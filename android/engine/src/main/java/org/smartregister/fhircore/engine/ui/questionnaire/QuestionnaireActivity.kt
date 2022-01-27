@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
@@ -275,12 +276,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
-    setResult(
-      Activity.RESULT_OK,
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(questionnaireResponse))
-      }
-    )
     val message = questionnaireViewModel.extractionProgressMessage.value
     if (message?.isNotBlank() == true)
       AlertDialogue.showInfoAlert(
@@ -289,10 +284,24 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         getString(R.string.done),
         {
           it.dismiss()
-          finish()
+          finishActivity(questionnaireResponse)
         }
       )
-    else finish()
+    else finishActivity(questionnaireResponse)
+  }
+
+  fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
+    val parcelResponse = questionnaireResponse.copy()
+    questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
+      .forEach { parcelResponse.find(it.linkId)?.answer?.clear() }
+    setResult(
+      Activity.RESULT_OK,
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(parcelResponse))
+        putExtra(QUESTIONNAIRE_ARG_FORM, questionnaire.logicalId)
+      }
+    )
+    finish()
   }
 
   fun deepFlat(
