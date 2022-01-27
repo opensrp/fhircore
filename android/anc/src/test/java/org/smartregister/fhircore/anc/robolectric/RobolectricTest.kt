@@ -96,7 +96,7 @@ abstract class RobolectricTest {
       .let {
         it.replace("#TODAY", Date().asYyyyMmDd()).replace("#NOW", DateTimeType.now().valueAsString)
       }
-      .let { FhirContext.forR4().newJsonParser().parseResource(it) }
+      .let { FhirContext.forR4Cached().newJsonParser().parseResource(it) }
 
   fun Resource.convertToString(trimTime: Boolean) =
     FhirContext.forR4Cached().newJsonParser().encodeResourceToString(this).let {
@@ -116,7 +116,7 @@ abstract class RobolectricTest {
   ): Bundle {
     val map = scu.parse(structureMapText, sourceGroup)
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
 
     println(iParser.encodeResourceToString(map))
 

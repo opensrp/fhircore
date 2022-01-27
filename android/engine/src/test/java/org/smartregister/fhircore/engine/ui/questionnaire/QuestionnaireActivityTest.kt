@@ -96,7 +96,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireConfig = QuestionnaireConfig("appId", "form", "title", "form-id")
     coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
       questionnaireConfig
-    coEvery { questionnaireViewModel.loadQuestionnaire(any()) } returns mockk()
+    coEvery { questionnaireViewModel.loadQuestionnaire(any()) } returns Questionnaire()
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
@@ -143,7 +143,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
     Assert.assertTrue(result.getBoolean(QuestionnaireActivity.QUESTIONNAIRE_READ_ONLY))
     Assert.assertEquals(
-      FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaireResponse),
+      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(questionnaireResponse),
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
     )
     Assert.assertEquals(
@@ -151,7 +151,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       result.getString(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
     )
     Assert.assertEquals(
-      FhirContext.forR4().newJsonParser().encodeResourceToString(patient),
+      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(patient),
       result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
     )
   }
@@ -236,7 +236,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
 
     Assert.assertEquals(
-      getString(R.string.saving_registration),
+      getString(R.string.form_progress_message),
       alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
 
@@ -267,6 +267,12 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnClickSaveButtonShouldShowSubmitConfirmationAlert() {
+    ReflectionHelpers.setField(
+      questionnaireActivity,
+      "questionnaire",
+      Questionnaire().apply { experimental = false }
+    )
+
     questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
@@ -274,6 +280,25 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_submit_message),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+  }
+
+  @Test
+  fun testOnClickSaveWithExperimentalButtonShouldShowTestOnlyConfirmationAlert() {
+    ReflectionHelpers.setField(
+      questionnaireActivity,
+      "questionnaire",
+      Questionnaire().apply { experimental = true }
+    )
+
+    questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_test_only_message),
       alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
   }
@@ -309,6 +334,24 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val result = questionnaireActivity.validQuestionnaireResponse(questionnaireResponse)
 
     Assert.assertFalse(result)
+  }
+
+  @Test
+  fun testPostSaveSuccessfulShouldFinishActivity() {
+    questionnaireActivity.postSaveSuccessful(QuestionnaireResponse())
+
+    Assert.assertTrue(questionnaireActivity.isFinishing)
+  }
+
+  @Test
+  fun testPostSaveSuccessfulWithExtractionMessageShouldShowAlert() {
+    questionnaireActivity.questionnaireViewModel.extractionProgressMessage.postValue("ABC")
+    questionnaireActivity.postSaveSuccessful(QuestionnaireResponse())
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals("ABC", alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text)
   }
 
   private fun buildQuestionnaireWithConstraints(): Questionnaire {

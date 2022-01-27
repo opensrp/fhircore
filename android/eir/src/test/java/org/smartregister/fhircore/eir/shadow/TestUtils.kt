@@ -28,7 +28,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 
 object TestUtils {
-  private val iParser: IParser = FhirContext.forR4().newJsonParser()
+  private val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
 
   fun loadQuestionnaire(context: Context, questionnaire: String): Questionnaire {
     val qJson = context.assets.open(questionnaire).bufferedReader().use { it.readText() }
