@@ -29,9 +29,12 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
+import com.famoco.desfireservicelib.CardReaderState
 import com.famoco.desfireservicelib.DESFireServiceAccess
+import com.famoco.desfireservicelib.ServiceConnectionState
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -67,6 +70,15 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   private lateinit var eventJob: Job
 
   private var scanForRegistration = true
+  private var desFireServiceObserversAdded = false
+  private val desFireServiceConnectionStateObserver: Observer<in ServiceConnectionState> =
+      Observer {
+    val state = it.name
+  }
+  private val cardReaderStateObserver: Observer<in CardReaderState> = Observer {
+    val cardReaderState = it.name
+  }
+  private var readResultObserver : Observer<in Array<String>>? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -82,7 +94,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     // Add DES service listeners
     addDesServiceListeners()
 
-    loadLocalDevWfpCodaFiles()
+    // loadLocalDevWfpCodaFiles()
   }
 
   fun loadLocalDevWfpCodaFiles() {
@@ -169,6 +181,12 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun onPause() {
+    if (desFireServiceObserversAdded) {
+      DESFireServiceAccess.DESFireServiceConnectionState.removeObserver(desFireServiceConnectionStateObserver)
+      DESFireServiceAccess.cardReaderState.removeObserver(cardReaderStateObserver)
+      DESFireServiceAccess.readResult.removeObserver(readResultObserver!!)
+    }
+
     super.onPause()
     // In order to consume the event in ReadNfcActivity or WriteNfcActivity,
     // we need to cancel this eventJob before leaving the MainActivity,
@@ -187,33 +205,37 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   private fun addDesServiceListeners() {
     // Check state connection with the service
-    DESFireServiceAccess.DESFireServiceConnectionState.observe(this) {
-      val state = it.name
-    }
+    desFireServiceObserversAdded = true
+    DESFireServiceAccess.DESFireServiceConnectionState.observe(
+      this,
+      desFireServiceConnectionStateObserver
+    )
 
     // Check if card interaction status
-    DESFireServiceAccess.cardReaderState.observe(this) {
-      val cardReaderState = it.name
-    }
+    DESFireServiceAccess.cardReaderState.observe(this, cardReaderStateObserver)
 
-    // After reading the card, the end-user will need the content that has been read on the card
-    DESFireServiceAccess.readResult.observe(this) { result ->
-      if (!result.isNullOrEmpty()) {
-        val stringBuilder = StringBuilder().append("")
-        result.forEach { stringBuilder.append(it) }
-        val readResult = stringBuilder.toString()
-        if (scanForRegistration) {
-          if (readResult == "{\n}") {
-            showAgeDialog{ dialog, which -> dialog.dismiss() }
+    if (readResultObserver == null) {
+      readResultObserver = Observer { result ->
+        if (!result.isNullOrEmpty()) {
+          val stringBuilder = StringBuilder().append("")
+          result.forEach { stringBuilder.append(it) }
+          val readResult = stringBuilder.toString()
+          if (scanForRegistration) {
+            if (readResult == "{\n}") {
+              showAgeDialog { dialog, which -> dialog.dismiss() }
+            } else {
+              showEraseCardDialog { dialog, which -> dialog.dismiss() }
+            }
           } else {
-            showEraseCardDialog { dialog, which -> dialog.dismiss() }
+            val patientNFCItem = Gson().fromJson(readResult, PatientNfcItem::class.java)
+            navigateToDetails(patientNFCItem.patientId)
           }
-        } else {
-          val patientNFCItem = Gson().fromJson(readResult, PatientNfcItem::class.java)
-          navigateToDetails(patientNFCItem.patientId)
         }
       }
     }
+
+    // After reading the card, the end-user will need the content that has been read on the card
+    DESFireServiceAccess.readResult.observe(this, readResultObserver!!)
   }
 
   private fun writeToCard(isDelete: Boolean = false) {
@@ -324,4 +346,6 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
     )
   }
+
+
 }
