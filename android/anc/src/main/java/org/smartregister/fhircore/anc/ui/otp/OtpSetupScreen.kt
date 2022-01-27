@@ -26,8 +26,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -49,16 +48,14 @@ const val SET_PIN_CONFIRM_BUTTON = "SET_PIN_CONFIRM_BUTTON"
 @Composable
 fun OtpSetupScreen(viewModel: OtpViewModel) {
 
-  val inputPin by remember { mutableStateOf(viewModel.pin.value) }
-  val enableSetPin by remember { mutableStateOf(viewModel.enableSetPin.value) }
-  val showError by remember { mutableStateOf(viewModel.showError.value) }
+  val inputPin by viewModel.pin.observeAsState(initial = "")
+  val enableSetPin by viewModel.enableSetPin.observeAsState(initial = false)
 
   OtpSetupPage(
     onPinChanged = viewModel::onPinChanged,
-    inputPin = inputPin ?: "",
+    inputPin = inputPin,
     setPinEnabled = enableSetPin ?: false,
-    onPinConfirmed = viewModel::onPinConfirmed,
-    showError = showError ?: false
+    onPinConfirmed = viewModel::onPinConfirmed
   )
 }
 
@@ -69,23 +66,19 @@ fun OtpSetupPage(
   onPinChanged: (String) -> Unit,
   inputPin: String,
   setPinEnabled: Boolean = false,
-  onPinConfirmed: () -> Unit,
-  showError: Boolean = false
+  onPinConfirmed: () -> Unit
 ) {
   Surface(color = colorResource(id = R.color.white_slightly_opaque)) {
     Column(
       modifier =
-        Modifier.fillMaxSize()
-          .padding(all = 16.dp)
-          .wrapContentWidth(Alignment.CenterHorizontally)
+        Modifier.fillMaxSize().padding(all = 16.dp).wrapContentWidth(Alignment.CenterHorizontally)
     ) {
       Text(
         text = stringResource(R.string.set_pin),
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
-        modifier =
-          modifier.padding(top = 70.dp).align(Alignment.CenterHorizontally)
+        modifier = modifier.padding(top = 70.dp).align(Alignment.CenterHorizontally)
       )
 
       Text(
@@ -97,15 +90,10 @@ fun OtpSetupPage(
           modifier.padding(horizontal = 16.dp, vertical = 16.dp).align(Alignment.CenterHorizontally)
       )
 
-      PinView(
-        otpInputLength = 4,
-        onPinChanged = onPinChanged,
-        inputPin = inputPin,
-        showError = showError
-      )
+      PinView(otpInputLength = 4, onPinChanged = onPinChanged, inputPin = inputPin)
 
       Button(
-        enabled = true, // setPinEnabled,
+        enabled = setPinEnabled,
         onClick = onPinConfirmed,
         modifier = Modifier.fillMaxWidth().padding(top = 30.dp).testTag(SET_PIN_CONFIRM_BUTTON)
       ) {

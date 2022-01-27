@@ -16,12 +16,16 @@
 
 package org.smartregister.fhircore.anc.ui.otp
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
@@ -29,23 +33,54 @@ class OtpLoginActivity : BaseMultiLanguageActivity() {
 
   private val optViewModel by viewModels<OtpViewModel>()
 
-  private lateinit var familyId: String
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-    optViewModel.apply {}
+    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+    optViewModel.apply {
+      val optLoginActivity = this@OtpLoginActivity
+      loadData()
+      navigateToHome.observe(optLoginActivity, { optLoginActivity.moveToHome() })
+      launchDialPad.observe(optLoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
+      navigateToLogin.observe(optLoginActivity, { optLoginActivity.moveToLoginViaUsername() })
+      pin.observe(
+        optLoginActivity,
+        {
+          it.let {
+            if (it.length > 3) {
+              if (it.equals(optViewModel.savedOtp, false)) {
+                moveToHome()
+              }
+            }
+          }
+        }
+      )
+    }
     setContent { AppTheme { OtpLoginScreen(optViewModel) } }
   }
 
-  private fun loadData() {
-    optViewModel.run {
-      //      load previous login to match
-    }
+  private fun launchDialPad(phone: String) {
+    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
 
-  override fun onResume() {
-    super.onResume()
-    loadData()
+  private fun moveToHome() {
+    startActivity(
+      Intent(this, FamilyRegisterActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      }
+    )
+    finish()
+  }
+
+  private fun moveToLoginViaUsername() {
+    startActivity(
+      Intent(this, LoginActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addCategory(Intent.CATEGORY_LAUNCHER)
+      }
+    )
+    finish()
   }
 }

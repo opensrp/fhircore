@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.OTP_PIN
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -44,9 +45,15 @@ constructor(
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 
+  private val _navigateToLogin = MutableLiveData<Boolean>()
+  val navigateToLogin: LiveData<Boolean>
+    get() = _navigateToLogin
+
   private val _pin = MutableLiveData<String>()
   val pin: LiveData<String>
     get() = _pin
+
+  lateinit var savedOtp: String
 
   private val _loginError = MutableLiveData<String>()
   val loginError: LiveData<String>
@@ -59,6 +66,11 @@ constructor(
   private val _enableSetPin = MutableLiveData(false)
   val enableSetPin
     get() = _enableSetPin
+
+  fun loadData() {
+    sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "false")
+    savedOtp = sharedPreferences.read(OTP_PIN, "").toString()
+  }
 
   fun onPinConfirmed() {
     val newPin = pin.value ?: ""
@@ -74,14 +86,32 @@ constructor(
   }
 
   fun onPinChanged(newPin: String) {
-    _pin.postValue(newPin)
-    //    enableSetPin.value = newPin.length>3
-    _enableSetPin.postValue(newPin.length > 3)
-    Log.e("aw", "pin changed " + newPin)
+    //    _pin.postValue(newPin)
+    //    //    enableSetPin.value = newPin.length>3
+    //    _enableSetPin.postValue(newPin.length > 3)
+    //    Log.e("aw", "pin changed " + newPin)
+
+    if (newPin.length == 4) {
+      val pinMatched = newPin.equals(savedOtp, false)
+      showError.value = !pinMatched
+      _pin.postValue(newPin)
+      if (pinMatched) {
+        _navigateToHome.value = true
+      }
+      Log.e("aw", "pin changed " + newPin)
+    } else {
+      showError.value = false
+    }
   }
 
-  fun forgotPassword() {
-    // TODO load supervisor contact e.g.
+  fun onMenuLoginClicked() {
+    Log.e("aw", "onMenuLoginClicked")
+    sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "true")
+    _navigateToLogin.value = true
+  }
+
+  fun forgotPin() {
+    // load supervisor contact e.g.
     _launchDialPad.value = "tel:0123456789"
   }
 }

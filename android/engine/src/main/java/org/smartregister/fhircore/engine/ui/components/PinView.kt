@@ -82,21 +82,30 @@ fun PinView(
     value = editValue,
     onValueChange = {
       if (it.length <= otpLength) {
-        when {
-          it.isEmpty() -> {
-            keyboard?.show()
-          }
-          it.length < otpLength -> {
-            setEditValue(it)
-            keyboard?.show()
-          }
-          else -> {
-            setEditValue(it)
-            onPinChanged(it)
-            keyboard?.hide()
-          }
-        }
+        setEditValue(it)
+        onPinChanged(it)
       }
+      if (it.length < 4) {
+        keyboard?.show()
+      } else {
+        keyboard?.hide()
+      }
+      //      if (it.length <= otpLength) {
+      //        when {
+      //          it.isEmpty() -> {
+      //            keyboard?.show()
+      //          }
+      //          it.length < otpLength -> {
+      //            setEditValue(it)
+      //            keyboard?.show()
+      //          }
+      //          else -> {
+      //            setEditValue(it)
+      //            onPinChanged(it)
+      //            keyboard?.hide()
+      //          }
+      //        }
+      //      }
     },
     modifier = Modifier.size(0.dp).focusRequester(focusRequester),
     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
@@ -157,6 +166,14 @@ fun OtpCell(
 
   Box(modifier = modifier) {
     if (isDotted) {
+      //      if (isCursorVisible) {
+      //        Text(
+      //          text = if (value.isEmpty()) cursorSymbol else value,
+      //          fontSize = 18.sp,
+      //          style = MaterialTheme.typography.body1,
+      //          modifier = Modifier.wrapContentSize().align(Alignment.Center)
+      //        )
+      //      } else {
       Card(
         modifier = Modifier.size(30.dp).align(Alignment.Center),
         elevation = 1.dp,
@@ -171,6 +188,7 @@ fun OtpCell(
           modifier = Modifier.wrapContentSize().align(Alignment.Center)
         )
       }
+      //      }
     } else {
       Card(
         modifier = Modifier.fillMaxSize().align(Alignment.Center),

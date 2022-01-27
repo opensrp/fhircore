@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.login
 import android.content.Intent
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockk
 import io.mockk.spyk
 import org.junit.After
 import org.junit.Assert
@@ -39,7 +40,7 @@ class AncLoginServiceTest : RobolectricTest() {
 
   lateinit var loginActivity: LoginActivity
 
-  private val loginService: AncLoginService = spyk(AncLoginService())
+  private val loginService: AncLoginService = spyk(AncLoginService(mockk()))
 
   @Before
   fun setUp() {
@@ -55,7 +56,7 @@ class AncLoginServiceTest : RobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldNavigateToRegisterScreen() {
-    loginService.navigateToHome()
+    loginService.navigateToHome(canSetOtp = false)
     val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
     val shadowIntent: ShadowIntent = shadowOf(startedIntent)
     Assert.assertEquals(FamilyRegisterActivity::class.java, shadowIntent.intentClass)

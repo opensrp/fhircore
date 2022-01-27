@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.ui.login
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,6 +30,7 @@ import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposab
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.OTP_PIN
 
 @AndroidEntryPoint
@@ -62,11 +64,17 @@ class LoginActivity :
       configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
     }
 
+    Log.e("aw", "login in here")
     // Check if Otp enabled and stored then move to otp login
     val isOtpEnabled = loginViewModel.loginViewConfiguration.value?.enableOtp ?: false
-    val lastOtp = loginViewModel.sharedPreferences.read(OTP_PIN, "")
-    if (isOtpEnabled && !lastOtp.isNullOrEmpty()) {
+    val stayUserNamePasswordLogin =
+      loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, "").equals("true", true)
+    val lastOtpExist = !loginViewModel.sharedPreferences.read(OTP_PIN, "").isNullOrEmpty()
+    if (isOtpEnabled && lastOtpExist && !stayUserNamePasswordLogin) {
       loginService.navigateToOtpLogin()
+    }
+    if (stayUserNamePasswordLogin) {
+      loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "false")
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }

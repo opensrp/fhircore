@@ -34,18 +34,18 @@ class OtpSetupActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     optViewModel.apply {
+      loadData()
       val optSetupActivity = this@OtpSetupActivity
-      navigateToHome.observe(optSetupActivity, { optSetupActivity.onPinConfirmed() })
+      navigateToHome.observe(optSetupActivity, { optSetupActivity.moveToHome() })
       pin.observe(optSetupActivity, { it.let { enableSetPin.postValue(it.length > 3) } })
     }
-
     setContent { AppTheme { OtpSetupScreen(optViewModel) } }
   }
 
-  private fun onPinConfirmed() {
+  private fun moveToHome() {
     startActivity(
       Intent(this, FamilyRegisterActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

@@ -134,5 +134,7 @@
 
     <string name="app_name_ecbis">eCBIS</string>
     <string name="enter_pin_w4vv01">Enter pin for W4VV-01</string>
+    <string name="incorrect_pin_please_retry">Incorrect pin, lease try again</string>
+    <string name="otp_menu_login">Login</string>
     <string name="forgot_pin">Forgot pin?</string>
 </resources>
