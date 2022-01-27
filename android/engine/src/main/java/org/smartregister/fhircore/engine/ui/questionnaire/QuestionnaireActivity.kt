@@ -229,7 +229,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
 
     val questionnaireResponse = getQuestionnaireResponse()
-/*    if (!validQuestionnaireResponse(questionnaireResponse)) {
+    if (!validQuestionnaireResponse(questionnaireResponse)) {
       saveProcessingAlertDialog.dismiss()
 
       AlertDialogue.showErrorAlert(
@@ -238,7 +238,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         R.string.questionnaire_alert_invalid_title
       )
       return
-    }*/
+    }
 
     handleQuestionnaireResponse(questionnaireResponse)
 
@@ -259,48 +259,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     finish()
   }
 
-  // TODO remove this when SDK bug for validation is fixed
-  // https://github.com/google/android-fhir/issues/912
-  fun deepFlat(
-    qItems: List<Questionnaire.QuestionnaireItemComponent>,
-    questionnaireResponse: QuestionnaireResponse,
-    targetQ: MutableList<Questionnaire.QuestionnaireItemComponent>,
-    targetQR: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
-  ) {
-    qItems.forEach { qit ->
-      // process each inner item list
-      deepFlat(qit.item, questionnaireResponse, targetQ, targetQR)
-
-      // remove nested structure to prevent validation recursion; it is already processed above
-      qit.item.clear()
-
-      // add questionnaire and response pair for each linkid on same index
-      questionnaireResponse.find(qit.linkId)?.let { qrit ->
-        targetQ.add(qit)
-        targetQR.add(qrit)
-      }
-    }
-  }
-
-  // TODO change this when SDK bug for validation is fixed
-  // https://github.com/google/android-fhir/issues/912
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
-    // clone questionnaire and response for processing and changing structure
-    val q = parser.parseResource(parser.encodeResourceToString(questionnaire)) as Questionnaire
-    val qr =
-      parser.parseResource(parser.encodeResourceToString(questionnaireResponse)) as
-        QuestionnaireResponse
-
-    // flatten and pair all responses temporarily to fix index mapping issue for questionnaire and
-    // questionnaire response
-    val qItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
-    val qrItems = mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
-
-    deepFlat(q.item, qr, qItems, qrItems)
-
     return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(
-        qItems,
-        qrItems,
+        questionnaire.item,
+        questionnaireResponse.item,
         this
       )
       .values
