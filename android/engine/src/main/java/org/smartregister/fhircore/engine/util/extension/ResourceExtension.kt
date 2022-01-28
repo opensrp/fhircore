@@ -27,6 +27,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Quantity
@@ -54,6 +55,7 @@ fun Base?.valueToString(): String {
     this.repeat.let {
       it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
     }
+  else if (this is HumanName) "${this.given.firstOrNull().valueToString()} ${this.family}"
   else this.toString()
 }
 
