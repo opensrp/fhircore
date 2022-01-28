@@ -135,34 +135,24 @@ fun ResultItem(
 
 //chisomoStart
 
-@ExperimentalPagerApi
-@Composable
-fun rememberPagerState(
-  @androidx.annotation.IntRange(from = 0) pageCount: Int,
-  @androidx.annotation.IntRange (from = 0) initialPage: Int = 0,
-  @FloatRange(from = 0.0, to = 1.0) initialPageOffset: Float = 0f,
-  @IntRange(from = 1) initialOffscreenLimit: Int = 1,
-  infiniteLoop: Boolean = false
-): PagerState = rememberSaveable(saver = PagerState.Saver) {
-  PagerState(
-    pageCount = pageCount,
-    currentPage = initialPage,
-    currentPageOffset = initialPageOffset,
-    offscreenLimit = initialOffscreenLimit,
-    infiniteLoop = infiniteLoop
-  )
-}
 
 
-private val tabData = listOf(
-  TabItem.Demographic,
-  TabItem.Visit,
-  TabItem.History
-)
+
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun TabWithPager() {
+fun TabWithPager(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+  val tabData = listOf(
+    TabItem(0, Icons.Filled.Feed, "Details") {
+      DemographicsTab(questPatientDetailViewModel)
+    },
+    TabItem(2, Icons.Filled.DirectionsWalk, "Visit") {
+      VisitTab()
+    },
+    TabItem(1, Icons.Filled.History, "Settings") {
+      HistoryTab()
+    }
+  )
   val pagerState = rememberPagerState(
     pageCount = tabData.size,
     infiniteLoop = true,
@@ -298,7 +288,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         }
 
       }
-      TabWithPager()
+      TabWithPager(questPatientDetailViewModel)
 
       /* Forms section
       Column(
