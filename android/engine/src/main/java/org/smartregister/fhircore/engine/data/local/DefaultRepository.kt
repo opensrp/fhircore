@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.local
 
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
@@ -23,6 +24,9 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DataRequirement
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -62,6 +66,18 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" })
         filter(QuestionnaireResponse.QUESTIONNAIRE, { value = "Questionnaire/${questionnaire.id}" })
       }
+    }
+
+  suspend fun search(dataRequirement: DataRequirement) =
+    when (dataRequirement.type) {
+      Enumerations.ResourceType.CONDITION.toCode() ->
+        fhirEngine.search<Condition> {
+          dataRequirement.codeFilter.forEach {
+            filter(TokenClientParam(it.path), { value = of(it.codeFirstRep) })
+          }
+          // TODO handle date filter
+        }
+      else -> listOf()
     }
 
   suspend fun save(resource: Resource) {

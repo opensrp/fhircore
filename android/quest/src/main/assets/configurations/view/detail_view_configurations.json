@@ -80,7 +80,7 @@
             "properties": {
               "labelDirection": "UP",
               "value": {
-                "textSize": 45
+                "textSize": 35
               }
             }
           }
@@ -130,7 +130,27 @@
                 "missing": "N/A"
               },
               "value": {
-                "textSize": 45
+                "textSize": 35
+              }
+            }
+          }
+        ]
+      },
+      {
+        "filters": [
+          {
+            "resourceType": "MEDICATIONREQUEST",
+            "key": "reasonCode",
+            "displayableProperty": "reasonCode",
+            "valueType": "CODEABLECONCEPT",
+            "label": "Findings: ",
+            "properties": {
+              "valueFormatter": {
+                "Minor": "Underage",
+                "missing": "Missing reason for recommendation"
+              },
+              "value": {
+                "textSize": 16
               }
             }
           }
