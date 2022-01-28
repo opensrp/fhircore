@@ -142,7 +142,7 @@ constructor(
     }
   }
 
-  fun workflowPointName(classification: String) = "$appId|$classification"
+  fun workflowPointName(key: String) = "$appId|$key"
 
   fun isAppIdInitialized() = this::appId.isInitialized
 
@@ -152,5 +152,6 @@ constructor(
     const val APP_SYNC_CONFIG = "configurations/app/sync_config.json"
     const val ORGANIZATION = "organization"
     const val PUBLISHER = "publisher"
+    const val ID = "_id"
   }
 }

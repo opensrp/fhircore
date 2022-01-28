@@ -39,7 +39,7 @@ import org.opencds.cqf.cql.evaluator.cql2elm.content.LibraryContentProvider
 import org.opencds.cqf.cql.evaluator.engine.execution.TranslatingLibraryLoader
 import timber.log.Timber
 
-open class FhirLibraryLoader(
+open class LibraryLoaderExt(
   modelManager: ModelManager,
   libraryContentProviders: List<LibraryContentProvider>,
   translatorOptions: CqlTranslatorOptions = CqlTranslatorOptions.defaultOptions(),

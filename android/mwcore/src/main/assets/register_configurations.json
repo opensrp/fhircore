@@ -1,0 +1,26 @@
+[
+  {
+    "id": "patient_client",
+    "primaryFilter": {
+      "filterType": "TOKEN",
+      "key": "_tag",
+      "valueType": "CODING",
+      "valueCoding": {
+        "system": "https://d-tree.org",
+        "code": "patient-client"
+      }
+    }
+  },
+  {
+    "id": "patient_exposed_infant",
+    "primaryFilter": {
+      "filterType": "TOKEN",
+      "key": "_tag",
+      "valueType": "CODING",
+      "valueCoding": {
+        "system": "https://d-tree.org",
+        "code": "patient-exposed-infant"
+      }
+    }
+  }
+]

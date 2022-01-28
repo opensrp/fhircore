@@ -37,8 +37,8 @@ android {
         applicationId "org.smartregister.fhircore.mwcore"
         minSdk 21
         targetSdk 30
-        versionCode 1
-        versionName "0.0.2"
+        versionCode 3
+        versionName "0.0.3"
         multiDexEnabled true
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
@@ -155,7 +155,7 @@ dependencies {
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
-    def composeVersion = "1.0.1"
+    def composeVersion = "1.0.5"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 }

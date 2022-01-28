@@ -1,0 +1,229 @@
+//Declare name and version of lib
+library TestArtifact version '1'
+
+//FHIR as a data model and version of FHIR
+using FHIR version '4.0.1'
+
+//functions to help FHIR vs CQL primitives
+include "FHIRHelpers" version '4.0.1' called FHIRHelpers
+
+//System declarations  : Codable concept codes systems
+codesystem "SNOMED": 'http://snomed.info/sct'
+codesystem "ConditionClinicalStatusCodes": 'http://terminology.hl7.org/CodeSystem/condition-clinical'
+codesystem "ConditionVerificationStatusCodes": 'http://hl7.org/fhir/ValueSet/condition-ver-status'
+codesystem "ServiceReqCategoryCodes": 'http://hl7.org/fhir/ValueSet/servicerequest-category'
+codesystem "DiagReportCategoryCodes": 'http://hl7.org/fhir/ValueSet/diagnostic-service-sections'
+
+//Code used as identifers
+code "Pregnancy code": '77386006' from "SNOMED" display 'Pregnant'
+code "G6PD code": '86859003' from "SNOMED" display 'G6PD Enzyme'
+code "Haemoglobin code": '259695003' from "SNOMED" display 'Haemoglobin'
+code "active": 'active' from "ConditionClinicalStatusCodes"
+code "confirmed": 'confirmed' from "ConditionVerificationStatusCodes"
+code "g6pdStatusCode": '9024005' from "SNOMED" display 'G6PD Status'
+code "g6pdAnaemiaCode": '86859003' from "SNOMED" display 'Glucose-6-phosphate dehydrogenase deficiency anaemia'
+code "normalResultCode": '280413001' from "SNOMED" display 'Normal'
+code "deficientResultCode": '260372006' from "SNOMED" display 'Deficient'
+code "intermediateResultCode": '11896004' from "SNOMED" display 'Intermediate'
+code "serviceReqCategory": '108252007' from "ServiceReqCategoryCodes" display 'Laboratory procedure'
+code "diagReportCategory": 'HM' from "DiagReportCategoryCodes" display 'Hematology'
+code "pqRegimenCode": '429663004' from "SNOMED" display 'Primaquine (substance)'
+
+
+//CQL is written from a perspective of a single patient
+//can be  run in a context for a Single patient or population
+context Patient
+
+// TODO see if we need to do any more filtering and sorting; rightnow only one encounter is passed
+define "Encounter":
+  Last([Encounter] E
+    where E.status ~ 'finished' )
+
+define "AgeRange":
+  AgeInYears() >= 16
+
+define "Female":
+  Patient.gender = 'female'
+
+define "Male":
+  Patient.gender = 'male'
+
+define "is Pregnant":
+  Last([Condition: "Pregnancy code"] O
+    where O.clinicalStatus ~ "active"
+      sort by recordedDate) is not null
+
+define "Registerd Haem":
+  Last([Observation: "Haemoglobin code"] H
+    where H.status ~ 'registered')
+
+define "Registerd G6PD":
+  Last([Observation: "G6PD code"] G
+    where G.status ~ 'registered')
+
+
+define "Abnormal Haemoglobin": "Registerd Haem".value.value <= 8.0
+
+
+//Define Thresholds
+define "Deficient":
+  Last([Observation: "G6PD code"] G
+    where G.value.value <= 3.9
+        return true)
+
+define "Intermediate":
+  Last([Observation: "G6PD code"] G
+    where "Female" and G.value.value >= 4.1  and G.value.value <= 6.0
+      return  true)
+
+
+define "Normal Male":
+    Last([Observation: "G6PD code"] G
+        where "Male" and G.value.value >= 4.1
+            return  true)
+
+define "Normal Female":
+    Last([Observation: "G6PD code"] G
+        where "Female" and G.value.value >= 6.1
+            return  true)
+
+define "g6pdTestResultCode":
+      if "Deficient" then "deficientResultCode"
+      else if "Intermediate" then "intermediateResultCode"
+      else if "Normal Male" or "Normal Female" then "normalResultCode"
+      else null
+
+define "recommendedDosageTiming":
+  if not "Abnormal Haemoglobin" and ("Deficient" or "Intermediate") then decimal { value: 8.0 }
+  else if not "Abnormal Haemoglobin" then decimal { value: 2.0 }
+else null
+
+define "patientRef": ReplaceMatches('Patient/'+Patient.id,'#','')
+define "encounterRef": ReplaceMatches('Encounter/'+Encounter.id,'#','')
+
+define "condition": if "g6pdTestResultCode" is not null
+    then Condition {
+      subject: Reference {reference: string { value: "patientRef" } },
+      encounter: Reference {reference: string { value: "encounterRef" } },
+      clinicalStatus: CodeableConcept { coding: {
+        Coding {
+          code: code {value: "active".code },
+          system: uri {value: "active".system }
+        }
+      } },
+      verificationStatus: CodeableConcept { coding: {
+        Coding {
+          code: code {value: "confirmed".code },
+          system: uri {value: "confirmed".system }
+        }
+      } },
+      category: { CodeableConcept { coding: {
+        Coding {
+          code: code {value: "g6pdStatusCode".code },
+          system: uri {value: "g6pdStatusCode".system },
+          display: string {value: "g6pdStatusCode".display }
+        }
+      } } },
+      code: CodeableConcept { coding: {
+        Coding {
+          code: code {value: "g6pdTestResultCode".code },
+          system: uri {value: "g6pdTestResultCode".system },
+          display: string {value: "g6pdTestResultCode".display }
+        }
+      } },
+      onset: dateTime{ value: Today() },
+      recordedDate: dateTime{ value: Today() }
+    } else null
+
+define "serviceRequest": if "g6pdTestResultCode" is not null
+   then ServiceRequest{
+	  subject: Reference {reference: string { value: "patientRef" } },
+      encounter: Reference {reference: string { value: "encounterRef" } },
+      status: ServiceRequestStatus { value: 'completed'},
+      intent: ServiceRequestIntent {value: 'order' },
+      category: { CodeableConcept { coding: {
+        Coding {
+          code: code {value: "serviceReqCategory".code },
+          system: uri {value: "serviceReqCategory".system },
+          display: string {value: "serviceReqCategory".display }
+        }
+      } } },
+      code: CodeableConcept { coding: {
+        Coding {
+          code: code {value: "G6PD code".code },
+          system: uri {value: "G6PD code".system },
+          display: string {value: "G6PD code".display }
+        }
+      } },
+      authoredOn: dateTime{ value: Today() }
+} else null
+
+define "diagnosticReport": if "g6pdTestResultCode" is not null
+   then DiagnosticReport{
+	  subject: Reference {reference: string { value: "patientRef" } },
+      encounter: Reference {reference: string { value: "encounterRef" } },
+      status: DiagnosticReportStatus { value: 'final'},
+      category: { CodeableConcept { coding: {
+        Coding {
+          code: code {value: "diagReportCategory".code },
+          system: uri {value: "diagReportCategory".system },
+          display: string {value: "diagReportCategory".display }
+        }
+      } } },
+      code: CodeableConcept { coding: {
+        Coding {
+          code: code {value: "G6PD code".code },
+          system: uri {value: "G6PD code".system },
+          display: string {value: "G6PD code".display }
+        }
+      } },
+      effective: dateTime{ value: Today() }
+} else null
+
+define "medication": if "AgeRange" and recommendedDosageTiming is not null
+then CodeableConcept { coding: {
+        Coding {
+          code: code {value: "pqRegimenCode".code },
+          system: uri {value: "pqRegimenCode".system },
+          display: string {value: "pqRegimenCode".display }
+        }
+} } else null
+
+define "dosage": Dosage {
+  timing: Timing {
+    repeat: FHIR.Timing.Repeat {
+     frequency: positiveInt {value: 1},
+     period: "recommendedDosageTiming",
+     periodUnit: UnitsOfTime { value: 'wk' }
+	}
+  },
+  doseAndRate: {
+    FHIR.Dosage.DoseAndRate {
+       dose: SimpleQuantity {
+         value: decimal {value:  0.75},
+         unit: string {value: 'mg/kg'},
+         system: uri {value: 'http://unitsofmeasure.org'}
+       }
+    }
+  }
+}
+
+define "medicationRequest": if "medication" is not null
+   then MedicationRequest {
+     subject: Reference {reference: string { value: "patientRef" } },
+     encounter: Reference {reference: string { value: "encounterRef" } },
+     authoredOn: dateTime{ value: Today() },
+     status: MedicationRequestStatus {value: 'active'},
+     intent: MedicationRequestIntent {value: 'proposal'},
+     category: { CodeableConcept { coding: {
+        Coding {
+          code: code {value: "g6pdAnaemiaCode".code },
+          system: uri {value: "g6pdAnaemiaCode".system },
+          display: string {value: "g6pdAnaemiaCode".display }
+        }
+      } } },
+     medication: "medication",
+     dosageInstruction: { "dosage" }
+} else null
+
+define "OUTPUT": List { "condition", "serviceRequest", "diagnosticReport", "medicationRequest" }

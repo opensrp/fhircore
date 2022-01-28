@@ -50,6 +50,8 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.mwcore.R
+import org.smartregister.fhircore.mwcore.configuration.view.patientDetailsViewConfigurationOf
+import org.smartregister.fhircore.mwcore.data.patient.model.QuestResultItem
 
 
 const val TOOLBAR_TITLE = "toolbarTitle"
@@ -89,9 +91,9 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
         DropdownMenuItem(
           onClick = {
             showMenu = false
-            questPatientDetailViewModel.onMenuItemClickListener(true)
+            questPatientDetailViewModel.onMenuItemClickListener(R.string.edit_patient_info)
           }
-        ) { Text(text = stringResource(id = R.string.test_results)) }
+        ) { Text(text = stringResource(id = R.string.edit_patient_info)) }
       }
     }
 
@@ -101,7 +103,7 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 
 @Composable
 fun ResultItem(
-  questionnaireResponse: QuestionnaireResponse,
+  testResult: QuestResultItem,
   questPatientDetailViewModel: QuestPatientDetailViewModel
 ) {
   Row(
@@ -111,19 +113,41 @@ fun ResultItem(
     Modifier
       .fillMaxWidth()
       .padding(12.dp)
-      .clickable {
-        questPatientDetailViewModel.onTestResultItemClickListener(questionnaireResponse)
-      }
+      .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult) }
       .testTag(RESULT_ITEM)
   ) {
-    Text(
-      text = (questionnaireResponse.meta?.tagFirstRep?.display
-        ?: "") + " (${questionnaireResponse.authored?.asDdMmmYyyy() ?: ""}) ",
-      color = colorResource(id = R.color.black),
-      fontSize = 17.sp,
-      textAlign = TextAlign.Start,
-      modifier = Modifier.padding(end = 12.dp)
-    )
+    Column(verticalArrangement = Arrangement.Center) {
+      testResult.data.forEach { dataList ->
+        Row(modifier = Modifier.padding(end = 12.dp)) {
+          dataList.forEach { item ->
+            item.label?.let {
+              Text(
+                text = item.label,
+                color =
+                Color(
+                  android.graphics.Color.parseColor(item.properties?.label?.color ?: "#000000")
+                ),
+                fontSize = item.properties?.label?.textSize?.sp ?: 17.sp,
+                fontWeight =
+                FontWeight(item.properties?.label?.fontWeight?.weight ?: FontWeight.Normal.weight)
+              )
+            }
+
+            Text(
+              text = (item.valuePrefix ?: "") + item.value,
+              color =
+              Color(
+                android.graphics.Color.parseColor(item.properties?.value?.color ?: "#000000")
+              ),
+              fontSize = item.properties?.value?.textSize?.sp ?: 17.sp,
+              textAlign = TextAlign.Start,
+              fontWeight =
+              FontWeight(item.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight)
+            )
+          }
+        }
+      }
+    }
 
     Image(
       painter = painterResource(id = R.drawable.ic_forward_arrow),
@@ -219,6 +243,8 @@ fun FormItem(
 
 @Composable
 fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+  val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration
+    .observeAsState(patientDetailsViewConfigurationOf())
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)
@@ -335,7 +361,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
         /* Responses section
         Text(
-          text = "RESPONSES (${testResults?.size?.toString() ?: ""})",
+          text = "${viewConfiguration.contentTitle} (${testResults?.size?.toString() ?: ""})",
           color = colorResource(id = R.color.grayText),
           fontSize = 16.sp,
           fontWeight = FontWeight.Bold
@@ -345,52 +371,18 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM)
         ) {
           Column {
-            val totalResultsCount = testResults?.count() ?: 0
-            testResults?.forEachIndexed { index, item ->
-              Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier =
-                Modifier.fillMaxWidth()
-                  .padding(12.dp)
-                  .clickable { questPatientDetailViewModel.onTestResultItemClickListener(item) }
-                  .testTag(RESULT_ITEM)
-              ) {
-                Text(
-                  text = (item.meta?.tagFirstRep?.display
-                    ?: "") + " (${item.authored?.asDdMmmYyyy() ?: ""}) ",
-                  color = colorResource(id = R.color.black),
-                  fontSize = 17.sp,
-                  textAlign = TextAlign.Start,
-                  modifier = Modifier.padding(end = 12.dp)
-                )
-
-                Image(
-                  painter = painterResource(id = R.drawable.ic_forward_arrow),
-                  contentDescription = "",
-                  colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
-                )
-              }
-
-              if (index < totalResultsCount) {
-                Divider(color = colorResource(id = R.color.white_smoke))
-                Column {
-                  testResults?.let {
-                    it.forEachIndexed { index, item ->
-                      ResultItem(item, questPatientDetailViewModel)
-                      if (index < it.size) {
-                        Divider(color = colorResource(id = R.color.white_smoke))
-                      }
-                    }
-                  }
-                    ?: Text(
-                      text = stringResource(id = R.string.loading_responses),
-                      modifier = Modifier.padding(16.dp)
-                    )
+            testResults?.let {
+              it.forEachIndexed { index, item ->
+                ResultItem(item, questPatientDetailViewModel)
+                if (index < it.size - 1) {
+                  Divider(color = colorResource(id = R.color.white_smoke))
                 }
               }
-              Spacer(Modifier.height(24.dp))
             }
+              ?: Text(
+                text = stringResource(id = R.string.loading_responses),
+                modifier = Modifier.padding(16.dp)
+              )
           }
         }*/
       }

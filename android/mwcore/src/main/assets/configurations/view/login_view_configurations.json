@@ -3,7 +3,7 @@
     "appId": "mw-core",
     "classification": "login",
     "applicationName": "MW Core",
-    "applicationVersion": "0.0.2",
+    "applicationVersion": "0.0.3",
     "darkMode": false,
     "showLogo": true
   }
