@@ -21,6 +21,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
@@ -73,6 +74,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.load(Library::class.java, fhirModelLibrary.logicalId) } returns
       fhirModelLibrary
     coEvery { defaultRepository.save(any()) } just runs
+    coEvery { defaultRepository.search(any()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(
@@ -81,7 +83,8 @@ class CqlContentTest : RobolectricTest() {
         dataBundle.apply {
           this.entry.removeIf { it.resource.resourceType == ResourceType.Patient }
         },
-        defaultRepository
+        defaultRepository,
+        true
       )
     }
 
@@ -90,6 +93,8 @@ class CqlContentTest : RobolectricTest() {
       result,
       ResourceType.MedicationRequest
     )
+
+    coVerify { defaultRepository.save(any()) }
   }
 
   @Test
@@ -123,6 +128,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.load(Library::class.java, fhirModelLibrary.logicalId) } returns
       fhirModelLibrary
     coEvery { defaultRepository.save(any()) } just runs
+    coEvery { defaultRepository.search(any()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(
@@ -142,6 +148,51 @@ class CqlContentTest : RobolectricTest() {
       "$resourceDir/output_diagnostic_report.json",
       result,
       ResourceType.DiagnosticReport
+    )
+
+    coVerify(exactly = 3) { defaultRepository.save(any()) }
+  }
+
+  @Test
+  fun runCqlLibraryTestForControlTest() {
+    val resourceDir = "cql/control-test"
+    val cqlElm = "$resourceDir/library-elm.json".readFileToBase64Encoded()
+
+    val cqlLibrary =
+      parser.parseResource(
+        "$resourceDir/library.json".readFile().replace("#library-elm.json", cqlElm)
+      ) as
+        Library
+
+    println(cqlLibrary.convertToString(false))
+
+    val fhirHelpersLibrary = "cql-common/helper.json".parseSampleResource() as Library
+    val fhirModelLibrary = "cql-common/fhir-model.json".parseSampleResource() as Library
+
+    val dataBundle = "$resourceDir/data.json".parseSampleResource() as Bundle
+
+    val fhirEngine = mockk<FhirEngine>()
+    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+
+    coEvery { fhirEngine.load(Library::class.java, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.load(Library::class.java, fhirHelpersLibrary.logicalId) } returns
+      fhirHelpersLibrary
+    coEvery { fhirEngine.load(Library::class.java, fhirModelLibrary.logicalId) } returns
+      fhirModelLibrary
+
+    val result = runBlocking {
+      evaluator.runCqlLibrary(cqlLibrary.logicalId, null, dataBundle, defaultRepository)
+    }
+
+    println(result)
+
+    Assert.assertTrue(result.contains("OUTPUT -> Correct result"))
+    Assert.assertTrue(
+      result.contains(
+        "OUTPUT -> \nDetails:\n" +
+          "Value (3.0) is in Normal G6PD Range 0-3\n" +
+          "Value (9.0) is in Normal Haemoglobin Range 8-12"
+      )
     )
   }
 

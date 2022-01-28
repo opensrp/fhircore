@@ -69,7 +69,7 @@ class NetworkModule {
       .build()
       .create(OAuthService::class.java)
 
-  @Provides fun provideParser(): IParser = FhirContext.forR4().newJsonParser()
+  @Provides fun provideParser(): IParser = FhirContext.forR4Cached().newJsonParser()
 
   @Provides
   fun provideFhirResourceService(

@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Quantity
@@ -56,13 +57,14 @@ fun Base?.valueToString(): String {
     this.repeat.let {
       it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
     }
+  else if (this is HumanName) "${this.given.firstOrNull().valueToString()} ${this.family}"
   else this.toString()
 }
 
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
-fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
+fun Resource.toJson(parser: IParser = FhirContext.forR4Cached().newJsonParser()): String =
   parser.encodeResourceToString(this)
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
@@ -74,7 +76,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   if (this is Patient) {
     extension = this.extension
   }
-  val jsonParser = FhirContext.forR4().newJsonParser()
+  val jsonParser = FhirContext.forR4Cached().newJsonParser()
   val stringJson = toJson(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 

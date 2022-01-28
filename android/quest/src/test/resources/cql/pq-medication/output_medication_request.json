@@ -20,6 +20,17 @@
       ]
     }
   ],
+  "reasonCode": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "86859003",
+          "display": "Glucose-6-phosphate dehydrogenase deficiency anaemia"
+        }
+      ]
+    }
+  ],
   "medicationCodeableConcept": {
     "coding": [
       {

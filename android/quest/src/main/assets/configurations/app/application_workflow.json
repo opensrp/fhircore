@@ -32,6 +32,12 @@
         "resource": "DetailViewConfiguration",
         "classification": "test_result_detail_view",
         "description": "Configurations for Test Results Details"
+      },
+      {
+        "workflowPoint": "register_navigation",
+        "resource": "RegisterNavigationConfiguration",
+        "classification": "register_navigation",
+        "description": "Configurations for Custom Navigation"
       }
     ]
   },
@@ -68,6 +74,12 @@
         "resource": "PatientDetailsViewConfiguration",
         "classification": "patient_details_view",
         "description": "Configurations for patient details view"
+      },
+      {
+        "workflowPoint": "register_navigation",
+        "resource": "RegisterNavigationConfiguration",
+        "classification": "register_navigation",
+        "description": "Configurations for Custom Navigation"
       }
     ]
   }

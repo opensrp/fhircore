@@ -46,7 +46,6 @@
         <string name="loading">Inapakia</string>
         <string name="error_loading_form">Hitilafu kounyesha fomu</string>
         <string name="error_saving_form">Hitilafu imetokea, haiwezi kuhifadhi fomu</string>
-        <string name="saving_registration">Tunahifadhi usajili. Tafadhali subiri</string>
         <string name="replace_photo">Replace photo</string>
         <string name="take_photo">Take photo</string>
         <string name="app_logo">Nembo ya programu</string>
@@ -90,4 +89,9 @@
         <string name="no">Hapana</string>
         <string name="yes">Ndio</string>
         <string name="required_constraint_validation_error_msg">Jibu linahitajika</string>
+        <string name="questionnaire_alert_submit_button_title">Hifadhi</string>
+        <string name="form_progress_message">Inachakata data. Tafadhali subiri</string>
+        <string name="questionnaire_alert_test_only_button_title">Chakata</string>
+        <string name="questionnaire_alert_test_only_title">Mchakato wa data ya fomu</string>
+        <string name="questionnaire_alert_test_only_message">Thibitisha kuwa umemaliza kujaza data. Kumbuka hii ni fomu ya majaribio tu na haihifadhi data yoyote</string>
 </resources>

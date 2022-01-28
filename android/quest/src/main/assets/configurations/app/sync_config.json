@@ -42,6 +42,16 @@
   {
     "resourceType": "SearchParameter",
     "name": "organization",
+    "code": "subject.organization",
+    "base": [
+      "MedicationRequest"
+    ],
+    "type": "token",
+    "expression": "organization"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "name": "organization",
     "code": "patient.organization",
     "base": [
       "QuestionnaireResponse"
@@ -75,7 +85,7 @@
       "Library"
     ],
     "type": "token",
-    "expression": "1753,46841,46831,46823"
+    "expression": "1753,32883,46841,46831,46823"
   },
   {
     "resourceType": "SearchParameter",
