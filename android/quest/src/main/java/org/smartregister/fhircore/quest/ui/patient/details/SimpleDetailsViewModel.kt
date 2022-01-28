@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.jetbrains.annotations.VisibleForTesting
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.quest.configuration.view.DetailViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.Filter
@@ -111,6 +112,7 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
     encounter: Encounter
   ): MutableMap<Enumerations.ResourceType, List<Resource>> {
     return mutableMapOf(
+      Enumerations.ResourceType.PATIENT to listOf(getPatient(encounter)),
       Enumerations.ResourceType.CONDITION to getCondition(encounter, null),
       Enumerations.ResourceType.OBSERVATION to getObservation(encounter, null),
       Enumerations.ResourceType.MEDICATIONREQUEST to getMedicationRequest(encounter, null)
@@ -120,8 +122,7 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
   fun Base.getPathValue(path: String) = fhirPathEngine.evaluate(this, path).firstOrNull()
 
   fun doesSatisfyFilter(resource: Resource, filter: Filter): Boolean? {
-    if (filter.valueCoding == null && filter.valueString == null)
-      throw IllegalStateException("Filter must have either of one valueCoding or valueString")
+    if (filter.valueCoding == null && filter.valueString == null) return true
 
     // get property mentioned as filter and match value
     // e.g. category: CodeableConcept in Condition
@@ -143,6 +144,9 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
           Timber.i("${resource.resourceType}, ${filter.key}: could not resolve key value filter")
       }
   }
+
+  suspend fun getPatient(encounter: Encounter) =
+    patientRepository.fetchDemographics(encounter.subject.extractId())
 
   suspend fun getCondition(encounter: Encounter, filter: Filter?) =
     getSearchResults<Condition>(
