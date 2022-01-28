@@ -89,7 +89,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
         }
       )
 
-      Column(modifier = Modifier.padding(20.dp).testTag(DETAILS_DATA_ROWS)) {
+      Column(modifier = Modifier.padding(5.dp).testTag(DETAILS_DATA_ROWS)) {
         dataItem?.rows?.forEachIndexed { i, r ->
           kotlin
             .runCatching {
@@ -105,7 +105,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
               if (r.cells.size == 0) {
                 Divider(
                   color = colorResource(id = R.color.white_smoke),
-                  modifier = Modifier.padding(15.dp)
+                  modifier = Modifier.padding(2.dp)
                 )
               }
             }

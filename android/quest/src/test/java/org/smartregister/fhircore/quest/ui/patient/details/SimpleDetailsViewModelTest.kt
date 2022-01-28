@@ -36,6 +36,8 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
@@ -106,8 +108,14 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
           this.intent = MedicationRequest.MedicationRequestIntent.FILLERORDER
         }
       )
+    coEvery { viewModel.getPatient(any()) } returns Patient()
 
-    viewModel.getDataMap(Encounter().apply { id = "123" })
+    viewModel.getDataMap(
+      Encounter().apply {
+        id = "123"
+        subject = Reference().apply { reference = "Encounter/123" }
+      }
+    )
 
     coVerify { viewModel.getCondition(any(), any()) }
     coVerify { viewModel.getObservation(any(), any()) }
