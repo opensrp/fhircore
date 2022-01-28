@@ -270,7 +270,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           modifier = Modifier
         ) { Image(
           painter = painterResource(id = R.drawable.ic_more_vert),
-          contentDescription = "",
+          contentDescription = "MenuOption Icon",
           colorFilter = ColorFilter.tint(colorResource(id = R.color.white))
         )}
         DropdownMenu(
