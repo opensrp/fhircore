@@ -45,7 +45,6 @@ import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
-import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData

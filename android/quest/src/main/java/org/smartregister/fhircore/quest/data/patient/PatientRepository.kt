@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
+import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.configuration.view.Filter
@@ -146,9 +147,7 @@ constructor(
       }
       else -> {
 
-        val encounterId = getEncounterId(questionnaireResponse)
-        val encounter = loadEncounter(encounterId)
-
+        val encounter = loadEncounter(questionnaireResponse.getEncounterId())
         val data: MutableList<List<AdditionalData>> = mutableListOf()
 
         patientDetailsViewConfiguration.dynamicRows.forEach { filtersList ->
@@ -231,15 +230,6 @@ constructor(
         if (it.hasEffectiveDateTimeType()) it.effectiveDateTimeType.value else it.meta.lastUpdated
       }
       .sortedByDescending { it.logicalId }
-
-  fun getEncounterId(questionnaireResponse: QuestionnaireResponse): String {
-    return questionnaireResponse
-      .contained
-      ?.find { it.resourceType == ResourceType.Encounter }
-      ?.logicalId
-      ?.replace("#", "")
-      ?: ""
-  }
 
   fun fetchResultItemLabel(questionnaire: Questionnaire): String {
     return questionnaire.name ?: questionnaire.title ?: questionnaire.logicalId

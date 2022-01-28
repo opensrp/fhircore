@@ -69,8 +69,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         getCustomNavigationOptions().navigationOptions.map {
           NavigationMenuOption(
             id = it.id.hashCode(),
-            title = it.title,
-            iconResource = this.getDrawable(it.icon)
+            title = it.title ?: "",
+            iconResource = this.getDrawable(it.icon!!)
           )
         }
       )
@@ -124,7 +124,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
           Intent(this, QuestionnaireActivity::class.java)
             .putExtras(
               QuestionnaireActivity.intentArgs(
-                formName = navigationOption.action.form,
+                formName = navigationOption.action.form!!,
               )
             )
         )

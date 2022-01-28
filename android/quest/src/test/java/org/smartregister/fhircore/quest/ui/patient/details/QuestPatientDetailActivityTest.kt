@@ -44,8 +44,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.configuration.parser.G6PDDetailConfigParser
-import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
