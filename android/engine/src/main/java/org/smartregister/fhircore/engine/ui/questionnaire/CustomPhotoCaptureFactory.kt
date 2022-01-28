@@ -26,6 +26,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.request.RequestOptions
@@ -58,27 +59,25 @@ class CustomPhotoCaptureFactory(
   lateinit var tvHeader: TextView
   lateinit var ivThumbnail: ImageView
   lateinit var btnTakePhoto: MaterialButton
-  lateinit var errorTextView: TextView
+  lateinit var tvError: TextView
   var context: Context = fragment.requireContext()
   var cameraLauncher: ActivityResultLauncher<Void>
-  var questionnaireResponse: QuestionnaireResponse.QuestionnaireResponseItemComponent
   var answers: MutableList<QuestionnaireResponseItemAnswerComponent> = mutableListOf()
   lateinit var onAnswerChanged: () -> Unit
 
   init {
     cameraLauncher = registerCameraLauncher()
-    questionnaireResponse = QuestionnaireResponse.QuestionnaireResponseItemComponent()
   }
 
   internal fun registerCameraLauncher(): ActivityResultLauncher<Void> {
     return fragment.registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap
       ->
-      lifecycleScope.launch {
-        loadThumbnail(bitmap)
-        val bytes = bitmap.encodeToByteArray()
-        populateQuestionnaireResponse(bytes)
-        onAnswerChanged.invoke()
-      }
+        if (bitmap != null) {
+          loadThumbnail(bitmap)
+          val bytes = bitmap.encodeToByteArray()
+          populateQuestionnaireResponse(bytes)
+          onAnswerChanged.invoke()
+        }
     }
   }
 
@@ -99,8 +98,7 @@ class CustomPhotoCaptureFactory(
 
   internal fun populateQuestionnaireResponse(imageBytes: ByteArray) {
     answers.clear()
-    val answer =
-      QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+    val answer = QuestionnaireResponseItemAnswerComponent().apply {
         value =
           Attachment().apply {
             contentType = CONTENT_TYPE
@@ -125,7 +123,7 @@ class CustomPhotoCaptureFactory(
           tvHeader = binding.tvHeader
           ivThumbnail = binding.ivThumbnail
           btnTakePhoto = binding.btnTakePhoto
-          errorTextView = binding.errorTextView as TextView
+          tvError = binding.tvError as TextView
         }
         onAnswerChanged = { onAnswerChanged(context) }
       }
@@ -141,31 +139,32 @@ class CustomPhotoCaptureFactory(
         }
         tvHeader.text = questionnaireItemViewItem.questionnaireItem.text
         btnTakePhoto.setOnClickListener { launchCamera() }
-        questionnaireItemViewItem.singleAnswerOrNull?.valueAttachment?.data?.decodeToBitmap()
-          ?.let { imageBitmap -> loadThumbnail(imageBitmap) }
-
+        questionnaireItemViewItem.singleAnswerOrNull?.valueAttachment?.let { attachment ->
+          loadThumbnail(attachment.data.decodeToBitmap())
+          answers.clear()
+          answers.add(QuestionnaireResponseItemAnswerComponent().apply { value = attachment })
+        }
         if (!questionnaireItemViewItem.questionnaireItem.readOnly) {
           questionnaireItemViewItem.questionnaireResponseItem.answer = answers
         }
       }
 
       override fun displayValidationResult(validationResult: ValidationResult) {
-        lifecycleScope.launchWhenResumed {
-          errorTextView.text =
-            if (validationResult.getSingleStringValidationMessage() == "") null
-            else validationResult.getSingleStringValidationMessage()
-        }
+            tvError.text =
+                    if (validationResult.getSingleStringValidationMessage() == "") null
+                    else validationResult.getSingleStringValidationMessage()
       }
 
       override fun setReadOnly(isReadOnly: Boolean) {
         ivThumbnail.isEnabled = !isReadOnly
-        btnTakePhoto.isEnabled = !isReadOnly
+        btnTakePhoto.apply {
+        isEnabled = !isReadOnly
+        alpha = if (isReadOnly) 0.6F else 1F
+        }
       }
     }
 
   companion object {
-    private const val AUTHORITY_FILE_PROVIDER = "org.smartregister.fhircore.fileprovider"
     const val CONTENT_TYPE = "image/jpg"
-    private const val PREFIX_BITMAP = "BITMAP_"
   }
 }
