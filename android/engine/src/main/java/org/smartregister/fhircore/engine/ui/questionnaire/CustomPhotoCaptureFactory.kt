@@ -26,7 +26,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.withResumed
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.request.RequestOptions
@@ -38,7 +37,6 @@ import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Attachment
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.databinding.CustomPhotoCaptureLayoutBinding
@@ -72,12 +70,12 @@ class CustomPhotoCaptureFactory(
   internal fun registerCameraLauncher(): ActivityResultLauncher<Void> {
     return fragment.registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap
       ->
-        if (bitmap != null) {
-          loadThumbnail(bitmap)
-          val bytes = bitmap.encodeToByteArray()
-          populateQuestionnaireResponse(bytes)
-          onAnswerChanged.invoke()
-        }
+      if (bitmap != null) {
+        loadThumbnail(bitmap)
+        val bytes = bitmap.encodeToByteArray()
+        populateQuestionnaireResponse(bytes)
+        onAnswerChanged.invoke()
+      }
     }
   }
 
@@ -98,7 +96,8 @@ class CustomPhotoCaptureFactory(
 
   internal fun populateQuestionnaireResponse(imageBytes: ByteArray) {
     answers.clear()
-    val answer = QuestionnaireResponseItemAnswerComponent().apply {
+    val answer =
+      QuestionnaireResponseItemAnswerComponent().apply {
         value =
           Attachment().apply {
             contentType = CONTENT_TYPE
@@ -150,16 +149,16 @@ class CustomPhotoCaptureFactory(
       }
 
       override fun displayValidationResult(validationResult: ValidationResult) {
-            tvError.text =
-                    if (validationResult.getSingleStringValidationMessage() == "") null
-                    else validationResult.getSingleStringValidationMessage()
+        tvError.text =
+          if (validationResult.getSingleStringValidationMessage() == "") null
+          else validationResult.getSingleStringValidationMessage()
       }
 
       override fun setReadOnly(isReadOnly: Boolean) {
         ivThumbnail.isEnabled = !isReadOnly
         btnTakePhoto.apply {
-        isEnabled = !isReadOnly
-        alpha = if (isReadOnly) 0.6F else 1F
+          isEnabled = !isReadOnly
+          alpha = if (isReadOnly) 0.6F else 1F
         }
       }
     }

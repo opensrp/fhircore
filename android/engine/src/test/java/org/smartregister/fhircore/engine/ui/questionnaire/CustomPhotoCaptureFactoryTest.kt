@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -27,7 +26,6 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.validation.ValidationResult
-import com.google.android.fhir.datacapture.validation.getSingleStringValidationMessage
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -37,13 +35,9 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import java.io.File
 import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -105,7 +99,10 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
       CustomPhotoCaptureFactory.CONTENT_TYPE,
       photoCaptureFactory.answers.firstOrNull()?.valueAttachment?.contentType
     )
-    Assert.assertEquals(imageBytes, photoCaptureFactory.answers.firstOrNull()?.valueAttachment?.data)
+    Assert.assertEquals(
+      imageBytes,
+      photoCaptureFactory.answers.firstOrNull()?.valueAttachment?.data
+    )
   }
 
   @Test
@@ -204,7 +201,9 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     every { photoCaptureFactory.tvError } returns tvError
 
     val validationResult = ValidationResult(false, listOf("Error"))
-    photoCaptureFactory.getQuestionnaireItemViewHolderDelegate().displayValidationResult(validationResult)
+    photoCaptureFactory
+      .getQuestionnaireItemViewHolderDelegate()
+      .displayValidationResult(validationResult)
 
     verify { tvError.text = "Error" }
   }
@@ -220,7 +219,9 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     every { photoCaptureFactory.tvError } returns tvError
 
     val validationResult = ValidationResult(true, listOf())
-    photoCaptureFactory.getQuestionnaireItemViewHolderDelegate().displayValidationResult(validationResult)
+    photoCaptureFactory
+      .getQuestionnaireItemViewHolderDelegate()
+      .displayValidationResult(validationResult)
 
     verify { tvError.text = null }
   }
@@ -240,9 +241,9 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
     photoCaptureFactory.getQuestionnaireItemViewHolderDelegate().setReadOnly(true)
 
-    verify{ ivThumbnail.isEnabled = false}
-    verify{ btnTakePhoto.isEnabled = false}
-    verify{ btnTakePhoto.alpha = 0.6F}
+    verify { ivThumbnail.isEnabled = false }
+    verify { btnTakePhoto.isEnabled = false }
+    verify { btnTakePhoto.alpha = 0.6F }
   }
 
   @Test
@@ -260,8 +261,8 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
     photoCaptureFactory.getQuestionnaireItemViewHolderDelegate().setReadOnly(false)
 
-    verify{ ivThumbnail.isEnabled = true}
-    verify{ btnTakePhoto.isEnabled = true}
-    verify{ btnTakePhoto.alpha = 1F}
+    verify { ivThumbnail.isEnabled = true }
+    verify { btnTakePhoto.isEnabled = true }
+    verify { btnTakePhoto.alpha = 1F }
   }
 }
