@@ -51,8 +51,8 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 
             Card(
                 modifier = Modifier
-                    .padding(6.dp)
-                    .wrapContentHeight(),
+                    .padding(15.dp)
+                    .height(200.dp),
                 elevation = 6.dp,
                 shape = MaterialTheme.shapes.medium.copy(
                     androidx.compose.foundation.shape.CornerSize(
@@ -60,12 +60,12 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel) {
                     )
                 )
             ){
-                Column(modifier = Modifier.wrapContentHeight()) {
+                Column(modifier = Modifier.wrapContentHeight().padding(6.dp)) {
                     Text(text = "ART # " + (patientItem?.identifier ?: ""))
                     Text(text = "Name: " + (patientItem?.name ?: ""))
                     Text(text = "Age: " + (patientItem?.age ?: ""))
                     Text(text = "Gender: " + (patientItem?.genderFull() ?: ""))
-                    Text(text = "Location" + (patientItem?.address ?: ""))
+                    Text(text = "Location: " + (patientItem?.address ?: ""))
 
                 }
             }

@@ -262,7 +262,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
 
         Column() {
-
+          val items = listOf( "Test Results", "Edit Details", "Enter Lab Results")
 
         var showMenu by remember { mutableStateOf(false) }
         IconButton(
@@ -278,13 +278,28 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           onDismissRequest = { showMenu = false },
           Modifier.testTag(TOOLBAR_MENU)
         ) {
-          DropdownMenuItem(
-            onClick = {
+
+          items.forEachIndexed { index, s ->
+            DropdownMenuItem(onClick = {
               showMenu = false
-              questPatientDetailViewModel.onMenuItemClickListener(true)
-            }
-          ) { Text(text = stringResource(id = R.string.test_results)) }
+            }) {
+              Text(text = "" + s)
+             }
+          }
+
+
+
+
+
+//          DropdownMenuItem(
+//            onClick = {
+//              showMenu = false
+//              questPatientDetailViewModel.onMenuItemClickListener(true)
+//            }
+//          ) { Text(text = stringResource(id = R.string.test_results)) }
         }
+
+
         }
 
       }
