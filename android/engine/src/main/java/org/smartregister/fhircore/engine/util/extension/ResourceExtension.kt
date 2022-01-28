@@ -57,7 +57,7 @@ fun Base?.valueToString(): String {
     this.repeat.let {
       it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
     }
-  else if (this is HumanName) this.given.firstOrNull().valueToString() + " " + this.family
+  else if (this is HumanName) "${this.given.firstOrNull().valueToString()} ${this.family}"
   else this.toString()
 }
 
