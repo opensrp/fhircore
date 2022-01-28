@@ -23,6 +23,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
@@ -40,6 +41,7 @@ class OtpSetupActivity : BaseMultiLanguageActivity() {
       loadData()
       val optSetupActivity = this@OtpSetupActivity
       navigateToHome.observe(optSetupActivity, { optSetupActivity.moveToHome() })
+      navigateToSettings.observe(optSetupActivity, { optSetupActivity.moveToSettings() })
       pin.observe(optSetupActivity, { it.let { enableSetPin.postValue(it.length > 3) } })
     }
     setContent { AppTheme { OtpSetupScreen(optViewModel) } }
@@ -51,5 +53,19 @@ class OtpSetupActivity : BaseMultiLanguageActivity() {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
     )
+    finish()
+  }
+
+  private fun moveToSettings() {
+    startActivity(
+      Intent(this, AppSettingActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addCategory(Intent.CATEGORY_LAUNCHER)
+      }
+    )
+    finish()
   }
 }

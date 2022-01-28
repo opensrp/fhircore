@@ -42,18 +42,6 @@ class OtpLoginActivity : BaseMultiLanguageActivity() {
       navigateToHome.observe(optLoginActivity, { optLoginActivity.moveToHome() })
       launchDialPad.observe(optLoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
       navigateToLogin.observe(optLoginActivity, { optLoginActivity.moveToLoginViaUsername() })
-      pin.observe(
-        optLoginActivity,
-        {
-          it.let {
-            if (it.length > 3) {
-              if (it.equals(optViewModel.savedOtp, false)) {
-                moveToHome()
-              }
-            }
-          }
-        }
-      )
     }
     setContent { AppTheme { OtpLoginScreen(optViewModel) } }
   }

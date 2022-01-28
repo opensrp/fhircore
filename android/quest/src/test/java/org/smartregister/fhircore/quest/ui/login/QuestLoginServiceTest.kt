@@ -56,7 +56,7 @@ class QuestLoginServiceTest : RobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldNavigateToRegisterScreen() {
-    loginService.navigateToHome()
+    loginService.navigateToHome(canSetOtp = false)
     val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
     val shadowIntent: ShadowIntent = shadowOf(startedIntent)
     Assert.assertEquals(PatientRegisterActivity::class.java, shadowIntent.intentClass)

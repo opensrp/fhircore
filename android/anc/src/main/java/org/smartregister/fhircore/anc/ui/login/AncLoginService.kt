@@ -24,7 +24,6 @@ import org.smartregister.fhircore.anc.ui.otp.OtpSetupActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.OTP_PIN
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class AncLoginService @Inject constructor(val sharedPreferencesHelper: SharedPreferencesHelper) :
@@ -34,7 +33,7 @@ class AncLoginService @Inject constructor(val sharedPreferencesHelper: SharedPre
 
   override fun navigateToHome(canSetOtp: Boolean) {
     // Todo: check whether to setup PIN     or moveTo Register Home
-    if (canSetOtp && sharedPreferencesHelper.read(OTP_PIN, "").isNullOrEmpty()) {
+    if (canSetOtp) { // && sharedPreferencesHelper.read(OTP_PIN, "").isNullOrEmpty()) {
       sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, "false")
       navigateToOtpSetup()
     } else {

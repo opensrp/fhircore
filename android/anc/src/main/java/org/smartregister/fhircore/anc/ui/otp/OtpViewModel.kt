@@ -23,6 +23,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.OTP_PIN
@@ -48,6 +49,10 @@ constructor(
   private val _navigateToLogin = MutableLiveData<Boolean>()
   val navigateToLogin: LiveData<Boolean>
     get() = _navigateToLogin
+
+  private val _navigateToSettings = MutableLiveData<Boolean>()
+  val navigateToSettings: LiveData<Boolean>
+    get() = _navigateToSettings
 
   private val _pin = MutableLiveData<String>()
   val pin: LiveData<String>
@@ -113,5 +118,11 @@ constructor(
   fun forgotPin() {
     // load supervisor contact e.g.
     _launchDialPad.value = "tel:0123456789"
+  }
+
+  fun onMenuSettingClicked() {
+    Log.e("aw", "onMenuSettingClicked")
+    sharedPreferences.remove(APP_ID_CONFIG)
+    _navigateToSettings.value = true
   }
 }
