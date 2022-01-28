@@ -34,6 +34,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -301,6 +302,18 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       getString(R.string.questionnaire_alert_test_only_message),
       alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
+  }
+
+  @Test
+  fun testOnClickEditButtonShouldSetEditModeToTrue() = runBlockingTest {
+    val questionnaire = Questionnaire().apply { experimental = false }
+    val questionnaireActivitySpy = spyk(questionnaireActivity)
+    ReflectionHelpers.setField(questionnaireActivitySpy, "questionnaire", questionnaire)
+    Assert.assertFalse(questionnaireActivitySpy.editMode)
+
+    questionnaireActivitySpy.onClick(questionnaireActivitySpy.findViewById(R.id.btn_edit_qr))
+
+    Assert.assertTrue(questionnaireActivitySpy.editMode)
   }
 
   @Test
