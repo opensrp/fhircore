@@ -24,7 +24,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.mockk
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -33,19 +32,15 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_READ_ONLY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
-import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -114,61 +109,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
     val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
-    Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  }
-
-  @Test
-  fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
-
-    ReflectionHelpers.setField(
-      questPatientDetailActivity,
-      "parser",
-      QuestDetailConfigParser(mockk())
-    )
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      questPatientDetailActivity,
-      "onTestResultItemClickListener",
-      ReflectionHelpers.ClassParameter(
-        QuestResultItem::class.java,
-        QuestResultItem(
-          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }, mockk()),
-          listOf()
-        )
-      )
-    )
-
-    val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
-    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
-
-    Assert.assertEquals(expectedIntent.component, actualIntent.component)
-    Assert.assertEquals("12345", actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM))
-    Assert.assertEquals(true, actualIntent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false))
-  }
-
-  @Test
-  fun testOnTestResultItemClickListenerShouldStartSimpleDetailsActivityForG6pd() {
-    ReflectionHelpers.setField(
-      questPatientDetailActivity,
-      "parser",
-      G6PDDetailConfigParser(mockk())
-    )
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      questPatientDetailActivity,
-      "onTestResultItemClickListener",
-      ReflectionHelpers.ClassParameter(
-        QuestResultItem::class.java,
-        QuestResultItem(
-          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }, mockk()),
-          listOf()
-        )
-      )
-    )
-    8
-    val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
-    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
-
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 }

@@ -161,14 +161,11 @@ class PatientRepositoryTest : RobolectricTest() {
           }
         )
 
-      val parser = QuestDetailConfigParser(fhirEngine)
-
       val results =
         repository.fetchTestResults(
           "1",
           listOf(QuestionnaireConfig("quest", "form", "title", "1")),
-          patientDetailsViewConfigurationOf(),
-          parser
+          patientDetailsViewConfigurationOf()
         )
 
       Assert.assertEquals("First Questionnaire", results[0].data[0][0].value)
