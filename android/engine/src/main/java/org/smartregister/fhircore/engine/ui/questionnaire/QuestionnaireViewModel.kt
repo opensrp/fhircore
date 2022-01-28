@@ -31,6 +31,7 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
@@ -193,14 +194,25 @@ constructor(
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
 
-        questionnaire.cqfLibraryIds().forEach {
-          val patient =
-            if (questionnaireResponse.hasSubject())
-              loadPatient(questionnaireResponse.subject.extractId())
-            else null
-          val output = libraryEvaluator.runCqlLibrary(it, patient, bundle, defaultRepository)
-          if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
-        }
+        questionnaire
+          .cqfLibraryIds()
+          .map {
+            val patient =
+              if (questionnaireResponse.hasSubject())
+                loadPatient(questionnaireResponse.subject.extractId())
+              else null
+            async(Dispatchers.Default) {
+              libraryEvaluator.runCqlLibrary(it, patient, bundle, defaultRepository)
+            }
+          }
+          .map { jobOutput ->
+            jobOutput.join()
+            jobOutput
+          }
+          .forEach { output ->
+            if (output.await().isNotEmpty())
+              extractionProgressMessage.postValue(output.await().joinToString("\n"))
+          }
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
       }
