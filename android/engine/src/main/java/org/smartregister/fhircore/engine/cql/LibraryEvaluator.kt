@@ -72,10 +72,23 @@ class LibraryEvaluator @Inject constructor() {
   private var libEvaluator: LibraryEvaluator? = null
   private val bundleLinks = BundleLinks("", null, true, BundleTypeEnum.COLLECTION)
   val fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
-  val cqlFhirParametersConverter by lazy {
-    CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
+  lateinit var cqlFhirParametersConverter: CqlFhirParametersConverter
+  lateinit var fhirModelResolver: R4FhirModelResolverExt
+  lateinit var modelManager: ModelManager
+  var initialized = false
+
+  fun initialize() {
+    if (initialized) return
+
+    cqlFhirParametersConverter =
+      CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
+
+    fhirModelResolver = R4FhirModelResolverExt()
+    modelManager = ModelManager()
+
+    initialized = true
   }
-  val fhirModelResolver by lazy { R4FhirModelResolverExt() }
+
   /**
    * This method loads configurations for CQL evaluation
    * @param libraryResources Fhir resource type Library
@@ -206,6 +219,8 @@ class LibraryEvaluator @Inject constructor() {
     repository: DefaultRepository,
     outputLog: Boolean = false
   ): List<String> {
+    initialize()
+
     val library = repository.fhirEngine.load(org.hl7.fhir.r4.model.Library::class.java, libraryId)
 
     val helpers =
@@ -305,7 +320,7 @@ class LibraryEvaluator @Inject constructor() {
 
     cqlEvaluator =
       CqlEvaluator(
-        LibraryLoaderExt(ModelManager(), listOf(libraryProvider)),
+        LibraryLoaderExt(modelManager, listOf(libraryProvider)),
         mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
         terminologyProvider
       )
