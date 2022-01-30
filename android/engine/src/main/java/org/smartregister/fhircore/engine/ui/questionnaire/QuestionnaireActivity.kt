@@ -39,7 +39,6 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -52,9 +51,6 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.nfc.MainViewModel
-import org.smartregister.fhircore.engine.nfc.main.AssistanceVisit
-import org.smartregister.fhircore.engine.nfc.main.AssistanceVisitNfcModel
-import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitData
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -89,6 +85,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   var editMode = false
   lateinit var fragment: FhirCoreQuestionnaireFragment
   private val parser = FhirContext.forR4Cached().newJsonParser()
+  private var formName: String = ""
 
   private val mainViewModel: MainViewModel by viewModels()
   private lateinit var eventJob: Job
@@ -124,7 +121,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
       editMode = intent.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
 
-      val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+      formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
       // form is either name of form in asset/form-config or questionnaire-id
       // load from assets and get questionnaire or if not found build it from questionnaire
       questionnaireConfig =
@@ -274,7 +271,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       { result ->
         saveProcessingAlertDialog.dismiss()
         if (result.first) {
-          postSaveSuccessful()
+          postSaveSuccessful(result.second)
         } else {
           Timber.e("An error occurred during extraction")
         }
@@ -282,8 +279,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     )
   }
 
-  open fun postSaveSuccessful() {
-    saveToNfc()
+  open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
+    saveToNfc(questionnaireResponse)
     // finish()
   }
 
@@ -322,6 +319,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
+    const val ASSISTANCE_VISIT_FORM = "assistance-visit"
+    const val ANTHRO_FOLLOWING_VISIT_FORM = "anthro-following-visit"
+    const val CODA_CHILD_REG_FORM = "wfp-coda-poc-child-registration"
 
     fun Intent.questionnaireEditMode() = this.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
@@ -427,33 +427,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     // After reading the card, the end-user will need the content that has been read on the card
     DESFireServiceAccess.readResult.observe(this, readResultObserver!!)
   }
+  private fun saveToNfc(questionnaireResponse: QuestionnaireResponse) {
+    var json: String = "{}"
+    when (formName) {
+      ASSISTANCE_VISIT_FORM ->
+        json = questionnaireViewModel.getAssistanceVisitNfcJson(questionnaireResponse)
+    }
+    writeToCard(json)
+  }
 
-  private fun writeToCard() {
+  private fun writeToCard(json: String) {
     mainViewModel.generateProtoFile()
     // InitializeSAM
     mainViewModel.initSAM()
-    // Perform Write action with the UI given by the Service
-    val assistanceItem =
-      AssistanceVisit(
-        patientId = "4c6e394d-2e0a-42a7-9628-ac552c83eb84",
-        visitNumber = 1,
-        date = "2022-01-30",
-        timestamp = "1643448880238",
-        rusfAvailable = false,
-        rationType = "PlumpySup",
-        nextVisitDays = 12,
-        nextVisitDate = "2022-03-30",
-        counselType = "ODP",
-        communicationMonitoring = "FCM",
-        exit = false,
-        exitOption = "ESAM"
-      )
-    val assistanceVisit = AssistanceVisitNfcModel(asv = getAssistanceVisitData(assistanceItem))
-    val json: String = Gson().toJson(assistanceVisit)
-    mainViewModel.writeSerialized(json)
-  }
 
-  private fun saveToNfc() {
-    writeToCard()
+    // Perform Write action with the UI given by the Service
+    mainViewModel.writeSerialized(json)
   }
 }

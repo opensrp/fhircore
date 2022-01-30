@@ -25,6 +25,7 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
@@ -51,7 +52,10 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.questionnaireResponse
+import org.smartregister.fhircore.engine.nfc.main.AssistanceVisit
+import org.smartregister.fhircore.engine.nfc.main.AssistanceVisitNfcModel
+import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitData
+import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitQRAnswersToNfcMap
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -87,7 +91,7 @@ constructor(
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
   }
 
-  val extractionProgress = MutableLiveData<Pair<Boolean, Any>>()
+  val extractionProgress = MutableLiveData<Pair<Boolean, QuestionnaireResponse>>()
 
   var editQuestionnaireResponse: QuestionnaireResponse? = null
 
@@ -250,7 +254,9 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
       }
 
-      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(Pair(true, "test")) }
+      viewModelScope.launch(Dispatchers.Main) {
+        extractionProgress.postValue(Pair(true, questionnaireResponse))
+      }
     }
   }
 
@@ -387,5 +393,83 @@ constructor(
     cal.set(Calendar.DAY_OF_YEAR, 1)
     cal.set(Calendar.MONTH, 1)
     return cal.time
+  }
+
+  fun getAssistanceVisitNfcJson(questionnaireResponse: QuestionnaireResponse): String {
+
+    val _nextVisitDays =
+      questionnaireResponse
+        .find("96cb0f16-fbf5-444d-b590-3de84329fbe2")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueIntegerType
+        ?.value
+        ?.toInt()!!
+
+    val _counselType =
+      questionnaireResponse
+        .find("7b2fc90e-ecfa-4c0e-847a-c0467baf2583")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val _communicationMonitoring =
+      questionnaireResponse
+        .find("b8bb5af1-f83d-4b6a-84f9-32969696fc57")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val _exit =
+      questionnaireResponse
+        .find("40dafb52-eb4f-42e0-f380-ae7ff5efbbb1")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val _exitOption =
+      questionnaireResponse
+        .find("3014a4c0-5ef2-4e73-9836-6ee095a69312")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val _rationType =
+      questionnaireResponse
+        .find("519c33cd-a36f-485d-ffc0-ab49901a3046")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val assistanceVisitQRAnswersToNfcMap = getAssistanceVisitQRAnswersToNfcMap()
+
+    val assistanceItem =
+      AssistanceVisit(
+        patientId = "4c6e394d-2e0a-42a7-9628-ac552c83eb84",
+        visitNumber = 1,
+        date = "2022-01-30",
+        timestamp = "1643448880238",
+        rusfAvailable = false,
+        rationType = _rationType!!,
+        nextVisitDays = _nextVisitDays,
+        nextVisitDate = "2022-03-30",
+        counselType =
+          if (_counselType != null) assistanceVisitQRAnswersToNfcMap.get(_counselType)!! else "",
+        communicationMonitoring =
+          if (_communicationMonitoring != null)
+            assistanceVisitQRAnswersToNfcMap.get(_communicationMonitoring)!!
+          else "",
+        exit = (_exit ?: false) as Boolean,
+        exitOption =
+          if (_exitOption != null) assistanceVisitQRAnswersToNfcMap.get(_exitOption)!! else ""
+      )
+    val assistanceVisitNfcModel =
+      AssistanceVisitNfcModel(asv = getAssistanceVisitData(assistanceItem))
+    return Gson().toJson(assistanceVisitNfcModel)
   }
 }

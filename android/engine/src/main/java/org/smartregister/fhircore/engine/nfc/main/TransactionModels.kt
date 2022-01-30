@@ -66,6 +66,28 @@ fun getAssistanceVisitData(assistanceItem: AssistanceVisit): String {
     .plus(assistanceItem.exitOption)
 }
 
+fun getAssistanceVisitQRAnswersToNfcMap(): HashMap<String, String> {
+  val assistanceVisitAnswersToNfcMap = hashMapOf<String, String>()
+  assistanceVisitAnswersToNfcMap[
+    "optimal-dietary-practices-for-adults,-including-pregnant-and-lactating-women"] = "ODP"
+  assistanceVisitAnswersToNfcMap["use-of-therapeutic-foods"] = "UTF"
+  assistanceVisitAnswersToNfcMap["infant-and-young-child-feeding-(iycf)"] = "IYCF"
+  assistanceVisitAnswersToNfcMap["water,-hygiene-and-sanitation-(wash)"] = "WASH"
+  assistanceVisitAnswersToNfcMap["arv-adherence"] = "ARV"
+  assistanceVisitAnswersToNfcMap["other"] = "other"
+  assistanceVisitAnswersToNfcMap["exit-for-transfer-to-sam"] = "ESAM"
+  assistanceVisitAnswersToNfcMap["exit-for-transfer-to-other-mam"] = "EMAM"
+  assistanceVisitAnswersToNfcMap["exit-cured"] = "EC"
+  assistanceVisitAnswersToNfcMap["lost-sight"] = "LS"
+  assistanceVisitAnswersToNfcMap["deceased"] = "ED"
+  assistanceVisitAnswersToNfcMap["-en-(nutritional-education)"] = "EN"
+  assistanceVisitAnswersToNfcMap["dc-(demonstration-culinaire)"] = "DC"
+  assistanceVisitAnswersToNfcMap["vad-(household-visit)"] = "VAD"
+  assistanceVisitAnswersToNfcMap["field-community-meeting-(reeunion-communautaire)"] = "FCM"
+
+  return assistanceVisitAnswersToNfcMap
+}
+
 fun getAssistanceVisitMap(): HashMap<String, Int> {
   val assistanceVisitMap = hashMapOf<String, Int>()
   assistanceVisitMap["patientId"] = 0
