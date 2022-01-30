@@ -180,25 +180,26 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     mainViewModel.initSAM()
     // Perform Write action with the UI given by the Service
 
-    val patientNfcItem = patientItem?.let {
-      PatientNfcItem(
-        patientId = it.id,
-        //identifier = dto.identifierFirstRep.value ?: "",
-        firstName = it.name,
-        gender = it.gender.toString(),
-        age = it.age,
-        lastName = "",
-        middleName = "",
-        birthDate = "",
-        caretakerName = "",
-        caretakerRelationship = "",
-        village = "",
-        healthCenter = "",
-        beneficiaryGroup = "",
-        registrationDate = "",
-        creationDate = ""
-    )
-    }
+    val patientNfcItem =
+      patientItem?.let {
+        PatientNfcItem(
+          patientId = it.id,
+          // identifier = dto.identifierFirstRep.value ?: "",
+          firstName = it.name,
+          gender = it.gender.toString(),
+          age = it.age,
+          lastName = "",
+          middleName = "",
+          birthDate = "",
+          caretakerName = "",
+          caretakerRelationship = "",
+          village = "",
+          healthCenter = "",
+          beneficiaryGroup = "",
+          registrationDate = "",
+          creationDate = ""
+        )
+      }
     val json = Gson().toJson(patientNfcItem)
     mainViewModel.writeSerialized(json)
   }

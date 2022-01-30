@@ -78,7 +78,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   private val cardReaderStateObserver: Observer<in CardReaderState> = Observer {
     val cardReaderState = it.name
   }
-  private var readResultObserver : Observer<in Array<String>>? = null
+  private var readResultObserver: Observer<in Array<String>>? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -182,7 +182,9 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun onPause() {
     if (desFireServiceObserversAdded) {
-      DESFireServiceAccess.DESFireServiceConnectionState.removeObserver(desFireServiceConnectionStateObserver)
+      DESFireServiceAccess.DESFireServiceConnectionState.removeObserver(
+        desFireServiceConnectionStateObserver
+      )
       DESFireServiceAccess.cardReaderState.removeObserver(cardReaderStateObserver)
       DESFireServiceAccess.readResult.removeObserver(readResultObserver!!)
     }
@@ -215,23 +217,24 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     DESFireServiceAccess.cardReaderState.observe(this, cardReaderStateObserver)
 
     if (readResultObserver == null) {
-      readResultObserver = Observer { result ->
-        if (!result.isNullOrEmpty()) {
-          val stringBuilder = StringBuilder().append("")
-          result.forEach { stringBuilder.append(it) }
-          val readResult = stringBuilder.toString()
-          if (scanForRegistration) {
-            if (readResult == "{\n}") {
-              showAgeDialog { dialog, which -> dialog.dismiss() }
+      readResultObserver =
+        Observer { result ->
+          if (!result.isNullOrEmpty()) {
+            val stringBuilder = StringBuilder().append("")
+            result.forEach { stringBuilder.append(it) }
+            val readResult = stringBuilder.toString()
+            if (scanForRegistration) {
+              if (readResult == "{\n}") {
+                showAgeDialog { dialog, which -> dialog.dismiss() }
+              } else {
+                showEraseCardDialog { dialog, which -> dialog.dismiss() }
+              }
             } else {
-              showEraseCardDialog { dialog, which -> dialog.dismiss() }
+              val patientNFCItem = Gson().fromJson(readResult, PatientNfcItem::class.java)
+              navigateToDetails(patientNFCItem.patientId)
             }
-          } else {
-            val patientNFCItem = Gson().fromJson(readResult, PatientNfcItem::class.java)
-            navigateToDetails(patientNFCItem.patientId)
           }
         }
-      }
     }
 
     // After reading the card, the end-user will need the content that has been read on the card
@@ -270,7 +273,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun registerClient(clientIdentifier: String?) {
-    //showAgeDialog({ dialog, which -> dialog.dismiss() })
+    // showAgeDialog({ dialog, which -> dialog.dismiss() })
     readFromCard()
   }
 
@@ -346,6 +349,4 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
     )
   }
-
-
 }
