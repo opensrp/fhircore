@@ -87,7 +87,7 @@ constructor(
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
   }
 
-  val extractionProgress = MutableLiveData<Boolean>()
+  val extractionProgress = MutableLiveData<Pair<Boolean, Any>>()
 
   var editQuestionnaireResponse: QuestionnaireResponse? = null
 
@@ -250,7 +250,7 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
       }
 
-      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(Pair(true, "test")) }
     }
   }
 

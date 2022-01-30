@@ -22,11 +22,16 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
+import com.famoco.desfireservicelib.CardReaderState
+import com.famoco.desfireservicelib.DESFireServiceAccess
+import com.famoco.desfireservicelib.ServiceConnectionState
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA_QUESTIONNAIRE_JSON_STRING
@@ -34,8 +39,11 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -43,6 +51,10 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.nfc.MainViewModel
+import org.smartregister.fhircore.engine.nfc.main.AssistanceVisit
+import org.smartregister.fhircore.engine.nfc.main.AssistanceVisitNfcModel
+import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitData
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -77,6 +89,18 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   var editMode = false
   lateinit var fragment: FhirCoreQuestionnaireFragment
   private val parser = FhirContext.forR4Cached().newJsonParser()
+
+  private val mainViewModel: MainViewModel by viewModels()
+  private lateinit var eventJob: Job
+  private var desFireServiceObserversAdded = false
+  private val desFireServiceConnectionStateObserver: Observer<in ServiceConnectionState> =
+      Observer {
+    val state = it.name
+  }
+  private val cardReaderStateObserver: Observer<in CardReaderState> = Observer {
+    val cardReaderState = it.name
+  }
+  private var readResultObserver: Observer<in Array<String>>? = null
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -144,6 +168,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
       loadProgress.dismiss()
     }
+
+    // Add DES service listeners
+    addDesServiceListeners()
   }
 
   private suspend fun renderFragment() {
@@ -246,7 +273,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       this,
       { result ->
         saveProcessingAlertDialog.dismiss()
-        if (result) {
+        if (result.first) {
           postSaveSuccessful()
         } else {
           Timber.e("An error occurred during extraction")
@@ -256,7 +283,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun postSaveSuccessful() {
-    finish()
+    saveToNfc()
+    // finish()
   }
 
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
@@ -358,5 +386,74 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         R.string.questionnaire_alert_back_pressed_button_title
       )
     }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    // Event that prompt only once to be able to know what has just happen with the card reader
+    // This consumption will be used if the end-user want to use the Read/Write Activities
+    // from the DESFire Service, so that the event can be consume inside the end-user app.
+    eventJob =
+      lifecycleScope.launchWhenStarted {
+        DESFireServiceAccess.eventFlow.collect { event ->
+          Toast.makeText(baseContext, event.name, Toast.LENGTH_SHORT).show()
+        }
+      }
+    eventJob.start()
+  }
+
+  private fun addDesServiceListeners() {
+    // Check state connection with the service
+    desFireServiceObserversAdded = true
+    DESFireServiceAccess.DESFireServiceConnectionState.observe(
+      this,
+      desFireServiceConnectionStateObserver
+    )
+
+    // Check if card interaction status
+    DESFireServiceAccess.cardReaderState.observe(this, cardReaderStateObserver)
+
+    if (readResultObserver == null) {
+      readResultObserver =
+        Observer { result ->
+          if (!result.isNullOrEmpty()) {
+            val stringBuilder = StringBuilder().append("")
+            result.forEach { stringBuilder.append(it) }
+            val readResult = stringBuilder.toString()
+          }
+        }
+    }
+
+    // After reading the card, the end-user will need the content that has been read on the card
+    DESFireServiceAccess.readResult.observe(this, readResultObserver!!)
+  }
+
+  private fun writeToCard() {
+    mainViewModel.generateProtoFile()
+    // InitializeSAM
+    mainViewModel.initSAM()
+    // Perform Write action with the UI given by the Service
+    val assistanceItem =
+      AssistanceVisit(
+        patientId = "4c6e394d-2e0a-42a7-9628-ac552c83eb84",
+        visitNumber = 1,
+        date = "2022-01-30",
+        timestamp = "1643448880238",
+        rusfAvailable = false,
+        rationType = "PlumpySup",
+        nextVisitDays = 12,
+        nextVisitDate = "2022-03-30",
+        counselType = "ODP",
+        communicationMonitoring = "FCM",
+        exit = false,
+        exitOption = "ESAM"
+      )
+    val assistanceVisit = AssistanceVisitNfcModel(asv = getAssistanceVisitData(assistanceItem))
+    val json: String = Gson().toJson(assistanceVisit)
+    mainViewModel.writeSerialized(json)
+  }
+
+  private fun saveToNfc() {
+    writeToCard()
   }
 }
