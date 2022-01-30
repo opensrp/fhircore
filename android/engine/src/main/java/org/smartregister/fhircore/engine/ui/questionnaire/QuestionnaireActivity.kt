@@ -168,6 +168,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     // Add DES service listeners
     addDesServiceListeners()
+    // to be safe init SAM when activity is launched
+    mainViewModel.generateProtoFile()
+    // InitializeSAM
+    mainViewModel.initSAM()
   }
 
   private suspend fun renderFragment() {
@@ -175,7 +179,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       FhirCoreQuestionnaireFragment().apply {
         val questionnaireString = parser.encodeResourceToString(questionnaire)
 
-        // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
+        // Generate Fragment bundle arguments.
+        // is the Questionnaire & QuestionnaireResponse
         arguments =
           when {
             clientIdentifier == null -> {
@@ -420,6 +425,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             val stringBuilder = StringBuilder().append("")
             result.forEach { stringBuilder.append(it) }
             val readResult = stringBuilder.toString()
+            this@QuestionnaireActivity.finish() // quit questinnaire activity
           }
         }
     }
@@ -432,6 +438,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     when (formName) {
       ASSISTANCE_VISIT_FORM ->
         json = questionnaireViewModel.getAssistanceVisitNfcJson(questionnaireResponse)
+      CODA_CHILD_REG_FORM ->
+        json = questionnaireViewModel.getChildRegNfcJson(questionnaireResponse, this)
     }
     writeToCard(json)
   }

@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.nfc.main.AssistanceVisit
 import org.smartregister.fhircore.engine.nfc.main.AssistanceVisitNfcModel
+import org.smartregister.fhircore.engine.nfc.main.PatientNfcItem
 import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitData
 import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitQRAnswersToNfcMap
 import org.smartregister.fhircore.engine.util.AssetUtil
@@ -64,7 +65,10 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
@@ -471,5 +475,77 @@ constructor(
     val assistanceVisitNfcModel =
       AssistanceVisitNfcModel(asv = getAssistanceVisitData(assistanceItem))
     return Gson().toJson(assistanceVisitNfcModel)
+  }
+
+  fun getChildRegNfcJson(questionnaireResponse: QuestionnaireResponse, context: Context): String {
+
+    val patient =
+      Patient().apply {
+        name =
+          listOf(
+            HumanName().apply {
+              given.add(
+                questionnaireResponse
+                  .find("f0361e64-db57-495a-8c82-fa6576e84f74")
+                  ?.answer
+                  ?.get(0)
+                  ?.valueStringType
+              )
+              family =
+                questionnaireResponse
+                  .find("007eadd1-3929-4786-803a-72df7a11735b")
+                  ?.answer
+                  ?.get(0)
+                  ?.valueStringType
+                  ?.toString()
+            }
+          )
+        active = true
+        gender =
+          Enumerations.AdministrativeGender.fromCode(
+            questionnaireResponse
+              .find("23e7f371-6996-417e-af8c-6df395ba04e1")
+              ?.answer
+              ?.get(0)
+              ?.valueCoding
+              ?.code
+          )
+        birthDate =
+          Calendar.getInstance().run {
+            add(
+              Calendar.MONTH,
+              -(questionnaireResponse.find("38896946-7046-42f0-dabd-6ed855965a38")?.answer?.get(0)!!
+                .valueIntegerType
+                .value)
+            )
+            time
+          }
+      }
+
+    val name = patient.extractName()
+    val gender = patient.extractGender(context)?.first() ?: ""
+    val age = patient.extractAge()
+
+    val patientNfcItem =
+      patient?.let {
+        PatientNfcItem(
+          patientId = it.logicalId,
+          // identifier = dto.identifierFirstRep.value ?: "",
+          firstName = it.extractName(),
+          gender = it.gender.toString(),
+          age = it.extractAge(),
+          lastName = "",
+          middleName = "",
+          birthDate = "",
+          caretakerName = "",
+          caretakerRelationship = "",
+          village = "",
+          healthCenter = "",
+          beneficiaryGroup = "",
+          registrationDate = "",
+          creationDate = ""
+        )
+      }
+    return Gson().toJson(patientNfcItem)
   }
 }
