@@ -26,5 +26,5 @@ import com.github.os72.protobuf.dynamic.DynamicSchema
 object NFCDataProvider {
   // Values that will be shared between each viewModel in order to keep consistency
   var protoFile: DynamicSchema = DynamicSchema.newBuilder().build()
-  var fileNumber: String = DESFireServiceAccess.File.BINARY_FILE
+  var fileNumber: String = DESFireServiceAccess.File.RECORD_FILE
 }
