@@ -27,9 +27,6 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Calendar
-import java.util.Date
-import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -58,6 +55,7 @@ import org.smartregister.fhircore.engine.nfc.main.PatientNfcItem
 import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitData
 import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitQRAnswersToNfcMap
 import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -77,6 +75,8 @@ import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.*
 
 @HiltViewModel
 open class QuestionnaireViewModel
@@ -450,18 +450,19 @@ constructor(
         ?.valueCoding
         ?.code
 
+    val _date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
     val assistanceVisitQRAnswersToNfcMap = getAssistanceVisitQRAnswersToNfcMap()
 
     val assistanceItem =
       AssistanceVisit(
         patientId = "4c6e394d-2e0a-42a7-9628-ac552c83eb84",
         visitNumber = 1,
-        date = "2022-01-30",
-        timestamp = "1643448880238",
+        date = _date,
+        timestamp = System.currentTimeMillis().toString(),
         rusfAvailable = false,
         rationType = _rationType!!,
         nextVisitDays = _nextVisitDays,
-        nextVisitDate = "2022-03-30",
+        nextVisitDate = DateUtils.addDays(_date, _nextVisitDays, "yyyy-MM-dd"),
         counselType =
           if (_counselType != null) assistanceVisitQRAnswersToNfcMap.get(_counselType)!! else "",
         communicationMonitoring =
