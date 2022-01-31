@@ -8,9 +8,9 @@
       {
         "libraryId": "PQMedication",
         "libraryVersion": "1",
-        "startLine": 57,
+        "startLine": 59,
         "startChar": 8,
-        "endLine": 57,
+        "endLine": 59,
         "endChar": 48,
         "message": "Could not resolve membership operator for terminology target of the retrieve.",
         "errorType": "semantic",
@@ -77,6 +77,17 @@
           "name": "Pregnancy code",
           "id": "77386006",
           "display": "Pregnant",
+          "accessLevel": "Public",
+          "codeSystem": {
+            "resultTypeName": "{urn:hl7-org:elm-types:r1}CodeSystem",
+            "name": "SNOMED"
+          }
+        },
+        {
+          "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+          "name": "Underage code",
+          "id": "410599005",
+          "display": "Minor",
           "accessLevel": "Public",
           "codeSystem": {
             "resultTypeName": "{urn:hl7-org:elm-types:r1}CodeSystem",
@@ -1796,152 +1807,6 @@
           }
         },
         {
-          "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-          "name": "patientRef",
-          "context": "Patient",
-          "accessLevel": "Public",
-          "expression": {
-            "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-            "type": "ReplaceMatches",
-            "signature": [
-              {
-                "name": "{urn:hl7-org:elm-types:r1}String",
-                "type": "NamedTypeSpecifier"
-              },
-              {
-                "name": "{urn:hl7-org:elm-types:r1}String",
-                "type": "NamedTypeSpecifier"
-              },
-              {
-                "name": "{urn:hl7-org:elm-types:r1}String",
-                "type": "NamedTypeSpecifier"
-              }
-            ],
-            "operand": [
-              {
-                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                "type": "Concatenate",
-                "operand": [
-                  {
-                    "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                    "valueType": "{urn:hl7-org:elm-types:r1}String",
-                    "value": "Patient/",
-                    "type": "Literal"
-                  },
-                  {
-                    "name": "ToString",
-                    "libraryName": "FHIRHelpers",
-                    "type": "FunctionRef",
-                    "signature": [
-                      {
-                        "name": "{http://hl7.org/fhir}id",
-                        "type": "NamedTypeSpecifier"
-                      }
-                    ],
-                    "operand": [
-                      {
-                        "resultTypeName": "{http://hl7.org/fhir}id",
-                        "path": "id",
-                        "type": "Property",
-                        "source": {
-                          "resultTypeName": "{http://hl7.org/fhir}Patient",
-                          "name": "Patient",
-                          "type": "ExpressionRef"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                "valueType": "{urn:hl7-org:elm-types:r1}String",
-                "value": "#",
-                "type": "Literal"
-              },
-              {
-                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                "valueType": "{urn:hl7-org:elm-types:r1}String",
-                "value": "",
-                "type": "Literal"
-              }
-            ]
-          }
-        },
-        {
-          "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-          "name": "encounterRef",
-          "context": "Patient",
-          "accessLevel": "Public",
-          "expression": {
-            "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-            "type": "ReplaceMatches",
-            "signature": [
-              {
-                "name": "{urn:hl7-org:elm-types:r1}String",
-                "type": "NamedTypeSpecifier"
-              },
-              {
-                "name": "{urn:hl7-org:elm-types:r1}String",
-                "type": "NamedTypeSpecifier"
-              },
-              {
-                "name": "{urn:hl7-org:elm-types:r1}String",
-                "type": "NamedTypeSpecifier"
-              }
-            ],
-            "operand": [
-              {
-                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                "type": "Concatenate",
-                "operand": [
-                  {
-                    "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                    "valueType": "{urn:hl7-org:elm-types:r1}String",
-                    "value": "Encounter/",
-                    "type": "Literal"
-                  },
-                  {
-                    "name": "ToString",
-                    "libraryName": "FHIRHelpers",
-                    "type": "FunctionRef",
-                    "signature": [
-                      {
-                        "name": "{http://hl7.org/fhir}id",
-                        "type": "NamedTypeSpecifier"
-                      }
-                    ],
-                    "operand": [
-                      {
-                        "resultTypeName": "{http://hl7.org/fhir}id",
-                        "path": "id",
-                        "type": "Property",
-                        "source": {
-                          "resultTypeName": "{http://hl7.org/fhir}Encounter",
-                          "name": "Encounter",
-                          "type": "ExpressionRef"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                "valueType": "{urn:hl7-org:elm-types:r1}String",
-                "value": "#",
-                "type": "Literal"
-              },
-              {
-                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                "valueType": "{urn:hl7-org:elm-types:r1}String",
-                "value": "",
-                "type": "Literal"
-              }
-            ]
-          }
-        },
-        {
           "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
           "name": "CreateConcept",
           "context": "Patient",
@@ -2174,238 +2039,268 @@
           }
         },
         {
+          "resultTypeName": "{http://hl7.org/fhir}boolean",
+          "name": "medicationNotPrescribed",
+          "context": "Patient",
+          "accessLevel": "Public",
+          "expression": {
+            "resultTypeName": "{http://hl7.org/fhir}boolean",
+            "type": "If",
+            "condition": {
+              "asType": "{urn:hl7-org:elm-types:r1}Boolean",
+              "type": "As",
+              "operand": {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}Boolean",
+                "type": "IsNull",
+                "signature": [
+                  {
+                    "name": "{urn:hl7-org:elm-types:r1}Any",
+                    "type": "NamedTypeSpecifier"
+                  }
+                ],
+                "operand": {
+                  "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
+                  "name": "medication",
+                  "type": "ExpressionRef"
+                }
+              }
+            },
+            "then": {
+              "resultTypeName": "{http://hl7.org/fhir}boolean",
+              "classType": "{http://hl7.org/fhir}boolean",
+              "type": "Instance",
+              "element": [
+                {
+                  "name": "value",
+                  "value": {
+                    "resultTypeName": "{urn:hl7-org:elm-types:r1}Boolean",
+                    "valueType": "{urn:hl7-org:elm-types:r1}Boolean",
+                    "value": "true",
+                    "type": "Literal"
+                  }
+                }
+              ]
+            },
+            "else": {
+              "asType": "{http://hl7.org/fhir}boolean",
+              "type": "As",
+              "operand": {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}Any",
+                "type": "Null"
+              }
+            }
+          }
+        },
+        {
+          "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+          "name": "medicationReasonCode",
+          "context": "Patient",
+          "accessLevel": "Public",
+          "expression": {
+            "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+            "type": "If",
+            "condition": {
+              "asType": "{urn:hl7-org:elm-types:r1}Boolean",
+              "type": "As",
+              "operand": {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}Boolean",
+                "name": "is Pregnant",
+                "type": "ExpressionRef"
+              }
+            },
+            "then": {
+              "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+              "name": "Pregnancy code",
+              "type": "CodeRef"
+            },
+            "else": {
+              "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+              "type": "If",
+              "condition": {
+                "asType": "{urn:hl7-org:elm-types:r1}Boolean",
+                "type": "As",
+                "operand": {
+                  "resultTypeName": "{urn:hl7-org:elm-types:r1}Boolean",
+                  "type": "Not",
+                  "signature": [
+                    {
+                      "name": "{urn:hl7-org:elm-types:r1}Boolean",
+                      "type": "NamedTypeSpecifier"
+                    }
+                  ],
+                  "operand": {
+                    "resultTypeName": "{urn:hl7-org:elm-types:r1}Boolean",
+                    "name": "AgeRange",
+                    "type": "ExpressionRef"
+                  }
+                }
+              },
+              "then": {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+                "name": "Underage code",
+                "type": "CodeRef"
+              },
+              "else": {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+                "name": "g6pdAnaemiaCode",
+                "type": "CodeRef"
+              }
+            }
+          }
+        },
+        {
+          "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+          "name": "patientRef",
+          "context": "Patient",
+          "accessLevel": "Public",
+          "expression": {
+            "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+            "type": "ReplaceMatches",
+            "signature": [
+              {
+                "name": "{urn:hl7-org:elm-types:r1}String",
+                "type": "NamedTypeSpecifier"
+              },
+              {
+                "name": "{urn:hl7-org:elm-types:r1}String",
+                "type": "NamedTypeSpecifier"
+              },
+              {
+                "name": "{urn:hl7-org:elm-types:r1}String",
+                "type": "NamedTypeSpecifier"
+              }
+            ],
+            "operand": [
+              {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                "type": "Concatenate",
+                "operand": [
+                  {
+                    "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                    "valueType": "{urn:hl7-org:elm-types:r1}String",
+                    "value": "Patient/",
+                    "type": "Literal"
+                  },
+                  {
+                    "name": "ToString",
+                    "libraryName": "FHIRHelpers",
+                    "type": "FunctionRef",
+                    "signature": [
+                      {
+                        "name": "{http://hl7.org/fhir}id",
+                        "type": "NamedTypeSpecifier"
+                      }
+                    ],
+                    "operand": [
+                      {
+                        "resultTypeName": "{http://hl7.org/fhir}id",
+                        "path": "id",
+                        "type": "Property",
+                        "source": {
+                          "resultTypeName": "{http://hl7.org/fhir}Patient",
+                          "name": "Patient",
+                          "type": "ExpressionRef"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                "valueType": "{urn:hl7-org:elm-types:r1}String",
+                "value": "#",
+                "type": "Literal"
+              },
+              {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                "valueType": "{urn:hl7-org:elm-types:r1}String",
+                "value": "",
+                "type": "Literal"
+              }
+            ]
+          }
+        },
+        {
+          "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+          "name": "encounterRef",
+          "context": "Patient",
+          "accessLevel": "Public",
+          "expression": {
+            "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+            "type": "ReplaceMatches",
+            "signature": [
+              {
+                "name": "{urn:hl7-org:elm-types:r1}String",
+                "type": "NamedTypeSpecifier"
+              },
+              {
+                "name": "{urn:hl7-org:elm-types:r1}String",
+                "type": "NamedTypeSpecifier"
+              },
+              {
+                "name": "{urn:hl7-org:elm-types:r1}String",
+                "type": "NamedTypeSpecifier"
+              }
+            ],
+            "operand": [
+              {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                "type": "Concatenate",
+                "operand": [
+                  {
+                    "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                    "valueType": "{urn:hl7-org:elm-types:r1}String",
+                    "value": "Encounter/",
+                    "type": "Literal"
+                  },
+                  {
+                    "name": "ToString",
+                    "libraryName": "FHIRHelpers",
+                    "type": "FunctionRef",
+                    "signature": [
+                      {
+                        "name": "{http://hl7.org/fhir}id",
+                        "type": "NamedTypeSpecifier"
+                      }
+                    ],
+                    "operand": [
+                      {
+                        "resultTypeName": "{http://hl7.org/fhir}id",
+                        "path": "id",
+                        "type": "Property",
+                        "source": {
+                          "resultTypeName": "{http://hl7.org/fhir}Encounter",
+                          "name": "Encounter",
+                          "type": "ExpressionRef"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                "valueType": "{urn:hl7-org:elm-types:r1}String",
+                "value": "#",
+                "type": "Literal"
+              },
+              {
+                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                "valueType": "{urn:hl7-org:elm-types:r1}String",
+                "value": "",
+                "type": "Literal"
+              }
+            ]
+          }
+        },
+        {
           "resultTypeName": "{http://hl7.org/fhir}Dosage",
           "name": "dosage",
           "context": "Patient",
           "accessLevel": "Public",
           "expression": {
             "resultTypeName": "{http://hl7.org/fhir}Dosage",
-            "classType": "{http://hl7.org/fhir}Dosage",
-            "type": "Instance",
-            "element": [
-              {
-                "name": "timing",
-                "value": {
-                  "resultTypeName": "{http://hl7.org/fhir}Timing",
-                  "classType": "{http://hl7.org/fhir}Timing",
-                  "type": "Instance",
-                  "element": [
-                    {
-                      "name": "repeat",
-                      "value": {
-                        "resultTypeName": "{http://hl7.org/fhir}Timing.Repeat",
-                        "classType": "{http://hl7.org/fhir}Timing.Repeat",
-                        "type": "Instance",
-                        "element": [
-                          {
-                            "name": "frequency",
-                            "value": {
-                              "resultTypeName": "{http://hl7.org/fhir}positiveInt",
-                              "classType": "{http://hl7.org/fhir}positiveInt",
-                              "type": "Instance",
-                              "element": [
-                                {
-                                  "name": "value",
-                                  "value": {
-                                    "resultTypeName": "{urn:hl7-org:elm-types:r1}Integer",
-                                    "valueType": "{urn:hl7-org:elm-types:r1}Integer",
-                                    "value": "1",
-                                    "type": "Literal"
-                                  }
-                                }
-                              ]
-                            }
-                          },
-                          {
-                            "name": "period",
-                            "value": {
-                              "resultTypeName": "{http://hl7.org/fhir}decimal",
-                              "name": "recommendedDosageTiming",
-                              "type": "ExpressionRef"
-                            }
-                          },
-                          {
-                            "name": "periodUnit",
-                            "value": {
-                              "resultTypeName": "{http://hl7.org/fhir}UnitsOfTime",
-                              "classType": "{http://hl7.org/fhir}UnitsOfTime",
-                              "type": "Instance",
-                              "element": [
-                                {
-                                  "name": "value",
-                                  "value": {
-                                    "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                                    "valueType": "{urn:hl7-org:elm-types:r1}String",
-                                    "value": "wk",
-                                    "type": "Literal"
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "name": "route",
-                "value": {
-                  "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
-                  "name": "CreateConcept",
-                  "type": "FunctionRef",
-                  "signature": [
-                    {
-                      "name": "{urn:hl7-org:elm-types:r1}Code",
-                      "type": "NamedTypeSpecifier"
-                    }
-                  ],
-                  "operand": [
-                    {
-                      "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
-                      "name": "dosageRouteCode",
-                      "type": "CodeRef"
-                    }
-                  ]
-                }
-              },
-              {
-                "name": "doseAndRate",
-                "value": {
-                  "type": "List",
-                  "resultTypeSpecifier": {
-                    "type": "ListTypeSpecifier",
-                    "elementType": {
-                      "name": "{http://hl7.org/fhir}Dosage.DoseAndRate",
-                      "type": "NamedTypeSpecifier"
-                    }
-                  },
-                  "element": [
-                    {
-                      "resultTypeName": "{http://hl7.org/fhir}Dosage.DoseAndRate",
-                      "classType": "{http://hl7.org/fhir}Dosage.DoseAndRate",
-                      "type": "Instance",
-                      "element": [
-                        {
-                          "name": "type",
-                          "value": {
-                            "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
-                            "name": "CreateConcept",
-                            "type": "FunctionRef",
-                            "signature": [
-                              {
-                                "name": "{urn:hl7-org:elm-types:r1}Code",
-                                "type": "NamedTypeSpecifier"
-                              }
-                            ],
-                            "operand": [
-                              {
-                                "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
-                                "name": "dosageTypeCode",
-                                "type": "CodeRef"
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "name": "dose",
-                          "value": {
-                            "type": "As",
-                            "operand": {
-                              "resultTypeName": "{http://hl7.org/fhir}SimpleQuantity",
-                              "classType": "{http://hl7.org/fhir}SimpleQuantity",
-                              "type": "Instance",
-                              "element": [
-                                {
-                                  "name": "value",
-                                  "value": {
-                                    "resultTypeName": "{http://hl7.org/fhir}decimal",
-                                    "classType": "{http://hl7.org/fhir}decimal",
-                                    "type": "Instance",
-                                    "element": [
-                                      {
-                                        "name": "value",
-                                        "value": {
-                                          "resultTypeName": "{urn:hl7-org:elm-types:r1}Decimal",
-                                          "valueType": "{urn:hl7-org:elm-types:r1}Decimal",
-                                          "value": "0.75",
-                                          "type": "Literal"
-                                        }
-                                      }
-                                    ]
-                                  }
-                                },
-                                {
-                                  "name": "unit",
-                                  "value": {
-                                    "resultTypeName": "{http://hl7.org/fhir}string",
-                                    "classType": "{http://hl7.org/fhir}string",
-                                    "type": "Instance",
-                                    "element": [
-                                      {
-                                        "name": "value",
-                                        "value": {
-                                          "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                                          "valueType": "{urn:hl7-org:elm-types:r1}String",
-                                          "value": "mg/kg",
-                                          "type": "Literal"
-                                        }
-                                      }
-                                    ]
-                                  }
-                                },
-                                {
-                                  "name": "system",
-                                  "value": {
-                                    "resultTypeName": "{http://hl7.org/fhir}uri",
-                                    "classType": "{http://hl7.org/fhir}uri",
-                                    "type": "Instance",
-                                    "element": [
-                                      {
-                                        "name": "value",
-                                        "value": {
-                                          "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                                          "valueType": "{urn:hl7-org:elm-types:r1}String",
-                                          "value": "http://unitsofmeasure.org",
-                                          "type": "Literal"
-                                        }
-                                      }
-                                    ]
-                                  }
-                                }
-                              ]
-                            },
-                            "asTypeSpecifier": {
-                              "type": "ChoiceTypeSpecifier",
-                              "choice": [
-                                {
-                                  "name": "{http://hl7.org/fhir}Range",
-                                  "type": "NamedTypeSpecifier"
-                                },
-                                {
-                                  "name": "{http://hl7.org/fhir}SimpleQuantity",
-                                  "type": "NamedTypeSpecifier"
-                                }
-                              ]
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "resultTypeName": "{http://hl7.org/fhir}MedicationRequest",
-          "name": "medicationRequest",
-          "context": "Patient",
-          "accessLevel": "Public",
-          "expression": {
-            "resultTypeName": "{http://hl7.org/fhir}MedicationRequest",
             "type": "If",
             "condition": {
               "asType": "{urn:hl7-org:elm-types:r1}Boolean",
@@ -2437,30 +2332,68 @@
               }
             },
             "then": {
-              "resultTypeName": "{http://hl7.org/fhir}MedicationRequest",
-              "classType": "{http://hl7.org/fhir}MedicationRequest",
+              "resultTypeName": "{http://hl7.org/fhir}Dosage",
+              "classType": "{http://hl7.org/fhir}Dosage",
               "type": "Instance",
               "element": [
                 {
-                  "name": "subject",
+                  "name": "timing",
                   "value": {
-                    "resultTypeName": "{http://hl7.org/fhir}Reference",
-                    "classType": "{http://hl7.org/fhir}Reference",
+                    "resultTypeName": "{http://hl7.org/fhir}Timing",
+                    "classType": "{http://hl7.org/fhir}Timing",
                     "type": "Instance",
                     "element": [
                       {
-                        "name": "reference",
+                        "name": "repeat",
                         "value": {
-                          "resultTypeName": "{http://hl7.org/fhir}string",
-                          "classType": "{http://hl7.org/fhir}string",
+                          "resultTypeName": "{http://hl7.org/fhir}Timing.Repeat",
+                          "classType": "{http://hl7.org/fhir}Timing.Repeat",
                           "type": "Instance",
                           "element": [
                             {
-                              "name": "value",
+                              "name": "frequency",
                               "value": {
-                                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                                "name": "patientRef",
+                                "resultTypeName": "{http://hl7.org/fhir}positiveInt",
+                                "classType": "{http://hl7.org/fhir}positiveInt",
+                                "type": "Instance",
+                                "element": [
+                                  {
+                                    "name": "value",
+                                    "value": {
+                                      "resultTypeName": "{urn:hl7-org:elm-types:r1}Integer",
+                                      "valueType": "{urn:hl7-org:elm-types:r1}Integer",
+                                      "value": "1",
+                                      "type": "Literal"
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "period",
+                              "value": {
+                                "resultTypeName": "{http://hl7.org/fhir}decimal",
+                                "name": "recommendedDosageTiming",
                                 "type": "ExpressionRef"
+                              }
+                            },
+                            {
+                              "name": "periodUnit",
+                              "value": {
+                                "resultTypeName": "{http://hl7.org/fhir}UnitsOfTime",
+                                "classType": "{http://hl7.org/fhir}UnitsOfTime",
+                                "type": "Instance",
+                                "element": [
+                                  {
+                                    "name": "value",
+                                    "value": {
+                                      "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                                      "valueType": "{urn:hl7-org:elm-types:r1}String",
+                                      "value": "wk",
+                                      "type": "Literal"
+                                    }
+                                  }
+                                ]
                               }
                             }
                           ]
@@ -2470,161 +2403,148 @@
                   }
                 },
                 {
-                  "name": "encounter",
+                  "name": "route",
                   "value": {
-                    "resultTypeName": "{http://hl7.org/fhir}Reference",
-                    "classType": "{http://hl7.org/fhir}Reference",
-                    "type": "Instance",
-                    "element": [
+                    "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
+                    "name": "CreateConcept",
+                    "type": "FunctionRef",
+                    "signature": [
                       {
-                        "name": "reference",
-                        "value": {
-                          "resultTypeName": "{http://hl7.org/fhir}string",
-                          "classType": "{http://hl7.org/fhir}string",
-                          "type": "Instance",
-                          "element": [
-                            {
-                              "name": "value",
-                              "value": {
-                                "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                                "name": "encounterRef",
-                                "type": "ExpressionRef"
-                              }
-                            }
-                          ]
-                        }
+                        "name": "{urn:hl7-org:elm-types:r1}Code",
+                        "type": "NamedTypeSpecifier"
+                      }
+                    ],
+                    "operand": [
+                      {
+                        "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+                        "name": "dosageRouteCode",
+                        "type": "CodeRef"
                       }
                     ]
                   }
                 },
                 {
-                  "name": "authoredOn",
-                  "value": {
-                    "resultTypeName": "{http://hl7.org/fhir}dateTime",
-                    "classType": "{http://hl7.org/fhir}dateTime",
-                    "type": "Instance",
-                    "element": [
-                      {
-                        "name": "value",
-                        "value": {
-                          "resultTypeName": "{urn:hl7-org:elm-types:r1}DateTime",
-                          "type": "Now"
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "name": "status",
-                  "value": {
-                    "resultTypeName": "{http://hl7.org/fhir}MedicationRequestStatus",
-                    "classType": "{http://hl7.org/fhir}MedicationRequestStatus",
-                    "type": "Instance",
-                    "element": [
-                      {
-                        "name": "value",
-                        "value": {
-                          "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                          "valueType": "{urn:hl7-org:elm-types:r1}String",
-                          "value": "active",
-                          "type": "Literal"
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "name": "intent",
-                  "value": {
-                    "resultTypeName": "{http://hl7.org/fhir}MedicationRequestIntent",
-                    "classType": "{http://hl7.org/fhir}MedicationRequestIntent",
-                    "type": "Instance",
-                    "element": [
-                      {
-                        "name": "value",
-                        "value": {
-                          "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
-                          "valueType": "{urn:hl7-org:elm-types:r1}String",
-                          "value": "proposal",
-                          "type": "Literal"
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "name": "category",
+                  "name": "doseAndRate",
                   "value": {
                     "type": "List",
                     "resultTypeSpecifier": {
                       "type": "ListTypeSpecifier",
                       "elementType": {
-                        "name": "{http://hl7.org/fhir}CodeableConcept",
+                        "name": "{http://hl7.org/fhir}Dosage.DoseAndRate",
                         "type": "NamedTypeSpecifier"
                       }
                     },
                     "element": [
                       {
-                        "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
-                        "name": "CreateConcept",
-                        "type": "FunctionRef",
-                        "signature": [
+                        "resultTypeName": "{http://hl7.org/fhir}Dosage.DoseAndRate",
+                        "classType": "{http://hl7.org/fhir}Dosage.DoseAndRate",
+                        "type": "Instance",
+                        "element": [
                           {
-                            "name": "{urn:hl7-org:elm-types:r1}Code",
-                            "type": "NamedTypeSpecifier"
-                          }
-                        ],
-                        "operand": [
+                            "name": "type",
+                            "value": {
+                              "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
+                              "name": "CreateConcept",
+                              "type": "FunctionRef",
+                              "signature": [
+                                {
+                                  "name": "{urn:hl7-org:elm-types:r1}Code",
+                                  "type": "NamedTypeSpecifier"
+                                }
+                              ],
+                              "operand": [
+                                {
+                                  "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+                                  "name": "dosageTypeCode",
+                                  "type": "CodeRef"
+                                }
+                              ]
+                            }
+                          },
                           {
-                            "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
-                            "name": "g6pdAnaemiaCode",
-                            "type": "CodeRef"
+                            "name": "dose",
+                            "value": {
+                              "type": "As",
+                              "operand": {
+                                "resultTypeName": "{http://hl7.org/fhir}SimpleQuantity",
+                                "classType": "{http://hl7.org/fhir}SimpleQuantity",
+                                "type": "Instance",
+                                "element": [
+                                  {
+                                    "name": "value",
+                                    "value": {
+                                      "resultTypeName": "{http://hl7.org/fhir}decimal",
+                                      "classType": "{http://hl7.org/fhir}decimal",
+                                      "type": "Instance",
+                                      "element": [
+                                        {
+                                          "name": "value",
+                                          "value": {
+                                            "resultTypeName": "{urn:hl7-org:elm-types:r1}Decimal",
+                                            "valueType": "{urn:hl7-org:elm-types:r1}Decimal",
+                                            "value": "0.75",
+                                            "type": "Literal"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "name": "unit",
+                                    "value": {
+                                      "resultTypeName": "{http://hl7.org/fhir}string",
+                                      "classType": "{http://hl7.org/fhir}string",
+                                      "type": "Instance",
+                                      "element": [
+                                        {
+                                          "name": "value",
+                                          "value": {
+                                            "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                                            "valueType": "{urn:hl7-org:elm-types:r1}String",
+                                            "value": "mg/kg",
+                                            "type": "Literal"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "name": "system",
+                                    "value": {
+                                      "resultTypeName": "{http://hl7.org/fhir}uri",
+                                      "classType": "{http://hl7.org/fhir}uri",
+                                      "type": "Instance",
+                                      "element": [
+                                        {
+                                          "name": "value",
+                                          "value": {
+                                            "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                                            "valueType": "{urn:hl7-org:elm-types:r1}String",
+                                            "value": "http://unitsofmeasure.org",
+                                            "type": "Literal"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              "asTypeSpecifier": {
+                                "type": "ChoiceTypeSpecifier",
+                                "choice": [
+                                  {
+                                    "name": "{http://hl7.org/fhir}Range",
+                                    "type": "NamedTypeSpecifier"
+                                  },
+                                  {
+                                    "name": "{http://hl7.org/fhir}SimpleQuantity",
+                                    "type": "NamedTypeSpecifier"
+                                  }
+                                ]
+                              }
+                            }
                           }
                         ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "name": "medication",
-                  "value": {
-                    "type": "As",
-                    "operand": {
-                      "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
-                      "name": "medication",
-                      "type": "ExpressionRef"
-                    },
-                    "asTypeSpecifier": {
-                      "type": "ChoiceTypeSpecifier",
-                      "choice": [
-                        {
-                          "name": "{http://hl7.org/fhir}CodeableConcept",
-                          "type": "NamedTypeSpecifier"
-                        },
-                        {
-                          "name": "{http://hl7.org/fhir}Reference",
-                          "type": "NamedTypeSpecifier"
-                        }
-                      ]
-                    }
-                  }
-                },
-                {
-                  "name": "dosageInstruction",
-                  "value": {
-                    "type": "List",
-                    "resultTypeSpecifier": {
-                      "type": "ListTypeSpecifier",
-                      "elementType": {
-                        "name": "{http://hl7.org/fhir}Dosage",
-                        "type": "NamedTypeSpecifier"
-                      }
-                    },
-                    "element": [
-                      {
-                        "resultTypeName": "{http://hl7.org/fhir}Dosage",
-                        "name": "dosage",
-                        "type": "ExpressionRef"
                       }
                     ]
                   }
@@ -2632,13 +2552,255 @@
               ]
             },
             "else": {
-              "asType": "{http://hl7.org/fhir}MedicationRequest",
+              "asType": "{http://hl7.org/fhir}Dosage",
               "type": "As",
               "operand": {
                 "resultTypeName": "{urn:hl7-org:elm-types:r1}Any",
                 "type": "Null"
               }
             }
+          }
+        },
+        {
+          "resultTypeName": "{http://hl7.org/fhir}MedicationRequest",
+          "name": "medicationRequest",
+          "context": "Patient",
+          "accessLevel": "Public",
+          "expression": {
+            "resultTypeName": "{http://hl7.org/fhir}MedicationRequest",
+            "classType": "{http://hl7.org/fhir}MedicationRequest",
+            "type": "Instance",
+            "element": [
+              {
+                "name": "subject",
+                "value": {
+                  "resultTypeName": "{http://hl7.org/fhir}Reference",
+                  "classType": "{http://hl7.org/fhir}Reference",
+                  "type": "Instance",
+                  "element": [
+                    {
+                      "name": "reference",
+                      "value": {
+                        "resultTypeName": "{http://hl7.org/fhir}string",
+                        "classType": "{http://hl7.org/fhir}string",
+                        "type": "Instance",
+                        "element": [
+                          {
+                            "name": "value",
+                            "value": {
+                              "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                              "name": "patientRef",
+                              "type": "ExpressionRef"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "encounter",
+                "value": {
+                  "resultTypeName": "{http://hl7.org/fhir}Reference",
+                  "classType": "{http://hl7.org/fhir}Reference",
+                  "type": "Instance",
+                  "element": [
+                    {
+                      "name": "reference",
+                      "value": {
+                        "resultTypeName": "{http://hl7.org/fhir}string",
+                        "classType": "{http://hl7.org/fhir}string",
+                        "type": "Instance",
+                        "element": [
+                          {
+                            "name": "value",
+                            "value": {
+                              "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                              "name": "encounterRef",
+                              "type": "ExpressionRef"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "authoredOn",
+                "value": {
+                  "resultTypeName": "{http://hl7.org/fhir}dateTime",
+                  "classType": "{http://hl7.org/fhir}dateTime",
+                  "type": "Instance",
+                  "element": [
+                    {
+                      "name": "value",
+                      "value": {
+                        "resultTypeName": "{urn:hl7-org:elm-types:r1}DateTime",
+                        "type": "Now"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "status",
+                "value": {
+                  "resultTypeName": "{http://hl7.org/fhir}MedicationRequestStatus",
+                  "classType": "{http://hl7.org/fhir}MedicationRequestStatus",
+                  "type": "Instance",
+                  "element": [
+                    {
+                      "name": "value",
+                      "value": {
+                        "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                        "valueType": "{urn:hl7-org:elm-types:r1}String",
+                        "value": "active",
+                        "type": "Literal"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "intent",
+                "value": {
+                  "resultTypeName": "{http://hl7.org/fhir}MedicationRequestIntent",
+                  "classType": "{http://hl7.org/fhir}MedicationRequestIntent",
+                  "type": "Instance",
+                  "element": [
+                    {
+                      "name": "value",
+                      "value": {
+                        "resultTypeName": "{urn:hl7-org:elm-types:r1}String",
+                        "valueType": "{urn:hl7-org:elm-types:r1}String",
+                        "value": "proposal",
+                        "type": "Literal"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "category",
+                "value": {
+                  "type": "List",
+                  "resultTypeSpecifier": {
+                    "type": "ListTypeSpecifier",
+                    "elementType": {
+                      "name": "{http://hl7.org/fhir}CodeableConcept",
+                      "type": "NamedTypeSpecifier"
+                    }
+                  },
+                  "element": [
+                    {
+                      "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
+                      "name": "CreateConcept",
+                      "type": "FunctionRef",
+                      "signature": [
+                        {
+                          "name": "{urn:hl7-org:elm-types:r1}Code",
+                          "type": "NamedTypeSpecifier"
+                        }
+                      ],
+                      "operand": [
+                        {
+                          "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+                          "name": "g6pdAnaemiaCode",
+                          "type": "CodeRef"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "medication",
+                "value": {
+                  "type": "As",
+                  "operand": {
+                    "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
+                    "name": "medication",
+                    "type": "ExpressionRef"
+                  },
+                  "asTypeSpecifier": {
+                    "type": "ChoiceTypeSpecifier",
+                    "choice": [
+                      {
+                        "name": "{http://hl7.org/fhir}CodeableConcept",
+                        "type": "NamedTypeSpecifier"
+                      },
+                      {
+                        "name": "{http://hl7.org/fhir}Reference",
+                        "type": "NamedTypeSpecifier"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "name": "doNotPerform",
+                "value": {
+                  "resultTypeName": "{http://hl7.org/fhir}boolean",
+                  "name": "medicationNotPrescribed",
+                  "type": "ExpressionRef"
+                }
+              },
+              {
+                "name": "reasonCode",
+                "value": {
+                  "type": "List",
+                  "resultTypeSpecifier": {
+                    "type": "ListTypeSpecifier",
+                    "elementType": {
+                      "name": "{http://hl7.org/fhir}CodeableConcept",
+                      "type": "NamedTypeSpecifier"
+                    }
+                  },
+                  "element": [
+                    {
+                      "resultTypeName": "{http://hl7.org/fhir}CodeableConcept",
+                      "name": "CreateConcept",
+                      "type": "FunctionRef",
+                      "signature": [
+                        {
+                          "name": "{urn:hl7-org:elm-types:r1}Code",
+                          "type": "NamedTypeSpecifier"
+                        }
+                      ],
+                      "operand": [
+                        {
+                          "resultTypeName": "{urn:hl7-org:elm-types:r1}Code",
+                          "name": "medicationReasonCode",
+                          "type": "ExpressionRef"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "dosageInstruction",
+                "value": {
+                  "type": "List",
+                  "resultTypeSpecifier": {
+                    "type": "ListTypeSpecifier",
+                    "elementType": {
+                      "name": "{http://hl7.org/fhir}Dosage",
+                      "type": "NamedTypeSpecifier"
+                    }
+                  },
+                  "element": [
+                    {
+                      "resultTypeName": "{http://hl7.org/fhir}Dosage",
+                      "name": "dosage",
+                      "type": "ExpressionRef"
+                    }
+                  ]
+                }
+              }
+            ]
           }
         },
         {
