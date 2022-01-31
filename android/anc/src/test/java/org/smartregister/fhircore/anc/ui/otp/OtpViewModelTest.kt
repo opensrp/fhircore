@@ -28,8 +28,8 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.OTP_PIN
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
