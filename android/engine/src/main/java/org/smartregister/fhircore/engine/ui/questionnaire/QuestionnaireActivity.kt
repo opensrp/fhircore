@@ -57,6 +57,8 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.filterByPatient
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
+import org.smartregister.fhircore.engine.util.extension.pregnancyCondition
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
@@ -170,7 +172,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         populateInitialValues(questionnaire)
 
         val questionnaireString = parser.encodeResourceToString(questionnaire)
-        var listOfConditions: List<Condition> = arrayListOf()
+        var activePregnancyCondition: Condition? = Condition()
 
         // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
         arguments =
@@ -186,8 +188,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             clientIdentifier != null -> {
               try {
                 fhirEngine.load(Patient::class.java, clientIdentifier!!)
-                listOfConditions =
+                val listOfConditions: List<Condition> =
                   fhirEngine.search { filterByPatient(Condition.SUBJECT, clientIdentifier!!) }
+                val activePregnancy = listOfConditions.hasActivePregnancy()
+                activePregnancyCondition =
+                  if (activePregnancy) listOfConditions.pregnancyCondition() else null
               } catch (e: ResourceNotFoundException) {
                 setBarcode(questionnaire, clientIdentifier!!, true)
               }
@@ -204,12 +209,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 .apply {
                   val jsonParser = FhirContext.forR4Cached().newJsonParser()
                   val resourcesList = ArrayList<String>()
-                  if (listOfConditions.isNotEmpty()) {
-                    listOfConditions.forEach {
-                      resourcesList.add(jsonParser.encodeResourceToString(it))
-                    }
-                  }
-
+                  if (activePregnancyCondition != null)
+                    resourcesList.add(jsonParser.encodeResourceToString(activePregnancyCondition))
                   if (resourcesList.isNotEmpty()) {
                     putStringArrayList(QUESTIONNAIRE_POPULATION_RESOURCES, resourcesList)
                   }
