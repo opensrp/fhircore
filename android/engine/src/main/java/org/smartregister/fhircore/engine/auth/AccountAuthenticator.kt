@@ -298,7 +298,6 @@ constructor(
   }
 
   fun launchLoginScreen() {
-    // todo: update check for OTP login if persist
     launchScreen(getLoginActivityClass())
   }
 

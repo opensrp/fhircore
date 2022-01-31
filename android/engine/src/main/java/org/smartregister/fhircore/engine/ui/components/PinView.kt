@@ -157,14 +157,6 @@ fun OtpCell(
 
   Box(modifier = modifier) {
     if (isDotted) {
-      //      if (isCursorVisible) {
-      //        Text(
-      //          text = if (value.isEmpty()) cursorSymbol else value,
-      //          fontSize = 18.sp,
-      //          style = MaterialTheme.typography.body1,
-      //          modifier = Modifier.wrapContentSize().align(Alignment.Center)
-      //        )
-      //      } else {
       Card(
         modifier = Modifier.size(30.dp).align(Alignment.Center),
         elevation = 1.dp,
