@@ -1,8 +1,14 @@
 package org.smartregister.fhircore.quest.workflow
 
+import java.util.*
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.StringType
 
 /**
  * Created by Ephraim Kigamba - nek.eam@gmail.com on 28-01-2022.
@@ -10,76 +16,99 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 class WorkflowProvider {
 
     fun computeClientState(patient: Patient, stateObservation: Observation, visits: List<QuestionnaireResponse>) : List<Observation> {
-        if (visits.missedLast2Visits()) {
-            return listOf(createStatusObs("discharged"), createStatusTagObs("defaulter"))
+        return if (visits.missedLast2Visits()) {
+            listOf(createStatusObs(patient, "discharged"), createStatusTagObs(patient, "defaulter"))
         } else if (visits.missedLastVisit()) {
-            val statusTagObs = createStatusTagObs("visit-overdue")
-            if (!stateObservation.isPatientActive()) {
-                return listOf(statusTagObs)
+            val statusTagObs = createStatusTagObs(patient, "visit-overdue")
+            if (!stateObservation.isStatusActive()) {
+                listOf(statusTagObs)
             } else {
-                val activeStatusObs = createStatusObs("active")
-                return listOf(activeStatusObs, statusTagObs)
+                val activeStatusObs = createStatusObs(patient, "active")
+                listOf(activeStatusObs, statusTagObs)
             }
         } else {
-            return listOf()
+            listOf()
         }
     }
 
-    fun nextStep(patient: Patient, stateObservation: Observation, visits: List<QuestionnaireResponse>) : Step {
-        if (stateObservation.isPatientStatus("discharged")) {
-            return Step.DIMSISS
+    fun nextStep(stateObservation: Observation, visits: List<QuestionnaireResponse>) : Step {
+        return if (stateObservation.isPatientStatus("discharged")) {
+            Step.DIMSISS
         } else if (!visits.isNextVisitDue()) {
-            return Step.DIMSISS
+            Step.DIMSISS
         } else if (visits.isEmpty()) {
-            return Step.ASSISTANCE_STEP_FIRST_VISIT
+            Step.ASSISTANCE_STEP_FIRST_VISIT
         } else if (visits.size == 1) {
-            return Step.ANTHROPOMETRIC_STEP_FIRST_VISIT
+            Step.ANTHROPOMETRIC_STEP_FIRST_VISIT
         } else if (visits.size%2 == 1) {
-            return Step.ASSISTANCE_STEP_FOLLOWING_VISIT
+            Step.ASSISTANCE_STEP_FOLLOWING_VISIT
         } else {
-            return Step.ANTHROPOMETRIC_STEP_FOLLOWING_VISIT
+            Step.ANTHROPOMETRIC_STEP_FOLLOWING_VISIT
         }
     }
 
     fun List<QuestionnaireResponse>.missedLastVisit() : Boolean {
-        return true
+        return size > 0 && this[0].authored.daysFromToday() > 14
     }
 
+    fun Date.daysFromToday() : Int =
+        ((Calendar.getInstance().time.time - this.time)/(1000 * 60 * 60 * 24)).toInt()
+
     fun List<QuestionnaireResponse>.missedLast2Visits() : Boolean {
-        return true
+        return size > 1 && this[0].authored.daysFromToday() > 28
     }
 
     fun List<QuestionnaireResponse>.isNextVisitDue() : Boolean {
-        return true
+        return size > 0 && this[0].authored.daysFromToday() == 14
     }
 
     fun List<QuestionnaireResponse>.isLastAnthroVisit() : Boolean {
-        return true
+        return size > 0 && this[0].questionnaire.endsWith("anthro-following-visit")
     }
 
     fun List<QuestionnaireResponse>.isLastAssistanceVisit() : Boolean {
-        return true
+        return size > 0 && this[0].questionnaire.endsWith("assistance-visit")
     }
 
-    fun Observation.isPatientActive() : Boolean {
-        return true
+    fun Observation.isStatusActive() : Boolean {
+        return valueStringType.valueAsString.equals("active")
     }
 
-    fun createStatusObs(status : String) : Observation {
-
+    fun createStatusObs(patient: Patient, status : String) : Observation {
+        val date = Calendar.getInstance().time
+        return Observation()
+            .apply {
+                value = StringType(status)
+                code = CodeableConcept(Coding("https://smartregister.org/wfp-coda", "patient-status", "Patient status"))
+                setEffective(DateTimeType(date))
+                subject = Reference(patient)
+                issued = date
+                id = UUID.randomUUID().toString()
+                setStatus(Observation.ObservationStatus.FINAL)
+            }
     }
 
-    fun createStatusTagObs(status : String) : Observation {
-
+    fun createStatusTagObs(patient: Patient, status : String) : Observation {
+        val date = Calendar.getInstance().time
+        return Observation()
+            .apply {
+                value = StringType(status)
+                code = CodeableConcept(Coding("https://smartregister.org/wfp-coda", "patient-status-tag", "Patient status tag"))
+                setEffective(DateTimeType(date))
+                subject = Reference(patient)
+                issued = date
+                id = UUID.randomUUID().toString()
+                setStatus(Observation.ObservationStatus.FINAL)
+            }
     }
 
     fun Observation.isPatientStatus(status: String) : Boolean {
-        return true
+        return code.coding[0].code == "patient-status" && valueStringType.valueAsString == status
     }
 
 
     fun Observation.isPatientStatusTag(status: String) : Boolean {
-        return true
+        return code.coding[0].code == "patient-status-tag" && valueStringType.valueAsString == status
     }
 
     enum class Step {
