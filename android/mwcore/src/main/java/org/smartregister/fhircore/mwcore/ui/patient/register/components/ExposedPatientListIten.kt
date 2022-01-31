@@ -1,19 +1,3 @@
-/*
- * Copyright 2021 Ona Systems, Inc
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.smartregister.fhircore.mwcore.ui.patient.register.components
 
 import androidx.compose.foundation.Image
@@ -25,20 +9,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Female
-import androidx.compose.material.icons.filled.Handyman
-import androidx.compose.material.icons.filled.Male
-import androidx.compose.material.icons.filled.PregnantWoman
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,56 +31,10 @@ import org.smartregister.fhircore.mwcore.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRowClickListenerIntent
 
 
-@Composable
-fun MwChip(
-    text: String,
-    fontSize: TextUnit,
-    modifier: Modifier = Modifier,
-    textColor: Color = MaterialTheme.colors.onSecondary,
-    background: Color = MaterialTheme.colors.secondary
-) {
-    Box(
-        modifier = Modifier.background(
-            background,
-            RoundedCornerShape(18.dp)
-        )
-    ) {
-        Text(
-            color = textColor,
-            text = text,
-            fontSize = fontSize,
-            modifier = modifier
-                .wrapContentWidth()
-                .padding(8.dp, 2.dp)
-        )
-    }
-}
+
 
 @Composable
-fun ArtChip(text: String,
-            fontSize: TextUnit,
-            modifier: Modifier = Modifier,
-            textColor: Color = MaterialTheme.colors.onSecondary,
-            background: Color = MaterialTheme.colors.secondary)
-{
-    Box(modifier = modifier.background( color = MaterialTheme.colors.secondary.copy(alpha = 0.2F), 
-        RoundedCornerShape(4.dp)))
-    {
-        Text(
-            
-            color = textColor,
-            text = text,
-            fontSize = fontSize,
-            modifier = modifier
-                .wrapContentWidth()
-                .padding(8.dp, 2.dp)
-        )
-    }
-
-}
-
-@Composable
-fun PatientRow(
+fun PatientChildRow(
     patientItem: PatientItem,
     clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
     modifier: Modifier = Modifier,
@@ -129,15 +60,13 @@ fun PatientRow(
                 .height(IntrinsicSize.Min)
                 .padding(12.dp, 4.dp)
         ) {
-            
-            ArtChip(text = patientItem.identifier, fontSize =22.sp )
-                
-          /*  MwChip(
+
+            MwChip(
                 modifier = modifier.background( color = MaterialTheme.colors.secondary.copy(alpha = 0.2F), RoundedCornerShape(4.dp)) ,
                 text = patientItem.identifier,
                 fontSize = 22.sp,
                 textColor = MaterialTheme.colors.onSecondary,
-            ) */
+            )
 
 
             //Adding space between image and the column
@@ -167,14 +96,26 @@ fun PatientRow(
                     Spacer(modifier = Modifier.width(8.dp))
                     MwChip(
                         fontSize = 16.sp,
-                        text = patientItem.genderFull(),
+                        text = "MIP",
                         textColor = MaterialTheme.colors.primary,
                         background = MaterialTheme.colors.primary.copy(alpha = 0.2F)
                     )
                 }
             }
-            
-            clientImage(text = patientItem.genderFull())
+
+            Image(
+                painter = painterResource(id = R.drawable.ic_child),
+                contentDescription = "Child profile picture",
+
+                //resizing our profile picture
+                modifier = Modifier
+                    .size(40.dp)
+
+                    //shaping the picture
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colors.secondary.copy(alpha = .4F))
+                    .border(1.5.dp, MaterialTheme.colors.secondary, CircleShape)
+            )
 
         }
     }
@@ -182,46 +123,9 @@ fun PatientRow(
 }
 
 @Composable
-fun clientImage( text: String){
-    if ( text == "Male"){
-        Image(
-            painter = painterResource(
-                id = R.drawable.ic_man),
-            contentDescription = "Contact profile picture",
-            //resizing our profile picture
-            modifier = Modifier
-                .size(40.dp)
-
-                //shaping the picture
-                .clip(CircleShape)
-                .background(MaterialTheme.colors.secondary.copy(alpha = .4F))
-                .border(1.5.dp, MaterialTheme.colors.secondary, CircleShape)
-        )
-    }
-    else
-    {
-       Image(
-           painter = painterResource(
-               id = R.drawable.ic_woman_),
-
-            contentDescription = "Contact profile picture",
-
-            //resizing our profile picture
-            modifier = Modifier
-                .size(40.dp)
-
-                //shaping the picture
-                .clip(CircleShape)
-                .background(MaterialTheme.colors.secondary.copy(alpha = .4F))
-                .border(1.5.dp, MaterialTheme.colors.secondary, CircleShape)
-        )
-    }
-}
-
-@Composable
 @Preview(showBackground = true, showSystemUi = true)
 @ExcludeFromJacocoGeneratedReport
-fun PatientRowPreview() {
+fun PatientChildRowPreview() {
     val patientItem =
         PatientItem(
             id = "my-test-id",
