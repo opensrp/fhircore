@@ -71,6 +71,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   private var scanForRegistration = true
   private var desFireServiceObserversAdded = false
+  private var openedReadWriteActivity = false
   private val desFireServiceConnectionStateObserver: Observer<in ServiceConnectionState> =
       Observer {
     val state = it.name
@@ -78,7 +79,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   private val cardReaderStateObserver: Observer<in CardReaderState> = Observer {
     val cardReaderState = it.name
   }
-  private var readResultObserver : Observer<in Array<String>>? = null
+  private var readResultObserver: Observer<in Array<String>>? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -168,6 +169,12 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun onResume() {
     super.onResume()
+
+    if (openedReadWriteActivity) {
+      addDesServiceListeners()
+    }
+
+    openedReadWriteActivity = false
     // Event that prompt only once to be able to know what has just happen with the card reader
     // This consumption will be used if the end-user want to use the Read/Write Activities
     // from the DESFire Service, so that the event can be consume inside the end-user app.
@@ -182,7 +189,9 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun onPause() {
     if (desFireServiceObserversAdded) {
-      DESFireServiceAccess.DESFireServiceConnectionState.removeObserver(desFireServiceConnectionStateObserver)
+      DESFireServiceAccess.DESFireServiceConnectionState.removeObserver(
+        desFireServiceConnectionStateObserver
+      )
       DESFireServiceAccess.cardReaderState.removeObserver(cardReaderStateObserver)
       DESFireServiceAccess.readResult.removeObserver(readResultObserver!!)
     }
@@ -195,6 +204,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   private fun readFromCard(isRegistration: Boolean = true) {
+    openedReadWriteActivity = true
     scanForRegistration = isRegistration
     mainViewModel.generateProtoFile()
     // InitializeSAM
@@ -215,23 +225,24 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     DESFireServiceAccess.cardReaderState.observe(this, cardReaderStateObserver)
 
     if (readResultObserver == null) {
-      readResultObserver = Observer { result ->
-        if (!result.isNullOrEmpty()) {
-          val stringBuilder = StringBuilder().append("")
-          result.forEach { stringBuilder.append(it) }
-          val readResult = stringBuilder.toString()
-          if (scanForRegistration) {
-            if (readResult == "{\n}") {
-              showAgeDialog { dialog, which -> dialog.dismiss() }
+      readResultObserver =
+        Observer { result ->
+          if (!result.isNullOrEmpty()) {
+            val stringBuilder = StringBuilder().append("")
+            result.forEach { stringBuilder.append(it) }
+            val readResult = stringBuilder.toString()
+            if (scanForRegistration) {
+              if (readResult == "{\n}") {
+                showAgeDialog { dialog, which -> dialog.dismiss() }
+              } else {
+                showEraseCardDialog { dialog, which -> dialog.dismiss() }
+              }
             } else {
-              showEraseCardDialog { dialog, which -> dialog.dismiss() }
+              val patientNFCItem = Gson().fromJson(readResult, PatientNfcItem::class.java)
+              navigateToDetails(patientNFCItem.patientId)
             }
-          } else {
-            val patientNFCItem = Gson().fromJson(readResult, PatientNfcItem::class.java)
-            navigateToDetails(patientNFCItem.patientId)
           }
         }
-      }
     }
 
     // After reading the card, the end-user will need the content that has been read on the card
@@ -239,6 +250,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   private fun writeToCard(isDelete: Boolean = false) {
+    openedReadWriteActivity = true
     mainViewModel.generateProtoFile()
     // InitializeSAM
     mainViewModel.initSAM()
