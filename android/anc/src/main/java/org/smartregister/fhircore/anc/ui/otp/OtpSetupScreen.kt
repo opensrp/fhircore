@@ -64,6 +64,7 @@ import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+const val TOOLBAR_MENU_SETTINGS = "toolbarMenuSettings"
 const val SET_PIN_CONFIRM_BUTTON = "SET_PIN_CONFIRM_BUTTON"
 
 @Composable
@@ -102,7 +103,7 @@ fun OtpSetupPage(
           Icon(
             Icons.Filled.ArrowBack,
             contentDescription = "Back arrow",
-            modifier = Modifier.size(0.dp)
+            modifier = Modifier.size(0.dp).testTag(TOOLBAR_MENU_ICON)
           )
         }
       },
@@ -124,7 +125,8 @@ fun OtpSetupPage(
               showMenu = false
               Log.e("aw", "onMenuItem Clicked should action now")
               onMenuSettingClicked()
-            }
+            },
+            modifier = Modifier.testTag(TOOLBAR_MENU_SETTINGS)
           ) { Text(text = stringResource(id = R.string.settings)) }
         }
       }

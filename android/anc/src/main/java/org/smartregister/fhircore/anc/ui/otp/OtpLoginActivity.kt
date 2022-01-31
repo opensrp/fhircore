@@ -31,19 +31,19 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 @AndroidEntryPoint
 class OtpLoginActivity : BaseMultiLanguageActivity() {
 
-  private val optViewModel by viewModels<OtpViewModel>()
+  val otpViewModel by viewModels<OtpViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-    optViewModel.apply {
+    otpViewModel.apply {
       val optLoginActivity = this@OtpLoginActivity
       loadData()
       navigateToHome.observe(optLoginActivity, { optLoginActivity.moveToHome() })
       launchDialPad.observe(optLoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
       navigateToLogin.observe(optLoginActivity, { optLoginActivity.moveToLoginViaUsername() })
     }
-    setContent { AppTheme { OtpLoginScreen(optViewModel) } }
+    setContent { AppTheme { OtpLoginScreen(otpViewModel) } }
   }
 
   private fun launchDialPad(phone: String) {

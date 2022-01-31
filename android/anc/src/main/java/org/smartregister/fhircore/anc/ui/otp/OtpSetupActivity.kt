@@ -30,21 +30,21 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 @AndroidEntryPoint
 class OtpSetupActivity : BaseMultiLanguageActivity() {
 
-  private val optViewModel by viewModels<OtpViewModel>()
+  val otpViewModel by viewModels<OtpViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-    optViewModel.apply {
+    otpViewModel.apply {
       loadData()
       val optSetupActivity = this@OtpSetupActivity
       navigateToHome.observe(optSetupActivity, { optSetupActivity.moveToHome() })
       navigateToSettings.observe(optSetupActivity, { optSetupActivity.moveToSettings() })
       pin.observe(optSetupActivity, { it.let { enableSetPin.postValue(it.length > 3) } })
     }
-    setContent { AppTheme { OtpSetupScreen(optViewModel) } }
+    setContent { AppTheme { OtpSetupScreen(otpViewModel) } }
   }
 
   private fun moveToHome() {

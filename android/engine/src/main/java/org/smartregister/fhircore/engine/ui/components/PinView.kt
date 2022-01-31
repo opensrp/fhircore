@@ -53,6 +53,7 @@ import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -64,6 +65,8 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
+
+const val PIN_VIEW = "pin_view"
 
 @ExperimentalComposeUiApi
 @Composable
@@ -112,7 +115,7 @@ fun PinView(
   )
   Row(
     modifier =
-      Modifier.fillMaxWidth()
+      Modifier.fillMaxWidth().testTag(PIN_VIEW)
         .background(color = colorResource(id = R.color.cardview_light_background)),
     horizontalArrangement = Arrangement.Center
   ) {

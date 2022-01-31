@@ -71,6 +71,10 @@ import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+const val TOOLBAR_MENU_ICON = "toolbarIcon"
+const val TOOLBAR_MENU_LOGIN = "toolbarMenuLogin"
+const val FORGOT_PIN = "forgot_pin"
+
 @Composable
 fun OtpLoginScreen(viewModel: OtpViewModel) {
 
@@ -105,7 +109,7 @@ fun OtpLoginPage(
           Icon(
             Icons.Filled.ArrowBack,
             contentDescription = "Back arrow",
-            modifier = Modifier.size(0.dp)
+            modifier = Modifier.size(0.dp).testTag(TOOLBAR_MENU_ICON)
           )
         }
       },
@@ -127,7 +131,8 @@ fun OtpLoginPage(
               showMenu = false
               Log.e("aw", "onMenuItem Clicked should action now")
               onMenuLoginClicked()
-            }
+            },
+            modifier = Modifier.testTag(TOOLBAR_MENU_LOGIN)
           ) { Text(text = stringResource(id = R.string.otp_menu_login)) }
         }
       }
@@ -208,6 +213,7 @@ fun ForgotPinDialog(
   modifier: Modifier = Modifier
 ) {
   AlertDialog(
+    modifier = Modifier.testTag(FORGOT_PIN),
     onDismissRequest = onDismissDialog,
     title = {
       Text(

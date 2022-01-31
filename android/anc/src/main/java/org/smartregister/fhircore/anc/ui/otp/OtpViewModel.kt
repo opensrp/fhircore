@@ -34,7 +34,7 @@ class OtpViewModel
 @Inject
 constructor(
   val dispatcher: DispatcherProvider,
-  private val sharedPreferences: SharedPreferencesHelper,
+  val sharedPreferences: SharedPreferencesHelper,
   val app: Application
 ) : ViewModel() {
 
@@ -91,10 +91,6 @@ constructor(
   }
 
   fun onPinChanged(newPin: String) {
-    //    _pin.postValue(newPin)
-    //    //    enableSetPin.value = newPin.length>3
-    //    _enableSetPin.postValue(newPin.length > 3)
-    //    Log.e("aw", "pin changed " + newPin)
 
     if (newPin.length == 4) {
       val pinMatched = newPin.equals(savedOtp, false)
