@@ -71,6 +71,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   private var scanForRegistration = true
   private var desFireServiceObserversAdded = false
+  private var openedReadWriteActivity = false
   private val desFireServiceConnectionStateObserver: Observer<in ServiceConnectionState> =
       Observer {
     val state = it.name
@@ -169,8 +170,11 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onResume() {
     super.onResume()
 
-    addDesServiceListeners()
+    if (openedReadWriteActivity) {
+      addDesServiceListeners()
+    }
 
+    openedReadWriteActivity = false
     // Event that prompt only once to be able to know what has just happen with the card reader
     // This consumption will be used if the end-user want to use the Read/Write Activities
     // from the DESFire Service, so that the event can be consume inside the end-user app.
@@ -200,6 +204,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   private fun readFromCard(isRegistration: Boolean = true) {
+    openedReadWriteActivity = true
     scanForRegistration = isRegistration
     mainViewModel.generateProtoFile()
     // InitializeSAM
@@ -276,7 +281,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun registerClient(clientIdentifier: String?) {
-    // showAgeDialog({ dialog, which -> dialog.dismiss() })
+    //showAgeDialog({ dialog, which -> dialog.dismiss() })
     readFromCard()
   }
 

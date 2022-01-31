@@ -166,12 +166,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       loadProgress.dismiss()
     }
 
-    // Add DES service listeners
+/*    // Add DES service listeners
     addDesServiceListeners()
     // to be safe init SAM when activity is launched
     mainViewModel.generateProtoFile()
     // InitializeSAM
-    mainViewModel.initSAM()
+    mainViewModel.initSAM()*/
   }
 
   private suspend fun renderFragment() {
@@ -451,5 +451,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     // Perform Write action with the UI given by the Service
     mainViewModel.writeSerialized(json)
+
+    // find a better place for this
+    finish()
   }
 }
