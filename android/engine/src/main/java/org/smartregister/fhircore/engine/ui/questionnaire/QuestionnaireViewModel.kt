@@ -157,6 +157,7 @@ constructor(
         // val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         val patient =
           Patient().apply {
+            id = UUID.randomUUID().toString()
             name =
               listOf(
                 HumanName().apply {
@@ -186,14 +187,14 @@ constructor(
                   ?.valueCoding
                   ?.code
               )
-            birthDate =
+              birthDate =
               Calendar.getInstance().run {
                 add(
                   Calendar.MONTH,
                   -(questionnaireResponse
-                      .find("38896946-7046-42f0-dabd-6ed855965a38")
-                      ?.answer
-                      ?.get(0)!!
+                    .find("38896946-7046-42f0-dabd-6ed855965a38")
+                    ?.answer
+                    ?.get(0)!!
                     .valueIntegerType
                     .value)
                 )
@@ -482,6 +483,7 @@ constructor(
 
     val patient =
       Patient().apply {
+        id = questionnaireResponse.subject.extractId()
         name =
           listOf(
             HumanName().apply {
@@ -523,17 +525,13 @@ constructor(
           }
       }
 
-    val name = patient.extractName()
-    val gender = patient.extractGender(context)?.first() ?: ""
-    val age = patient.extractAge()
-
     val patientNfcItem =
       patient?.let {
         PatientNfcItem(
           patientId = it.logicalId,
           // identifier = dto.identifierFirstRep.value ?: "",
           firstName = it.extractName(),
-          gender = it.gender.toString(),
+          gender = (it.extractGender(context)?.first() ?: "").toString(),
           age = it.extractAge(),
           lastName = "",
           middleName = "",
