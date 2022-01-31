@@ -31,8 +31,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
@@ -108,13 +106,6 @@ class QuestPatientDetailActivity :
 
   private fun launchTestResults(@StringRes id: Int) {
     when (id) {
-      R.string.test_results ->
-        startActivity(
-          Intent(this, SimpleDetailsActivity::class.java).apply {
-            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-          }
-        )
-      R.string.run_cql -> runCql()
       R.string.edit_patient_info ->
         startActivity(
           Intent(this, QuestionnaireActivity::class.java)
@@ -136,27 +127,6 @@ class QuestPatientDetailActivity :
       .registrationForm
   }
 
-  fun runCql() {
-    val progress = AlertDialogue.showProgressAlert(this, R.string.loading)
-
-    patientViewModel
-      .runCqlFor(patientId, this)
-      .observe(
-        this,
-        {
-          if (it?.isNotBlank() == true) {
-            progress.dismiss()
-
-            AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_log))
-            // show separate alert for output resources generated
-            it.substringAfter(OUTPUT_PARAMETER_KEY, "").takeIf { it.isNotBlank() }?.let {
-              AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_output))
-            }
-          }
-        }
-      )
-  }
-
   // TODO https://github.com/opensrp/fhircore/issues/961
   // allow handling the data back and forth between activities via workflow or config
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -166,7 +136,7 @@ class QuestPatientDetailActivity :
       if (configurationRegistry.appId == "g6pd") {
         data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
           val response =
-            FhirContext.forR4().newJsonParser().parseResource(it) as QuestionnaireResponse
+            FhirContext.forR4Cached().newJsonParser().parseResource(it) as QuestionnaireResponse
           response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
             startActivity(
               Intent(this, SimpleDetailsActivity::class.java).apply {
