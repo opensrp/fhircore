@@ -168,6 +168,9 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun onResume() {
     super.onResume()
+
+    addDesServiceListeners()
+
     // Event that prompt only once to be able to know what has just happen with the card reader
     // This consumption will be used if the end-user want to use the Read/Write Activities
     // from the DESFire Service, so that the event can be consume inside the end-user app.
