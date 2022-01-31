@@ -105,5 +105,4 @@ internal class OtpViewModelTest : RobolectricTest() {
     otpViewModel.onPinConfirmed()
     Assert.assertEquals(otpViewModel.navigateToHome.value, true)
   }
-
 }

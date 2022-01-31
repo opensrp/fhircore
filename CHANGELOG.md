@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Patient details show height, weight and BMI post computing BMI
 - ANC | Activate language switcher on profile page
 - ANC | Implement vital signs observation extraction from questionnaires
+- ANC | Login Add OTP/Pin Login for eCBIS config only
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
