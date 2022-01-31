@@ -25,10 +25,8 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Calendar
-import java.util.Date
-import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,8 +49,13 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.questionnaireResponse
+import org.smartregister.fhircore.engine.nfc.main.AssistanceVisit
+import org.smartregister.fhircore.engine.nfc.main.AssistanceVisitNfcModel
+import org.smartregister.fhircore.engine.nfc.main.PatientNfcItem
+import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitData
+import org.smartregister.fhircore.engine.nfc.main.getAssistanceVisitQRAnswersToNfcMap
 import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -60,7 +63,10 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
@@ -69,6 +75,8 @@ import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.*
 
 @HiltViewModel
 open class QuestionnaireViewModel
@@ -87,7 +95,7 @@ constructor(
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
   }
 
-  val extractionProgress = MutableLiveData<Boolean>()
+  val extractionProgress = MutableLiveData<Pair<Boolean, QuestionnaireResponse>>()
 
   var editQuestionnaireResponse: QuestionnaireResponse? = null
 
@@ -149,6 +157,7 @@ constructor(
         // val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         val patient =
           Patient().apply {
+            id = UUID.randomUUID().toString()
             name =
               listOf(
                 HumanName().apply {
@@ -178,14 +187,14 @@ constructor(
                   ?.valueCoding
                   ?.code
               )
-            birthDate =
+              birthDate =
               Calendar.getInstance().run {
                 add(
                   Calendar.MONTH,
                   -(questionnaireResponse
-                      .find("38896946-7046-42f0-dabd-6ed855965a38")
-                      ?.answer
-                      ?.get(0)!!
+                    .find("38896946-7046-42f0-dabd-6ed855965a38")
+                    ?.answer
+                    ?.get(0)!!
                     .valueIntegerType
                     .value)
                 )
@@ -250,7 +259,9 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
       }
 
-      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+      viewModelScope.launch(Dispatchers.Main) {
+        extractionProgress.postValue(Pair(true, questionnaireResponse))
+      }
     }
   }
 
@@ -387,5 +398,153 @@ constructor(
     cal.set(Calendar.DAY_OF_YEAR, 1)
     cal.set(Calendar.MONTH, 1)
     return cal.time
+  }
+
+  fun getAssistanceVisitNfcJson(questionnaireResponse: QuestionnaireResponse): String {
+
+    val _nextVisitDays =
+      questionnaireResponse
+        .find("96cb0f16-fbf5-444d-b590-3de84329fbe2")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueIntegerType
+        ?.value
+        ?.toInt()!!
+
+    val _counselType =
+      questionnaireResponse
+        .find("7b2fc90e-ecfa-4c0e-847a-c0467baf2583")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val _communicationMonitoring =
+      questionnaireResponse
+        .find("b8bb5af1-f83d-4b6a-84f9-32969696fc57")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val _exit =
+      questionnaireResponse
+        .find("40dafb52-eb4f-42e0-f380-ae7ff5efbbb1")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val _exitOption =
+      questionnaireResponse
+        .find("3014a4c0-5ef2-4e73-9836-6ee095a69312")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val _rationType =
+      questionnaireResponse
+        .find("519c33cd-a36f-485d-ffc0-ab49901a3046")
+        ?.answer
+        ?.firstOrNull()
+        ?.valueCoding
+        ?.code
+
+    val _date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    val assistanceVisitQRAnswersToNfcMap = getAssistanceVisitQRAnswersToNfcMap()
+
+    val assistanceItem =
+      AssistanceVisit(
+        patientId = "4c6e394d-2e0a-42a7-9628-ac552c83eb84",
+        visitNumber = 1,
+        date = _date,
+        timestamp = System.currentTimeMillis().toString(),
+        rusfAvailable = false,
+        rationType = _rationType!!,
+        nextVisitDays = _nextVisitDays,
+        nextVisitDate = DateUtils.addDays(_date, _nextVisitDays, "yyyy-MM-dd"),
+        counselType =
+          if (_counselType != null) assistanceVisitQRAnswersToNfcMap.get(_counselType)!! else "",
+        communicationMonitoring =
+          if (_communicationMonitoring != null)
+            assistanceVisitQRAnswersToNfcMap.get(_communicationMonitoring)!!
+          else "",
+        exit = (_exit ?: false) as Boolean,
+        exitOption =
+          if (_exitOption != null) assistanceVisitQRAnswersToNfcMap.get(_exitOption)!! else ""
+      )
+    val assistanceVisitNfcModel =
+      AssistanceVisitNfcModel(asv = getAssistanceVisitData(assistanceItem))
+    return Gson().toJson(assistanceVisitNfcModel)
+  }
+
+  fun getChildRegNfcJson(questionnaireResponse: QuestionnaireResponse, context: Context): String {
+
+    val patient =
+      Patient().apply {
+        id = questionnaireResponse.subject.extractId()
+        name =
+          listOf(
+            HumanName().apply {
+              given.add(
+                questionnaireResponse
+                  .find("f0361e64-db57-495a-8c82-fa6576e84f74")
+                  ?.answer
+                  ?.get(0)
+                  ?.valueStringType
+              )
+              family =
+                questionnaireResponse
+                  .find("007eadd1-3929-4786-803a-72df7a11735b")
+                  ?.answer
+                  ?.get(0)
+                  ?.valueStringType
+                  ?.toString()
+            }
+          )
+        active = true
+        gender =
+          Enumerations.AdministrativeGender.fromCode(
+            questionnaireResponse
+              .find("23e7f371-6996-417e-af8c-6df395ba04e1")
+              ?.answer
+              ?.get(0)
+              ?.valueCoding
+              ?.code
+          )
+        birthDate =
+          Calendar.getInstance().run {
+            add(
+              Calendar.MONTH,
+              -(questionnaireResponse.find("38896946-7046-42f0-dabd-6ed855965a38")?.answer?.get(0)!!
+                .valueIntegerType
+                .value)
+            )
+            time
+          }
+      }
+
+    val patientNfcItem =
+      patient?.let {
+        PatientNfcItem(
+          patientId = it.logicalId,
+          // identifier = dto.identifierFirstRep.value ?: "",
+          firstName = it.extractName(),
+          gender = (it.extractGender(context)?.first() ?: "").toString(),
+          age = it.extractAge(),
+          lastName = "",
+          middleName = "",
+          birthDate = "",
+          caretakerName = "",
+          caretakerRelationship = "",
+          village = "",
+          healthCenter = "",
+          beneficiaryGroup = "",
+          registrationDate = "",
+          creationDate = ""
+        )
+      }
+    return Gson().toJson(patientNfcItem)
   }
 }

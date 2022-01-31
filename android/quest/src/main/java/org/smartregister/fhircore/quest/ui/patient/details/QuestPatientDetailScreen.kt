@@ -237,7 +237,9 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
         // Responses section
         Text(
-          text = stringResource(id = R.string.visit_history) + " (${testResults?.size?.toString() ?: ""})",
+          text =
+            stringResource(id = R.string.visit_history) +
+              " (${testResults?.size?.toString() ?: ""})",
           color = colorResource(id = R.color.grayText),
           fontSize = 16.sp,
           fontWeight = FontWeight.Bold

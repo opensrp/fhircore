@@ -250,7 +250,6 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   private fun writeToCard(isDelete: Boolean = false) {
-    openedReadWriteActivity = true
     mainViewModel.generateProtoFile()
     // InitializeSAM
     mainViewModel.initSAM()
@@ -358,6 +357,4 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
     )
   }
-
-
 }

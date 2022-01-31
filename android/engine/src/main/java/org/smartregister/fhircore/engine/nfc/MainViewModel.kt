@@ -125,60 +125,13 @@ class MainViewModel : ViewModel() {
     // TODO build this dynamically
     addProtobufField(
       messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "patient_id", 1)
+      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "asv", 1)
     )
     addProtobufField(
       messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "first_name", 2)
+      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "atv", 2)
     )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "last_name", 3)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "middle_name", 4)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "age", 5)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "birth_date", 6)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "gender", 8)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "caretaker_name", 9)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "caretaker_relationship", 10)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "village", 11)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "health_center", 12)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "beneficiary_group", 13)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "registration_date", 14)
-    )
-    addProtobufField(
-      messageBuilder,
-      ProtobufFieldDesc(null, ProtobufFieldDesc.ProtobufType.STRING, "creation_date", 15)
-    )
+
     // Add here each line to add in the desc file
     // the last parameter is th id that must be different for each field
     dynamicSchema.addMessageDefinition(messageBuilder.build())

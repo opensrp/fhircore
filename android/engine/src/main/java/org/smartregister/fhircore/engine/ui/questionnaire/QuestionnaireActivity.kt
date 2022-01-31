@@ -22,11 +22,16 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
+import com.famoco.desfireservicelib.CardReaderState
+import com.famoco.desfireservicelib.DESFireServiceAccess
+import com.famoco.desfireservicelib.ServiceConnectionState
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA_QUESTIONNAIRE_JSON_STRING
@@ -36,6 +41,8 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -43,6 +50,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.nfc.MainViewModel
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -77,6 +85,19 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   var editMode = false
   lateinit var fragment: FhirCoreQuestionnaireFragment
   private val parser = FhirContext.forR4Cached().newJsonParser()
+  private var formName: String = ""
+
+  private val mainViewModel: MainViewModel by viewModels()
+  private lateinit var eventJob: Job
+  private var desFireServiceObserversAdded = false
+  private val desFireServiceConnectionStateObserver: Observer<in ServiceConnectionState> =
+      Observer {
+    val state = it.name
+  }
+  private val cardReaderStateObserver: Observer<in CardReaderState> = Observer {
+    val cardReaderState = it.name
+  }
+  private var readResultObserver: Observer<in Array<String>>? = null
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -100,7 +121,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
       editMode = intent.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
 
-      val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+      formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
       // form is either name of form in asset/form-config or questionnaire-id
       // load from assets and get questionnaire or if not found build it from questionnaire
       questionnaireConfig =
@@ -144,6 +165,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
       loadProgress.dismiss()
     }
+
+/*    // Add DES service listeners
+    addDesServiceListeners()
+    // to be safe init SAM when activity is launched
+    mainViewModel.generateProtoFile()
+    // InitializeSAM
+    mainViewModel.initSAM()*/
   }
 
   private suspend fun renderFragment() {
@@ -151,7 +179,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       FhirCoreQuestionnaireFragment().apply {
         val questionnaireString = parser.encodeResourceToString(questionnaire)
 
-        // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
+        // Generate Fragment bundle arguments.
+        // is the Questionnaire & QuestionnaireResponse
         arguments =
           when {
             clientIdentifier == null -> {
@@ -246,8 +275,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       this,
       { result ->
         saveProcessingAlertDialog.dismiss()
-        if (result) {
-          postSaveSuccessful()
+        if (result.first) {
+          postSaveSuccessful(result.second)
         } else {
           Timber.e("An error occurred during extraction")
         }
@@ -255,8 +284,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     )
   }
 
-  open fun postSaveSuccessful() {
-    finish()
+  open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
+    saveToNfc(questionnaireResponse)
+    // finish()
   }
 
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
@@ -294,6 +324,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
+    const val ASSISTANCE_VISIT_FORM = "assistance-visit"
+    const val ANTHRO_FOLLOWING_VISIT_FORM = "anthro-following-visit"
+    const val CODA_CHILD_REG_FORM = "wfp-coda-poc-child-registration"
 
     fun Intent.questionnaireEditMode() = this.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
@@ -358,5 +391,68 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         R.string.questionnaire_alert_back_pressed_button_title
       )
     }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    // Event that prompt only once to be able to know what has just happen with the card reader
+    // This consumption will be used if the end-user want to use the Read/Write Activities
+    // from the DESFire Service, so that the event can be consume inside the end-user app.
+    eventJob =
+      lifecycleScope.launchWhenStarted {
+        DESFireServiceAccess.eventFlow.collect { event ->
+          Toast.makeText(baseContext, event.name, Toast.LENGTH_SHORT).show()
+        }
+      }
+    eventJob.start()
+  }
+
+  private fun addDesServiceListeners() {
+    // Check state connection with the service
+    desFireServiceObserversAdded = true
+    DESFireServiceAccess.DESFireServiceConnectionState.observe(
+      this,
+      desFireServiceConnectionStateObserver
+    )
+
+    // Check if card interaction status
+    DESFireServiceAccess.cardReaderState.observe(this, cardReaderStateObserver)
+
+    if (readResultObserver == null) {
+      readResultObserver =
+        Observer { result ->
+          if (!result.isNullOrEmpty()) {
+            val stringBuilder = StringBuilder().append("")
+            result.forEach { stringBuilder.append(it) }
+            val readResult = stringBuilder.toString()
+            this@QuestionnaireActivity.finish() // quit questinnaire activity
+          }
+        }
+    }
+
+    // After reading the card, the end-user will need the content that has been read on the card
+    DESFireServiceAccess.readResult.observe(this, readResultObserver!!)
+  }
+  private fun saveToNfc(questionnaireResponse: QuestionnaireResponse) {
+    var json: String = "{}"
+    when (formName) {
+      ASSISTANCE_VISIT_FORM ->
+        json = questionnaireViewModel.getAssistanceVisitNfcJson(questionnaireResponse)
+      CODA_CHILD_REG_FORM ->
+        json = questionnaireViewModel.getChildRegNfcJson(questionnaireResponse, this)
+    }
+    writeToCard(json)
+  }
+
+  private fun writeToCard(json: String) {
+    mainViewModel.generateProtoFile()
+    // InitializeSAM
+    mainViewModel.initSAM()
+
+    // Perform Write action with the UI given by the Service
+    mainViewModel.writeSerialized(json)
+
+    // find a better place for this
+    finish()
   }
 }
