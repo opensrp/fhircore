@@ -38,11 +38,11 @@ class OtpSetupActivity : BaseMultiLanguageActivity() {
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     otpViewModel.apply {
-      loadData()
+      loadData(isSetup = true)
       val optSetupActivity = this@OtpSetupActivity
-      navigateToHome.observe(optSetupActivity, { optSetupActivity.moveToHome() })
-      navigateToSettings.observe(optSetupActivity, { optSetupActivity.moveToSettings() })
-      pin.observe(optSetupActivity, { it.let { enableSetPin.postValue(it.length > 3) } })
+      navigateToHome.observe(optSetupActivity) { optSetupActivity.moveToHome() }
+      navigateToSettings.observe(optSetupActivity) { optSetupActivity.moveToSettings() }
+      pin.observe(optSetupActivity) { it.let { enableSetPin.postValue(it.length > 3) } }
     }
     setContent { AppTheme { OtpSetupScreen(otpViewModel) } }
   }

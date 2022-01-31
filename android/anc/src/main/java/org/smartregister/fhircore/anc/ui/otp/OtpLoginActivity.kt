@@ -38,10 +38,10 @@ class OtpLoginActivity : BaseMultiLanguageActivity() {
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     otpViewModel.apply {
       val optLoginActivity = this@OtpLoginActivity
-      loadData()
-      navigateToHome.observe(optLoginActivity, { optLoginActivity.moveToHome() })
-      launchDialPad.observe(optLoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
-      navigateToLogin.observe(optLoginActivity, { optLoginActivity.moveToLoginViaUsername() })
+      loadData(isSetup = false)
+      navigateToHome.observe(optLoginActivity) { optLoginActivity.moveToHome() }
+      launchDialPad.observe(optLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
+      navigateToLogin.observe(optLoginActivity) { optLoginActivity.moveToLoginViaUsername() }
     }
     setContent { AppTheme { OtpLoginScreen(otpViewModel) } }
   }

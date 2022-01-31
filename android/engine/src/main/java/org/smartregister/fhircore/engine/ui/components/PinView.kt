@@ -93,36 +93,26 @@ fun PinView(
       } else {
         keyboard?.hide()
       }
-      //      if (it.length <= otpLength) {
-      //        when {
-      //          it.isEmpty() -> {
-      //            keyboard?.show()
-      //          }
-      //          it.length < otpLength -> {
-      //            setEditValue(it)
-      //            keyboard?.show()
-      //          }
-      //          else -> {
-      //            setEditValue(it)
-      //            onPinChanged(it)
-      //            keyboard?.hide()
-      //          }
-      //        }
-      //      }
     },
-    modifier = Modifier.size(0.dp).focusRequester(focusRequester),
+    modifier = Modifier
+      .size(0.dp)
+      .focusRequester(focusRequester),
     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
   )
   Row(
     modifier =
-      Modifier.fillMaxWidth().testTag(PIN_VIEW)
-        .background(color = colorResource(id = R.color.cardview_light_background)),
+    Modifier
+      .fillMaxWidth()
+      .testTag(PIN_VIEW)
+      .background(color = colorResource(id = R.color.cardview_light_background)),
     horizontalArrangement = Arrangement.Center
   ) {
     (0 until otpLength).map { index ->
       OtpCell(
         modifier =
-          Modifier.size(40.dp).clickable {
+        Modifier
+          .size(40.dp)
+          .clickable {
             focusRequester.requestFocus()
             keyboard?.show()
           },
@@ -148,6 +138,9 @@ fun OtpCell(
   val (cursorSymbol, setCursorSymbol) = remember { mutableStateOf("") }
   var borderColor = colorResource(id = R.color.darkGrayText)
   var dottedBg = colorResource(id = R.color.darkGrayText)
+  if(value.length == 4){
+    dottedBg = colorResource(id = R.color.colorSuccess)
+  }
   if (showError) {
     borderColor = colorResource(id = R.color.colorError)
     dottedBg = colorResource(id = R.color.colorErrorDull)
@@ -178,7 +171,9 @@ fun OtpCell(
       //        )
       //      } else {
       Card(
-        modifier = Modifier.size(30.dp).align(Alignment.Center),
+        modifier = Modifier
+          .size(30.dp)
+          .align(Alignment.Center),
         elevation = 1.dp,
         shape = RoundedCornerShape(15.dp),
         border = BorderStroke(width = 1.dp, color = borderColor),
@@ -188,13 +183,17 @@ fun OtpCell(
           text = if (isCursorVisible) cursorSymbol else "",
           fontSize = 18.sp,
           style = MaterialTheme.typography.body1,
-          modifier = Modifier.wrapContentSize().align(Alignment.Center)
+          modifier = Modifier
+            .wrapContentSize()
+            .align(Alignment.Center)
         )
       }
       //      }
     } else {
       Card(
-        modifier = Modifier.fillMaxSize().align(Alignment.Center),
+        modifier = Modifier
+          .fillMaxSize()
+          .align(Alignment.Center),
         elevation = 1.dp,
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(width = 1.dp, color = borderColor),
@@ -203,7 +202,9 @@ fun OtpCell(
         Text(
           text = if (isCursorVisible) cursorSymbol else value,
           style = MaterialTheme.typography.body1,
-          modifier = Modifier.wrapContentSize().align(Alignment.Center)
+          modifier = Modifier
+            .wrapContentSize()
+            .align(Alignment.Center)
         )
       }
     }
@@ -251,7 +252,10 @@ fun OTPTextFields(modifier: Modifier = Modifier, length: Int, onFilled: (code: S
     (0 until length).forEach { index ->
       OutlinedTextField(
         modifier =
-          Modifier.width(50.dp).height(50.dp).focusOrder(focusRequester = focusRequesters[index]) {
+        Modifier
+          .width(50.dp)
+          .height(50.dp)
+          .focusOrder(focusRequester = focusRequesters[index]) {
             focusRequesters[index + 1].requestFocus()
           },
         textStyle =

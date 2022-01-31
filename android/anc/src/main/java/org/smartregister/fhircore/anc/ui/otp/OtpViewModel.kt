@@ -58,12 +58,6 @@ constructor(
   val pin: LiveData<String>
     get() = _pin
 
-  lateinit var savedOtp: String
-
-  private val _loginError = MutableLiveData<String>()
-  val loginError: LiveData<String>
-    get() = _loginError
-
   private val _showError = MutableLiveData(false)
   val showError
     get() = _showError
@@ -72,9 +66,13 @@ constructor(
   val enableSetPin
     get() = _enableSetPin
 
-  fun loadData() {
+  lateinit var savedOtp: String
+  var isSetupPage: Boolean = false
+
+  fun loadData(isSetup: Boolean = false) {
     sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "false")
     savedOtp = sharedPreferences.read(OTP_PIN, "").toString()
+    isSetupPage = isSetup
   }
 
   fun onPinConfirmed() {
@@ -94,9 +92,10 @@ constructor(
 
     if (newPin.length == 4) {
       val pinMatched = newPin.equals(savedOtp, false)
+      enableSetPin.value = true
       showError.value = !pinMatched
       _pin.postValue(newPin)
-      if (pinMatched) {
+      if (pinMatched && !isSetupPage) {
         _navigateToHome.value = true
       }
       Log.e("aw", "pin changed " + newPin)
