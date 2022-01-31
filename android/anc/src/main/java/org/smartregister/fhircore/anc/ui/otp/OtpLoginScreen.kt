@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.otp
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -115,10 +114,7 @@ fun OtpLoginPage(
       },
       actions = {
         IconButton(
-          onClick = {
-            showMenu = !showMenu
-            Log.e("aw", "onMenuToggle")
-          },
+          onClick = { showMenu = !showMenu },
           modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON)
         ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
         DropdownMenu(
@@ -129,7 +125,6 @@ fun OtpLoginPage(
           DropdownMenuItem(
             onClick = {
               showMenu = false
-              Log.e("aw", "onMenuItem Clicked should action now")
               onMenuLoginClicked()
             },
             modifier = Modifier.testTag(TOOLBAR_MENU_LOGIN)

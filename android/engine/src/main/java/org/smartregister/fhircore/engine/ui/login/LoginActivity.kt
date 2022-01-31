@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.ui.login
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
@@ -64,7 +63,6 @@ class LoginActivity :
       configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
     }
 
-    Log.e("aw", "login in here")
     // Check if Otp enabled and stored then move to otp login
     val isOtpEnabled = loginViewModel.loginViewConfiguration.value?.enableOtp ?: false
     val stayUserNamePasswordLogin =

@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.ui.otp
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -77,7 +76,6 @@ constructor(
 
   fun onPinConfirmed() {
     val newPin = pin.value ?: ""
-    Log.e("aw", "pin Confirmed " + newPin)
 
     if (newPin.length == 4) {
       _showError.postValue(false)
@@ -98,14 +96,12 @@ constructor(
       if (pinMatched && !isSetupPage) {
         _navigateToHome.value = true
       }
-      Log.e("aw", "pin changed " + newPin)
     } else {
       showError.value = false
     }
   }
 
   fun onMenuLoginClicked() {
-    Log.e("aw", "onMenuLoginClicked")
     sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "true")
     _navigateToLogin.value = true
   }
@@ -116,7 +112,6 @@ constructor(
   }
 
   fun onMenuSettingClicked() {
-    Log.e("aw", "onMenuSettingClicked")
     sharedPreferences.remove(APP_ID_CONFIG)
     _navigateToSettings.value = true
   }

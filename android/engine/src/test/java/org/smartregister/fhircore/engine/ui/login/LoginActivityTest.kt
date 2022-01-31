@@ -62,7 +62,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
-    loginViewModel.navigateToHome(false)
+    loginViewModel.navigateToHome()
 
     verify { loginService.navigateToHome(canSetOtp = false) }
   }
