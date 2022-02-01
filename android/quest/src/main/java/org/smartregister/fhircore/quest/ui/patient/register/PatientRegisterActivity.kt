@@ -16,11 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.app.ActivityManager
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.EditText
@@ -37,7 +39,6 @@ import com.famoco.desfireservicelib.DESFireServiceAccess
 import com.famoco.desfireservicelib.ServiceConnectionState
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
@@ -58,6 +59,8 @@ import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
+import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
@@ -96,6 +99,14 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     addDesServiceListeners()
 
     // loadLocalDevWfpCodaFiles()
+
+    val rt = Runtime.getRuntime()
+    val maxMemory = rt.maxMemory()
+    Log.v("onCreate", "maxMemory:" + java.lang.Long.toString(maxMemory))
+
+    val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+    val memoryClass = am.memoryClass
+    Log.v("onCreate", "memoryClass:" + Integer.toString(memoryClass))
   }
 
   fun loadLocalDevWfpCodaFiles() {
