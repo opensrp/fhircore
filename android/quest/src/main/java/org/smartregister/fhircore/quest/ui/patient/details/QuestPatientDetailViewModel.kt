@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isPatient
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -51,12 +52,14 @@ constructor(
   val patientRepository: PatientRepository,
   val defaultRepository: DefaultRepository,
   val patientItemMapper: PatientItemMapper,
-  val libraryEvaluator: LibraryEvaluator
+  val libraryEvaluator: LibraryEvaluator,
+  val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
 
   val patientItem = MutableLiveData<PatientItem>()
   val questionnaireConfigs = MutableLiveData<List<QuestionnaireConfig>>()
   val testResults = MutableLiveData<List<Pair<QuestionnaireResponse, Questionnaire>>>()
+  val statusAndStatusObs = MutableLiveData<List<Observation>>()
   val onBackPressClicked = MutableLiveData(false)
   val onMenuItemClicked = MutableLiveData(-1)
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
@@ -83,6 +86,10 @@ constructor(
 
   fun getAllResults(patientId: String) {
     viewModelScope.launch { testResults.postValue(patientRepository.fetchTestResults(patientId)) }
+  }
+
+  fun getPatientStatusAndStatusTag(patientId: String) {
+    viewModelScope.launch(dispatcherProvider.io()) { statusAndStatusObs.postValue(patientRepository.fetchStatusAndStatusTagObs(patientId)) }
   }
 
   suspend fun getAllDataFor(patientId: String): List<Resource> {

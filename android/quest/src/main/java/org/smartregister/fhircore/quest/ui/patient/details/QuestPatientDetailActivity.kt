@@ -71,6 +71,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
       getDemographics(patientId)
       getAllResults(patientId)
       getAllForms(this@QuestPatientDetailActivity)
+      getPatientStatusAndStatusTag(patientId)
     }
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }

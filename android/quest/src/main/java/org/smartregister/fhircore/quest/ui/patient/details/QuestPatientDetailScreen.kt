@@ -74,6 +74,7 @@ const val FORM_ITEM = "formItemTag"
 const val RESULT_ITEM = "resultItemTag"
 const val FORM_CONTAINER_ITEM = "formItemContainerTag"
 const val RESULT_CONTAINER_ITEM = "resultItemContainerTag"
+const val STATUS_CONTAINER_ITEM = "statusItemContainerTag"
 
 @Composable
 fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
@@ -137,10 +138,11 @@ fun ResultItem(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier =
-      Modifier.fillMaxWidth()
-        .padding(12.dp)
-        .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult.first) }
-        .testTag(RESULT_ITEM)
+    Modifier
+      .fillMaxWidth()
+      .padding(12.dp)
+      .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult.first) }
+      .testTag(RESULT_ITEM)
   ) {
     Text(
       text = (questPatientDetailViewModel.fetchResultItemLabel(testResult)
@@ -167,9 +169,10 @@ fun FormItem(
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
     modifier =
-      Modifier.fillMaxWidth()
-        .clickable { questPatientDetailViewModel.onFormItemClickListener(questionnaireConfig) }
-        .testTag(FORM_ITEM)
+    Modifier
+      .fillMaxWidth()
+      .clickable { questPatientDetailViewModel.onFormItemClickListener(questionnaireConfig) }
+      .testTag(FORM_ITEM)
   ) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
       Text(
@@ -187,15 +190,17 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)
+  val statusAndStatusTagObs by questPatientDetailViewModel.statusAndStatusObs.observeAsState(null)
 
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
       Toolbar(questPatientDetailViewModel)
       Column(
         modifier =
-          Modifier.fillMaxWidth()
-            .background(color = colorResource(id = R.color.colorPrimary))
-            .padding(12.dp)
+        Modifier
+          .fillMaxWidth()
+          .background(color = colorResource(id = R.color.colorPrimary))
+          .padding(12.dp)
       ) {
         Text(
           text =
@@ -210,15 +215,18 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
       // Forms section
       Column(
         modifier =
-          Modifier.fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(start = 12.dp, end = 12.dp)
+        Modifier
+          .fillMaxSize()
+          .verticalScroll(rememberScrollState())
+          .padding(start = 12.dp, end = 12.dp)
       ) {
         Spacer(Modifier.height(24.dp))
         Card(
           elevation = 3.dp,
           backgroundColor = colorResource(id = R.color.white),
-          modifier = Modifier.fillMaxWidth().testTag(FORM_CONTAINER_ITEM)
+          modifier = Modifier
+            .fillMaxWidth()
+            .testTag(FORM_CONTAINER_ITEM)
         ) {
           Column(modifier = Modifier.padding(16.dp)) {
             forms?.let { allForms ->
@@ -235,6 +243,53 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
         Spacer(Modifier.height(24.dp))
 
+        // Status section
+        Text(
+          text = "Status",
+          color = colorResource(id = R.color.grayText),
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Bold
+        )
+        Card(
+          elevation = 4.dp,
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+            .testTag(STATUS_CONTAINER_ITEM)
+        ) {
+          
+          Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+            verticalAlignment = Alignment.Bottom
+          ) {
+            if (statusAndStatusTagObs != null && statusAndStatusTagObs!!.size > 0) {
+              statusAndStatusTagObs?.get(0)?.let {
+                Text(
+                  text = it.valueStringType.value,
+                  color = colorResource(id = R.color.black),
+                  fontSize = 16.sp,
+                  fontWeight = FontWeight.Bold
+                )
+              }
+            }
+
+            if (statusAndStatusTagObs != null && statusAndStatusTagObs!!.size > 1) {
+              statusAndStatusTagObs?.get(1)?.let {
+                Text(
+                  text = it.valueStringType.value,
+                  color = colorResource(id = R.color.grayText),
+                  fontSize = 16.sp,
+                  fontWeight = FontWeight.Bold
+                )
+              }
+            }
+          }
+
+        }
+
+        Spacer(Modifier.height(24.dp))
+
         // Responses section
         Text(
           text = stringResource(id = R.string.visit_history) + " (${testResults?.size?.toString() ?: ""})",
@@ -244,7 +299,10 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         )
         Card(
           elevation = 4.dp,
-          modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM)
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+            .testTag(RESULT_CONTAINER_ITEM)
         ) {
           Column {
             testResults?.let {
