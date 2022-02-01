@@ -96,7 +96,7 @@ jobs:
           path: android          
           
       - name: Grant read permission for keyfile
-        run: chmod 644 /home/runner/work/fhircore/fhircore/android/keystore.jks
+        run: chmod 644 keystore.jks
         working-directory: android     
       
       - name: Grant execute permission for gradlew
@@ -136,7 +136,7 @@ jobs:
           path: android
           
       - name: Grant read permission for keyfile
-        run: chmod 644 /home/runner/work/fhircore/fhircore/android/keystore.jks
+        run: chmod 644 keystore.jks
         working-directory: android     
       
       - name: Grant execute permission for gradlew
