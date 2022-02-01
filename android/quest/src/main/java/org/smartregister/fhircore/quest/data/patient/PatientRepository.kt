@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.data.patient
 
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
@@ -40,6 +41,7 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.activePatientFilter
+import org.smartregister.fhircore.engine.util.extension.appTag
 import org.smartregister.fhircore.engine.util.extension.appTagFilter
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -138,6 +140,7 @@ constructor(
   private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
     fhirEngine.search {
       filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" })
+      filter(TokenClientParam("_tag"), { value = of(Coding("http://fhir.ona.io", "000100", "")) })
       appTagFilter(configurationRegistry.appId)
     }
 
@@ -172,8 +175,6 @@ constructor(
       }
     }
 
-
-
   suspend fun fetchStatusAndStatusTagObs(
     patientId: String
   ): List<Observation> {
@@ -205,6 +206,27 @@ constructor(
       }
 
       Collections.unmodifiableList(mm)
+    }
+  }
+
+  suspend fun fetchStatusObs(
+    patientId: String
+  ): Observation? {
+    return withContext(dispatcherProvider.io()) {
+      var statusObs : List<Observation> = fhirEngine.search {
+        filter(Observation.CODE, { value = of(Coding("https://smartregister.org/wfp-coda", "patient-status", "Patient status")) })
+        filter(Observation.SUBJECT, { value = "Patient/$patientId" })
+        appTagFilter(configurationRegistry.appId)
+      }
+
+      statusObs = statusObs.sortedByDescending { it.issued.time }
+
+      if (statusObs.size > 0) {
+        statusObs.first()
+      } else {
+        null
+      }
+
     }
   }
 }
