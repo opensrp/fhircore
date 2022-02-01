@@ -182,7 +182,8 @@ class QuestPatientDetailActivity :
       is QuestionnaireNavigationAction -> {
         resultItem?.let {
           val questionnaireResponse = resultItem.source.first
-          // The structure of questionnaire field is -> "questionnaire": "Questionnaire/3440/_history/20"
+          // The structure of questionnaire field is -> "questionnaire":
+          // "Questionnaire/3440/_history/20"
           val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
           val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
           startActivity(
