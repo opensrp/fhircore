@@ -5,9 +5,12 @@
     "navigationOptions": [
       {
         "id": "open_questionnaire",
+        "title": "Questionnaire",
+        "icon" : "",
         "action": {
           "type": "questionnaire",
-          "readyOnly": true
+          "form": "",
+          "readOnly": true
         }
       }
     ]
@@ -18,9 +21,12 @@
     "navigationOptions": [
       {
         "id": "open_test_details",
+        "title": "Test Details",
+        "icon" : "",
         "action": {
           "type": "test_details",
-          "readyOnly": true
+          "form": "",
+          "readOnly": true
         }
       }
     ]

@@ -23,7 +23,7 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Serializable
 @SerialName("test_details")
-data class TestDetailsNavigationAction(val form: String? = null, val readOnly: Boolean? = null) :
+data class TestDetailsNavigationAction(val form: String, val readOnly: Boolean) :
   NavigationAction()
 
 @Stable
