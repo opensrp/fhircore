@@ -22,9 +22,11 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -71,6 +73,11 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
       getDemographics(patientId)
       getAllResults(patientId)
       getAllForms(this@QuestPatientDetailActivity)
+      getPatientStatusAndStatusTag(patientId)
+
+      viewModelScope.launch(dispatcherProvider.io()) {
+        computeNextWorkflowStep(patientId)
+      }
     }
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }

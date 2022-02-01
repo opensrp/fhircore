@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -59,10 +58,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.ui.text.capitalize
+import java.util.Locale
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.engine.workflow.WorkflowProvider
 import org.smartregister.fhircore.quest.R
 
 const val TOOLBAR_TITLE = "toolbarTitle"
@@ -74,6 +76,7 @@ const val FORM_ITEM = "formItemTag"
 const val RESULT_ITEM = "resultItemTag"
 const val FORM_CONTAINER_ITEM = "formItemContainerTag"
 const val RESULT_CONTAINER_ITEM = "resultItemContainerTag"
+const val STATUS_CONTAINER_ITEM = "statusItemContainerTag"
 
 @Composable
 fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
@@ -187,6 +190,8 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)
+  val statusAndStatusTagObs by questPatientDetailViewModel.statusAndStatusObs.observeAsState(null)
+  val nextStep by questPatientDetailViewModel.nextWorkflowStep.observeAsState(null)
 
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
@@ -207,29 +212,101 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         )
       }
 
-      // Forms section
       Column(
         modifier =
-          Modifier.fillMaxSize()
+          Modifier.fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(start = 12.dp, end = 12.dp)
       ) {
         Spacer(Modifier.height(24.dp))
-        Card(
-          elevation = 3.dp,
-          backgroundColor = colorResource(id = R.color.white),
-          modifier = Modifier.fillMaxWidth().testTag(FORM_CONTAINER_ITEM)
-        ) {
-          Column(modifier = Modifier.padding(16.dp)) {
-            forms?.let { allForms ->
-              allForms.forEachIndexed { index, it ->
+
+        // START OF FORMS SECTION
+        forms?.let { allForms ->
+          val mappedForms =
+            HashMap<String, QuestionnaireConfig>().apply {
+              allForms.forEach { put(it.identifier, it) }
+            }
+
+          var formToShow: QuestionnaireConfig? = null
+
+          nextStep?.let {
+            when (it) {
+              WorkflowProvider.Step.ASSISTANCE_STEP_FIRST_VISIT ->
+                formToShow = mappedForms["assistance-visit"]
+              WorkflowProvider.Step.ASSISTANCE_STEP_FOLLOWING_VISIT ->
+                formToShow = mappedForms["assistance-visit"]
+              WorkflowProvider.Step.ANTHROPOMETRIC_STEP_FIRST_VISIT ->
+                formToShow = mappedForms["anthro-following-visit"]
+              WorkflowProvider.Step.ANTHROPOMETRIC_STEP_FOLLOWING_VISIT ->
+                formToShow = mappedForms["anthro-following-visit"]
+            }
+          }
+          /*
+          allForms.forEachIndexed { index, it ->
+            FormItem(it, questPatientDetailViewModel)
+            if (index < allForms.size.minus(1)) {
+              Spacer(Modifier.height(16.dp))
+            }
+          }*/
+
+          formToShow?.let {
+
+            // Forms section
+
+            Card(
+              elevation = 3.dp,
+              backgroundColor = colorResource(id = R.color.white),
+              modifier = Modifier.fillMaxWidth().testTag(FORM_CONTAINER_ITEM)
+            ) {
+              Column(modifier = Modifier.padding(16.dp)) {
                 FormItem(it, questPatientDetailViewModel)
-                if (index < allForms.size.minus(1)) {
-                  Spacer(Modifier.height(16.dp))
-                }
+                Spacer(Modifier.height(16.dp))
+              }
+                ?: Text(text = stringResource(id = R.string.loading_forms))
+            }
+
+            Spacer(Modifier.height(24.dp))
+          }
+        }
+        // END OF FORMS SECTION
+
+        // Status section
+        Text(
+          text = stringResource(R.string.status),
+          color = colorResource(id = R.color.grayText),
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Bold
+        )
+        Card(
+          elevation = 4.dp,
+          modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(STATUS_CONTAINER_ITEM)
+        ) {
+          Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp, horizontal = 20.dp),
+            verticalAlignment = Alignment.Bottom
+          ) {
+            if (statusAndStatusTagObs != null && statusAndStatusTagObs!!.size > 0) {
+              statusAndStatusTagObs?.get(0)?.let {
+                Text(
+                  text = it.valueStringType.value.capitalize(Locale.getDefault()),
+                  color = colorResource(id = R.color.black),
+                  fontSize = 16.sp,
+                  fontWeight = FontWeight.Bold
+                )
               }
             }
-              ?: Text(text = stringResource(id = R.string.loading_forms))
+
+            if (statusAndStatusTagObs != null && statusAndStatusTagObs!!.size > 1) {
+              statusAndStatusTagObs?.get(1)?.let {
+                Text(
+                  text = it.valueStringType.value,
+                  color = colorResource(id = R.color.grayText),
+                  fontSize = 16.sp,
+                  fontWeight = FontWeight.Bold
+                )
+              }
+            }
           }
         }
 

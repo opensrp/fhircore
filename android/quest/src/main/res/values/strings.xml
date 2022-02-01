@@ -28,4 +28,5 @@
     <string name="card_has_exisiting_data">The NFC card contains existing client information. New registration requires blank information. Erase card to proceed with registration</string>
     <string name="erase_card">Erase Card</string>
     <string name="visit_history">Visit History</string>
+    <string name="status">Status</string>
 </resources>

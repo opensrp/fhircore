@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.data.patient
 
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
@@ -23,12 +24,16 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
+import java.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
@@ -36,6 +41,7 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.activePatientFilter
+import org.smartregister.fhircore.engine.util.extension.appTag
 import org.smartregister.fhircore.engine.util.extension.appTagFilter
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -134,6 +140,7 @@ constructor(
   private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
     fhirEngine.search {
       filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" })
+      filter(TokenClientParam("_tag"), { value = of(Coding("http://fhir.ona.io", "000100", "")) })
       appTagFilter(configurationRegistry.appId)
     }
 
@@ -167,4 +174,59 @@ constructor(
         )
       }
     }
+
+  suspend fun fetchStatusAndStatusTagObs(
+    patientId: String
+  ): List<Observation> {
+    return withContext(dispatcherProvider.io()) {
+      var statusObs : List<Observation> = fhirEngine.search {
+        filter(Observation.CODE, { value = of(Coding("https://smartregister.org/wfp-coda", "patient-status", "Patient status")) })
+        filter(Observation.SUBJECT, { value = "Patient/$patientId" })
+        appTagFilter(configurationRegistry.appId)
+      }
+
+      statusObs = statusObs.sortedByDescending { it.issued.time }
+
+      var statusTagObs : List<Observation> = fhirEngine.search {
+        filter(Observation.CODE, { value = of(Coding("https://smartregister.org/wfp-coda", "patient-status-tag", "Patient status")) })
+        filter(Observation.SUBJECT, { value = "Patient/$patientId" })
+        appTagFilter(configurationRegistry.appId)
+      }
+
+      statusTagObs = statusTagObs.sortedByDescending { it.issued.time }
+
+      val mm = mutableListOf<Observation>()
+
+      if (statusObs.size > 0) {
+        mm.add(statusObs.first())
+      }
+
+      if (statusTagObs.size > 0) {
+        mm.add(statusTagObs.first())
+      }
+
+      Collections.unmodifiableList(mm)
+    }
+  }
+
+  suspend fun fetchStatusObs(
+    patientId: String
+  ): Observation? {
+    return withContext(dispatcherProvider.io()) {
+      var statusObs : List<Observation> = fhirEngine.search {
+        filter(Observation.CODE, { value = of(Coding("https://smartregister.org/wfp-coda", "patient-status", "Patient status")) })
+        filter(Observation.SUBJECT, { value = "Patient/$patientId" })
+        appTagFilter(configurationRegistry.appId)
+      }
+
+      statusObs = statusObs.sortedByDescending { it.issued.time }
+
+      if (statusObs.size > 0) {
+        statusObs.first()
+      } else {
+        null
+      }
+
+    }
+  }
 }
