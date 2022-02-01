@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadi
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.engine.workflow.WorkflowProvider
 import timber.log.Timber
 
 @HiltViewModel
@@ -192,8 +193,12 @@ constructor(
                 time
               }
           }
+        val statusObs = WorkflowProvider().createStatusObs(patient, "active")
         val bundle =
-          Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+          Bundle().apply {
+            addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+            addEntry(Bundle.BundleEntryComponent().apply { resource = statusObs })
+          }
 
         bundle.entry.forEach { bun ->
           // add organization to entities representing individuals in registration questionnaire
