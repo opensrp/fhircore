@@ -86,13 +86,13 @@
     <string name="enter_app_id">Enter Application ID</string>
     <string name="app_id_sample" translatable="false">E.g. anc, covax, g6pd, jnj, quest</string>
     <string name="load_configurations">LOAD CONFIGURATIONS</string>
-    <string name="fhir_core_app">FHIRCORE APP</string>
+    <string name="fhir_core_app" translatable="false">FHIRCORE APP</string>
     <string name="remember_app">Remember application</string>
     <string name="done">Done</string>
     <string name="replace_photo">Replace photo</string>
     <string name="take_photo">Take photo</string>
     <string name="edit">Edit</string>
     <string name="application_not_supported">Application %1$s not found</string>
-    <string name="eCBIS_app_name">eCBIS</string>
+    <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">username or password is invalid</string>
 </resources>

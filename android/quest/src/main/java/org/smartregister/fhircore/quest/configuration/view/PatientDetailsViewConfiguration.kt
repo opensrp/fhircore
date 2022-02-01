@@ -25,8 +25,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 data class PatientDetailsViewConfiguration(
   override val appId: String,
   override val classification: String,
-  val contentTitle: String = "Responses",
-  val valuePrefix: String = "G6PD ",
+  val contentTitle: String = "Content Title",
+  val valuePrefix: String = "Value Prefix",
   val dynamicRows: List<List<Filter>>
 ) : Configuration
 
@@ -34,8 +34,8 @@ data class PatientDetailsViewConfiguration(
 fun patientDetailsViewConfigurationOf(
   appId: String = "quest",
   classification: String = "patient_details",
-  contentTitle: String = "Responses",
-  valuePrefix: String = "G6PD ",
+  contentTitle: String = "Content Title",
+  valuePrefix: String = "Value Prefix",
   dynamicRows: List<List<Filter>> = mutableListOf()
 ) =
   PatientDetailsViewConfiguration(

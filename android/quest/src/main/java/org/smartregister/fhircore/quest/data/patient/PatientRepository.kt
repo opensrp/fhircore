@@ -297,8 +297,7 @@ constructor(
 
       result.map {
         QuestionnaireConfig(
-          appId =
-            if (configurationRegistry.isAppIdInitialized()) configurationRegistry.appId else "",
+          appId = configurationRegistry.appId,
           form = it.name ?: it.logicalId,
           title = it.title ?: it.name ?: it.logicalId,
           identifier = it.logicalId

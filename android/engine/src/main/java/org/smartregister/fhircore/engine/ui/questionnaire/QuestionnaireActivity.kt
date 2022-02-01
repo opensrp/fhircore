@@ -150,7 +150,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           text = context.getString(R.string.done)
         } else if (editMode) {
           text = getString(R.string.edit)
-        } else if (questionnaire.experimental) text = context.getString(R.string.done)
+        }
       }
 
       // Only add the fragment once, when the activity is first created.
@@ -423,7 +423,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       editMode: Boolean = false,
       questionnaireResponse: QuestionnaireResponse? = null,
       immunizationId: String? = null,
-      populationResources: ArrayList<Resource> = ArrayList(),
+      populationResources: ArrayList<Resource> = ArrayList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),

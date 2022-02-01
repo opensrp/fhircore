@@ -28,8 +28,6 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
-import org.smartregister.fhircore.engine.util.extension.asYyyyMmDdHHmmss
 import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
@@ -54,11 +52,7 @@ suspend fun loadAdditionalData(
       val conditions =
         getSearchResults<Condition>("Patient/$patientId", Condition.SUBJECT, filter, fhirEngine)
 
-      val sortedByDescending =
-        conditions.maxByOrNull {
-          it.meta.lastUpdated?.asYyyyMmDdHHmmss()
-            ?: it.recordedDate?.asYyyyMmDd()?.plus(" 23:60:60") ?: ""
-        }
+      val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
 
       sortedByDescending?.category?.forEach { cc ->
         cc.coding.firstOrNull { c -> c.code == filter.valueCoding!!.code }?.let {
