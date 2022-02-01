@@ -32,12 +32,9 @@ import ca.uhn.fhir.context.FhirContext
 import com.famoco.desfireservicelib.CardReaderState
 import com.famoco.desfireservicelib.DESFireServiceAccess
 import com.famoco.desfireservicelib.ServiceConnectionState
-import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA_QUESTIONNAIRE_JSON_STRING
-import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
-import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -118,55 +115,59 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     immunizationId = intent.getStringExtra(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
 
     lifecycleScope.launchWhenCreated {
-      readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
-      editMode = intent.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
+      with(dispatcherProvider.io()) {
+        readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
+        editMode = intent.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
 
-      formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
-      // form is either name of form in asset/form-config or questionnaire-id
-      // load from assets and get questionnaire or if not found build it from questionnaire
-      questionnaireConfig =
-        kotlin
-          .runCatching {
-            questionnaireViewModel.getQuestionnaireConfig(formName, this@QuestionnaireActivity)
+        formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+        // form is either name of form in asset/form-config or questionnaire-id
+        // load from assets and get questionnaire or if not found build it from questionnaire
+        questionnaireConfig =
+          kotlin
+            .runCatching {
+              questionnaireViewModel.getQuestionnaireConfig(formName, this@QuestionnaireActivity)
+            }
+            .getOrElse {
+              // load questionnaire from db and build config
+              questionnaire = questionnaireViewModel.loadQuestionnaire(formName, readOnly)!!
+
+              QuestionnaireConfig(
+                appId = configurationRegistry.appId,
+                form = questionnaire.name ?: "",
+                title = questionnaire.title ?: "",
+                identifier = questionnaire.logicalId
+              )
+            }
+
+        // if questionnaire is still not initialized load using config loaded from assets
+        if (!::questionnaire.isInitialized)
+          questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
+
+        supportActionBar?.apply {
+          setDisplayHomeAsUpEnabled(true)
+          title = questionnaireConfig.title
+        }
+
+        with(dispatcherProvider.main()) {
+          findViewById<Button>(R.id.btn_save_client_info).apply {
+            setOnClickListener(this@QuestionnaireActivity)
+            if (readOnly) {
+              text = context.getString(R.string.done)
+            } else if (editMode) {
+              text = getString(R.string.edit)
+            }
           }
-          .getOrElse {
-            // load questionnaire from db and build config
-            questionnaire = questionnaireViewModel.loadQuestionnaire(formName, readOnly)!!
 
-            QuestionnaireConfig(
-              appId = configurationRegistry.appId,
-              form = questionnaire.name ?: "",
-              title = questionnaire.title ?: "",
-              identifier = questionnaire.logicalId
-            )
+          // Only add the fragment once, when the activity is first created.
+          if (savedInstanceState == null) {
+            renderFragment()
           }
-
-      // if questionnaire is still not initialized load using config loaded from assets
-      if (!::questionnaire.isInitialized)
-        questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
-
-      supportActionBar?.apply {
-        setDisplayHomeAsUpEnabled(true)
-        title = questionnaireConfig.title
-      }
-
-      findViewById<Button>(R.id.btn_save_client_info).apply {
-        setOnClickListener(this@QuestionnaireActivity)
-        if (readOnly) {
-          text = context.getString(R.string.done)
-        } else if (editMode) {
-          text = getString(R.string.edit)
+          loadProgress.dismiss()
         }
       }
-
-      // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null) {
-        renderFragment()
-      }
-      loadProgress.dismiss()
     }
 
-/*    // Add DES service listeners
+    /*    // Add DES service listeners
     addDesServiceListeners()
     // to be safe init SAM when activity is launched
     mainViewModel.generateProtoFile()
@@ -192,7 +193,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               }
             }
             clientIdentifier != null -> {
-              try {
+              /*try {
                 FhirEngineProvider.getInstance(this@QuestionnaireActivity)
                   .load(Patient::class.java, clientIdentifier!!)
               } catch (e: ResourceNotFoundException) {
@@ -207,7 +208,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               bundleOf(
                 Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, parser.encodeResourceToString(questionnaire)),
                 Pair(EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING, serializedQuestionnaireResponse)
-              )
+              )*/
+              bundleOf(Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
             }
             else -> bundleOf(Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
           }
@@ -285,8 +287,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
-    saveToNfc(questionnaireResponse)
-    // finish()
+    //saveToNfc(questionnaireResponse)
+    finish()
   }
 
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
