@@ -41,9 +41,11 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isPatient
+import org.smartregister.fhircore.engine.workflow.WorkflowProvider
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import timber.log.Timber
 
 @HiltViewModel
 class QuestPatientDetailViewModel
@@ -60,6 +62,7 @@ constructor(
   val questionnaireConfigs = MutableLiveData<List<QuestionnaireConfig>>()
   val testResults = MutableLiveData<List<Pair<QuestionnaireResponse, Questionnaire>>>()
   val statusAndStatusObs = MutableLiveData<List<Observation>>()
+  val nextWorkflowStep = MutableLiveData<WorkflowProvider.Step?>()
   val onBackPressClicked = MutableLiveData(false)
   val onMenuItemClicked = MutableLiveData(-1)
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
@@ -89,7 +92,9 @@ constructor(
   }
 
   fun getPatientStatusAndStatusTag(patientId: String) {
-    viewModelScope.launch(dispatcherProvider.io()) { statusAndStatusObs.postValue(patientRepository.fetchStatusAndStatusTagObs(patientId)) }
+    viewModelScope.launch(dispatcherProvider.io()) {
+      statusAndStatusObs.postValue(patientRepository.fetchStatusAndStatusTagObs(patientId))
+    }
   }
 
   suspend fun getAllDataFor(patientId: String): List<Resource> {
@@ -161,6 +166,22 @@ constructor(
 
   companion object {
     const val PROFILE_CONFIG = "configurations/form/profile_config.json"
+  }
+
+  suspend fun computeNextWorkflowStep(patientId: String) {
+    val stateObs = patientRepository.fetchStatusObs(patientId)
+
+    if (stateObs != null) {
+      val responses =
+        patientRepository
+          .fetchTestResults(patientId)
+          .sortedByDescending { it.first.authored }
+          .map { it.first }
+      nextWorkflowStep.postValue(WorkflowProvider().nextStep(stateObs, responses))
+    } else {
+      Timber.e("Next step could not be computed")
+      nextWorkflowStep.postValue(null)
+    }
   }
 
   @Serializable
