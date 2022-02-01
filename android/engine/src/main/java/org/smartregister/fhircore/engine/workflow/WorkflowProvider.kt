@@ -1,4 +1,4 @@
-package org.smartregister.fhircore.quest.workflow
+package org.smartregister.fhircore.engine.workflow
 
 import java.util.*
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -34,7 +34,7 @@ class WorkflowProvider {
     fun nextStep(stateObservation: Observation, visits: List<QuestionnaireResponse>) : Step {
         return if (stateObservation.isPatientStatus("discharged")) {
             Step.DIMSISS
-        } else if (!visits.isNextVisitDue()) {
+        } else if (!visits.isCurrentVisitDue() && !visits.isNextVisitDue()) {
             Step.DIMSISS
         } else if (visits.isEmpty()) {
             Step.ASSISTANCE_STEP_FIRST_VISIT
@@ -68,6 +68,10 @@ class WorkflowProvider {
 
     fun List<QuestionnaireResponse>.isLastAssistanceVisit() : Boolean {
         return size > 0 && this[0].questionnaire.endsWith("assistance-visit")
+    }
+
+    fun List<QuestionnaireResponse>.isCurrentVisitDue() : Boolean {
+        return size == 0 || size%2 == 1
     }
 
     fun Observation.isStatusActive() : Boolean {
