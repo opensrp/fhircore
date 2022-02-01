@@ -1,5 +1,6 @@
 package org.smartregister.fhircore.engine.workflow
 
+import com.google.android.fhir.logicalId
 import java.util.*
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -85,7 +86,7 @@ class WorkflowProvider {
                 value = StringType(status)
                 code = CodeableConcept(Coding("https://smartregister.org/wfp-coda", "patient-status", "Patient status"))
                 setEffective(DateTimeType(date))
-                subject = Reference(patient)
+                subject = Reference("Patient/${patient.logicalId}")
                 issued = date
                 id = UUID.randomUUID().toString()
                 setStatus(Observation.ObservationStatus.FINAL)
