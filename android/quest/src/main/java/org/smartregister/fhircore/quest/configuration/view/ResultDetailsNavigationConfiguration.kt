@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.quest.configuration.view
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import androidx.compose.runtime.Stable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.Configuration
 
-enum class QuestConfigClassification : ConfigClassification {
-  PATIENT_REGISTER,
-  PATIENT_REGISTER_ROW,
-  TEST_RESULT_DETAIL_VIEW,
-  PATIENT_DETAILS_VIEW,
-  REGISTER_NAVIGATION,
-  RESULT_DETAILS_NAVIGATION;
-  override val classification: String = name.lowercase()
-}
+@Serializable
+@SerialName("test_details")
+data class TestDetailsNavigationAction(val form: String, val readOnly: Boolean) :
+  NavigationAction()
+
+@Stable
+@Serializable
+data class ResultDetailsNavigationConfiguration(
+  override val appId: String,
+  override val classification: String,
+  val navigationOptions: List<NavigationOption>
+) : Configuration

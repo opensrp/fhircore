@@ -16,10 +16,8 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import androidx.compose.ui.text.capitalize
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
@@ -208,6 +206,14 @@ fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireRes
 fun QuestionnaireResponse.assertSubject() {
   if (!this.hasSubject() || !this.subject.hasReference())
     throw IllegalStateException("QuestionnaireResponse must have a subject reference assigned")
+}
+
+fun QuestionnaireResponse.getEncounterId(): String {
+  return this.contained
+    ?.find { it.resourceType == ResourceType.Encounter }
+    ?.logicalId
+    ?.replace("#", "")
+    ?: ""
 }
 
 fun Resource.generateMissingId() {
