@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.data.patient
 
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
@@ -24,6 +25,7 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -35,6 +37,9 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
+import org.smartregister.fhircore.engine.util.extension.filterByPatient
+import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
+import org.smartregister.fhircore.engine.util.extension.pregnancyCondition
 import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -190,5 +195,15 @@ constructor(
         loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
       patientItem
     }
+  }
+
+  suspend fun fetchPregnancyCondition(patientId: String): String {
+    val listOfConditions: List<Condition> =
+      fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId = patientId) }
+    val activePregnancy = listOfConditions.hasActivePregnancy()
+    val activePregnancyCondition =
+      if (activePregnancy) listOfConditions.pregnancyCondition() else null
+    val jsonParser = FhirContext.forR4Cached().newJsonParser()
+    return if (activePregnancy) jsonParser.encodeResourceToString(activePregnancyCondition) else ""
   }
 }

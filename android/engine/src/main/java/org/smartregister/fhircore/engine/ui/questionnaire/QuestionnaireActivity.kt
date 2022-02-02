@@ -35,12 +35,10 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -55,10 +53,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
-import org.smartregister.fhircore.engine.util.extension.filterByPatient
 import org.smartregister.fhircore.engine.util.extension.find
-import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
-import org.smartregister.fhircore.engine.util.extension.pregnancyCondition
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
@@ -172,7 +167,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         populateInitialValues(questionnaire)
 
         val questionnaireString = parser.encodeResourceToString(questionnaire)
-        var activePregnancyCondition: Condition? = Condition()
 
         // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
         arguments =
@@ -188,11 +182,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             clientIdentifier != null -> {
               try {
                 fhirEngine.load(Patient::class.java, clientIdentifier!!)
-                val listOfConditions: List<Condition> =
-                  fhirEngine.search { filterByPatient(Condition.SUBJECT, clientIdentifier!!) }
-                val activePregnancy = listOfConditions.hasActivePregnancy()
-                activePregnancyCondition =
-                  if (activePregnancy) listOfConditions.pregnancyCondition() else null
               } catch (e: ResourceNotFoundException) {
                 setBarcode(questionnaire, clientIdentifier!!, true)
               }
@@ -206,15 +195,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, parser.encodeResourceToString(questionnaire)),
                 Pair(EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING, serializedQuestionnaireResponse)
               )
-                .apply {
-                  val jsonParser = FhirContext.forR4Cached().newJsonParser()
-                  val resourcesList = ArrayList<String>()
-                  if (activePregnancyCondition != null)
-                    resourcesList.add(jsonParser.encodeResourceToString(activePregnancyCondition))
-                  if (resourcesList.isNotEmpty()) {
-                    putStringArrayList(QUESTIONNAIRE_POPULATION_RESOURCES, resourcesList)
-                  }
-                }
             }
             else -> bundleOf(Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
           }

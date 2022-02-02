@@ -49,6 +49,7 @@ class QuestPatientDetailActivity :
   BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
 
   private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
+  private var patientResourcesList: ArrayList<String> = arrayListOf()
   private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
   private lateinit var patientId: String
   private var parser: DetailConfigParser? = null
@@ -78,6 +79,9 @@ class QuestPatientDetailActivity :
       )
 
     parser = patientViewModel.loadParser(packageName, patientDetailConfig)
+    patientViewModel
+      .fetchPatientResources(patientId)
+      .observe(this@QuestPatientDetailActivity, this::handlePatientResources)
 
     // TODO Load binary resources
     profileConfig =
@@ -94,6 +98,10 @@ class QuestPatientDetailActivity :
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
 
+  private fun handlePatientResources(resourceList: ArrayList<String>) {
+    if (resourceList.isNotEmpty()) patientResourcesList.addAll(resourceList)
+  }
+
   override fun onResume() {
     super.onResume()
 
@@ -106,7 +114,7 @@ class QuestPatientDetailActivity :
 
   private fun launchTestResults(@StringRes id: Int) {
     when (id) {
-      R.string.edit_patient_info ->
+      R.string.edit_patient_info -> {
         startActivity(
           Intent(this, QuestionnaireActivity::class.java)
             .putExtras(
@@ -116,7 +124,16 @@ class QuestPatientDetailActivity :
                 editMode = true
               )
             )
+            .apply {
+              if (patientResourcesList.isNotEmpty()) {
+                this.putStringArrayListExtra(
+                  QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+                  patientResourcesList
+                )
+              }
+            }
         )
+      }
     }
   }
 
