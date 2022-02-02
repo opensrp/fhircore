@@ -125,7 +125,7 @@ dependencies {
     implementation 'org.opencds.cqf.cql:evaluator:1.3.1-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.builder:1.3.1-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.dagger:1.3.1-SNAPSHOT'
-    api('org.smartregister:workflow:0.1.0-alpha01-preview-SNAPSHOT') {
+    api('com.google.android.fhir:workflow:0.1.0-local1-alpha01') {
         transitive = true
         exclude group: 'xerces'
         exclude group: 'com.github.java-json-tools'
@@ -133,6 +133,7 @@ dependencies {
         exclude group: 'ca.uhn.hapi.fhir'
         exclude group: 'org.opencds.cqf.cql'
         exclude group: 'com.google.android.fhir', module: 'common'
+        exclude group: 'com.google.android.fhir', module: 'engine'
     }
 
     //Hilt - Dependency Injection

@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -125,13 +126,11 @@ constructor(
     showDatePicker.value = true
   }
 
-  fun getSelectedPatient(): MutableLiveData<PatientItem?> {
-    return if (selectedPatientItem.value != null) selectedPatientItem else MutableLiveData(null)
-  }
+  fun getSelectedPatient(): MutableLiveData<PatientItem?> =
+    if (selectedPatientItem.value != null) selectedPatientItem else MutableLiveData(null)
 
-  fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
-    return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
-  }
+  fun getReportsTypeList(): Flow<PagingData<ReportItem>> =
+    Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
 
   fun onPatientItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
     if (listenerIntent is AncRowClickListenerIntent) {
@@ -178,30 +177,34 @@ constructor(
     measureUrl: String,
     individualEvaluation: Boolean,
     measureResourceBundleUrl: String = "measure/ANCIND01-bundle.json",
-    reportType: String = "subject"
+    reportType: String = SUBJECT
   ) {
     viewModelScope.launch {
+      val startDateFormatted =
+        measureReportDateFormatter.format(dateRangeDateFormatter.parse(startDate.value!!)!!)
+      val endDateFormatted =
+        measureReportDateFormatter.format(dateRangeDateFormatter.parse(endDate.value!!)!!)
       showProgressIndicator.value = true
-      if (selectedPatientItem.value != null && individualEvaluation) {
-        val startDateFormatted =
-          measureReportDateFormatter.format(dateRangeDateFormatter.parse(startDate.value!!)!!)
-        val endDateFormatted =
-          measureReportDateFormatter.format(dateRangeDateFormatter.parse(endDate.value!!)!!)
 
+      withContext(dispatcher.io()) {
+        fhirEngine.loadCqlLibraryBundle(
+          context = context,
+          fhirOperator = fhirOperator,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          resourcesBundlePath = measureResourceBundleUrl
+        )
+      }
+
+      if (selectedPatientItem.value != null && individualEvaluation) {
         val measureReport =
           withContext(dispatcher.io()) {
-            fhirEngine.loadCqlLibraryBundle(
-              context = context,
-              fhirOperator = fhirOperator,
-              sharedPreferencesHelper = sharedPreferencesHelper,
-              resourcesBundlePath = measureResourceBundleUrl
-            )
             fhirOperator.evaluateMeasure(
               url = measureUrl,
               start = startDateFormatted,
               end = endDateFormatted,
               reportType = reportType,
-              subject = selectedPatientItem.value!!.patientIdentifier
+              subject = selectedPatientItem.value!!.patientIdentifier,
+              practitioner = null
             )
           }
 
@@ -215,23 +218,63 @@ constructor(
           currentScreen = ReportScreen.RESULT
         }
       } else if (selectedPatientItem.value == null && !individualEvaluation) {
-        // TODO extract data from population MeasureReport
-        resultForPopulation.postValue(loadPopulationResult())
+        val measureReport =
+          withContext(dispatcher.io()) {
+            fhirOperator.evaluateMeasure(
+              url = measureUrl,
+              start = startDateFormatted,
+              end = endDateFormatted,
+              reportType = POPULATION,
+              subject = null,
+              practitioner = null
+            )
+          }
+
+        resultForPopulation.postValue(formatPopulationMeasureReport(measureReport))
         showProgressIndicator.postValue(false)
         currentScreen = ReportScreen.RESULT
       }
     }
   }
 
-  // TODO Replace with actual data - i.e convert evaluated MeasureReport for population
-  fun loadPopulationResult(): List<ResultItemPopulation> {
-    val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10", count = "1/10")
-    val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50", count = "30/60")
-    return listOf(
-      ResultItemPopulation(title = "Age Range", listOf(testResultItem1, testResultItem2)),
-      ResultItemPopulation(title = "Education Level", listOf(testResultItem1, testResultItem2))
-    )
+  private fun formatPopulationMeasureReport(
+    measureReport: MeasureReport
+  ): List<ResultItemPopulation> {
+    return measureReport.group.flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
+      reportGroup.stratifier.map { stratifier ->
+        val resultItems: List<ResultItem> =
+          stratifier.stratum.filter { it.hasValue() }.map { stratifierComponent ->
+            val text =
+              when {
+                stratifierComponent.value.hasText() -> stratifierComponent.value.text
+                stratifierComponent.value.hasCoding() ->
+                  stratifierComponent.value.coding.last().display
+                else -> ""
+              }
+
+            val initialPopulation =
+              stratifierComponent.findPopulation(INITIAL_POPULATION)?.count ?: 0
+            val numerator = stratifierComponent.findPopulation(NUMERATOR)?.count ?: 0
+            val denominator = stratifierComponent.findPopulation(DENOMINATOR)?.count ?: 0
+
+            val percentage =
+              if (denominator == 0 || numerator == 0) 0
+              else ceil((numerator / denominator) * initialPopulation.toDouble()).toInt()
+            val count = "$numerator/$denominator"
+            ResultItem(title = text, percentage = percentage.toString(), count = count)
+          }
+        ResultItemPopulation(title = stratifier.id.replaceDashes(), dataList = resultItems)
+      }
+    }
   }
+
+  private fun MeasureReport.StratifierGroupComponent.findPopulation(
+    id: String
+  ): MeasureReport.StratifierGroupPopulationComponent? {
+    return this.population.find { it.hasId() && it.id.equals(id, ignoreCase = true) }
+  }
+
+  fun String.replaceDashes() = this.replace("-", " ").uppercase(Locale.getDefault())
 
   fun onReportTypeSelected(reportType: String, launchPatientList: Boolean = false) {
     this.currentReportType.value = reportType
@@ -284,5 +327,9 @@ constructor(
     const val DATE_RANGE_DATE_FORMAT = "d MMM, yyyy"
     const val MEASURE_REPORT_DATE_FORMAT = "yyyy-MM-dd"
     const val NUMERATOR = "numerator"
+    const val DENOMINATOR = "denominator"
+    const val INITIAL_POPULATION = "initial-population"
+    const val SUBJECT = "subject"
+    const val POPULATION = "population"
   }
 }
