@@ -40,7 +40,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
       Timber.plant(Timber.DebugTree())
     }
 
-    dataCaptureConfig = DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
+    dataCaptureConfig = DataCaptureConfig()//attachmentResolver = referenceAttachmentResolver)
   }
 
   override fun getDataCaptureConfig(): DataCaptureConfig = dataCaptureConfig

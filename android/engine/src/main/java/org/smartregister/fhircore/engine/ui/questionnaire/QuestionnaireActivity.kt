@@ -177,12 +177,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private suspend fun renderFragment() {
     fragment =
-      FhirCoreQuestionnaireFragment().apply {
-        val questionnaireString = parser.encodeResourceToString(questionnaire)
+      FhirCoreQuestionnaireFragment(questionnaire).apply {
+        //val questionnaireString = parser.encodeResourceToString(questionnaire)
 
         // Generate Fragment bundle arguments.
         // is the Questionnaire & QuestionnaireResponse
-        arguments =
+        /*arguments =
           when {
             clientIdentifier == null -> {
               bundleOf(Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString)).apply {
@@ -193,7 +193,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               }
             }
             clientIdentifier != null -> {
-              /*try {
+              *//*try {
                 FhirEngineProvider.getInstance(this@QuestionnaireActivity)
                   .load(Patient::class.java, clientIdentifier!!)
               } catch (e: ResourceNotFoundException) {
@@ -208,12 +208,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               bundleOf(
                 Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, parser.encodeResourceToString(questionnaire)),
                 Pair(EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING, serializedQuestionnaireResponse)
-              )*/
+              )*//*
               bundleOf(Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
             }
             else -> bundleOf(Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
-          }
-      }
+          }*/
+        //viewModel.questionnaire = questionnaire
+    }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
   }
 
@@ -291,12 +292,46 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     finish()
   }
 
+  fun deepFlat(
+    qItems: List<Questionnaire.QuestionnaireItemComponent>,
+    questionnaireResponse: QuestionnaireResponse,
+    targetQ: MutableList<Questionnaire.QuestionnaireItemComponent>,
+    targetQR: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+  ) {
+    qItems.forEach { qit ->
+      // process each inner item list
+      deepFlat(qit.item, questionnaireResponse, targetQ, targetQR)
+
+      // remove nested structure to prevent validation recursion; it is already processed above
+      qit.item.clear()
+
+      // add questionnaire and response pair for each linkid on same index
+      questionnaireResponse.find(qit.linkId)?.let { qrit ->
+        targetQ.add(qit)
+        targetQR.add(qrit)
+      }
+    }
+  }
+
+  // TODO change this when SDK bug for validation is fixed
+  // https://github.com/google/android-fhir/issues/912
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
+    // clone questionnaire and response for processing and changing structure
+    val q = questionnaire.copy()
+    val qr = questionnaireResponse.copy()
+
+    // flatten and pair all responses temporarily to fix index mapping issue for questionnaire and
+    // questionnaire response
+    val qItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+    val qrItems = mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+
+    deepFlat(q.item, qr, qItems, qrItems)
+
     return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(
-        questionnaire.item,
-        questionnaireResponse.item,
-        this
-      )
+      qItems,
+      qrItems,
+      this
+    )
       .values
       .flatten()
       .all { it.isValid }

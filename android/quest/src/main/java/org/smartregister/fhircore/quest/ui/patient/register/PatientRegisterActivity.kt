@@ -292,8 +292,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun registerClient(clientIdentifier: String?) {
-    //showAgeDialog({ dialog, which -> dialog.dismiss() })
-    readFromCard()
+    showAgeDialog({ dialog, which -> dialog.dismiss() })
+    //readFromCard()
   }
 
   fun showAgeDialog(cancelClickListener: DialogInterface.OnClickListener) {
