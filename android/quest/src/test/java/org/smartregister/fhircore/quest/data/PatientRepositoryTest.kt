@@ -35,6 +35,8 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -245,6 +247,22 @@ class PatientRepositoryTest : RobolectricTest() {
         Assert.assertEquals("G6PD Test", title)
       }
     }
+
+  @Test
+  fun testFetchTestFormShouldReturnPregnancyCondition() =
+       coroutineTestRule.runBlockingTest {
+         coEvery { fhirEngine.search<Condition> { filter(Condition.SUBJECT, { value = "${ResourceType.Patient.name}/123" }) }} returns
+              listOf(
+                   Condition().apply {
+                     this.clinicalStatus.addCoding().code = "L123"
+                     this.clinicalStatus.addCoding().code = "inactive"
+                     this.code.addCoding().display = "pregnant"
+                   }
+              )
+
+         val results = repository.fetchPregnancyCondition("123")
+         Assert.assertNotNull(results)
+       }
 
   @Test
   fun testFetchTestFormShouldHandleNullNameAndTitle() =
