@@ -94,19 +94,14 @@ constructor(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(
-    id: String, type: QuestionnaireType
-  ): Questionnaire? =
-    defaultRepository.loadResource<Questionnaire>(id)
-      ?.apply {
-        //TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
-        this.url = this.url?:this.referenceValue()
-      }
-      //TODO ??????????????????????????????????/**/
-      ?.apply {
+  suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
+    defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (type.isReadOnly() || type.isEditMode()) {
-        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", type.isEditMode())
+        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", type.isReadOnly())
       }
+
+      // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
+      this.url = this.url ?: this.referenceValue()
     }
 
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {

@@ -69,6 +69,10 @@ fun Resource.encodeResourceToString(
   parser: IParser = FhirContext.forR4Cached().newJsonParser()
 ): String = parser.encodeResourceToString(this)
 
+fun <T> String.decodeResourceFromString(
+  parser: IParser = FhirContext.forR4Cached().newJsonParser()
+): T = parser.parseResource(this) as T
+
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   var extensionUpdateForm = listOf<Extension>()
   if (updatedResource is Patient) {
@@ -126,19 +130,14 @@ fun JSONObject.updateFrom(updated: JSONObject) {
 fun QuestionnaireResponse.generateMissingItems(questionnaire: Questionnaire) =
   questionnaire.item.generateMissingItems(this.item)
 
-
 fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
   qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>
 ) {
   this.forEachIndexed { index, qItem ->
     // generate complete hierarchy if response item missing otherwise check for nested items
     if (qrItems.isEmpty() || qItem.linkId != qrItems[index].linkId) {
-      qrItems.add(
-        index,
-        qItem.createQuestionnaireResponseItem()
-      )
-    }
-    else qItem.item.generateMissingItems(qrItems[index].item)
+      qrItems.add(index, qItem.createQuestionnaireResponseItem())
+    } else qItem.item.generateMissingItems(qrItems[index].item)
   }
 }
 /**
@@ -147,13 +146,13 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
  * question when mapped to the corresponding [QuestionnaireResponse]
  */
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
-  path: String, // TODO
+  path: String,
   readOnly: Boolean = false,
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
       item.readOnly = readOnly
-      // item.createCustomExtensionsIfExist(path)
+      item.createCustomExtensionsIfExist(path)
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly

@@ -17,9 +17,15 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -32,6 +38,13 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
+    }
+
+    CoroutineScope(SupervisorJob() + Dispatchers.Main).launch {
+      FhirContext.forR4Cached().apply {
+        Timber.i("Loading FhirContext.forR4Cached on application init")
+      }
+      ResourceMapper.run { Timber.i("Loading ResourceMapper on application init") }
     }
   }
 
