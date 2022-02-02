@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
@@ -182,21 +183,23 @@ class QuestPatientDetailActivity :
       is QuestionnaireNavigationAction -> {
         resultItem?.let {
           val questionnaireResponse = resultItem.source.first
-          // The structure of questionnaire field is -> "questionnaire":
-          // "Questionnaire/3440/_history/20"
-          val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
           val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
-          startActivity(
-            Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
-              .putExtras(
-                QuestionnaireActivity.intentArgs(
-                  clientIdentifier = patientId,
-                  formName = questionnaireId,
-                  readOnly = true,
-                  populationResources = populationResources
+          val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
+          if (questionnaireUrlList.isNotEmpty() && questionnaireUrlList.size > 1) {
+            startActivity(
+              Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                .putExtras(
+                  QuestionnaireActivity.intentArgs(
+                    clientIdentifier = patientId,
+                    formName = questionnaireUrlList[1],
+                    readOnly = true,
+                    populationResources = populationResources
+                  )
                 )
-              )
-          )
+            )
+          } else {
+            AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
+          }
         }
       }
       is TestDetailsNavigationAction -> {
