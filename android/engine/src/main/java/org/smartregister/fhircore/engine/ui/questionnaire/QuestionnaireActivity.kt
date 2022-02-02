@@ -37,10 +37,13 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -49,7 +52,9 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -102,6 +107,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launchWhenCreated {
       readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
       editMode = intent.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
+
+      if (readOnly) {
+        findViewById<Button>(R.id.btn_edit_qr).apply {
+          visibility = View.VISIBLE
+          setOnClickListener(this@QuestionnaireActivity)
+        }
+      }
 
       val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
       // form is either name of form in asset/form-config or questionnaire-id
@@ -205,6 +217,30 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       } else {
         showFormSubmissionConfirmAlert()
       }
+    } else if (view.id == R.id.btn_edit_qr) {
+      readOnly = false
+      editMode = true
+
+      lifecycleScope.launch(Dispatchers.Default) {
+        // Reload the questionnaire and reopen the fragment
+        questionnaire.item.prepareQuestionsForReadingOrEditing(
+          "QuestionnaireResponse.item",
+          readOnly
+        )
+        supportFragmentManager.commit { detach(fragment) }
+
+        intent.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
+          val jsonParser = FhirContext.forR4().newJsonParser()
+          forEach {
+            val resource = jsonParser.parseResource(it) as Resource
+            if (resource.resourceType.name == ResourceType.QuestionnaireResponse.name) {
+              questionnaireViewModel.editQuestionnaireResponse = resource as QuestionnaireResponse
+              return@forEach
+            }
+          }
+        }
+        renderFragment()
+      }
     } else {
       showToast(getString(R.string.error_saving_form))
     }
@@ -275,12 +311,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
-    setResult(
-      Activity.RESULT_OK,
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(questionnaireResponse))
-      }
-    )
     val message = questionnaireViewModel.extractionProgressMessage.value
     if (message?.isNotBlank() == true)
       AlertDialogue.showInfoAlert(
@@ -289,10 +319,24 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         getString(R.string.done),
         {
           it.dismiss()
-          finish()
+          finishActivity(questionnaireResponse)
         }
       )
-    else finish()
+    else finishActivity(questionnaireResponse)
+  }
+
+  fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
+    val parcelResponse = questionnaireResponse.copy()
+    questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
+      .forEach { parcelResponse.find(it.linkId)?.answer?.clear() }
+    setResult(
+      Activity.RESULT_OK,
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(parcelResponse))
+        putExtra(QUESTIONNAIRE_ARG_FORM, questionnaire.logicalId)
+      }
+    )
+    finish()
   }
 
   fun deepFlat(

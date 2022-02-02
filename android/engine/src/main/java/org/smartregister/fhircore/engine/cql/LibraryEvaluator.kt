@@ -223,7 +223,13 @@ class LibraryEvaluator @Inject constructor() {
       helpers,
       Bundle(),
       // TODO check and handle when data bundle has multiple Patient resources
-      createBundle(listOfNotNull(patient, *data.entry.map { it.resource }.toTypedArray()))
+      createBundle(
+        listOfNotNull(
+          patient,
+          *data.entry.map { it.resource }.toTypedArray(),
+          *repository.search(library.dataRequirementFirstRep).toTypedArray()
+        )
+      )
     )
 
     val result =
