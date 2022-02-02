@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.data
 
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -29,12 +30,18 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -44,7 +51,10 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
+import org.smartregister.fhircore.quest.configuration.view.FontWeight
+import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
@@ -291,4 +301,195 @@ class PatientRepositoryTest : RobolectricTest() {
         Assert.assertEquals("Form name", title)
       }
     }
+
+  fun createTestConfigurationsData(): List<PatientDetailsViewConfiguration> =
+    "configs/sample_patient_details_view_configurations.json".readFile().decodeJson()
+
+  @Test
+  fun testGetResultItemDynamicRowsEmptyShouldReturnCorrectData() {
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+
+    val questionnaire =
+      Questionnaire().apply {
+        this.id = "1"
+        this.name = "Questionnaire Name"
+        this.title = "Questionnaire Title"
+      }
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        this.id = "1"
+        this.questionnaire = "Questionnaire/1"
+        this.authored = today
+      }
+
+    val quest = createTestConfigurationsData()[0]
+    val patientDetailsViewConfiguration =
+      patientDetailsViewConfigurationOf(
+        appId = quest.appId,
+        classification = quest.classification,
+        contentTitle = quest.contentTitle,
+        dynamicRows = quest.dynamicRows
+      )
+
+    val data = runBlocking {
+      repository.getResultItem(
+        questionnaire,
+        questionnaireResponse,
+        patientDetailsViewConfiguration
+      )
+    }
+    with(data.data[0]) {
+      Assert.assertEquals("Questionnaire Name", this[0].value)
+      Assert.assertEquals(" (${today.asDdMmmYyyy()})", this[1].value)
+    }
+
+    with(data.source) {
+      Assert.assertEquals("1", first.id)
+      Assert.assertEquals("Questionnaire/1", first.questionnaire)
+      Assert.assertEquals(today, first.authored)
+
+      Assert.assertEquals("1", second.id)
+      Assert.assertEquals("Questionnaire Name", second.name)
+      Assert.assertEquals("Questionnaire Title", second.title)
+    }
+  }
+
+  @Test
+  fun testGetResultItemDynamicRowsNonEmptyShouldReturnCorrectData() {
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+
+    coEvery {
+      fhirEngine.search<Condition> {
+        filter(Condition.ENCOUNTER, { value = "Encounter/1" })
+        filter(
+          TokenClientParam("category"),
+          {
+            value =
+              of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "9024005", null)))
+          }
+        )
+      }
+    } returns getConditions()
+
+    coEvery {
+      fhirEngine.search<Observation> {
+        filter(Observation.ENCOUNTER, { value = "Encounter/1" })
+        filter(
+          TokenClientParam("code"),
+          {
+            value =
+              of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "259695003", null)))
+          }
+        )
+      }
+    } returns getObservations()
+
+    coEvery { fhirEngine.load(Encounter::class.java, any()) } returns getEncounter()
+
+    val questionnaire =
+      Questionnaire().apply {
+        this.id = "1"
+        this.name = "Questionnaire Name"
+        this.title = "Questionnaire Title"
+      }
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        this.id = "1"
+        this.questionnaire = "Questionnaire/1"
+        this.authored = today
+        this.contained = listOf(Encounter().apply { id = "1" })
+      }
+
+    val g6pd = createTestConfigurationsData()[1]
+
+    val patientDetailsViewConfiguration =
+      patientDetailsViewConfigurationOf(
+        appId = g6pd.appId,
+        classification = g6pd.classification,
+        contentTitle = g6pd.contentTitle,
+        valuePrefix = g6pd.valuePrefix,
+        dynamicRows = g6pd.dynamicRows
+      )
+
+    val data = runBlocking {
+      repository.getResultItem(
+        questionnaire,
+        questionnaireResponse,
+        patientDetailsViewConfiguration
+      )
+    }
+
+    Assert.assertEquals(2, data.data.size)
+
+    with(data.data[0]) {
+      Assert.assertEquals("Intermediate", this[0].value)
+      Assert.assertEquals("${today.asDdMmmYyyy()}", this[1].value)
+    }
+
+    with(data.data[1]) {
+      Assert.assertEquals("G6PD: ", this[0].label)
+      Assert.assertEquals("#74787A", this[0].properties?.label?.color)
+      Assert.assertEquals(16, this[0].properties?.label?.textSize)
+      Assert.assertEquals(FontWeight.NORMAL, this[0].properties?.label?.fontWeight)
+
+      Assert.assertEquals(" - Hb: ", this[1].label)
+      Assert.assertEquals("#74787A", this[1].properties?.label?.color)
+      Assert.assertEquals(16, this[1].properties?.label?.textSize)
+      Assert.assertEquals(FontWeight.NORMAL, this[1].properties?.label?.fontWeight)
+    }
+  }
+  private fun getEncounter() = Encounter().apply { id = "1" }
+
+  private fun getObservations(): List<Observation> {
+    return listOf(
+      Observation().apply {
+        encounter = Reference().apply { reference = "Encounter/1" }
+        code =
+          CodeableConcept().apply {
+            addCoding().apply {
+              system = "http://snomed.info/sct"
+              code = "86859003"
+            }
+          }
+      },
+      Observation().apply {
+        encounter = Reference().apply { reference = "Encounter/1" }
+        code =
+          CodeableConcept().apply {
+            addCoding().apply {
+              system = "http://snomed.info/sct"
+              code = "259695003"
+            }
+          }
+      }
+    )
+  }
+
+  private fun getConditions(): List<Condition> {
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+    return listOf(
+      Condition().apply {
+        recordedDate = today
+        category =
+          listOf(
+            CodeableConcept().apply {
+              addCoding().apply {
+                system = "http://snomed.info/sct"
+                code = "9024005"
+              }
+            }
+          )
+        code =
+          CodeableConcept().apply {
+            addCoding().apply {
+              system = "http://snomed.info/sct"
+              code = "11896004"
+              display = "Intermediate"
+            }
+          }
+      }
+    )
+  }
 }
