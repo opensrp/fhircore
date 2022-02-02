@@ -21,7 +21,7 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
+import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
 @Singleton

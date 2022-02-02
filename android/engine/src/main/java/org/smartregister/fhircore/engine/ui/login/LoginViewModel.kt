@@ -44,7 +44,6 @@ import org.smartregister.fhircore.engine.configuration.view.LoginViewConfigurati
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
@@ -54,6 +53,7 @@ import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.UserDetailsUtils
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber

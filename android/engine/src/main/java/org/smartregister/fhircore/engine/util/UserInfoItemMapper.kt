@@ -17,8 +17,8 @@
 package org.smartregister.fhircore.engine.util
 
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapperWithDomainModelSource
-import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.model.practitioner.PractitionerDetails
 
 object UserInfoItemMapper :
   DomainMapperWithDomainModelSource<PractitionerDetails, UserInfo, UserInfo> {

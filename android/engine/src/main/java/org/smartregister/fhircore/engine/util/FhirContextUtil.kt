@@ -18,12 +18,12 @@ package org.smartregister.fhircore.engine.util
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
-import org.smartregister.fhircore.engine.data.remote.model.response.FhirCareTeamExtension
-import org.smartregister.fhircore.engine.data.remote.model.response.FhirOrganizationExtension
-import org.smartregister.fhircore.engine.data.remote.model.response.FhirPractitionerDetails
-import org.smartregister.fhircore.engine.data.remote.model.response.KeycloakUserDetails
-import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
-import org.smartregister.fhircore.engine.data.remote.model.response.UserBioData
+import org.smartregister.model.practitioner.FhirCareTeamExtension
+import org.smartregister.model.practitioner.FhirOrganizationExtension
+import org.smartregister.model.practitioner.FhirPractitionerDetails
+import org.smartregister.model.practitioner.KeycloakUserDetails
+import org.smartregister.model.practitioner.PractitionerDetails
+import org.smartregister.model.practitioner.UserBioData
 
 class FhirContextUtil {
 

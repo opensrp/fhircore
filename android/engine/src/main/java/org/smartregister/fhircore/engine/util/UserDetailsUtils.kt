@@ -19,10 +19,10 @@ package org.smartregister.fhircore.engine.util
 import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.data.remote.model.response.KeycloakUserDetails
-import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.model.practitioner.KeycloakUserDetails
+import org.smartregister.model.practitioner.PractitionerDetails
 
 @Singleton
 class UserDetailsUtils @Inject constructor(val sharedPreferences: SharedPreferencesHelper) {
