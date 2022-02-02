@@ -24,6 +24,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
@@ -57,15 +58,14 @@ class QuestDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirE
     val questionnaireResponse = resultItem.source.first
 
     val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
-    val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
     context.startActivity(
       Intent(context, QuestionnaireActivity::class.java)
         .putExtras(
           QuestionnaireActivity.intentArgs(
             clientIdentifier = patientId,
             formName = questionnaireId,
-            readOnly = true,
-            populationResources = populationResources
+            questionnaireType = QuestionnaireType.READ_ONLY,
+            questionnaireResponse = questionnaireResponse
           )
         )
     )

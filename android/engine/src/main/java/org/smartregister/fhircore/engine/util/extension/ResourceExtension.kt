@@ -20,6 +20,7 @@ import androidx.compose.ui.text.capitalize
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
+import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
@@ -64,8 +65,9 @@ fun Base?.valueToString(): String {
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
-fun Resource.toJson(parser: IParser = FhirContext.forR4Cached().newJsonParser()): String =
-  parser.encodeResourceToString(this)
+fun Resource.encodeResourceToString(
+  parser: IParser = FhirContext.forR4Cached().newJsonParser()
+): String = parser.encodeResourceToString(this)
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   var extensionUpdateForm = listOf<Extension>()
@@ -77,10 +79,10 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
     extension = this.extension
   }
   val jsonParser = FhirContext.forR4Cached().newJsonParser()
-  val stringJson = toJson(jsonParser)
+  val stringJson = encodeResourceToString(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
-  originalResourceJson.updateFrom(JSONObject(updatedResource.toJson(jsonParser)))
+  originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString(jsonParser)))
   return jsonParser.parseResource(this::class.java, originalResourceJson.toString()).apply {
     val meta = this.meta
     val metaUpdateForm = this@updateFrom.meta
@@ -121,19 +123,37 @@ fun JSONObject.updateFrom(updated: JSONObject) {
   keys.forEach { key -> updated.opt(key)?.run { put(key, this) } }
 }
 
+fun QuestionnaireResponse.generateMissingItems(questionnaire: Questionnaire) =
+  questionnaire.item.generateMissingItems(this.item)
+
+
+fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
+  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+) {
+  this.forEachIndexed { index, qItem ->
+    // generate complete hierarchy if response item missing otherwise check for nested items
+    if (qrItems.isEmpty() || qItem.linkId != qrItems[index].linkId) {
+      qrItems.add(
+        index,
+        qItem.createQuestionnaireResponseItem()
+      )
+    }
+    else qItem.item.generateMissingItems(qrItems[index].item)
+  }
+}
 /**
  * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
  * [readOnly] is true. This also generates the correct FHIRPath population expression for each
  * question when mapped to the corresponding [QuestionnaireResponse]
  */
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
-  path: String,
+  path: String, // TODO
   readOnly: Boolean = false,
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
       item.readOnly = readOnly
-      item.createCustomExtensionsIfExist(path)
+      // item.createCustomExtensionsIfExist(path)
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly

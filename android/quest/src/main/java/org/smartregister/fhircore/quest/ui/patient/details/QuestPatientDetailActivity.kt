@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.quest.R
@@ -113,7 +114,7 @@ class QuestPatientDetailActivity :
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
                 formName = getRegistrationForm(),
-                editMode = true
+                questionnaireType = QuestionnaireType.EDIT
               )
             )
         )
