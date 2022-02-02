@@ -72,16 +72,14 @@ class LibraryEvaluator @Inject constructor() {
   private var libEvaluator: LibraryEvaluator? = null
   private val bundleLinks = BundleLinks("", null, true, BundleTypeEnum.COLLECTION)
   val fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
-  lateinit var cqlFhirParametersConverter: CqlFhirParametersConverter
+  val cqlFhirParametersConverter =
+    CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
   lateinit var fhirModelResolver: R4FhirModelResolverExt
   lateinit var modelManager: ModelManager
   var initialized = false
 
   fun initialize() {
     if (initialized) return
-
-    cqlFhirParametersConverter =
-      CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
 
     fhirModelResolver = R4FhirModelResolverExt()
     modelManager = ModelManager()
