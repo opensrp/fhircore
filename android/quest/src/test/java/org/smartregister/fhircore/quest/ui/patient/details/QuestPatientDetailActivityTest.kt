@@ -33,6 +33,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
+import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -61,8 +62,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
-  lateinit var resultDetailsNavigationConfiguration: ResultDetailsNavigationConfiguration
 
   private val hiltTestApplication = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -162,6 +161,78 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals("12345", actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(true, actualIntent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false))
+  }
+
+  @Test
+  fun testOnTestResultItemClickListenerQuestionnaireNullShouldShowAlertDialog() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_questionnaire",
+          title = "Questionnaire",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "quest",
+      classification = "result_details_navigation",
+      navigationOptions
+    )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      questPatientDetailActivity,
+      "onTestResultItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestResultItem::class.java,
+        QuestResultItem(
+          Pair(QuestionnaireResponse().apply { questionnaire = "" }, mockk()),
+          listOf()
+        )
+      )
+    )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+  }
+
+  @Test
+  fun testOnTestResultItemClickListenerInvalidQuestionnaireUrlShouldShowAlertDialog() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_questionnaire",
+          title = "Questionnaire",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "quest",
+      classification = "result_details_navigation",
+      navigationOptions
+    )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      questPatientDetailActivity,
+      "onTestResultItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestResultItem::class.java,
+        QuestResultItem(
+          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire" }, mockk()),
+          listOf()
+        )
+      )
+    )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
   }
 
   @Test

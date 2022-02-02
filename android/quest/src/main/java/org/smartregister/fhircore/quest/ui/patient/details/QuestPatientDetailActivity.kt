@@ -184,21 +184,31 @@ class QuestPatientDetailActivity :
         resultItem?.let {
           val questionnaireResponse = resultItem.source.first
           val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
-          val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
-          if (questionnaireUrlList.isNotEmpty() && questionnaireUrlList.size > 1) {
-            startActivity(
-              Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
-                .putExtras(
-                  QuestionnaireActivity.intentArgs(
-                    clientIdentifier = patientId,
-                    formName = questionnaireUrlList[1],
-                    readOnly = true,
-                    populationResources = populationResources
+          when {
+            questionnaireResponse.questionnaire.isNullOrBlank() -> {
+              AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
+            }
+            else -> {
+              val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
+              when {
+                questionnaireUrlList.isNotEmpty() && questionnaireUrlList.size > 1 -> {
+                  startActivity(
+                    Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                      .putExtras(
+                        QuestionnaireActivity.intentArgs(
+                          clientIdentifier = patientId,
+                          formName = questionnaireUrlList[1],
+                          readOnly = true,
+                          populationResources = populationResources
+                        )
+                      )
                   )
-                )
-            )
-          } else {
-            AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
+                }
+                else -> {
+                  AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
+                }
+              }
+            }
           }
         }
       }
