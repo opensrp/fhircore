@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -244,9 +245,9 @@ constructor(
       loadQuestionnaire(questionnaireId = questionnaireId)
     } else {
       Timber.e(
-        Exception(
-          "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
-        )
+           Exception(
+                "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+           )
       )
       Questionnaire()
     }
@@ -319,10 +320,10 @@ constructor(
 
   suspend fun fetchPregnancyCondition(patientId: String): String {
     val listOfConditions: List<Condition> =
-      fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId = patientId) }
+         fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId = patientId) }
     val activePregnancy = listOfConditions.hasActivePregnancy()
     val activePregnancyCondition =
-      if (activePregnancy) listOfConditions.pregnancyCondition() else null
+         if (activePregnancy) listOfConditions.pregnancyCondition() else null
     val jsonParser = FhirContext.forR4Cached().newJsonParser()
     return if (activePregnancy) jsonParser.encodeResourceToString(activePregnancyCondition) else ""
   }

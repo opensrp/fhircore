@@ -26,6 +26,7 @@ import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
@@ -53,7 +54,7 @@ class QuestPatientDetailActivity :
   BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
 
   private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
-  private var patientResourcesList: ArrayList<String> = arrayListOf()
+  var patientResourcesList: ArrayList<String> = arrayListOf()
   private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
   private lateinit var patientId: String
 
@@ -67,10 +68,11 @@ class QuestPatientDetailActivity :
 
     patientViewModel.apply {
       val detailActivity = this@QuestPatientDetailActivity
-      onBackPressClicked.observe(
-        detailActivity,
-        { backPressed -> if (backPressed) detailActivity.finish() }
-      )
+      onBackPressClicked.observe(detailActivity) { backPressed ->
+        if (backPressed) detailActivity.finish()
+      }
+      fetchPatientResources(patientId)
+           .observe(detailActivity, detailActivity::handlePatientResources)
       onMenuItemClicked.observe(detailActivity, detailActivity::launchTestResults)
       onFormItemClicked.observe(detailActivity, detailActivity::launchQuestionnaireForm)
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
@@ -80,10 +82,6 @@ class QuestPatientDetailActivity :
       configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       )
-
-    patientViewModel
-      .fetchPatientResources(patientId)
-      .observe(this@QuestPatientDetailActivity, this::handlePatientResources)
 
     // TODO Load binary resources
     profileConfig =
@@ -118,22 +116,22 @@ class QuestPatientDetailActivity :
     when (id) {
       R.string.edit_patient_info -> {
         startActivity(
-          Intent(this, QuestionnaireActivity::class.java)
-            .putExtras(
-              QuestionnaireActivity.intentArgs(
-                clientIdentifier = patientId,
-                formName = getRegistrationForm(),
-                editMode = true
-              )
-            )
-            .apply {
-              if (patientResourcesList.isNotEmpty()) {
-                this.putStringArrayListExtra(
-                  QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
-                  patientResourcesList
-                )
-              }
-            }
+             Intent(this, QuestionnaireActivity::class.java)
+                  .putExtras(
+                       QuestionnaireActivity.intentArgs(
+                            clientIdentifier = patientId,
+                            formName = getRegistrationForm(),
+                            editMode = true
+                       )
+                  )
+                  .apply {
+                    if (patientResourcesList.isNotEmpty()) {
+                      this.putStringArrayListExtra(
+                           QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+                           patientResourcesList
+                      )
+                    }
+                  }
         )
       }
     }
