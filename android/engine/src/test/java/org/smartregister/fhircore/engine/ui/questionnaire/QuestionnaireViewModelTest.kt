@@ -138,7 +138,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns
       Questionnaire().apply { id = "12345" }
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345") }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.DEFAULT)
+    }
 
     coVerify { fhirEngine.load(Questionnaire::class.java, "12345") }
     Assert.assertEquals("12345", result!!.logicalId)
@@ -176,7 +178,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", true) }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.READ_ONLY)
+    }
 
     Assert.assertTrue(result!!.item[0].item[0].readOnly)
     Assert.assertEquals("q1-name", result.item[0].item[0].linkId)
@@ -235,7 +239,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", true) }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.READ_ONLY)
+    }
 
     Assert.assertEquals("12345", result!!.logicalId)
     Assert.assertTrue(result!!.item[0].readOnly)
@@ -318,7 +324,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", editMode = true) }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT)
+    }
 
     Assert.assertEquals("12345", result!!.logicalId)
     Assert.assertFalse(result.item[0].readOnly)
@@ -490,7 +498,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       "12345",
       questionnaire,
       QuestionnaireResponse(),
-      true
+      QuestionnaireType.EDIT
     )
 
     coVerifyOrder {
@@ -731,7 +739,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       "12345",
       questionnaire,
       questionnaireResponse,
-      true
+      QuestionnaireType.EDIT
     )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }

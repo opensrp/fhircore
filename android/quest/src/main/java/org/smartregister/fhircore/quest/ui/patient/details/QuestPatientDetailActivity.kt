@@ -199,7 +199,7 @@ class QuestPatientDetailActivity :
                         QuestionnaireActivity.intentArgs(
                           clientIdentifier = patientId,
                           formName = questionnaireUrlList[1],
-                          readOnly = true,
+                          questionnaireType = QuestionnaireType.EDIT,
                           populationResources = populationResources
                         )
                       )

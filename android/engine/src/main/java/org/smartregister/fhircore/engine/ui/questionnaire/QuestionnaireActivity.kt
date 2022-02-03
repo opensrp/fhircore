@@ -84,10 +84,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   lateinit var questionnaireConfig: QuestionnaireConfig
+  var questionnaireType = QuestionnaireType.DEFAULT
 
   protected lateinit var questionnaire: Questionnaire
   protected var clientIdentifier: String? = null
-  protected var questionnaireType = QuestionnaireType.DEFAULT
   lateinit var fragment: FhirCoreQuestionnaireFragment
   val parser = FhirContext.forR4Cached().newJsonParser()
 
@@ -165,8 +165,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 ?.decodeResourceFromString<QuestionnaireResponse>()
                 ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
 
-            if (questionnaireType.isReadOnly() || questionnaireType.isEditMode())
-              require(questionnaireResponse != null)
+            if (questionnaireType.isReadOnly()) require(questionnaireResponse != null)
 
             if (clientIdentifier != null) {
               setBarcode(questionnaire, clientIdentifier!!, true)

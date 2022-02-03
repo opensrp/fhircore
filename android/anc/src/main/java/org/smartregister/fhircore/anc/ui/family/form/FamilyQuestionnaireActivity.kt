@@ -45,7 +45,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    isEditFamily = intent.extras?.getBoolean(FamilyFormConstants.FAMILY_EDIT_INFO) ?: false
+    isEditFamily = questionnaireType.isEditMode()
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
 
     val action =
@@ -69,7 +69,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
       questionnaire,
       questionnaireResponse,
-      isEditFamily
+      questionnaireType
     )
   }
 

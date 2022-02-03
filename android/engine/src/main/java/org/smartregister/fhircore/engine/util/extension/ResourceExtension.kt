@@ -27,7 +27,6 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
@@ -167,18 +166,6 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
 
 private fun Questionnaire.QuestionnaireItemComponent.createCustomExtensionsIfExist(path: String) {
   val list = mutableListOf<Extension>()
-  list.add(
-    Extension().apply {
-      url = "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
-      setValue(
-        Expression().apply {
-          language = "text/fhirpath"
-          expression =
-            "$path.where(linkId = '${this@createCustomExtensionsIfExist.linkId}').answer.value"
-        }
-      )
-    }
-  )
   this.getExtensionByUrl(FhirCoreQuestionnaireFragment.BARCODE_URL)?.let {
     list.add(
       createCustomExtension(
