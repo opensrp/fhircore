@@ -48,9 +48,9 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.filterByPatient
+import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.pregnancyCondition
-import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.configuration.view.Filter
@@ -245,9 +245,9 @@ constructor(
       loadQuestionnaire(questionnaireId = questionnaireId)
     } else {
       Timber.e(
-           Exception(
-                "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
-           )
+        Exception(
+          "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+        )
       )
       Questionnaire()
     }
@@ -320,10 +320,10 @@ constructor(
 
   suspend fun fetchPregnancyCondition(patientId: String): String {
     val listOfConditions: List<Condition> =
-         fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId = patientId) }
+      fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId = patientId) }
     val activePregnancy = listOfConditions.hasActivePregnancy()
     val activePregnancyCondition =
-         if (activePregnancy) listOfConditions.pregnancyCondition() else null
+      if (activePregnancy) listOfConditions.pregnancyCondition() else null
     val jsonParser = FhirContext.forR4Cached().newJsonParser()
     return if (activePregnancy) jsonParser.encodeResourceToString(activePregnancyCondition) else ""
   }

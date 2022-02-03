@@ -277,24 +277,24 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
 
     val navigationOptions =
-         listOf(
-              NavigationOption(
-                   id = "open_test_details",
-                   title = "Test Details",
-                   icon = "",
-                   TestDetailsNavigationAction(form = "", readOnly = true)
-              )
-         )
+      listOf(
+        NavigationOption(
+          id = "open_test_details",
+          title = "Test Details",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
     ResultDetailsNavigationConfiguration(
-         appId = "g6pd",
-         classification = "result_details_navigation",
-         navigationOptions
+      appId = "g6pd",
+      classification = "result_details_navigation",
+      navigationOptions
     )
 
     ReflectionHelpers.callInstanceMethod<Any>(
-         questPatientDetailActivity,
-         "handlePatientResources",
-         ReflectionHelpers.ClassParameter(ArrayList::class.java, arrayListOf("Condition"))
+      questPatientDetailActivity,
+      "handlePatientResources",
+      ReflectionHelpers.ClassParameter(ArrayList::class.java, arrayListOf("Condition"))
     )
 
     Assert.assertEquals("Condition", questPatientDetailActivity.patientResourcesList[0])
