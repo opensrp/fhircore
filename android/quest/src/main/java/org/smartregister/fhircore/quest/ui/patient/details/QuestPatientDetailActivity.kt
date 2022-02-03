@@ -26,7 +26,6 @@ import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -184,7 +183,6 @@ class QuestPatientDetailActivity :
       is QuestionnaireNavigationAction -> {
         resultItem?.let {
           val questionnaireResponse = resultItem.source.first
-          val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
           when {
             questionnaireResponse.questionnaire.isNullOrBlank() -> {
               AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
@@ -199,8 +197,8 @@ class QuestPatientDetailActivity :
                         QuestionnaireActivity.intentArgs(
                           clientIdentifier = patientId,
                           formName = questionnaireUrlList[1],
-                          questionnaireType = QuestionnaireType.EDIT,
-                          populationResources = populationResources
+                          questionnaireType = QuestionnaireType.READ_ONLY,
+                          questionnaireResponse = questionnaireResponse
                         )
                       )
                   )

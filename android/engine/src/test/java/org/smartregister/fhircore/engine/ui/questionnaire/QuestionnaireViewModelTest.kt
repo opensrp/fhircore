@@ -246,33 +246,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("12345", result!!.logicalId)
     Assert.assertTrue(result!!.item[0].readOnly)
     Assert.assertEquals("patient-first-name", result!!.item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.value",
-      (result!!.item[0].extension[0].value as Expression).expression
-    )
     Assert.assertEquals("patient-last-name", result!!.item[0].item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.item.where(linkId = 'patient-last-name').answer.value",
-      (result!!.item[0].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertTrue(result!!.item[1].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-age').answer.value",
-      (result!!.item[1].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result!!.item[2].readOnly)
     Assert.assertEquals(0, result!!.item[2].extension.size)
     Assert.assertTrue(result!!.item[2].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-dob').answer.value",
-      (result!!.item[2].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result!!.item[2].item[1].readOnly)
     Assert.assertTrue(result!!.item[2].item[1].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-related-person').item.where(linkId = 'rp-name').answer.value",
-      (result!!.item[2].item[1].item[0].extension[0].value as Expression).expression
-    )
   }
 
   @Test
@@ -331,33 +311,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("12345", result!!.logicalId)
     Assert.assertFalse(result.item[0].readOnly)
     Assert.assertEquals("patient-first-name", result.item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.value",
-      (result.item[0].extension[0].value as Expression).expression
-    )
     Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.item.where(linkId = 'patient-last-name').answer.value",
-      (result.item[0].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result.item[1].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-age').answer.value",
-      (result.item[1].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result.item[2].readOnly)
     Assert.assertEquals(0, result.item[2].extension.size)
     Assert.assertFalse(result.item[2].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-dob').answer.value",
-      (result!!.item[2].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result!!.item[2].item[1].readOnly)
     Assert.assertFalse(result!!.item[2].item[1].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-related-person').item.where(linkId = 'rp-name').answer.value",
-      (result!!.item[2].item[1].item[0].extension[0].value as Expression).expression
-    )
   }
 
   @Test

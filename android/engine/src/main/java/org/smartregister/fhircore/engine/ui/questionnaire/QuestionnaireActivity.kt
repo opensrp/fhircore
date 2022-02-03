@@ -35,7 +35,6 @@ import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
@@ -124,7 +123,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private fun updateViews() {
+  fun updateViews() {
     findViewById<Button>(R.id.btn_edit_qr).apply {
       visibility = if (questionnaireType.isReadOnly()) View.VISIBLE else View.GONE
       setOnClickListener(this@QuestionnaireActivity)
@@ -229,7 +228,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       val loadProgress = showProgressAlert(this, R.string.loading)
 
-      lifecycleScope.launch(Dispatchers.Default) {
+      lifecycleScope.launch {
         // Reload the questionnaire and reopen the fragment
         loadQuestionnaireAndConfig(questionnaireConfig.identifier)
 
