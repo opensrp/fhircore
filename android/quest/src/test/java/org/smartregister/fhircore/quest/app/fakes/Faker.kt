@@ -109,7 +109,7 @@ object Faker {
         )
       )
 
-    coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns
+    coEvery { patientRepository.fetchTestResults(any(), any(), any()) } returns
       listOf(
         QuestResultItem(
           Pair(
@@ -154,6 +154,6 @@ object Faker {
 
     coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
     coEvery { patientRepository.fetchTestForms(any()) } returns emptyList()
-    coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns emptyList()
+    coEvery { patientRepository.fetchTestResults(any(), any(), any()) } returns emptyList()
   }
 }

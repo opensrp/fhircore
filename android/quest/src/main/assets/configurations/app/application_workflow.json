@@ -38,6 +38,12 @@
         "resource": "RegisterNavigationConfiguration",
         "classification": "register_navigation",
         "description": "Configurations for Custom Navigation"
+      },
+      {
+        "workflowPoint": "result_details_navigation",
+        "resource": "ResultDetailsNavigationConfiguration",
+        "classification": "result_details_navigation",
+        "description": "Configurations for Result Details Navigation"
       }
     ]
   },
@@ -80,6 +86,12 @@
         "resource": "RegisterNavigationConfiguration",
         "classification": "register_navigation",
         "description": "Configurations for Custom Navigation"
+      },
+      {
+        "workflowPoint": "result_details_navigation",
+        "resource": "ResultDetailsNavigationConfiguration",
+        "classification": "result_details_navigation",
+        "description": "Configurations for Result Details Navigation"
       }
     ]
   }
