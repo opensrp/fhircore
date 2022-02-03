@@ -61,12 +61,15 @@ fun PatientChildRow(
                 .padding(12.dp, 4.dp)
         ) {
 
-            MwChip(
+            ArtChip(text = patientItem.identifier, fontSize =22.sp )
+
+
+            /*MwChip(
                 modifier = modifier.background( color = MaterialTheme.colors.secondary.copy(alpha = 0.2F), RoundedCornerShape(4.dp)) ,
                 text = patientItem.identifier,
                 fontSize = 22.sp,
                 textColor = MaterialTheme.colors.onSecondary,
-            )
+            ) */
 
 
             //Adding space between image and the column

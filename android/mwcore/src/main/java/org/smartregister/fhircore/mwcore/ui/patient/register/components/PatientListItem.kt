@@ -167,7 +167,7 @@ fun PatientRow(
                     Spacer(modifier = Modifier.width(8.dp))
                     MwChip(
                         fontSize = 16.sp,
-                        text = patientItem.genderFull(),
+                        text = "[Club]"  ,
                         textColor = MaterialTheme.colors.primary,
                         background = MaterialTheme.colors.primary.copy(alpha = 0.2F)
                     )
@@ -212,7 +212,7 @@ fun clientImage( text: String){
 
                 //shaping the picture
                 .clip(CircleShape)
-                .background(MaterialTheme.colors.secondary.copy(alpha = .4F))
+                .background(color = Color(0xFFFFC0CB)) //Cyan.copy(alpha = .4F )) //MaterialTheme.colors.secondary.copy(alpha = .4F))
                 .border(1.5.dp, MaterialTheme.colors.secondary, CircleShape)
         )
     }
