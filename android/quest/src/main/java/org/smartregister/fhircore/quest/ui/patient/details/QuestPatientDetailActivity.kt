@@ -23,23 +23,27 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
+import org.smartregister.fhircore.quest.configuration.view.NavigationOption
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
+import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
+import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
@@ -52,7 +56,6 @@ class QuestPatientDetailActivity :
   private var patientResourcesList: ArrayList<String> = arrayListOf()
   private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
   private lateinit var patientId: String
-  private var parser: DetailConfigParser? = null
 
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
 
@@ -74,7 +77,7 @@ class QuestPatientDetailActivity :
     }
 
     patientDetailConfig =
-      configurationRegistry.retrieveConfiguration(
+      configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       )
 
@@ -92,7 +95,7 @@ class QuestPatientDetailActivity :
     }
     patientViewModel.run {
       getDemographicsWithAdditionalData(patientId, patientDetailConfig)
-      getAllResults(patientId, profileConfig, patientDetailConfig, parser)
+      getAllResults(patientId, profileConfig, patientDetailConfig)
       getAllForms(profileConfig)
     }
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
@@ -107,7 +110,7 @@ class QuestPatientDetailActivity :
 
     patientViewModel.run {
       getDemographicsWithAdditionalData(patientId, patientDetailConfig)
-      getAllResults(patientId, profileConfig, patientDetailConfig, parser)
+      getAllResults(patientId, profileConfig, patientDetailConfig)
       getAllForms(profileConfig)
     }
   }
@@ -144,29 +147,30 @@ class QuestPatientDetailActivity :
       .registrationForm
   }
 
-  // TODO https://github.com/opensrp/fhircore/issues/961
-  // allow handling the data back and forth between activities via workflow or config
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
 
     if (resultCode == Activity.RESULT_OK)
-      if (configurationRegistry.appId == "g6pd") {
-        data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
-          val response =
-            FhirContext.forR4Cached().newJsonParser().parseResource(it) as QuestionnaireResponse
-          response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
-            startActivity(
-              Intent(this, SimpleDetailsActivity::class.java).apply {
-                putExtra(RECORD_ID_ARG, it.replace("#", ""))
+      getResultDetailsNavigationOptions().navigationOptions.forEach {
+        when (it.action) {
+          is TestDetailsNavigationAction -> {
+            data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
+              val response =
+                FhirContext.forR4Cached().newJsonParser().parseResource(it) as QuestionnaireResponse
+              response.getEncounterId().let {
+                startActivity(
+                  Intent(this, SimpleDetailsActivity::class.java).apply {
+                    putExtra(RECORD_ID_ARG, it.replace("#", ""))
+                  }
+                )
               }
-            )
+            }
           }
+          is QuestionnaireNavigationAction -> {}
         }
       }
   }
 
-  // TODO https://github.com/opensrp/fhircore/issues/961
-  // allow handling the data back and forth between activities via workflow or config
   private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {
     if (questionnaireConfig != null) {
       startActivityForResult(
@@ -184,8 +188,67 @@ class QuestPatientDetailActivity :
   }
 
   private fun onTestResultItemClickListener(resultItem: QuestResultItem?) {
-    resultItem?.let { parser?.onResultItemClicked(resultItem, this, patientId) }
+    getResultDetailsNavigationOptions().navigationOptions.forEach {
+      handleNavigationOptions(it, resultItem, patientId)
+    }
   }
+
+  private fun handleNavigationOptions(
+    navigationOption: NavigationOption,
+    resultItem: QuestResultItem?,
+    patientId: String
+  ) {
+    when (navigationOption.action) {
+      is QuestionnaireNavigationAction -> {
+        resultItem?.let {
+          val questionnaireResponse = resultItem.source.first
+          val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
+          when {
+            questionnaireResponse.questionnaire.isNullOrBlank() -> {
+              AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
+            }
+            else -> {
+              val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
+              when {
+                questionnaireUrlList.isNotEmpty() && questionnaireUrlList.size > 1 -> {
+                  startActivity(
+                    Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                      .putExtras(
+                        QuestionnaireActivity.intentArgs(
+                          clientIdentifier = patientId,
+                          formName = questionnaireUrlList[1],
+                          readOnly = true,
+                          populationResources = populationResources
+                        )
+                      )
+                  )
+                }
+                else -> {
+                  AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
+                }
+              }
+            }
+          }
+        }
+      }
+      is TestDetailsNavigationAction -> {
+        resultItem?.let {
+          val questionnaireResponse = resultItem.source.first
+
+          startActivity(
+            Intent(this@QuestPatientDetailActivity, SimpleDetailsActivity::class.java).apply {
+              putExtra(RECORD_ID_ARG, questionnaireResponse.getEncounterId())
+            }
+          )
+        }
+      }
+    }
+  }
+
+  fun getResultDetailsNavigationOptions() =
+    configurationRegistry.retrieveConfiguration<ResultDetailsNavigationConfiguration>(
+      configClassification = QuestConfigClassification.RESULT_DETAILS_NAVIGATION
+    )
 
   override fun configureViews(viewConfiguration: PatientDetailsViewConfiguration) {
     patientViewModel.updateViewConfigurations(viewConfiguration)
