@@ -27,6 +27,7 @@ import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -474,6 +475,38 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertEquals(authoredDate, oldQr.authored)
     Assert.assertEquals("6", oldQr.meta.versionId)
     Assert.assertNotNull(oldQr.meta.lastUpdated)
+  }
+
+  @Test
+  fun `QuestionnaireResponse#getEncounterId() should return logicalId`() {
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply { contained = listOf(Encounter().apply { id = "1234" }) }
+
+    val id = questionnaireResponse.getEncounterId()
+
+    Assert.assertEquals("1234", id)
+  }
+
+  @Test
+  fun `QuestionnaireResponse#getEncounterId() replace# should return logicalId`() {
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply { contained = listOf(Encounter().apply { id = "#1234" }) }
+
+    val id = questionnaireResponse.getEncounterId()
+
+    Assert.assertEquals("1234", id)
+  }
+
+  @Test
+  fun `QuestionnaireResponse#getEncounterId() Id null should return empty id`() {
+
+    val questionnaireResponse = QuestionnaireResponse().apply { contained = listOf(Encounter()) }
+
+    val id = questionnaireResponse.getEncounterId()
+
+    Assert.assertEquals("", id)
   }
 
   @Test

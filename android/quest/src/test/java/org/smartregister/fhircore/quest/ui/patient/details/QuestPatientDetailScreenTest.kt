@@ -115,7 +115,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     // Simulate retrieval of data from repository
     questPatientDetailViewModel.run {
       getDemographicsWithAdditionalData(patientId, patientDetailsViewConfig)
-      getAllResults(patientId, profileConfig, patientDetailsViewConfig, null)
+      getAllResults(patientId, profileConfig, patientDetailsViewConfig)
       getAllForms(profileConfig)
     }
   }
@@ -304,7 +304,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     questPatientDetailViewModel.run {
       updateViewConfigurations(patientDetailsViewConfigurationOf(contentTitle = "RESPONSES"))
       getDemographicsWithAdditionalData(patientId, patientDetailsViewConfig)
-      getAllResults(patientId, profileConfig, patientDetailsViewConfig, mockk())
+      getAllResults(patientId, profileConfig, patientDetailsViewConfig)
       getAllForms(profileConfig)
     }
 
