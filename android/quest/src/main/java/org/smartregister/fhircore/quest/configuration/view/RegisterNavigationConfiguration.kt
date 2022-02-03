@@ -24,7 +24,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Serializable
 @SerialName("questionnaire")
-data class QuestionnaireNavigationAction(val form: String) : NavigationAction()
+data class QuestionnaireNavigationAction(val form: String, val readOnly: Boolean) :
+  NavigationAction()
 
 @Serializable
 class NavigationConfiguration(

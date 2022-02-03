@@ -33,7 +33,6 @@ import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -87,19 +86,13 @@ constructor(
   fun getAllResults(
     patientId: String,
     profileConfig: ProfileConfig,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration,
-    parser: DetailConfigParser?
+    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
   ) {
     viewModelScope.launch {
       val forms = patientRepository.fetchTestForms(profileConfig.profileQuestionnaireFilter)
 
       testResults.postValue(
-        patientRepository.fetchTestResults(
-          patientId,
-          forms,
-          patientDetailsViewConfiguration,
-          parser
-        )
+        patientRepository.fetchTestResults(patientId, forms, patientDetailsViewConfiguration)
       )
     }
   }
@@ -126,18 +119,6 @@ constructor(
 
   fun updateViewConfigurations(patientDetailsViewConfiguration: PatientDetailsViewConfiguration) {
     _patientDetailsViewConfiguration.value = patientDetailsViewConfiguration
-  }
-
-  fun loadParser(
-    packageName: String,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
-  ): DetailConfigParser {
-    return Class.forName(
-        "$packageName.configuration.parser.${patientDetailsViewConfiguration.parser}"
-      )
-      .getConstructor(FhirEngine::class.java)
-      .newInstance(fhirEngine) as
-      DetailConfigParser
   }
 
   companion object {
