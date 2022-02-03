@@ -36,6 +36,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import org.hl7.fhir.r4.model.CareTeam
+import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.Organization
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -117,10 +120,36 @@ constructor(
     viewModelScope.launch(dispatcher.io()) {
       val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
       val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
+      val fhirCareTeamExtensionList =
+        practitionerDetails.fhirPractitionerDetails.fhirCareTeamExtensionList
+      val fhirOrganizationExtensions =
+        practitionerDetails.fhirPractitionerDetails.fhirOrganizationExtensions
+      val locationHierarchyList = practitionerDetails.fhirPractitionerDetails.locationHierarchyList
       val keyclockUtils = UserDetailsUtils(sharedPreferences)
       keyclockUtils.updateUserDetailsFromPractitionerDetails(practitionerDetails, userResponse)
       keyclockUtils.storeKeyClockInfo(practitionerDetails)
-      fhirEngine.save(practitionerDetails)
+
+      if (locationHierarchyList.isNotEmpty()) {
+        locationHierarchyList.forEach {
+          val location = Location()
+          location.copyValues(it)
+          fhirEngine.save(location)
+        }
+      }
+      if (fhirOrganizationExtensions.isNotEmpty()) {
+        fhirOrganizationExtensions.forEach {
+          val organization = Organization()
+          organization.copyValues(it)
+          fhirEngine.save(organization)
+        }
+      }
+      if (fhirCareTeamExtensionList.isNotEmpty()) {
+        fhirCareTeamExtensionList.forEach {
+          val careTeam = CareTeam()
+          careTeam.copyValues(it)
+          fhirEngine.save(careTeam)
+        }
+      }
     }
   }
 

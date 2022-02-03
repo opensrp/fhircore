@@ -39,4 +39,16 @@ class FhirContextUtil {
 
     return fhirContext.newJsonParser()
   }
+
+  fun getPractitionerDetailContext(): FhirContext? {
+    val fhirContext = FhirContext.forR4()
+
+    fhirContext.registerCustomType(PractitionerDetails::class.java)
+    fhirContext.registerCustomType(FhirCareTeamExtension::class.java)
+    fhirContext.registerCustomType(FhirOrganizationExtension::class.java)
+    fhirContext.registerCustomType(FhirPractitionerDetails::class.java)
+    fhirContext.registerCustomType(KeycloakUserDetails::class.java)
+    fhirContext.registerCustomType(UserBioData::class.java)
+    return fhirContext
+  }
 }
