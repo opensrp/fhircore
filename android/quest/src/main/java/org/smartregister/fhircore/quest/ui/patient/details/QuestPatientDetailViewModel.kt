@@ -121,18 +121,6 @@ constructor(
     _patientDetailsViewConfiguration.value = patientDetailsViewConfiguration
   }
 
-  fun loadParser(
-    packageName: String,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
-  ): DetailConfigParser {
-    return Class.forName(
-        "$packageName.configuration.parser.${patientDetailsViewConfiguration.parser}"
-      )
-      .getConstructor(FhirEngine::class.java)
-      .newInstance(fhirEngine) as
-      DetailConfigParser
-  }
-
   fun fetchPatientResources(patientId: String): LiveData<ArrayList<String>> {
     val resourceListLive = MutableLiveData<ArrayList<String>>()
     val resourceList = arrayListOf<String>()

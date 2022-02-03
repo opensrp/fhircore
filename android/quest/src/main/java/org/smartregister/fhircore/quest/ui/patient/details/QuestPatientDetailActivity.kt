@@ -81,7 +81,6 @@ class QuestPatientDetailActivity :
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       )
 
-    parser = patientViewModel.loadParser(packageName, patientDetailConfig)
     patientViewModel
       .fetchPatientResources(patientId)
       .observe(this@QuestPatientDetailActivity, this::handlePatientResources)
