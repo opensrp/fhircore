@@ -56,7 +56,7 @@ class AncLoginServiceTest : RobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldNavigateToRegisterScreen() {
-    loginService.navigateToHome(canSetOtp = false)
+    loginService.navigateToHome(canSetPin = false)
     val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
     val shadowIntent: ShadowIntent = shadowOf(startedIntent)
     Assert.assertEquals(FamilyRegisterActivity::class.java, shadowIntent.intentClass)

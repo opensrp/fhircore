@@ -14,43 +14,42 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.otp
+package org.smartregister.fhircore.anc.ui.pin
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 
 @AndroidEntryPoint
-class OtpLoginActivity : BaseMultiLanguageActivity() {
+class PinSetupActivity : BaseMultiLanguageActivity() {
 
-  val otpViewModel by viewModels<OtpViewModel>()
+  val pinViewModel by viewModels<PinViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-    otpViewModel.apply {
-      val optLoginActivity = this@OtpLoginActivity
-      loadData(isSetup = false)
-      navigateToHome.observe(optLoginActivity) { optLoginActivity.moveToHome() }
-      launchDialPad.observe(optLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
-      navigateToLogin.observe(optLoginActivity) { optLoginActivity.moveToLoginViaUsername() }
-    }
-    setContent { AppTheme { OtpLoginScreen(otpViewModel) } }
-  }
 
-  private fun launchDialPad(phone: String) {
-    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
+    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+
+    pinViewModel.apply {
+      loadData(isSetup = true)
+      val pinSetupActivity = this@PinSetupActivity
+      navigateToHome.observe(pinSetupActivity) { pinSetupActivity.moveToHome() }
+      navigateToSettings.observe(pinSetupActivity) { pinSetupActivity.moveToSettings() }
+      pin.observe(pinSetupActivity) { it.let { enableSetPin.postValue(it.length > 3) } }
+    }
+    setContent { AppTheme { PinSetupScreen(pinViewModel) } }
   }
 
   private fun moveToHome() {
+    sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, "false")
     startActivity(
       Intent(this, FamilyRegisterActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -59,9 +58,9 @@ class OtpLoginActivity : BaseMultiLanguageActivity() {
     finish()
   }
 
-  private fun moveToLoginViaUsername() {
+  private fun moveToSettings() {
     startActivity(
-      Intent(this, LoginActivity::class.java).apply {
+      Intent(this, AppSettingActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)

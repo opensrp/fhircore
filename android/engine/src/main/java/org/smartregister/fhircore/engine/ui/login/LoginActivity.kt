@@ -30,7 +30,7 @@ import org.smartregister.fhircore.engine.configuration.view.LoginViewConfigurati
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.OTP_PIN
+import org.smartregister.fhircore.engine.util.PIN_KEY
 
 @AndroidEntryPoint
 class LoginActivity :
@@ -50,7 +50,7 @@ class LoginActivity :
         this@LoginActivity,
         {
           loginService.navigateToHome(
-            loginViewModel.loginViewConfiguration.value?.enableOtp == true
+            loginViewModel.loginViewConfiguration.value?.enablePin == true
           )
         }
       )
@@ -64,15 +64,13 @@ class LoginActivity :
     }
 
     // Check if Otp enabled and stored then move to otp login
-    val isOtpEnabled = loginViewModel.loginViewConfiguration.value?.enableOtp ?: false
+    val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
     val stayUserNamePasswordLogin =
       loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, "").equals("true", true)
-    val lastOtpExist = !loginViewModel.sharedPreferences.read(OTP_PIN, "").isNullOrEmpty()
-    if (isOtpEnabled && lastOtpExist && !stayUserNamePasswordLogin) {
-      loginService.navigateToOtpLogin()
-    }
-    if (stayUserNamePasswordLogin) {
+    val lastPinExist = !loginViewModel.sharedPreferences.read(PIN_KEY, "").isNullOrEmpty()
+    if (isPinEnabled && lastPinExist && !stayUserNamePasswordLogin) {
       loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "false")
+      loginService.navigateToPinLogin()
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.otp
+package org.smartregister.fhircore.anc.ui.pin
 
 import android.app.Application
 import androidx.lifecycle.LiveData
@@ -25,11 +25,11 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.OTP_PIN
+import org.smartregister.fhircore.engine.util.PIN_KEY
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltViewModel
-class OtpViewModel
+class PinViewModel
 @Inject
 constructor(
   val dispatcher: DispatcherProvider,
@@ -65,12 +65,11 @@ constructor(
   val enableSetPin
     get() = _enableSetPin
 
-  lateinit var savedOtp: String
+  lateinit var savedPin: String
   var isSetupPage: Boolean = false
 
   fun loadData(isSetup: Boolean = false) {
-    sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "false")
-    savedOtp = sharedPreferences.read(OTP_PIN, "").toString()
+    savedPin = sharedPreferences.read(PIN_KEY, "").toString()
     isSetupPage = isSetup
   }
 
@@ -79,7 +78,7 @@ constructor(
 
     if (newPin.length == 4) {
       _showError.postValue(false)
-      sharedPreferences.write(OTP_PIN, newPin)
+      sharedPreferences.write(PIN_KEY, newPin)
       _navigateToHome.postValue(true)
     } else {
       _showError.postValue(true)
@@ -89,7 +88,7 @@ constructor(
   fun onPinChanged(newPin: String) {
 
     if (newPin.length == 4) {
-      val pinMatched = newPin.equals(savedOtp, false)
+      val pinMatched = newPin.equals(savedPin, false)
       enableSetPin.value = true
       showError.value = !pinMatched
       _pin.postValue(newPin)
@@ -98,6 +97,7 @@ constructor(
       }
     } else {
       showError.value = false
+      enableSetPin.value = false
     }
   }
 

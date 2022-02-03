@@ -14,37 +14,40 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.otp
+package org.smartregister.fhircore.anc.ui.pin
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
-import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
-class OtpSetupActivity : BaseMultiLanguageActivity() {
+class PinLoginActivity : BaseMultiLanguageActivity() {
 
-  val otpViewModel by viewModels<OtpViewModel>()
+  val pinViewModel by viewModels<PinViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-
-    otpViewModel.apply {
-      loadData(isSetup = true)
-      val optSetupActivity = this@OtpSetupActivity
-      navigateToHome.observe(optSetupActivity) { optSetupActivity.moveToHome() }
-      navigateToSettings.observe(optSetupActivity) { optSetupActivity.moveToSettings() }
-      pin.observe(optSetupActivity) { it.let { enableSetPin.postValue(it.length > 3) } }
+    pinViewModel.apply {
+      val pinLoginActivity = this@PinLoginActivity
+      loadData(isSetup = false)
+      navigateToHome.observe(pinLoginActivity) { pinLoginActivity.moveToHome() }
+      launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
+      navigateToLogin.observe(pinLoginActivity) { pinLoginActivity.moveToLoginViaUsername() }
     }
-    setContent { AppTheme { OtpSetupScreen(otpViewModel) } }
+    setContent { AppTheme { PinLoginScreen(pinViewModel) } }
+  }
+
+  private fun launchDialPad(phone: String) {
+    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
 
   private fun moveToHome() {
@@ -56,9 +59,9 @@ class OtpSetupActivity : BaseMultiLanguageActivity() {
     finish()
   }
 
-  private fun moveToSettings() {
+  private fun moveToLoginViaUsername() {
     startActivity(
-      Intent(this, AppSettingActivity::class.java).apply {
+      Intent(this, LoginActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)

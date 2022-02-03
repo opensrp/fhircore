@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.otp
+package org.smartregister.fhircore.anc.ui.pin
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -28,7 +28,7 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
 @ExperimentalCoroutinesApi
-class OtpSetupScreenTest : RobolectricTest() {
+class PinSetupScreenTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 
@@ -43,9 +43,9 @@ class OtpSetupScreenTest : RobolectricTest() {
     )
 
   @Test
-  fun testOtpLoginScreenPage() {
+  fun testPinSetupScreenPage() {
     composeRule.setContent {
-      OtpSetupPage(
+      PinSetupPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
@@ -53,8 +53,6 @@ class OtpSetupScreenTest : RobolectricTest() {
         inputPin = "0000"
       )
     }
-    composeRule.onNodeWithTag(TOOLBAR_MENU_ICON).assertExists()
-    composeRule.onNodeWithTag(TOOLBAR_MENU_SETTINGS).assertExists()
     composeRule.onNodeWithTag(SET_PIN_CONFIRM_BUTTON).assertExists()
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
     composeRule.onNodeWithTag(SET_PIN_CONFIRM_BUTTON).performClick()

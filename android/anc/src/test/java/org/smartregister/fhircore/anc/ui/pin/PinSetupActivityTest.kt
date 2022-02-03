@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.otp
+package org.smartregister.fhircore.anc.ui.pin
 
 import android.app.Activity
 import android.app.Application
@@ -35,14 +35,14 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.OTP_PIN
+import org.smartregister.fhircore.engine.util.PIN_KEY
 
 @HiltAndroidTest
-class OtpLoginActivityTest : ActivityRobolectricTest() {
+class PinSetupActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var otpLoginActivity: OtpLoginActivity
+  private lateinit var pinSetupActivity: PinSetupActivity
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
@@ -52,44 +52,38 @@ class OtpLoginActivityTest : ActivityRobolectricTest() {
 
   @BindValue
   val loginViewModel =
-    OtpViewModel(DefaultDispatcherProvider(), mockk(), ApplicationProvider.getApplicationContext())
+    PinViewModel(DefaultDispatcherProvider(), mockk(), ApplicationProvider.getApplicationContext())
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    otpLoginActivity =
-      spyk(Robolectric.buildActivity(OtpLoginActivity::class.java).create().resume().get())
-    coEvery { otpLoginActivity.otpViewModel.savedOtp } returns "1234"
-    coEvery { otpLoginActivity.otpViewModel.pin } returns testPin
+    pinSetupActivity =
+      spyk(Robolectric.buildActivity(PinSetupActivity::class.java).create().resume().get())
+    coEvery { pinSetupActivity.pinViewModel.savedPin } returns "1234"
+    coEvery { pinSetupActivity.pinViewModel.pin } returns testPin
   }
 
   @Test
-  fun testNavigateToLoginShouldVerifyExpectedIntent() {
-    otpLoginActivity.otpViewModel.onMenuLoginClicked()
-    val expectedIntent = Intent(otpLoginActivity, LoginActivity::class.java)
+  fun testNavigateToSettingShouldVerifyExpectedIntent() {
+    pinSetupActivity.pinViewModel.onMenuSettingClicked()
+    val expectedIntent = Intent(pinSetupActivity, AppSettingActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
-    otpLoginActivity.otpViewModel.onPinChanged("1234")
+    pinSetupActivity.pinViewModel.onPinConfirmed()
     Assert.assertEquals(
-      otpLoginActivity.otpViewModel.sharedPreferences.read(OTP_PIN, "").toString(),
+      pinSetupActivity.pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
       testPin.value.toString()
     )
-    val expectedIntent = Intent(otpLoginActivity, FamilyRegisterActivity::class.java)
+    val expectedIntent = Intent(pinSetupActivity, FamilyRegisterActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
-  @Test
-  fun testOnPinChangedShowsError() {
-    otpLoginActivity.otpViewModel.onPinChanged("0909")
-    Assert.assertEquals(otpLoginActivity.otpViewModel.showError.value, true)
-  }
-
   override fun getActivity(): Activity {
-    return otpLoginActivity
+    return pinSetupActivity
   }
 }

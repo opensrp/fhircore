@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.otp
+package org.smartregister.fhircore.anc.ui.pin
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,11 +28,12 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.Button
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -45,13 +49,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,38 +66,39 @@ import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU_BUTTON
 import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_TITLE
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
+import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
+import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-const val TOOLBAR_MENU_SETTINGS = "toolbarMenuSettings"
-const val SET_PIN_CONFIRM_BUTTON = "SET_PIN_CONFIRM_BUTTON"
+const val TOOLBAR_MENU_ICON = "toolbarIcon"
+const val TOOLBAR_MENU_LOGIN = "toolbarMenuLogin"
+const val FORGOT_PIN = "forgot_pin"
 
 @Composable
-fun OtpSetupScreen(viewModel: OtpViewModel) {
+fun PinLoginScreen(viewModel: PinViewModel) {
 
-  val inputPin by viewModel.pin.observeAsState(initial = "")
-  val enableSetPin by viewModel.enableSetPin.observeAsState(initial = false)
+  val showError by viewModel.showError.observeAsState(initial = false)
 
-  OtpSetupPage(
+  PinLoginPage(
     onPinChanged = viewModel::onPinChanged,
-    inputPin = inputPin,
-    setPinEnabled = enableSetPin ?: false,
-    onPinConfirmed = viewModel::onPinConfirmed,
-    onMenuSettingClicked = { viewModel.onMenuSettingClicked() },
+    showError = showError,
+    onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
+    forgotPin = viewModel::forgotPin,
   )
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun OtpSetupPage(
+fun PinLoginPage(
   modifier: Modifier = Modifier,
   onPinChanged: (String) -> Unit,
-  inputPin: String,
-  setPinEnabled: Boolean = false,
-  onPinConfirmed: () -> Unit,
-  onMenuSettingClicked: () -> Unit,
+  showError: Boolean = false,
+  onMenuLoginClicked: () -> Unit,
+  forgotPin: () -> Unit
 ) {
 
   var showMenu by remember { mutableStateOf(false) }
+  var showForgotPinDialog by remember { mutableStateOf(false) }
 
   Surface(color = colorResource(id = R.color.white_slightly_opaque)) {
     TopAppBar(
@@ -119,13 +125,17 @@ fun OtpSetupPage(
           DropdownMenuItem(
             onClick = {
               showMenu = false
-              onMenuSettingClicked()
+              onMenuLoginClicked()
             },
-            modifier = Modifier.testTag(TOOLBAR_MENU_SETTINGS)
-          ) { Text(text = stringResource(id = R.string.settings)) }
+            modifier = Modifier.testTag(TOOLBAR_MENU_LOGIN)
+          ) { Text(text = stringResource(id = R.string.otp_menu_login)) }
         }
       }
     )
+
+    if (showForgotPinDialog) {
+      ForgotPinDialog(forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
+    }
 
     Column(
       modifier =
@@ -145,61 +155,111 @@ fun OtpSetupPage(
             .testTag(APP_LOGO_TAG),
       )
       Text(
-        text = stringResource(R.string.set_pin),
+        text = stringResource(R.string.app_name_ecbis),
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
-        modifier = modifier.padding(top = 20.dp).align(Alignment.CenterHorizontally)
+        modifier = modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally)
       )
 
       Text(
-        text = stringResource(R.string.set_pin_message),
+        text = stringResource(R.string.enter_pin_w4vv01),
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Normal,
-        fontSize = 18.sp,
-        modifier =
-          modifier.padding(horizontal = 16.dp, vertical = 16.dp).align(Alignment.CenterHorizontally)
+        fontSize = 20.sp,
+        modifier = modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally)
       )
 
-      PinView(otpInputLength = 4, onPinChanged = onPinChanged, inputPin = inputPin)
+      PinView(
+        pinInputLength = 4,
+        isDotted = true,
+        onPinChanged = onPinChanged,
+        showError = showError
+      )
 
-      Button(
-        enabled = setPinEnabled,
-        onClick = onPinConfirmed,
-        modifier = Modifier.fillMaxWidth().padding(top = 30.dp).testTag(SET_PIN_CONFIRM_BUTTON)
-      ) {
+      if (showError)
         Text(
-          color = Color.White,
-          text = stringResource(id = R.string.set_pin),
-          modifier = Modifier.padding(8.dp)
+          text = stringResource(R.string.incorrect_pin_please_retry),
+          textAlign = TextAlign.Center,
+          fontWeight = FontWeight.Normal,
+          fontSize = 16.sp,
+          color = colorResource(id = R.color.colorError),
+          modifier = modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally)
         )
-      }
+
+      Text(
+        text = stringResource(R.string.forgot_pin),
+        color = LoginButtonColor,
+        fontSize = 16.sp,
+        style = TextStyle(textDecoration = TextDecoration.Underline, color = LoginDarkColor),
+        modifier =
+          modifier.padding(top = 24.dp).align(Alignment.CenterHorizontally).clickable {
+            showForgotPinDialog = !showForgotPinDialog
+          }
+      )
     }
   }
 }
 
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun OtpSetupPreview() {
-  OtpSetupPage(
-    onPinChanged = {},
-    onPinConfirmed = {},
-    inputPin = "",
-    setPinEnabled = false,
-    onMenuSettingClicked = {}
+fun ForgotPinDialog(
+  forgotPin: () -> Unit,
+  onDismissDialog: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  AlertDialog(
+    modifier = Modifier.testTag(FORGOT_PIN),
+    onDismissRequest = onDismissDialog,
+    title = {
+      Text(
+        text = stringResource(org.smartregister.fhircore.engine.R.string.forgot_password_title),
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp
+      )
+    },
+    text = {
+      Text(
+        text =
+          stringResource(
+            org.smartregister.fhircore.engine.R.string.call_supervisor,
+            "012-3456-789"
+          ),
+        fontSize = 16.sp
+      )
+    },
+    buttons = {
+      Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        horizontalArrangement = Arrangement.End
+      ) {
+        Text(
+          text = stringResource(org.smartregister.fhircore.engine.R.string.cancel),
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
+        )
+        Text(
+          color = MaterialTheme.colors.primary,
+          text = stringResource(org.smartregister.fhircore.engine.R.string.dial_number),
+          modifier =
+            modifier.padding(horizontal = 10.dp).clickable {
+              onDismissDialog()
+              forgotPin()
+            }
+        )
+      }
+    }
   )
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun OtpSetupFilledPreview() {
-  OtpSetupPage(
-    onPinChanged = {},
-    onPinConfirmed = {},
-    inputPin = "1234",
-    setPinEnabled = true,
-    onMenuSettingClicked = {}
-  )
+fun PinLoginPreview() {
+  PinLoginPage(onPinChanged = {}, showError = false, onMenuLoginClicked = {}, forgotPin = {})
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PinLoginErrorPreview() {
+  PinLoginPage(onPinChanged = {}, showError = true, onMenuLoginClicked = {}, forgotPin = {})
 }

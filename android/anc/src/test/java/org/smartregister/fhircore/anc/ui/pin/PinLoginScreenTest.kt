@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.otp
+package org.smartregister.fhircore.anc.ui.pin
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -28,7 +28,7 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
 @ExperimentalCoroutinesApi
-class ReportScreensTest : RobolectricTest() {
+class PinLoginScreensTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 
@@ -43,17 +43,15 @@ class ReportScreensTest : RobolectricTest() {
     )
 
   @Test
-  fun testOtpLoginScreenPage() {
+  fun testPinLoginScreenPage() {
     composeRule.setContent {
-      OtpLoginPage(
+      PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = false,
         onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         forgotPin = { listenerObjectSpy.onForgotPin() }
       )
     }
-    composeRule.onNodeWithTag(TOOLBAR_MENU_ICON).assertExists()
-    composeRule.onNodeWithTag(TOOLBAR_MENU_LOGIN).assertExists()
     composeRule.onNodeWithTag(FORGOT_PIN).assertExists()
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
     composeRule.onNodeWithTag(FORGOT_PIN).performClick()

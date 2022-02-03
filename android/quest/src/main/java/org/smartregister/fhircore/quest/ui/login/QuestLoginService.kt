@@ -37,7 +37,7 @@ class QuestLoginService @Inject constructor() : LoginService {
     }
   }
 
-  override fun navigateToOtpLogin() {
+  override fun navigateToPinLogin() {
     // Do nothing
   }
 }

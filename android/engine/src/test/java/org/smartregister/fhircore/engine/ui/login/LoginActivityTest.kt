@@ -64,7 +64,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
     loginViewModel.navigateToHome()
 
-    verify { loginService.navigateToHome(canSetOtp = false) }
+    verify { loginService.navigateToHome() }
   }
 
   override fun getActivity(): Activity {
@@ -74,6 +74,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
   class TestLoginService : LoginService {
     override lateinit var loginActivity: LoginActivity
     override fun navigateToHome(canSetPin: Boolean) {}
-    override fun navigateToOtpLogin() {}
+    override fun navigateToPinLogin() {}
   }
 }

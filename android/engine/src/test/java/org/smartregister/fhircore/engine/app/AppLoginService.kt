@@ -24,11 +24,11 @@ class AppLoginService @Inject constructor() : LoginService {
 
   override lateinit var loginActivity: LoginActivity
 
-  override fun navigateToHome(canSetOtp: Boolean) {
+  override fun navigateToHome(canSetPin: Boolean) {
     // Do nothing
   }
 
-  override fun navigateToOtpLogin() {
+  override fun navigateToPinLogin() {
     // Do nothing
   }
 }

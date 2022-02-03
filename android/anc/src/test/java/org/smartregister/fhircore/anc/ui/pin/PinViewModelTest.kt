@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.otp
+package org.smartregister.fhircore.anc.ui.pin
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
@@ -31,12 +31,12 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.OTP_PIN
+import org.smartregister.fhircore.engine.util.PIN_KEY
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
-internal class OtpViewModelTest : RobolectricTest() {
+internal class PinViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -48,7 +48,7 @@ internal class OtpViewModelTest : RobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  private lateinit var otpViewModel: OtpViewModel
+  private lateinit var pinViewModel: PinViewModel
 
   private val testPin = MutableLiveData("1234")
 
@@ -57,49 +57,49 @@ internal class OtpViewModelTest : RobolectricTest() {
     hiltRule.inject()
     // Spy needed to control interaction with the real injected dependency
 
-    otpViewModel =
-      OtpViewModel(
+    pinViewModel =
+      PinViewModel(
         dispatcher = dispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
         app = ApplicationProvider.getApplicationContext()
       )
 
-    coEvery { otpViewModel.savedOtp } returns "1234"
-    coEvery { otpViewModel.pin } returns testPin
+    coEvery { pinViewModel.savedPin } returns "1234"
+    coEvery { pinViewModel.pin } returns testPin
   }
 
   @Test
   fun testOnPinChangeValidated() {
-    otpViewModel.run { loadData() }
-    otpViewModel.onPinChanged(testPin.value.toString())
+    pinViewModel.run { loadData() }
+    pinViewModel.onPinChanged(testPin.value.toString())
     Assert.assertEquals(
-      otpViewModel.sharedPreferences.read(OTP_PIN, "").toString(),
+      pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
       testPin.value.toString()
     )
   }
 
   @Test
   fun testOnPinChangeError() {
-    otpViewModel.run { loadData() }
-    otpViewModel.onPinChanged("3232")
-    Assert.assertEquals(otpViewModel.showError.value, true)
+    pinViewModel.run { loadData() }
+    pinViewModel.onPinChanged("3232")
+    Assert.assertEquals(pinViewModel.showError.value, true)
   }
 
   @Test
   fun testOnMenuLoginClicked() {
-    otpViewModel.onMenuLoginClicked()
-    Assert.assertEquals(otpViewModel.navigateToLogin.value, true)
+    pinViewModel.onMenuLoginClicked()
+    Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
   }
 
   @Test
   fun testOnMenuSettingsClicked() {
-    otpViewModel.onMenuSettingClicked()
-    Assert.assertEquals(otpViewModel.showError.value, true)
+    pinViewModel.onMenuSettingClicked()
+    Assert.assertEquals(pinViewModel.showError.value, true)
   }
 
   @Test
   fun testOnPinConfirmed() {
-    otpViewModel.onPinConfirmed()
-    Assert.assertEquals(otpViewModel.navigateToHome.value, true)
+    pinViewModel.onPinConfirmed()
+    Assert.assertEquals(pinViewModel.navigateToHome.value, true)
   }
 }

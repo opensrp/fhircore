@@ -71,20 +71,20 @@ const val PIN_VIEW = "pin_view"
 @ExperimentalComposeUiApi
 @Composable
 fun PinView(
-  otpInputLength: Int = 4,
+  pinInputLength: Int = 4,
   onPinChanged: (String) -> Unit = {},
   inputPin: String = "",
   isDotted: Boolean = false,
   showError: Boolean = false
 ) {
   val (editValue, setEditValue) = remember { mutableStateOf(inputPin) }
-  val otpLength = remember { otpInputLength }
+  val pinLength = remember { pinInputLength }
   val focusRequester = remember { FocusRequester() }
   val keyboard = LocalSoftwareKeyboardController.current
   TextField(
     value = editValue,
     onValueChange = {
-      if (it.length <= otpLength) {
+      if (it.length <= pinLength) {
         setEditValue(it)
         onPinChanged(it)
       }
@@ -104,8 +104,8 @@ fun PinView(
         .background(color = colorResource(id = R.color.cardview_light_background)),
     horizontalArrangement = Arrangement.Center
   ) {
-    (0 until otpLength).map { index ->
-      OtpCell(
+    (0 until pinLength).map { index ->
+      PinCell(
         modifier =
           Modifier.size(40.dp).clickable {
             focusRequester.requestFocus()
@@ -122,7 +122,7 @@ fun PinView(
 }
 
 @Composable
-fun OtpCell(
+fun PinCell(
   modifier: Modifier,
   value: String,
   isCursorVisible: Boolean = false,

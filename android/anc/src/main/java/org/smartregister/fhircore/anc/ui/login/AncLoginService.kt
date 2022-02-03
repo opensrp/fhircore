@@ -19,23 +19,22 @@ package org.smartregister.fhircore.anc.ui.login
 import android.content.Intent
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
-import org.smartregister.fhircore.anc.ui.otp.OtpLoginActivity
-import org.smartregister.fhircore.anc.ui.otp.OtpSetupActivity
+import org.smartregister.fhircore.anc.ui.pin.PinLoginActivity
+import org.smartregister.fhircore.anc.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
-class AncLoginService @Inject constructor(val sharedPreferencesHelper: SharedPreferencesHelper) :
-  LoginService {
+class AncLoginService @Inject constructor() : LoginService {
 
   override lateinit var loginActivity: LoginActivity
 
-  override fun navigateToHome(canSetOtp: Boolean) {
-    // Todo: check whether to setup PIN     or moveTo Register Home
-    if (canSetOtp) { // && sharedPreferencesHelper.read(OTP_PIN, "").isNullOrEmpty()) {
-      sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, "false")
-      navigateToOtpSetup()
+  /**
+   * Navigate to app home page as this fun is implemented if multiple modules,
+   * @param canSetPin : boolean to check whether app can navigate Home or PinSetup page
+   */
+  override fun navigateToHome(canSetPin: Boolean) {
+    if (canSetPin) {
+      navigateToPinSetup()
     } else {
       val intent =
         Intent(loginActivity, FamilyRegisterActivity::class.java).apply {
@@ -48,9 +47,9 @@ class AncLoginService @Inject constructor(val sharedPreferencesHelper: SharedPre
     }
   }
 
-  override fun navigateToOtpLogin() {
+  override fun navigateToPinLogin() {
     val intent =
-      Intent(loginActivity, OtpLoginActivity::class.java).apply {
+      Intent(loginActivity, PinLoginActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
     loginActivity.run {
@@ -59,9 +58,9 @@ class AncLoginService @Inject constructor(val sharedPreferencesHelper: SharedPre
     }
   }
 
-  private fun navigateToOtpSetup() {
+  private fun navigateToPinSetup() {
     val intent =
-      Intent(loginActivity, OtpSetupActivity::class.java).apply {
+      Intent(loginActivity, PinSetupActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
     loginActivity.run {

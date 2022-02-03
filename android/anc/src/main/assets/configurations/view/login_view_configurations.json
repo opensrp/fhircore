@@ -6,7 +6,7 @@
     "applicationVersion": "0.0.3",
     "darkMode": true,
     "showLogo": false,
-    "enableOtp": false
+    "enablePin": false
   },
   {
     "appId": "ecbis",
@@ -15,6 +15,6 @@
     "applicationVersion": "0.0.1",
     "darkMode": false,
     "showLogo": true,
-    "enableOtp": true
+    "enablePin": true
   }
 ]
