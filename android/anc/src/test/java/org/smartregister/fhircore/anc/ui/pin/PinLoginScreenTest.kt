@@ -34,6 +34,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU
 import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU_BUTTON
+import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_TITLE
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
 @ExperimentalCoroutinesApi
@@ -68,6 +69,7 @@ class PinLoginScreensTest : RobolectricTest() {
     composeRule.onNodeWithTag(FORGOT_PIN).assertExists()
     composeRule.onNodeWithTag(FORGOT_PIN).assertHasClickAction().performClick()
 
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertExists()
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).assertHasClickAction().performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).assertIsDisplayed()
     composeRule

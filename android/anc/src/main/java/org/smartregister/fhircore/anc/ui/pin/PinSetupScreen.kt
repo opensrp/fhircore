@@ -64,7 +64,8 @@ import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val TOOLBAR_MENU_SETTINGS = "toolbarMenuSettings"
-const val SET_PIN_CONFIRM_BUTTON = "SET_PIN_CONFIRM_BUTTON"
+const val SET_PIN_CONFIRM_BUTTON = "setPinConfirmButton"
+const val SET_PIN_TEXT = "setPinText"
 
 @Composable
 fun PinSetupScreen(viewModel: PinViewModel) {
@@ -171,7 +172,7 @@ fun PinSetupPage(
         Text(
           color = Color.White,
           text = stringResource(id = R.string.set_pin),
-          modifier = Modifier.padding(8.dp)
+          modifier = Modifier.padding(8.dp).testTag(SET_PIN_TEXT)
         )
       }
     }

@@ -34,6 +34,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU
 import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU_BUTTON
+import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_TITLE
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
 @ExperimentalCoroutinesApi
@@ -61,7 +62,7 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
         setPinEnabled = false,
-        inputPin = "0000"
+        inputPin = ""
       )
     }
 
@@ -70,6 +71,7 @@ class PinSetupScreenTest : RobolectricTest() {
     composeRule.onNodeWithTag(SET_PIN_CONFIRM_BUTTON).assertExists()
     composeRule.onNodeWithTag(SET_PIN_CONFIRM_BUTTON).assertHasClickAction()
 
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertExists()
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).assertHasClickAction().performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).assertIsDisplayed()
     composeRule
@@ -80,5 +82,20 @@ class PinSetupScreenTest : RobolectricTest() {
       .performClick()
 
     verify { listenerObjectSpy.onMenuSettingsClicked() }
+  }
+
+  @Test
+  fun testPinSetupScreenPageSetPinButtonEnabled() {
+    composeRule.setContent {
+      PinSetupPage(
+        onPinChanged = { listenerObjectSpy.onPinChanged() },
+        onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
+        onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+        setPinEnabled = true,
+        inputPin = "0000"
+      )
+    }
+
+    composeRule.onNodeWithTag(PIN_VIEW).assertExists()
   }
 }

@@ -93,6 +93,20 @@ internal class PinViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testLoadDataForSetupScreen() {
+    pinViewModel.loadData(isSetup = true)
+    Assert.assertEquals(pinViewModel.isSetupPage, true)
+    Assert.assertNotNull(pinViewModel.savedPin)
+  }
+
+  @Test
+  fun testLoadDataForLoginScreen() {
+    pinViewModel.loadData(isSetup = false)
+    Assert.assertEquals(pinViewModel.isSetupPage, false)
+    Assert.assertNotNull(pinViewModel.savedPin)
+  }
+
+  @Test
   fun testOnPinChangeError() {
     pinViewModel.onPinChanged("3232")
     Assert.assertEquals(pinViewModel.showError.value, true)
