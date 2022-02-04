@@ -39,9 +39,10 @@ data class Filter(
   val key: String,
   val displayableProperty: String = key,
   val valuePrefix: String? = null,
+  val valuePostfix: String? = null,
   val label: String? = null,
   val valueType: Enumerations.DataType,
-  val valueCoding: Code?,
+  val valueCoding: Code? = null,
   val valueString: String? = null,
   val dynamicColors: List<DynamicColor>? = null,
   val properties: Properties? = null

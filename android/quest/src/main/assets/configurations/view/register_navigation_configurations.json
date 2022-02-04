@@ -14,7 +14,8 @@
         "icon" : "ic_reports",
         "action": {
           "type": "questionnaire",
-          "form" : "14222"
+          "form" : "14222",
+          "readOnly": false
         }
       }
     ]
