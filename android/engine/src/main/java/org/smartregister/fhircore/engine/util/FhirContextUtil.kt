@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.FhirCareTeamExtension
 import org.smartregister.model.practitioner.FhirOrganizationExtension
 import org.smartregister.model.practitioner.FhirPractitionerDetails
@@ -34,21 +35,10 @@ class FhirContextUtil {
     fhirContext.registerCustomType(FhirCareTeamExtension::class.java)
     fhirContext.registerCustomType(FhirOrganizationExtension::class.java)
     fhirContext.registerCustomType(FhirPractitionerDetails::class.java)
+    fhirContext.registerCustomType(LocationHierarchy::class.java)
     fhirContext.registerCustomType(KeycloakUserDetails::class.java)
     fhirContext.registerCustomType(UserBioData::class.java)
 
     return fhirContext.newJsonParser()
-  }
-
-  fun getPractitionerDetailContext(): FhirContext? {
-    val fhirContext = FhirContext.forR4()
-
-    fhirContext.registerCustomType(PractitionerDetails::class.java)
-    fhirContext.registerCustomType(FhirCareTeamExtension::class.java)
-    fhirContext.registerCustomType(FhirOrganizationExtension::class.java)
-    fhirContext.registerCustomType(FhirPractitionerDetails::class.java)
-    fhirContext.registerCustomType(KeycloakUserDetails::class.java)
-    fhirContext.registerCustomType(UserBioData::class.java)
-    return fhirContext
   }
 }

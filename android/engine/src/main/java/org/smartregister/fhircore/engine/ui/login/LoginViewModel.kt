@@ -26,6 +26,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
@@ -35,6 +36,7 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import org.hl7.fhir.r4.model.CareTeam
 import org.hl7.fhir.r4.model.Location
@@ -51,11 +53,13 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.FhirContextUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.UserDetailsUtils
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.toJson
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
 import retrofit2.Response
@@ -116,8 +120,10 @@ constructor(
     sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson())
   }
 
-  private fun callPractitionerDetails(userResponse: UserInfo) {
-    viewModelScope.launch(dispatcher.io()) {
+  fun callPractitionerDetails(userResponse: UserInfo) {
+    runBlocking {
+      val iParser: IParser = FhirContextUtil().getPractitionerDetailParser()!!
+
       val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
       val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
       val fhirCareTeamExtensionList =
@@ -133,7 +139,8 @@ constructor(
         locationHierarchyList.forEach {
           val location = Location()
           location.copyValues(it)
-          fhirEngine.save(location)
+          Timber.e(location.toJson())
+          fhirEngine.save(it)
         }
       }
       if (fhirOrganizationExtensions.isNotEmpty()) {

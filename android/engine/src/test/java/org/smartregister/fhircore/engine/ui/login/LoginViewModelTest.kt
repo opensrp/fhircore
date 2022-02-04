@@ -31,6 +31,7 @@ import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -42,6 +43,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -98,6 +100,11 @@ internal class LoginViewModelTest : RobolectricTest() {
   @After
   fun tearDown() {
     accountAuthenticatorSpy.secureSharedPreference.deleteCredentials()
+  }
+
+  @Test
+  fun testTestTest() = runBlockingTest{
+    loginViewModel.callPractitionerDetails(UserInfo(sub = "111"))
   }
 
   @Test

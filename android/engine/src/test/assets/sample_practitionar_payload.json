@@ -76,6 +76,7 @@
           ],
           "teams": [
             {
+              "fhirType": "FhirOrganizationExtension",
               "resourceType": "Organization",
               "id": "202",
               "meta": {
