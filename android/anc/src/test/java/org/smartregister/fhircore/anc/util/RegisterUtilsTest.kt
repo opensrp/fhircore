@@ -82,7 +82,7 @@ class RegisterUtilsTest : RobolectricTest() {
   @Test
   fun testFamilyMemberRegistrationStructureMapExtraction() {
     val formResourcesDir = "questionnaires/family-member-registration"
-    val structureMap = "$formResourcesDir/structure-map.txt".readFile()
+    val structureMap = "questionnaires/family-registration/structure-map.txt".readFile()
     val response = "$formResourcesDir/questionnaire-response.json".readFile()
     val scu = buildStructureMapUtils()
 

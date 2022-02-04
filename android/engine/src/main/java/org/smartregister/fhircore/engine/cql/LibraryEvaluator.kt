@@ -76,7 +76,7 @@ class LibraryEvaluator @Inject constructor() {
     CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
   lateinit var fhirModelResolver: R4FhirModelResolverExt
   lateinit var modelManager: ModelManager
-  private var initialized = false
+  var initialized = false
 
   fun initialize() {
     if (initialized) return

@@ -40,7 +40,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
       Timber.plant(Timber.DebugTree())
     }
 
-    CoroutineScope(SupervisorJob() + Dispatchers.Main).launch {
+    CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
       FhirContext.forR4Cached().apply {
         Timber.i("Loading FhirContext.forR4Cached on application init")
       }

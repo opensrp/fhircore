@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -27,6 +28,7 @@ import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA_QUESTIONNAIRE_JSON_STRING
@@ -35,6 +37,7 @@ import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
@@ -97,6 +100,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     setContentView(R.layout.activity_questionnaire)
 
     val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
@@ -108,9 +112,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     val loadProgress = showProgressAlert(this, R.string.loading)
 
     lifecycleScope.launch {
-      async { questionnaireViewModel.libraryEvaluator.initialize() }
-
       loadQuestionnaireAndConfig(formName)
+
+      async(Dispatchers.Default) { questionnaireViewModel.libraryEvaluator.initialize() }
 
       // Only add the fragment once, when the activity is first created.
       if (savedInstanceState == null) {
@@ -119,7 +123,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       updateViews()
 
-      loadProgress.dismiss()
+      fragment.whenStarted { loadProgress.dismiss() }
     }
   }
 
@@ -147,8 +151,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private suspend fun renderFragment() {
     fragment =
       FhirCoreQuestionnaireFragment().apply {
-        populateInitialValues(questionnaire)
-
         val questionnaireString = parser.encodeResourceToString(questionnaire)
 
         // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
@@ -207,6 +209,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             identifier = questionnaire.logicalId
           )
       }
+      .also { populateInitialValues(questionnaire) }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {

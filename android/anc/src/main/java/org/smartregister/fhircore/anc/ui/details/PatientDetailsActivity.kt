@@ -155,7 +155,10 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
                 questionnaireType = QuestionnaireType.EDIT
               )
             )
-            .putExtra(FamilyQuestionnaireActivity.HEAD_RECORD_ID_KEY, patient.value?.headId)
+            .putExtra(
+              FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY,
+              patient.value?.headId
+            )
         )
         true
       }
