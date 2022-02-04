@@ -36,8 +36,8 @@ import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -101,7 +101,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launch {
       loadQuestionnaireAndConfig(formName)
 
-      async(dispatcherProvider.default()) { questionnaireViewModel.libraryEvaluator.initialize() }
+      withContext(dispatcherProvider.io()) { questionnaireViewModel.libraryEvaluator.initialize() }
 
       // Only add the fragment once, when the activity is first created.
       if (savedInstanceState == null) {
