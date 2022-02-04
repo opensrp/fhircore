@@ -252,14 +252,11 @@ constructor(
                 else -> ""
               }
 
-            val initialPopulation =
-              stratifierComponent.findPopulation(INITIAL_POPULATION)?.count ?: 0
             val numerator = stratifierComponent.findPopulation(NUMERATOR)?.count ?: 0
             val denominator = stratifierComponent.findPopulation(DENOMINATOR)?.count ?: 0
 
             val percentage =
-              if (denominator == 0 || numerator == 0) 0
-              else ceil((numerator / denominator) * initialPopulation.toDouble()).toInt()
+              ceil((numerator / if (denominator == 0) 1 else denominator) * 100.0).toInt()
             val count = "$numerator/$denominator"
             ResultItem(title = text, percentage = percentage.toString(), count = count)
           }
