@@ -79,17 +79,36 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnPinChangeValidated() {
+    pinViewModel.apply {
+      savedPin = "1234"
+      isSetupPage = false
+    }
     pinViewModel.onPinChanged(testPin.value.toString())
     Assert.assertEquals(
       pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
       testPin.value.toString()
     )
+    Assert.assertEquals(pinViewModel.enableSetPin.value, true)
+    Assert.assertEquals(pinViewModel.navigateToHome.value, true)
   }
 
   @Test
   fun testOnPinChangeError() {
     pinViewModel.onPinChanged("3232")
     Assert.assertEquals(pinViewModel.showError.value, true)
+  }
+
+  @Test
+  fun testOnPinChangeInvalid() {
+    pinViewModel.onPinChanged("32")
+    Assert.assertEquals(pinViewModel.showError.value, false)
+    Assert.assertEquals(pinViewModel.enableSetPin.value, false)
+  }
+
+  @Test
+  fun testOnForgotPin() {
+    pinViewModel.forgotPin()
+    Assert.assertEquals(pinViewModel.launchDialPad.value, "tel:0123456789")
   }
 
   @Test

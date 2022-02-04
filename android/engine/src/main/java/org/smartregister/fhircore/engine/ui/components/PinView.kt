@@ -67,6 +67,9 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 
 const val PIN_VIEW = "pin_view"
+const val PIN_VIEW_CELL = "pin_view_cell"
+const val PIN_VIEW_CELL_DOTTED = "pin_view_cell_dotted"
+const val PIN_VIEW_CELL_TEXT = "pin_view_cell_text"
 const val PIN_VIEW_ERROR = "pin_view_error"
 
 @ExperimentalComposeUiApi
@@ -125,7 +128,7 @@ fun PinView(
 
 @Composable
 fun PinCell(
-  modifier: Modifier,
+  modifier: Modifier = Modifier,
   value: String,
   isCursorVisible: Boolean = false,
   isDotted: Boolean = false,
@@ -135,9 +138,6 @@ fun PinCell(
   val (cursorSymbol, setCursorSymbol) = remember { mutableStateOf("") }
   var borderColor = colorResource(id = R.color.darkGrayText)
   var dottedBg = colorResource(id = R.color.darkGrayText)
-  if (value.length == 4) {
-    dottedBg = colorResource(id = R.color.colorSuccess)
-  }
   if (showError) {
     borderColor = colorResource(id = R.color.colorError)
     dottedBg = colorResource(id = R.color.colorErrorDull)
@@ -147,6 +147,9 @@ fun PinCell(
   } else if (value.isEmpty()) {
     borderColor = colorResource(id = R.color.light_gray)
     dottedBg = colorResource(id = R.color.light_gray)
+  }
+  if (value.length == 4) {
+    dottedBg = colorResource(id = R.color.colorSuccess)
   }
   LaunchedEffect(key1 = cursorSymbol, isCursorVisible) {
     if (isCursorVisible) {
@@ -160,7 +163,7 @@ fun PinCell(
   Box(modifier = modifier) {
     if (isDotted) {
       Card(
-        modifier = Modifier.size(30.dp).align(Alignment.Center),
+        modifier = Modifier.size(30.dp).align(Alignment.Center).testTag(PIN_VIEW_CELL_DOTTED),
         elevation = 1.dp,
         shape = RoundedCornerShape(15.dp),
         border = BorderStroke(width = 1.dp, color = borderColor),
@@ -170,13 +173,13 @@ fun PinCell(
           text = if (isCursorVisible) cursorSymbol else "",
           fontSize = 18.sp,
           style = MaterialTheme.typography.body1,
-          modifier = Modifier.wrapContentSize().align(Alignment.Center)
+          modifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(PIN_VIEW_CELL_TEXT)
         )
       }
       //      }
     } else {
       Card(
-        modifier = Modifier.fillMaxSize().align(Alignment.Center),
+        modifier = Modifier.fillMaxSize().align(Alignment.Center).testTag(PIN_VIEW_CELL),
         elevation = 1.dp,
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(width = 1.dp, color = borderColor),
@@ -185,7 +188,7 @@ fun PinCell(
         Text(
           text = if (isCursorVisible) cursorSymbol else value,
           style = MaterialTheme.typography.body1,
-          modifier = Modifier.wrapContentSize().align(Alignment.Center)
+          modifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(PIN_VIEW_CELL_TEXT)
         )
       }
     }
