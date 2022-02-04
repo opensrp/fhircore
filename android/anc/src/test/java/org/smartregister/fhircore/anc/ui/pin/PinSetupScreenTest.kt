@@ -16,14 +16,24 @@
 
 package org.smartregister.fhircore.anc.ui.pin
 
+import android.app.Application
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU
+import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU_BUTTON
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
 @ExperimentalCoroutinesApi
@@ -41,6 +51,8 @@ class PinSetupScreenTest : RobolectricTest() {
       }
     )
 
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+
   @Test
   fun testPinSetupScreenPage() {
     composeRule.setContent {
@@ -52,9 +64,21 @@ class PinSetupScreenTest : RobolectricTest() {
         inputPin = "0000"
       )
     }
-    composeRule.onNodeWithTag(SET_PIN_CONFIRM_BUTTON).assertExists()
+
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
+
+    composeRule.onNodeWithTag(SET_PIN_CONFIRM_BUTTON).assertExists()
     composeRule.onNodeWithTag(SET_PIN_CONFIRM_BUTTON).assertHasClickAction()
-    // verify { listenerObjectSpy.onPinConfirmed() }
+
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).assertHasClickAction().performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(TOOLBAR_MENU)
+      .onChildAt(0)
+      .assertTextEquals(application.getString(R.string.settings))
+      .assertHasClickAction()
+      .performClick()
+
+    verify { listenerObjectSpy.onMenuSettingsClicked() }
   }
 }

@@ -67,6 +67,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 
 const val PIN_VIEW = "pin_view"
+const val PIN_VIEW_ERROR = "pin_view_error"
 
 @ExperimentalComposeUiApi
 @Composable
@@ -75,7 +76,8 @@ fun PinView(
   onPinChanged: (String) -> Unit = {},
   inputPin: String = "",
   isDotted: Boolean = false,
-  showError: Boolean = false
+  showError: Boolean = false,
+  modifier: Modifier = Modifier
 ) {
   val (editValue, setEditValue) = remember { mutableStateOf(inputPin) }
   val pinLength = remember { pinInputLength }

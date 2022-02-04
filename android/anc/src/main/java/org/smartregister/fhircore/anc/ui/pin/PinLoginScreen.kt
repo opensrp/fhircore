@@ -64,6 +64,8 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU
 import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU_BUTTON
 import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_TITLE
+import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
+import org.smartregister.fhircore.engine.ui.components.PIN_VIEW_ERROR
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
@@ -72,7 +74,8 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 
 const val TOOLBAR_MENU_ICON = "toolbarIcon"
 const val TOOLBAR_MENU_LOGIN = "toolbarMenuLogin"
-const val FORGOT_PIN = "forgot_pin"
+const val FORGOT_PIN = "forgotPin"
+const val FORGOT_PIN_DIALOG = "forgotPinDialog"
 
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
@@ -128,7 +131,7 @@ fun PinLoginPage(
               onMenuLoginClicked()
             },
             modifier = Modifier.testTag(TOOLBAR_MENU_LOGIN)
-          ) { Text(text = stringResource(id = R.string.otp_menu_login)) }
+          ) { Text(text = stringResource(id = R.string.menu_login)) }
         }
       }
     )
@@ -174,7 +177,8 @@ fun PinLoginPage(
         pinInputLength = 4,
         isDotted = true,
         onPinChanged = onPinChanged,
-        showError = showError
+        showError = showError,
+        modifier = Modifier.testTag(PIN_VIEW)
       )
 
       if (showError)
@@ -184,7 +188,11 @@ fun PinLoginPage(
           fontWeight = FontWeight.Normal,
           fontSize = 16.sp,
           color = colorResource(id = R.color.colorError),
-          modifier = modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally)
+          modifier =
+            modifier
+              .padding(vertical = 16.dp)
+              .align(Alignment.CenterHorizontally)
+              .testTag(PIN_VIEW_ERROR)
         )
 
       Text(
@@ -193,9 +201,11 @@ fun PinLoginPage(
         fontSize = 16.sp,
         style = TextStyle(textDecoration = TextDecoration.Underline, color = LoginDarkColor),
         modifier =
-          modifier.padding(top = 24.dp).align(Alignment.CenterHorizontally).clickable {
-            showForgotPinDialog = !showForgotPinDialog
-          }
+          modifier
+            .padding(top = 24.dp)
+            .align(Alignment.CenterHorizontally)
+            .testTag(FORGOT_PIN)
+            .clickable { showForgotPinDialog = !showForgotPinDialog }
       )
     }
   }
@@ -208,7 +218,7 @@ fun ForgotPinDialog(
   modifier: Modifier = Modifier
 ) {
   AlertDialog(
-    modifier = Modifier.testTag(FORGOT_PIN),
+    modifier = Modifier.testTag(FORGOT_PIN_DIALOG),
     onDismissRequest = onDismissDialog,
     title = {
       Text(
