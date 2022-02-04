@@ -41,6 +41,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
     pinViewModel.apply {
       loadData(isSetup = true)
       val pinSetupActivity = this@PinSetupActivity
+      onBackClick.observe(pinSetupActivity) { finish() }
       navigateToHome.observe(pinSetupActivity) { pinSetupActivity.moveToHome() }
       navigateToSettings.observe(pinSetupActivity) { pinSetupActivity.moveToSettings() }
       pin.observe(pinSetupActivity) { it.let { enableSetPin.postValue(it.length > 3) } }

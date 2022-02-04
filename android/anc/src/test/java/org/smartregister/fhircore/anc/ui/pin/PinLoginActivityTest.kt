@@ -26,7 +26,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -36,31 +35,34 @@ import org.robolectric.Shadows
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.PIN_KEY
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class PinLoginActivityTest : ActivityRobolectricTest() {
 
   private lateinit var pinLoginActivity: PinLoginActivity
 
-  @get:Rule var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
   private val testPin = MutableLiveData("1234")
 
-  @BindValue
-  val loginViewModel =
-    PinViewModel(DefaultDispatcherProvider(), mockk(), ApplicationProvider.getApplicationContext())
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
+  private lateinit var pinViewModel: PinViewModel
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
+    coEvery { sharedPreferencesHelper.write(any(), "true") } returns Unit
+    pinViewModel = mockk()
+    coEvery { pinViewModel.savedPin } returns "1234"
+    coEvery { pinViewModel.pin } returns testPin
     pinLoginActivity =
-      spyk(Robolectric.buildActivity(PinLoginActivity::class.java).create().resume().get())
-    coEvery { pinLoginActivity.pinViewModel.savedPin } returns "1234"
-    coEvery { pinLoginActivity.pinViewModel.pin } returns testPin
+      Robolectric.buildActivity(PinLoginActivity::class.java).create().resume().get()
   }
 
   @Test
