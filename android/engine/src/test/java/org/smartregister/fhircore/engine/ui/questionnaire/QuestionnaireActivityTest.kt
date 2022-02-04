@@ -93,6 +93,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "1234")
       }
 
     hiltRule.inject()
@@ -103,6 +104,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
       questionnaireConfig
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
+    coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any()) } returns
+      QuestionnaireResponse()
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
