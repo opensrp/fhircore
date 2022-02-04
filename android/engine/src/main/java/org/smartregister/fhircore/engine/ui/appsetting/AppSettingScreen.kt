@@ -45,13 +45,16 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 
 const val REMEMBER_APP_CHECKBOX_TAG = "rememberAppCheckboxTag"
 const val APP_ID_TEXT_INPUT_TAG = "appIdTextInputTag"
+const val COMPOSITION_ID_TEXT_INPUT_TAG = "compositionIdTextInputTag"
 
 @Composable
 fun AppSettingScreen(
   modifier: Modifier = Modifier,
   appId: String,
+  compositionId: String,
   rememberApp: Boolean,
   onAppIdChanged: (String) -> Unit,
+  onCompositionIdChanged: (String) -> Unit,
   onRememberAppChecked: (Boolean) -> Unit,
   onLoadConfigurations: (Boolean) -> Unit
 ) {
@@ -90,6 +93,29 @@ fun AppSettingScreen(
       fontSize = 12.sp,
       modifier = modifier.padding(vertical = 8.dp)
     )
+    Spacer(modifier = modifier.height(20.dp))
+    Text(
+      text = stringResource(R.string.composition_id),
+      modifier = modifier.padding(vertical = 8.dp)
+    )
+    OutlinedTextField(
+      onValueChange = onCompositionIdChanged,
+      value = compositionId,
+      maxLines = 1,
+      singleLine = true,
+      placeholder = {
+        Text(
+          color = Color.LightGray,
+          text = stringResource(R.string.enter_composition_id),
+        )
+      },
+      modifier = modifier.testTag(COMPOSITION_ID_TEXT_INPUT_TAG).fillMaxWidth().padding(vertical = 2.dp)
+    )
+    Text(
+      text = stringResource(R.string.composition_id_sample),
+      fontSize = 12.sp,
+      modifier = modifier.padding(vertical = 8.dp)
+    )
     Row(modifier = modifier.padding(vertical = 20.dp)) {
       Checkbox(
         checked = rememberApp,
@@ -123,8 +149,10 @@ fun AppSettingScreen(
 private fun AppSettingScreenPreview() {
   AppSettingScreen(
     appId = "",
+    compositionId = "",
     onLoadConfigurations = {},
     onAppIdChanged = {},
+    onCompositionIdChanged = {},
     onRememberAppChecked = {},
     rememberApp = false
   )

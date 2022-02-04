@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
+import org.smartregister.fhircore.engine.util.COMPOSITION_ID_CONFIG
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -46,41 +47,46 @@ class AppSettingActivity : AppCompatActivity() {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
     appSettingViewModel.loadConfigs.observe(
-      this,
-      { loadConfigs ->
-        if (loadConfigs != null && loadConfigs) {
-          val applicationId = appSettingViewModel.appId.value!!
-          configurationRegistry.loadAppConfigurations(
-            appId = applicationId,
-            accountAuthenticator = accountAuthenticator
-          ) { loadSuccessful: Boolean ->
-            if (loadSuccessful) {
-              sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
-              finish()
-            } else {
-              showToast(
-                getString(R.string.application_not_supported, appSettingViewModel.appId.value)
-              )
-            }
+      this
+    ) { loadConfigs ->
+      if (loadConfigs != null && loadConfigs) {
+        val applicationId = appSettingViewModel.appId.value!!
+        val compositionId = appSettingViewModel.compositionId.value!!
+        configurationRegistry.loadAppConfigurations(
+          appId = applicationId,
+          accountAuthenticator = accountAuthenticator
+        ) { loadSuccessful: Boolean ->
+          if (loadSuccessful) {
+            sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
+            sharedPreferencesHelper.write(COMPOSITION_ID_CONFIG, compositionId)
+            finish()
+          } else {
+            showToast(
+              getString(R.string.application_not_supported, appSettingViewModel.appId.value)
+            )
           }
-        } else if (loadConfigs != null && !loadConfigs)
-          showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
-      }
-    )
+        }
+      } else if (loadConfigs != null && !loadConfigs)
+        showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
+    }
 
     sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.let {
       appSettingViewModel.onApplicationIdChanged(it)
+      appSettingViewModel.onCompositionIdChanged(it)
       appSettingViewModel.loadConfigurations(true)
     }
       ?: run {
         setContent {
           AppTheme {
             val appId by appSettingViewModel.appId.observeAsState("")
+            val compositionId by appSettingViewModel.compositionId.observeAsState("")
             val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
             AppSettingScreen(
               appId = appId,
+              compositionId = compositionId,
               rememberApp = rememberApp,
               onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
+              onCompositionIdChanged = appSettingViewModel::onCompositionIdChanged,
               onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
               onLoadConfigurations = appSettingViewModel::loadConfigurations
             )

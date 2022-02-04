@@ -96,4 +96,7 @@
     <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">username or password is invalid</string>
     <string name="invalid_form_id">"Invalid form id attached"</string>
+    <string name="composition_id">Composition ID</string>
+    <string name="enter_composition_id">Enter the Composition ID</string>
+    <string name="composition_id_sample" translatable="false">E.g. 123, 8676</string>
 </resources>

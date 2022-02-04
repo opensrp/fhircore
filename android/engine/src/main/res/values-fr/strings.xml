@@ -94,4 +94,8 @@
     <string name="questionnaire_alert_test_only_title">Données de processus</string>
     <string name="questionnaire_alert_test_only_button_title">Traiter</string>
     <string name="questionnaire_alert_test_only_message">Confirm that you are finished filling out the data. Note this is test only form and does not save any data</string>
+    <string name="invalid_form_id">"Invalid form id attached"</string>
+    <string name="composition_id">Composition ID</string>
+    <string name="enter_composition_id">Enter Composition ID</string>
+    <string name="composition_id_sample" translatable="false">E.g. 123, 8676</string>
 </resources>

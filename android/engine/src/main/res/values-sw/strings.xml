@@ -94,4 +94,8 @@
         <string name="questionnaire_alert_test_only_button_title">Chakata</string>
         <string name="questionnaire_alert_test_only_title">Mchakato wa data ya fomu</string>
         <string name="questionnaire_alert_test_only_message">Thibitisha kuwa umemaliza kujaza data. Kumbuka hii ni fomu ya majaribio tu na haihifadhi data yoyote</string>
+        <string name="invalid_form_id">"Invalid form id attached"</string>
+        <string name="composition_id">Composition ID</string>
+        <string name="enter_composition_id">Enter Composition ID</string>
+        <string name="composition_id_sample" translatable="false">E.g. 123, 8676</string>
 </resources>

@@ -27,12 +27,21 @@ class AppSettingViewModel @Inject constructor() : ViewModel() {
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   private val _appId = MutableLiveData("")
+  private val _compositionId = MutableLiveData("")
+
+  val compositionId
+    get() = _compositionId
+
   val appId
     get() = _appId
 
   private val _rememberApp = MutableLiveData(false)
   val rememberApp
     get() = _rememberApp
+
+  fun onCompositionIdChanged(compositionId: String) {
+      _compositionId.value = compositionId
+  }
 
   fun onApplicationIdChanged(appId: String) {
     _appId.value = appId
