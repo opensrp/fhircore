@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -37,10 +36,8 @@ import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -67,15 +64,6 @@ import timber.log.Timber
  * Implement a subclass of this [QuestionnaireActivity] to provide functionality on how to
  * [handleQuestionnaireResponse]
  */
-enum class QuestionnaireType {
-  READ_ONLY,
-  EDIT,
-  DEFAULT;
-
-  fun isEditMode() = this == EDIT
-  fun isReadOnly() = this == READ_ONLY
-}
-
 @AndroidEntryPoint
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
@@ -100,7 +88,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     setContentView(R.layout.activity_questionnaire)
 
     val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
@@ -114,7 +101,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launch {
       loadQuestionnaireAndConfig(formName)
 
-      async(Dispatchers.Default) { questionnaireViewModel.libraryEvaluator.initialize() }
+      async(dispatcherProvider.default()) { questionnaireViewModel.libraryEvaluator.initialize() }
 
       // Only add the fragment once, when the activity is first created.
       if (savedInstanceState == null) {

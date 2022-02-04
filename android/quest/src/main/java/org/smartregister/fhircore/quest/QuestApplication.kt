@@ -24,7 +24,6 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -40,7 +39,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
       Timber.plant(Timber.DebugTree())
     }
 
-    CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+    CoroutineScope(Dispatchers.Default).launch {
       FhirContext.forR4Cached().apply {
         Timber.i("Loading FhirContext.forR4Cached on application init")
       }
