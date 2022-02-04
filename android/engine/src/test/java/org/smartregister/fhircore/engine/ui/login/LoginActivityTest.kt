@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
@@ -55,6 +56,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    coEvery { loginViewModel.sharedPreferences.read(any(), "") } returns "1234"
+    coEvery { loginViewModel.sharedPreferences.write(any(), "true") } returns Unit
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
     loginService = loginActivity.loginService
