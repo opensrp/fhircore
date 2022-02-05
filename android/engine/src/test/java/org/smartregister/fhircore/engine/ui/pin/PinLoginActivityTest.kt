@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
@@ -34,6 +35,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
@@ -65,6 +67,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(any(), "true") } returns Unit
     pinViewModel.apply { savedPin = "1234" }
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     pinLoginActivity =
       spyk(Robolectric.buildActivity(PinLoginActivity::class.java).create().resume().get())
     loginService = pinLoginActivity.loginService

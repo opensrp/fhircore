@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
@@ -35,6 +36,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -64,6 +66,7 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     coEvery { pinViewModel.savedPin } returns "1234"
     coEvery { sharedPreferencesHelper.write(any(), "false") } returns Unit
     coEvery { pinViewModel.pin } returns testPin
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     pinSetupActivity =
       Robolectric.buildActivity(PinSetupActivity::class.java).create().resume().get()
   }
@@ -91,12 +94,6 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     pinSetupActivity.pinViewModel.onPinConfirmed()
     Assert.assertEquals("1234", testPin.value.toString())
     Assert.assertEquals(false, pinSetupActivity.pinViewModel.showError.value)
-  }
-
-  @Test
-  fun testHandleBackClickedShouldCallFinishMethod() {
-    pinSetupActivity.pinViewModel.onAppBackClick()
-    Assert.assertTrue(pinSetupActivity.isFinishing)
   }
 
   override fun getActivity(): Activity {
