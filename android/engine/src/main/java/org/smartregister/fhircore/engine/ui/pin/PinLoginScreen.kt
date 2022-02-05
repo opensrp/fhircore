@@ -130,7 +130,7 @@ fun PinLoginPage(
               onMenuLoginClicked()
             },
             modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN)
-          ) { Text(text = stringResource(id = R.string.otp_menu_login)) }
+          ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
         }
       }
     )

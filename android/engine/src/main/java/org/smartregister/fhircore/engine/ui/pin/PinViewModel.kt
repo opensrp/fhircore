@@ -68,6 +68,12 @@ constructor(
   lateinit var savedPin: String
   var isSetupPage: Boolean = false
 
+  val onBackClick = MutableLiveData(false)
+
+  fun onAppBackClick() {
+    onBackClick.value = true
+  }
+
   fun loadData(isSetup: Boolean = false) {
     savedPin = sharedPreferences.read(PIN_KEY, "").toString()
     isSetupPage = isSetup

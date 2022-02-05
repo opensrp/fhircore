@@ -16,14 +16,21 @@
 
 package org.smartregister.fhircore.engine.ui.pin
 
+import android.app.Application
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
@@ -42,6 +49,8 @@ class PinSetupScreenTest : RobolectricTest() {
       }
     )
 
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+
   @Test
   fun testPinSetupScreenPage() {
     composeRule.setContent {
@@ -50,12 +59,40 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
         setPinEnabled = false,
+        inputPin = ""
+      )
+    }
+
+    composeRule.onNodeWithTag(PIN_VIEW).assertExists()
+
+    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).assertExists()
+    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).assertHasClickAction()
+
+    composeRule.onNodeWithTag(PIN_TOOLBAR_TITLE).assertExists()
+    composeRule.onNodeWithTag(PIN_TOOLBAR_MENU_BUTTON).assertHasClickAction().performClick()
+    composeRule.onNodeWithTag(PIN_TOOLBAR_MENU).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(PIN_TOOLBAR_MENU)
+      .onChildAt(0)
+      .assertTextEquals(application.getString(R.string.settings))
+      .assertHasClickAction()
+      .performClick()
+
+    verify { listenerObjectSpy.onMenuSettingsClicked() }
+  }
+
+  @Test
+  fun testPinSetupScreenPageSetPinButtonEnabled() {
+    composeRule.setContent {
+      PinSetupPage(
+        onPinChanged = { listenerObjectSpy.onPinChanged() },
+        onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
+        onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+        setPinEnabled = true,
         inputPin = "0000"
       )
     }
-    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).assertExists()
+
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
-    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).performClick()
-    verify { listenerObjectSpy.onPinConfirmed() }
   }
 }

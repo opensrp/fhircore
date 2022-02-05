@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.engine.ui.pin
 
+import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.mockk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
@@ -46,7 +49,9 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
+  private val application = ApplicationProvider.getApplicationContext<Application>()
 
   private lateinit var pinViewModel: PinViewModel
 
@@ -55,34 +60,69 @@ internal class PinViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    // Spy needed to control interaction with the real injected dependency
+
+    coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
+    coEvery { sharedPreferencesHelper.write(any(), "true") } returns Unit
+    coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
 
     pinViewModel =
       PinViewModel(
         dispatcher = dispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        app = ApplicationProvider.getApplicationContext()
+        app = application
       )
-
-    coEvery { pinViewModel.savedPin } returns "1234"
-    coEvery { pinViewModel.pin } returns testPin
+    pinViewModel.apply {
+      savedPin = "1234"
+      isSetupPage = true
+    }
   }
 
   @Test
   fun testOnPinChangeValidated() {
-    pinViewModel.run { loadData() }
+    pinViewModel.apply {
+      savedPin = "1234"
+      isSetupPage = false
+    }
     pinViewModel.onPinChanged(testPin.value.toString())
     Assert.assertEquals(
       pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
       testPin.value.toString()
     )
+    Assert.assertEquals(pinViewModel.enableSetPin.value, true)
+    Assert.assertEquals(pinViewModel.navigateToHome.value, true)
+  }
+
+  @Test
+  fun testLoadDataForSetupScreen() {
+    pinViewModel.loadData(isSetup = true)
+    Assert.assertEquals(pinViewModel.isSetupPage, true)
+    Assert.assertNotNull(pinViewModel.savedPin)
+  }
+
+  @Test
+  fun testLoadDataForLoginScreen() {
+    pinViewModel.loadData(isSetup = false)
+    Assert.assertEquals(pinViewModel.isSetupPage, false)
+    Assert.assertNotNull(pinViewModel.savedPin)
   }
 
   @Test
   fun testOnPinChangeError() {
-    pinViewModel.run { loadData() }
     pinViewModel.onPinChanged("3232")
     Assert.assertEquals(pinViewModel.showError.value, true)
+  }
+
+  @Test
+  fun testOnPinChangeInvalid() {
+    pinViewModel.onPinChanged("32")
+    Assert.assertEquals(pinViewModel.showError.value, false)
+    Assert.assertEquals(pinViewModel.enableSetPin.value, false)
+  }
+
+  @Test
+  fun testOnForgotPin() {
+    pinViewModel.forgotPin()
+    Assert.assertEquals(pinViewModel.launchDialPad.value, "tel:0123456789")
   }
 
   @Test
@@ -94,12 +134,6 @@ internal class PinViewModelTest : RobolectricTest() {
   @Test
   fun testOnMenuSettingsClicked() {
     pinViewModel.onMenuSettingClicked()
-    Assert.assertEquals(pinViewModel.showError.value, true)
-  }
-
-  @Test
-  fun testOnPinConfirmed() {
-    pinViewModel.onPinConfirmed()
-    Assert.assertEquals(pinViewModel.navigateToHome.value, true)
+    Assert.assertEquals(pinViewModel.navigateToSettings.value, true)
   }
 }
