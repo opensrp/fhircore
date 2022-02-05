@@ -17,27 +17,23 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 
 class QuestLoginService @Inject constructor() : LoginService {
 
-  override lateinit var loginActivity: LoginActivity
+  override lateinit var runningActivity: AppCompatActivity
 
   override fun navigateToHome(canSetOtp: Boolean) {
     val intent =
-      Intent(loginActivity, PatientRegisterActivity::class.java).apply {
+      Intent(runningActivity, PatientRegisterActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
-    loginActivity.run {
+    runningActivity.run {
       startActivity(intent)
       finish()
     }
-  }
-
-  override fun navigateToPinLogin() {
-    // Do nothing
   }
 }

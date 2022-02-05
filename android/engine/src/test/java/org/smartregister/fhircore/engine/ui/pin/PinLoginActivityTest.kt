@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.pin
+package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Activity
 import android.app.Application
@@ -33,8 +33,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
-import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.PIN_KEY
@@ -78,9 +77,6 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
       pinLoginActivity.pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
       testPin.value.toString()
     )
-    val expectedIntent = Intent(pinLoginActivity, FamilyRegisterActivity::class.java)
-    val actualIntent = Shadows.shadowOf(application).nextStartedActivity
-    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -72,8 +73,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
   }
 
   class TestLoginService : LoginService {
-    override lateinit var loginActivity: LoginActivity
+    override lateinit var runningActivity: AppCompatActivity
     override fun navigateToHome(canSetPin: Boolean) {}
-    override fun navigateToPinLogin() {}
   }
 }

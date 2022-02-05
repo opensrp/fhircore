@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.pin
+package org.smartregister.fhircore.engine.ui.pin
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -24,11 +24,11 @@ import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
 @ExperimentalCoroutinesApi
-class PinLoginScreensTest : RobolectricTest() {
+class PinSetupScreenTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 
@@ -37,24 +37,25 @@ class PinLoginScreensTest : RobolectricTest() {
       object {
         // Imitate click action by doing nothing
         fun onPinChanged() {}
-        fun onMenuLoginClicked() {}
-        fun onForgotPin() {}
+        fun onPinConfirmed() {}
+        fun onMenuSettingsClicked() {}
       }
     )
 
   @Test
-  fun testPinLoginScreenPage() {
+  fun testPinSetupScreenPage() {
     composeRule.setContent {
-      PinLoginPage(
+      PinSetupPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
-        showError = false,
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
-        forgotPin = { listenerObjectSpy.onForgotPin() }
+        onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
+        onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+        setPinEnabled = false,
+        inputPin = "0000"
       )
     }
-    composeRule.onNodeWithTag(FORGOT_PIN).assertExists()
+    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).assertExists()
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
-    composeRule.onNodeWithTag(FORGOT_PIN).performClick()
-    verify { listenerObjectSpy.onForgotPin() }
+    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).performClick()
+    verify { listenerObjectSpy.onPinConfirmed() }
   }
 }

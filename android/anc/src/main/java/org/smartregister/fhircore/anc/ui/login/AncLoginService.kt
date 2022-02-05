@@ -17,16 +17,14 @@
 package org.smartregister.fhircore.anc.ui.login
 
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
-import org.smartregister.fhircore.anc.ui.pin.PinLoginActivity
-import org.smartregister.fhircore.anc.ui.pin.PinSetupActivity
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 
 class AncLoginService @Inject constructor() : LoginService {
 
-  override lateinit var loginActivity: LoginActivity
+  override lateinit var runningActivity: AppCompatActivity
 
   /**
    * Navigate to app home page as this fun is implemented if multiple modules,
@@ -37,35 +35,13 @@ class AncLoginService @Inject constructor() : LoginService {
       navigateToPinSetup()
     } else {
       val intent =
-        Intent(loginActivity, FamilyRegisterActivity::class.java).apply {
+        Intent(runningActivity, FamilyRegisterActivity::class.java).apply {
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-      loginActivity.run {
+      runningActivity.run {
         startActivity(intent)
         finish()
       }
-    }
-  }
-
-  override fun navigateToPinLogin() {
-    val intent =
-      Intent(loginActivity, PinLoginActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      }
-    loginActivity.run {
-      startActivity(intent)
-      finish()
-    }
-  }
-
-  private fun navigateToPinSetup() {
-    val intent =
-      Intent(loginActivity, PinSetupActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      }
-    loginActivity.run {
-      startActivity(intent)
-      finish()
     }
   }
 }

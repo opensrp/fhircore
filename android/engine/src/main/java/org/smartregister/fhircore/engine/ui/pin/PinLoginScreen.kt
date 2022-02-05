@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.pin
+package org.smartregister.fhircore.engine.ui.pin
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -60,19 +60,21 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU
-import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU_BUTTON
-import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_TITLE
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-const val TOOLBAR_MENU_ICON = "toolbarIcon"
-const val TOOLBAR_MENU_LOGIN = "toolbarMenuLogin"
-const val FORGOT_PIN = "forgot_pin"
+const val PIN_TOOLBAR_MENU = "toolbarMenuTag"
+const val PIN_TOOLBAR_MENU_BUTTON = "toolbarMenuButtonTag"
+const val PIN_TOOLBAR_TITLE = "toolbarTitle"
+const val PIN_TOOLBAR_MENU_ICON = "toolbarIcon"
+const val PIN_TOOLBAR_MENU_LOGIN = "toolbarMenuLogin"
+const val PIN_FORGOT_PIN = "forgotPin"
+const val PIN_TOOLBAR_MENU_SETTINGS = "toolbarMenuSettings"
+const val PIN_SET_PIN_CONFIRM_BUTTON = "setPinConfirmButton"
 
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
@@ -102,32 +104,32 @@ fun PinLoginPage(
 
   Surface(color = colorResource(id = R.color.white_slightly_opaque)) {
     TopAppBar(
-      title = { Text(text = "", Modifier.testTag(TOOLBAR_TITLE)) },
+      title = { Text(text = "", Modifier.testTag(PIN_TOOLBAR_TITLE)) },
       navigationIcon = {
         IconButton(onClick = {}) {
           Icon(
             Icons.Filled.ArrowBack,
             contentDescription = "Back arrow",
-            modifier = Modifier.size(0.dp).testTag(TOOLBAR_MENU_ICON)
+            modifier = Modifier.size(0.dp).testTag(PIN_TOOLBAR_MENU_ICON)
           )
         }
       },
       actions = {
         IconButton(
           onClick = { showMenu = !showMenu },
-          modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON)
+          modifier = Modifier.testTag(PIN_TOOLBAR_MENU_BUTTON)
         ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
         DropdownMenu(
           expanded = showMenu,
           onDismissRequest = { showMenu = false },
-          Modifier.testTag(TOOLBAR_MENU)
+          Modifier.testTag(PIN_TOOLBAR_MENU)
         ) {
           DropdownMenuItem(
             onClick = {
               showMenu = false
               onMenuLoginClicked()
             },
-            modifier = Modifier.testTag(TOOLBAR_MENU_LOGIN)
+            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN)
           ) { Text(text = stringResource(id = R.string.otp_menu_login)) }
         }
       }
@@ -155,7 +157,7 @@ fun PinLoginPage(
             .testTag(APP_LOGO_TAG),
       )
       Text(
-        text = stringResource(R.string.app_name_ecbis),
+        text = stringResource(R.string.eCBIS_app_name),
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
@@ -208,7 +210,7 @@ fun ForgotPinDialog(
   modifier: Modifier = Modifier
 ) {
   AlertDialog(
-    modifier = Modifier.testTag(FORGOT_PIN),
+    modifier = Modifier.testTag(PIN_FORGOT_PIN),
     onDismissRequest = onDismissDialog,
     title = {
       Text(

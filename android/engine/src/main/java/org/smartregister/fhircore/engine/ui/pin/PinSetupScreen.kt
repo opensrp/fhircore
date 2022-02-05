@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.pin
+package org.smartregister.fhircore.engine.ui.pin
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -55,16 +55,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU
-import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_MENU_BUTTON
-import org.smartregister.fhircore.anc.ui.family.details.TOOLBAR_TITLE
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-
-const val TOOLBAR_MENU_SETTINGS = "toolbarMenuSettings"
-const val SET_PIN_CONFIRM_BUTTON = "SET_PIN_CONFIRM_BUTTON"
 
 @Composable
 fun PinSetupScreen(viewModel: PinViewModel) {
@@ -96,32 +90,32 @@ fun PinSetupPage(
 
   Surface(color = colorResource(id = R.color.white_slightly_opaque)) {
     TopAppBar(
-      title = { Text(text = "", Modifier.testTag(TOOLBAR_TITLE)) },
+      title = { Text(text = "", Modifier.testTag(PIN_TOOLBAR_TITLE)) },
       navigationIcon = {
         IconButton(onClick = {}) {
           Icon(
             Icons.Filled.ArrowBack,
             contentDescription = "Back arrow",
-            modifier = Modifier.size(0.dp).testTag(TOOLBAR_MENU_ICON)
+            modifier = Modifier.size(0.dp).testTag(PIN_TOOLBAR_MENU_ICON)
           )
         }
       },
       actions = {
         IconButton(
           onClick = { showMenu = !showMenu },
-          modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON)
+          modifier = Modifier.testTag(PIN_TOOLBAR_MENU_BUTTON)
         ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
         DropdownMenu(
           expanded = showMenu,
           onDismissRequest = { showMenu = false },
-          Modifier.testTag(TOOLBAR_MENU)
+          Modifier.testTag(PIN_TOOLBAR_MENU)
         ) {
           DropdownMenuItem(
             onClick = {
               showMenu = false
               onMenuSettingClicked()
             },
-            modifier = Modifier.testTag(TOOLBAR_MENU_SETTINGS)
+            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_SETTINGS)
           ) { Text(text = stringResource(id = R.string.settings)) }
         }
       }
@@ -166,7 +160,7 @@ fun PinSetupPage(
       Button(
         enabled = setPinEnabled,
         onClick = onPinConfirmed,
-        modifier = Modifier.fillMaxWidth().padding(top = 30.dp).testTag(SET_PIN_CONFIRM_BUTTON)
+        modifier = Modifier.fillMaxWidth().padding(top = 30.dp).testTag(PIN_SET_PIN_CONFIRM_BUTTON)
       ) {
         Text(
           color = Color.White,

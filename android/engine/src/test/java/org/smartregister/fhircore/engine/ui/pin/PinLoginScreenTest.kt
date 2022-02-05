@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.pin
+package org.smartregister.fhircore.engine.ui.pin
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -24,11 +24,11 @@ import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
 @ExperimentalCoroutinesApi
-class PinSetupScreenTest : RobolectricTest() {
+class PinLoginScreensTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 
@@ -37,25 +37,24 @@ class PinSetupScreenTest : RobolectricTest() {
       object {
         // Imitate click action by doing nothing
         fun onPinChanged() {}
-        fun onPinConfirmed() {}
-        fun onMenuSettingsClicked() {}
+        fun onMenuLoginClicked() {}
+        fun onForgotPin() {}
       }
     )
 
   @Test
-  fun testPinSetupScreenPage() {
+  fun testPinLoginScreenPage() {
     composeRule.setContent {
-      PinSetupPage(
+      PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
-        onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
-        onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
-        setPinEnabled = false,
-        inputPin = "0000"
+        showError = false,
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
+        forgotPin = { listenerObjectSpy.onForgotPin() }
       )
     }
-    composeRule.onNodeWithTag(SET_PIN_CONFIRM_BUTTON).assertExists()
+    composeRule.onNodeWithTag(PIN_FORGOT_PIN).assertExists()
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
-    composeRule.onNodeWithTag(SET_PIN_CONFIRM_BUTTON).performClick()
-    verify { listenerObjectSpy.onPinConfirmed() }
+    composeRule.onNodeWithTag(PIN_FORGOT_PIN).performClick()
+    verify { listenerObjectSpy.onForgotPin() }
   }
 }

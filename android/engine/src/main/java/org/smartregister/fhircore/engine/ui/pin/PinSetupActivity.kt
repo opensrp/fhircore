@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.pin
+package org.smartregister.fhircore.engine.ui.pin
 
 import android.content.Intent
 import android.os.Bundle
@@ -22,20 +22,24 @@ import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import javax.inject.Inject
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 
 @AndroidEntryPoint
 class PinSetupActivity : BaseMultiLanguageActivity() {
 
+  @Inject lateinit var loginService: LoginService
+
   val pinViewModel by viewModels<PinViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
+    loginService.runningActivity = this
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     pinViewModel.apply {
@@ -50,12 +54,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
 
   private fun moveToHome() {
     sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, "false")
-    startActivity(
-      Intent(this, FamilyRegisterActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      }
-    )
-    finish()
+    loginService.navigateToHome(canSetPin = false)
   }
 
   private fun moveToSettings() {
