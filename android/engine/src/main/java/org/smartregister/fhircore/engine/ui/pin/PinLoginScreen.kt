@@ -73,6 +73,7 @@ const val PIN_TOOLBAR_TITLE = "toolbarTitle"
 const val PIN_TOOLBAR_MENU_ICON = "toolbarIcon"
 const val PIN_TOOLBAR_MENU_LOGIN = "toolbarMenuLogin"
 const val PIN_FORGOT_PIN = "forgotPin"
+const val PIN_FORGOT_DIALOG = "forgotPinDialog"
 const val PIN_TOOLBAR_MENU_SETTINGS = "toolbarMenuSettings"
 const val PIN_SET_PIN_CONFIRM_BUTTON = "setPinConfirmButton"
 
@@ -195,9 +196,11 @@ fun PinLoginPage(
         fontSize = 16.sp,
         style = TextStyle(textDecoration = TextDecoration.Underline, color = LoginDarkColor),
         modifier =
-          modifier.padding(top = 24.dp).align(Alignment.CenterHorizontally).clickable {
-            showForgotPinDialog = !showForgotPinDialog
-          }
+          modifier
+            .padding(top = 24.dp)
+            .align(Alignment.CenterHorizontally)
+            .testTag(PIN_FORGOT_PIN)
+            .clickable { showForgotPinDialog = !showForgotPinDialog }
       )
     }
   }
@@ -210,7 +213,7 @@ fun ForgotPinDialog(
   modifier: Modifier = Modifier
 ) {
   AlertDialog(
-    modifier = Modifier.testTag(PIN_FORGOT_PIN),
+    modifier = Modifier.testTag(PIN_FORGOT_DIALOG),
     onDismissRequest = onDismissDialog,
     title = {
       Text(

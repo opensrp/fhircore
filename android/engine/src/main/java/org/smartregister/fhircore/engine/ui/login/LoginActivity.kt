@@ -65,7 +65,7 @@ class LoginActivity :
       configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
     }
 
-    // Check if Pin enabled and stored then move to otp login
+    // Check if Pin enabled and stored then move to Pin login
     val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
     val stayUserNamePasswordLogin =
       loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, "").equals("true", true)
@@ -74,7 +74,6 @@ class LoginActivity :
       loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "false")
       loginService.navigateToPinLogin()
     }
-    //    loginService.navigateToPinLogin()
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
   }

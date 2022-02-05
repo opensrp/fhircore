@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.ui.pin
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
@@ -26,6 +27,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
+import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -34,6 +36,8 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.ui.login.LoginService
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.PIN_KEY
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -50,18 +54,20 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
 
-  private lateinit var pinViewModel: PinViewModel
+  @BindValue
+  val pinViewModel = PinViewModel(DefaultDispatcherProvider(), sharedPreferencesHelper, application)
+
+  lateinit var loginService: LoginService
 
   @Before
   fun setUp() {
     hiltRule.inject()
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(any(), "true") } returns Unit
-    pinViewModel = mockk()
-    coEvery { pinViewModel.savedPin } returns "1234"
-    coEvery { pinViewModel.pin } returns testPin
+    pinViewModel.apply { savedPin = "1234" }
     pinLoginActivity =
-      Robolectric.buildActivity(PinLoginActivity::class.java).create().resume().get()
+      spyk(Robolectric.buildActivity(PinLoginActivity::class.java).create().resume().get())
+    loginService = pinLoginActivity.loginService
   }
 
   @Test
@@ -89,5 +95,10 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
 
   override fun getActivity(): Activity {
     return pinLoginActivity
+  }
+
+  class TestPinLoginService : LoginService {
+    override lateinit var runningActivity: AppCompatActivity
+    override fun navigateToHome() {}
   }
 }

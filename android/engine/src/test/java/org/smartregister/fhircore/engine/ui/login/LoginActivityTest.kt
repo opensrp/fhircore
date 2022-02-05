@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
@@ -32,6 +33,7 @@ import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class LoginActivityTest : ActivityRobolectricTest() {
@@ -44,18 +46,21 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   lateinit var loginService: LoginService
 
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
   @BindValue
   val loginViewModel =
     LoginViewModel(
       accountAuthenticator,
       DefaultDispatcherProvider(),
-      mockk(),
+      sharedPreferencesHelper,
       ApplicationProvider.getApplicationContext()
     )
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    coEvery { sharedPreferencesHelper.read(any(), "") } returns "true"
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
     loginService = loginActivity.loginService
