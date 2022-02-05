@@ -26,7 +26,7 @@ class QuestLoginService @Inject constructor() : LoginService {
 
   override lateinit var runningActivity: AppCompatActivity
 
-  override fun navigateToHome(canSetOtp: Boolean) {
+  override fun navigateToHome() {
     val intent =
       Intent(runningActivity, PatientRegisterActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

@@ -24,7 +24,7 @@ class AppLoginService @Inject constructor() : LoginService {
 
   override lateinit var runningActivity: AppCompatActivity
 
-  override fun navigateToHome(canSetPin: Boolean) {
+  override fun navigateToHome() {
     // Do nothing
   }
 }

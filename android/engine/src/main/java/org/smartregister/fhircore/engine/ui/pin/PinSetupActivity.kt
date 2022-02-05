@@ -54,7 +54,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
 
   private fun moveToHome() {
     sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, "false")
-    loginService.navigateToHome(canSetPin = false)
+    loginService.navigateToHome()
   }
 
   private fun moveToSettings() {

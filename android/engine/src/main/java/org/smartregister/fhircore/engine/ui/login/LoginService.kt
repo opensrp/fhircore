@@ -25,7 +25,7 @@ interface LoginService {
 
   var runningActivity: AppCompatActivity
 
-  fun navigateToHome(canSetPin: Boolean = false)
+  fun navigateToHome()
 
   fun navigateToPinLogin() {
     val intent =

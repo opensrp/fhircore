@@ -74,6 +74,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   class TestLoginService : LoginService {
     override lateinit var runningActivity: AppCompatActivity
-    override fun navigateToHome(canSetPin: Boolean) {}
+    override fun navigateToHome() {}
   }
 }

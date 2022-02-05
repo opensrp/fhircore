@@ -26,22 +26,14 @@ class AncLoginService @Inject constructor() : LoginService {
 
   override lateinit var runningActivity: AppCompatActivity
 
-  /**
-   * Navigate to app home page as this fun is implemented if multiple modules,
-   * @param canSetPin : boolean to check whether app can navigate Home or PinSetup page
-   */
-  override fun navigateToHome(canSetPin: Boolean) {
-    if (canSetPin) {
-      navigateToPinSetup()
-    } else {
-      val intent =
-        Intent(runningActivity, FamilyRegisterActivity::class.java).apply {
-          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-      runningActivity.run {
-        startActivity(intent)
-        finish()
+  override fun navigateToHome() {
+    val intent =
+      Intent(runningActivity, FamilyRegisterActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
+    runningActivity.run {
+      startActivity(intent)
+      finish()
     }
   }
 }

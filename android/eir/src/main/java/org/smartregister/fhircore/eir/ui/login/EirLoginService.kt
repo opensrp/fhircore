@@ -26,7 +26,7 @@ class EirLoginService @Inject constructor() : LoginService {
 
   override lateinit var runningActivity: AppCompatActivity
 
-  override fun navigateToHome(canSetPin: Boolean) {
+  override fun navigateToHome() {
     val intent =
       Intent(runningActivity, PatientRegisterActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -35,9 +35,5 @@ class EirLoginService @Inject constructor() : LoginService {
       startActivity(intent)
       finish()
     }
-  }
-
-  override fun navigateToPinLogin() {
-    // Do nothing
   }
 }

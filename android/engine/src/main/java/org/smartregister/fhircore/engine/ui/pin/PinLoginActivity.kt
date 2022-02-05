@@ -55,7 +55,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   }
 
   private fun moveToHome() {
-    loginService.navigateToHome(canSetPin = false)
+    loginService.navigateToHome()
   }
 
   private fun moveToLoginViaUsername() {

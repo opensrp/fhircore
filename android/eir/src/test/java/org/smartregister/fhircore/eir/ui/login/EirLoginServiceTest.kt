@@ -45,7 +45,7 @@ class EirLoginServiceTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     loginActivity = Robolectric.buildActivity(LoginActivity::class.java).get()
-    loginService.loginActivity = loginActivity
+    loginService.runningActivity = loginActivity
   }
 
   @After
@@ -55,7 +55,7 @@ class EirLoginServiceTest : RobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldNavigateToRegisterScreen() {
-    loginService.navigateToHome(canSetPin = false)
+    loginService.navigateToHome()
     val startedIntent: Intent = Shadows.shadowOf(loginActivity).nextStartedActivity
     val shadowIntent: ShadowIntent = Shadows.shadowOf(startedIntent)
     Assert.assertEquals(PatientRegisterActivity::class.java, shadowIntent.intentClass)

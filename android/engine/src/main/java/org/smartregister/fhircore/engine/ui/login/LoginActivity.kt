@@ -49,9 +49,11 @@ class LoginActivity :
       navigateToHome.observe(
         this@LoginActivity,
         {
-          loginService.navigateToHome(
-            loginViewModel.loginViewConfiguration.value?.enablePin == true
-          )
+          if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
+            loginService.navigateToPinSetup()
+          } else {
+            loginService.navigateToHome()
+          }
         }
       )
       launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
