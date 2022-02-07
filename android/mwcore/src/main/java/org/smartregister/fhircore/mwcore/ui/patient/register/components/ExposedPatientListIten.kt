@@ -93,8 +93,8 @@ fun PatientChildRow(
                     MwChip(
                         text = patientItem.age,
                         fontSize = 16.sp,
-                        textColor = MaterialTheme.colors.secondary,
-                        background = MaterialTheme.colors.secondary.copy(alpha = 0.2F)
+                        textColor = MaterialTheme.colors.primary,
+                        background = MaterialTheme.colors.primary.copy(alpha = 0.2F)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     MwChip(
@@ -140,7 +140,7 @@ fun PatientChildRowPreview() {
         )
     LazyColumn() {
         items(10) {
-            PatientRow(patientItem = patientItem, { _, _ -> })
+            PatientChildRow(patientItem = patientItem, { _, _ -> })
         }
     }
 

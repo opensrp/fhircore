@@ -18,6 +18,7 @@ import org.smartregister.fhircore.mwcore.data.patient.PatientRepository
 import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
 import org.smartregister.fhircore.mwcore.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.mwcore.ui.patient.register.OpenPatientProfile
+import org.smartregister.fhircore.mwcore.ui.patient.register.components.ExposedRegisterList
 import org.smartregister.fhircore.mwcore.ui.patient.register.components.PatientRegisterList
 
 @AndroidEntryPoint
@@ -34,7 +35,7 @@ class ExposedInfantsRegisterFragment : ComposeRegisterFragment<Patient, PatientI
 
     @Composable
     override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>, modifier: Modifier) {
-        PatientRegisterList(
+        ExposedRegisterList(
             pagingItems = pagingItems,
             modifier = modifier,
             clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
