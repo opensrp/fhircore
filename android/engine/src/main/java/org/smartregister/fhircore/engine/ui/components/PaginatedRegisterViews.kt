@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -172,13 +173,14 @@ fun PaginatedRegister(
   showResultsCount: Boolean,
   resultCount: Int,
   body: (@Composable() () -> Unit),
+  showPageCount: Boolean = true,
   currentPage: Int,
   pagesCount: Int,
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Column(modifier = modifier.fillMaxSize()) {
+  Column(modifier = modifier.fillMaxWidth().fillMaxHeight(0.6f)) {
     if (showResultsCount) {
       SearchHeader(resultCount = resultCount)
     }
@@ -196,14 +198,16 @@ fun PaginatedRegister(
         }
       }
     }
-    if (!showResultsCount) {
-      SearchFooter(
-        resultCount = resultCount,
-        currentPage = currentPage,
-        pageNumbers = pagesCount,
-        previousButtonClickListener = previousButtonClickListener,
-        nextButtonClickListener = nextButtonClickListener
-      )
+    if (showPageCount) {
+      if (!showResultsCount) {
+        SearchFooter(
+          resultCount = resultCount,
+          currentPage = currentPage,
+          pageNumbers = pagesCount,
+          previousButtonClickListener = previousButtonClickListener,
+          nextButtonClickListener = nextButtonClickListener
+        )
+      }
     }
   }
 }
@@ -245,6 +249,7 @@ fun PaginatedRegisterPreviewWithResults() {
     showResultsCount = true,
     resultCount = 0,
     body = { Text(text = "Something cool") },
+    showPageCount = true,
     currentPage = 0,
     pagesCount = 20,
     previousButtonClickListener = {},
@@ -261,6 +266,7 @@ fun PaginatedRegisterPreviewWithoutResults() {
     showResultsCount = false,
     resultCount = 0,
     body = { Text(text = "Something cool") },
+    showPageCount = false,
     currentPage = 0,
     pagesCount = 20,
     previousButtonClickListener = {},
