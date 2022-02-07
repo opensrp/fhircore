@@ -1,4 +1,4 @@
-package org.smartregister.fhircore.anc.cucumber.espresso
+package org.smartregister.fhircore.anc.tests
 
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
