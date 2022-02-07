@@ -93,6 +93,22 @@ internal class PinViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testOnPinConfirmed() {
+    pinViewModel.onPinConfirmed()
+    Assert.assertEquals(
+      pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
+      testPin.value.toString()
+    )
+    Assert.assertEquals(pinViewModel.showError.value, true)
+  }
+
+  @Test
+  fun testOnAppBackCLicked() {
+    pinViewModel.onAppBackClick()
+    Assert.assertEquals(pinViewModel.onBackClick.value, true)
+  }
+
+  @Test
   fun testLoadDataForSetupScreen() {
     pinViewModel.loadData(isSetup = true)
     Assert.assertEquals(pinViewModel.isSetupPage, true)

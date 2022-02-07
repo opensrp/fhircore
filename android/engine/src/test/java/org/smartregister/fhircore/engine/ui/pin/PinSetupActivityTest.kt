@@ -26,9 +26,11 @@ import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.unmockkObject
+import io.mockk.spyk
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -36,9 +38,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -55,6 +59,7 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
   private lateinit var pinViewModel: PinViewModel
 
   private lateinit var pinSetupActivity: PinSetupActivity
+  private lateinit var pinSetupActivitySpy: PinSetupActivity
 
   @Before
   fun setUp() {
@@ -69,6 +74,9 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     pinSetupActivity =
       Robolectric.buildActivity(PinSetupActivity::class.java).create().resume().get()
+
+    pinSetupActivitySpy = spyk(pinSetupActivity, recordPrivateCalls = true)
+    every { pinSetupActivitySpy.finish() } returns Unit
   }
 
   @After
@@ -94,6 +102,12 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     pinSetupActivity.pinViewModel.onPinConfirmed()
     Assert.assertEquals("1234", testPin.value.toString())
     Assert.assertEquals(false, pinSetupActivity.pinViewModel.showError.value)
+  }
+
+  @Test
+  fun testMoveToHome() {
+    ReflectionHelpers.callInstanceMethod<Any>(pinSetupActivity, "moveToHome")
+    Assert.assertNotNull(sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, ""))
   }
 
   override fun getActivity(): Activity {
