@@ -26,37 +26,36 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class PinViewTest : RobolectricTest() {
 
-    @get:Rule val composeRule = createComposeRule()
+  @get:Rule val composeRule = createComposeRule()
 
-    @ExperimentalComposeUiApi
-    @Test
-    fun testPinCellViewDotted() {
-        composeRule.setContent { PinCell(isDotted = true, value = "1") }
-        composeRule.onNodeWithTag(PIN_VIEW_CELL_DOTTED).assertExists()
-        composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
-    }
+  @ExperimentalComposeUiApi
+  @Test
+  fun testPinCellViewDotted() {
+    composeRule.setContent { PinCell(isDotted = true, value = "1") }
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_DOTTED).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
+  }
 
-    @ExperimentalComposeUiApi
-    @Test
-    fun testPinCellViewError() {
-        composeRule.setContent { PinCell(isDotted = false, value = "1", showError = true) }
-        composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
-        composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists().assertTextEquals("1")
-    }
+  @ExperimentalComposeUiApi
+  @Test
+  fun testPinCellViewError() {
+    composeRule.setContent { PinCell(isDotted = false, value = "1", showError = true) }
+    composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists().assertTextEquals("1")
+  }
 
-    @ExperimentalComposeUiApi
-    @Test
-    fun testPinCellView() {
-        composeRule.setContent { PinCell(isDotted = false, value = "1") }
-        composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
-        composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
-    }
+  @ExperimentalComposeUiApi
+  @Test
+  fun testPinCellView() {
+    composeRule.setContent { PinCell(isDotted = false, value = "1") }
+    composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
+  }
 
-    @ExperimentalComposeUiApi
-    @Test
-    fun testPinView() {
-        composeRule.setContent { PinView(showError = true) }
-        composeRule.onNodeWithTag(PIN_VIEW).assertExists()
-    }
+  @ExperimentalComposeUiApi
+  @Test
+  fun testPinView() {
+    composeRule.setContent { PinView(showError = true) }
+    composeRule.onNodeWithTag(PIN_VIEW).assertExists()
+  }
 }
-
