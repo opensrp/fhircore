@@ -22,6 +22,30 @@
         "description": "Configurations for Patient Row"
       },
       {
+        "workflowPoint": "patient_details_view",
+        "resource": "PatientDetailsViewConfiguration",
+        "classification": "patient_details_view",
+        "description": "Configurations for patient details view"
+      },
+      {
+        "workflowPoint": "test_result_detail_view",
+        "resource": "DetailViewConfiguration",
+        "classification": "test_result_detail_view",
+        "description": "Configurations for Test Results Details"
+      },
+      {
+        "workflowPoint": "register_navigation",
+        "resource": "RegisterNavigationConfiguration",
+        "classification": "register_navigation",
+        "description": "Configurations for Custom Navigation"
+      },
+      {
+        "workflowPoint": "result_details_navigation",
+        "resource": "ResultDetailsNavigationConfiguration",
+        "classification": "result_details_navigation",
+        "description": "Configurations for Result Details Navigation"
+      },
+      {
         "workflowPoint": "registration",
         "resource": "RegisterViewConfiguration",
         "classification": "patient_task_register",
@@ -50,6 +74,30 @@
         "resource": "PatientRegisterRowViewConfiguration",
         "classification": "patient_register_row",
         "description": "Configurations for Patient Row"
+      },
+      {
+        "workflowPoint": "test_result_detail_view",
+        "resource": "DetailViewConfiguration",
+        "classification": "test_result_detail_view",
+        "description": "Configurations for Test Results Details"
+      },
+      {
+        "workflowPoint": "patient_details_view",
+        "resource": "PatientDetailsViewConfiguration",
+        "classification": "patient_details_view",
+        "description": "Configurations for patient details view"
+      },
+      {
+        "workflowPoint": "register_navigation",
+        "resource": "RegisterNavigationConfiguration",
+        "classification": "register_navigation",
+        "description": "Configurations for Custom Navigation"
+      },
+      {
+        "workflowPoint": "result_details_navigation",
+        "resource": "ResultDetailsNavigationConfiguration",
+        "classification": "result_details_navigation",
+        "description": "Configurations for Result Details Navigation"
       }
     ]
   }

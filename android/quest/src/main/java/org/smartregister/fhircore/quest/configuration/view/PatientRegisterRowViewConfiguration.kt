@@ -17,7 +17,10 @@
 package org.smartregister.fhircore.quest.configuration.view
 
 import androidx.compose.runtime.Stable
+import androidx.ui.core.Direction
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.smartregister.fhircore.engine.configuration.Configuration
 
@@ -34,10 +37,12 @@ class PatientRegisterRowViewConfiguration(
 data class Filter(
   val resourceType: Enumerations.ResourceType,
   val key: String,
+  val displayableProperty: String = key,
   val valuePrefix: String? = null,
+  val valuePostfix: String? = null,
   val label: String? = null,
   val valueType: Enumerations.DataType,
-  val valueCoding: Code?,
+  val valueCoding: Code? = null,
   val valueString: String? = null,
   val dynamicColors: List<DynamicColor>? = null,
   val properties: Properties? = null
@@ -47,9 +52,19 @@ data class Filter(
 @Serializable
 data class Code(val system: String? = null, val code: String? = null, val display: String? = null)
 
+fun Code.isSimilar(coding: Coding) = this.code == coding.code && this.system == coding.system
+
+fun Code.isSimilar(concept: CodeableConcept) =
+  concept.coding.any { this.code == it.code && this.system == it.system }
+
 @Stable
 @Serializable
-data class Properties(val label: Property? = null, val value: Property? = null)
+data class Properties(
+  val label: Property? = null,
+  val value: Property? = null,
+  val valueFormatter: Map<String, String>? = null,
+  val labelDirection: Direction = Direction.LEFT
+)
 
 @Stable
 @Serializable

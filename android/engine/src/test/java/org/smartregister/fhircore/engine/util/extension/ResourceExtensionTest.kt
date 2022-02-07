@@ -20,20 +20,26 @@ import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import java.math.BigDecimal
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.UriType
 import org.json.JSONObject
 import org.junit.Assert
@@ -472,13 +478,86 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `QuestionnaireResponse#getEncounterId() should return logicalId`() {
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply { contained = listOf(Encounter().apply { id = "1234" }) }
+
+    val id = questionnaireResponse.getEncounterId()
+
+    Assert.assertEquals("1234", id)
+  }
+
+  @Test
+  fun `QuestionnaireResponse#getEncounterId() replace# should return logicalId`() {
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply { contained = listOf(Encounter().apply { id = "#1234" }) }
+
+    val id = questionnaireResponse.getEncounterId()
+
+    Assert.assertEquals("1234", id)
+  }
+
+  @Test
+  fun `QuestionnaireResponse#getEncounterId() Id null should return empty id`() {
+
+    val questionnaireResponse = QuestionnaireResponse().apply { contained = listOf(Encounter()) }
+
+    val id = questionnaireResponse.getEncounterId()
+
+    Assert.assertEquals("", id)
+  }
+
+  @Test
   fun `Resource#generateMissingId() should generate Id if empty`() {
     val resource = Patient()
+    resource.id = "1"
 
-    Assert.assertTrue(resource.logicalId.isEmpty())
     resource.generateMissingId()
+    Assert.assertEquals("1", resource.logicalId)
 
+    resource.id = null
+    resource.generateMissingId()
+    Assert.assertNotEquals("1", resource.logicalId)
     Assert.assertFalse(resource.logicalId.isEmpty())
+  }
+
+  @Test
+  fun `Type#valueToString() should return string representation`() {
+    Assert.assertEquals("12345", StringType("12345").valueToString())
+    Assert.assertEquals("true", BooleanType(true).valueToString())
+    Assert.assertEquals(Date().makeItReadable(), DateTimeType(Date()).valueToString())
+    Assert.assertEquals("d", Coding("s", "c", "d").valueToString())
+    Assert.assertEquals(
+      "d",
+      CodeableConcept().apply { addCoding(Coding("s", "c", "d")) }.valueToString()
+    )
+    Assert.assertEquals(
+      "3.4",
+      Quantity()
+        .apply {
+          this.value = BigDecimal.valueOf(3.4)
+          this.unit = "G"
+        }
+        .valueToString()
+    )
+    Assert.assertEquals(
+      "8 Week (s)",
+      Timing()
+        .apply {
+          repeat.period = BigDecimal(8.0)
+          repeat.periodUnit = Timing.UnitsOfTime.WK
+        }
+        .valueToString()
+    )
+  }
+
+  @Test
+  fun `Resource#generateReferenceValue() should return correct reference`() {
+    val resource = Patient().apply { id = "123456" }
+
+    Assert.assertEquals("Patient/123456", resource.referenceValue())
   }
 
   @Test
@@ -527,5 +606,42 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertTrue(questionnaire[1].readOnly)
     Assert.assertTrue(questionnaire[2].hasExtension(FhirCoreQuestionnaireFragment.BARCODE_URL))
     Assert.assertTrue(questionnaire[2].readOnly)
+  }
+
+  @Test
+  fun `Type valueToString() should return string representation`() {
+    Assert.assertEquals("12345", StringType("12345").valueToString())
+    Assert.assertEquals("true", BooleanType(true).valueToString())
+    Assert.assertEquals(Date().makeItReadable(), DateTimeType(Date()).valueToString())
+    Assert.assertEquals("d", Coding("s", "c", "d").valueToString())
+    Assert.assertEquals(
+      "d",
+      CodeableConcept().apply { addCoding(Coding("s", "c", "d")) }.valueToString()
+    )
+    Assert.assertEquals(
+      "3.4",
+      Quantity()
+        .apply {
+          this.value = BigDecimal.valueOf(3.4)
+          this.unit = "G"
+        }
+        .valueToString()
+    )
+  }
+
+  @Test
+  fun `Resource generateReferenceValue() should return correct reference`() {
+    val resource = Patient().apply { id = "123456" }
+
+    Assert.assertEquals("Patient/123456", resource.referenceValue())
+  }
+
+  @Test
+  fun `Resource#isPatient() should return true if resource is valid`() {
+    val resource = Patient()
+    Assert.assertFalse(resource.isPatient("1"))
+
+    resource.id = "1"
+    Assert.assertTrue(resource.isPatient("1"))
   }
 }

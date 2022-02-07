@@ -44,8 +44,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
@@ -95,13 +93,8 @@ fun EncounterListScreen(encounterListViewModel: EncounterListViewModel) {
   }
 }
 
-@Preview
 @Composable
-@ExcludeFromJacocoGeneratedReport
-fun EncounterItemRow(
-  @PreviewParameter(DummyItem::class) item: EncounterItem,
-  isLastItem: Boolean = false
-) {
+fun EncounterItemRow(item: EncounterItem, isLastItem: Boolean = false) {
   Column {
     Row(
       verticalAlignment = Alignment.CenterVertically,
@@ -163,20 +156,59 @@ fun LoadingItem() {
 @Preview
 @Composable
 @ExcludeFromJacocoGeneratedReport
-fun EncounterListScreenPreview() {
+fun EncounterItemDefaultPreview() {
   EncounterItemRow(
     item =
       EncounterItem(
         id = "id",
         status = Encounter.EncounterStatus.ARRIVED,
-        display = "display",
+        display = "Option 1",
         periodStartDate = Date()
       )
   )
 }
 
-class DummyItem : PreviewParameterProvider<EncounterItem> {
-  override val values: Sequence<EncounterItem>
-    get() =
-      listOf(EncounterItem("1", Encounter.EncounterStatus.FINISHED, "Dummy", Date())).asSequence()
+@Preview
+@Composable
+@ExcludeFromJacocoGeneratedReport
+fun EncounterItemFinishedPreview() {
+  EncounterItemRow(
+    item =
+      EncounterItem(
+        id = "id",
+        status = Encounter.EncounterStatus.FINISHED,
+        display = "Option 2",
+        periodStartDate = Date()
+      )
+  )
+}
+
+@Preview
+@Composable
+@ExcludeFromJacocoGeneratedReport
+fun EncounterItemCancelledPreview() {
+  EncounterItemRow(
+    item =
+      EncounterItem(
+        id = "id",
+        status = Encounter.EncounterStatus.CANCELLED,
+        display = "Option 3",
+        periodStartDate = Date()
+      )
+  )
+}
+
+@Preview
+@Composable
+@ExcludeFromJacocoGeneratedReport
+fun EncounterItemUnknownPreview() {
+  EncounterItemRow(
+    item =
+      EncounterItem(
+        id = "id",
+        status = Encounter.EncounterStatus.UNKNOWN,
+        display = "Option 4",
+        periodStartDate = Date()
+      )
+  )
 }

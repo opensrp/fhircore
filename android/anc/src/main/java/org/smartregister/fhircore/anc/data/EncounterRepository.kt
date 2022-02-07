@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.data
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Encounter
@@ -41,7 +42,7 @@ class EncounterRepository @Inject constructor(val fhirEngine: FhirEngine) :
 
       val encounters =
         fhirEngine.search<Encounter> {
-          filter(Encounter.SUBJECT) { value = "Patient/$patientId" }
+          apply { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }.getQuery()
           from = nextPage * PaginationUtil.DEFAULT_PAGE_SIZE
           count = PaginationUtil.DEFAULT_PAGE_SIZE
         }

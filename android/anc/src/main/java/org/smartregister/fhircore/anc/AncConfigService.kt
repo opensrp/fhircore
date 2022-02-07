@@ -71,7 +71,7 @@ constructor(
   }
 
   private fun loadSearchParams(context: Context): List<SearchParameter> {
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val json =
       context.assets.open(ConfigurationRegistry.APP_SYNC_CONFIG).bufferedReader().use {
         it.readText()

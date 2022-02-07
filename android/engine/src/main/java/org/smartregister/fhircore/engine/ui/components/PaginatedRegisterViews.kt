@@ -20,9 +20,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Icon
@@ -40,6 +40,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.paging.LoadState
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
@@ -180,33 +182,67 @@ fun PaginatedRegister(
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Column(modifier = modifier.fillMaxWidth().fillMaxHeight(0.6f)) {
-    if (showResultsCount) {
-      SearchHeader(resultCount = resultCount)
-    }
-    Box(
-      contentAlignment = Alignment.TopCenter,
-      modifier = modifier.weight(1f).padding(4.dp).fillMaxSize()
-    ) {
-      if (loadState == LoadState.Loading) {
-        CircularProgressBar()
-      } else {
-        if (resultCount == 0 && showResultsCount) {
-          NoResults(modifier = modifier)
-        } else {
-          body()
+  val bottomPadding = if (showResultsCount) 4.dp else 40.dp
+  Column(modifier = modifier.fillMaxWidth().height(200.dp)) {
+    ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+      val (topRef, bodyRef, bottomRef, searchFooterRef) = createRefs()
+      Column(
+        modifier =
+          modifier.constrainAs(topRef) {
+            width = Dimension.wrapContent
+            height = Dimension.value(4.dp)
+            start.linkTo(parent.start)
+            top.linkTo(parent.top)
+            end.linkTo(parent.end)
+          }
+      ) { Text(text = "hidden") }
+      Column(
+        modifier =
+          modifier.constrainAs(bottomRef) {
+            width = Dimension.fillToConstraints
+            height = Dimension.value(4.dp)
+            start.linkTo(parent.start)
+            bottom.linkTo(parent.bottom)
+            end.linkTo(parent.end)
+          }
+      ) { Text(text = "hidden", color = MaterialTheme.colors.primary) }
+      Column(
+        modifier =
+          modifier.padding(bottom = bottomPadding).fillMaxSize().constrainAs(bodyRef) {
+            height = Dimension.fillToConstraints
+            start.linkTo(parent.start)
+            top.linkTo(topRef.bottom)
+            end.linkTo(parent.end)
+            bottom.linkTo(bottomRef.top)
+          }
+      ) {
+        if (showResultsCount) {
+          SearchHeader(resultCount = resultCount)
+        }
+        Box(contentAlignment = Alignment.TopCenter, modifier = modifier.fillMaxSize()) {
+          if (loadState == LoadState.Loading) {
+            CircularProgressBar()
+          } else {
+            if (resultCount == 0 && showResultsCount) {
+              NoResults(modifier = modifier)
+            } else {
+              body()
+            }
+          }
         }
       }
-    }
-    if (showPageCount) {
-      if (!showResultsCount) {
-        SearchFooter(
-          resultCount = resultCount,
-          currentPage = currentPage,
-          pageNumbers = pagesCount,
-          previousButtonClickListener = previousButtonClickListener,
-          nextButtonClickListener = nextButtonClickListener
-        )
+      if (showPageCount) {
+        if (!showResultsCount) {
+          Box(modifier = Modifier.constrainAs(searchFooterRef) { bottom.linkTo(parent.bottom) }) {
+            SearchFooter(
+                    resultCount = resultCount,
+                    currentPage = currentPage,
+                    pageNumbers = pagesCount,
+                    previousButtonClickListener = previousButtonClickListener,
+                    nextButtonClickListener = nextButtonClickListener
+            )
+          }
+        }
       }
     }
   }

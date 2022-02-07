@@ -38,6 +38,10 @@ abstract class ActivityRobolectricTest : RobolectricTest() {
     return getActivity().getString(id)
   }
 
+  fun getString(@StringRes id: Int, vararg args: String): String {
+    return getActivity().getString(id, *args)
+  }
+
   fun <T : View> findViewById(@IdRes id: Int): T {
     return getActivity().findViewById(id)
   }

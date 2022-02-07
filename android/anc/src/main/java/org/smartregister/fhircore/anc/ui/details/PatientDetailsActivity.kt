@@ -44,7 +44,6 @@ import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivit
 import org.smartregister.fhircore.anc.ui.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
-import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_REGISTER_FORM
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
@@ -55,6 +54,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSe
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
@@ -151,10 +151,14 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
                 clientIdentifier = patientId,
                 formName =
                   if (patient.value?.isHouseHoldHead == true) FAMILY_REGISTER_FORM
-                  else FAMILY_MEMBER_REGISTER_FORM
+                  else FAMILY_MEMBER_REGISTER_FORM,
+                questionnaireType = QuestionnaireType.EDIT
               )
             )
-            .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
+            .putExtra(
+              FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY,
+              patient.value?.headId
+            )
         )
         true
       }

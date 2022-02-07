@@ -45,7 +45,12 @@ class RecordVaccineActivity : QuestionnaireActivity() {
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
-      val bundle = questionnaireViewModel.performExtraction(questionnaire, questionnaireResponse)
+      val bundle =
+        questionnaireViewModel.performExtraction(
+          this@RecordVaccineActivity,
+          questionnaire,
+          questionnaireResponse
+        )
 
       if (bundle.entryFirstRep.resource is Immunization) {
         savedImmunization =
@@ -75,7 +80,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
     }
   }
 
-  override fun postSaveSuccessful() {
+  override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     val nextVaccineDate = savedImmunization.nextDueDateFmt()
     val currentDose = savedImmunization.protocolAppliedFirstRep.doseNumberPositiveIntType.value
 
