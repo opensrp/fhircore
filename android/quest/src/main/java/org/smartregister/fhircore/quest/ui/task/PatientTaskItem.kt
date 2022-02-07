@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.quest.ui.task
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import androidx.compose.runtime.Stable
+import java.util.Date
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-enum class QuestConfigClassification : ConfigClassification {
-  PATIENT_REGISTER,
-  PATIENT_REGISTER_ROW,
-  PATIENT_TASK_REGISTER;
-  override val classification: String = name.lowercase()
+@Stable
+data class PatientTaskItem(
+  val id: String = "",
+  val name: String = "",
+  val gender: String = "",
+  val birthdate: Date? = null,
+  val address: String = "",
+  val description: String = "",
+  val overdue: Boolean
+) {
+  fun demographics(): String {
+    return "$name, $gender, ${birthdate.toAgeDisplay()}"
+  }
 }

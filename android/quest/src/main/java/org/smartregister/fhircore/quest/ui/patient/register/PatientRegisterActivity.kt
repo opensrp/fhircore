@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
@@ -54,6 +55,11 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_users)!!
       ),
       NavigationMenuOption(
+        id = R.id.menu_item_tasks,
+        title = getString(R.string.tasks),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
+      ),
+      NavigationMenuOption(
         id = R.id.menu_item_settings,
         title = getString(R.string.menu_settings),
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
@@ -64,6 +70,12 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
       R.id.menu_item_clients -> switchFragment(mainFragmentTag())
+      R.id.menu_item_tasks ->
+        switchFragment(
+          tag = PatientTaskFragment.TAG,
+          isRegisterFragment = false,
+          toolbarTitle = getString(R.string.tasks)
+        )
       R.id.menu_item_settings ->
         switchFragment(
           tag = UserProfileFragment.TAG,
@@ -79,6 +91,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun supportedFragments(): Map<String, Fragment> =
     mapOf(
       Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()),
+      Pair(PatientTaskFragment.TAG, PatientTaskFragment()),
       Pair(UserProfileFragment.TAG, UserProfileFragment())
     )
 

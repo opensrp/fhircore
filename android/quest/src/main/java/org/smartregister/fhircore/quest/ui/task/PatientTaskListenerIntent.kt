@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.quest.ui.task
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import org.smartregister.fhircore.engine.util.ListenerIntent
 
-enum class QuestConfigClassification : ConfigClassification {
-  PATIENT_REGISTER,
-  PATIENT_REGISTER_ROW,
-  PATIENT_TASK_REGISTER;
-  override val classification: String = name.lowercase()
-}
+/** [ListenerIntent] used on individual rows click listeners for patient task register. */
+sealed class PatientTaskListenerIntent : ListenerIntent

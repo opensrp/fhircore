@@ -16,11 +16,10 @@
 
 package org.smartregister.fhircore.quest.util
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam
+import com.google.android.fhir.search.Search
+import org.hl7.fhir.r4.model.ResourceType
 
-enum class QuestConfigClassification : ConfigClassification {
-  PATIENT_REGISTER,
-  PATIENT_REGISTER_ROW,
-  PATIENT_TASK_REGISTER;
-  override val classification: String = name.lowercase()
+fun Search.filterByPractitioner(reference: ReferenceClientParam, practitionerId: String) {
+  filter(reference) { this.value = "${ResourceType.Practitioner.name}/$practitionerId" }
 }
