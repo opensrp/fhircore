@@ -10,6 +10,12 @@
         "description": "Configurations for patient register"
       },
       {
+        "workflowPoint": "registration",
+        "resource": "RegisterViewConfiguration",
+        "classification": "patient_task_register",
+        "description": "Configurations for patient task"
+      },
+      {
         "workflowPoint": "login",
         "resource": "LoginViewConfiguration",
         "classification": "login",

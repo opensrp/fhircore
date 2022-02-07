@@ -20,6 +20,12 @@
         "resource": "PatientRegisterRowViewConfiguration",
         "classification": "patient_register_row",
         "description": "Configurations for Patient Row"
+      },
+      {
+        "workflowPoint": "registration",
+        "resource": "RegisterViewConfiguration",
+        "classification": "patient_task_register",
+        "description": "Configurations for patient task"
       }
     ]
   },

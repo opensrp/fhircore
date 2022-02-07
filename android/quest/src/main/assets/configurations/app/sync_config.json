@@ -88,5 +88,15 @@
     ],
     "type": "token",
     "expression": ""
+  },
+  {
+    "resourceType": "SearchParameter",
+    "name": "organization",
+    "code": "organization",
+    "base": [
+      "Task"
+    ],
+    "type": "token",
+    "expression": ""
   }
 ]
