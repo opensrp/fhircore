@@ -46,8 +46,8 @@
         <string name="loading">Inapakia</string>
         <string name="error_loading_form">Hitilafu kounyesha fomu</string>
         <string name="error_saving_form">Hitilafu imetokea, haiwezi kuhifadhi fomu</string>
-        <string name="replace_photo">Replace photo</string>
-        <string name="take_photo">Take photo</string>
+        <string name="replace_photo">Badilisha picha</string>
+        <string name="take_photo">Piga picha</string>
         <string name="app_logo">Nembo ya programu</string>
         <string name="powered_by">Inatumia</string>
         <string name="already_fully_vaccinated">Hawezi kupokea dozi nyingine. Tayari amechanjwa kikamilifu</string>

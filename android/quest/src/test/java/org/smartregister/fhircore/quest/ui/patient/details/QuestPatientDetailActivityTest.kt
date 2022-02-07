@@ -33,6 +33,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
+import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -44,8 +45,9 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.configuration.parser.G6PDDetailConfigParser
-import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
+import org.smartregister.fhircore.quest.configuration.view.NavigationOption
+import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
+import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -71,7 +73,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     Faker.initPatientRepositoryMocks(patientRepository)
 
     val intent =
@@ -89,12 +91,14 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnBackPressListenerShouldFinishActivity() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     questPatientDetailActivity.patientViewModel.onBackPressed(true)
     Assert.assertTrue(questPatientDetailActivity.isFinishing)
   }
 
   @Test
   fun testOnMenuItemClickListenerShouldStartQuestionnaireActivity() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     questPatientDetailActivity.configurationRegistry.appId = "quest"
     questPatientDetailActivity.configurationRegistry.configurationsMap.put(
       "quest|patient_register",
@@ -110,6 +114,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnFormItemClickListenerShouldStartQuestionnaireActivity() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     questPatientDetailActivity.patientViewModel.onFormItemClickListener(
       QuestionnaireConfig(appId = "quest", form = "test-form", title = "Title", identifier = "1234")
     )
@@ -121,11 +126,21 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
 
-    ReflectionHelpers.setField(
-      questPatientDetailActivity,
-      "parser",
-      QuestDetailConfigParser(mockk())
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_questionnaire",
+          title = "Questionnaire",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "quest",
+      classification = "result_details_navigation",
+      navigationOptions
     )
 
     ReflectionHelpers.callInstanceMethod<Any>(
@@ -149,11 +164,94 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnTestResultItemClickListenerShouldStartSimpleDetailsActivityForG6pd() {
-    ReflectionHelpers.setField(
+  fun testOnTestResultItemClickListenerQuestionnaireNullShouldShowAlertDialog() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_questionnaire",
+          title = "Questionnaire",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "quest",
+      classification = "result_details_navigation",
+      navigationOptions
+    )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
       questPatientDetailActivity,
-      "parser",
-      G6PDDetailConfigParser(mockk())
+      "onTestResultItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestResultItem::class.java,
+        QuestResultItem(
+          Pair(QuestionnaireResponse().apply { questionnaire = "" }, mockk()),
+          listOf()
+        )
+      )
+    )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+  }
+
+  @Test
+  fun testOnTestResultItemClickListenerInvalidQuestionnaireUrlShouldShowAlertDialog() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_questionnaire",
+          title = "Questionnaire",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "quest",
+      classification = "result_details_navigation",
+      navigationOptions
+    )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      questPatientDetailActivity,
+      "onTestResultItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestResultItem::class.java,
+        QuestResultItem(
+          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire" }, mockk()),
+          listOf()
+        )
+      )
+    )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+  }
+
+  @Test
+  fun testOnTestResultItemClickListenerShouldStartSimpleDetailsActivityForG6pd() {
+    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_test_details",
+          title = "Test Details",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "g6pd",
+      classification = "result_details_navigation",
+      navigationOptions
     )
 
     ReflectionHelpers.callInstanceMethod<Any>(
@@ -167,7 +265,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
         )
       )
     )
-    8
+
     val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
 
