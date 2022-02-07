@@ -54,7 +54,10 @@ class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem
   }
 
   @Composable
-  override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientTaskItem>) {
+  override fun ConstructRegisterList(
+    pagingItems: LazyPagingItems<PatientTaskItem>,
+    modifier: Modifier
+  ) {
     PatientTaskList(
       pagingItems = pagingItems,
       useLabel = registerViewConfiguration.useLabel,

@@ -60,16 +60,17 @@ class PatientRegisterActivity : BaseRegisterActivity() {
           title = getString(R.string.menu_clients),
           iconResource = ContextCompat.getDrawable(this, R.drawable.ic_users)!!
         ),
-      NavigationMenuOption(
-        id = R.id.menu_item_tasks,
-        title = getString(R.string.tasks),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
-      ),
+        NavigationMenuOption(
+          id = R.id.menu_item_tasks,
+          title = getString(R.string.tasks),
+          iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
+        ),
         NavigationMenuOption(
           id = R.id.menu_item_settings,
           title = getString(R.string.menu_settings),
           iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
         )
+      )
       .plus(
         getCustomNavigationOptions().navigationOptions.map {
           NavigationMenuOption(

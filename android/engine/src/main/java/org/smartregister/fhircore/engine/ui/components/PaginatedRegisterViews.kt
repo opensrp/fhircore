@@ -175,14 +175,23 @@ fun PaginatedRegister(
   showResultsCount: Boolean,
   resultCount: Int,
   body: (@Composable() () -> Unit),
-  showPageCount: Boolean = true,
+  showPageCount: Boolean,
   currentPage: Int,
   pagesCount: Int,
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val bottomPadding = if (showResultsCount) 4.dp else 40.dp
+  val bottomPadding =
+    when {
+      showResultsCount -> {
+        4.dp
+      }
+      showPageCount -> {
+        40.dp
+      }
+      else -> 0.dp
+    }
   Column(modifier = modifier.fillMaxWidth().height(200.dp)) {
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
       val (topRef, bodyRef, bottomRef, searchFooterRef) = createRefs()
@@ -235,11 +244,11 @@ fun PaginatedRegister(
         if (!showResultsCount) {
           Box(modifier = Modifier.constrainAs(searchFooterRef) { bottom.linkTo(parent.bottom) }) {
             SearchFooter(
-                    resultCount = resultCount,
-                    currentPage = currentPage,
-                    pageNumbers = pagesCount,
-                    previousButtonClickListener = previousButtonClickListener,
-                    nextButtonClickListener = nextButtonClickListener
+              resultCount = resultCount,
+              currentPage = currentPage,
+              pageNumbers = pagesCount,
+              previousButtonClickListener = previousButtonClickListener,
+              nextButtonClickListener = nextButtonClickListener
             )
           }
         }

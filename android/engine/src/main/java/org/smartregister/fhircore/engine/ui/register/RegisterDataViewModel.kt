@@ -53,7 +53,7 @@ class RegisterDataViewModel<I : Any, O : Any>(
   val showResultsCount
     get() = _showResultsCount
 
-  private val _showPageCount = MutableLiveData(false)
+  private val _showPageCount = MutableLiveData(true)
   val showPageCount
     get() = _showPageCount
 

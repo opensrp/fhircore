@@ -21,5 +21,5 @@ import com.google.android.fhir.search.Search
 import org.hl7.fhir.r4.model.ResourceType
 
 fun Search.filterByPractitioner(reference: ReferenceClientParam, practitionerId: String) {
-  filter(reference) { this.value = "${ResourceType.Practitioner.name}/$practitionerId" }
+  filter(reference, { this.value = "${ResourceType.Practitioner.name}/$practitionerId" })
 }

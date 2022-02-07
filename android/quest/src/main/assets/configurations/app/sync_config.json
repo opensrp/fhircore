@@ -98,11 +98,11 @@
   {
     "resourceType": "SearchParameter",
     "name": "organization",
-    "code": "organization",
+    "code": "subject.organization",
     "base": [
       "Task"
     ],
     "type": "token",
-    "expression": ""
+    "expression": "organization"
   }
 ]

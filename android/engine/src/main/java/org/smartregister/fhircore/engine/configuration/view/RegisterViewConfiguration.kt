@@ -39,7 +39,7 @@ data class RegisterViewConfiguration(
   var registrationForm: String = "patient-registration",
   var showSideMenu: Boolean = true,
   var showBottomMenu: Boolean = false,
-  var showPageCount: Boolean = false,
+  var showPageCount: Boolean = true,
   var useLabel: Boolean = true,
   var primaryFilter: SearchFilter? = null
 ) : Configuration
