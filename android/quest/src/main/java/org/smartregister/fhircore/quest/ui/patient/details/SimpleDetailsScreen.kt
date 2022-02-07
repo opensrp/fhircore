@@ -93,7 +93,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
         dataItem?.rows?.forEachIndexed { i, r ->
           kotlin
             .runCatching {
-              Row(Modifier.padding(10.dp).testTag(DETAILS_DATA_ROW)) {
+              Row(Modifier.padding(5.dp).testTag(DETAILS_DATA_ROW)) {
                 r.cells.forEach { c ->
                   if (c.filter.properties?.labelDirection == Direction.UP) {
                     Column(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
