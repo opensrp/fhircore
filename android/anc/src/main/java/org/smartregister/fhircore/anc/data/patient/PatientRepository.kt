@@ -241,7 +241,8 @@ constructor(
             isPregnant = searchCondition(patient.logicalId).hasActivePregnancy(),
             birthDate = patient.birthDate,
             address = patient.extractAddress(),
-            isHouseHoldHead = patient.link.isEmpty()
+            isHouseHoldHead = patient.link.isEmpty(),
+            headId = ancPatientItemHead.patientIdentifier
           )
         ancPatientDetailItem = PatientDetailItem(ancPatientItem, ancPatientItemHead)
       }
