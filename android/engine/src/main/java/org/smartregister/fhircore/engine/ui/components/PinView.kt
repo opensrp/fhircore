@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,7 +33,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -49,16 +47,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,6 +60,10 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 
 const val PIN_VIEW = "pin_view"
+const val PIN_VIEW_CELL = "pin_view_cell"
+const val PIN_VIEW_CELL_DOTTED = "pin_view_cell_dotted"
+const val PIN_VIEW_CELL_TEXT = "pin_view_cell_text"
+const val PIN_VIEW_ERROR = "pin_view_error"
 
 @ExperimentalComposeUiApi
 @Composable
@@ -75,7 +72,8 @@ fun PinView(
   onPinChanged: (String) -> Unit = {},
   inputPin: String = "",
   isDotted: Boolean = false,
-  showError: Boolean = false
+  showError: Boolean = false,
+  modifier: Modifier = Modifier
 ) {
   val (editValue, setEditValue) = remember { mutableStateOf(inputPin) }
   val pinLength = remember { pinInputLength }
@@ -123,7 +121,7 @@ fun PinView(
 
 @Composable
 fun PinCell(
-  modifier: Modifier,
+  modifier: Modifier = Modifier,
   value: String,
   isCursorVisible: Boolean = false,
   isDotted: Boolean = false,
@@ -133,9 +131,6 @@ fun PinCell(
   val (cursorSymbol, setCursorSymbol) = remember { mutableStateOf("") }
   var borderColor = colorResource(id = R.color.darkGrayText)
   var dottedBg = colorResource(id = R.color.darkGrayText)
-  if (value.length == 4) {
-    dottedBg = colorResource(id = R.color.colorSuccess)
-  }
   if (showError) {
     borderColor = colorResource(id = R.color.colorError)
     dottedBg = colorResource(id = R.color.colorErrorDull)
@@ -145,6 +140,9 @@ fun PinCell(
   } else if (value.isEmpty()) {
     borderColor = colorResource(id = R.color.light_gray)
     dottedBg = colorResource(id = R.color.light_gray)
+  }
+  if (value.length == 4) {
+    dottedBg = colorResource(id = R.color.colorSuccess)
   }
   LaunchedEffect(key1 = cursorSymbol, isCursorVisible) {
     if (isCursorVisible) {
@@ -158,7 +156,7 @@ fun PinCell(
   Box(modifier = modifier) {
     if (isDotted) {
       Card(
-        modifier = Modifier.size(30.dp).align(Alignment.Center),
+        modifier = Modifier.size(30.dp).align(Alignment.Center).testTag(PIN_VIEW_CELL_DOTTED),
         elevation = 1.dp,
         shape = RoundedCornerShape(15.dp),
         border = BorderStroke(width = 1.dp, color = borderColor),
@@ -168,13 +166,13 @@ fun PinCell(
           text = if (isCursorVisible) cursorSymbol else "",
           fontSize = 18.sp,
           style = MaterialTheme.typography.body1,
-          modifier = Modifier.wrapContentSize().align(Alignment.Center)
+          modifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(PIN_VIEW_CELL_TEXT)
         )
       }
       //      }
     } else {
       Card(
-        modifier = Modifier.fillMaxSize().align(Alignment.Center),
+        modifier = Modifier.fillMaxSize().align(Alignment.Center).testTag(PIN_VIEW_CELL),
         elevation = 1.dp,
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(width = 1.dp, color = borderColor),
@@ -183,7 +181,7 @@ fun PinCell(
         Text(
           text = if (isCursorVisible) cursorSymbol else value,
           style = MaterialTheme.typography.body1,
-          modifier = Modifier.wrapContentSize().align(Alignment.Center)
+          modifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(PIN_VIEW_CELL_TEXT)
         )
       }
     }
@@ -193,81 +191,27 @@ fun PinCell(
 @ExperimentalComposeUiApi
 @Preview
 @Composable
-fun OtpViewPreview() {
+fun PinViewPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView() }
 }
 
 @ExperimentalComposeUiApi
 @Preview
 @Composable
-fun OtpViewDottedPreview() {
+fun PinViewDottedPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true) }
 }
 
 @ExperimentalComposeUiApi
 @Preview
 @Composable
-fun OtpViewErrorPreview() {
+fun PinViewErrorPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(showError = true) }
 }
 
 @ExperimentalComposeUiApi
 @Preview
 @Composable
-fun OtpViewDottedErrorPreview() {
+fun PinViewDottedErrorPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true, showError = true) }
-}
-
-@Composable
-fun OTPTextFields(modifier: Modifier = Modifier, length: Int, onFilled: (code: String) -> Unit) {
-  var code: List<Char> by remember { mutableStateOf(listOf()) }
-  val focusRequesters: List<FocusRequester> = remember {
-    val temp = mutableListOf<FocusRequester>()
-    repeat(length) { temp.add(FocusRequester()) }
-    temp
-  }
-
-  Row(modifier = Modifier.height(50.dp)) {
-    (0 until length).forEach { index ->
-      OutlinedTextField(
-        modifier =
-          Modifier.width(50.dp).height(50.dp).focusOrder(focusRequester = focusRequesters[index]) {
-            focusRequesters[index + 1].requestFocus()
-          },
-        textStyle =
-          MaterialTheme.typography.body2.copy(textAlign = TextAlign.Center, color = Color.Black),
-        singleLine = true,
-        value = code.getOrNull(index = index)?.takeIf { it.isDigit() }?.toString() ?: "",
-        onValueChange = { value: String ->
-          if (focusRequesters[index].freeFocus()) {
-            val temp = code.toMutableList()
-            if (value == "") {
-              if (temp.size > index) {
-                temp.removeAt(index = index)
-                code = temp
-                focusRequesters.getOrNull(index - 1)?.requestFocus()
-              }
-            } else {
-              if (code.size > index) {
-                temp[index] = value.getOrNull(0) ?: ' '
-              } else {
-                temp.add(value.getOrNull(0) ?: ' ')
-                code = temp
-                focusRequesters.getOrNull(index + 1)?.requestFocus()
-                  ?: onFilled(code.joinToString(separator = ""))
-              }
-            }
-          }
-        },
-        keyboardOptions =
-          KeyboardOptions.Default.copy(
-            keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Next
-          ),
-        visualTransformation = PasswordVisualTransformation()
-      )
-
-      Spacer(modifier = Modifier.width(15.dp))
-    }
-  }
 }
