@@ -34,6 +34,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.PIN_KEY
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -62,7 +63,8 @@ internal class PinViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
-    coEvery { sharedPreferencesHelper.write(any(), "true") } returns Unit
+    coEvery { sharedPreferencesHelper.write(PIN_KEY, "1234") } returns Unit
+    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, "true") } returns Unit
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
 
     pinViewModel =
@@ -74,6 +76,7 @@ internal class PinViewModelTest : RobolectricTest() {
     pinViewModel.apply {
       savedPin = "1234"
       isSetupPage = true
+      onPinChanged("1234")
     }
   }
 
@@ -99,7 +102,18 @@ internal class PinViewModelTest : RobolectricTest() {
       pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
       testPin.value.toString()
     )
-    Assert.assertEquals(pinViewModel.showError.value, true)
+    Assert.assertEquals(pinViewModel.showError.value, false)
+  }
+
+  @Test
+  fun testOnPinConfirmedValidated() {
+    pinViewModel.onPinConfirmed()
+    Assert.assertEquals(
+      pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
+      testPin.value.toString()
+    )
+    Assert.assertEquals(pinViewModel.showError.value, false)
+    Assert.assertEquals(pinViewModel.navigateToHome.value, true)
   }
 
   @Test
