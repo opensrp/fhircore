@@ -100,6 +100,10 @@ jobs:
         run: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
         working-directory: android
 
+      - name: Run Instrumentation Tests
+        run: ./gradlew anc:connectedAndroidTest
+        working-directory: android
+
       - name: Upload ANC Test Report to codecov
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F anc -f "anc/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
