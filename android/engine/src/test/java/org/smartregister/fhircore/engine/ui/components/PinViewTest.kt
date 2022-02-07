@@ -58,4 +58,24 @@ class PinViewTest : RobolectricTest() {
     composeRule.setContent { PinView(showError = true) }
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
   }
+
+  @ExperimentalComposeUiApi
+  @Test
+  fun testPinCell() {
+    composeRule.setContent {
+      PinCell(value = "1", isCursorVisible = false, isDotted = false, showError = true)
+    }
+    composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
+  }
+
+  @ExperimentalComposeUiApi
+  @Test
+  fun testPinCellDotted() {
+    composeRule.setContent {
+      PinCell(value = "1", isCursorVisible = false, isDotted = true, showError = false)
+    }
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_DOTTED).assertExists()
+  }
 }

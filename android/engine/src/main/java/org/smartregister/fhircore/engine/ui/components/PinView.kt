@@ -169,7 +169,6 @@ fun PinCell(
           modifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(PIN_VIEW_CELL_TEXT)
         )
       }
-      //      }
     } else {
       Card(
         modifier = Modifier.fillMaxSize().align(Alignment.Center).testTag(PIN_VIEW_CELL),
