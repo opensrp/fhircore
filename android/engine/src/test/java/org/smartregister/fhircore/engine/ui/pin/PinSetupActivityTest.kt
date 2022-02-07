@@ -26,11 +26,11 @@ import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
-import io.mockk.unmockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
