@@ -82,6 +82,14 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testNavigateToCallDialerShouldVerifyExpectedIntent() {
+    pinLoginActivity.pinViewModel.forgotPin()
+    val expectedIntent = Intent(Intent.ACTION_DIAL)
+    val actualIntent = Shadows.shadowOf(application).nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
     pinLoginActivity.pinViewModel.onPinChanged("1234")
     Assert.assertEquals(

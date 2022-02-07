@@ -24,16 +24,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
-import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
-class PinLoginActivity :
-  BaseMultiLanguageActivity(), ConfigurableComposableView<LoginViewConfiguration> {
+class PinLoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
 
@@ -72,9 +69,5 @@ class PinLoginActivity :
       }
     )
     finish()
-  }
-
-  override fun configureViews(viewConfiguration: LoginViewConfiguration) {
-    // pinViewModel.updateViewConfigurations(viewConfiguration)
   }
 }
