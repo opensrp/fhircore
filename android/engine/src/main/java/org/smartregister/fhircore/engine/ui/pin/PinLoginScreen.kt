@@ -213,7 +213,6 @@ fun ForgotPinDialog(
   modifier: Modifier = Modifier
 ) {
   AlertDialog(
-    modifier = Modifier.testTag(PIN_FORGOT_DIALOG),
     onDismissRequest = onDismissDialog,
     title = {
       Text(
@@ -251,7 +250,8 @@ fun ForgotPinDialog(
             }
         )
       }
-    }
+    },
+    modifier = Modifier.testTag(PIN_FORGOT_DIALOG)
   )
 }
 

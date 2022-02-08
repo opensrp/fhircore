@@ -50,6 +50,7 @@ class PinLoginScreensTest : RobolectricTest() {
         fun onPinChanged() {}
         fun onMenuLoginClicked() {}
         fun forgotPin() {}
+        fun onDismissForgotDialog() {}
       }
     )
 
@@ -108,5 +109,16 @@ class PinLoginScreensTest : RobolectricTest() {
       )
     }
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
+  }
+
+  @Test
+  fun testForgotPinDialog() {
+    composeRule.setContent {
+      ForgotPinDialog(
+        forgotPin = { listenerObjectSpy.forgotPin() },
+        onDismissDialog = { listenerObjectSpy.onDismissForgotDialog() }
+      )
+    }
+    composeRule.onNodeWithTag(PIN_FORGOT_DIALOG).assertExists()
   }
 }
