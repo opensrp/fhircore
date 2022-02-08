@@ -39,7 +39,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    loginService.runningActivity = this
+    loginService.loginActivity = this
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     pinViewModel.apply {

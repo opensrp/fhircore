@@ -22,7 +22,7 @@ import org.smartregister.fhircore.engine.ui.login.LoginService
 
 class AppLoginService @Inject constructor() : LoginService {
 
-  override lateinit var runningActivity: AppCompatActivity
+  override lateinit var loginActivity: AppCompatActivity
 
   override fun navigateToHome() {
     // Do nothing

@@ -24,10 +24,14 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
@@ -51,8 +55,26 @@ class PinSetupScreenTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
+  private lateinit var pinViewModel: PinViewModel
+
+  @Before
+  fun setUp() {
+    pinViewModel =
+      mockk {
+        every { pin } returns MutableLiveData("1234")
+        every { enableSetPin } returns MutableLiveData(false)
+      }
+  }
+
   @Test
-  fun testPinSetupScreenPage() {
+  fun testPinSetupScreen() {
+    composeRule.setContent { PinSetupScreen(viewModel = pinViewModel) }
+    composeRule.onNodeWithTag(PIN_VIEW).assertExists()
+    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).assertExists()
+  }
+
+  @Test
+  fun testPinSetupPage() {
     composeRule.setContent {
       PinSetupPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
@@ -82,7 +104,7 @@ class PinSetupScreenTest : RobolectricTest() {
   }
 
   @Test
-  fun testPinSetupScreenPageSetPinButtonEnabled() {
+  fun testPinSetupPageSetPinButtonEnabled() {
     composeRule.setContent {
       PinSetupPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },

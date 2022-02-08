@@ -24,14 +24,14 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActiv
 
 class QuestLoginService @Inject constructor() : LoginService {
 
-  override lateinit var runningActivity: AppCompatActivity
+  override lateinit var loginActivity: AppCompatActivity
 
   override fun navigateToHome() {
     val intent =
-      Intent(runningActivity, PatientRegisterActivity::class.java).apply {
+      Intent(loginActivity, PatientRegisterActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
-    runningActivity.run {
+    loginActivity.run {
       startActivity(intent)
       finish()
     }

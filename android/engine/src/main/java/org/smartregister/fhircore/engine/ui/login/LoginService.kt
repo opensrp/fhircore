@@ -23,16 +23,16 @@ import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 
 interface LoginService {
 
-  var runningActivity: AppCompatActivity
+  var loginActivity: AppCompatActivity
 
   fun navigateToHome()
 
   fun navigateToPinLogin() {
     val intent =
-      Intent(runningActivity, PinLoginActivity::class.java).apply {
+      Intent(loginActivity, PinLoginActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
-    runningActivity.run {
+    loginActivity.run {
       startActivity(intent)
       finish()
     }
@@ -40,10 +40,10 @@ interface LoginService {
 
   fun navigateToPinSetup() {
     val intent =
-      Intent(runningActivity, PinSetupActivity::class.java).apply {
+      Intent(loginActivity, PinSetupActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
-    runningActivity.run {
+    loginActivity.run {
       startActivity(intent)
       finish()
     }

@@ -44,7 +44,7 @@ class LoginActivity :
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    loginService.runningActivity = this
+    loginService.loginActivity = this
     loginViewModel.apply {
       navigateToHome.observe(
         this@LoginActivity,

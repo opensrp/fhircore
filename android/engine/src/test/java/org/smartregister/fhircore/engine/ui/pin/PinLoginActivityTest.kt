@@ -109,7 +109,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
   }
 
   class TestPinLoginService : LoginService {
-    override lateinit var runningActivity: AppCompatActivity
+    override lateinit var loginActivity: AppCompatActivity
     override fun navigateToHome() {}
   }
 }

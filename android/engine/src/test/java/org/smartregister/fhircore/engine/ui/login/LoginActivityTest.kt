@@ -101,7 +101,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
   }
 
   class TestLoginService : LoginService {
-    override lateinit var runningActivity: AppCompatActivity
+    override lateinit var loginActivity: AppCompatActivity
     override fun navigateToHome() {}
   }
 }

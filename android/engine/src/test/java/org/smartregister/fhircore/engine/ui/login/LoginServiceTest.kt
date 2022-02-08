@@ -46,7 +46,7 @@ class LoginServiceTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     loginActivity = Robolectric.buildActivity(LoginActivity::class.java).get()
-    loginService.runningActivity = loginActivity
+    loginService.loginActivity = loginActivity
   }
 
   @After

@@ -24,10 +24,14 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
@@ -45,20 +49,34 @@ class PinLoginScreensTest : RobolectricTest() {
         // Imitate click action by doing nothing
         fun onPinChanged() {}
         fun onMenuLoginClicked() {}
-        fun onForgotPin() {}
+        fun forgotPin() {}
       }
     )
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
+  private lateinit var pinViewModel: PinViewModel
+
+  @Before
+  fun setUp() {
+    pinViewModel = mockk { every { showError } returns MutableLiveData(true) }
+  }
+
   @Test
-  fun testPinLoginScreenPage() {
+  fun testPinLoginScreen() {
+    composeRule.setContent { PinLoginScreen(viewModel = pinViewModel) }
+    composeRule.onNodeWithTag(PIN_VIEW).assertExists()
+    composeRule.onNodeWithTag(PIN_FORGOT_PIN).assertExists()
+  }
+
+  @Test
+  fun testPinLoginPage() {
     composeRule.setContent {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = false,
         onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
-        forgotPin = { listenerObjectSpy.onForgotPin() }
+        forgotPin = { listenerObjectSpy.forgotPin() }
       )
     }
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
@@ -80,13 +98,13 @@ class PinLoginScreensTest : RobolectricTest() {
   }
 
   @Test
-  fun testPinLoginScreenPageWithError() {
+  fun testPinLoginSPageWithError() {
     composeRule.setContent {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = true,
         onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
-        forgotPin = { listenerObjectSpy.onForgotPin() }
+        forgotPin = { listenerObjectSpy.forgotPin() }
       )
     }
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()

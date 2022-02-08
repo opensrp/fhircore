@@ -24,14 +24,14 @@ import org.smartregister.fhircore.engine.ui.login.LoginService
 
 class AncLoginService @Inject constructor() : LoginService {
 
-  override lateinit var runningActivity: AppCompatActivity
+  override lateinit var loginActivity: AppCompatActivity
 
   override fun navigateToHome() {
     val intent =
-      Intent(runningActivity, FamilyRegisterActivity::class.java).apply {
+      Intent(loginActivity, FamilyRegisterActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
-    runningActivity.run {
+    loginActivity.run {
       startActivity(intent)
       finish()
     }
