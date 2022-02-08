@@ -73,7 +73,7 @@ abstract class ComposeRegisterFragment<I : Any, O : Any> :
   @Composable
   abstract fun ConstructRegisterList(pagingItems: LazyPagingItems<O>, modifier: Modifier)
 
-  override fun configureViews(registerViewConfiguration: RegisterViewConfiguration) {
-    registerDataViewModel.updateViewConfigurations(registerViewConfiguration)
+  override fun configureViews(viewConfiguration: RegisterViewConfiguration) {
+    registerDataViewModel.updateViewConfigurations(viewConfiguration)
   }
 }

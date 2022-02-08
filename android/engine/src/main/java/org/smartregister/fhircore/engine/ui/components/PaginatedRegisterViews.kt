@@ -175,7 +175,7 @@ fun PaginatedRegister(
   showResultsCount: Boolean,
   resultCount: Int,
   body: (@Composable() () -> Unit),
-  showPageCount: Boolean,
+  showPageCount: Boolean = true,
   currentPage: Int,
   pagesCount: Int,
   previousButtonClickListener: () -> Unit,
