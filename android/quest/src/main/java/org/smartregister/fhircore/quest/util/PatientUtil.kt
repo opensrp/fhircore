@@ -53,7 +53,7 @@ suspend fun loadAdditionalData(
         getSearchResults<Condition>("Patient/$patientId", Condition.SUBJECT, filter, fhirEngine)
 
       val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
-      val recordedDate = sortedByDescending?.recordedDate?:""
+      val recordedDate = sortedByDescending?.recordedDate ?: ""
       sortedByDescending?.category?.forEach { cc ->
         cc.coding.firstOrNull { c -> c.code == filter.valueCoding!!.code }?.let {
           val status = sortedByDescending.code?.coding?.firstOrNull()?.display ?: ""
@@ -62,7 +62,8 @@ suspend fun loadAdditionalData(
               label = filter.label,
               value = status,
               valuePrefix = filter.valuePrefix,
-              lastDateAdded = DateUtils.simpleDateFormat(pattern = "dd-MMM-yyyy").format(recordedDate),
+              lastDateAdded =
+                DateUtils.simpleDateFormat(pattern = "dd-MMM-yyyy").format(recordedDate),
               properties = propertiesMapping(status, filter)
             )
           )
