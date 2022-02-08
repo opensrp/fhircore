@@ -16,5 +16,6 @@
     <string name="no_test_results_found">No test results found</string>
     <string name="patient_test_results">TEST RESULTS</string>
     <string name="sample_distance">2.4 km</string>
+    <string name="hash_sign">#</string>
 
 </resources>

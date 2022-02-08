@@ -90,12 +90,14 @@ fun PatientTaskRow(
             modifier = modifier.wrapContentWidth()
           )
           Dot(modifier = modifier, showDot = patientItem.id.isNotEmpty())
-          Text(
-            color = SubtitleTextColor,
-            text = "#${patientItem.id}",
-            fontSize = 14.sp,
-            modifier = modifier.wrapContentWidth()
-          )
+          if (patientItem.id.isNotEmpty()) {
+            Text(
+              color = SubtitleTextColor,
+              text = stringResource(R.string.hash_sign) + patientItem.id,
+              fontSize = 14.sp,
+              modifier = modifier.wrapContentWidth()
+            )
+          }
         } else {
           Icon(
             Icons.Rounded.DirectionsWalk,
