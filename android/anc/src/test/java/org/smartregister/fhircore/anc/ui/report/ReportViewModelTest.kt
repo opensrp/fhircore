@@ -128,11 +128,6 @@ internal class ReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testLoadDummyResultData() {
-    Assert.assertNotNull(reportViewModel.loadPopulationResult())
-  }
-
-  @Test
   fun testShouldVerifyReportItemClickListener() {
     val expectedReportItem = testReportItem
     reportViewModel.onReportMeasureItemClicked(testReportItem)
