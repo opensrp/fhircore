@@ -100,7 +100,7 @@ fun PatientRow(
               }
 
               Text(
-                text = (it.valuePrefix ?: "") + it.value,
+                text = " Last Test - ${it.lastDateAdded}",
                 color =
                   Color(
                     android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
