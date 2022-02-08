@@ -64,6 +64,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -93,15 +94,14 @@ constructor(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(
-    id: String,
-    readOnly: Boolean = false,
-    editMode: Boolean = false
-  ): Questionnaire? =
+  suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (readOnly || editMode) {
-        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", readOnly)
+      if (type.isReadOnly() || type.isEditMode()) {
+        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", type.isReadOnly())
       }
+
+      // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
+      this.url = this.url ?: this.referenceValue()
     }
 
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
@@ -139,7 +139,7 @@ constructor(
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
-    editMode: Boolean = false
+    questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT
   ) {
     viewModelScope.launch {
       // important to set response subject so that structure map can handle subject for all entities
@@ -163,7 +163,7 @@ constructor(
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
           // Ideally ResourceMapper should allow this internally via structure-map
-          if (editMode) {
+          if (questionnaireType.isEditMode()) {
             if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
               bun.resource.id = questionnaireResponse.subject.extractId()
             else {
@@ -181,7 +181,7 @@ constructor(
           )
         } else saveBundleResources(bundle)
 
-        if (editMode && editQuestionnaireResponse != null) {
+        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
         }
 
@@ -190,7 +190,7 @@ constructor(
         // TODO https://github.com/opensrp/fhircore/issues/900
         // reassess following i.e. deleting/updating older resources because one resource
         // might have generated other flow in subsequent followups
-        if (editMode && editQuestionnaireResponse != null) {
+        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
 

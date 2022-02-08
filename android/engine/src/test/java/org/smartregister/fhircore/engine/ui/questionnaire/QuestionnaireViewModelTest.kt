@@ -138,7 +138,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns
       Questionnaire().apply { id = "12345" }
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345") }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.DEFAULT)
+    }
 
     coVerify { fhirEngine.load(Questionnaire::class.java, "12345") }
     Assert.assertEquals("12345", result!!.logicalId)
@@ -176,7 +178,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", true) }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.READ_ONLY)
+    }
 
     Assert.assertTrue(result!!.item[0].item[0].readOnly)
     Assert.assertEquals("q1-name", result.item[0].item[0].linkId)
@@ -235,38 +239,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", true) }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.READ_ONLY)
+    }
 
     Assert.assertEquals("12345", result!!.logicalId)
     Assert.assertTrue(result!!.item[0].readOnly)
     Assert.assertEquals("patient-first-name", result!!.item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.value",
-      (result!!.item[0].extension[0].value as Expression).expression
-    )
     Assert.assertEquals("patient-last-name", result!!.item[0].item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.item.where(linkId = 'patient-last-name').answer.value",
-      (result!!.item[0].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertTrue(result!!.item[1].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-age').answer.value",
-      (result!!.item[1].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result!!.item[2].readOnly)
     Assert.assertEquals(0, result!!.item[2].extension.size)
     Assert.assertTrue(result!!.item[2].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-dob').answer.value",
-      (result!!.item[2].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result!!.item[2].item[1].readOnly)
     Assert.assertTrue(result!!.item[2].item[1].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-related-person').item.where(linkId = 'rp-name').answer.value",
-      (result!!.item[2].item[1].item[0].extension[0].value as Expression).expression
-    )
   }
 
   @Test
@@ -318,38 +304,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", editMode = true) }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT)
+    }
 
     Assert.assertEquals("12345", result!!.logicalId)
     Assert.assertFalse(result.item[0].readOnly)
     Assert.assertEquals("patient-first-name", result.item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.value",
-      (result.item[0].extension[0].value as Expression).expression
-    )
     Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.item.where(linkId = 'patient-last-name').answer.value",
-      (result.item[0].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result.item[1].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-age').answer.value",
-      (result.item[1].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result.item[2].readOnly)
     Assert.assertEquals(0, result.item[2].extension.size)
     Assert.assertFalse(result.item[2].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-dob').answer.value",
-      (result!!.item[2].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result!!.item[2].item[1].readOnly)
     Assert.assertFalse(result!!.item[2].item[1].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-related-person').item.where(linkId = 'rp-name').answer.value",
-      (result!!.item[2].item[1].item[0].extension[0].value as Expression).expression
-    )
   }
 
   @Test
@@ -490,7 +458,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       "12345",
       questionnaire,
       QuestionnaireResponse(),
-      true
+      QuestionnaireType.EDIT
     )
 
     coVerifyOrder {
@@ -731,7 +699,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       "12345",
       questionnaire,
       questionnaireResponse,
-      true
+      QuestionnaireType.EDIT
     )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }

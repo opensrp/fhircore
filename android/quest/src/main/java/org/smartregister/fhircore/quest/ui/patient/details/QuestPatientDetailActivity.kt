@@ -26,7 +26,6 @@ import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -35,6 +34,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.extension.getEncounterId
@@ -120,7 +120,7 @@ class QuestPatientDetailActivity :
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
                 formName = getRegistrationForm(),
-                editMode = true
+                questionnaireType = QuestionnaireType.EDIT
               )
             )
             .apply {
@@ -198,7 +198,6 @@ class QuestPatientDetailActivity :
       is QuestionnaireNavigationAction -> {
         resultItem?.let {
           val questionnaireResponse = resultItem.source.first
-          val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
           when {
             questionnaireResponse.questionnaire.isNullOrBlank() -> {
               AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
@@ -213,8 +212,8 @@ class QuestPatientDetailActivity :
                         QuestionnaireActivity.intentArgs(
                           clientIdentifier = patientId,
                           formName = questionnaireUrlList[1],
-                          readOnly = true,
-                          populationResources = populationResources
+                          questionnaireType = QuestionnaireType.READ_ONLY,
+                          questionnaireResponse = questionnaireResponse
                         )
                       )
                   )
