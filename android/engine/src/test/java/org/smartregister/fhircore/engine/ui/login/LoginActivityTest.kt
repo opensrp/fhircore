@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import android.app.Activity
+import android.app.Application
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
@@ -26,13 +28,19 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
+import org.smartregister.fhircore.engine.util.PIN_KEY
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -48,6 +56,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
 
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+
   @BindValue
   val loginViewModel =
     LoginViewModel(
@@ -60,7 +70,10 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    coEvery { sharedPreferencesHelper.read(any(), "") } returns "true"
+    coEvery { sharedPreferencesHelper.read(PIN_KEY, "") } returns ""
+    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, "") } returns "false"
+    coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
+    coEvery { sharedPreferencesHelper.write("FORCE_LOGIN_VIA_USERNAME", "false") } returns Unit
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
     loginService = loginActivity.loginService
@@ -71,6 +84,16 @@ class LoginActivityTest : ActivityRobolectricTest() {
     loginViewModel.navigateToHome()
 
     verify { loginService.navigateToHome() }
+  }
+
+  @Test
+  fun testNavigateToPinSetupShouldVerifyExpectedIntent() {
+    val loginConfig = loginViewConfigurationOf(enablePin = true)
+    loginViewModel.updateViewConfigurations(loginConfig)
+    loginViewModel.navigateToHome()
+    val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
+    val actualIntent = Shadows.shadowOf(application).nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   override fun getActivity(): Activity {

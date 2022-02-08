@@ -20,6 +20,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -30,33 +31,11 @@ class PinViewTest : RobolectricTest() {
 
   @ExperimentalComposeUiApi
   @Test
-  fun testPinCellViewDotted() {
-    composeRule.setContent { PinCell(isDotted = true, value = "1") }
-    composeRule.onNodeWithTag(PIN_VIEW_CELL_DOTTED).assertExists()
-    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
-  }
-
-  @ExperimentalComposeUiApi
-  @Test
-  fun testPinCellViewError() {
-    composeRule.setContent { PinCell(isDotted = false, value = "1", showError = true) }
-    composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
-    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists().assertTextEquals("1")
-  }
-
-  @ExperimentalComposeUiApi
-  @Test
-  fun testPinCellView() {
-    composeRule.setContent { PinCell(isDotted = false, value = "1") }
-    composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
-    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
-  }
-
-  @ExperimentalComposeUiApi
-  @Test
   fun testPinView() {
-    composeRule.setContent { PinView(showError = true) }
+    composeRule.setContent { PinView(inputPin = "1234", showError = true) }
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_INPUT_TEXT_FIELD).assertExists()
+    composeRule.onNodeWithText("1234").assertExists()
   }
 
   @ExperimentalComposeUiApi
@@ -72,10 +51,24 @@ class PinViewTest : RobolectricTest() {
   @ExperimentalComposeUiApi
   @Test
   fun testPinCellDotted() {
-    composeRule.setContent {
-      PinCell(value = "1", isCursorVisible = false, isDotted = true, showError = false)
-    }
-    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
+    composeRule.setContent { PinCell(isDotted = true, value = "1") }
     composeRule.onNodeWithTag(PIN_VIEW_CELL_DOTTED).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
+  }
+
+  @ExperimentalComposeUiApi
+  @Test
+  fun testPinCellViewError() {
+    composeRule.setContent { PinCell(isDotted = false, value = "1", showError = true) }
+    composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists().assertTextEquals("1")
+  }
+
+  @ExperimentalComposeUiApi
+  @Test
+  fun testPinCellViewDottedError() {
+    composeRule.setContent { PinCell(isDotted = true, value = "1", showError = true) }
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_DOTTED).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists().assertTextEquals("")
   }
 }

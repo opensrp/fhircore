@@ -60,6 +60,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 
 const val PIN_VIEW = "pin_view"
+const val PIN_VIEW_INPUT_TEXT_FIELD = "pin_view_input_text_field"
 const val PIN_VIEW_CELL = "pin_view_cell"
 const val PIN_VIEW_CELL_DOTTED = "pin_view_cell_dotted"
 const val PIN_VIEW_CELL_TEXT = "pin_view_cell_text"
@@ -92,8 +93,8 @@ fun PinView(
         keyboard?.hide()
       }
     },
-    modifier = Modifier.size(0.dp).focusRequester(focusRequester),
-    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+    modifier = Modifier.size(0.dp).focusRequester(focusRequester).testTag(PIN_VIEW_INPUT_TEXT_FIELD)
   )
   Row(
     modifier =
