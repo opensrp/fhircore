@@ -158,3 +158,16 @@ fun List<Condition>.hasActivePregnancy() =
 
     active && pregnancy
   }
+
+fun List<Condition>.pregnancyCondition(): Condition {
+  var pregnancyCondition = Condition()
+  this.forEach { condition ->
+    if (condition.code.coding.map { it.display }.plus(condition.code.text).any {
+        it.contentEquals("pregnant", true)
+      }
+    )
+      pregnancyCondition = condition
+  }
+
+  return pregnancyCondition
+}
