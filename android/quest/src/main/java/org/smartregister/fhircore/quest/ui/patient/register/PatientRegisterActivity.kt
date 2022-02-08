@@ -62,7 +62,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         ),
         NavigationMenuOption(
           id = R.id.menu_item_tasks,
-          title = getString(R.string.tasks),
+          title = getString(R.string.menu_tasks),
           iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
         ),
         NavigationMenuOption(

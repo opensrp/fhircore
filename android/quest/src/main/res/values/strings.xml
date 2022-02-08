@@ -17,5 +17,6 @@
     <string name="patient_test_results">TEST RESULTS</string>
     <string name="sample_distance">2.4 km</string>
     <string name="hash_sign">#</string>
+    <string name="menu_tasks">Tasks</string>
 
 </resources>
