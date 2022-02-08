@@ -90,6 +90,7 @@ deps.junit5_api = "org.junit.jupiter:junit-jupiter-api:$versions.junit5_api"
 deps.junit5_engine = "org.junit.jupiter:junit-jupiter-engine:$versions.junit5_api"
 deps.junit5_engine_vintage = "org.junit.vintage:junit-vintage-engine:$versions.junit5_api"
 deps.mockk = "io.mockk:mockk:$versions.mockk"
+deps.mockk_android = "io.mockk:mockk-android:$versions.mockk"
 deps.dokka_plugin = "org.jetbrains.dokka:dokka-gradle-plugin:$versions.dokka"
 
 def kotlin = [:]
