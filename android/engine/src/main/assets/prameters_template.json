@@ -4,12 +4,7 @@
     {
       "name": "practitioner",
       "valueString": "#idPractitioner",
-      "part": [
-        {
-          "name": "name",
-          "valueString": "idResource"
-        }
-      ]
+      "part": "#parts"
     }
   ]
 }

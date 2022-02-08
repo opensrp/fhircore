@@ -103,7 +103,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testTestTest() = runBlockingTest{
+  fun testTestTest() = runBlockingTest {
     loginViewModel.callPractitionerDetails(UserInfo(sub = "111"))
   }
 

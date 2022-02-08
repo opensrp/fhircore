@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FhirContextUtil
+import org.smartregister.fhircore.engine.util.PractitionerDetailsUtils
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.UserDetailsUtils
@@ -135,6 +136,14 @@ constructor(
       keyclockUtils.updateUserDetailsFromPractitionerDetails(practitionerDetails, userResponse)
       keyclockUtils.storeKeyClockInfo(practitionerDetails)
 
+      val parameter =
+        PractitionerDetailsUtils(app, fhirEngine)
+          .saveParameter(
+            practitionerId = practitionerDetails.id,
+            careTeamList = fhirCareTeamExtensionList,
+            organizationList = fhirOrganizationExtensions
+          )
+      fhirEngine.save(parameter)
       if (locationHierarchyList.isNotEmpty()) {
         locationHierarchyList.forEach {
           val location = Location()
