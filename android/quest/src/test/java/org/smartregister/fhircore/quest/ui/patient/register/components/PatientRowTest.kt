@@ -45,7 +45,15 @@ class PatientRowTest : RobolectricTest() {
         gender = "Male",
         age = "27",
         address = "Nairobi",
-        additionalData = listOf(AdditionalData("G6PD", "Deficient", " G6PD Status - "))
+        additionalData =
+          listOf(
+            AdditionalData(
+              label = "G6PD",
+              value = "Deficient",
+              valuePrefix = " G6PD Status - ",
+              lastDateAdded = "04-Feb-2022"
+            )
+          )
       )
     composeRule.setContent { PatientRow(patientItem = patientItem, { _, _ -> }) }
   }
@@ -57,6 +65,6 @@ class PatientRowTest : RobolectricTest() {
     composeRule.onNodeWithText("John Doe, 27").assertExists()
     composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
     composeRule.onNodeWithText("G6PD").assertExists().assertIsDisplayed()
-    composeRule.onNodeWithText(" G6PD Status - Deficient").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText(" Last Test - 04-Feb-2022").assertExists().assertIsDisplayed()
   }
 }

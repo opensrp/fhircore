@@ -101,10 +101,6 @@ fun PatientRow(
 
               Text(
                 text = " Last Test - ${it.lastDateAdded}",
-                color =
-                  Color(
-                    android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
-                  ),
                 fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
                 modifier = modifier.wrapContentWidth(),
                 fontWeight =
