@@ -123,7 +123,7 @@ internal class PinViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testLoadDataForSetupScreen() {
+  fun testLoadData() {
     pinViewModel.loadData(isSetup = true)
     Assert.assertEquals(pinViewModel.isSetupPage, true)
     Assert.assertNotNull(pinViewModel.savedPin)
