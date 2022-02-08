@@ -61,12 +61,15 @@ fun PatientChildRow(
                 .padding(12.dp, 4.dp)
         ) {
 
-            MwChip(
+            ArtChip(text = patientItem.identifier, fontSize =22.sp )
+
+
+            /*MwChip(
                 modifier = modifier.background( color = MaterialTheme.colors.secondary.copy(alpha = 0.2F), RoundedCornerShape(4.dp)) ,
                 text = patientItem.identifier,
                 fontSize = 22.sp,
                 textColor = MaterialTheme.colors.onSecondary,
-            )
+            ) */
 
 
             //Adding space between image and the column
@@ -90,8 +93,8 @@ fun PatientChildRow(
                     MwChip(
                         text = patientItem.age,
                         fontSize = 16.sp,
-                        textColor = MaterialTheme.colors.secondary,
-                        background = MaterialTheme.colors.secondary.copy(alpha = 0.2F)
+                        textColor = MaterialTheme.colors.primary,
+                        background = MaterialTheme.colors.primary.copy(alpha = 0.2F)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     MwChip(
@@ -137,7 +140,7 @@ fun PatientChildRowPreview() {
         )
     LazyColumn() {
         items(10) {
-            PatientRow(patientItem = patientItem, { _, _ -> })
+            PatientChildRow(patientItem = patientItem, { _, _ -> })
         }
     }
 

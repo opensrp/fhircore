@@ -170,10 +170,10 @@ fun TabWithPager(questPatientDetailViewModel: QuestPatientDetailViewModel) {
     TabItem(0, Icons.Filled.Feed, "Details") {
       DemographicsTab(questPatientDetailViewModel)
     },
-    TabItem(2, Icons.Filled.DirectionsWalk, "Visit") {
+    TabItem(2, Icons.Filled.LocalHospital, "Visit") {
       VisitTab()
     },
-    TabItem(1, Icons.Filled.History, "Settings") {
+    TabItem(1, Icons.Filled.History, "History") {
       HistoryTab()
     }
   )
