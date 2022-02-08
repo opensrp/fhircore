@@ -127,7 +127,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   fun testBottomMenuOptionsShouldReturnNonZeroOptions() {
     val menu = patientRegisterActivity.bottomNavigationMenuOptions()
 
-    Assert.assertEquals(2, menu.size)
+    Assert.assertEquals(3, menu.size)
     Assert.assertEquals(R.id.menu_item_clients, menu[0].id)
     Assert.assertEquals(getString(R.string.menu_clients), menu[0].title)
     Assert.assertEquals(R.id.menu_item_tasks, menu[1].id)
