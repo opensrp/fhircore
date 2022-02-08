@@ -85,6 +85,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
   PinLoginPage(
     onPinChanged = viewModel::onPinChanged,
     showError = showError,
+    enterUserPinMessage = viewModel.enterUserLoginMessage,
     onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
     forgotPin = viewModel::forgotPin,
   )
@@ -97,6 +98,7 @@ fun PinLoginPage(
   onPinChanged: (String) -> Unit,
   showError: Boolean = false,
   onMenuLoginClicked: () -> Unit,
+  enterUserPinMessage: String = "",
   forgotPin: () -> Unit
 ) {
 
@@ -166,7 +168,7 @@ fun PinLoginPage(
       )
 
       Text(
-        text = stringResource(R.string.enter_pin_w4vv01),
+        text = enterUserPinMessage,
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Normal,
         fontSize = 20.sp,

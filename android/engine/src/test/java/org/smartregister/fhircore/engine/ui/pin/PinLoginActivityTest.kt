@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.PIN_KEY
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -55,9 +56,16 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
   private val testPin = MutableLiveData("1234")
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   @BindValue
-  val pinViewModel = PinViewModel(DefaultDispatcherProvider(), sharedPreferencesHelper, application)
+  val pinViewModel =
+    PinViewModel(
+      DefaultDispatcherProvider(),
+      sharedPreferencesHelper,
+      secureSharedPreference,
+      application
+    )
 
   lateinit var loginService: LoginService
 
@@ -67,6 +75,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(any(), "true") } returns Unit
     pinViewModel.apply { savedPin = "1234" }
+    coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     pinLoginActivity =
       spyk(Robolectric.buildActivity(PinLoginActivity::class.java).create().resume().get())

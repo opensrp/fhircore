@@ -22,10 +22,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.PIN_KEY
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltViewModel
@@ -34,6 +36,7 @@ class PinViewModel
 constructor(
   val dispatcher: DispatcherProvider,
   val sharedPreferences: SharedPreferencesHelper,
+  val secureSharedPreference: SecureSharedPreference,
   val app: Application
 ) : ViewModel() {
 
@@ -66,6 +69,8 @@ constructor(
     get() = _enableSetPin
 
   lateinit var savedPin: String
+  lateinit var enterUserLoginMessage: String
+
   var isSetupPage: Boolean = false
 
   val onBackClick = MutableLiveData(false)
@@ -77,7 +82,17 @@ constructor(
   fun loadData(isSetup: Boolean = false) {
     savedPin = sharedPreferences.read(PIN_KEY, "").toString()
     isSetupPage = isSetup
+    enterUserLoginMessage =
+      retrieveUsername().let {
+        if (it.isNullOrEmpty()) {
+          app.getString(R.string.enter_login_pin)
+        } else {
+          app.getString(R.string.enter_pin_for_user, it)
+        }
+      }
   }
+
+  fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun onPinConfirmed() {
     val newPin = pin.value ?: ""

@@ -69,6 +69,7 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
     pinViewModel = mockk()
     coEvery { pinViewModel.savedPin } returns "1234"
+    coEvery { pinViewModel.enterUserLoginMessage } returns "demo"
     coEvery { sharedPreferencesHelper.write(any(), "false") } returns Unit
     coEvery { pinViewModel.pin } returns testPin
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }

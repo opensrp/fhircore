@@ -60,7 +60,11 @@ class PinLoginScreensTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    pinViewModel = mockk { every { showError } returns MutableLiveData(true) }
+    pinViewModel =
+      mockk {
+        every { showError } returns MutableLiveData(true)
+        every { enterUserLoginMessage } returns "Enter PIN for DemoUser"
+      }
   }
 
   @Test
@@ -77,6 +81,7 @@ class PinLoginScreensTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = false,
         onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
+        enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() }
       )
     }
@@ -105,6 +110,7 @@ class PinLoginScreensTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = true,
         onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
+        enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() }
       )
     }

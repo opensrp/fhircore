@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.PIN_KEY
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -51,6 +52,7 @@ internal class PinViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -66,11 +68,13 @@ internal class PinViewModelTest : RobolectricTest() {
     coEvery { sharedPreferencesHelper.write(PIN_KEY, "1234") } returns Unit
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, "true") } returns Unit
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
+    coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
     pinViewModel =
       PinViewModel(
         dispatcher = dispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
+        secureSharedPreference = secureSharedPreference,
         app = application
       )
     pinViewModel.apply {
@@ -127,6 +131,7 @@ internal class PinViewModelTest : RobolectricTest() {
     pinViewModel.loadData(isSetup = true)
     Assert.assertEquals(pinViewModel.isSetupPage, true)
     Assert.assertNotNull(pinViewModel.savedPin)
+    Assert.assertNotNull(pinViewModel.enterUserLoginMessage)
   }
 
   @Test
@@ -134,6 +139,7 @@ internal class PinViewModelTest : RobolectricTest() {
     pinViewModel.loadData(isSetup = false)
     Assert.assertEquals(pinViewModel.isSetupPage, false)
     Assert.assertNotNull(pinViewModel.savedPin)
+    Assert.assertEquals("demo", pinViewModel.retrieveUsername())
   }
 
   @Test
