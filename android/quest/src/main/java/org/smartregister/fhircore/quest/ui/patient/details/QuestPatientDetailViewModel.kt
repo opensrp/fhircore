@@ -121,6 +121,19 @@ constructor(
     _patientDetailsViewConfiguration.value = patientDetailsViewConfiguration
   }
 
+  fun fetchPatientResources(patientId: String): LiveData<ArrayList<String>> {
+    val resourceListLive = MutableLiveData<ArrayList<String>>()
+    val resourceList = arrayListOf<String>()
+    viewModelScope.launch {
+      val activePregnancyConditionString =
+        patientRepository.fetchPregnancyCondition(patientId = patientId)
+      if (activePregnancyConditionString.isNotEmpty())
+        resourceList.add(activePregnancyConditionString)
+      resourceListLive.postValue(resourceList)
+    }
+    return resourceListLive
+  }
+
   companion object {
     const val PROFILE_CONFIG = "configurations/form/profile_config.json"
   }
