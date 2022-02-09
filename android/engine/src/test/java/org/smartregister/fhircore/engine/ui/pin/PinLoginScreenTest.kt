@@ -62,6 +62,7 @@ class PinLoginScreensTest : RobolectricTest() {
   fun setUp() {
     pinViewModel =
       mockk {
+        every { appName } returns "TestApp"
         every { showError } returns MutableLiveData(true)
         every { enterUserLoginMessage } returns "Enter PIN for DemoUser"
       }
@@ -82,7 +83,8 @@ class PinLoginScreensTest : RobolectricTest() {
         showError = false,
         onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
-        forgotPin = { listenerObjectSpy.forgotPin() }
+        forgotPin = { listenerObjectSpy.forgotPin() },
+        appName = "anc"
       )
     }
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
@@ -111,7 +113,8 @@ class PinLoginScreensTest : RobolectricTest() {
         showError = true,
         onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
-        forgotPin = { listenerObjectSpy.forgotPin() }
+        forgotPin = { listenerObjectSpy.forgotPin() },
+        appName = "g6pd"
       )
     }
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()

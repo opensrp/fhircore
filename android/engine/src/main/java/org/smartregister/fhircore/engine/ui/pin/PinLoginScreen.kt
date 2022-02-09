@@ -88,6 +88,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     enterUserPinMessage = viewModel.enterUserLoginMessage,
     onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
     forgotPin = viewModel::forgotPin,
+    appName = viewModel.appName
   )
 }
 
@@ -99,7 +100,8 @@ fun PinLoginPage(
   showError: Boolean = false,
   onMenuLoginClicked: () -> Unit,
   enterUserPinMessage: String = "",
-  forgotPin: () -> Unit
+  forgotPin: () -> Unit,
+  appName: String = ""
 ) {
 
   var showMenu by remember { mutableStateOf(false) }
@@ -148,8 +150,12 @@ fun PinLoginPage(
           .padding(horizontal = 16.dp, vertical = 70.dp)
           .wrapContentWidth(Alignment.CenterHorizontally)
     ) {
+      val appLogo = when (appName) {
+        "g6pd" -> R.drawable.ic_logo_g6pd
+        else -> R.drawable.ic_liberia
+      }
       Image(
-        painter = painterResource(id = R.drawable.ic_liberia),
+        painter = painterResource(id = appLogo),
         contentDescription = stringResource(id = R.string.app_logo),
         modifier =
           modifier
@@ -160,7 +166,7 @@ fun PinLoginPage(
             .testTag(APP_LOGO_TAG),
       )
       Text(
-        text = stringResource(R.string.eCBIS_app_name),
+        text = appName,
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,

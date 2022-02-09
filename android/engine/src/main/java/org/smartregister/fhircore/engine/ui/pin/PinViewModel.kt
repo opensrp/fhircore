@@ -70,6 +70,7 @@ constructor(
 
   lateinit var savedPin: String
   lateinit var enterUserLoginMessage: String
+  lateinit var appName: String
 
   var isSetupPage: Boolean = false
 
@@ -90,7 +91,10 @@ constructor(
           app.getString(R.string.enter_pin_for_user, it)
         }
       }
+    appName = retrieveAppName()
   }
+
+  fun retrieveAppName(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 

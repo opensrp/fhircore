@@ -61,6 +61,7 @@ class PinSetupScreenTest : RobolectricTest() {
   fun setUp() {
     pinViewModel =
       mockk {
+        every { appName } returns "anc"
         every { pin } returns MutableLiveData("1234")
         every { enableSetPin } returns MutableLiveData(false)
       }
@@ -81,7 +82,8 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
         setPinEnabled = false,
-        inputPin = ""
+        inputPin = "",
+        appName = "anc"
       )
     }
 
@@ -111,7 +113,8 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
         setPinEnabled = true,
-        inputPin = "0000"
+        inputPin = "0000",
+        appName = "eCBIS"
       )
     }
 
