@@ -60,21 +60,21 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     Assert.assertNotNull(sharedPreferencesHelper.read("anyBooleanKey", 0))
   }
 
-  @Ignore
   @Test
   fun testWriteString() {
-    verify { sharedPreferencesHelper.write("anyStringKey", "test write") }
+    sharedPreferencesHelper.write("anyStringKey", "test write String")
+    Assert.assertEquals("test write String", sharedPreferencesHelper.read("anyStringKey", ""))
   }
 
-  @Ignore
   @Test
   fun testWriteBoolean() {
-    verify { sharedPreferencesHelper.write("anyBooleanKey", true) }
+    sharedPreferencesHelper.write("anyBooleanKey", true)
+    Assert.assertEquals(true, sharedPreferencesHelper.read("anyBooleanKey", false))
   }
 
-  @Ignore
   @Test
   fun testWriteLong() {
-    verify { sharedPreferencesHelper.write("anyLongKey", 0) }
+    sharedPreferencesHelper.write("anyLongKey", 123456789)
+    Assert.assertEquals(123456789, sharedPreferencesHelper.read("anyLongKey", 0))
   }
 }
