@@ -49,7 +49,7 @@ import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.task.PatientTaskItem
+import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.ui.task.PatientTaskListenerIntent
 
 @Composable

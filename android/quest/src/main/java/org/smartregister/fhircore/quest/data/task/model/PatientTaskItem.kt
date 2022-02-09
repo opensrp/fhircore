@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.task
+package org.smartregister.fhircore.quest.data.task.model
 
 import androidx.compose.runtime.Stable
 import java.util.Date

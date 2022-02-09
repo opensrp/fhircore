@@ -27,7 +27,7 @@ import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.extension.overdue
+import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 
 data class PatientTask(val patient: Patient, val task: Task)
 

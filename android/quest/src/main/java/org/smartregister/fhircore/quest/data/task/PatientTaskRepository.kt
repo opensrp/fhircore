@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.task
+package org.smartregister.fhircore.quest.data.task
 
 import android.content.Context
 import com.google.android.fhir.FhirEngine
@@ -27,6 +27,9 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
+import org.smartregister.fhircore.quest.ui.task.PatientTask
+import org.smartregister.fhircore.quest.ui.task.PatientTaskItemMapper
 import org.smartregister.fhircore.quest.util.filterByPractitioner
 
 class PatientTaskRepository
