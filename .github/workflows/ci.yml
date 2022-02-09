@@ -98,8 +98,8 @@ jobs:
 
       - name: Run ANC unit tests with Gradle
         uses: reactivecircus/android-emulator-runner@v2
-        working-directory: android
         with: 
+          working-directory: android
           api-level: 29
           scripts: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
 
