@@ -150,10 +150,11 @@ fun PinLoginPage(
           .padding(horizontal = 16.dp, vertical = 70.dp)
           .wrapContentWidth(Alignment.CenterHorizontally)
     ) {
-      val appLogo = when (appName) {
-        "g6pd" -> R.drawable.ic_logo_g6pd
-        else -> R.drawable.ic_liberia
-      }
+      val appLogo =
+        when (appName) {
+          "g6pd" -> R.drawable.ic_logo_g6pd
+          else -> R.drawable.ic_liberia
+        }
       Image(
         painter = painterResource(id = appLogo),
         contentDescription = stringResource(id = R.string.app_logo),
