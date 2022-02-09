@@ -27,24 +27,12 @@ interface LoginService {
 
   fun navigateToHome()
 
-  fun navigateToPinLogin() {
-    val intent =
-      Intent(loginActivity, PinLoginActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      }
+  fun navigateToPinLogin(goForSetup: Boolean = false) {
+    var nextIntent = Intent(loginActivity, PinLoginActivity::class.java)
+    if (goForSetup) nextIntent = Intent(loginActivity, PinSetupActivity::class.java)
+    nextIntent.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
     loginActivity.run {
-      startActivity(intent)
-      finish()
-    }
-  }
-
-  fun navigateToPinSetup() {
-    val intent =
-      Intent(loginActivity, PinSetupActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      }
-    loginActivity.run {
-      startActivity(intent)
+      startActivity(nextIntent)
       finish()
     }
   }

@@ -51,7 +51,7 @@ class LoginActivity :
         this@LoginActivity,
         {
           if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
-            loginService.navigateToPinSetup()
+            loginService.navigateToPinLogin(goForSetup = true)
           } else {
             loginService.navigateToHome()
           }

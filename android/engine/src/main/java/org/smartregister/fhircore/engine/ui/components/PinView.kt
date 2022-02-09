@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -59,6 +58,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.CURSOR_SYMBOL
+import org.smartregister.fhircore.engine.util.EMPTY_STRING
 
 const val PIN_VIEW = "pin_view"
 const val PIN_VIEW_INPUT_TEXT_FIELD = "pin_view_input_text_field"
@@ -138,7 +138,10 @@ fun PinCell(
     dottedBg = colorResource(id = R.color.colorErrorDull)
   } else if (isCursorVisible) {
     borderColor = colorResource(id = R.color.colorPrimaryLight)
-    dottedBg = colorResource(id = R.color.white)
+    dottedBg = colorResource(id = R.color.light_gray)
+    if (value.isEmpty()) {
+      dottedBg = colorResource(id = R.color.white)
+    }
   } else if (value.isEmpty()) {
     borderColor = colorResource(id = R.color.light_gray)
     dottedBg = colorResource(id = R.color.light_gray)
@@ -156,35 +159,32 @@ fun PinCell(
   }
 
   Box(modifier = modifier) {
+    var cardTestTag = PIN_VIEW_CELL
+    val textTestTag = PIN_VIEW_CELL_TEXT
+    var backgroundColor = colorResource(id = R.color.white)
+    var textValue = value
+    var textSize = 14.sp
+    var cardRoundedCornerRadius = 8.dp
     if (isDotted) {
-      Card(
-        modifier = Modifier.size(30.dp).align(Alignment.Center).testTag(PIN_VIEW_CELL_DOTTED),
-        elevation = 1.dp,
-        shape = RoundedCornerShape(15.dp),
-        border = BorderStroke(width = 1.dp, color = borderColor),
-        backgroundColor = dottedBg
-      ) {
-        Text(
-          text = if (isCursorVisible) cursorSymbol else "",
-          fontSize = 18.sp,
-          style = MaterialTheme.typography.body1,
-          modifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(PIN_VIEW_CELL_TEXT)
-        )
-      }
-    } else {
-      Card(
-        modifier = Modifier.fillMaxSize().align(Alignment.Center).testTag(PIN_VIEW_CELL),
-        elevation = 1.dp,
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(width = 1.dp, color = borderColor),
-        backgroundColor = colorResource(id = R.color.white)
-      ) {
-        Text(
-          text = if (isCursorVisible) cursorSymbol else value,
-          style = MaterialTheme.typography.body1,
-          modifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(PIN_VIEW_CELL_TEXT)
-        )
-      }
+      cardTestTag = PIN_VIEW_CELL_DOTTED
+      backgroundColor = dottedBg
+      textValue = EMPTY_STRING
+      textSize = 18.sp
+      cardRoundedCornerRadius = 15.dp
+    }
+    Card(
+      modifier = Modifier.size(30.dp).align(Alignment.Center).testTag(cardTestTag),
+      elevation = 1.dp,
+      shape = RoundedCornerShape(cardRoundedCornerRadius),
+      border = BorderStroke(width = 1.dp, color = borderColor),
+      backgroundColor = backgroundColor
+    ) {
+      Text(
+        text = if (isCursorVisible) cursorSymbol else textValue,
+        fontSize = textSize,
+        style = MaterialTheme.typography.body1,
+        modifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(textTestTag)
+      )
     }
   }
 }

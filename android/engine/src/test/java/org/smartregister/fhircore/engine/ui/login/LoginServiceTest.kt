@@ -64,7 +64,7 @@ class LoginServiceTest : RobolectricTest() {
 
   @Test
   fun testNavigateToPinSetupNavigateToPinSetupScreen() {
-    loginService.navigateToPinSetup()
+    loginService.navigateToPinLogin(goForSetup = true)
     val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
     val shadowIntent: ShadowIntent = shadowOf(startedIntent)
     Assert.assertEquals(PinSetupActivity::class.java, shadowIntent.intentClass)
