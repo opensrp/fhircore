@@ -37,6 +37,7 @@ import org.junit.Assert
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -147,9 +148,8 @@ class PatientTaskFragmentTest : RobolectricTest() {
   }
 
   @Test
-  //  @Ignore
+  @Ignore
   fun testInitializeRegisterDataViewModelShouldInitializeViewModel() {
-
     val registerDataViewModel = patientTaskFragment.initializeRegisterDataViewModel()
     assertNotNull(registerDataViewModel)
     Assert.assertEquals(
