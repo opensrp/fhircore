@@ -15,6 +15,6 @@
     <string name="loading_responses">Majibu yanapakia...</string>
     <string name="no_test_results_found">Hakuna matokeo yaliyopatikana</string>
     <string name="patient_test_results">Matokeo</string>
-    <string name="last_test">" Mtihani Wa Mwisho - "</string>
+    <string name="last_test">" Mtihani Wa Mwisho - %1$s"</string>
 
 </resources>

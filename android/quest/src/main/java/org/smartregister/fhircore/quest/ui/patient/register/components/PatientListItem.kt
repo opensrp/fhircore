@@ -102,7 +102,7 @@ fun PatientRow(
               }
 
               Text(
-                text = " " + stringResource(R.string.last_test) + " " + it.lastDateAdded,
+                text = " " + stringResource(id = R.string.last_test, "${it.lastDateAdded}"),
                 fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
                 modifier = modifier.wrapContentWidth(),
                 fontWeight =

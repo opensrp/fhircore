@@ -71,8 +71,8 @@ class PatientRowTest : RobolectricTest() {
     composeRule
       .onNodeWithText(
         " " +
-          ApplicationProvider.getApplicationContext<Application>().getString(R.string.last_test) +
-          " 04-Feb-2022"
+          ApplicationProvider.getApplicationContext<Application>()
+            .getString(R.string.last_test, "04-Feb-2022")
       )
       .assertExists()
       .assertIsDisplayed()
