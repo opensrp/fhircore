@@ -29,9 +29,6 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
-import org.smartregister.model.location.LocationHierarchy
-import org.smartregister.model.practitioner.FhirCareTeamExtension
-import org.smartregister.model.practitioner.FhirOrganizationExtension
 import timber.log.Timber
 
 @Singleton
@@ -75,9 +72,9 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
 
   fun saveParameter(
     practitionerId: String,
-    careTeamList: List<FhirCareTeamExtension>,
-    organizationList: List<FhirOrganizationExtension>,
-    locationHierarchyList: LocationHierarchy,
+    careTeamList: List<CareTeam>,
+    organizationList: List<Organization>,
+    locationHierarchyList: Location,
   ): Parameters {
     val parts = arrayListOf<Parameters.ParametersParameterComponent>()
     if (careTeamList.isNotEmpty())

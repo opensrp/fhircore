@@ -145,24 +145,17 @@ constructor(
           )
       fhirEngine.save(parameter)
       if (locationHierarchyList.isNotEmpty()) {
-        locationHierarchyList.forEach {
-          val location = Location()
-          location.copyValues(it)
-          fhirEngine.save(it)
-        }
+          fhirEngine.save(locationHierarchyList[0])
       }
+
       if (fhirOrganizationExtensions.isNotEmpty()) {
         fhirOrganizationExtensions.forEach {
-          val organization = Organization()
-          organization.copyValues(it)
-          fhirEngine.save(organization)
+          fhirEngine.save(it)
         }
       }
       if (fhirCareTeamExtensionList.isNotEmpty()) {
         fhirCareTeamExtensionList.forEach {
-          val careTeam = CareTeam()
-          careTeam.copyValues(it)
-          fhirEngine.save(careTeam)
+          fhirEngine.save(it)
         }
       }
     }
