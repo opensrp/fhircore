@@ -89,26 +89,6 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnClientMenuOptionSelectedShouldLaunchTaskPatientFragment() {
-    patientRegisterActivity.onNavigationOptionItemSelected(
-      RoboMenuItem().apply { itemId = R.id.menu_item_tasks }
-    )
-    // switched to patient task fragment
-    Assert.assertEquals(
-      "Tasks",
-      patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
-    )
-    Assert.assertEquals(
-      View.GONE,
-      patientRegisterActivity.findViewById<View>(R.id.filter_register_button).visibility
-    )
-    Assert.assertEquals(
-      View.GONE,
-      patientRegisterActivity.findViewById<View>(R.id.edit_text_search).visibility
-    )
-  }
-
-  @Test
   fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
     patientRegisterActivity.onNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = R.id.menu_item_settings }
