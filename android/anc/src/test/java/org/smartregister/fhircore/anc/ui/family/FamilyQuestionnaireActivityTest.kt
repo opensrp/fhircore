@@ -161,6 +161,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     )
   }
 
+  @Ignore("can handle with https://github.com/opensrp/fhircore/issues/1037")
   @Test
   fun testTextOfSaveButtonForFamilyMemberRegistration() {
     buildActivityFor(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, false)
@@ -195,7 +196,6 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     )
   }
 
-  @Ignore("can handle with https://github.com/opensrp/fhircore/issues/1037")
   @Test
   fun testTextOfSavedButtonForAncRegister() {
     buildActivityFor(FamilyFormConstants.ANC_ENROLLMENT_FORM, false)
