@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.form
+package org.smartregister.fhircore.engine.ui.questionnaire
 
-import kotlinx.serialization.Serializable
+enum class QuestionnaireType {
+  READ_ONLY,
+  EDIT,
+  DEFAULT;
 
-@Serializable
-object FamilyFormConstants {
-  const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-  const val FAMILY_REGISTER_FORM = "family-registration"
-  const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
+  fun isEditMode() = this == EDIT
+  fun isReadOnly() = this == READ_ONLY
 }

@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.form
+package org.smartregister.fhircore.engine.util.extension
 
-import kotlinx.serialization.Serializable
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam
+import com.google.android.fhir.search.Search
+import org.hl7.fhir.r4.model.ResourceType
 
-@Serializable
-object FamilyFormConstants {
-  const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-  const val FAMILY_REGISTER_FORM = "family-registration"
-  const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
+fun Search.filterByPatient(reference: ReferenceClientParam, patientId: String) {
+  filter(reference, { value = "${ResourceType.Patient.name}/$patientId" })
 }
