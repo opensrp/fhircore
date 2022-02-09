@@ -12,5 +12,6 @@
     <string name="loading_responses">Chargement des réponses</string>
     <string name="no_test_results_found">Aucun résultat trouvé</string>
     <string name="patient_test_results">Résultat du test</string>
+    <string name="last_test">" Dernier Test"</string>
 
 </resources>

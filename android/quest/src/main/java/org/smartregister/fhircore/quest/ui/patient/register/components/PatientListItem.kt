@@ -34,12 +34,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.Properties
 import org.smartregister.fhircore.quest.configuration.view.Property
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
@@ -100,7 +102,7 @@ fun PatientRow(
               }
 
               Text(
-                text = " Last Test - ${it.lastDateAdded}",
+                text = " " + stringResource(R.string.last_test) + " " + it.lastDateAdded,
                 fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
                 modifier = modifier.wrapContentWidth(),
                 fontWeight =
