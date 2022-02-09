@@ -96,17 +96,12 @@ jobs:
         run: ./gradlew :anc:spotlessCheck
         working-directory: android
 
-      - name: Run ANC instrumentation tests with Gradle
+      - name: Run ANC instrumentation and unit tests with Gradle
         uses: reactivecircus/android-emulator-runner@v2
         with: 
-          working-directory: android
           arch: x86_64
           api-level: 29
-          script: ./gradlew :anc:connectedCheck --info
-      
-      - name: Run ANC unit tests with Gradle
-        run: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
-        working-directory: android
+          script: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
 
       - name: Upload ANC Test Report to codecov
         working-directory: android
