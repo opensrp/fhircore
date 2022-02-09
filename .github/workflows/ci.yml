@@ -100,10 +100,9 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with: 
           working-directory: android
-          emulator-build: 6061023
           arch: x86_64
           api-level: 29
-          scripts: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
+          script: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
 
       - name: Upload ANC Test Report to codecov
         working-directory: android
