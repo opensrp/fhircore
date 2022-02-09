@@ -53,6 +53,7 @@ class QuestPatientDetailActivity :
   BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
 
   private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
+  var patientResourcesList: ArrayList<String> = arrayListOf()
   private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
   private lateinit var patientId: String
 
@@ -66,10 +67,11 @@ class QuestPatientDetailActivity :
 
     patientViewModel.apply {
       val detailActivity = this@QuestPatientDetailActivity
-      onBackPressClicked.observe(
-        detailActivity,
-        { backPressed -> if (backPressed) detailActivity.finish() }
-      )
+      onBackPressClicked.observe(detailActivity) { backPressed ->
+        if (backPressed) detailActivity.finish()
+      }
+      fetchPatientResources(patientId)
+        .observe(detailActivity, detailActivity::handlePatientResources)
       onMenuItemClicked.observe(detailActivity, detailActivity::launchTestResults)
       onFormItemClicked.observe(detailActivity, detailActivity::launchQuestionnaireForm)
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
@@ -95,6 +97,10 @@ class QuestPatientDetailActivity :
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
 
+  private fun handlePatientResources(resourceList: ArrayList<String>) {
+    if (resourceList.isNotEmpty()) patientResourcesList.addAll(resourceList)
+  }
+
   override fun onResume() {
     super.onResume()
 
@@ -107,7 +113,7 @@ class QuestPatientDetailActivity :
 
   private fun launchTestResults(@StringRes id: Int) {
     when (id) {
-      R.string.edit_patient_info ->
+      R.string.edit_patient_info -> {
         startActivity(
           Intent(this, QuestionnaireActivity::class.java)
             .putExtras(
@@ -117,7 +123,16 @@ class QuestPatientDetailActivity :
                 questionnaireType = QuestionnaireType.EDIT
               )
             )
+            .apply {
+              if (patientResourcesList.isNotEmpty()) {
+                this.putStringArrayListExtra(
+                  QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+                  patientResourcesList
+                )
+              }
+            }
         )
+      }
     }
   }
 
