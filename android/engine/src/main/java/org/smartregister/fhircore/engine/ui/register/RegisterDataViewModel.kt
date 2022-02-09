@@ -69,7 +69,10 @@ class RegisterDataViewModel<I : Any, O : Any>(
 
   var registerData: MutableStateFlow<Flow<PagingData<O>>> = MutableStateFlow(emptyFlow())
 
-  val registerViewConfiguration: MutableLiveData<RegisterViewConfiguration> = MutableLiveData()
+  private val _registerViewConfiguration: MutableLiveData<RegisterViewConfiguration> =
+    MutableLiveData()
+  val registerViewConfiguration
+    get() = _registerViewConfiguration
 
   init {
     viewModelScope.launch { _totalRecordsCount.postValue(registerRepository.countAll()) }
@@ -116,8 +119,8 @@ class RegisterDataViewModel<I : Any, O : Any>(
       .flow
 
   fun updateViewConfigurations(viewConfiguration: RegisterViewConfiguration) {
-    this.registerViewConfiguration.value = viewConfiguration
-    this._showPageCount.postValue(registerViewConfiguration.value?.showPageCount)
+    this._registerViewConfiguration.postValue(viewConfiguration)
+    registerViewConfiguration.value?.showPageCount?.let { this.showPageCount(it) }
   }
 
   fun previousPage() {
@@ -138,6 +141,10 @@ class RegisterDataViewModel<I : Any, O : Any>(
 
   fun showResultsCount(showResultsCount: Boolean) {
     this._showResultsCount.postValue(showResultsCount)
+  }
+
+  fun showPageCount(showPageCount: Boolean) {
+    this._showPageCount.postValue(showPageCount)
   }
 
   fun setShowLoader(showLoader: Boolean) {
