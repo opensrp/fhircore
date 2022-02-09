@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.UserDetailsUtils
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
-import org.smartregister.fhircore.engine.util.extension.toJson
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
 import retrofit2.Response
@@ -141,14 +140,14 @@ constructor(
           .saveParameter(
             practitionerId = practitionerDetails.id,
             careTeamList = fhirCareTeamExtensionList,
-            organizationList = fhirOrganizationExtensions
+            organizationList = fhirOrganizationExtensions,
+            locationHierarchyList = locationHierarchyList[0]
           )
       fhirEngine.save(parameter)
       if (locationHierarchyList.isNotEmpty()) {
         locationHierarchyList.forEach {
           val location = Location()
           location.copyValues(it)
-          Timber.e(location.toJson())
           fhirEngine.save(it)
         }
       }

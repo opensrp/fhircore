@@ -22,12 +22,16 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.CareTeam
+import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
+import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.FhirCareTeamExtension
 import org.smartregister.model.practitioner.FhirOrganizationExtension
-import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
 @Singleton
@@ -39,19 +43,33 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
     practitionerId: String,
     resourceType: String
   ): List<Resource> {
-    var practitionerDetails = PractitionerDetails()
+    val practitionerDetails: Parameters
+    val practitionerCareTeams = arrayListOf<CareTeam>()
+    val practitionerOrganizations = arrayListOf<Organization>()
+    val practitionerLocations = arrayListOf<Location>()
 
     try {
-      practitionerDetails = fhirEngine.load(PractitionerDetails::class.java, practitionerId)
+      practitionerDetails = fhirEngine.load(Parameters::class.java, practitionerId)
+      practitionerDetails.parameter.forEach {
+        if (it.name.equals("CareTeam")) {
+          val careTeam = fhirEngine.load(CareTeam::class.java, it.id)
+          practitionerCareTeams.add(careTeam)
+        } else if (it.name.equals("Organization")) {
+          val organization = fhirEngine.load(Organization::class.java, it.id)
+          practitionerOrganizations.add(organization)
+        } else if (it.name.equals("Location")) {
+          val location = fhirEngine.load(Location::class.java, it.id)
+          practitionerLocations.add(location)
+        }
+      }
     } catch (e: ResourceNotFoundException) {
       Timber.e(e)
     }
     return when (resourceType) {
-      "careTeams" -> return practitionerDetails.fhirPractitionerDetails.fhirCareTeamExtensionList
-      "organization" ->
-        return practitionerDetails.fhirPractitionerDetails.fhirOrganizationExtensions
-      "locations" -> return practitionerDetails.fhirPractitionerDetails.locationHierarchyList
-      else -> practitionerDetails.fhirPractitionerDetails.fhirOrganizationExtensions
+      "careTeams" -> return practitionerCareTeams
+      "organization" -> return practitionerOrganizations
+      "locations" -> return practitionerLocations
+      else -> practitionerCareTeams
     }
   }
 
@@ -59,6 +77,7 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
     practitionerId: String,
     careTeamList: List<FhirCareTeamExtension>,
     organizationList: List<FhirOrganizationExtension>,
+    locationHierarchyList: LocationHierarchy,
   ): Parameters {
     val parts = arrayListOf<Parameters.ParametersParameterComponent>()
     if (careTeamList.isNotEmpty())
@@ -79,6 +98,14 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
         }
         parts.add(part)
       }
+    if (!locationHierarchyList.isEmpty) {
+      val part = Parameters.ParametersParameterComponent()
+      part.apply {
+        this.name = "Location"
+        this.id = locationHierarchyList.id
+      }
+      parts.add(part)
+    }
     return recordParameters(practitionerId = practitionerId, parts = parts)
   }
 
@@ -95,7 +122,7 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
     practitionerId: String,
     parts: List<Parameters.ParametersParameterComponent>
   ): Map<String, String?> {
-    return mapOf("#idPractitioner" to practitionerId, "#parts" to parts.toString())
+    return mapOf("#idPractitioner" to practitionerId, "#parts" to parts.encodeJson())
   }
 
   private fun <T : Resource> loadConfig(
