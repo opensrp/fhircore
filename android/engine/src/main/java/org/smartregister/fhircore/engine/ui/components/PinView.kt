@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.util.CURSOR_SYMBOL
 
 const val PIN_VIEW = "pin_view"
 const val PIN_VIEW_INPUT_TEXT_FIELD = "pin_view_input_text_field"
@@ -149,7 +150,7 @@ fun PinCell(
     if (isCursorVisible) {
       scope.launch {
         delay(350)
-        setCursorSymbol(if (cursorSymbol.isEmpty()) "|" else "")
+        setCursorSymbol(if (cursorSymbol.isEmpty()) CURSOR_SYMBOL else "")
       }
     }
   }

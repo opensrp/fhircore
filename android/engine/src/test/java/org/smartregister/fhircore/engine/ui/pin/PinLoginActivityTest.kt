@@ -91,7 +91,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
-  @Ignore("reason = action dialer is disabled for now")
+  @Ignore("reason : action dialer is disabled for now")
   @Test
   fun testNavigateToCallDialerShouldVerifyExpectedIntent() {
     pinLoginActivity.pinViewModel.forgotPin()

@@ -29,6 +29,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -155,10 +156,11 @@ internal class PinViewModelTest : RobolectricTest() {
     Assert.assertEquals(pinViewModel.enableSetPin.value, false)
   }
 
+  @Ignore("reason : action dialer is disabled for now")
   @Test
   fun testOnForgotPin() {
     pinViewModel.forgotPin()
-    Assert.assertEquals(pinViewModel.launchDialPad.value, "tel:0123456789")
+    Assert.assertEquals(pinViewModel.launchDialPad.value, "tel:XXXX")
   }
 
   @Test
