@@ -75,7 +75,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F eir -f "eir/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
   anc-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-11.0
 
     steps:
       - name: Checkout 🛎️
@@ -97,8 +97,11 @@ jobs:
         working-directory: android
 
       - name: Run ANC unit tests with Gradle
-        run: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
+        uses: reactivecircus/android-emulator-runner@v2
         working-directory: android
+        with: 
+          api-level: 29
+          scripts: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
 
       - name: Upload ANC Test Report to codecov
         working-directory: android
