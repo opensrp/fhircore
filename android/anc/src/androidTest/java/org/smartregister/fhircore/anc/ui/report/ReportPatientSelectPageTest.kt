@@ -36,23 +36,19 @@ import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncRow
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
 @ExperimentalCoroutinesApi
-class ReportPatientSelectPageTest : RobolectricTest() {
+class ReportPatientSelectPageTest {
 
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
-  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
-
-  @get:Rule(order = 3) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private lateinit var reportViewModel: ReportViewModel
 

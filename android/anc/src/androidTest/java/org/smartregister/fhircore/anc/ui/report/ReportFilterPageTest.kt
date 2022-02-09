@@ -36,25 +36,22 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.TestDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
-class ReportFilterPageTest : RobolectricTest() {
+class ReportFilterPageTest {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
-  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
-
-  @get:Rule(order = 3) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -88,7 +85,7 @@ class ReportFilterPageTest : RobolectricTest() {
       spyk(
         ReportViewModel(
           repository = reportRepository,
-          dispatcher = coroutinesTestRule.testDispatcherProvider,
+          dispatcher = TestDispatcherProvider.instance,
           patientRepository = ancPatientRepository,
           fhirEngine = fhirEngine,
           fhirOperator = fhirOperator,

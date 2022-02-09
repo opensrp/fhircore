@@ -34,22 +34,19 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.TestDispatcherProvider
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
-class ReportHomePageTest : RobolectricTest() {
+class ReportHomePageTest {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val composeRule = createComposeRule()
-
-  @get:Rule(order = 2) val coroutinesTestRule = CoroutineTestRule()
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -68,10 +65,10 @@ class ReportHomePageTest : RobolectricTest() {
     ancPatientRepository =
       spyk(
         PatientRepository(
-          app,
-          fhirEngine,
-          AncItemMapper(app),
-          coroutinesTestRule.testDispatcherProvider
+          context = app,
+          fhirEngine = fhirEngine,
+          domainMapper = AncItemMapper(app),
+          dispatcherProvider = TestDispatcherProvider.instance
         )
       )
     viewModel =
@@ -79,7 +76,7 @@ class ReportHomePageTest : RobolectricTest() {
         objToCopy =
           ReportViewModel(
             repository = repository,
-            dispatcher = coroutinesTestRule.testDispatcherProvider,
+            dispatcher = TestDispatcherProvider.instance,
             patientRepository = ancPatientRepository,
             fhirOperator = fhirOperator,
             fhirEngine = fhirEngine,

@@ -55,7 +55,7 @@ android {
         versionName "0.0.4"
         multiDexEnabled true
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "org.smartregister.fhircore.anc.ui.AncTestRunner"
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
 
@@ -160,6 +160,7 @@ dependencies {
     testImplementation deps.atsl.ext_junit_ktx
     testImplementation deps.coroutines.test
     testImplementation deps.androidx.core_test
+    androidTestImplementation deps.androidx.core_test
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk

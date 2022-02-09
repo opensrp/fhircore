@@ -25,19 +25,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
-class ReportScreensTest : RobolectricTest() {
+class ReportScreensTest {
 
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
-  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
-
-  @get:Rule(order = 3) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val listenerObjectSpy =
     spyk(
@@ -112,8 +108,6 @@ class ReportScreensTest : RobolectricTest() {
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).assertExists()
-    // composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).performClick()
-    // verify { listenerObjectSpy.onDateRangePress() }
   }
 
   @Test
