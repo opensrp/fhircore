@@ -218,21 +218,12 @@ fun ForgotPinDialog(
     onDismissRequest = onDismissDialog,
     title = {
       Text(
-        text = stringResource(org.smartregister.fhircore.engine.R.string.forgot_password_title),
+        text = stringResource(R.string.forgot_pin),
         fontWeight = FontWeight.Bold,
         fontSize = 18.sp
       )
     },
-    text = {
-      Text(
-        text =
-          stringResource(
-            org.smartregister.fhircore.engine.R.string.call_supervisor,
-            "012-3456-789"
-          ),
-        fontSize = 16.sp
-      )
-    },
+    text = { Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp) },
     buttons = {
       Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),

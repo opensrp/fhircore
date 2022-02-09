@@ -66,7 +66,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(PIN_KEY, "1234") } returns Unit
-    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, "true") } returns Unit
+    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, true) } returns Unit
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
     coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 

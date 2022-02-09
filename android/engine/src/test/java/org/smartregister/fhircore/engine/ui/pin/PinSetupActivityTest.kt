@@ -65,12 +65,13 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
-    coEvery { sharedPreferencesHelper.write(any(), "true") } returns Unit
+    coEvery { sharedPreferencesHelper.read(any(), false) } returns false
+    coEvery { sharedPreferencesHelper.write(any(), true) } returns Unit
+    coEvery { sharedPreferencesHelper.write(any(), false) } returns Unit
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
     pinViewModel = mockk()
     coEvery { pinViewModel.savedPin } returns "1234"
     coEvery { pinViewModel.enterUserLoginMessage } returns "demo"
-    coEvery { sharedPreferencesHelper.write(any(), "false") } returns Unit
     coEvery { pinViewModel.pin } returns testPin
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     pinSetupActivity =
@@ -108,7 +109,7 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
   @Test
   fun testMoveToHome() {
     ReflectionHelpers.callInstanceMethod<Any>(pinSetupActivity, "moveToHome")
-    Assert.assertNotNull(sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, ""))
+    Assert.assertNotNull(sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false))
   }
 
   override fun getActivity(): Activity {

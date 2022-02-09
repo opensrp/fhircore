@@ -123,13 +123,14 @@ constructor(
   }
 
   fun onMenuLoginClicked() {
-    sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "true")
+    sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, true)
     _navigateToLogin.value = true
   }
 
   fun forgotPin() {
-    // load supervisor contact e.g.
-    _launchDialPad.value = "tel:0123456789"
+    // Todo: disable dialer action for now
+    //  plus load supervisor contact from config
+    // _launchDialPad.value = "tel:####"
   }
 
   fun onMenuSettingClicked() {

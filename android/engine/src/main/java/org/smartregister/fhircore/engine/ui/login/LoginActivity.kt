@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposab
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.EMPTY_STRING
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.PIN_KEY
 
@@ -68,10 +69,10 @@ class LoginActivity :
     // Check if Pin enabled and stored then move to Pin login
     val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
     val stayUserNamePasswordLogin =
-      loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, "").equals("true", true)
-    val lastPinExist = !loginViewModel.sharedPreferences.read(PIN_KEY, "").isNullOrEmpty()
+      loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
+    val lastPinExist = !loginViewModel.sharedPreferences.read(PIN_KEY, EMPTY_STRING).isNullOrEmpty()
     if (isPinEnabled && lastPinExist && !stayUserNamePasswordLogin) {
-      loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, "false")
+      loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
       loginService.navigateToPinLogin()
     }
 

@@ -71,9 +71,9 @@ class LoginActivityTest : ActivityRobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     coEvery { sharedPreferencesHelper.read(PIN_KEY, "") } returns ""
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, "") } returns "false"
+    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
     coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
-    coEvery { sharedPreferencesHelper.write("FORCE_LOGIN_VIA_USERNAME", "false") } returns Unit
+    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
     loginService = loginActivity.loginService

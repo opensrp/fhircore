@@ -31,6 +31,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -73,7 +74,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
-    coEvery { sharedPreferencesHelper.write(any(), "true") } returns Unit
+    coEvery { sharedPreferencesHelper.write(any(), true) } returns Unit
     pinViewModel.apply { savedPin = "1234" }
     coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
@@ -90,6 +91,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
+  @Ignore("reason = action dialer is disabled for now")
   @Test
   fun testNavigateToCallDialerShouldVerifyExpectedIntent() {
     pinLoginActivity.pinViewModel.forgotPin()
