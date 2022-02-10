@@ -26,7 +26,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.PIN_KEY
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -81,7 +80,7 @@ constructor(
   }
 
   fun loadData(isSetup: Boolean = false) {
-    savedPin = sharedPreferences.read(PIN_KEY, "").toString()
+    savedPin = secureSharedPreference.retrieveSessionPin()?:""
     isSetupPage = isSetup
     enterUserLoginMessage =
       retrieveUsername().let {
@@ -103,7 +102,7 @@ constructor(
 
     if (newPin.length == 4) {
       _showError.postValue(false)
-      sharedPreferences.write(PIN_KEY, newPin)
+      secureSharedPreference.saveSessionPin(newPin)
       _navigateToHome.postValue(true)
     } else {
       _showError.postValue(true)

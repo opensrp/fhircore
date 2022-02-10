@@ -29,9 +29,7 @@ import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposab
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.EMPTY_STRING
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.PIN_KEY
 
 @AndroidEntryPoint
 class LoginActivity :
@@ -70,7 +68,7 @@ class LoginActivity :
     val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
     val stayUserNamePasswordLogin =
       loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
-    val lastPinExist = !loginViewModel.sharedPreferences.read(PIN_KEY, EMPTY_STRING).isNullOrEmpty()
+    val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
     if (isPinEnabled && lastPinExist && !stayUserNamePasswordLogin) {
       loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
       loginService.navigateToPinLogin()
