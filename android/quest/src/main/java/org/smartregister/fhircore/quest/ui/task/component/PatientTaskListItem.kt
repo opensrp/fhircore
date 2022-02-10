@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +52,15 @@ import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.ui.task.PatientTaskListenerIntent
+
+const val TEXT_TITLE = "textTitle"
+const val TEXT_SUBTITLE_ADDRESS = "textSubtitleAddress"
+const val TEXT_SUBTITLE_ID = "textSubtitleId"
+const val TEXT_SUBTITLE_DISTANCE = "textSubtitleDistance"
+const val TEXT_SUBTITLE_DESCRIPTION = "textSubtitleDescription"
+const val ICON_SUBTITLE = "iconSubtitle"
+const val LABEL_MAIN = "labelMain"
+const val ICON_MAIN = "iconMain"
 
 @Composable
 fun PatientTaskRow(
@@ -76,7 +86,11 @@ fun PatientTaskRow(
       modifier =
         modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-      Text(text = titleText, fontSize = 18.sp, modifier = modifier.wrapContentWidth())
+      Text(
+        text = titleText,
+        fontSize = 18.sp,
+        modifier = modifier.testTag(TEXT_TITLE).wrapContentWidth()
+      )
       Spacer(modifier = modifier.height(8.dp))
       Row(
         horizontalArrangement = Arrangement.SpaceAround,
@@ -87,7 +101,7 @@ fun PatientTaskRow(
             color = SubtitleTextColor,
             text = subTitleText,
             fontSize = 14.sp,
-            modifier = modifier.wrapContentWidth()
+            modifier = modifier.testTag(TEXT_SUBTITLE_ADDRESS).wrapContentWidth()
           )
           Dot(modifier = modifier, showDot = patientItem.id.isNotEmpty())
           if (patientItem.id.isNotEmpty()) {
@@ -95,40 +109,43 @@ fun PatientTaskRow(
               color = SubtitleTextColor,
               text = stringResource(R.string.hash_sign) + patientItem.id,
               fontSize = 14.sp,
-              modifier = modifier.wrapContentWidth()
+              modifier = modifier.testTag(TEXT_SUBTITLE_ID).wrapContentWidth()
             )
           }
         } else {
           Icon(
             Icons.Rounded.DirectionsWalk,
             contentDescription = "Localized description",
-            tint = SubtitleTextColor
+            tint = SubtitleTextColor,
+            modifier = modifier.testTag(ICON_SUBTITLE)
           )
           Text(
             color = SubtitleTextColor,
             text = stringResource(R.string.sample_distance),
             fontSize = 14.sp,
-            modifier = modifier.wrapContentWidth()
+            modifier = modifier.testTag(TEXT_SUBTITLE_DISTANCE).wrapContentWidth()
           )
           Dot(modifier = modifier, showDot = patientItem.description.isNotEmpty())
           Text(
             color = SubtitleTextColor,
             text = patientItem.description,
             fontSize = 14.sp,
-            modifier = modifier.wrapContentWidth()
+            modifier = modifier.testTag(TEXT_SUBTITLE_DESCRIPTION).wrapContentWidth()
           )
         }
       }
     }
     if (useLabel) {
       TaskLabel(
-        modifier = modifier.wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
+        modifier =
+          modifier.testTag(LABEL_MAIN).wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
         patientItem = patientItem,
         clickListener = clickListener
       )
     } else {
       TaskIcon(
-        modifier = modifier.wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
+        modifier =
+          modifier.testTag(ICON_MAIN).wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
         patientItem = patientItem,
         clickListener = clickListener
       )
