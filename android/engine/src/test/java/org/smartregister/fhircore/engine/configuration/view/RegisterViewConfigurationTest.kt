@@ -63,7 +63,7 @@ class RegisterViewConfigurationTest : RobolectricTest() {
   @Test
   fun testDefaultRegisterViewConfiguration() {
     val registerViewConfiguration = RegisterViewConfiguration("anc", "classification")
-    Assert.assertEquals("", registerViewConfiguration.appId)
+    Assert.assertEquals("anc", registerViewConfiguration.appId)
     Assert.assertEquals("", registerViewConfiguration.appTitle)
     Assert.assertEquals("", registerViewConfiguration.searchBarHint)
     Assert.assertEquals("", registerViewConfiguration.newClientButtonText)
