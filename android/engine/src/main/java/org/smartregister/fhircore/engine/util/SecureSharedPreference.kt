@@ -53,6 +53,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     secureSharedPreferences.edit {
       remove(KEY_LATEST_CREDENTIALS_PREFERENCE)
       remove(KEY_LATEST_SESSION_TOKEN_PREFERENCE)
+      remove(KEY_SESSION_PIN)
     }
   }
 
