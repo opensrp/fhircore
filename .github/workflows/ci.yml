@@ -102,7 +102,7 @@ jobs:
           arch: x86_64
           api-level: 30
           working-directory: android
-          script: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
+          script: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace --info
 
       - name: Upload ANC Test Report to codecov
         working-directory: android
