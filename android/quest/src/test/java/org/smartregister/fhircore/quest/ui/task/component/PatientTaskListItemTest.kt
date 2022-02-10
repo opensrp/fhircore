@@ -89,7 +89,7 @@ class PatientTaskListItemTest : RobolectricTest() {
             birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
             address = "Nairobi",
             description = "Sick Visit",
-            overdue = true
+            overdue = false
           ),
         useLabel = true,
         clickListener = listenerObjectSpy.onRowClick()
@@ -159,7 +159,7 @@ class PatientTaskListItemTest : RobolectricTest() {
             birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
             address = "Nairobi",
             description = "Sick Visit",
-            overdue = true
+            overdue = false
           ),
         useLabel = false,
         displaySelectContentOnly = true,
