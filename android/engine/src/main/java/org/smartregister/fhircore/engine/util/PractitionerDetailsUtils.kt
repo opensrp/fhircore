@@ -20,6 +20,7 @@ import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CareTeam
@@ -27,8 +28,8 @@ import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import timber.log.Timber
 
 @Singleton
@@ -47,17 +48,43 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
 
     try {
       practitionerDetails = fhirEngine.load(Parameters::class.java, practitionerId)
-      practitionerDetails.parameter.forEach {
-        if (it.name.equals("CareTeam")) {
-          val careTeam = fhirEngine.load(CareTeam::class.java, it.id)
-          practitionerCareTeams.add(careTeam)
-        } else if (it.name.equals("Organization")) {
-          val organization = fhirEngine.load(Organization::class.java, it.id)
-          practitionerOrganizations.add(organization)
-        } else if (it.name.equals("Location")) {
-          val location = fhirEngine.load(Location::class.java, it.id)
-          practitionerLocations.add(location)
-        }
+      when (resourceType) {
+        "careTeams" ->
+          practitionerDetails.parameter.forEach {
+            if (it.name.equals("CareTeam")) {
+              val result = it.value.valueToString().split(",").map { id -> id.trim() }
+              if (result.isNotEmpty()) {
+                result.forEach { id ->
+                  val careTeam = fhirEngine.load(CareTeam::class.java, id)
+                  practitionerCareTeams.add(careTeam)
+                }
+              }
+            }
+          }
+        "organization" ->
+          practitionerDetails.parameter.forEach {
+            if (it.name.equals("Organization")) {
+              val result = it.value.valueToString().split(",").map { id -> id.trim() }
+              if (result.isNotEmpty()) {
+                result.forEach { id ->
+                  val organization = fhirEngine.load(Organization::class.java, it.id)
+                  practitionerOrganizations.add(organization)
+                }
+              }
+            }
+          }
+        "locations" ->
+          practitionerDetails.parameter.forEach {
+            if (it.name.equals("Location")) {
+              val result = it.value.valueToString().split(",").map { id -> id.trim() }
+              if (result.isNotEmpty()) {
+                result.forEach { id ->
+                  val location = fhirEngine.load(Location::class.java, it.id)
+                  practitionerLocations.add(location)
+                }
+              }
+            }
+          }
       }
     } catch (e: ResourceNotFoundException) {
       Timber.e(e)
@@ -74,52 +101,59 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
     practitionerId: String,
     careTeamList: List<CareTeam>,
     organizationList: List<Organization>,
-    locationHierarchyList: Location,
+    locationList: List<Location>,
   ): Parameters {
-    val parts = arrayListOf<Parameters.ParametersParameterComponent>()
-    if (careTeamList.isNotEmpty())
-      careTeamList.forEach { careTeam ->
-        val part = Parameters.ParametersParameterComponent()
-        part.apply {
-          this.name = "CareTeam"
-          this.id = careTeam.id
-        }
-        parts.add(part)
-      }
+    val carePlanIds = arrayListOf<String>()
+    val organizationIds = arrayListOf<String>()
+    val locationsIds = arrayListOf<String>()
+    if (careTeamList.isNotEmpty()) careTeamList.forEach { careTeam -> carePlanIds.add(careTeam.id) }
     if (organizationList.isNotEmpty())
-      organizationList.forEach { organization ->
-        val part = Parameters.ParametersParameterComponent()
-        part.apply {
-          this.name = "Organization"
-          this.id = organization.id
-        }
-        parts.add(part)
-      }
-    if (!locationHierarchyList.isEmpty) {
-      val part = Parameters.ParametersParameterComponent()
-      part.apply {
-        this.name = "Location"
-        this.id = locationHierarchyList.id
-      }
-      parts.add(part)
-    }
-    return recordParameters(practitionerId = practitionerId, parts = parts)
+      organizationList.forEach { organization -> organizationIds.add(organization.id) }
+    if (locationList.isNotEmpty())
+      organizationList.forEach { location -> locationsIds.add(location.id) }
+    val carePlanIdsString = if (carePlanIds.isNotEmpty()) carePlanIds.joinToString { it } else ""
+    val organizationIdsString =
+      if (organizationIds.isNotEmpty()) organizationIds.joinToString { it } else ""
+    val locationIdsString = if (locationsIds.isNotEmpty()) locationsIds.joinToString { it } else ""
+    return recordParameters(
+      practitionerId = practitionerId,
+      carePlanIds = carePlanIdsString,
+      organizationIds = organizationIdsString,
+      locationIds = locationIdsString
+    )
   }
 
   private fun recordParameters(
     practitionerId: String,
-    parts: List<Parameters.ParametersParameterComponent>
+    carePlanIds: String,
+    organizationIds: String,
+    locationIds: String
   ): Parameters {
-    val config = buildConfigData(practitionerId = practitionerId, parts = parts)
+    val config =
+      buildConfigData(
+        practitionerId = practitionerId,
+        carePlanIds = carePlanIds,
+        organizationIds = organizationIds,
+        locationIds = locationIds
+      )
     val parameters = loadConfig(Template.PARAMETERS, clazz = Parameters::class.java, data = config)
     return parameters
   }
 
   private fun buildConfigData(
     practitionerId: String,
-    parts: List<Parameters.ParametersParameterComponent>
+    carePlanIds: String,
+    organizationIds: String,
+    locationIds: String
   ): Map<String, String?> {
-    return mapOf("#idPractitioner" to practitionerId, "#parts" to parts.encodeJson())
+
+    return mapOf(
+      "#id" to UUID.randomUUID().toString(),
+      "#idPractitioner" to practitionerId,
+      "#idPartsCP" to carePlanIds,
+      "idPartsO" to organizationIds,
+      "idPartsL" to locationIds
+    )
   }
 
   private fun <T : Resource> loadConfig(

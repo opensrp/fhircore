@@ -26,7 +26,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
@@ -38,9 +37,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
-import org.hl7.fhir.r4.model.CareTeam
-import org.hl7.fhir.r4.model.Location
-import org.hl7.fhir.r4.model.Organization
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -53,7 +49,6 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FhirContextUtil
 import org.smartregister.fhircore.engine.util.PractitionerDetailsUtils
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -122,15 +117,11 @@ constructor(
 
   fun callPractitionerDetails(userResponse: UserInfo) {
     runBlocking {
-      val iParser: IParser = FhirContextUtil().getPractitionerDetailParser()!!
-
       val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
       val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
-      val fhirCareTeamExtensionList =
-        practitionerDetails.fhirPractitionerDetails.fhirCareTeamExtensionList
-      val fhirOrganizationExtensions =
-        practitionerDetails.fhirPractitionerDetails.fhirOrganizationExtensions
-      val locationHierarchyList = practitionerDetails.fhirPractitionerDetails.locationHierarchyList
+      val careTeamList = practitionerDetails.fhirPractitionerDetails.careTeams
+      val organizationList = practitionerDetails.fhirPractitionerDetails.organizations
+      val locationList = practitionerDetails.fhirPractitionerDetails.locations
       val keyclockUtils = UserDetailsUtils(sharedPreferences)
       keyclockUtils.updateUserDetailsFromPractitionerDetails(practitionerDetails, userResponse)
       keyclockUtils.storeKeyClockInfo(practitionerDetails)
@@ -138,25 +129,23 @@ constructor(
       val parameter =
         PractitionerDetailsUtils(app, fhirEngine)
           .saveParameter(
-            practitionerId = practitionerDetails.id,
-            careTeamList = fhirCareTeamExtensionList,
-            organizationList = fhirOrganizationExtensions,
-            locationHierarchyList = locationHierarchyList[0]
+            practitionerId = practitionerDetails.userDetail.id,
+            careTeamList = careTeamList,
+            organizationList = organizationList,
+            locationList = locationList
           )
       fhirEngine.save(parameter)
-      if (locationHierarchyList.isNotEmpty()) {
-          fhirEngine.save(locationHierarchyList[0])
+
+      if (locationList.isNotEmpty()) {
+        locationList.forEach { fhirEngine.save(it) }
       }
 
-      if (fhirOrganizationExtensions.isNotEmpty()) {
-        fhirOrganizationExtensions.forEach {
-          fhirEngine.save(it)
-        }
+      if (organizationList.isNotEmpty()) {
+        organizationList.forEach { fhirEngine.save(it) }
       }
-      if (fhirCareTeamExtensionList.isNotEmpty()) {
-        fhirCareTeamExtensionList.forEach {
-          fhirEngine.save(it)
-        }
+
+      if (careTeamList.isNotEmpty()) {
+        careTeamList.forEach { fhirEngine.save(it) }
       }
     }
   }
