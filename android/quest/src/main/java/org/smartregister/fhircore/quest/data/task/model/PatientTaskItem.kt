@@ -28,7 +28,7 @@ data class PatientTaskItem(
   val birthdate: Date? = null,
   val address: String = "",
   val description: String = "",
-  val overdue: Boolean
+  val overdue: Boolean = false
 ) {
   fun demographics(): String {
     return "$name, $gender, ${birthdate.toAgeDisplay()}"

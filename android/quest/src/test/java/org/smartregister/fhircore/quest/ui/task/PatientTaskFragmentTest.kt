@@ -27,11 +27,6 @@ import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.unmockkObject
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Period
-import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.Task
 import org.junit.After
 import org.junit.Assert
 import org.junit.Assert.assertNotNull
@@ -44,8 +39,8 @@ import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
-import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.quest.data.task.PatientTaskRepository
+import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 
@@ -84,67 +79,66 @@ class PatientTaskFragmentTest : RobolectricTest() {
   }
 
   @Test
-  fun testPerformSearchFilterShouldReturnTrue() {
-    val patientTask =
-      PatientTask(
-        patient =
-          Patient().apply {
-            id = "2"
-            nameFirstRep.given = listOf(StringType("Name"))
-            nameFirstRep.family = "Surname"
-            gender = Enumerations.AdministrativeGender.MALE
-            addressFirstRep.city = "Nairobi"
-          },
-        task =
-          Task().apply {
-            id = "1"
-            description = "Sick Visit"
-            executionPeriod =
-              Period().apply {
-                start = "2020-03-10".getDate("yyyy-MM-dd")
-                end = "2020-03-12".getDate("yyyy-MM-dd")
-              }
-          }
+  fun testPerformFilterShouldReturnTrueWithMatchingDataAndSearchFilter() {
+    Assert.assertTrue(
+      patientTaskFragment.performFilter(
+        RegisterFilterType.SEARCH_FILTER,
+        PatientTaskItem(name = "Samia"),
+        ""
       )
-    val mapper = PatientTaskItemMapper(patientTaskFragment.requireContext())
+    )
 
-    val patientTaskItem = mapper.mapToDomainModel(patientTask)
+    Assert.assertTrue(
+      patientTaskFragment.performFilter(
+        RegisterFilterType.SEARCH_FILTER,
+        PatientTaskItem(name = "Razi"),
+        "Razi"
+      )
+    )
 
-    val result =
-      patientTaskFragment.performFilter(RegisterFilterType.SEARCH_FILTER, patientTaskItem, "1")
-    assertTrue(result)
+    Assert.assertTrue(
+      patientTaskFragment.performFilter(
+        RegisterFilterType.SEARCH_FILTER,
+        PatientTaskItem(id = "1234"),
+        "1234"
+      )
+    )
   }
 
   @Test
-  fun testPerformOverdueFilterShouldReturnTrue() {
-    val patientTask =
-      PatientTask(
-        patient =
-          Patient().apply {
-            id = "2"
-            nameFirstRep.given = listOf(StringType("Name"))
-            nameFirstRep.family = "Surname"
-            gender = Enumerations.AdministrativeGender.MALE
-            addressFirstRep.city = "Nairobi"
-          },
-        task =
-          Task().apply {
-            id = "1"
-            description = "Sick Visit"
-            executionPeriod =
-              Period().apply {
-                start = "2020-03-10".getDate("yyyy-MM-dd")
-                end = "2020-03-12".getDate("yyyy-MM-dd")
-              }
-          }
+  fun testPerformFilterShouldReturnFalseWithNotMatchingDataAndSearchFilter() {
+    Assert.assertFalse(
+      patientTaskFragment.performFilter(
+        RegisterFilterType.SEARCH_FILTER,
+        PatientTaskItem(name = "Samia"),
+        0
       )
-    val mapper = PatientTaskItemMapper(patientTaskFragment.requireContext())
+    )
+    Assert.assertFalse(
+      patientTaskFragment.performFilter(
+        RegisterFilterType.SEARCH_FILTER,
+        PatientTaskItem(id = "1234"),
+        "1"
+      )
+    )
+  }
 
-    val patientTaskItem = mapper.mapToDomainModel(patientTask)
+  @Test
+  fun testPerformFilterShouldReturnTrueForEmptyFilter() {
+    Assert.assertTrue(
+      patientTaskFragment.performFilter(RegisterFilterType.SEARCH_FILTER, PatientTaskItem(), "")
+    )
+  }
 
-    val result =
-      patientTaskFragment.performFilter(RegisterFilterType.OVERDUE_FILTER, patientTaskItem, "1")
-    assertTrue(result)
+  @Test
+  fun testPerformFilterShouldReturnTrueForOverdueFilterType() {
+    Assert.assertTrue(
+      patientTaskFragment.performFilter(
+        RegisterFilterType.OVERDUE_FILTER,
+        PatientTaskItem(overdue = true),
+        "222"
+      )
+    )
   }
 
   @Test

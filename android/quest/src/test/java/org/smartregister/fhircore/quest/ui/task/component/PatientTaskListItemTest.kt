@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.task.component
 
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -57,7 +58,8 @@ class PatientTaskListItemTest : RobolectricTest() {
             overdue = true
           ),
         useLabel = true,
-        clickListener = listenerObjectSpy.onRowClick()
+        clickListener = listenerObjectSpy.onRowClick(),
+        modifier = Modifier
       )
     }
 
@@ -92,7 +94,8 @@ class PatientTaskListItemTest : RobolectricTest() {
             overdue = false
           ),
         useLabel = true,
-        clickListener = listenerObjectSpy.onRowClick()
+        clickListener = listenerObjectSpy.onRowClick(),
+        modifier = Modifier
       )
     }
 
@@ -125,7 +128,8 @@ class PatientTaskListItemTest : RobolectricTest() {
             overdue = true
           ),
         useLabel = false,
-        clickListener = listenerObjectSpy.onRowClick()
+        clickListener = listenerObjectSpy.onRowClick(),
+        modifier = Modifier
       )
     }
 
@@ -163,7 +167,8 @@ class PatientTaskListItemTest : RobolectricTest() {
           ),
         useLabel = false,
         displaySelectContentOnly = true,
-        clickListener = listenerObjectSpy.onRowClick()
+        clickListener = listenerObjectSpy.onRowClick(),
+        modifier = Modifier
       )
     }
 

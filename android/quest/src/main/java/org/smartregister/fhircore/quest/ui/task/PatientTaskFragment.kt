@@ -88,7 +88,6 @@ class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem
       RegisterFilterType.OVERDUE_FILTER -> {
         data.overdue
       }
-      else -> false
     }
   }
 

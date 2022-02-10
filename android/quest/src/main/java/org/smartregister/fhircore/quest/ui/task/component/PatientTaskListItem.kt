@@ -68,7 +68,7 @@ fun PatientTaskRow(
   useLabel: Boolean,
   clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit,
   displaySelectContentOnly: Boolean = false,
-  modifier: Modifier = Modifier,
+  modifier: Modifier,
 ) {
   val titleText =
     if (!displaySelectContentOnly) {
@@ -157,7 +157,7 @@ fun PatientTaskRow(
 fun TaskIcon(
   patientItem: PatientTaskItem,
   clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier
 ) {
   val iconId =
     when (patientItem.overdue) {
@@ -171,7 +171,7 @@ fun TaskIcon(
 fun TaskLabel(
   patientItem: PatientTaskItem,
   clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier
 ) {
 
   val textColor =
