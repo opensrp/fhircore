@@ -36,7 +36,6 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.PIN_KEY
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -66,10 +65,11 @@ internal class PinViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
-    coEvery { sharedPreferencesHelper.write(PIN_KEY, "1234") } returns Unit
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, true) } returns Unit
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
     coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    coEvery { secureSharedPreference.saveSessionPin("1234") } returns Unit
+    coEvery { secureSharedPreference.retrieveSessionPin() } returns "1234"
 
     pinViewModel =
       PinViewModel(
@@ -92,10 +92,7 @@ internal class PinViewModelTest : RobolectricTest() {
       isSetupPage = false
     }
     pinViewModel.onPinChanged(testPin.value.toString())
-    Assert.assertEquals(
-      pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
-      testPin.value.toString()
-    )
+    Assert.assertEquals(pinViewModel.savedPin, testPin.value.toString())
     Assert.assertEquals(pinViewModel.enableSetPin.value, true)
     Assert.assertEquals(pinViewModel.navigateToHome.value, true)
   }
@@ -104,7 +101,7 @@ internal class PinViewModelTest : RobolectricTest() {
   fun testOnPinConfirmed() {
     pinViewModel.onPinConfirmed()
     Assert.assertEquals(
-      pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
+      pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
       testPin.value.toString()
     )
     Assert.assertEquals(pinViewModel.showError.value, false)
@@ -114,7 +111,7 @@ internal class PinViewModelTest : RobolectricTest() {
   fun testOnPinConfirmedValidated() {
     pinViewModel.onPinConfirmed()
     Assert.assertEquals(
-      pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
+      pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
       testPin.value.toString()
     )
     Assert.assertEquals(pinViewModel.showError.value, false)

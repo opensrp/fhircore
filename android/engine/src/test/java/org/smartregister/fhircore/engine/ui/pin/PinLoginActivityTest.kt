@@ -41,7 +41,6 @@ import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.PIN_KEY
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -75,6 +74,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
     hiltRule.inject()
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(any(), true) } returns Unit
+    coEvery { secureSharedPreference.retrieveSessionPin() } returns "1234"
     pinViewModel.apply { savedPin = "1234" }
     coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
@@ -104,7 +104,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
     pinLoginActivity.pinViewModel.onPinChanged("1234")
     Assert.assertEquals(
-      pinLoginActivity.pinViewModel.sharedPreferences.read(PIN_KEY, "").toString(),
+      pinLoginActivity.pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
       testPin.value.toString()
     )
   }
