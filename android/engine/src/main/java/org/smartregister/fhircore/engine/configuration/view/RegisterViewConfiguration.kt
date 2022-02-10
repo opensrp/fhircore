@@ -82,7 +82,7 @@ fun Context.registerViewConfigurationOf(
   registrationForm: String = "patient-registration",
   showSideMenu: Boolean = true,
   showBottomMenu: Boolean = false,
-  showPageCount: Boolean = false,
+  showPageCount: Boolean = true,
   useLabel: Boolean = true
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
