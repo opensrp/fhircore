@@ -52,11 +52,10 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
         "careTeams" ->
           practitionerDetails.parameter.forEach {
             if (it.name.equals("CareTeam")) {
-              val result = it.value.valueToString().split(",").map { id -> id.trim() }
+              val result = listOfIds(it)
               if (result.isNotEmpty()) {
                 result.forEach { id ->
-                  val careTeam = fhirEngine.load(CareTeam::class.java, id)
-                  practitionerCareTeams.add(careTeam)
+                  practitionerCareTeams.add(loadResource(id = id, clazz = CareTeam::class.java))
                 }
               }
             }
@@ -64,11 +63,12 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
         "organization" ->
           practitionerDetails.parameter.forEach {
             if (it.name.equals("Organization")) {
-              val result = it.value.valueToString().split(",").map { id -> id.trim() }
+              val result = listOfIds(it)
               if (result.isNotEmpty()) {
                 result.forEach { id ->
-                  val organization = fhirEngine.load(Organization::class.java, it.id)
-                  practitionerOrganizations.add(organization)
+                  practitionerOrganizations.add(
+                    loadResource(id = id, clazz = Organization::class.java)
+                  )
                 }
               }
             }
@@ -76,11 +76,10 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
         "locations" ->
           practitionerDetails.parameter.forEach {
             if (it.name.equals("Location")) {
-              val result = it.value.valueToString().split(",").map { id -> id.trim() }
+              val result = listOfIds(it)
               if (result.isNotEmpty()) {
                 result.forEach { id ->
-                  val location = fhirEngine.load(Location::class.java, it.id)
-                  practitionerLocations.add(location)
+                  practitionerLocations.add(loadResource(id = id, clazz = Location::class.java))
                 }
               }
             }
@@ -95,6 +94,11 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
       "locations" -> return practitionerLocations
       else -> practitionerCareTeams
     }
+  }
+
+  private fun listOfIds(it: Parameters.ParametersParameterComponent): List<String> {
+    val result = it.value.valueToString().split(",").map { id -> id.trim() }
+    return result
   }
 
   fun saveParameter(
@@ -162,6 +166,13 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
     data: Map<String, String?> = emptyMap()
   ): T {
     return context.loadResourceTemplate(id, clazz, data)
+  }
+
+  private suspend fun <T : Resource> loadResource(
+    id: String,
+    clazz: Class<T>,
+  ): T {
+    return fhirEngine.load(clazz = clazz, id = id)
   }
 
   companion object {
