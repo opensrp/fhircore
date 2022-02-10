@@ -57,8 +57,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.util.CURSOR_SYMBOL
-import org.smartregister.fhircore.engine.util.EMPTY_STRING
 
 const val PIN_VIEW = "pin_view"
 const val PIN_VIEW_INPUT_TEXT_FIELD = "pin_view_input_text_field"
@@ -67,10 +65,14 @@ const val PIN_VIEW_CELL_DOTTED = "pin_view_cell_dotted"
 const val PIN_VIEW_CELL_TEXT = "pin_view_cell_text"
 const val PIN_VIEW_ERROR = "pin_view_error"
 
+const val CURSOR_SYMBOL = "|"
+const val PIN_INPUT_MAX_THRESHOLD = 4
+const val PIN_CURSOR_DELAY: Long = 350
+
 @ExperimentalComposeUiApi
 @Composable
 fun PinView(
-  pinInputLength: Int = 4,
+  pinInputLength: Int = PIN_INPUT_MAX_THRESHOLD,
   onPinChanged: (String) -> Unit = {},
   inputPin: String = "",
   isDotted: Boolean = false,
@@ -88,7 +90,7 @@ fun PinView(
         setEditValue(it)
         onPinChanged(it)
       }
-      if (it.length < 4) {
+      if (it.length < pinLength) {
         keyboard?.show()
       } else {
         keyboard?.hide()
@@ -111,7 +113,8 @@ fun PinView(
             focusRequester.requestFocus()
             keyboard?.show()
           },
-        value = editValue.getOrNull(index)?.toString() ?: "",
+        indexValue = editValue.getOrNull(index)?.toString() ?: "",
+        fullEditValue = editValue,
         isCursorVisible = editValue.length == index,
         isDotted = isDotted,
         showError = showError
@@ -124,35 +127,38 @@ fun PinView(
 @Composable
 fun PinCell(
   modifier: Modifier = Modifier,
-  value: String,
+  indexValue: String,
+  fullEditValue: String,
   isCursorVisible: Boolean = false,
   isDotted: Boolean = false,
-  showError: Boolean = false,
+  showError: Boolean = false
 ) {
   val scope = rememberCoroutineScope()
   val (cursorSymbol, setCursorSymbol) = remember { mutableStateOf("") }
   var borderColor = colorResource(id = R.color.darkGrayText)
   var dottedBg = colorResource(id = R.color.darkGrayText)
-  if (showError) {
-    borderColor = colorResource(id = R.color.colorError)
-    dottedBg = colorResource(id = R.color.colorErrorDull)
-  } else if (isCursorVisible) {
+  if (isCursorVisible) {
     borderColor = colorResource(id = R.color.colorPrimaryLight)
     dottedBg = colorResource(id = R.color.light_gray)
-    if (value.isEmpty()) {
+    if (indexValue.isEmpty()) {
       dottedBg = colorResource(id = R.color.white)
     }
-  } else if (value.isEmpty()) {
+  } else if (indexValue.isEmpty()) {
     borderColor = colorResource(id = R.color.light_gray)
     dottedBg = colorResource(id = R.color.light_gray)
   }
-  if (value.length == 4) {
+  if (fullEditValue.length == PIN_INPUT_MAX_THRESHOLD) {
     dottedBg = colorResource(id = R.color.colorSuccess)
+    borderColor = colorResource(id = R.color.colorSuccess)
+  }
+  if (showError) {
+    borderColor = colorResource(id = R.color.colorError)
+    dottedBg = colorResource(id = R.color.colorErrorDull)
   }
   LaunchedEffect(key1 = cursorSymbol, isCursorVisible) {
     if (isCursorVisible) {
       scope.launch {
-        delay(350)
+        delay(PIN_CURSOR_DELAY)
         setCursorSymbol(if (cursorSymbol.isEmpty()) CURSOR_SYMBOL else "")
       }
     }
@@ -162,13 +168,13 @@ fun PinCell(
     var cardTestTag = PIN_VIEW_CELL
     val textTestTag = PIN_VIEW_CELL_TEXT
     var backgroundColor = colorResource(id = R.color.white)
-    var textValue = value
+    var textValue = indexValue
     var textSize = 14.sp
     var cardRoundedCornerRadius = 8.dp
     if (isDotted) {
       cardTestTag = PIN_VIEW_CELL_DOTTED
       backgroundColor = dottedBg
-      textValue = EMPTY_STRING
+      textValue = ""
       textSize = 18.sp
       cardRoundedCornerRadius = 15.dp
     }

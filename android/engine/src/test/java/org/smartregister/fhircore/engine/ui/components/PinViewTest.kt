@@ -42,16 +42,22 @@ class PinViewTest : RobolectricTest() {
   @Test
   fun testPinCell() {
     composeRule.setContent {
-      PinCell(value = "1", isCursorVisible = false, isDotted = false, showError = true)
+      PinCell(
+        indexValue = "3",
+        fullEditValue = "123",
+        isCursorVisible = false,
+        isDotted = false,
+        showError = true
+      )
     }
     composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
-    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists().assertTextEquals("3")
   }
 
   @ExperimentalComposeUiApi
   @Test
   fun testPinCellDotted() {
-    composeRule.setContent { PinCell(isDotted = true, value = "1") }
+    composeRule.setContent { PinCell(isDotted = true, indexValue = "3", fullEditValue = "123") }
     composeRule.onNodeWithTag(PIN_VIEW_CELL_DOTTED).assertExists()
     composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
   }
@@ -59,15 +65,19 @@ class PinViewTest : RobolectricTest() {
   @ExperimentalComposeUiApi
   @Test
   fun testPinCellViewError() {
-    composeRule.setContent { PinCell(isDotted = false, value = "1", showError = true) }
+    composeRule.setContent {
+      PinCell(isDotted = false, indexValue = "4", fullEditValue = "1234", showError = true)
+    }
     composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()
-    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists().assertTextEquals("1")
+    composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists().assertTextEquals("4")
   }
 
   @ExperimentalComposeUiApi
   @Test
   fun testPinCellViewDottedError() {
-    composeRule.setContent { PinCell(isDotted = true, value = "1", showError = true) }
+    composeRule.setContent {
+      PinCell(isDotted = true, indexValue = "3", fullEditValue = "123", showError = true)
+    }
     composeRule.onNodeWithTag(PIN_VIEW_CELL_DOTTED).assertExists()
     composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists().assertTextEquals("")
   }

@@ -56,8 +56,6 @@ class LoginActivity :
         }
       )
       launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
-      // loginUser() TODO commented out to make user login everytime. Make it configurable via
-      // settings
     }
 
     if (configurationRegistry.isAppIdInitialized()) {
@@ -66,10 +64,10 @@ class LoginActivity :
 
     // Check if Pin enabled and stored then move to Pin login
     val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
-    val stayUserNamePasswordLogin =
+    val forceLoginViaUsername =
       loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
     val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
-    if (isPinEnabled && lastPinExist && !stayUserNamePasswordLogin) {
+    if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
       loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
       loginService.navigateToPinLogin()
     }

@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
@@ -100,7 +101,7 @@ constructor(
   fun onPinConfirmed() {
     val newPin = pin.value ?: ""
 
-    if (newPin.length == 4) {
+    if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
       _showError.postValue(false)
       secureSharedPreference.saveSessionPin(newPin)
       _navigateToHome.postValue(true)
@@ -111,7 +112,7 @@ constructor(
 
   fun onPinChanged(newPin: String) {
 
-    if (newPin.length == 4) {
+    if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
       val pinMatched = newPin.equals(savedPin, false)
       enableSetPin.value = true
       showError.value = !pinMatched

@@ -61,6 +61,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
@@ -183,7 +184,7 @@ fun PinLoginPage(
       )
 
       PinView(
-        pinInputLength = 4,
+        pinInputLength = PIN_INPUT_MAX_THRESHOLD,
         isDotted = true,
         onPinChanged = onPinChanged,
         showError = showError

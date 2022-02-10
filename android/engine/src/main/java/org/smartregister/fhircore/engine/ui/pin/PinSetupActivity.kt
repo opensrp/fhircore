@@ -25,6 +25,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
@@ -47,7 +48,9 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
       val pinSetupActivity = this@PinSetupActivity
       navigateToHome.observe(pinSetupActivity) { pinSetupActivity.moveToHome() }
       navigateToSettings.observe(pinSetupActivity) { pinSetupActivity.moveToSettings() }
-      pin.observe(pinSetupActivity) { it.let { enableSetPin.postValue(it.length > 3) } }
+      pin.observe(pinSetupActivity) {
+        it.let { enableSetPin.postValue(it.length >= PIN_INPUT_MAX_THRESHOLD) }
+      }
     }
     setContent { AppTheme { PinSetupScreen(pinViewModel) } }
   }

@@ -56,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
@@ -162,7 +163,11 @@ fun PinSetupPage(
           modifier.padding(horizontal = 16.dp, vertical = 16.dp).align(Alignment.CenterHorizontally)
       )
 
-      PinView(pinInputLength = 4, onPinChanged = onPinChanged, inputPin = inputPin)
+      PinView(
+        pinInputLength = PIN_INPUT_MAX_THRESHOLD,
+        onPinChanged = onPinChanged,
+        inputPin = inputPin
+      )
 
       Button(
         enabled = setPinEnabled,

@@ -45,7 +45,7 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
 
   @Test
   fun testReadString() {
-    Assert.assertNotNull(sharedPreferencesHelper.read("anyStringKey", EMPTY_STRING))
+    Assert.assertNotNull(sharedPreferencesHelper.read("anyStringKey", ""))
   }
 
   @Test
