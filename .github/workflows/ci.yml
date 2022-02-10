@@ -37,6 +37,7 @@ jobs:
           path: property_configs
         
   engine-tests:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
@@ -76,6 +77,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
   eir-tests:
+    needs: setup
     runs-on: ubuntu-latest
 
     steps:
@@ -116,6 +118,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F eir -f "eir/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
   anc-tests:
+    needs: setup
     runs-on: ubuntu-latest
 
     steps:
@@ -156,6 +159,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F anc -f "anc/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
   quest-tests:
+    needs: setup
     runs-on: ubuntu-latest
 
     steps:
