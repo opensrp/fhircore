@@ -80,7 +80,7 @@ constructor(
   }
 
   fun loadData(isSetup: Boolean = false) {
-    savedPin = secureSharedPreference.retrieveSessionPin()?:""
+    savedPin = secureSharedPreference.retrieveSessionPin() ?: ""
     isSetupPage = isSetup
     enterUserLoginMessage =
       retrieveUsername().let {
