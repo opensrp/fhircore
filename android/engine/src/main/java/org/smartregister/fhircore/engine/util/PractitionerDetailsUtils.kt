@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util
 
 import com.google.android.fhir.FhirEngine
+import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CareTeam
@@ -27,81 +28,68 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.model.practitioner.KeycloakUserDetails
+import org.smartregister.model.practitioner.PractitionerDetails
 
 @Singleton
 class PractitionerDetailsUtils
 @Inject
 constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: FhirEngine) {
 
-  suspend fun getResourceFromPatientDetails(resourceType: String): List<Resource> {
-    val practitionerCareTeams = arrayListOf<CareTeam>()
-    val practitionerOrganizations = arrayListOf<Organization>()
-    val practitionerLocations = arrayListOf<Location>()
-
+  suspend fun getResourceFromPractitionerDetails(resourceType: String): List<Resource> {
     val practitionerDetails: Parameters =
-      sharedPreferences.read(PARAMETERS_SHARED_PREFERENCE_KEY, "")!!.decodeResourceFromString()
-    when (resourceType) {
-      ResourceType.CareTeam.name ->
-        practitionerDetails.parameter.forEach {
-          if (it.name.equals(ResourceType.CareTeam.name)) {
-            val result = it.resource as ListResource
-            if (result.hasEntry()) {
-              result.entry.forEach { entry ->
-                practitionerCareTeams.add(
-                  loadResource(
-                    id = entry.item.reference,
-                    stringToReplace = "${ResourceType.CareTeam.name}/",
-                    clazz = CareTeam::class.java
-                  )
-                )
-              }
-            }
-          }
-        }
-      ResourceType.Organization.name ->
-        practitionerDetails.parameter.forEach {
-          if (it.name.equals(ResourceType.Organization.name)) {
-            val result = it.resource as ListResource
-            if (result.hasEntry()) {
-              result.entry.forEach { entry ->
-                practitionerOrganizations.add(
-                  loadResource(
-                    id = entry.item.reference,
-                    stringToReplace = "${ResourceType.Organization.name}/",
-                    clazz = Organization::class.java
-                  )
-                )
-              }
-            }
-          }
-        }
-      ResourceType.Location.name ->
-        practitionerDetails.parameter.forEach {
-          if (it.name.equals(ResourceType.Location.name)) {
-            val result = it.resource as ListResource
-            if (result.hasEntry()) {
-              result.entry.forEach { entry ->
-                practitionerLocations.add(
-                  loadResource(
-                    id = entry.item.reference,
-                    stringToReplace = "${ResourceType.Location.name}/",
-                    clazz = Location::class.java
-                  )
-                )
-              }
-            }
-          }
-        }
-    }
+      sharedPreferences.read(PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY, "")!!
+        .decodeResourceFromString()
     return when (resourceType) {
-      ResourceType.CareTeam.name -> return practitionerCareTeams
-      ResourceType.Organization.name -> return practitionerOrganizations
-      ResourceType.Location.name -> return practitionerLocations
-      else -> practitionerCareTeams
+      ResourceType.CareTeam.name ->
+        return getResourcesList(
+          practitionerDetails,
+          ResourceType.CareTeam.name,
+          CareTeam::class.java
+        )
+      ResourceType.Organization.name ->
+        return getResourcesList(
+          practitionerDetails,
+          ResourceType.Organization.name,
+          Organization::class.java
+        )
+      ResourceType.Location.name ->
+        return getResourcesList(
+          practitionerDetails,
+          ResourceType.Location.name,
+          Location::class.java
+        )
+      else -> arrayListOf()
     }
+  }
+
+  private suspend fun <T : Resource> getResourcesList(
+    practitionerDetails: Parameters,
+    resourceName: String,
+    clazz: Class<T>
+  ): ArrayList<T> {
+    val resourceList = arrayListOf<T>()
+    practitionerDetails.parameter.forEach {
+      if (it.name.equals(ResourceType.Location.name)) {
+        val result = it.resource as ListResource
+        if (result.hasEntry()) {
+          result.entry.forEach { entry ->
+            resourceList.add(
+              fhirEngine.load(
+                clazz = clazz,
+                id = entry.item.reference.replace("$resourceName/", "")
+              )
+            )
+          }
+        }
+      }
+    }
+    return resourceList
   }
 
   fun saveParameter(
@@ -115,38 +103,57 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
       name = ResourceType.Practitioner.name
       value = StringType(practitionerId)
     }
-    if (careTeamList.isNotEmpty())
-      parameters.addParameter().apply {
-        name = ResourceType.CareTeam.name
-        resource =
-          ListResource().apply {
-            careTeamList.forEach { addEntry().apply { item = it.asReference() } }
-          }
-      }
-    if (organizationList.isNotEmpty())
-      parameters.addParameter().apply {
-        name = ResourceType.Organization.name
-        resource =
-          ListResource().apply {
-            organizationList.forEach { addEntry().apply { item = it.asReference() } }
-          }
-      }
-    if (locationList.isNotEmpty())
-      parameters.addParameter().apply {
-        name = ResourceType.Location.name
-        resource =
-          ListResource().apply {
-            locationList.forEach { addEntry().apply { item = it.asReference() } }
-          }
-      }
-    sharedPreferences.write(PARAMETERS_SHARED_PREFERENCE_KEY, parameters.encodeResourceToString())
+    addParameters(careTeamList, parameters, ResourceType.CareTeam.name)
+    addParameters(organizationList, parameters, ResourceType.Organization.name)
+    addParameters(locationList, parameters, ResourceType.Location.name)
+
+    sharedPreferences.write(
+      PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY,
+      parameters.encodeResourceToString()
+    )
   }
 
-  private suspend fun <T : Resource> loadResource(
-    id: String,
-    stringToReplace: String,
-    clazz: Class<T>,
-  ): T {
-    return fhirEngine.load(clazz = clazz, id = id.replace(stringToReplace, ""))
+  private fun <T : Resource> addParameters(
+    resources: List<T>,
+    parameters: Parameters,
+    resourceName: String
+  ) {
+    if (resources.isNotEmpty())
+      parameters.addParameter().apply {
+        name = resourceName
+        resource =
+          ListResource().apply {
+            resources.forEach { addEntry().apply { item = it.asReference() } }
+          }
+      }
+  }
+
+  private fun storeUserPreferences(userInfo: UserInfo) {
+    sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson())
+  }
+
+  fun updateUserDetailsFromPractitionerDetails(
+    practitionerDetails: PractitionerDetails,
+    userResponse: UserInfo
+  ) {
+    storeUserPreferences(
+      userInfo =
+        UserInfoItemMapper.mapToDomainModel(practitionerDetails, domainModelSource = userResponse)
+    )
+  }
+
+  fun storeKeyClockInfo(practitionerDetails: PractitionerDetails) {
+    val userData = practitionerDetails.userDetail as KeycloakUserDetails
+    val gson = Gson()
+    val json = gson.toJson(userData)
+    sharedPreferences.write(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, json)
+  }
+
+  fun retrieveKeyClockInfo(): KeycloakUserDetails {
+    val keycloakUserDetailsString =
+      sharedPreferences.read(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, "")!!
+    val gson = Gson()
+
+    return gson.fromJson(keycloakUserDetailsString, KeycloakUserDetails::class.java)
   }
 }

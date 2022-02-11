@@ -177,7 +177,7 @@ constructor(
   // TODO move to some external file
   suspend fun getPractitionerDetails(keycloak_uuid: String): org.hl7.fhir.r4.model.Bundle {
 
-    val iParser: IParser = FhirContextUtil().getPractitionerDetailParser()!!
+    val iParser: IParser = FhirContextUtil().getPractitionerDetailParser()
 
     val qJson =
       context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }

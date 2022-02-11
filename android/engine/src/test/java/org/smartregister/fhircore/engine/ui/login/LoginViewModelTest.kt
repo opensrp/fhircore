@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.PractitionerDetailsUtils
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.Call
@@ -73,6 +74,8 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
+  @Inject lateinit var practitionerDetailsUtils: PractitionerDetailsUtils
+
   private lateinit var loginViewModel: LoginViewModel
 
   private lateinit var accountAuthenticatorSpy: AccountAuthenticator
@@ -94,6 +97,7 @@ internal class LoginViewModelTest : RobolectricTest() {
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = dispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
+        practitionerDetailsUtils = practitionerDetailsUtils,
         app = ApplicationProvider.getApplicationContext()
       )
   }

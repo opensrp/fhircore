@@ -56,6 +56,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
       dispatcher = DefaultDispatcherProvider(),
       accountAuthenticator = accountAuthenticator,
       sharedPreferences = mockk(),
+      practitionerDetailsUtils = mockk(),
       app = ApplicationProvider.getApplicationContext()
     )
 

@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.PractitionerDetailsUtils
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.UserDetailsUtils
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.model.practitioner.PractitionerDetails
@@ -70,6 +69,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
+  val practitionerDetailsUtils: PractitionerDetailsUtils,
   val sharedPreferences: SharedPreferencesHelper,
   val app: Application
 ) : ViewModel(), AccountManagerCallback<Bundle> {
@@ -118,32 +118,35 @@ constructor(
   fun callPractitionerDetails(userResponse: UserInfo) {
     runBlocking {
       val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
-      val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
-      val careTeamList = practitionerDetails.fhirPractitionerDetails.careTeams
-      val organizationList = practitionerDetails.fhirPractitionerDetails.organizations
-      val locationList = practitionerDetails.fhirPractitionerDetails.locations
-      val keyclockUtils = UserDetailsUtils(sharedPreferences)
-      keyclockUtils.updateUserDetailsFromPractitionerDetails(practitionerDetails, userResponse)
-      keyclockUtils.storeKeyClockInfo(practitionerDetails)
+      if (bundle.hasEntry()) {
+        val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
+        val careTeamList = practitionerDetails.fhirPractitionerDetails.careTeams
+        val organizationList = practitionerDetails.fhirPractitionerDetails.organizations
+        val locationList = practitionerDetails.fhirPractitionerDetails.locations
+        practitionerDetailsUtils.updateUserDetailsFromPractitionerDetails(
+          practitionerDetails,
+          userResponse
+        )
+        practitionerDetailsUtils.storeKeyClockInfo(practitionerDetails)
 
-      PractitionerDetailsUtils(sharedPreferences, fhirEngine)
-        .saveParameter(
+        practitionerDetailsUtils.saveParameter(
           practitionerId = practitionerDetails.userDetail.id,
           careTeamList = careTeamList,
           organizationList = organizationList,
           locationList = locationList
         )
 
-      if (locationList.isNotEmpty()) {
-        locationList.forEach { fhirEngine.save(it) }
-      }
+        if (locationList.isNotEmpty()) {
+          locationList.forEach { fhirEngine.save(it) }
+        }
 
-      if (organizationList.isNotEmpty()) {
-        organizationList.forEach { fhirEngine.save(it) }
-      }
+        if (organizationList.isNotEmpty()) {
+          organizationList.forEach { fhirEngine.save(it) }
+        }
 
-      if (careTeamList.isNotEmpty()) {
-        careTeamList.forEach { fhirEngine.save(it) }
+        if (careTeamList.isNotEmpty()) {
+          careTeamList.forEach { fhirEngine.save(it) }
+        }
       }
     }
   }

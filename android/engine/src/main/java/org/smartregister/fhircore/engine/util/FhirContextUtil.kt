@@ -26,8 +26,8 @@ import org.smartregister.model.practitioner.UserBioData
 
 class FhirContextUtil {
 
-  fun getPractitionerDetailParser(): IParser? {
-    val fhirContext = FhirContext.forR4()
+  fun getPractitionerDetailParser(): IParser {
+    val fhirContext = FhirContext.forR4Cached()
 
     fhirContext.registerCustomType(PractitionerDetails::class.java)
     fhirContext.registerCustomType(FhirPractitionerDetails::class.java)
