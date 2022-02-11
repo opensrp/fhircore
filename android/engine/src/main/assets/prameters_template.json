@@ -1,9 +1,8 @@
 {
   "resourceType": "Parameters",
-  "id": "#id",
   "parameter": [
     {
-      "name": "Practitioner",
+      "name": "practitioner",
       "valueString": "#idPractitioner",
       "part": [
         {

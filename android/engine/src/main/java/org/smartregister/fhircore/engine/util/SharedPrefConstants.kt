@@ -19,4 +19,5 @@ package org.smartregister.fhircore.engine.util
 const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
 const val USER_INFO_SHARED_PREFERENCE_KEY = "USER_INFO"
 const val KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY = "KEY_CLOCK_INFO"
+const val PARAMETERS_SHARED_PREFERENCE_KEY = "PARAMETERS_SHARED_PREFERENCE_KEY"
 const val APP_ID_CONFIG = "app_id_config"

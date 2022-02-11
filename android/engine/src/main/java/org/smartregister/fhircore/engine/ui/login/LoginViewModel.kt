@@ -126,15 +126,13 @@ constructor(
       keyclockUtils.updateUserDetailsFromPractitionerDetails(practitionerDetails, userResponse)
       keyclockUtils.storeKeyClockInfo(practitionerDetails)
 
-      val parameter =
-        PractitionerDetailsUtils(app, fhirEngine)
-          .saveParameter(
-            practitionerId = practitionerDetails.userDetail.id,
-            careTeamList = careTeamList,
-            organizationList = organizationList,
-            locationList = locationList
-          )
-      fhirEngine.save(parameter)
+      PractitionerDetailsUtils(sharedPreferences, fhirEngine)
+        .saveParameter(
+          practitionerId = practitionerDetails.userDetail.id,
+          careTeamList = careTeamList,
+          organizationList = organizationList,
+          locationList = locationList
+        )
 
       if (locationList.isNotEmpty()) {
         locationList.forEach { fhirEngine.save(it) }
