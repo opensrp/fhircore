@@ -25,6 +25,7 @@ import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -43,16 +44,16 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
     val practitionerDetails: Parameters =
       sharedPreferences.read(PARAMETERS_SHARED_PREFERENCE_KEY, "")!!.decodeResourceFromString()
     when (resourceType) {
-      "CareTeam" ->
+      ResourceType.CareTeam.name ->
         practitionerDetails.parameter.forEach {
-          if (it.name.equals("CareTeam")) {
+          if (it.name.equals(ResourceType.CareTeam.name)) {
             val result = it.resource as ListResource
             if (result.hasEntry()) {
               result.entry.forEach { entry ->
                 practitionerCareTeams.add(
                   loadResource(
                     id = entry.item.reference,
-                    stringToReplace = "CareTeam/",
+                    stringToReplace = "${ResourceType.CareTeam.name}/",
                     clazz = CareTeam::class.java
                   )
                 )
@@ -60,16 +61,16 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
             }
           }
         }
-      "Organization" ->
+      ResourceType.Organization.name ->
         practitionerDetails.parameter.forEach {
-          if (it.name.equals("Organization")) {
+          if (it.name.equals(ResourceType.Organization.name)) {
             val result = it.resource as ListResource
             if (result.hasEntry()) {
               result.entry.forEach { entry ->
                 practitionerOrganizations.add(
                   loadResource(
                     id = entry.item.reference,
-                    stringToReplace = "Organization/",
+                    stringToReplace = "${ResourceType.Organization.name}/",
                     clazz = Organization::class.java
                   )
                 )
@@ -77,16 +78,16 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
             }
           }
         }
-      "Location" ->
+      ResourceType.Location.name ->
         practitionerDetails.parameter.forEach {
-          if (it.name.equals("Location")) {
+          if (it.name.equals(ResourceType.Location.name)) {
             val result = it.resource as ListResource
             if (result.hasEntry()) {
               result.entry.forEach { entry ->
                 practitionerLocations.add(
                   loadResource(
                     id = entry.item.reference,
-                    stringToReplace = "Location/",
+                    stringToReplace = "${ResourceType.Location.name}/",
                     clazz = Location::class.java
                   )
                 )
@@ -96,9 +97,9 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
         }
     }
     return when (resourceType) {
-      "CareTeam" -> return practitionerCareTeams
-      "Organization" -> return practitionerOrganizations
-      "Location" -> return practitionerLocations
+      ResourceType.CareTeam.name -> return practitionerCareTeams
+      ResourceType.Organization.name -> return practitionerOrganizations
+      ResourceType.Location.name -> return practitionerLocations
       else -> practitionerCareTeams
     }
   }
@@ -111,12 +112,12 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
   ) {
     val parameters = Parameters()
     parameters.addParameter().apply {
-      name = "Practitioner"
+      name = ResourceType.Practitioner.name
       value = StringType(practitionerId)
     }
     if (careTeamList.isNotEmpty())
       parameters.addParameter().apply {
-        name = "CaraTeam"
+        name = ResourceType.CareTeam.name
         resource =
           ListResource().apply {
             careTeamList.forEach { addEntry().apply { item = it.asReference() } }
@@ -124,7 +125,7 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
       }
     if (organizationList.isNotEmpty())
       parameters.addParameter().apply {
-        name = "Organization"
+        name = ResourceType.Organization.name
         resource =
           ListResource().apply {
             organizationList.forEach { addEntry().apply { item = it.asReference() } }
@@ -132,7 +133,7 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
       }
     if (locationList.isNotEmpty())
       parameters.addParameter().apply {
-        name = "Location"
+        name = ResourceType.Location.name
         resource =
           ListResource().apply {
             locationList.forEach { addEntry().apply { item = it.asReference() } }
