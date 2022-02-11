@@ -53,6 +53,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.ui.task.PatientTaskListenerIntent
 
+const val ROW_PATIENT_TASK = "rowPatientTask"
 const val TEXT_TITLE = "textTitle"
 const val TEXT_SUBTITLE_ADDRESS = "textSubtitleAddress"
 const val TEXT_SUBTITLE_ID = "textSubtitleId"
@@ -80,7 +81,7 @@ fun PatientTaskRow(
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min)
+    modifier = modifier.testTag(ROW_PATIENT_TASK).fillMaxWidth().height(IntrinsicSize.Min)
   ) {
     Column(
       modifier =

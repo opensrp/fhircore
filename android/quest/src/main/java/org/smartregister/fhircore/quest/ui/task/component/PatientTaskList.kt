@@ -20,13 +20,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
+import kotlinx.coroutines.flow.flowOf
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.DateUtils.getDate
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.ui.task.PatientTaskListenerIntent
 
@@ -68,4 +74,36 @@ fun PatientTaskList(
       }
     }
   }
+}
+
+@Composable
+@Preview
+@ExcludeFromJacocoGeneratedReport
+fun dummyPatientTaskPagingList(): LazyPagingItems<PatientTaskItem> {
+  val listFlow =
+    flowOf(
+      PagingData.from(
+        listOf(
+          PatientTaskItem(
+            id = "1",
+            name = "Eve",
+            gender = "F",
+            birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
+            address = "Nairobi",
+            description = "Sick Visit",
+            overdue = true
+          ),
+          PatientTaskItem(
+            id = "2",
+            name = "Vivi",
+            gender = "M",
+            birthdate = "2021-04-20".getDate("yyyy-MM-dd"),
+            address = "Nairobi",
+            description = "Immunization Visit",
+            overdue = false
+          )
+        )
+      )
+    )
+  return listFlow.collectAsLazyPagingItems()
 }

@@ -16,6 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.task
 
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertAll
+import androidx.compose.ui.test.isEnabled
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.fragment.app.commitNow
 import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -38,15 +43,20 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.quest.data.task.PatientTaskRepository
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
+import org.smartregister.fhircore.quest.ui.task.component.ROW_PATIENT_TASK
+import org.smartregister.fhircore.quest.ui.task.component.dummyPatientTaskPagingList
 
 @HiltAndroidTest
 class PatientTaskFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule val composeRule = createComposeRule()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
@@ -76,6 +86,24 @@ class PatientTaskFragmentTest : RobolectricTest() {
   @After
   fun cleanup() {
     unmockkObject(Sync)
+  }
+
+  @Test
+  fun testConstructRegisterListShouldEnabled() {
+    composeRule.setContent {
+      patientTaskFragment.registerViewConfiguration =
+        RegisterViewConfiguration(
+          appId = "quest",
+          classification = "classification",
+          useLabel = true
+        )
+      patientTaskFragment.ConstructRegisterList(
+        pagingItems = dummyPatientTaskPagingList(),
+        modifier = Modifier
+      )
+    }
+
+    composeRule.onAllNodesWithTag(ROW_PATIENT_TASK).assertAll(isEnabled())
   }
 
   @Test
