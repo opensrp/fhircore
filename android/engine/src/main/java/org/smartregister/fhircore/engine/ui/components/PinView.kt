@@ -205,8 +205,22 @@ fun PinViewPreview() {
 @ExperimentalComposeUiApi
 @Preview
 @Composable
+fun PinViewValidatedPreview() {
+  Surface(modifier = Modifier.padding(24.dp)) { PinView(inputPin = "1234") }
+}
+
+@ExperimentalComposeUiApi
+@Preview
+@Composable
 fun PinViewDottedPreview() {
   Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true) }
+}
+
+@ExperimentalComposeUiApi
+@Preview
+@Composable
+fun PinViewDottedValidatedPreview() {
+  Surface(modifier = Modifier.padding(24.dp)) { PinView(isDotted = true, inputPin = "1234") }
 }
 
 @ExperimentalComposeUiApi

@@ -62,6 +62,7 @@ class PinSetupScreenTest : RobolectricTest() {
     pinViewModel =
       mockk {
         every { appName } returns "anc"
+        every { appLogoResId } returns R.drawable.ic_liberia
         every { pin } returns MutableLiveData("1234")
         every { enableSetPin } returns MutableLiveData(false)
       }
@@ -83,7 +84,8 @@ class PinSetupScreenTest : RobolectricTest() {
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
         setPinEnabled = false,
         inputPin = "",
-        appName = "anc"
+        appName = "anc",
+        appLogoResId = R.drawable.ic_liberia
       )
     }
 
@@ -114,7 +116,8 @@ class PinSetupScreenTest : RobolectricTest() {
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
         setPinEnabled = true,
         inputPin = "0000",
-        appName = "eCBIS"
+        appName = "eCBIS",
+        appLogoResId = R.drawable.ic_logo_g6pd
       )
     }
 

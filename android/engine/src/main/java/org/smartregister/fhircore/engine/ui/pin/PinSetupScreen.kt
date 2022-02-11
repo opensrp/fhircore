@@ -73,7 +73,8 @@ fun PinSetupScreen(viewModel: PinViewModel) {
     setPinEnabled = enableSetPin ?: false,
     onPinConfirmed = viewModel::onPinConfirmed,
     onMenuSettingClicked = { viewModel.onMenuSettingClicked() },
-    appName = viewModel.appName
+    appName = viewModel.appName,
+    appLogoResId = viewModel.appLogoResId
   )
 }
 
@@ -86,7 +87,8 @@ fun PinSetupPage(
   setPinEnabled: Boolean = false,
   onPinConfirmed: () -> Unit,
   onMenuSettingClicked: () -> Unit,
-  appName: String = ""
+  appName: String = "",
+  appLogoResId: Int
 ) {
 
   var showMenu by remember { mutableStateOf(false) }
@@ -130,13 +132,8 @@ fun PinSetupPage(
           .padding(horizontal = 16.dp, vertical = 70.dp)
           .wrapContentWidth(Alignment.CenterHorizontally)
     ) {
-      val appLogo =
-        when (appName) {
-          "g6pd" -> R.drawable.ic_logo_g6pd
-          else -> R.drawable.ic_liberia
-        }
       Image(
-        painter = painterResource(id = appLogo),
+        painter = painterResource(id = appLogoResId),
         contentDescription = stringResource(id = R.string.app_logo),
         modifier =
           modifier
@@ -193,7 +190,9 @@ fun PinSetupPreview() {
     onPinConfirmed = {},
     inputPin = "",
     setPinEnabled = false,
-    onMenuSettingClicked = {}
+    onMenuSettingClicked = {},
+    appName = "anc",
+    appLogoResId = 0
   )
 }
 
@@ -206,6 +205,8 @@ fun PinSetupFilledPreview() {
     onPinConfirmed = {},
     inputPin = "1234",
     setPinEnabled = true,
-    onMenuSettingClicked = {}
+    onMenuSettingClicked = {},
+    appName = "eCBIS",
+    appLogoResId = 0
   )
 }

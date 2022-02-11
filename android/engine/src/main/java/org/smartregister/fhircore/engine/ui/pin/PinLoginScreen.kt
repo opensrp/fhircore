@@ -89,7 +89,8 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     enterUserPinMessage = viewModel.enterUserLoginMessage,
     onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
     forgotPin = viewModel::forgotPin,
-    appName = viewModel.appName
+    appName = viewModel.appName,
+    appLogoResId = viewModel.appLogoResId
   )
 }
 
@@ -102,7 +103,8 @@ fun PinLoginPage(
   onMenuLoginClicked: () -> Unit,
   enterUserPinMessage: String = "",
   forgotPin: () -> Unit,
-  appName: String = ""
+  appName: String = "",
+  appLogoResId: Int
 ) {
 
   var showMenu by remember { mutableStateOf(false) }
@@ -151,13 +153,8 @@ fun PinLoginPage(
           .padding(horizontal = 16.dp, vertical = 70.dp)
           .wrapContentWidth(Alignment.CenterHorizontally)
     ) {
-      val appLogo =
-        when (appName) {
-          "g6pd" -> R.drawable.ic_logo_g6pd
-          else -> R.drawable.ic_liberia
-        }
       Image(
-        painter = painterResource(id = appLogo),
+        painter = painterResource(id = appLogoResId),
         contentDescription = stringResource(id = R.string.app_logo),
         modifier =
           modifier
@@ -260,12 +257,26 @@ fun ForgotPinDialog(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginPreview() {
-  PinLoginPage(onPinChanged = {}, showError = false, onMenuLoginClicked = {}, forgotPin = {})
+  PinLoginPage(
+    onPinChanged = {},
+    showError = false,
+    onMenuLoginClicked = {},
+    forgotPin = {},
+    appName = "anc",
+    appLogoResId = 0
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PinLoginErrorPreview() {
-  PinLoginPage(onPinChanged = {}, showError = true, onMenuLoginClicked = {}, forgotPin = {})
+  PinLoginPage(
+    onPinChanged = {},
+    showError = true,
+    onMenuLoginClicked = {},
+    forgotPin = {},
+    appName = "ecbis",
+    appLogoResId = 0
+  )
 }

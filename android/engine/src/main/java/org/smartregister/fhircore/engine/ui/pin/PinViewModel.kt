@@ -70,7 +70,10 @@ constructor(
 
   lateinit var savedPin: String
   lateinit var enterUserLoginMessage: String
+
+  lateinit var appId: String
   lateinit var appName: String
+  var appLogoResId: Int = R.drawable.ic_liberia
 
   var isSetupPage: Boolean = false
 
@@ -91,10 +94,22 @@ constructor(
           app.getString(R.string.enter_pin_for_user, it)
         }
       }
+    appId = retrieveAppId()
     appName = retrieveAppName()
+    appLogoResId = retrieveAppLogoResId()
   }
 
+  fun retrieveAppId(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!
+
   fun retrieveAppName(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!
+
+  // Todo: this applicationLogoIconResource must be load from config
+  fun retrieveAppLogoResId(): Int {
+    return when (appId) {
+      "g6pd" -> R.drawable.ic_logo_g6pd
+      else -> R.drawable.ic_liberia
+    }
+  }
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
