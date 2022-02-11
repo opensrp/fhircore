@@ -28,10 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.DirectionsWalk
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -114,11 +111,10 @@ fun PatientTaskRow(
             )
           }
         } else {
-          Icon(
-            Icons.Rounded.DirectionsWalk,
-            contentDescription = "Localized description",
-            tint = SubtitleTextColor,
-            modifier = modifier.testTag(ICON_SUBTITLE)
+          Image(
+            painter = painterResource(id = R.drawable.ic_walk),
+            contentDescription = null,
+            modifier = modifier.testTag(ICON_SUBTITLE).padding(end = 4.dp)
           )
           Text(
             color = SubtitleTextColor,
