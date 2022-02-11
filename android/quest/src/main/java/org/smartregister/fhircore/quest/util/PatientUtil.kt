@@ -26,8 +26,8 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
@@ -53,7 +53,7 @@ suspend fun loadAdditionalData(
         getSearchResults<Condition>("Patient/$patientId", Condition.SUBJECT, filter, fhirEngine)
 
       val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
-
+      val recordedDate = sortedByDescending?.recordedDate ?: ""
       sortedByDescending?.category?.forEach { cc ->
         cc.coding.firstOrNull { c -> c.code == filter.valueCoding!!.code }?.let {
           val status = sortedByDescending.code?.coding?.firstOrNull()?.display ?: ""
@@ -62,6 +62,8 @@ suspend fun loadAdditionalData(
               label = filter.label,
               value = status,
               valuePrefix = filter.valuePrefix,
+              lastDateAdded =
+                DateUtils.simpleDateFormat(pattern = "dd-MMM-yyyy").format(recordedDate),
               properties = propertiesMapping(status, filter)
             )
           )

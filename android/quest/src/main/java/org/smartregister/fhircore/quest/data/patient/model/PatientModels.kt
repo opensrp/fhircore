@@ -38,6 +38,7 @@ data class AdditionalData(
   val value: String,
   var valuePrefix: String? = null,
   var valuePostfix: String? = null,
+  var lastDateAdded: String? = null,
   val properties: Properties? = null
 )
 
