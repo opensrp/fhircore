@@ -1,6 +1,6 @@
 task jacocoTestReport(type: JacocoReport, dependsOn: [
-        "testDebugUnitTest",
-        "createDebugCoverageReport"
+        "testDebugUnitTest"
+//        "createDebugCoverageReport"
 ]) {
 
     reports {

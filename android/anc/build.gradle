@@ -57,7 +57,7 @@ android {
 
         testInstrumentationRunner "org.smartregister.fhircore.anc.ui.AncTestRunner"
         // This command ensures that the app's state is completely cleared between tests
-        testInstrumentationRunnerArguments clearPackageData: 'true'
+        testInstrumentationRunnerArguments 'clearPackageData': 'true', 'package': 'org.smartregister.fhircore.anc'
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
 
