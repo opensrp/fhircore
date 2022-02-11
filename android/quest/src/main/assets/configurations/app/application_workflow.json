@@ -23,7 +23,7 @@
       },
       {
         "workflowPoint": "patient_details_view",
-        "resource": "PatientDetailsViewConfiguration",
+        "resource": "DataDetailsListViewConfiguration",
         "classification": "patient_details_view",
         "description": "Configurations for patient details view"
       },
@@ -77,7 +77,7 @@
       },
       {
         "workflowPoint": "patient_details_view",
-        "resource": "PatientDetailsViewConfiguration",
+        "resource": "DataDetailsListViewConfiguration",
         "classification": "patient_details_view",
         "description": "Configurations for patient details view"
       },

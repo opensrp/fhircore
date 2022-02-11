@@ -50,12 +50,11 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.dataDetailsListViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -80,9 +79,8 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   val patientRepository: PatientRepository = mockk()
   val defaultRepository: DefaultRepository = mockk()
 
-  lateinit var questPatientDetailViewModel: QuestPatientDetailViewModel
-  lateinit var patientDetailsViewConfig: PatientDetailsViewConfiguration
-  lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
+  lateinit var questPatientDetailViewModel: ListDataDetailViewModel
+  lateinit var patientDetailsViewConfig: DataDetailsListViewConfiguration
   lateinit var fhirEngine: FhirEngine
 
   private val patientId = "5583145"
@@ -95,7 +93,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
       spyk(
-        QuestPatientDetailViewModel(
+        ListDataDetailViewModel(
           patientRepository = patientRepository,
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
@@ -109,14 +107,15 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       )
 
-    profileConfig =
-      AssetUtil.decodeAsset(fileName = QuestPatientDetailViewModel.PROFILE_CONFIG, application)
-
     // Simulate retrieval of data from repository
     questPatientDetailViewModel.run {
       getDemographicsWithAdditionalData(patientId, patientDetailsViewConfig)
-      getAllResults(patientId, profileConfig, patientDetailsViewConfig)
-      getAllForms(profileConfig)
+      getAllResults(
+        patientId,
+        patientDetailsViewConfig.questionnaireFilter!!,
+        patientDetailsViewConfig
+      )
+      getAllForms(patientDetailsViewConfig.questionnaireFilter!!)
     }
   }
 
@@ -278,7 +277,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
       spyk(
-        QuestPatientDetailViewModel(
+        ListDataDetailViewModel(
           patientRepository = patientRepository,
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
@@ -302,10 +301,14 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
     // Simulate retrieval of data from repository
     questPatientDetailViewModel.run {
-      updateViewConfigurations(patientDetailsViewConfigurationOf(contentTitle = "RESPONSES"))
+      updateViewConfigurations(dataDetailsListViewConfigurationOf(contentTitle = "RESPONSES"))
       getDemographicsWithAdditionalData(patientId, patientDetailsViewConfig)
-      getAllResults(patientId, profileConfig, patientDetailsViewConfig)
-      getAllForms(profileConfig)
+      getAllResults(
+        patientId,
+        patientDetailsViewConfig.questionnaireFilter!!,
+        patientDetailsViewConfig
+      )
+      getAllForms(patientDetailsViewConfig.questionnaireFilter!!)
     }
 
     composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
@@ -316,7 +319,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
     questPatientDetailViewModel =
       spyk(
-        QuestPatientDetailViewModel(
+        ListDataDetailViewModel(
           patientRepository = patientRepository,
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,

@@ -53,9 +53,9 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.FontWeight
-import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
+import org.smartregister.fhircore.quest.configuration.view.dataDetailsListViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
@@ -175,7 +175,7 @@ class PatientRepositoryTest : RobolectricTest() {
         repository.fetchTestResults(
           "1",
           listOf(QuestionnaireConfig("quest", "form", "title", "1")),
-          patientDetailsViewConfigurationOf()
+          dataDetailsListViewConfigurationOf()
         )
 
       Assert.assertEquals("First Questionnaire", results[0].data[0][0].value)
@@ -302,7 +302,7 @@ class PatientRepositoryTest : RobolectricTest() {
       }
     }
 
-  fun createTestConfigurationsData(): List<PatientDetailsViewConfiguration> =
+  fun createTestConfigurationsData(): List<DataDetailsListViewConfiguration> =
     "configs/sample_patient_details_view_configurations.json".readFile().decodeJson()
 
   @Test
@@ -325,7 +325,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
     val quest = createTestConfigurationsData()[0]
     val patientDetailsViewConfiguration =
-      patientDetailsViewConfigurationOf(
+      dataDetailsListViewConfigurationOf(
         appId = quest.appId,
         classification = quest.classification,
         contentTitle = quest.contentTitle,
@@ -405,7 +405,7 @@ class PatientRepositoryTest : RobolectricTest() {
     val g6pd = createTestConfigurationsData()[1]
 
     val patientDetailsViewConfiguration =
-      patientDetailsViewConfigurationOf(
+      dataDetailsListViewConfigurationOf(
         appId = g6pd.appId,
         classification = g6pd.classification,
         contentTitle = g6pd.contentTitle,

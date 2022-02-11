@@ -10,6 +10,11 @@
     "classification": "patient_details_view",
     "valuePrefix": "G6PD ",
     "contentTitle": "TEST RESULTS",
+    "questionnaireFilter": {
+      "key": "context",
+      "code": "000002",
+      "system": "http://fhir.ona.io"
+    },
     "dynamicRows": [
       [
         {

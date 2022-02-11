@@ -36,7 +36,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -53,8 +52,8 @@ import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.pregnancyCondition
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.Filter
-import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.isSimilar
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -116,7 +115,7 @@ constructor(
   suspend fun fetchTestResults(
     patientId: String,
     forms: List<QuestionnaireConfig>,
-    config: PatientDetailsViewConfiguration
+    config: DataDetailsListViewConfiguration
   ): List<QuestResultItem> {
     return withContext(dispatcherProvider.io()) {
       val testResults = mutableListOf<QuestResultItem>()
@@ -134,7 +133,7 @@ constructor(
   suspend fun getResultItem(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
+    patientDetailsViewConfiguration: DataDetailsListViewConfiguration
   ): QuestResultItem {
 
     when {

@@ -61,6 +61,16 @@
   },
   {
     "resourceType": "SearchParameter",
+    "name": "subject",
+    "code": "subject",
+    "base": [
+      "QuestionnaireResponse"
+    ],
+    "type": "token",
+    "expression": "organization"
+  },
+  {
+    "resourceType": "SearchParameter",
     "name": "publisher",
     "code": "publisher",
     "base": [

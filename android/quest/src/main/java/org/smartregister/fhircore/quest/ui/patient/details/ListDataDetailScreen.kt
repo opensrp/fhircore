@@ -63,7 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
+import org.smartregister.fhircore.quest.configuration.view.dataDetailsListViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 
 const val TOOLBAR_TITLE = "toolbarTitle"
@@ -77,7 +77,7 @@ const val FORM_CONTAINER_ITEM = "formItemContainerTag"
 const val RESULT_CONTAINER_ITEM = "resultItemContainerTag"
 
 @Composable
-fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+fun Toolbar(questPatientDetailViewModel: ListDataDetailViewModel) {
   var showMenu by remember { mutableStateOf(false) }
 
   TopAppBar(
@@ -112,10 +112,7 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 }
 
 @Composable
-fun ResultItem(
-  testResult: QuestResultItem,
-  questPatientDetailViewModel: QuestPatientDetailViewModel
-) {
+fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDataDetailViewModel) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -170,7 +167,7 @@ fun ResultItem(
 @Composable
 fun FormItem(
   questionnaireConfig: QuestionnaireConfig,
-  questPatientDetailViewModel: QuestPatientDetailViewModel
+  questPatientDetailViewModel: ListDataDetailViewModel
 ) {
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
@@ -191,9 +188,9 @@ fun FormItem(
 }
 
 @Composable
-fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewModel) {
   val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration
-    .observeAsState(patientDetailsViewConfigurationOf())
+    .observeAsState(dataDetailsListViewConfigurationOf())
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)

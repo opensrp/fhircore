@@ -19,29 +19,33 @@ package org.smartregister.fhircore.quest.configuration.view
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 
 @Stable
 @Serializable
-data class PatientDetailsViewConfiguration(
+data class DataDetailsListViewConfiguration(
   override val appId: String,
   override val classification: String,
   val contentTitle: String = "Content Title",
   val valuePrefix: String = "Value Prefix",
-  val dynamicRows: List<List<Filter>>
+  val dynamicRows: List<List<Filter>>,
+  val questionnaireFilter: SearchFilter? = null
 ) : Configuration
 
 @Stable
-fun patientDetailsViewConfigurationOf(
+fun dataDetailsListViewConfigurationOf(
   appId: String = "quest",
   classification: String = "patient_details",
   contentTitle: String = "Content Title",
   valuePrefix: String = "Value Prefix",
-  dynamicRows: List<List<Filter>> = mutableListOf()
+  dynamicRows: List<List<Filter>> = mutableListOf(),
+  questionnaireFilter: SearchFilter? = null
 ) =
-  PatientDetailsViewConfiguration(
+  DataDetailsListViewConfiguration(
     appId = appId,
     classification = classification,
     contentTitle = contentTitle,
     valuePrefix = valuePrefix,
-    dynamicRows = dynamicRows
+    dynamicRows = dynamicRows,
+    questionnaireFilter = questionnaireFilter
   )

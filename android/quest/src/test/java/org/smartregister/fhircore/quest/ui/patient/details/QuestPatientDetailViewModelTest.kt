@@ -53,7 +53,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   private val patientId = "5583145"
 
-  private lateinit var questPatientDetailViewModel: QuestPatientDetailViewModel
+  private lateinit var questPatientDetailViewModel: ListDataDetailViewModel
   private lateinit var fhirEngine: FhirEngine
 
   @Before
@@ -62,7 +62,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
     fhirEngine = mockk()
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
-      QuestPatientDetailViewModel(
+      ListDataDetailViewModel(
         patientRepository = patientRepository,
         defaultRepository = defaultRepository,
         patientItemMapper = patientItemMapper,

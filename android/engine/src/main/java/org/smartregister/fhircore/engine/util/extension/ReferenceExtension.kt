@@ -17,7 +17,12 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 
 fun Reference.extractId(): String {
   return this.reference.split("/").last().trim()
+}
+
+fun String.asReference(resourceType: ResourceType): Reference {
+  return Reference().apply { reference = "$resourceType/$this" }
 }

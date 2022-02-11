@@ -36,11 +36,10 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.NavigationOption
-import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
 import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
@@ -50,14 +49,13 @@ import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
 class QuestPatientDetailActivity :
-  BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
+  BaseMultiLanguageActivity(), ConfigurableComposableView<DataDetailsListViewConfiguration> {
 
-  private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
   var patientResourcesList: ArrayList<String> = arrayListOf()
-  private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
+  private lateinit var patientDetailConfig: DataDetailsListViewConfiguration
   private lateinit var patientId: String
 
-  val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+  val patientViewModel by viewModels<ListDataDetailViewModel>()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
@@ -78,22 +76,16 @@ class QuestPatientDetailActivity :
     }
 
     patientDetailConfig =
-      configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
+      configurationRegistry.retrieveConfiguration(
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       )
-
-    // TODO Load binary resources
-    profileConfig =
-      AssetUtil.decodeAsset(fileName = QuestPatientDetailViewModel.PROFILE_CONFIG, this)
 
     if (configurationRegistry.isAppIdInitialized()) {
       configureViews(patientDetailConfig)
     }
-    patientViewModel.run {
-      getDemographicsWithAdditionalData(patientId, patientDetailConfig)
-      getAllResults(patientId, profileConfig, patientDetailConfig)
-      getAllForms(profileConfig)
-    }
+
+    loadData()
+
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
 
@@ -104,10 +96,14 @@ class QuestPatientDetailActivity :
   override fun onResume() {
     super.onResume()
 
+    loadData()
+  }
+
+  fun loadData() {
     patientViewModel.run {
       getDemographicsWithAdditionalData(patientId, patientDetailConfig)
-      getAllResults(patientId, profileConfig, patientDetailConfig)
-      getAllForms(profileConfig)
+      getAllResults(patientId, patientDetailConfig.questionnaireFilter!!, patientDetailConfig)
+      getAllForms(patientDetailConfig.questionnaireFilter!!)
     }
   }
 
@@ -245,7 +241,7 @@ class QuestPatientDetailActivity :
       configClassification = QuestConfigClassification.RESULT_DETAILS_NAVIGATION
     )
 
-  override fun configureViews(viewConfiguration: PatientDetailsViewConfiguration) {
+  override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {
     patientViewModel.updateViewConfigurations(viewConfiguration)
   }
 }
