@@ -128,20 +128,19 @@ constructor(@ApplicationContext val context: Context, val fhirEngine: FhirEngine
   }
 
   private fun recordParameters(
-    practitionerId: String,
-    carePlanIds: String,
-    organizationIds: String,
-    locationIds: String
+       practitionerId: String,
+       carePlanIds: String,
+       organizationIds: String,
+       locationIds: String
   ): Parameters {
     val config =
-      buildConfigData(
-        practitionerId = practitionerId,
-        carePlanIds = carePlanIds,
-        organizationIds = organizationIds,
-        locationIds = locationIds
-      )
-    val parameters = loadConfig(Template.PARAMETERS, clazz = Parameters::class.java, data = config)
-    return parameters
+         buildConfigData(
+              practitionerId = practitionerId,
+              carePlanIds = carePlanIds,
+              organizationIds = organizationIds,
+              locationIds = locationIds
+         )
+    return loadConfig(Template.PARAMETERS, clazz = Parameters::class.java, data = config)
   }
 
   private fun buildConfigData(
