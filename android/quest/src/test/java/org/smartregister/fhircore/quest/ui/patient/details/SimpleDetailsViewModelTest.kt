@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import FhirPathUtil.doesSatisfyFilter
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -47,6 +46,7 @@ import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
 
 @HiltAndroidTest
 class SimpleDetailsViewModelTest : RobolectricTest() {
