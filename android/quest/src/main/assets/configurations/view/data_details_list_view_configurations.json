@@ -3,7 +3,12 @@
     "appId": "quest",
     "classification": "patient_details_view",
     "contentTitle": "Responses",
-    "dynamicRows": []
+    "dynamicRows": [],
+    "questionnaireFilter": {
+      "key": "context",
+      "code": "000002",
+      "system": "http://fhir.ona.io"
+    }
   },
   {
     "appId": "g6pd",
@@ -80,6 +85,60 @@
             "value": {
               "color": "#74787A",
               "textSize": 16
+            }
+          }
+        }
+      ]
+    ]
+  },
+  {
+    "appId": "g6pd",
+    "classification": "control_test_details_view",
+    "valuePrefix": "G6PD ",
+    "contentTitle": "TEST RESULTS",
+    "questionnaireFilter": {
+      "key": "context",
+      "code": "000005",
+      "system": "http://fhir.ona.io"
+    },
+    "questionnaireFieldsFilter": [
+      {"key": "result_type", "label": "Type: "},
+      {"key": "g6pd"},
+      {"key": "haemoglobin", "label": "Hb: "}
+    ],
+    "dynamicRows": [
+      [
+        {
+          "resourceType": "OBSERVATION",
+          "key": "code",
+          "displayableProperty": "effective",
+          "valueType": "DATETIME",
+          "label": "",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "15361003"
+          },
+          "properties": {
+            "value": {
+              "color": "#2b2d2f",
+              "textSize": 20
+            }
+          }
+        },
+        {
+          "resourceType": "OBSERVATION",
+          "key": "code",
+          "displayableProperty": "value",
+          "valueType": "CODEABLECONCEPT",
+          "label": " --> ",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "15361003"
+          },
+          "properties": {
+            "value": {
+              "color": "#2b2d2f",
+              "textSize": 20
             }
           }
         }

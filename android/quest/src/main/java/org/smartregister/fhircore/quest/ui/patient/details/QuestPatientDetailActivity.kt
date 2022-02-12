@@ -26,6 +26,7 @@ import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -102,7 +103,12 @@ class QuestPatientDetailActivity :
   fun loadData() {
     patientViewModel.run {
       getDemographicsWithAdditionalData(patientId, patientDetailConfig)
-      getAllResults(patientId, patientDetailConfig.questionnaireFilter!!, patientDetailConfig)
+      getAllResults(
+        patientId,
+        ResourceType.Patient,
+        patientDetailConfig.questionnaireFilter!!,
+        patientDetailConfig
+      )
       getAllForms(patientDetailConfig.questionnaireFilter!!)
     }
   }
@@ -149,7 +155,7 @@ class QuestPatientDetailActivity :
             data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
               val response =
                 FhirContext.forR4Cached().newJsonParser().parseResource(it) as QuestionnaireResponse
-              response.getEncounterId().let {
+              response.getEncounterId()?.let {
                 startActivity(
                   Intent(this, SimpleDetailsActivity::class.java).apply {
                     putExtra(RECORD_ID_ARG, it.replace("#", ""))

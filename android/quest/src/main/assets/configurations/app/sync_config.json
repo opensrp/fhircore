@@ -7,7 +7,7 @@
       "Patient"
     ],
     "type": "token",
-    "expression": "organization"
+    "expression": "#organization"
   },
   {
     "resourceType": "SearchParameter",
@@ -17,7 +17,7 @@
       "Encounter"
     ],
     "type": "token",
-    "expression": "organization"
+    "expression": "#organization"
   },
   {
     "resourceType": "SearchParameter",
@@ -27,7 +27,7 @@
       "Observation"
     ],
     "type": "token",
-    "expression": "organization"
+    "expression": "#organization"
   },
   {
     "resourceType": "SearchParameter",
@@ -37,7 +37,7 @@
       "Condition"
     ],
     "type": "token",
-    "expression": "organization"
+    "expression": "#organization"
   },
   {
     "resourceType": "SearchParameter",
@@ -47,27 +47,17 @@
       "MedicationRequest"
     ],
     "type": "token",
-    "expression": "organization"
+    "expression": "#organization"
   },
   {
     "resourceType": "SearchParameter",
     "name": "organization",
-    "code": "patient.organization",
+    "code": "_filter",
     "base": [
       "QuestionnaireResponse"
     ],
     "type": "token",
-    "expression": "organization"
-  },
-  {
-    "resourceType": "SearchParameter",
-    "name": "subject",
-    "code": "subject",
-    "base": [
-      "QuestionnaireResponse"
-    ],
-    "type": "token",
-    "expression": "organization"
+    "expression": "patient.organization eq #organization or subject eq Organization/#organization"
   },
   {
     "resourceType": "SearchParameter",
@@ -77,7 +67,7 @@
       "Questionnaire"
     ],
     "type": "token",
-    "expression": "publisher"
+    "expression": "#publisher"
   },
   {
     "resourceType": "SearchParameter",

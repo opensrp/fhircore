@@ -28,6 +28,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -82,6 +83,7 @@ constructor(
 
   fun getAllResults(
     subjectId: String,
+    subjectType: ResourceType,
     searchFilter: SearchFilter,
     patientDetailsViewConfiguration: DataDetailsListViewConfiguration
   ) {
@@ -89,7 +91,12 @@ constructor(
       val forms = patientRepository.fetchTestForms(searchFilter)
 
       testResults.postValue(
-        patientRepository.fetchTestResults(subjectId, forms, patientDetailsViewConfiguration)
+        patientRepository.fetchTestResults(
+          subjectId,
+          subjectType,
+          forms,
+          patientDetailsViewConfiguration
+        )
       )
     }
   }

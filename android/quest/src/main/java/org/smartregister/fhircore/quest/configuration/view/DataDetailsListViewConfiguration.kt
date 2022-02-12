@@ -29,7 +29,8 @@ data class DataDetailsListViewConfiguration(
   val contentTitle: String = "Content Title",
   val valuePrefix: String = "Value Prefix",
   val dynamicRows: List<List<Filter>>,
-  val questionnaireFilter: SearchFilter? = null
+  val questionnaireFilter: SearchFilter? = null,
+  val questionnaireFieldsFilter: List<QuestionnaireItemFilter> = listOf()
 ) : Configuration
 
 @Stable
@@ -39,7 +40,8 @@ fun dataDetailsListViewConfigurationOf(
   contentTitle: String = "Content Title",
   valuePrefix: String = "Value Prefix",
   dynamicRows: List<List<Filter>> = mutableListOf(),
-  questionnaireFilter: SearchFilter? = null
+  questionnaireFilter: SearchFilter? = null,
+  questionnaireFieldsFilter: List<QuestionnaireItemFilter> = listOf()
 ) =
   DataDetailsListViewConfiguration(
     appId = appId,
@@ -47,5 +49,6 @@ fun dataDetailsListViewConfigurationOf(
     contentTitle = contentTitle,
     valuePrefix = valuePrefix,
     dynamicRows = dynamicRows,
-    questionnaireFilter = questionnaireFilter
+    questionnaireFilter = questionnaireFilter,
+    questionnaireFieldsFilter = questionnaireFieldsFilter
   )

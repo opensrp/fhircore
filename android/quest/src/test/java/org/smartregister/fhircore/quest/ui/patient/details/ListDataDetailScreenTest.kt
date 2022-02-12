@@ -42,6 +42,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -64,7 +65,7 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @HiltAndroidTest
-class QuestPatientDetailScreenTest : RobolectricTest() {
+class ListDataDetailScreenTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -112,6 +113,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       getDemographicsWithAdditionalData(patientId, patientDetailsViewConfig)
       getAllResults(
         patientId,
+        ResourceType.Patient,
         patientDetailsViewConfig.questionnaireFilter!!,
         patientDetailsViewConfig
       )
@@ -266,7 +268,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .onNodeWithTag(TOOLBAR_TITLE)
       .assertTextEquals(application.getString(R.string.back_to_clients))
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
-    composeRule.onNodeWithTag(PATIENT_NAME).assertExists().assertTextEquals(", , ")
+    composeRule.onNodeWithTag(PATIENT_NAME).assertDoesNotExist()
     composeRule.onNodeWithTag(FORM_CONTAINER_ITEM).assert(hasAnyChild(hasText("Loading forms ...")))
     composeRule
       .onNodeWithTag(RESULT_CONTAINER_ITEM)
@@ -305,6 +307,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       getDemographicsWithAdditionalData(patientId, patientDetailsViewConfig)
       getAllResults(
         patientId,
+        ResourceType.Patient,
         patientDetailsViewConfig.questionnaireFilter!!,
         patientDetailsViewConfig
       )

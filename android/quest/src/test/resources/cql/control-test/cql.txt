@@ -13,6 +13,10 @@ codesystem "SNOMED": 'http://snomed.info/sct'
 //Code used as identifers
 code "g6pdControl1": '410680006' from "SNOMED" display 'Control-mode 1'
 code "g6pdControl2": '405358009' from "SNOMED" display 'Control-mode 2'
+code "invalidResult": '455371000124106' from "SNOMED" display 'Incorrect Result'
+code "validResult": '280413001' from "SNOMED" display 'Correct Result'
+code "deviceOperation": '15361003' from "SNOMED" display 'Device Operation'
+
 
 define "QR" : Last([QuestionnaireResponse] H)
 
@@ -57,12 +61,31 @@ define "Haemoglobin Conclusion":
     	then 'Value ('+ "HaemoglobinValue"+') is in Normal Haemoglobin Range 13-17'
     else 'Value('+"HaemoglobinValue"+') is Non Deterministic Haemoglobin result'
 
-define "Conclusion":
-  if "G6PD Normal" and "Haemoglobin Normal" then 'Correct result'
-  else 'Invalid result'
+define "ConclusionCode":
+  if "G6PD Normal" and "Haemoglobin Normal" then "validResult"
+  else "invalidResult"
+
+define "Conclusion": "ConclusionCode".display
 
 define "Conclusion Details": '\nDetails:\n'+ "G6PD Conclusion" + '\n' + "Haemoglobin Conclusion"
 
+define "QRRef": ReplaceMatches('QuestionnaireResponse/'+"QR".id,'#','')
 
-define "OUTPUT": List { "Conclusion" , "Conclusion Details"}
+define "Observation": Observation{
+  focus: Reference { reference: string { value: "QRRef" } },
+  code: CreateConcept("deviceOperation"),
+  effective: dateTime{ value: Now() },
+  value: CreateConcept("ConclusionCode")
+}
 
+define "OUTPUT": List { "Conclusion" , "Conclusion Details", "Observation"}
+
+// helper functions
+define function "CreateConcept"(code Code):
+  CodeableConcept { coding: {
+        Coding {
+          code: code {value: "code".code },
+          system: uri {value: "code".system },
+          display: string {value: "code".display }
+        }
+  } }

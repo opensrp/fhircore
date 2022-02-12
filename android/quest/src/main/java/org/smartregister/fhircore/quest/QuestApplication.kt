@@ -41,6 +41,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
 
     CoroutineScope(Dispatchers.Default).launch {
       FhirContext.forR4Cached().apply {
+        requireNotNull(this.validationSupport)
         Timber.i("Loading FhirContext.forR4Cached on application init")
       }
       ResourceMapper.run { Timber.i("Loading ResourceMapper on application init") }

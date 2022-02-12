@@ -79,6 +79,7 @@ const val RESULT_CONTAINER_ITEM = "resultItemContainerTag"
 @Composable
 fun Toolbar(questPatientDetailViewModel: ListDataDetailViewModel) {
   var showMenu by remember { mutableStateOf(false) }
+  val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
 
   TopAppBar(
     title = {
@@ -100,12 +101,14 @@ fun Toolbar(questPatientDetailViewModel: ListDataDetailViewModel) {
         onDismissRequest = { showMenu = false },
         Modifier.testTag(TOOLBAR_MENU)
       ) {
-        DropdownMenuItem(
-          onClick = {
-            showMenu = false
-            questPatientDetailViewModel.onMenuItemClickListener(R.string.edit_patient_info)
-          }
-        ) { Text(text = stringResource(id = R.string.edit_patient_info)) }
+        patientItem?.let {
+          DropdownMenuItem(
+            onClick = {
+              showMenu = false
+              questPatientDetailViewModel.onMenuItemClickListener(R.string.edit_patient_info)
+            }
+          ) { Text(text = stringResource(id = R.string.edit_patient_info)) }
+        }
       }
     }
   )
@@ -126,7 +129,7 @@ fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDat
     Column(verticalArrangement = Arrangement.Center) {
       testResult.data.forEach { dataList ->
         Row(modifier = Modifier.padding(end = 12.dp)) {
-          dataList.forEach { item ->
+          dataList.forEachIndexed { i, item ->
             item.label?.let {
               Text(
                 text = item.label,
@@ -151,6 +154,10 @@ fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDat
               fontWeight =
                 FontWeight(item.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight)
             )
+
+            // add separator between items if item value itself is not supposed to act as label i.e.
+            // label exists
+            if (i < dataList.size - 1 && item.label?.isNotBlank() == true) Text(", ")
           }
         }
       }
@@ -204,14 +211,16 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewMode
             .background(color = colorResource(id = R.color.colorPrimary))
             .padding(12.dp)
       ) {
-        Text(
-          text =
-            "${patientItem?.name ?: ""}, ${patientItem?.gender ?: ""}, ${patientItem?.age ?: ""}",
-          color = colorResource(id = R.color.white),
-          fontSize = 18.sp,
-          fontWeight = FontWeight.Bold,
-          modifier = Modifier.testTag(PATIENT_NAME)
-        )
+        patientItem?.let {
+          Text(
+            text = "${it.name}, ${it.gender}, ${it.age}",
+            color = colorResource(id = R.color.white),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.testTag(PATIENT_NAME)
+          )
+        }
+
         // Adding Additional Data i.e, G6PD Status etc.
         patientItem?.additionalData?.forEach {
           Row {

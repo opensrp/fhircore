@@ -24,5 +24,6 @@ fun Reference.extractId(): String {
 }
 
 fun String.asReference(resourceType: ResourceType): Reference {
-  return Reference().apply { reference = "$resourceType/$this" }
+  val resourceId = this
+  return Reference().apply { reference = "${resourceType.name}/$resourceId" }
 }

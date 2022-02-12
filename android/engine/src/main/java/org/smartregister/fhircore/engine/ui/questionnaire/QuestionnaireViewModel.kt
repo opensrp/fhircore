@@ -235,7 +235,7 @@ constructor(
    * Sets questionnaireResponse subject with proper subject-type defined in questionnaire with an
    * existing resourceId or organization or null
    */
-  private fun handleQuestionnaireResponseSubject(
+  fun handleQuestionnaireResponseSubject(
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse

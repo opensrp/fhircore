@@ -41,7 +41,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
 @HiltAndroidTest
-class QuestPatientDetailViewModelTest : RobolectricTest() {
+class ListDataDetailViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -113,9 +113,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetAllForms() {
-    questPatientDetailViewModel.getAllForms(
-      mockk { every { profileQuestionnaireFilter } returns mockk() }
-    )
+    questPatientDetailViewModel.getAllForms(mockk())
     Assert.assertNotNull(questPatientDetailViewModel.questionnaireConfigs.value)
     Assert.assertEquals(2, questPatientDetailViewModel.questionnaireConfigs.value!!.size)
     Assert.assertEquals(

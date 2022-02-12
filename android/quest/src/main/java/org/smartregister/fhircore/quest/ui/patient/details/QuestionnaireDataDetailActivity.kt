@@ -16,32 +16,24 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
-import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
-import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
@@ -72,7 +64,8 @@ class QuestionnaireDataDetailActivity :
 
     detailConfig =
       configurationRegistry.retrieveConfiguration(
-        configClassification = QuestConfigClassification.QUESTIONNAIRE_DETAILS_VIEW
+        configClassification =
+          QuestConfigClassification.valueOf(intent.getStringExtra(CLASSIFICATION_ARG)!!.uppercase())
       )
 
     configureViews(detailConfig)
@@ -91,49 +84,17 @@ class QuestionnaireDataDetailActivity :
     viewModel.run {
       with(detailConfig) {
         getAllForms(questionnaireFilter!!)
-        getAllResults(subjectId, questionnaireFilter, detailConfig)
+        getAllResults(subjectId, ResourceType.Organization, questionnaireFilter, detailConfig)
       }
     }
   }
 
-  fun getRegistrationForm(): String {
-    return configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-        configClassification = QuestConfigClassification.PATIENT_REGISTER
-      )
-      .registrationForm
-  }
-
-  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    super.onActivityResult(requestCode, resultCode, data)
-
-    if (resultCode == Activity.RESULT_OK)
-      getResultDetailsNavigationOptions().navigationOptions.forEach {
-        when (it.action) {
-          is TestDetailsNavigationAction -> {
-            data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
-              val response =
-                FhirContext.forR4Cached().newJsonParser().parseResource(it) as QuestionnaireResponse
-              response.getEncounterId().let {
-                startActivity(
-                  Intent(this, SimpleDetailsActivity::class.java).apply {
-                    putExtra(RECORD_ID_ARG, it.replace("#", ""))
-                  }
-                )
-              }
-            }
-          }
-          is QuestionnaireNavigationAction -> {}
-        }
-      }
-  }
-
   private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {
     if (questionnaireConfig != null) {
-      startActivityForResult(
+      startActivity(
         Intent(this, QuestionnaireActivity::class.java).apply {
           putExtras(QuestionnaireActivity.intentArgs(formName = questionnaireConfig.identifier))
-        },
-        0
+        }
       )
     }
   }
@@ -145,5 +106,9 @@ class QuestionnaireDataDetailActivity :
 
   override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {
     viewModel.updateViewConfigurations(viewConfiguration)
+  }
+
+  companion object {
+    const val CLASSIFICATION_ARG = "CLASSIFICATION"
   }
 }

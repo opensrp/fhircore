@@ -28,7 +28,7 @@
       "valueCoding": {
         "system": "http://snomed.info/sct",
         "code": "410680006",
-        "display": "Number"
+        "display": "Control Test 1"
       }
     } ]
   }, {
