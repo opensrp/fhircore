@@ -25,14 +25,22 @@ object UserInfoItemMapper :
 
   override fun mapToDomainModel(dto: PractitionerDetails, domainModelSource: UserInfo): UserInfo {
     val userData = dto.userDetail.userBioData
-    val location =
-      if (dto.fhirPractitionerDetails.locationHierarchyList == null) ""
-      else dto.fhirPractitionerDetails.locationHierarchyList.joinToString()
-    val familyName = if (userData.familyName == null) "" else userData.familyName.valueAsString
-    val givenName = if (userData.givenName == null) "" else userData.givenName.valueAsString
-    val name = if (userData.userName == null) "" else userData.userName.valueAsString
-    val preferredUsername =
-      if (userData.preferredName == null) "" else userData.preferredName.valueAsString
+    var location = ""
+    var familyName = ""
+    var givenName = ""
+    var name = ""
+    var preferredUsername = ""
+
+    if (!dto.fhirPractitionerDetails.locationHierarchyList.isNullOrEmpty())
+      location = dto.fhirPractitionerDetails.locationHierarchyList.joinToString()
+
+    if (userData.familyName.hasValue()) familyName = userData.familyName.valueAsString
+
+    if (userData.givenName.hasValue()) givenName = userData.givenName.valueAsString
+
+    if (userData.userName.hasValue()) name = userData.userName.valueAsString
+
+    if (userData.preferredName.hasValue()) preferredUsername = userData.preferredName.valueAsString
 
     return UserInfo(
       questionnairePublisher = domainModelSource.questionnairePublisher,
