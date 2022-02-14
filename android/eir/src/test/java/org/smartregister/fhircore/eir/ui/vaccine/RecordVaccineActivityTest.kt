@@ -107,7 +107,6 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, RECORD_VACCINE_FORM)
       }
 
-    coEvery { recordVaccineViewModel.loadQuestionnaire(any()) } returns mockk()
     coEvery { recordVaccineViewModel.loadQuestionnaire(any(), any()) } returns mockk()
     val questionnaireConfig = QuestionnaireConfig("appId", "form", "title", "form-id")
     coEvery { recordVaccineViewModel.getQuestionnaireConfig(any(), any()) } returns

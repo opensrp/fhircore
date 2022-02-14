@@ -104,7 +104,7 @@ class LibraryEvaluatorTest {
   @Test
   fun testGetStringValueWithResourceShouldReturnCorrectStringRepresentation() {
     val resource = Patient().apply { id = "123" }
-    val resourceStr = FhirContext.forR4().newJsonParser().encodeResourceToString(resource)
+    val resourceStr = FhirContext.forR4Cached().newJsonParser().encodeResourceToString(resource)
 
     val result = evaluator!!.getStringRepresentation(resource)
 
