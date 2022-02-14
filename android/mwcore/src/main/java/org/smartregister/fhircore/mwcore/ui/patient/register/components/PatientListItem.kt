@@ -131,13 +131,6 @@ fun PatientRow(
         ) {
             
             ArtChip(text = patientItem.identifier, fontSize =22.sp )
-                
-          /*  MwChip(
-                modifier = modifier.background( color = MaterialTheme.colors.secondary.copy(alpha = 0.2F), RoundedCornerShape(4.dp)) ,
-                text = patientItem.identifier,
-                fontSize = 22.sp,
-                textColor = MaterialTheme.colors.onSecondary,
-            ) */
 
 
             //Adding space between image and the column
@@ -213,7 +206,7 @@ fun clientImage( text: String){
                 //shaping the picture
                 .clip(CircleShape)
                 .background(color = Color(0xFFFFC0CB)) //Cyan.copy(alpha = .4F )) //MaterialTheme.colors.secondary.copy(alpha = .4F))
-                .border(1.5.dp, MaterialTheme.colors.primary, CircleShape)
+                .border(1.5.dp, color = Color( 0xFFAA336A), CircleShape)
         )
     }
 }
