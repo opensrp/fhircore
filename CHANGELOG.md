@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Integrate Hilt Dependency Injection
 - Engine | Fixed login authentication issue.
 - Engine | Implement language switcher on profile page
+- Engine | Added the composition Id settings on the settings page
 
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected

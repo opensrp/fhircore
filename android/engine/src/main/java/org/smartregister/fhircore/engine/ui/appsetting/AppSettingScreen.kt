@@ -109,7 +109,8 @@ fun AppSettingScreen(
           text = stringResource(R.string.enter_composition_id),
         )
       },
-      modifier = modifier.testTag(COMPOSITION_ID_TEXT_INPUT_TAG).fillMaxWidth().padding(vertical = 2.dp)
+      modifier =
+        modifier.testTag(COMPOSITION_ID_TEXT_INPUT_TAG).fillMaxWidth().padding(vertical = 2.dp)
     )
     Text(
       text = stringResource(R.string.composition_id_sample),

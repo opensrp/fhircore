@@ -46,9 +46,7 @@ class AppSettingActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
-    appSettingViewModel.loadConfigs.observe(
-      this
-    ) { loadConfigs ->
+    appSettingViewModel.loadConfigs.observe(this) { loadConfigs ->
       if (loadConfigs != null && loadConfigs) {
         val applicationId = appSettingViewModel.appId.value!!
         val compositionId = appSettingViewModel.compositionId.value!!

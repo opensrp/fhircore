@@ -40,7 +40,7 @@ class AppSettingViewModel @Inject constructor() : ViewModel() {
     get() = _rememberApp
 
   fun onCompositionIdChanged(compositionId: String) {
-      _compositionId.value = compositionId
+    _compositionId.value = compositionId
   }
 
   fun onApplicationIdChanged(appId: String) {
