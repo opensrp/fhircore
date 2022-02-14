@@ -102,6 +102,39 @@ class PatientExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun testPregnancyConditionShouldReturnPregnancyCondition() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "OCD"
+        },
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "pregnant"
+        }
+      )
+
+    Assert.assertNotNull(conditions.pregnancyCondition())
+  }
+
+  @Test
+  fun testPregnancyConditionShouldReturnCondition() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "OCD"
+        }
+      )
+
+    Assert.assertNotNull(conditions.pregnancyCondition())
+  }
+
+  @Test
   fun testGetAgeString() {
     val expectedAge = "1y"
     Assert.assertEquals(expectedAge, getAgeStringFromDays(365))
