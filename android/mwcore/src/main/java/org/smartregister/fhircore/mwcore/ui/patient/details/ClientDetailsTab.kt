@@ -1,5 +1,6 @@
 package org.smartregister.fhircore.mwcore.ui.patient.details
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +28,7 @@ import com.google.android.material.tabs.TabItem
 import kotlinx.coroutines.NonCancellable.children
 import kotlinx.serialization.json.JsonNull.content
 import org.intellij.lang.annotations.JdkConstants
+import org.smartregister.fhircore.mwcore.R
 import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
 import org.smartregister.fhircore.mwcore.data.patient.model.genderFull
 import org.smartregister.fhircore.mwcore.ui.patient.register.OpenPatientProfile
@@ -51,8 +54,8 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 
             Card(
                 modifier = Modifier
-                    .padding(15.dp)
-                    .height(200.dp),
+                        .padding(15.dp)
+                        .height(200.dp),
                 elevation = 6.dp,
                 shape = MaterialTheme.shapes.medium.copy(
                     androidx.compose.foundation.shape.CornerSize(
@@ -60,7 +63,9 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel) {
                     )
                 )
             ){
-                Column(modifier = Modifier.wrapContentHeight().padding(6.dp)) {
+                Column(modifier = Modifier
+                        .wrapContentHeight()
+                        .padding(6.dp)) {
                     Text(text = "ART # " + (patientItem?.identifier ?: ""))
                     Text(text = "Name: " + (patientItem?.name ?: ""))
                     Text(text = "Age: " + (patientItem?.age ?: ""))
@@ -72,15 +77,17 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 
         }
         Row(
-            Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(10.dp),
+                Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(10.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ){
             Button(onClick = { /*TODO*/ }, modifier = Modifier.background(color = MaterialTheme.colors.primary, RoundedCornerShape(30.dp)),
                 enabled = true) {
+                Image(painter = painterResource(id = R.drawable.ic_plus) , contentDescription = "Add guardian icon")
+                Spacer(modifier = Modifier.size(5.dp))
                 Text(text = "Add Guardian", fontSize = 20.sp )
             }
         }
