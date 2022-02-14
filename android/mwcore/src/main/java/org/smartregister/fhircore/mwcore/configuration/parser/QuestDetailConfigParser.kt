@@ -24,6 +24,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.mwcore.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.mwcore.data.patient.model.AdditionalData
@@ -64,7 +65,7 @@ class QuestDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirE
           QuestionnaireActivity.intentArgs(
             clientIdentifier = patientId,
             formName = questionnaireId,
-            readOnly = true,
+            questionnaireType = QuestionnaireType.READ_ONLY,
             populationResources = populationResources
           )
         )
