@@ -144,7 +144,7 @@ fun childClientImage( text: String){
                         //shaping the picture
                         .clip(CircleShape)
                         .background(color = Color(0xFFFFC0CB)) //Cyan.copy(alpha = .4F )) //MaterialTheme.colors.secondary.copy(alpha = .4F))
-                        .border(1.5.dp, MaterialTheme.colors.secondary, CircleShape)
+                        .border(1.5.dp, color = Color( 0xFFAA336A), CircleShape)
         )
     }
 }
