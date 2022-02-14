@@ -4,14 +4,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Feed
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -84,12 +83,9 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel) {
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ){
-            Button(onClick = { /*TODO*/ }, modifier = Modifier.background(color = MaterialTheme.colors.primary, RoundedCornerShape(30.dp)),
-                enabled = true) {
-                Image(painter = painterResource(id = R.drawable.ic_plus) , contentDescription = "Add guardian icon")
-                Spacer(modifier = Modifier.size(5.dp))
-                Text(text = "Add Guardian", fontSize = 20.sp )
-            }
+            ExtendedFloatingActionButton(onClick = { /*TODO*/ }, icon = { Image(painter = painterResource(id = R.drawable.ic_plus)
+                    , contentDescription = "add guardian icon" )
+        } , modifier = Modifier.height(60.dp), backgroundColor = MaterialTheme.colors.primary , text= {Text( "ADD GUARDIAN", fontSize = 16.sp)}  )
         }
 
     }
