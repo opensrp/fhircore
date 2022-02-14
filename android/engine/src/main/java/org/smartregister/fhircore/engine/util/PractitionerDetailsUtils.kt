@@ -68,7 +68,7 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
     }
   }
 
-  private suspend fun <T : Resource> getResourcesList(
+  suspend fun <T : Resource> getResourcesList(
     practitionerDetails: Parameters,
     resourceName: String,
     clazz: Class<T>

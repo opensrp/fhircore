@@ -19,8 +19,10 @@ package org.smartregister.fhircore.engine.util
 import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -29,6 +31,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CareTeam
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
@@ -44,6 +47,10 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.model.practitioner.FhirPractitionerDetails
+import org.smartregister.model.practitioner.KeycloakUserDetails
+import org.smartregister.model.practitioner.PractitionerDetails
+import org.smartregister.model.practitioner.UserBioData
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -62,6 +69,8 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
   private val organizationList: List<Organization> = getOrganizations()
 
   private val locationList: List<Location> = getLocations()
+
+  val fhirEngine = spyk<FhirEngine>()
 
   @Before
   fun setUp() {
@@ -143,6 +152,24 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
   fun saveParameterShoutWriteParametersInSharedPreferences() {
     every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
 
+    practitionerDetailsUtils.saveParameter(
+      practitionerId = "123",
+      careTeamList = careTeamList,
+      organizationList = organizationList,
+      locationList = locationList
+    )
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    verify {
+      sharedPreferencesHelper.write(
+        PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY,
+        getParameters().encodeResourceToString()
+      )
+    }
+  }
+
+  private fun getParameters(): Parameters {
     val parameters = Parameters()
     parameters.addParameter().apply {
       name = ResourceType.Practitioner.name
@@ -163,28 +190,93 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
       parameters = parameters,
       ResourceType.Location.name
     )
-
-    practitionerDetailsUtils.saveParameter(
-      practitionerId = "123",
-      careTeamList = careTeamList,
-      organizationList = organizationList,
-      locationList = locationList
-    )
-
-    Shadows.shadowOf(Looper.getMainLooper()).idle()
-
-    verify {
-      sharedPreferencesHelper.write(
-        PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY,
-        parameters.encodeResourceToString()
-      )
-    }
+    return parameters
   }
 
   @Test
   fun storeUserPreferencesShoutWriteUserInfoInSharedPreferences() {
     every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
 
+    practitionerDetailsUtils.storeUserPreferences(userInfo = getUserInfo())
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    verify {
+      sharedPreferencesHelper.write(USER_INFO_SHARED_PREFERENCE_KEY, getUserInfo().encodeJson())
+    }
+  }
+
+  @Test
+  fun storeKeyClockInfoShoutWriteKeyClockInfoInSharedPreferences() {
+    every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
+
+    practitionerDetailsUtils.storeKeyClockInfo(getPractitionerDetails())
+
+    val gson = Gson()
+    val keycloakUserDetails = gson.toJson(getKeycloakUserDetails())
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    verify {
+      sharedPreferencesHelper.write(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, keycloakUserDetails)
+    }
+  }
+
+  @Test
+  fun testGetResourcesList() {
+    coEvery { fhirEngine.load(CareTeam::class.java, any()) } returns careTeamList[0]
+    coEvery { fhirEngine.load(Organization::class.java, any()) } returns organizationList[0]
+    coEvery { fhirEngine.load(Location::class.java, any()) } returns locationList[0]
+
+    runBlocking {
+      val listCareTeam =
+        practitionerDetailsUtils.getResourcesList(
+          getParameters(),
+          ResourceType.CareTeam.name,
+          CareTeam::class.java
+        )
+      val listOrganization =
+        practitionerDetailsUtils.getResourcesList(
+          getParameters(),
+          ResourceType.Organization.name,
+          Organization::class.java
+        )
+      val listLocation =
+        practitionerDetailsUtils.getResourcesList(
+          getParameters(),
+          ResourceType.Location.name,
+          Location::class.java
+        )
+      Assert.assertNotNull(listCareTeam)
+      Assert.assertNotNull(listOrganization)
+      Assert.assertNotNull(listLocation)
+    }
+  }
+
+  @Test
+  fun testGetResourceFromPractitionerDetails() {
+    every {
+      sharedPreferencesHelper.read(PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY, any())
+    } returns getParameters().encodeResourceToString()
+
+    coEvery { fhirEngine.load(CareTeam::class.java, any()) } returns careTeamList[0]
+    coEvery { fhirEngine.load(Organization::class.java, any()) } returns organizationList[0]
+    coEvery { fhirEngine.load(Location::class.java, any()) } returns locationList[0]
+
+    runBlocking {
+      val listCareTeam =
+        practitionerDetailsUtils.getResourceFromPractitionerDetails(ResourceType.CareTeam.name)
+      val listOrganization =
+        practitionerDetailsUtils.getResourceFromPractitionerDetails(ResourceType.Organization.name)
+      val listLocation =
+        practitionerDetailsUtils.getResourceFromPractitionerDetails(ResourceType.Location.name)
+      Assert.assertNotNull(listCareTeam)
+      Assert.assertNotNull(listOrganization)
+      Assert.assertNotNull(listLocation)
+    }
+  }
+
+  private fun getUserInfo(): UserInfo {
     val userInfo =
       UserInfo().apply {
         familyName = "abc"
@@ -194,11 +286,37 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
         name = "ab"
         sub = "123"
       }
+    return userInfo
+  }
 
-    practitionerDetailsUtils.storeUserPreferences(userInfo = userInfo)
+  private fun getKeycloakUserDetails(): KeycloakUserDetails {
+    val userBioDataData =
+      UserBioData().apply {
+        familyName = StringType("abc")
+        givenName = StringType("xyz")
+        preferredName = StringType("ab")
+        userName = StringType("axyz")
+      }
+    return KeycloakUserDetails().apply {
+      id = "id_1"
+      userBioData = userBioDataData
+      roles = arrayListOf(StringType("abc"), StringType("xyz"))
+    }
+  }
 
-    Shadows.shadowOf(Looper.getMainLooper()).idle()
+  private fun getFhirPractitionerDetailsInfo(): FhirPractitionerDetails {
+    return FhirPractitionerDetails().apply {
+      id = "id_1"
+      locations = locationList
+      careTeams = careTeamList
+      organizations = organizationList
+    }
+  }
 
-    verify { sharedPreferencesHelper.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson()) }
+  private fun getPractitionerDetails(): PractitionerDetails {
+    return PractitionerDetails().apply {
+      userDetail = getKeycloakUserDetails()
+      fhirPractitionerDetails = getFhirPractitionerDetailsInfo()
+    }
   }
 }

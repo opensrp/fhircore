@@ -34,7 +34,12 @@ class UserInfoItemMapperTest : RobolectricTest() {
 
   private val keycloakUserDetails: KeycloakUserDetails = getKeycloakUserDetails()
 
+  private val keycloakUserDetailsEmptyNames: KeycloakUserDetails = getKeycloakUserDetailsEmptyName()
+
   private val fhirPractitionerDetail: FhirPractitionerDetails = getFhirPractitionerDetails()
+
+  private val fhirPractitionerDetailEmptyLocation: FhirPractitionerDetails =
+    getFhirPractitionerDetailsEmptyLocation()
 
   private val userInfo: UserInfo = getUserInfo()
 
@@ -47,10 +52,33 @@ class UserInfoItemMapperTest : RobolectricTest() {
       }
     val userInfo =
       userInfoItemMapper.mapToDomainModel(dto = practitionerDetails, domainModelSource = userInfo)
-    verifyPatientDemographics(userInfo)
+    verifyUserDetails(userInfo)
   }
 
-  private fun verifyPatientDemographics(userInfo: UserInfo) {
+  @Test
+  fun testMapToDomainModelWithEmptyDate() {
+    val practitionerDetails =
+      PractitionerDetails().apply {
+        userDetail = keycloakUserDetailsEmptyNames
+        fhirPractitionerDetails = fhirPractitionerDetailEmptyLocation
+      }
+    val userInfo =
+      userInfoItemMapper.mapToDomainModel(dto = practitionerDetails, domainModelSource = userInfo)
+    verifyUserDetailsEmpty(userInfo)
+  }
+
+  private fun verifyUserDetailsEmpty(userInfo: UserInfo) {
+    with(userInfo) {
+      Assert.assertEquals("123", sub)
+      Assert.assertEquals("", name)
+      Assert.assertEquals("", familyName)
+      Assert.assertEquals("", givenName)
+      Assert.assertEquals("", preferredUsername)
+      Assert.assertEquals("", location)
+    }
+  }
+
+  private fun verifyUserDetails(userInfo: UserInfo) {
     with(userInfo) {
       Assert.assertEquals("123", sub)
       Assert.assertEquals("axyz", name)
@@ -95,6 +123,28 @@ class UserInfoItemMapperTest : RobolectricTest() {
       organization = "lm"
       name = "ab"
       sub = "123"
+    }
+  }
+
+  private fun getFhirPractitionerDetailsEmptyLocation(): FhirPractitionerDetails {
+    return FhirPractitionerDetails().apply {
+      id = "id_1"
+      locations = arrayListOf()
+    }
+  }
+
+  private fun getKeycloakUserDetailsEmptyName(): KeycloakUserDetails {
+    val userBioDataData =
+      UserBioData().apply {
+        familyName = StringType("")
+        givenName = StringType("")
+        preferredName = StringType("")
+        userName = StringType("")
+      }
+    return KeycloakUserDetails().apply {
+      id = "id_1"
+      userBioData = userBioDataData
+      roles = arrayListOf(StringType("abc"), StringType("xyz"))
     }
   }
 }
