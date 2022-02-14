@@ -39,9 +39,11 @@ class AppSettingScreenKtTest : RobolectricTest() {
     val onRememberAppChecked: (Boolean) -> Unit = spyk()
 
     val onAppIdChanged: (String) -> Unit = spyk()
+    val onCompositionIdChanged: (String) -> Unit = spyk()
   }
 
   private val appId = "appId"
+  private val compositionId = "1234"
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
@@ -53,8 +55,10 @@ class AppSettingScreenKtTest : RobolectricTest() {
     composeRule.setContent {
       AppSettingScreen(
         appId = appId,
+        compositionId = compositionId,
         rememberApp = false,
         onAppIdChanged = listenersSpy.onAppIdChanged,
+        onCompositionIdChanged = listenersSpy.onCompositionIdChanged,
         onRememberAppChecked = listenersSpy.onRememberAppChecked,
         onLoadConfigurations = listenersSpy.onLoadConfigurations
       )
@@ -67,6 +71,9 @@ class AppSettingScreenKtTest : RobolectricTest() {
     composeRule.onNodeWithText(context.getString(R.string.application_id))
     composeRule.onNodeWithText(context.getString(R.string.enter_app_id))
     composeRule.onNodeWithText(context.getString(R.string.app_id_sample))
+    composeRule.onNodeWithText(context.getString(R.string.composition_id))
+    composeRule.onNodeWithText(context.getString(R.string.enter_composition_id))
+    composeRule.onNodeWithText(context.getString(R.string.composition_id_sample))
     composeRule.onNodeWithText(context.getString(R.string.remember_app))
     composeRule.onNodeWithText(context.getString(R.string.load_configurations))
   }
@@ -81,6 +88,12 @@ class AppSettingScreenKtTest : RobolectricTest() {
   fun testUpdatingAppIdAction() {
     composeRule.onNodeWithTag(APP_ID_TEXT_INPUT_TAG).performTextInput("appId")
     verify { listenersSpy.onAppIdChanged }
+  }
+
+  @Test
+  fun testUpdatingCompositionAction() {
+    composeRule.onNodeWithTag(COMPOSITION_ID_TEXT_INPUT_TAG).performTextInput("12345")
+    verify { listenersSpy.onCompositionIdChanged }
   }
 
   @Test

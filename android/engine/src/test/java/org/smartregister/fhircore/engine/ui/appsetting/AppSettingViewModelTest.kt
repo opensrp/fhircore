@@ -36,6 +36,13 @@ class AppSettingViewModelTest {
   }
 
   @Test
+  fun testOnCompositionIdChanged() {
+    appSettingViewModel.onCompositionIdChanged("1234")
+    Assert.assertNotNull(appSettingViewModel.compositionId.value)
+    Assert.assertEquals("1234", appSettingViewModel.compositionId.value)
+  }
+
+  @Test
   fun testOnRememberAppChecked() {
     appSettingViewModel.onRememberAppChecked(true)
     Assert.assertNotNull(appSettingViewModel.rememberApp.value)
