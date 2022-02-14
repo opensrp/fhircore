@@ -113,7 +113,7 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
     )
   }
 
-  private fun <T : Resource> addParameters(
+  fun <T : Resource> addParameters(
     resources: List<T>,
     parameters: Parameters,
     resourceName: String
