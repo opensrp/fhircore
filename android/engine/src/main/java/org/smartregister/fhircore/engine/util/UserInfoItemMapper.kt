@@ -20,7 +20,7 @@ import org.smartregister.fhircore.engine.data.domain.util.DomainMapperWithDomain
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.model.practitioner.PractitionerDetails
 
-object UserInfoItemMapper :
+class UserInfoItemMapper :
   DomainMapperWithDomainModelSource<PractitionerDetails, UserInfo, UserInfo> {
 
   override fun mapToDomainModel(dto: PractitionerDetails, domainModelSource: UserInfo): UserInfo {
@@ -31,8 +31,8 @@ object UserInfoItemMapper :
     var name = ""
     var preferredUsername = ""
 
-    if (!dto.fhirPractitionerDetails.locationHierarchyList.isNullOrEmpty())
-      location = dto.fhirPractitionerDetails.locationHierarchyList.joinToString()
+    if (!dto.fhirPractitionerDetails.locations.isNullOrEmpty())
+      location = dto.fhirPractitionerDetails.locations.joinToString()
 
     if (userData.familyName.hasValue()) familyName = userData.familyName.valueAsString
 

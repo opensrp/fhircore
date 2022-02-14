@@ -21,12 +21,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserInfo(
-  @SerialName("questionnaire_publisher") val questionnairePublisher: String? = null,
-  @SerialName("organization") val organization: String? = null,
-  @SerialName("location") val location: String? = null,
-  @SerialName("family_name") val familyName: String? = null,
-  @SerialName("given_name") val givenName: String? = null,
-  @SerialName("name") val name: String? = null,
-  @SerialName("preferred_username") val preferredUsername: String? = null,
-  @SerialName("sub") val sub: String? = null
+  @SerialName("questionnaire_publisher") var questionnairePublisher: String? = null,
+  @SerialName("organization") var organization: String? = null,
+  @SerialName("location") var location: String? = null,
+  @SerialName("family_name") var familyName: String? = null,
+  @SerialName("given_name") var givenName: String? = null,
+  @SerialName("name") var name: String? = null,
+  @SerialName("preferred_username") var preferredUsername: String? = null,
+  @SerialName("sub") var sub: String? = null
 )

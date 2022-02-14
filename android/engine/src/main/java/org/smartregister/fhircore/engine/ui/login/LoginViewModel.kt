@@ -89,14 +89,16 @@ constructor(
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         if (response.isSuccessful)
-          response.body()!!.run {
-            val responseBodyString = this.string()
-            Timber.d(responseBodyString)
-            val userResponse = responseBodyString.decodeJson<UserInfo>()
-            storeUserPreferences(userResponse)
-            callPractitionerDetails(userResponse)
-            _showProgressBar.postValue(false)
-            _navigateToHome.value = true
+          runBlocking {
+            response.body()!!.run {
+              val responseBodyString = this.string()
+              Timber.d(responseBodyString)
+              val userResponse = responseBodyString.decodeJson<UserInfo>()
+              storeUserPreferences(userResponse)
+              callPractitionerDetails(userResponse)
+              _showProgressBar.postValue(false)
+              _navigateToHome.value = true
+            }
           }
         else {
           handleFailure(call, IOException("Network call failed with $response"))
@@ -115,38 +117,36 @@ constructor(
     sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson())
   }
 
-  fun callPractitionerDetails(userResponse: UserInfo) {
-    runBlocking {
-      val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
-      if (bundle.hasEntry()) {
-        val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
-        val careTeamList = practitionerDetails.fhirPractitionerDetails.careTeams
-        val organizationList = practitionerDetails.fhirPractitionerDetails.organizations
-        val locationList = practitionerDetails.fhirPractitionerDetails.locations
-        practitionerDetailsUtils.updateUserDetailsFromPractitionerDetails(
-          practitionerDetails,
-          userResponse
-        )
-        practitionerDetailsUtils.storeKeyClockInfo(practitionerDetails)
+  suspend fun callPractitionerDetails(userResponse: UserInfo) {
+    val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
+    if (bundle.hasEntry()) {
+      val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
+      val careTeamList = practitionerDetails.fhirPractitionerDetails.careTeams
+      val organizationList = practitionerDetails.fhirPractitionerDetails.organizations
+      val locationList = practitionerDetails.fhirPractitionerDetails.locations
+      practitionerDetailsUtils.updateUserDetailsFromPractitionerDetails(
+        practitionerDetails,
+        userResponse
+      )
+      practitionerDetailsUtils.storeKeyClockInfo(practitionerDetails)
 
-        practitionerDetailsUtils.saveParameter(
-          practitionerId = practitionerDetails.userDetail.id,
-          careTeamList = careTeamList,
-          organizationList = organizationList,
-          locationList = locationList
-        )
+      practitionerDetailsUtils.saveParameter(
+        practitionerId = practitionerDetails.userDetail.id,
+        careTeamList = careTeamList,
+        organizationList = organizationList,
+        locationList = locationList
+      )
 
-        if (locationList.isNotEmpty()) {
-          locationList.forEach { fhirEngine.save(it) }
-        }
+      if (locationList.isNotEmpty()) {
+        locationList.forEach { fhirEngine.save(it) }
+      }
 
-        if (organizationList.isNotEmpty()) {
-          organizationList.forEach { fhirEngine.save(it) }
-        }
+      if (organizationList.isNotEmpty()) {
+        organizationList.forEach { fhirEngine.save(it) }
+      }
 
-        if (careTeamList.isNotEmpty()) {
-          careTeamList.forEach { fhirEngine.save(it) }
-        }
+      if (careTeamList.isNotEmpty()) {
+        careTeamList.forEach { fhirEngine.save(it) }
       }
     }
   }

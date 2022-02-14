@@ -138,7 +138,7 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
   ) {
     storeUserPreferences(
       userInfo =
-        UserInfoItemMapper.mapToDomainModel(practitionerDetails, domainModelSource = userResponse)
+        UserInfoItemMapper().mapToDomainModel(practitionerDetails, domainModelSource = userResponse)
     )
   }
 
