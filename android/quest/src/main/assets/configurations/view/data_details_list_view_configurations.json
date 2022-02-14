@@ -102,6 +102,7 @@
       "system": "http://fhir.ona.io"
     },
     "questionnaireFieldsFilter": [
+      {"key": "device", "label": "Device ID: ", "index": 0},
       {"key": "result_type", "label": "Type: "},
       {"key": "g6pd"},
       {"key": "haemoglobin", "label": "Hb: "}
@@ -113,33 +114,23 @@
           "key": "code",
           "displayableProperty": "effective",
           "valueType": "DATETIME",
-          "label": "",
+          "label": "Date: ",
           "valueCoding": {
             "system": "http://snomed.info/sct",
             "code": "15361003"
-          },
-          "properties": {
-            "value": {
-              "color": "#2b2d2f",
-              "textSize": 20
-            }
           }
-        },
+        }
+      ],
+      [
         {
           "resourceType": "OBSERVATION",
           "key": "code",
           "displayableProperty": "value",
           "valueType": "CODEABLECONCEPT",
-          "label": " --> ",
+          "label": "Calibration: ",
           "valueCoding": {
             "system": "http://snomed.info/sct",
             "code": "15361003"
-          },
-          "properties": {
-            "value": {
-              "color": "#2b2d2f",
-              "textSize": 20
-            }
           }
         }
       ]

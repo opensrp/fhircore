@@ -216,7 +216,6 @@ class CqlContentTest : RobolectricTest() {
       observationSlot.captured.valueCodeableConcept.codingFirstRep.display
     )
     Assert.assertEquals("Device Operation", observationSlot.captured.code.codingFirstRep.display)
-    Assert.assertEquals("Patient/P1", observationSlot.captured.subject.reference)
   }
 
   private fun toJsonElm(cql: String): String {

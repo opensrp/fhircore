@@ -75,7 +75,6 @@ define "Observation": Observation{
   focus: Reference { reference: string { value: "QRRef" } },
   code: CreateConcept("deviceOperation"),
   effective: dateTime{ value: Now() },
-  subject: "QR".subject,
   value: CreateConcept("ConclusionCode")
 }
 

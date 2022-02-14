@@ -185,18 +185,21 @@ constructor(
         }
       }
     }
-    patientDetailsViewConfiguration
-      .questionnaireFieldsFilter
-      .mapNotNull { f ->
-        questionnaireResponse.find(f.key)?.let {
-          AdditionalData(
-            label = f.label ?: it.asLabel(),
-            value = it.answerFirstRep.value.valueToString()
-          )
+
+    patientDetailsViewConfiguration.questionnaireFieldsFilter.groupBy { it.index }.forEach {
+      it
+        .value
+        .mapNotNull { f ->
+          questionnaireResponse.find(f.key)?.let {
+            AdditionalData(
+              label = f.label ?: it.asLabel(),
+              value = it.answerFirstRep.value.valueToString()
+            )
+          }
         }
-      }
-      .takeIf { it.isNotEmpty() }
-      ?.run { data.add(this) }
+        .takeIf { it.isNotEmpty() }
+        ?.run { data.add(it.key ?: data.size, this) }
+    }
 
     return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
   }

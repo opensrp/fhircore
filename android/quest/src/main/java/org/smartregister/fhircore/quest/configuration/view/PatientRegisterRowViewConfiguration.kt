@@ -53,6 +53,7 @@ data class Filter(
 data class QuestionnaireItemFilter(
   val key: String,
   val label: String? = null,
+  val index: Int? = null,
   val dynamicColors: List<DynamicColor>? = null,
   val properties: Properties? = null
 )

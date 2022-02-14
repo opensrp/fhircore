@@ -27,7 +27,7 @@
       "Observation"
     ],
     "type": "token",
-    "expression": "patient.organization eq #organization or subject eq Organization/#organization"
+    "expression": "patient.organization eq #organization or focus.subject eq Organization/#organization"
   },
   {
     "resourceType": "SearchParameter",
