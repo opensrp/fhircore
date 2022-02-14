@@ -42,9 +42,9 @@ fun PatientChildRow(
     Card(
         modifier =
         modifier
-            .clickable { clickListener(OpenPatientProfile, patientItem) }
+                .clickable { clickListener(OpenPatientProfile, patientItem) }
 
-            .padding(6.dp),
+                .padding(6.dp),
         elevation = 6.dp,
         shape = MaterialTheme.shapes.medium.copy(
             androidx.compose.foundation.shape.CornerSize(
@@ -56,9 +56,9 @@ fun PatientChildRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
             modifier = modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(12.dp, 4.dp)
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+                    .padding(12.dp, 4.dp)
         ) {
 
             ArtChip(text = patientItem.identifier, fontSize =22.sp )
@@ -78,8 +78,8 @@ fun PatientChildRow(
                 modifier =
                 modifier
 
-                    .padding(15.dp)
-                    .weight(0.65f)
+                        .padding(15.dp)
+                        .weight(0.65f)
             ) {
                 Text(
                     text = "${patientItem.name}",
@@ -105,24 +105,48 @@ fun PatientChildRow(
                     )
                 }
             }
-
-            Image(
-                painter = painterResource(id = R.drawable.ic_child),
-                contentDescription = "Child profile picture",
-
-                //resizing our profile picture
-                modifier = Modifier
-                    .size(40.dp)
-
-                    //shaping the picture
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colors.secondary.copy(alpha = .4F))
-                    .border(1.5.dp, MaterialTheme.colors.secondary, CircleShape)
-            )
-
+        childClientImage(text = patientItem.genderFull())
+        
         }
     }
 
+}
+
+@Composable
+fun childClientImage( text: String){
+    if ( text == "Male"){
+        Image(
+                painter = painterResource(
+                        id = R.drawable.ic_child),
+                contentDescription = "Contact profile picture",
+                //resizing our profile picture
+                modifier = Modifier
+                        .size(40.dp)
+
+                        //shaping the picture
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colors.secondary.copy(alpha = .4F))
+                        .border(1.5.dp, MaterialTheme.colors.secondary, CircleShape)
+        )
+    }
+    else
+    {
+        Image(
+                painter = painterResource(
+                        id = R.drawable.ic_child),
+
+                contentDescription = "Contact profile picture",
+
+                //resizing our profile picture
+                modifier = Modifier
+                        .size(40.dp)
+
+                        //shaping the picture
+                        .clip(CircleShape)
+                        .background(color = Color(0xFFFFC0CB)) //Cyan.copy(alpha = .4F )) //MaterialTheme.colors.secondary.copy(alpha = .4F))
+                        .border(1.5.dp, MaterialTheme.colors.primary, CircleShape)
+        )
+    }
 }
 
 @Composable

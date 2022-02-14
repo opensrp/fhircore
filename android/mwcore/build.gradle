@@ -50,6 +50,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         minSdkVersion 21
+
         targetSdkVersion 30
     }
 
