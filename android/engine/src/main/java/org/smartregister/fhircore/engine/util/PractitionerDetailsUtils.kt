@@ -128,7 +128,7 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
       }
   }
 
-  private fun storeUserPreferences(userInfo: UserInfo) {
+  fun storeUserPreferences(userInfo: UserInfo) {
     sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson())
   }
 

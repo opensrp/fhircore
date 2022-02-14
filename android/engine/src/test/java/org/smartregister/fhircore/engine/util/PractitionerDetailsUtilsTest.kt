@@ -16,11 +16,17 @@
 
 package org.smartregister.fhircore.engine.util
 
+import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.CareTeam
@@ -33,7 +39,11 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Shadows
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -58,6 +68,8 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
     hiltRule.inject()
     // Spy needed to control interaction with the real injected dependency
     val fhirEngine = spyk<FhirEngine>()
+
+    sharedPreferencesHelper = mockk()
 
     practitionerDetailsUtils =
       PractitionerDetailsUtils(
@@ -125,5 +137,68 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
       }
     )
     return listOfLocation
+  }
+
+  @Test
+  fun saveParameterShoutWriteParametersInSharedPreferences() {
+    every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
+
+    val parameters = Parameters()
+    parameters.addParameter().apply {
+      name = ResourceType.Practitioner.name
+      value = StringType("123")
+    }
+    practitionerDetailsUtils.addParameters(
+      careTeamList,
+      parameters = parameters,
+      ResourceType.CareTeam.name
+    )
+    practitionerDetailsUtils.addParameters(
+      organizationList,
+      parameters = parameters,
+      ResourceType.Organization.name
+    )
+    practitionerDetailsUtils.addParameters(
+      locationList,
+      parameters = parameters,
+      ResourceType.Location.name
+    )
+
+    practitionerDetailsUtils.saveParameter(
+      practitionerId = "123",
+      careTeamList = careTeamList,
+      organizationList = organizationList,
+      locationList = locationList
+    )
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    verify {
+      sharedPreferencesHelper.write(
+        PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY,
+        parameters.encodeResourceToString()
+      )
+    }
+  }
+
+  @Test
+  fun storeUserPreferencesShoutWriteUserInfoInSharedPreferences() {
+    every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
+
+    val userInfo =
+      UserInfo().apply {
+        familyName = "abc"
+        givenName = "xyx"
+        questionnairePublisher = "ab"
+        organization = "lm"
+        name = "ab"
+        sub = "123"
+      }
+
+    practitionerDetailsUtils.storeUserPreferences(userInfo = userInfo)
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    verify { sharedPreferencesHelper.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson()) }
   }
 }
