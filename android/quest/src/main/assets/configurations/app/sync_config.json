@@ -22,12 +22,12 @@
   {
     "resourceType": "SearchParameter",
     "name": "organization",
-    "code": "subject.organization",
+    "code": "_filter",
     "base": [
       "Observation"
     ],
     "type": "token",
-    "expression": "#organization"
+    "expression": "patient.organization eq #organization or subject eq Organization/#organization"
   },
   {
     "resourceType": "SearchParameter",
