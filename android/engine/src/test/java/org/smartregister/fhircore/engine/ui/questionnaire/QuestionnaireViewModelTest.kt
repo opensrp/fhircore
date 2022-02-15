@@ -102,7 +102,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, any()) } returns
+    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
       "{\"organization\":\"1111\"}"
 
     defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
