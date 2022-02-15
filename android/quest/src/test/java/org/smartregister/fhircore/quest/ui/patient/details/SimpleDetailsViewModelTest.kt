@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -27,7 +25,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -47,9 +44,9 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.Filter
-import org.smartregister.fhircore.quest.configuration.view.Properties
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
 
 @HiltAndroidTest
 class SimpleDetailsViewModelTest : RobolectricTest() {
@@ -87,22 +84,20 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
         Enumerations.ResourceType.MEDICATIONREQUEST to
           listOf(MedicationRequest().apply { id = "mr1" }),
       )
-    every { viewModel.doesSatisfyFilter(any(), any()) } returns true
 
     viewModel.loadData(encounterId)
 
     coVerify { patientRepository.loadEncounter(any()) }
     coVerify { viewModel.getDataMap(any()) }
-    verify { viewModel.doesSatisfyFilter(any(), any()) }
   }
 
   @Test
   fun testGetDataMap() = runBlockingTest {
-    coEvery { viewModel.getCondition(any(), any()) } returns
+    coEvery { patientRepository.getCondition(any(), any()) } returns
       listOf(Condition().apply { code.addCoding(Coding("s", "c", "d")) })
-    coEvery { viewModel.getObservation(any(), any()) } returns
+    coEvery { patientRepository.getObservation(any(), any()) } returns
       listOf(Observation().apply { value = StringType("1234") })
-    coEvery { viewModel.getMedicationRequest(any(), any()) } returns
+    coEvery { patientRepository.getMedicationRequest(any(), any()) } returns
       listOf(
         MedicationRequest().apply {
           this.intent = MedicationRequest.MedicationRequestIntent.FILLERORDER
@@ -117,62 +112,9 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
       }
     )
 
-    coVerify { viewModel.getCondition(any(), any()) }
-    coVerify { viewModel.getObservation(any(), any()) }
-    coVerify { viewModel.getMedicationRequest(any(), any()) }
-  }
-
-  @Test
-  fun testGetConditionShouldReturnValidCondition() = runBlockingTest {
-    val fhirEngine = mockk<FhirEngine>()
-    coEvery { patientRepository.fhirEngine } returns fhirEngine
-    coEvery { fhirEngine.search<Condition>(any()) } returns listOf(Condition().apply { id = "c1" })
-
-    val result =
-      viewModel.getCondition(
-        Encounter().apply { id = "123" },
-        filterOf("code", "Code", Properties())
-      )
-
-    coVerify { fhirEngine.search<Condition>(any()) }
-
-    Assert.assertEquals("c1", result!!.first().logicalId)
-  }
-
-  @Test
-  fun testGetObservationShouldReturnValidObservation() = runBlockingTest {
-    val fhirEngine = mockk<FhirEngine>()
-    coEvery { patientRepository.fhirEngine } returns fhirEngine
-    coEvery { fhirEngine.search<Observation>(any()) } returns
-      listOf(Observation().apply { id = "o1" })
-
-    val result =
-      viewModel.getObservation(
-        Encounter().apply { id = "123" },
-        filterOf("code", "Code", Properties())
-      )
-
-    coVerify { fhirEngine.search<Observation>(any()) }
-
-    Assert.assertEquals("o1", result.first().logicalId)
-  }
-
-  @Test
-  fun testGetMedicationRequestShouldReturnValidMedicationRequest() = runBlockingTest {
-    val fhirEngine = mockk<FhirEngine>()
-    coEvery { patientRepository.fhirEngine } returns fhirEngine
-    coEvery { fhirEngine.search<MedicationRequest>(any()) } returns
-      listOf(MedicationRequest().apply { id = "mr1" })
-
-    val result =
-      viewModel.getMedicationRequest(
-        Encounter().apply { id = "123" },
-        filterOf("code", "Code", Properties())
-      )
-
-    coVerify { fhirEngine.search<MedicationRequest>(any()) }
-
-    Assert.assertEquals("mr1", result.first().logicalId)
+    coVerify { patientRepository.getCondition(any(), any()) }
+    coVerify { patientRepository.getObservation(any(), any()) }
+    coVerify { patientRepository.getMedicationRequest(any(), any()) }
   }
 
   @Test
@@ -191,7 +133,7 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
         code = CodeableConcept().addCoding(Coding("http://a.b.com", "c1", "D1"))
       }
 
-    Assert.assertTrue(viewModel.doesSatisfyFilter(obs, filter)!!)
+    Assert.assertTrue(doesSatisfyFilter(obs, filter)!!)
   }
 
   @Test

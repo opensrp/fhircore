@@ -25,6 +25,7 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -41,7 +42,6 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -73,12 +73,13 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -100,6 +101,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
+      "{\"organization\":\"1111\"}"
+
     defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
     val configurationRegistry = mockk<ConfigurationRegistry>()
     every { configurationRegistry.appId } returns "appId"
@@ -927,5 +932,36 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking { structureMapProvider.invoke(resourceUrl, SimpleWorkerContext()) }
 
     coVerify { questionnaireViewModel.fetchStructureMap(resourceUrl) }
+  }
+
+  fun testHandlePatientSubjectShouldReturnSetCorrectReference() {
+    val questionnaire = Questionnaire().apply { addSubjectType("Patient") }
+    val questionnaireResponse = QuestionnaireResponse()
+
+    Assert.assertFalse(questionnaireResponse.hasSubject())
+
+    questionnaireViewModel.handleQuestionnaireResponseSubject(
+      "123",
+      questionnaire,
+      questionnaireResponse
+    )
+
+    Assert.assertEquals("Patient/123", questionnaireResponse.subject.reference)
+  }
+
+  @Test
+  fun testHandleOrganizationSubjectShouldReturnSetCorrectReference() {
+    val questionnaire = Questionnaire().apply { addSubjectType("Organization") }
+    val questionnaireResponse = QuestionnaireResponse()
+
+    Assert.assertFalse(questionnaireResponse.hasSubject())
+
+    questionnaireViewModel.handleQuestionnaireResponseSubject(
+      "123",
+      questionnaire,
+      questionnaireResponse
+    )
+
+    Assert.assertEquals("Organization/1111", questionnaireResponse.subject.reference)
   }
 }

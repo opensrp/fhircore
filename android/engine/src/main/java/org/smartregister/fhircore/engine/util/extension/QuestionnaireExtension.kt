@@ -21,6 +21,9 @@ import com.google.android.fhir.datacapture.targetStructureMap
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 
+fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
+  this.linkId.replace("_", " ").capitalize().plus(": ")
+
 fun Questionnaire.isExtractionCandidate() =
   this.targetStructureMap != null ||
     this.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
