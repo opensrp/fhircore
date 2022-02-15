@@ -36,7 +36,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -51,7 +50,7 @@ import org.smartregister.fhircore.engine.util.extension.filterByPatient
 import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.pregnancyCondition
-import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.getEncounterReferenceValue
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
@@ -59,6 +58,7 @@ import org.smartregister.fhircore.quest.configuration.view.isSimilar
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestSourceItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.getSearchResults
 import org.smartregister.fhircore.quest.util.loadAdditionalData
@@ -125,15 +125,24 @@ constructor(
         searchQuestionnaireResponses(patientId, forms).sortedByDescending { it.authored }
       questionnaireResponses.forEach {
         val questionnaire = getQuestionnaire(it)
-        testResults.add(getResultItem(questionnaire, it, config))
+        val questItem =
+          QuestSourceItem(
+            questionnaireResponseLogicalId = it.logicalId,
+            questionnaireResponseAuthored = it.authored,
+            questionnaireResponseEncounterId = it.getEncounterId(),
+            questionnaireResponseEncounterReferenceValue = it.getEncounterReferenceValue(),
+            questionnaireLogicalId = questionnaire?.logicalId,
+            questionnaireName = questionnaire?.name,
+            questionnaireTitle = questionnaire?.title
+          )
+        testResults.add(getResultItem(questItem, config))
       }
       testResults
     }
   }
 
   suspend fun getResultItem(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
+    questSourceItem: QuestSourceItem,
     patientDetailsViewConfiguration: PatientDetailsViewConfiguration
   ): QuestResultItem {
 
@@ -142,16 +151,17 @@ constructor(
         val data =
           listOf(
             listOf(
-              AdditionalData(value = fetchResultItemLabel(questionnaire)),
-              AdditionalData(value = " (${questionnaireResponse.authored?.asDdMmmYyyy() ?: ""})")
+              AdditionalData(value = fetchResultItemLabel(questSourceItem)),
+              AdditionalData(
+                value = " (${questSourceItem.questionnaireResponseAuthored?.asDdMmmYyyy() ?: ""})"
+              )
             )
           )
 
-        return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
+        return QuestResultItem(questSourceItem, data)
       }
       else -> {
 
-        val encounter = loadEncounter(questionnaireResponse.getEncounterId())
         val data: MutableList<List<AdditionalData>> = mutableListOf()
 
         patientDetailsViewConfiguration.dynamicRows.forEach { filtersList ->
@@ -161,11 +171,11 @@ constructor(
             val value =
               when (filter.resourceType) {
                 Enumerations.ResourceType.CONDITION ->
-                  getCondition(encounter, filter)
+                  getCondition(questSourceItem, filter)
                     .find { doesSatisfyFilter(it, filter) == true }
                     ?.getPathValue(filter.displayableProperty)
                 Enumerations.ResourceType.OBSERVATION ->
-                  getObservation(encounter, filter)
+                  getObservation(questSourceItem, filter)
                     .find { doesSatisfyFilter(it, filter) == true }
                     ?.getPathValue(filter.displayableProperty)
                 else -> null
@@ -184,7 +194,7 @@ constructor(
           data.add(additionalDataList)
         }
 
-        return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
+        return QuestResultItem(questSourceItem, data)
       }
     }
   }
@@ -216,16 +226,21 @@ constructor(
       }
   }
 
-  suspend fun getCondition(encounter: Encounter, filter: Filter?) =
-    getSearchResults<Condition>(encounter.referenceValue(), Condition.ENCOUNTER, filter, fhirEngine)
+  suspend fun getCondition(questSourceItem: QuestSourceItem, filter: Filter?) =
+    getSearchResults<Condition>(
+      questSourceItem.questionnaireResponseEncounterReferenceValue,
+      Condition.ENCOUNTER,
+      filter,
+      fhirEngine
+    )
       .sortedByDescending {
         if (it.hasOnsetDateTimeType()) it.onsetDateTimeType.value else it.recordedDate
       }
       .sortedByDescending { it.logicalId }
 
-  suspend fun getObservation(encounter: Encounter, filter: Filter?) =
+  suspend fun getObservation(questSourceItem: QuestSourceItem, filter: Filter?) =
     getSearchResults<Observation>(
-      encounter.referenceValue(),
+      questSourceItem.questionnaireResponseEncounterReferenceValue,
       Observation.ENCOUNTER,
       filter,
       fhirEngine
@@ -235,21 +250,37 @@ constructor(
       }
       .sortedByDescending { it.logicalId }
 
-  fun fetchResultItemLabel(questionnaire: Questionnaire): String {
-    return questionnaire.name ?: questionnaire.title ?: questionnaire.logicalId
+  fun fetchResultItemLabel(questSourceItem: QuestSourceItem): String {
+    return questSourceItem.questionnaireName
+      ?: questSourceItem.questionnaireTitle ?: questSourceItem.questionnaireLogicalId ?: ""
   }
 
-  suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire {
-    return if (questionnaireResponse.questionnaire != null) {
-      val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
-      loadQuestionnaire(questionnaireId = questionnaireId)
-    } else {
-      Timber.e(
-        Exception(
-          "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+  suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire? {
+    return when {
+      questionnaireResponse.questionnaire.isNullOrBlank() -> {
+        Timber.e(
+          Exception(
+            "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+          )
         )
-      )
-      Questionnaire()
+        null
+      }
+      else -> {
+        val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
+        when {
+          questionnaireUrlList.isNotEmpty() && questionnaireUrlList.size > 1 -> {
+            loadQuestionnaire(questionnaireId = questionnaireUrlList[1])
+          }
+          else -> {
+            Timber.e(
+              Exception(
+                "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+              )
+            )
+            null
+          }
+        }
+      }
     }
   }
 

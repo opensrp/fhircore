@@ -192,6 +192,14 @@ fun QuestionnaireResponse.getEncounterId(): String {
     ?: ""
 }
 
+fun QuestionnaireResponse.getEncounterReferenceValue(): String {
+  return this.contained
+    ?.find { it.resourceType == ResourceType.Encounter }
+    ?.referenceValue()
+    ?.replace("#", "")
+    ?: ""
+}
+
 fun Resource.generateMissingId() {
   if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
