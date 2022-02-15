@@ -234,6 +234,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
     )
   }
+  @Test
+  fun testOnBackPressedShouldCallFinishWhenInReadOnlyMode() {
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireType", QuestionnaireType.EDIT)
+    questionnaireActivity.onBackPressed()
+
+    verify { questionnaireActivity.finish() }
+  }
 
   @Test
   fun testHandleQuestionnaireResponseShouldCallExtractAndSaveResources() {

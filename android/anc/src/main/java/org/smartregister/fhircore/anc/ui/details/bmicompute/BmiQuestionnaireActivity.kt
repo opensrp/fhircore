@@ -22,7 +22,6 @@ import android.widget.Button
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
-import java.util.UUID
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Quantity
@@ -49,7 +48,12 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
-      val bundle = questionnaireViewModel.performExtraction(questionnaire, questionnaireResponse)
+      val bundle =
+        questionnaireViewModel.performExtraction(
+          this@BmiQuestionnaireActivity,
+          questionnaire,
+          questionnaireResponse
+        )
 
       if (bundle.entry.size > 3 && bundle.entry[3].resource is Observation) {
         val computedBMI =
@@ -71,7 +75,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       .setTitle(title)
       .setMessage(message)
       .setCancelable(true)
-      .setPositiveButton(R.string.ok) { dialogInterface, _ ->
+      .setPositiveButton(android.R.string.ok) { dialogInterface, _ ->
         dialogInterface.dismiss()
         resumeForm()
       }
@@ -105,6 +109,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
 
         lifecycleScope.launch {
           questionnaireViewModel.extractAndSaveResources(
+            this@BmiQuestionnaireActivity,
             patientId,
             questionnaire,
             questionnaireResponse

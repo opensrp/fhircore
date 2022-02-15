@@ -30,8 +30,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA_QUESTIONNAIRE_JSON_STRING
-import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
@@ -146,7 +144,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         // 2- readonly -> assert and pass response from intent
         // 3- default -> process, populate and pass response/data from intent if exists
         arguments =
-          bundleOf(Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString)).apply {
+          bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString)).apply {
             var questionnaireResponse =
               intent
                 .getStringExtra(QUESTIONNAIRE_RESPONSE)
@@ -164,7 +162,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             }
 
             this.putString(
-              EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
+              QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
               questionnaireResponse?.encodeResourceToString()
             )
           }
@@ -365,14 +363,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     deepFlat(q.item, qr, qItems, qrItems)
 
-    return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(
-        qItems,
-        qrItems,
-        this
-      )
-      .values
-      .flatten()
-      .all { it.isValid }
+    return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(qItems, qrItems, this).values.flatten().all {
+      it.isValid
+    }
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
