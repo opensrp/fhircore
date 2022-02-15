@@ -75,7 +75,7 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
   ): ArrayList<T> {
     val resourceList = arrayListOf<T>()
     practitionerDetails.parameter.forEach {
-      if (it.name.equals(ResourceType.Location.name)) {
+      if (it.name.equals(resourceName)) {
         val result = it.resource as ListResource
         if (result.hasEntry()) {
           result.entry.forEach { entry ->
