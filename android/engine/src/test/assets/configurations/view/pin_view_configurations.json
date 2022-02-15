@@ -1,0 +1,18 @@
+[
+  {
+    "appId": "anc",
+    "classification": "login",
+    "applicationName": "ANC",
+    "appLogoIconResourceFile": "ic_liberia",
+    "enablePin": false,
+    "showLogo": true
+  },
+  {
+    "appId": "ecbis",
+    "classification": "login",
+    "applicationName": "eCBIS",
+    "appLogoIconResourceFile": "ic_liberia",
+    "enablePin": true,
+    "showLogo": true
+  }
+]

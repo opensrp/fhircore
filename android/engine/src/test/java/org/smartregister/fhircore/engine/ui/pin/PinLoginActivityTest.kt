@@ -37,6 +37,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
@@ -57,6 +58,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+  @BindValue val configurationRegistry: ConfigurationRegistry = mockk()
 
   @BindValue
   val pinViewModel =
@@ -64,6 +66,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
       DefaultDispatcherProvider(),
       sharedPreferencesHelper,
       secureSharedPreference,
+      configurationRegistry,
       application
     )
 

@@ -5,7 +5,8 @@
     "applicationName": "Quest",
     "applicationVersion": "0.0.2",
     "darkMode": false,
-    "showLogo": false
+    "showLogo": false,
+    "enablePin": true
   },
   {
     "appId": "g6pd",
@@ -13,6 +14,7 @@
     "applicationName": "G6PD Test Reader",
     "applicationVersion": "0.0.1",
     "darkMode": false,
-    "showLogo": true
+    "showLogo": true,
+    "enablePin": true
   }
 ]

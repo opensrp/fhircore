@@ -23,6 +23,10 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -37,6 +41,8 @@ constructor(
   val dispatcher: DispatcherProvider,
   val sharedPreferences: SharedPreferencesHelper,
   val secureSharedPreference: SecureSharedPreference,
+  val configurationRegistry: ConfigurationRegistry,
+  val accountAuthenticator: AccountAuthenticator,
   val app: Application
 ) : ViewModel() {
 
@@ -73,7 +79,9 @@ constructor(
 
   lateinit var appId: String
   lateinit var appName: String
-  var appLogoResId: Int = R.drawable.ic_liberia
+  lateinit var appLogoResFile: String
+
+  lateinit var pinViewConfiguration: PinViewConfiguration
 
   var isSetupPage: Boolean = false
 
@@ -84,6 +92,10 @@ constructor(
   }
 
   fun loadData(isSetup: Boolean = false) {
+    appId = retrieveAppId()
+    pinViewConfiguration = getPinConfiguration()
+    appName = retrieveAppName()
+    appLogoResFile = retrieveAppLogoIconResourceFile()
     savedPin = secureSharedPreference.retrieveSessionPin() ?: ""
     isSetupPage = isSetup
     enterUserLoginMessage =
@@ -94,22 +106,16 @@ constructor(
           app.getString(R.string.enter_pin_for_user, it)
         }
       }
-    appId = retrieveAppId()
-    appName = retrieveAppName()
-    appLogoResId = retrieveAppLogoResId()
   }
+
+  fun getPinConfiguration(): PinViewConfiguration =
+    configurationRegistry.retrieveConfiguration(AppConfigClassification.PIN)
 
   fun retrieveAppId(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!
 
-  fun retrieveAppName(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!
+  fun retrieveAppName(): String = pinViewConfiguration.applicationName
 
-  // Todo: this applicationLogoIconResource must be load from config
-  fun retrieveAppLogoResId(): Int {
-    return when (appId) {
-      "g6pd" -> R.drawable.ic_logo_g6pd
-      else -> R.drawable.ic_liberia
-    }
-  }
+  fun retrieveAppLogoIconResourceFile(): String = pinViewConfiguration.appLogoIconResourceFile
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 

@@ -44,6 +44,12 @@
         "resource": "ResultDetailsNavigationConfiguration",
         "classification": "result_details_navigation",
         "description": "Configurations for Result Details Navigation"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfigurations",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
       }
     ]
   },
@@ -92,6 +98,12 @@
         "resource": "ResultDetailsNavigationConfiguration",
         "classification": "result_details_navigation",
         "description": "Configurations for Result Details Navigation"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfigurations",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
       }
     ]
   }

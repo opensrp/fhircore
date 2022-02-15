@@ -32,6 +32,9 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -53,17 +56,34 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+  @BindValue val configurationRegistry: ConfigurationRegistry = mockk()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
   private lateinit var pinViewModel: PinViewModel
 
   private val testPin = MutableLiveData("1234")
+  val testApplicationConfiguration =
+    ApplicationConfiguration(
+      appId = "ancApp",
+      classification = "classification",
+      theme = "dark theme",
+      languages = listOf("en"),
+      syncInterval = 15,
+      applicationName = "Test App",
+      appLogoIconResource = "ic_launcher"
+    )
 
   @Before
   fun setUp() {
     hiltRule.inject()
 
+    coEvery { configurationRegistry.appId } returns "anc"
+    coEvery {
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        AppConfigClassification.APPLICATION
+      )
+    } returns testApplicationConfiguration
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, true) } returns Unit
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
@@ -76,11 +96,14 @@ internal class PinViewModelTest : RobolectricTest() {
         dispatcher = dispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
         secureSharedPreference = secureSharedPreference,
+        configurationRegistry = mockk(),
         app = application
       )
     pinViewModel.apply {
       savedPin = "1234"
       isSetupPage = true
+      appName = "demo"
+      appLogoIconRes = "ic_launcher"
       onPinChanged("1234")
     }
   }

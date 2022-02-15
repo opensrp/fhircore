@@ -24,6 +24,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
@@ -33,6 +34,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 class PinLoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   val pinViewModel by viewModels<PinViewModel>()
 
@@ -41,8 +43,8 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
     loginService.loginActivity = this
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     pinViewModel.apply {
-      val pinLoginActivity = this@PinLoginActivity
       loadData(isSetup = false)
+      val pinLoginActivity = this@PinLoginActivity
       navigateToHome.observe(pinLoginActivity) { pinLoginActivity.moveToHome() }
       launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
       navigateToLogin.observe(pinLoginActivity) { pinLoginActivity.moveToLoginViaUsername() }
