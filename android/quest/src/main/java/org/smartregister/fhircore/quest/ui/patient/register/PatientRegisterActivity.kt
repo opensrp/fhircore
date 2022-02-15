@@ -34,7 +34,10 @@ import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.NavigationConfiguration
 import org.smartregister.fhircore.quest.configuration.view.NavigationOption
+import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
+import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
+import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity.Companion.CLASSIFICATION_ARG
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
@@ -127,6 +130,12 @@ class PatientRegisterActivity : BaseRegisterActivity() {
                 formName = navigationOption.action.form,
               )
             )
+        )
+      is QuestionnaireDataDetailsNavigationAction ->
+        startActivity(
+          Intent(this, QuestionnaireDataDetailActivity::class.java).apply {
+            putExtra(CLASSIFICATION_ARG, navigationOption.action.classification)
+          }
         )
     }
   }

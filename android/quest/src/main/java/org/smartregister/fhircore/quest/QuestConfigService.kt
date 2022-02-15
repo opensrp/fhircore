@@ -51,14 +51,20 @@ constructor(
     for (i in searchParams.indices) {
       // TODO: expressionValue supports for Organization and Publisher, extend it using
       // Composition resource
+      val paramName = searchParams[i].name!! // e.g. organization
+      val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
+      val paramExpression = searchParams[i].expression
       val expressionValue =
-        searchParams[i].name!!.let {
-          when {
-            it.contains(ORGANIZATION) -> authenticatedUserInfo?.organization
-            it.contains(PUBLISHER) -> authenticatedUserInfo?.questionnairePublisher
-            it.contains(ID) -> searchParams[i].expression
-            else -> null
-          }
+        when (paramName) {
+          ORGANIZATION -> authenticatedUserInfo?.organization
+          PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
+          ID -> paramExpression
+          else -> null
+        }?.let {
+          // replace the evaluated value into expression for complex expressions
+          // e.g. #organization -> 123
+          // e.g. patient.organization eq #organization -> patient.organization eq 123
+          paramExpression.replace(paramLiteral, it)
         }
 
       pairs.add(

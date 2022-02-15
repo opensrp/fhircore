@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
@@ -27,8 +28,10 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Quantity
@@ -184,12 +187,11 @@ fun QuestionnaireResponse.assertSubject() {
     throw IllegalStateException("QuestionnaireResponse must have a subject reference assigned")
 }
 
-fun QuestionnaireResponse.getEncounterId(): String {
+fun QuestionnaireResponse.getEncounterId(): String? {
   return this.contained
     ?.find { it.resourceType == ResourceType.Encounter }
     ?.logicalId
     ?.replace("#", "")
-    ?: ""
 }
 
 fun Resource.generateMissingId() {
@@ -206,6 +208,23 @@ fun Resource.asReference(): Reference {
 }
 
 fun Resource.referenceValue(): String = "${fhirType()}/$logicalId"
+
+fun Resource.referenceParamForCondition(): ReferenceClientParam =
+  when (resourceType) {
+    ResourceType.Patient -> Condition.PATIENT
+    ResourceType.Encounter -> Condition.ENCOUNTER
+    else ->
+      throw IllegalStateException("Do not know how to use $resourceType for Condition resource")
+  }
+
+fun Resource.referenceParamForObservation(): ReferenceClientParam =
+  when (resourceType) {
+    ResourceType.Patient -> Observation.PATIENT
+    ResourceType.Encounter -> Observation.ENCOUNTER
+    ResourceType.QuestionnaireResponse -> Observation.FOCUS
+    else ->
+      throw IllegalStateException("Do not know how to use $resourceType for Observation resource")
+  }
 
 fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()

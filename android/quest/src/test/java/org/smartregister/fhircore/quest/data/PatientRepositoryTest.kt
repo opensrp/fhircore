@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data
 
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -37,11 +38,13 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -53,13 +56,15 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.FontWeight
-import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
+import org.smartregister.fhircore.quest.configuration.view.Properties
+import org.smartregister.fhircore.quest.configuration.view.dataDetailsListViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.patient.details.filterOf
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.loadAdditionalData
 
@@ -174,8 +179,9 @@ class PatientRepositoryTest : RobolectricTest() {
       val results =
         repository.fetchTestResults(
           "1",
+          ResourceType.Patient,
           listOf(QuestionnaireConfig("quest", "form", "title", "1")),
-          patientDetailsViewConfigurationOf()
+          dataDetailsListViewConfigurationOf()
         )
 
       Assert.assertEquals("First Questionnaire", results[0].data[0][0].value)
@@ -302,7 +308,7 @@ class PatientRepositoryTest : RobolectricTest() {
       }
     }
 
-  fun createTestConfigurationsData(): List<PatientDetailsViewConfiguration> =
+  fun createTestConfigurationsData(): List<DataDetailsListViewConfiguration> =
     "configs/sample_patient_details_view_configurations.json".readFile().decodeJson()
 
   @Test
@@ -325,7 +331,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
     val quest = createTestConfigurationsData()[0]
     val patientDetailsViewConfiguration =
-      patientDetailsViewConfigurationOf(
+      dataDetailsListViewConfigurationOf(
         appId = quest.appId,
         classification = quest.classification,
         contentTitle = quest.contentTitle,
@@ -405,7 +411,7 @@ class PatientRepositoryTest : RobolectricTest() {
     val g6pd = createTestConfigurationsData()[1]
 
     val patientDetailsViewConfiguration =
-      patientDetailsViewConfigurationOf(
+      dataDetailsListViewConfigurationOf(
         appId = g6pd.appId,
         classification = g6pd.classification,
         contentTitle = g6pd.contentTitle,
@@ -491,5 +497,52 @@ class PatientRepositoryTest : RobolectricTest() {
           }
       }
     )
+  }
+
+  @Test
+  fun testGetConditionShouldReturnValidCondition() = runBlockingTest {
+    coEvery { fhirEngine.search<Condition>(any()) } returns listOf(Condition().apply { id = "c1" })
+
+    val result =
+      repository.getCondition(
+        Encounter().apply { id = "123" },
+        filterOf("code", "Code", Properties())
+      )
+
+    coVerify { fhirEngine.search<Condition>(any()) }
+
+    Assert.assertEquals("c1", result!!.first().logicalId)
+  }
+
+  @Test
+  fun testGetObservationShouldReturnValidObservation() = runBlockingTest {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(Observation().apply { id = "o1" })
+
+    val result =
+      repository.getObservation(
+        Encounter().apply { id = "123" },
+        filterOf("code", "Code", Properties())
+      )
+
+    coVerify { fhirEngine.search<Observation>(any()) }
+
+    Assert.assertEquals("o1", result.first().logicalId)
+  }
+
+  @Test
+  fun testGetMedicationRequestShouldReturnValidMedicationRequest() = runBlockingTest {
+    coEvery { fhirEngine.search<MedicationRequest>(any()) } returns
+      listOf(MedicationRequest().apply { id = "mr1" })
+
+    val result =
+      repository.getMedicationRequest(
+        Encounter().apply { id = "123" },
+        filterOf("code", "Code", Properties())
+      )
+
+    coVerify { fhirEngine.search<MedicationRequest>(any()) }
+
+    Assert.assertEquals("mr1", result.first().logicalId)
   }
 }

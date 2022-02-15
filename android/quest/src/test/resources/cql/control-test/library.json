@@ -1,11 +1,6 @@
 {
   "resourceType": "Library",
   "id": "32883",
-  "meta": {
-    "versionId": "1",
-    "lastUpdated": "2022-01-17T16:24:27.652+00:00",
-    "source": "#2c991a72e3cdc56a"
-  },
   "extension": [ {
     "url": "http://hl7.org/fhir/uv/cpg/StructureDefinition/cpg-knowledgeCapability",
     "valueCode": "publishable"
@@ -33,9 +28,6 @@
     "text": "CQL"
   } ],
   "relatedArtifact": [ {
-    "type": "depends-on",
-    "resource": "http://hl7.org/fhir/Library/FHIR-ModelInfo|4.0.1"
-  }, {
     "type": "depends-on",
     "label": "FHIRHelpers|4.0.1",
     "resource": "Library/1753"
