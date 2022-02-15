@@ -270,9 +270,29 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
         practitionerDetailsUtils.getResourceFromPractitionerDetails(ResourceType.Organization.name)
       val listLocation =
         practitionerDetailsUtils.getResourceFromPractitionerDetails(ResourceType.Location.name)
+      val listUnknownType =
+        practitionerDetailsUtils.getResourceFromPractitionerDetails(ResourceType.Practitioner.name)
       Assert.assertNotNull(listCareTeam)
       Assert.assertNotNull(listOrganization)
       Assert.assertNotNull(listLocation)
+      Assert.assertNotNull(listUnknownType)
+      Assert.assertEquals(listUnknownType.size, 0)
+    }
+  }
+
+  @Test
+  fun testRetrieveKeyClockDetails() {
+    val gson = Gson()
+    val keycloakUserDetails = gson.toJson(getKeycloakUserDetails())
+    every {
+      sharedPreferencesHelper.read(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, any())
+    } returns keycloakUserDetails
+
+    runBlocking {
+      val keycloakUserInfo =
+           practitionerDetailsUtils.retrieveKeyClockInfo()
+
+      Assert.assertNotNull(keycloakUserInfo)
     }
   }
 
