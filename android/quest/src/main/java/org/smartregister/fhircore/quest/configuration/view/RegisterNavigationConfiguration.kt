@@ -28,6 +28,11 @@ data class QuestionnaireNavigationAction(val form: String, val readOnly: Boolean
   NavigationAction()
 
 @Serializable
+@SerialName("questionnaire_data_details")
+data class QuestionnaireDataDetailsNavigationAction(val classification: String) :
+  NavigationAction()
+
+@Serializable
 class NavigationConfiguration(
   override val appId: String,
   override val classification: String,

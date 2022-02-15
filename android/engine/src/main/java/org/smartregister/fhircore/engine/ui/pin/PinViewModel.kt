@@ -42,7 +42,6 @@ constructor(
   val sharedPreferences: SharedPreferencesHelper,
   val secureSharedPreference: SecureSharedPreference,
   val configurationRegistry: ConfigurationRegistry,
-  val accountAuthenticator: AccountAuthenticator,
   val app: Application
 ) : ViewModel() {
 

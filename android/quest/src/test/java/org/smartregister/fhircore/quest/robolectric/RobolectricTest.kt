@@ -90,6 +90,10 @@ abstract class RobolectricTest {
     return Base64.getEncoder().encodeToString(this.readFile().toByteArray())
   }
 
+  fun String.readStringToBase64Encoded(): String {
+    return Base64.getEncoder().encodeToString(this.toByteArray())
+  }
+
   fun String.parseSampleResource(): IBaseResource =
     this.readFile()
       .let {
