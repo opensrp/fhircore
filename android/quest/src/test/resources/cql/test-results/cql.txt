@@ -25,6 +25,7 @@ code "g6pdStatusCode": '9024005' from "SNOMED" display 'G6PD Status'
 code "normalResultCode": '280413001' from "SNOMED" display 'Normal'
 code "deficientResultCode": '260372006' from "SNOMED" display 'Deficient'
 code "intermediateResultCode": '11896004' from "SNOMED" display 'Intermediate'
+code "haemoglobinLevelCode": '104142005' from "SNOMED" display 'Haemoglobin Level'
 code "serviceReqCategory": '108252007' from "ServiceReqCategoryCodes" display 'Laboratory procedure'
 code "diagReportCategory": 'HM' from "DiagReportCategoryCodes" display 'Hematology'
 
@@ -57,27 +58,26 @@ define "Registerd G6PD":
   Last([Observation: "G6PD code"] G
     where G.status ~ 'registered')
 
+define "Registerd HBLevel":
+  Last([Observation: "haemoglobinLevelCode"] G
+    where G.status ~ 'registered')
 
-define "Abnormal Haemoglobin": "Registerd Haem".value.value <= 8.0
-
+define "G6pd Value": "Registerd G6PD".value.value
 
 //Define Thresholds
-define "Deficient": "Registerd G6PD".value.value <= 3.9
+define "Deficient": "G6pd Value" <= 3.9
 
-define "Intermediate":
-  Last([Observation: "G6PD code"] G
-    where "Female" and G.value.value >= 4.0  and G.value.value <= 6.0
-      return  true)
+define "Intermediate": "Female" and "G6pd Value" >= 4.0  and "G6pd Value" <= 6.0
 
+define "Normal Male": "Male" and "G6pd Value" >= 4.0
 
-define "Normal Male": "Male" and "Registerd G6PD".value.value >= 4.0
-
-define "Normal Female": "Female" and "Registerd G6PD".value.value >= 6.1
+define "Normal Female": "Female" and "G6pd Value" >= 6.1
 
 define "g6pdTestResultCode":
       if "Deficient" then "deficientResultCode"
       else if "Intermediate" then "intermediateResultCode"
       else if "Normal Male" or "Normal Female" then "normalResultCode"
+      else if "Registerd HBLevel" is not null then toCode("Registerd HBLevel".value.coding[0])
       else null
 
 
@@ -132,3 +132,10 @@ define function "CreateConcept"(code Code):
 
 define function "CreateReference"(ref String):
   Reference {reference: string { value: "ref" } }
+
+define function "toCode"(coding Coding):
+    Code {
+      code: "coding".code,
+      system: "coding".system,
+      display: "coding".display
+     }

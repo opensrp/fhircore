@@ -118,7 +118,6 @@ class CqlContentTest : RobolectricTest() {
     println(cqlLibrary.convertToString(false))
 
     val fhirHelpersLibrary = "cql-common/helper.json".parseSampleResource() as Library
-    val fhirModelLibrary = "cql-common/fhir-model.json".parseSampleResource() as Library
 
     val dataBundle = "$resourceDir/data.json".parseSampleResource() as Bundle
 
@@ -132,8 +131,6 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.load(Library::class.java, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.load(Library::class.java, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
-    coEvery { fhirEngine.load(Library::class.java, fhirModelLibrary.logicalId) } returns
-      fhirModelLibrary
     coEvery { defaultRepository.save(any()) } just runs
     coEvery { defaultRepository.search(any()) } returns listOf()
 
