@@ -16,7 +16,24 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
+import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
+import org.smartregister.fhircore.engine.ui.pin.PinLoginActivity
+import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
+
 interface LoginService {
-  var loginActivity: LoginActivity
+
+  var loginActivity: AppCompatActivity
+
   fun navigateToHome()
+
+  fun navigateToPinLogin(goForSetup: Boolean = false) {
+    var nextIntent = Intent(loginActivity, PinLoginActivity::class.java)
+    if (goForSetup) nextIntent = Intent(loginActivity, PinSetupActivity::class.java)
+    nextIntent.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+    loginActivity.run {
+      startActivity(nextIntent)
+      finish()
+    }
+  }
 }
