@@ -40,10 +40,14 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
     loginService.loginActivity = this
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+
     pinViewModel.apply {
-      loadData(isSetup = false)
+      if (configurationRegistry.isAppIdInitialized()) {
+        loadData(isSetup = false)
+      }
       val pinLoginActivity = this@PinLoginActivity
       navigateToHome.observe(pinLoginActivity) { pinLoginActivity.moveToHome() }
       launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }

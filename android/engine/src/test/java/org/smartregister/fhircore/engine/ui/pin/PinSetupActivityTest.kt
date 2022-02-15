@@ -57,7 +57,6 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
 
   private lateinit var pinViewModel: PinViewModel
-
   private lateinit var pinSetupActivity: PinSetupActivity
   private lateinit var pinSetupActivitySpy: PinSetupActivity
 
