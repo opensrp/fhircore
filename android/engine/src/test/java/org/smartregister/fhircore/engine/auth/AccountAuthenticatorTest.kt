@@ -24,6 +24,7 @@ import android.accounts.AccountManager.KEY_INTENT
 import android.content.Intent
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -32,6 +33,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -49,6 +51,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.FhirContextUtil
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.Call
@@ -175,6 +178,20 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertEquals(account.name, parcelable.getStringExtra(KEY_ACCOUNT_NAME))
     Assert.assertTrue(parcelable.extras!!.containsKey(AUTH_TOKEN_TYPE))
     Assert.assertEquals(authTokenType, parcelable.getStringExtra(AUTH_TOKEN_TYPE))
+  }
+
+  @Test
+  fun testThatGetPractitionerDetailsReturnsACustomBundle() {
+    val iParser: IParser = FhirContextUtil().getPractitionerDetailParser()
+    val qJson =
+      context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }
+    val bundleCurrent = iParser.parseResource(qJson) as org.hl7.fhir.r4.model.Bundle
+    runBlocking {
+      val bundle = accountAuthenticator.getPractitionerDetails(keycloak_uuid = "123")
+      Assert.assertNotNull(bundle)
+      Assert.assertNotNull(bundle.entry)
+      Assert.assertEquals(bundleCurrent.entry.size, bundle.entry.size)
+    }
   }
 
   @Test
