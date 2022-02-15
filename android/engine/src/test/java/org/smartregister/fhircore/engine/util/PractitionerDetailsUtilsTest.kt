@@ -284,13 +284,11 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
   fun testRetrieveKeyClockDetails() {
     val gson = Gson()
     val keycloakUserDetails = gson.toJson(getKeycloakUserDetails())
-    every {
-      sharedPreferencesHelper.read(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, any())
-    } returns keycloakUserDetails
+    every { sharedPreferencesHelper.read(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, any()) } returns
+      keycloakUserDetails
 
     runBlocking {
-      val keycloakUserInfo =
-           practitionerDetailsUtils.retrieveKeyClockInfo()
+      val keycloakUserInfo = practitionerDetailsUtils.retrieveKeyClockInfo()
 
       Assert.assertNotNull(keycloakUserInfo)
     }
