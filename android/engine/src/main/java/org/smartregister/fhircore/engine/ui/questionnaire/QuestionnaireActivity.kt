@@ -144,28 +144,29 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         // 2- readonly -> assert and pass response from intent
         // 3- default -> process, populate and pass response/data from intent if exists
         arguments =
-          bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString)).apply {
-            var questionnaireResponse =
-              intent
-                .getStringExtra(QUESTIONNAIRE_RESPONSE)
-                ?.decodeResourceFromString<QuestionnaireResponse>()
-                ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
+          bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
+            .apply {
+              var questionnaireResponse =
+                intent
+                  .getStringExtra(QUESTIONNAIRE_RESPONSE)
+                  ?.decodeResourceFromString<QuestionnaireResponse>()
+                  ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
 
-            if (questionnaireType.isReadOnly()) require(questionnaireResponse != null)
+              if (questionnaireType.isReadOnly()) require(questionnaireResponse != null)
 
-            if (clientIdentifier != null) {
-              setBarcode(questionnaire, clientIdentifier!!, true)
+              if (clientIdentifier != null) {
+                setBarcode(questionnaire, clientIdentifier!!, true)
 
-              if (questionnaireResponse == null)
-                questionnaireResponse =
-                  questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+                if (questionnaireResponse == null)
+                  questionnaireResponse =
+                    questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+              }
+
+              this.putString(
+                QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
+                questionnaireResponse?.encodeResourceToString()
+              )
             }
-
-            this.putString(
-              QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
-              questionnaireResponse?.encodeResourceToString()
-            )
-          }
       }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
   }
@@ -363,9 +364,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     deepFlat(q.item, qr, qItems, qrItems)
 
-    return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(qItems, qrItems, this).values.flatten().all {
-      it.isValid
-    }
+    return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(
+        qItems,
+        qrItems,
+        this
+      )
+      .values
+      .flatten()
+      .all { it.isValid }
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {

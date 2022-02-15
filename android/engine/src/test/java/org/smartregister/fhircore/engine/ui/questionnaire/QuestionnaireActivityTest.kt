@@ -236,10 +236,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
   @Test
   fun testOnBackPressedShouldCallFinishWhenInReadOnlyMode() {
-    ReflectionHelpers.setField(questionnaireActivity, "questionnaireType", QuestionnaireType.EDIT)
-    questionnaireActivity.onBackPressed()
+    val qActivity = spyk(questionnaireActivity)
+    ReflectionHelpers.setField(qActivity, "questionnaireType", QuestionnaireType.READ_ONLY)
+    qActivity.onBackPressed()
 
-    verify { questionnaireActivity.finish() }
+    verify { qActivity.finish() }
   }
 
   @Test
