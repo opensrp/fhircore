@@ -285,15 +285,17 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     questionnaireViewModel.extractionProgress.observe(
       this,
-      { result ->
-        saveProcessingAlertDialog.dismiss()
-        if (result) {
-          postSaveSuccessful(questionnaireResponse)
-        } else {
-          Timber.e("An error occurred during extraction")
-        }
-      }
+      { result -> onPostSave(result, questionnaireResponse) }
     )
+  }
+
+  fun onPostSave(result: Boolean, questionnaireResponse: QuestionnaireResponse) {
+    dismissSaveProcessing()
+    if (result) {
+      postSaveSuccessful(questionnaireResponse)
+    } else {
+      Timber.e("An error occurred during extraction")
+    }
   }
 
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit

@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.anc.ui.bmicompute
 
+import android.content.Context
+import android.graphics.Color
+import android.text.style.ForegroundColorSpan
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -25,6 +28,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireViewModel
 
@@ -96,5 +100,73 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
     val resultIndex4 =
       viewModel.getEndingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.OBESITY, app)
     Assert.assertEquals(expectedIndex4, resultIndex4)
+  }
+
+  @Test
+  fun getBmiResultShouldReturnBmiCategoriesWithUnderweightEmphasized() {
+    val spannableString = viewModel.getBmiResult(16.0, ApplicationProvider.getApplicationContext())
+    val categoriesString = getBmiCategories(ApplicationProvider.getApplicationContext())
+    val underweightString = "Underweight = bmi below 18.5"
+
+    val spans = spannableString.getSpans(0, spannableString.length, ForegroundColorSpan::class.java)
+
+    Assert.assertEquals(Color.RED, spans[0].foregroundColor)
+    Assert.assertEquals(
+      categoriesString.indexOf(underweightString),
+      spannableString.getSpanStart(spans[0])
+    )
+    Assert.assertEquals(
+      categoriesString.indexOf(underweightString) + underweightString.length,
+      spannableString.getSpanEnd(spans[0])
+    )
+  }
+
+  @Test
+  fun getBmiResultShouldReturnBmiCategoriesWithUnderweightEmphasizedBmiCategorieseWithOverweightEmphasized() {
+    val spannableString = viewModel.getBmiResult(25.0, ApplicationProvider.getApplicationContext())
+    val categoriesString = getBmiCategories(ApplicationProvider.getApplicationContext())
+    val overweightString = "Overweight = 25 – 29.9"
+
+    val spans = spannableString.getSpans(0, spannableString.length, ForegroundColorSpan::class.java)
+
+    Assert.assertEquals(Color.RED, spans[0].foregroundColor)
+    Assert.assertEquals(
+      categoriesString.indexOf(overweightString),
+      spannableString.getSpanStart(spans[0])
+    )
+    Assert.assertEquals(
+      categoriesString.indexOf(overweightString) + overweightString.length,
+      spannableString.getSpanEnd(spans[0])
+    )
+  }
+
+  @Test
+  fun getBmiResultShouldReturnBmiCategoriesWithNormalEmphasizedBmiCategorieseWithOverweightEmphasized() {
+    val spannableString = viewModel.getBmiResult(20.0, ApplicationProvider.getApplicationContext())
+    val categoriesString = getBmiCategories(ApplicationProvider.getApplicationContext())
+    val normalBmiString = "Normal weight = 18.5 – 24.9"
+
+    val spans = spannableString.getSpans(0, spannableString.length, ForegroundColorSpan::class.java)
+
+    Assert.assertEquals(Color.parseColor("#5AAB61"), spans[0].foregroundColor)
+    Assert.assertEquals(
+      categoriesString.indexOf(normalBmiString),
+      spannableString.getSpanStart(spans[0])
+    )
+    Assert.assertEquals(
+      categoriesString.indexOf(normalBmiString) + normalBmiString.length,
+      spannableString.getSpanEnd(spans[0])
+    )
+  }
+
+  private fun getBmiCategories(context: Context): String {
+    return context.getString(
+      R.string.bmi_categories_text,
+      context.getString(R.string.bmi_categories_label),
+      context.getString(R.string.bmi_category_underweight),
+      context.getString(R.string.bmi_category_normal),
+      context.getString(R.string.bmi_category_overweight),
+      context.getString(R.string.bmi_category_obesity)
+    )
   }
 }
