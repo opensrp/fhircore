@@ -9,69 +9,83 @@ include "FHIRHelpers" version '4.0.1' called FHIRHelpers
 
 //System declarations  : Codable concept codes systems
 codesystem "SNOMED": 'http://snomed.info/sct'
-codesystem "ONA": 'http://fhir.ona.io'
 
 //Code used as identifers
-code "G6PD code": '86859003' from "SNOMED" display 'G6PD Enzyme'
-code "Haemoglobin code": '259695003' from "SNOMED" display 'Haemoglobin'
-code "g6pdResultTypeCode": '000001' from "ONA" display 'G6PD Result Type'
 code "g6pdControl1": '410680006' from "SNOMED" display 'Control-mode 1'
 code "g6pdControl2": '405358009' from "SNOMED" display 'Control-mode 2'
+code "invalidResult": '455371000124106' from "SNOMED" display 'Incorrect Result'
+code "validResult": '280413001' from "SNOMED" display 'Correct Result'
+code "deviceOperation": '15361003' from "SNOMED" display 'Device Operation'
 
 
-define "Control1Obs":
-  Last([Observation: "g6pdResultTypeCode"] H
-    where H.value ~ "g6pdControl1")
+define "QR" : Last([QuestionnaireResponse] H)
 
-define "Control2Obs":
-  Last([Observation: "g6pdResultTypeCode"] H
-    where H.value ~  "g6pdControl2")
+define "Control1Obs": "QR".item.where(linkId='result_type').answer.value ~ "g6pdControl1"
 
-define "HaemoglobinObs":
-  Last([Observation: "Haemoglobin code"] H
-    where H.status ~ 'registered')
+define "Control2Obs": "QR".item.where(linkId='result_type').answer.value ~  "g6pdControl2"
 
-define "G6PDObs":
-  Last([Observation: "G6PD code"] G
-    where G.status ~ 'registered')
+define "HaemoglobinObs": "QR".item.where(linkId='haemoglobin').answer.first().value
 
-define "G6PD Value": ToString("G6PDObs".value.value.value)
-define "Haemoglobin Value": ToString("HaemoglobinObs".value.value.value)
+define "G6PDObs": "QR".item.where(linkId='g6pd').answer.first().value
+
+define "G6PDTemp": decimal {value: "G6PDObs".value}
+define "G6PDValue": ToString("G6PDTemp")
+define "HaemoglobinTemp": decimal {value: "HaemoglobinObs".value}
+define "HaemoglobinValue": ToString("HaemoglobinTemp")
 
 define "G6PD Normal":
-    if "Control1Obs" is not null and "G6PDObs".value.value between 0.0 and 3.0
+    if "Control1Obs" is not null and "G6PDObs" between 0.0 and 3.0
     	then true
-    else if "Control2Obs" is not null and "G6PDObs".value.value between 6.0 and 10.0
+    else if "Control2Obs" is not null and "G6PDObs" between 6.0 and 10.0
     	then true
     else false
 
 define "G6PD Conclusion":
     if "Control1Obs" is not null and "G6PD Normal"
-    	then 'Value ('+ "G6PD Value"+') is in Normal G6PD Range 0-3'
+    	then 'Value ('+ "G6PDValue"+') is in Normal G6PD Range 0-3'
     else if "Control2Obs" is not null and "G6PD Normal"
-    	then 'Value ('+ "G6PD Value"+') is in Normal G6PD Range 6-12'
-    else 'Value('+"G6PD Value"+') is Non Deterministic G6PD result'
+    	then 'Value ('+ "G6PDValue"+') is in Normal G6PD Range 6-12'
+    else 'Value('+"G6PDValue"+') is Non Deterministic G6PD result'
 
 define "Haemoglobin Normal":
-    if "Control1Obs" is not null and "HaemoglobinObs".value.value between 8.0 and 12.0
+    if "Control1Obs" is not null and "HaemoglobinObs" between 8.0 and 12.0
     	then true
-    else if "Control2Obs" is not null and "HaemoglobinObs".value.value between 13.0 and 17.0
+    else if "Control2Obs" is not null and "HaemoglobinObs" between 13.0 and 17.0
     	then true
     else false
 
 define "Haemoglobin Conclusion":
     if "Control1Obs" is not null and "Haemoglobin Normal"
-    	then 'Value ('+ "Haemoglobin Value"+') is in Normal Haemoglobin Range 8-12'
+    	then 'Value ('+ "HaemoglobinValue"+') is in Normal Haemoglobin Range 8-12'
     else if "Control2Obs" is not null and "Haemoglobin Normal"
-    	then 'Value ('+ "Haemoglobin Value"+') is in Normal Haemoglobin Range 13-17'
-    else 'Value('+"Haemoglobin Value"+') is Non Deterministic Haemoglobin result'
+    	then 'Value ('+ "HaemoglobinValue"+') is in Normal Haemoglobin Range 13-17'
+    else 'Value('+"HaemoglobinValue"+') is Non Deterministic Haemoglobin result'
 
-define "Conclusion":
-  if "G6PD Normal" and "Haemoglobin Normal" then 'Correct result'
-  else 'Invalid result'
+define "ConclusionCode":
+  if "G6PD Normal" and "Haemoglobin Normal" then "validResult"
+  else "invalidResult"
+
+define "Conclusion": "ConclusionCode".display
 
 define "Conclusion Details": '\nDetails:\n'+ "G6PD Conclusion" + '\n' + "Haemoglobin Conclusion"
 
+define "QRRef": ReplaceMatches('QuestionnaireResponse/'+"QR".id,'#','')
 
-define "OUTPUT": List { "Conclusion" , "Conclusion Details"}
+define "Observation": Observation{
+  focus: Reference { reference: string { value: "QRRef" } },
+  code: CreateConcept("deviceOperation"),
+  effective: dateTime{ value: Now() },
+  value: CreateConcept("ConclusionCode")
+}
 
+define "OUTPUT": List { "Conclusion" , "Conclusion Details", "Observation"}
+
+// helper functions
+define function "CreateConcept"(code Code):
+  CodeableConcept { coding: {
+        Coding {
+          code: code {value: "code".code },
+          system: uri {value: "code".system },
+          display: string {value: "code".display }
+        }
+  } }

@@ -163,4 +163,6 @@ dependencies {
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 //     debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+
+    testImplementation 'info.cqframework:cql-to-elm:1.5.0'
 }

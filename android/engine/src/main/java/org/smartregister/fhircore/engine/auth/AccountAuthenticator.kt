@@ -212,6 +212,11 @@ constructor(
     return tokenManagerService.getLocalSessionToken()?.isNotBlank() == true
   }
 
+  fun hasActivePin(): Boolean {
+    Timber.v("Checking for an active PIN")
+    return secureSharedPreference.retrieveSessionPin()?.isNotBlank() == true
+  }
+
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
     Timber.v("Validating credentials with local storage")
     return secureSharedPreference.retrieveCredentials()?.let {

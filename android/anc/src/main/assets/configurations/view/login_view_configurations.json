@@ -5,7 +5,8 @@
     "applicationName": "ANC",
     "applicationVersion": "0.0.3",
     "darkMode": true,
-    "showLogo": false
+    "showLogo": false,
+    "enablePin": false
   },
   {
     "appId": "ecbis",
@@ -13,6 +14,7 @@
     "applicationName": "eCBIS",
     "applicationVersion": "0.0.1",
     "darkMode": false,
-    "showLogo": true
+    "showLogo": true,
+    "enablePin": true
   }
 ]

@@ -26,6 +26,8 @@
             </intent-filter>
         </activity>
         <activity android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity" />
+        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinLoginActivity" />
+        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinSetupActivity" />
         <activity android:name=".ui.family.register.FamilyRegisterActivity" />
         <activity android:name=".ui.report.ReportHomeActivity" />
         <activity

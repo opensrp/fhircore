@@ -39,10 +39,25 @@ class SharedPreferencesHelper @Inject constructor(@ApplicationContext val contex
     }
   }
 
+  /** @see [SharedPreferences.getLong] */
+  fun read(key: String, defaultValue: Long) = prefs.getLong(key, defaultValue)
+
+  /** @see [SharedPreferences.Editor.putLong] */
   fun write(key: String, value: Long) {
     val prefsEditor: SharedPreferences.Editor = prefs.edit()
     with(prefsEditor) {
       putLong(key, value)
+      commit()
+    }
+  }
+
+  /** @see [SharedPreferences.getBoolean] */
+  fun read(key: String, defaultValue: Boolean) = prefs.getBoolean(key, defaultValue)
+
+  /** @see [SharedPreferences.Editor.putBoolean] */
+  fun write(key: String, value: Boolean) {
+    with(prefs.edit()) {
+      putBoolean(key, value)
       commit()
     }
   }

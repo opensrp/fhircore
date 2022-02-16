@@ -63,7 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
+import org.smartregister.fhircore.quest.configuration.view.dataDetailsListViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 
 const val TOOLBAR_TITLE = "toolbarTitle"
@@ -77,8 +77,9 @@ const val FORM_CONTAINER_ITEM = "formItemContainerTag"
 const val RESULT_CONTAINER_ITEM = "resultItemContainerTag"
 
 @Composable
-fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+fun Toolbar(questPatientDetailViewModel: ListDataDetailViewModel) {
   var showMenu by remember { mutableStateOf(false) }
+  val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
 
   TopAppBar(
     title = {
@@ -100,22 +101,21 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
         onDismissRequest = { showMenu = false },
         Modifier.testTag(TOOLBAR_MENU)
       ) {
-        DropdownMenuItem(
-          onClick = {
-            showMenu = false
-            questPatientDetailViewModel.onMenuItemClickListener(R.string.edit_patient_info)
-          }
-        ) { Text(text = stringResource(id = R.string.edit_patient_info)) }
+        patientItem?.let {
+          DropdownMenuItem(
+            onClick = {
+              showMenu = false
+              questPatientDetailViewModel.onMenuItemClickListener(R.string.edit_patient_info)
+            }
+          ) { Text(text = stringResource(id = R.string.edit_patient_info)) }
+        }
       }
     }
   )
 }
 
 @Composable
-fun ResultItem(
-  testResult: QuestResultItem,
-  questPatientDetailViewModel: QuestPatientDetailViewModel
-) {
+fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDataDetailViewModel) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -129,7 +129,7 @@ fun ResultItem(
     Column(verticalArrangement = Arrangement.Center) {
       testResult.data.forEach { dataList ->
         Row(modifier = Modifier.padding(end = 12.dp)) {
-          dataList.forEach { item ->
+          dataList.forEachIndexed { i, item ->
             item.label?.let {
               Text(
                 text = item.label,
@@ -154,6 +154,10 @@ fun ResultItem(
               fontWeight =
                 FontWeight(item.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight)
             )
+
+            // add separator between items if item value itself is not supposed to act as label i.e.
+            // label exists
+            if (i < dataList.size - 1 && item.label?.isNotBlank() == true) Text(", ")
           }
         }
       }
@@ -170,7 +174,7 @@ fun ResultItem(
 @Composable
 fun FormItem(
   questionnaireConfig: QuestionnaireConfig,
-  questPatientDetailViewModel: QuestPatientDetailViewModel
+  questPatientDetailViewModel: ListDataDetailViewModel
 ) {
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
@@ -191,9 +195,9 @@ fun FormItem(
 }
 
 @Composable
-fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewModel) {
   val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration
-    .observeAsState(patientDetailsViewConfigurationOf())
+    .observeAsState(dataDetailsListViewConfigurationOf())
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)
@@ -207,14 +211,16 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
             .background(color = colorResource(id = R.color.colorPrimary))
             .padding(12.dp)
       ) {
-        Text(
-          text =
-            "${patientItem?.name ?: ""}, ${patientItem?.gender ?: ""}, ${patientItem?.age ?: ""}",
-          color = colorResource(id = R.color.white),
-          fontSize = 18.sp,
-          fontWeight = FontWeight.Bold,
-          modifier = Modifier.testTag(PATIENT_NAME)
-        )
+        patientItem?.let {
+          Text(
+            text = "${it.name}, ${it.gender}, ${it.age}",
+            color = colorResource(id = R.color.white),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.testTag(PATIENT_NAME)
+          )
+        }
+
         // Adding Additional Data i.e, G6PD Status etc.
         patientItem?.additionalData?.forEach {
           Row {
