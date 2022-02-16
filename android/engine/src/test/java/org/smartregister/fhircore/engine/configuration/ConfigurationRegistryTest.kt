@@ -30,6 +30,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -140,5 +141,38 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
       AppConfigClassification.LOGIN
     )
+  }
+
+  @Test
+  fun testRetrievePinConfigurationShouldReturnLoginViewConfiguration() {
+    configurationRegistry.loadAppConfigurations(testAppId, accountAuthenticator) {}
+    val retrievedConfiguration =
+      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
+
+    Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
+    val configurationsMap = configurationRegistry.configurationsMap
+    Assert.assertTrue(configurationsMap.isNotEmpty())
+    Assert.assertTrue(configurationsMap.containsKey("appId|pin"))
+    Assert.assertTrue(configurationsMap["appId|pin"]!! is PinViewConfiguration)
+
+    Assert.assertEquals("appId", retrievedConfiguration.appId)
+    Assert.assertEquals("pin", retrievedConfiguration.classification)
+    Assert.assertEquals("Sample App", retrievedConfiguration.applicationName)
+    Assert.assertEquals("ic_launcher", retrievedConfiguration.appLogoIconResourceFile)
+    Assert.assertTrue(retrievedConfiguration.enablePin)
+    Assert.assertTrue(retrievedConfiguration.showLogo)
+  }
+
+  @Test(expected = UninitializedPropertyAccessException::class)
+  fun testRetrievePinConfigurationShouldThrowAnExceptionWhenAppIdNotProvided() {
+    // AppId not initialized; throw UninitializedPropertyAccessException
+    configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(AppConfigClassification.PIN)
+  }
+
+  @Test(expected = NoSuchElementException::class)
+  fun testRetrievePinConfigurationShouldThrowAnExceptionWhenAppIdProvided() {
+    configurationRegistry.appId = testAppId
+    // WorkflowPoint not initialized; throw NoSuchElementException
+    configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
   }
 }

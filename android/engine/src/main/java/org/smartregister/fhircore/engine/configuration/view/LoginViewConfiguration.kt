@@ -42,6 +42,7 @@ class LoginViewConfiguration(
  * @param darkMode Change login theme; alter the background color to white when false dark blue
  * otherwise
  * @param showLogo Show login logo for the app otherwise
+ * @param enablePin provides PIN login feature
  */
 @Stable
 fun loginViewConfigurationOf(

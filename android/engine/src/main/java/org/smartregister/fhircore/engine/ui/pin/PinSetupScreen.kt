@@ -46,20 +46,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.getDrawable
 
 @Composable
 fun PinSetupScreen(viewModel: PinViewModel) {
@@ -73,8 +76,7 @@ fun PinSetupScreen(viewModel: PinViewModel) {
     setPinEnabled = enableSetPin ?: false,
     onPinConfirmed = viewModel::onPinConfirmed,
     onMenuSettingClicked = { viewModel.onMenuSettingClicked() },
-    appName = viewModel.appName,
-    appLogoResId = viewModel.appLogoResId
+    appLogoResFile = viewModel.appLogoResFile
   )
 }
 
@@ -87,8 +89,7 @@ fun PinSetupPage(
   setPinEnabled: Boolean = false,
   onPinConfirmed: () -> Unit,
   onMenuSettingClicked: () -> Unit,
-  appName: String = "",
-  appLogoResId: Int
+  appLogoResFile: String
 ) {
 
   var showMenu by remember { mutableStateOf(false) }
@@ -133,7 +134,7 @@ fun PinSetupPage(
           .wrapContentWidth(Alignment.CenterHorizontally)
     ) {
       Image(
-        painter = painterResource(id = appLogoResId),
+        bitmap = LocalContext.current.getDrawable(appLogoResFile).toBitmap().asImageBitmap(),
         contentDescription = stringResource(id = R.string.app_logo),
         modifier =
           modifier
@@ -191,8 +192,7 @@ fun PinSetupPreview() {
     inputPin = "",
     setPinEnabled = false,
     onMenuSettingClicked = {},
-    appName = "anc",
-    appLogoResId = 0
+    appLogoResFile = "ic_launcher"
   )
 }
 
@@ -206,7 +206,6 @@ fun PinSetupFilledPreview() {
     inputPin = "1234",
     setPinEnabled = true,
     onMenuSettingClicked = {},
-    appName = "eCBIS",
-    appLogoResId = 0
+    appLogoResFile = "ic_launcher"
   )
 }

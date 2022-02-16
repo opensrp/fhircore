@@ -23,6 +23,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
@@ -34,6 +35,7 @@ import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 class PinSetupActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   val pinViewModel by viewModels<PinViewModel>()
 
@@ -44,7 +46,9 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     pinViewModel.apply {
-      loadData(isSetup = true)
+      if (configurationRegistry.isAppIdInitialized()) {
+        loadData(isSetup = true)
+      }
       val pinSetupActivity = this@PinSetupActivity
       navigateToHome.observe(pinSetupActivity) { pinSetupActivity.moveToHome() }
       navigateToSettings.observe(pinSetupActivity) { pinSetupActivity.moveToSettings() }
