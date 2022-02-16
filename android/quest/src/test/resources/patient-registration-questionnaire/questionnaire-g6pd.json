@@ -277,20 +277,7 @@
       } ],
       "initial": [ {
         "valueCoding": {
-          "code": "date",
-          "display": "Date *",
-          "_display": {
-            "extension": [ {
-              "url": "http://hl7.org/fhir/StructureDefinition/translation",
-              "extension": [ {
-                "url": "lang",
-                "valueCode": "sw"
-              }, {
-                "url": "content",
-                "valueString": "Tarehe *"
-              } ]
-            } ]
-          }
+          "code": "date"
         }
       } ]
     }, {
