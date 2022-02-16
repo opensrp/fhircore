@@ -177,7 +177,6 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     )
   }
 
-  // check test passing
   @Test
   fun testTextOfSaveButtonForFamilyRegistration() = runBlockingTest {
     buildActivityFor(FamilyFormConstants.FAMILY_REGISTER_FORM, false)
@@ -195,7 +194,6 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     )
   }
 
-  // test check passing
   @Test
   fun testTextOfSavedButtonForAncRegister() {
     buildActivityFor(FamilyFormConstants.ANC_ENROLLMENT_FORM, false)
