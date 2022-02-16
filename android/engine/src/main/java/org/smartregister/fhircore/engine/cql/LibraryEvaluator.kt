@@ -53,6 +53,8 @@ import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory
 import org.opencds.cqf.cql.evaluator.library.CqlFhirParametersConverter
 import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import timber.log.Timber
 
 /**
  * This class contains methods to run CQL evaluators given Fhir expressions It borrows code from
@@ -257,6 +259,8 @@ class LibraryEvaluator @Inject constructor() {
     parser.setPrettyPrint(false)
     return result.parameter.mapNotNull { p ->
       (p.value ?: p.resource)?.let {
+        Timber.d("Param found: ${p.name} with value: ${getStringRepresentation(it)}")
+
         if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
           data.addEntry().apply { this.resource = p.resource }
           repository.save(it as Resource)
@@ -307,6 +311,8 @@ class LibraryEvaluator @Inject constructor() {
     // Load terminology content, and create a TerminologyProvider which is the interface used by the
     // evaluator for resolving terminology
     val terminologyProvider = BundleTerminologyProvider(fhirContext, valueSet)
+
+    Timber.d("Cql with data: ${data.encodeResourceToString()}")
 
     // Load data content, and create a RetrieveProvider which is the interface used for
     // implementations of CQL retrieves.

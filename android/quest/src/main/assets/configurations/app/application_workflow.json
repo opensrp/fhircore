@@ -23,7 +23,7 @@
       },
       {
         "workflowPoint": "patient_details_view",
-        "resource": "PatientDetailsViewConfiguration",
+        "resource": "DataDetailsListViewConfiguration",
         "classification": "patient_details_view",
         "description": "Configurations for patient details view"
       },
@@ -44,6 +44,12 @@
         "resource": "ResultDetailsNavigationConfiguration",
         "classification": "result_details_navigation",
         "description": "Configurations for Result Details Navigation"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfigurations",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
       }
     ]
   },
@@ -77,7 +83,7 @@
       },
       {
         "workflowPoint": "patient_details_view",
-        "resource": "PatientDetailsViewConfiguration",
+        "resource": "DataDetailsListViewConfiguration",
         "classification": "patient_details_view",
         "description": "Configurations for patient details view"
       },
@@ -92,6 +98,18 @@
         "resource": "ResultDetailsNavigationConfiguration",
         "classification": "result_details_navigation",
         "description": "Configurations for Result Details Navigation"
+      },
+      {
+        "workflowPoint": "control_test_details_view",
+        "resource": "DataDetailsListViewConfiguration",
+        "classification": "control_test_details_view",
+        "description": "Configurations for patient details view"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfigurations",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
       }
     ]
   }

@@ -26,21 +26,21 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
 @HiltViewModel
-class QuestPatientDetailViewModel
+class ListDataDetailViewModel
 @Inject
 constructor(
   val patientRepository: PatientRepository,
@@ -50,8 +50,8 @@ constructor(
   val fhirEngine: FhirEngine
 ) : ViewModel() {
 
-  private val _patientDetailsViewConfiguration = MutableLiveData<PatientDetailsViewConfiguration>()
-  val patientDetailsViewConfiguration: LiveData<PatientDetailsViewConfiguration>
+  private val _patientDetailsViewConfiguration = MutableLiveData<DataDetailsListViewConfiguration>()
+  val patientDetailsViewConfiguration: LiveData<DataDetailsListViewConfiguration>
     get() = _patientDetailsViewConfiguration
 
   val patientItem = MutableLiveData<PatientItem>()
@@ -64,7 +64,7 @@ constructor(
 
   fun getDemographicsWithAdditionalData(
     patientId: String,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
+    patientDetailsViewConfiguration: DataDetailsListViewConfiguration
   ) {
     viewModelScope.launch {
       val demographic = patientRepository.fetchDemographicsWithAdditionalData(patientId)
@@ -75,24 +75,28 @@ constructor(
     }
   }
 
-  fun getAllForms(profileConfig: ProfileConfig) {
+  fun getAllForms(searchFilter: SearchFilter) {
     viewModelScope.launch {
-      questionnaireConfigs.postValue(
-        patientRepository.fetchTestForms(profileConfig.profileQuestionnaireFilter)
-      )
+      questionnaireConfigs.postValue(patientRepository.fetchTestForms(searchFilter))
     }
   }
 
   fun getAllResults(
-    patientId: String,
-    profileConfig: ProfileConfig,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
+    subjectId: String,
+    subjectType: ResourceType,
+    searchFilter: SearchFilter,
+    patientDetailsViewConfiguration: DataDetailsListViewConfiguration
   ) {
     viewModelScope.launch {
-      val forms = patientRepository.fetchTestForms(profileConfig.profileQuestionnaireFilter)
+      val forms = patientRepository.fetchTestForms(searchFilter)
 
       testResults.postValue(
-        patientRepository.fetchTestResults(patientId, forms, patientDetailsViewConfiguration)
+        patientRepository.fetchTestResults(
+          subjectId,
+          subjectType,
+          forms,
+          patientDetailsViewConfiguration
+        )
       )
     }
   }
@@ -117,7 +121,7 @@ constructor(
     return testResult.second.name ?: testResult.second.title ?: testResult.second.logicalId
   }
 
-  fun updateViewConfigurations(patientDetailsViewConfiguration: PatientDetailsViewConfiguration) {
+  fun updateViewConfigurations(patientDetailsViewConfiguration: DataDetailsListViewConfiguration) {
     _patientDetailsViewConfiguration.value = patientDetailsViewConfiguration
   }
 
@@ -133,15 +137,4 @@ constructor(
     }
     return resourceListLive
   }
-
-  companion object {
-    const val PROFILE_CONFIG = "configurations/form/profile_config.json"
-  }
-
-  @Serializable
-  data class ProfileConfig(
-    val profileQuestionnaireFilter: SearchFilter,
-    val cqlHelperLibraryFilter: SearchFilter,
-    val cqlProfileLibraryFilter: SearchFilter
-  )
 }
