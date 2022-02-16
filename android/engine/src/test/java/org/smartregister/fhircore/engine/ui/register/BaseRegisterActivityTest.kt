@@ -338,6 +338,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     testRegisterActivity.switchFragment(
       tag = TestFragment.TAG + 2,
       isRegisterFragment = false,
+      isFilterVisible = false,
       toolbarTitle = null
     )
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
@@ -358,6 +359,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     testRegisterActivity.switchFragment(
       tag = TestFragment.TAG + 2,
       isRegisterFragment = false,
+      isFilterVisible = false,
       toolbarTitle = toolbarTitle
     )
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
