@@ -32,6 +32,10 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.pinViewConfigurationOf
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -54,15 +58,29 @@ internal class PinViewModelTest : RobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
   private lateinit var pinViewModel: PinViewModel
 
   private val testPin = MutableLiveData("1234")
+  val testPinViewConfiguration =
+    PinViewConfiguration(
+      appId = "ancApp",
+      classification = "classification",
+      applicationName = "Test App",
+      appLogoIconResourceFile = "ic_launcher",
+      enablePin = true,
+      showLogo = true
+    )
 
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    configurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
 
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, true) } returns Unit
@@ -76,13 +94,39 @@ internal class PinViewModelTest : RobolectricTest() {
         dispatcher = dispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
         secureSharedPreference = secureSharedPreference,
+        configurationRegistry = configurationRegistry,
         app = application
       )
     pinViewModel.apply {
       savedPin = "1234"
       isSetupPage = true
+      appName = "demo"
+      appLogoResFile = "ic_launcher"
       onPinChanged("1234")
+      pinViewConfiguration = testPinViewConfiguration
     }
+  }
+
+  @Test
+  fun testPinViewConfiguration() {
+    val expectedPinConfig =
+      pinViewConfigurationOf(
+        appId = "ancApp",
+        classification = "classification",
+        applicationName = "Test App",
+        appLogoIconResourceFile = "ic_launcher",
+        enablePin = true,
+        showLogo = true
+      )
+    Assert.assertEquals(expectedPinConfig.appId, testPinViewConfiguration.appId)
+    Assert.assertEquals(expectedPinConfig.classification, testPinViewConfiguration.classification)
+    Assert.assertEquals(expectedPinConfig.applicationName, testPinViewConfiguration.applicationName)
+    Assert.assertEquals(
+      expectedPinConfig.appLogoIconResourceFile,
+      testPinViewConfiguration.appLogoIconResourceFile
+    )
+    Assert.assertEquals(expectedPinConfig.enablePin, testPinViewConfiguration.enablePin)
+    Assert.assertEquals(expectedPinConfig.showLogo, testPinViewConfiguration.showLogo)
   }
 
   @Test
