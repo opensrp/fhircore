@@ -2,9 +2,9 @@
   "resourceType": "Questionnaire",
   "id": "3435",
   "meta": {
-    "versionId": "11",
-    "lastUpdated": "2021-12-06T10:07:41.836+00:00",
-    "source": "#b79d1ac3c80c3377"
+    "versionId": "31",
+    "lastUpdated": "2022-02-08T10:01:17.386+00:00",
+    "source": "#032daa700c2ffd2f"
   },
   "language": "en",
   "extension": [ {
@@ -13,9 +13,21 @@
   } ],
   "name": "Add Patient",
   "title": "Add Patient",
+  "_title": {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/translation",
+      "extension": [ {
+        "url": "lang",
+        "valueCode": "sw"
+      }, {
+        "url": "content",
+        "valueString": "Ongeza Mgonjwa"
+      } ]
+    } ]
+  },
   "status": "active",
   "subjectType": [ "Patient" ],
-  "publisher": "ONA",
+  "publisher": "G6PD",
   "useContext": [ {
     "code": {
       "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
@@ -25,7 +37,19 @@
       "coding": [ {
         "system": "http://fhir.ona.io",
         "code": "000003",
-        "display": "G6PD Patient"
+        "display": "G6PD Patient",
+        "_display": {
+          "extension": [ {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [ {
+              "url": "lang",
+              "valueCode": "sw"
+            }, {
+              "url": "content",
+              "valueString": "Mgonjwa wa G6PD"
+            } ]
+          } ]
+        }
       } ]
     }
   } ],
@@ -36,6 +60,18 @@
       "linkId": "PR-name",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
       "text": "Demographic Information",
+      "_text": {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/translation",
+          "extension": [ {
+            "url": "lang",
+            "valueCode": "sw"
+          }, {
+            "url": "content",
+            "valueString": "Maelezo ya Mtumiaji"
+          } ]
+        } ]
+      },
       "type": "group",
       "item": [ {
         "extension": [ {
@@ -47,7 +83,19 @@
         } ],
         "linkId": "PR-name-family",
         "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
-        "text": "Surname",
+        "text": "Surname *",
+        "_text": {
+          "extension": [ {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [ {
+              "url": "lang",
+              "valueCode": "sw"
+            }, {
+              "url": "content",
+              "valueString": "Jina la ukoo *"
+            } ]
+          } ]
+        },
         "type": "string",
         "required": true
       }, {
@@ -60,7 +108,19 @@
         } ],
         "linkId": "PR-name-given",
         "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
-        "text": "First Name",
+        "text": "First Name *",
+        "_text": {
+          "extension": [ {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [ {
+              "url": "lang",
+              "valueCode": "sw"
+            }, {
+              "url": "content",
+              "valueString": "Jina la kwanza *"
+            } ]
+          } ]
+        },
         "type": "string",
         "required": true
       } ]
@@ -79,8 +139,20 @@
         "linkId": "PR-identifier-nid",
         "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
         "text": "National ID Number",
+        "_text": {
+          "extension": [ {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [ {
+              "url": "lang",
+              "valueCode": "sw"
+            }, {
+              "url": "content",
+              "valueString": "Nambari ya Kitambulisho *"
+            } ]
+          } ]
+        },
         "type": "string",
-        "required": true
+        "required": false
       } ]
     }, {
       "extension": [ {
@@ -95,20 +167,56 @@
       } ],
       "linkId": "PR-gender",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
-      "text": "Sex",
+      "text": "Sex *",
+      "_text": {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/translation",
+          "extension": [ {
+            "url": "lang",
+            "valueCode": "sw"
+          }, {
+            "url": "content",
+            "valueString": "Jinsia *"
+          } ]
+        } ]
+      },
       "type": "choice",
       "required": true,
       "answerOption": [ {
         "valueCoding": {
-          "system":"http://hl7.org/fhir/administrative-gender",
+          "system": "http://hl7.org/fhir/administrative-gender",
           "code": "female",
-          "display": "Female"
+          "display": "Female",
+          "_display": {
+            "extension": [ {
+              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+              "extension": [ {
+                "url": "lang",
+                "valueCode": "sw"
+              }, {
+                "url": "content",
+                "valueString": "Mwanamke"
+              } ]
+            } ]
+          }
         }
       }, {
         "valueCoding": {
-          "system":"http://hl7.org/fhir/administrative-gender",
+          "system": "http://hl7.org/fhir/administrative-gender",
           "code": "male",
-          "display": "Male"
+          "display": "Male",
+          "_display": {
+            "extension": [ {
+              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+              "extension": [ {
+                "url": "lang",
+                "valueCode": "sw"
+              }, {
+                "url": "content",
+                "valueString": "Mwanaume"
+              } ]
+            } ]
+          }
         }
       } ]
     }, {
@@ -117,26 +225,72 @@
         "valueCode": "horizontal"
       } ],
       "linkId": "birth_date_selection",
-      "text": "Date of Birth",
+      "text": "Date of Birth *",
+      "_text": {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/translation",
+          "extension": [ {
+            "url": "lang",
+            "valueCode": "sw"
+          }, {
+            "url": "content",
+            "valueString": "Tarehe ya Kuzaliwa *"
+          } ]
+        } ]
+      },
       "type": "choice",
       "required": true,
-      "initial": [
-        {
-          "valueCoding": {
-            "code": "date",
-            "display": "Date"
-          }
-        }
-      ],
       "answerOption": [ {
         "valueCoding": {
           "code": "date",
-          "display": "Date"
+          "display": "Date",
+          "_display": {
+            "extension": [ {
+              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+              "extension": [ {
+                "url": "lang",
+                "valueCode": "sw"
+              }, {
+                "url": "content",
+                "valueString": "Tarehe"
+              } ]
+            } ]
+          }
         }
       }, {
         "valueCoding": {
           "code": "age",
-          "display": "Age"
+          "display": "Age",
+          "_display": {
+            "extension": [ {
+              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+              "extension": [ {
+                "url": "lang",
+                "valueCode": "sw"
+              }, {
+                "url": "content",
+                "valueString": "Umri *"
+              } ]
+            } ]
+          }
+        }
+      } ],
+      "initial": [ {
+        "valueCoding": {
+          "code": "date",
+          "display": "Date *",
+          "_display": {
+            "extension": [ {
+              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+              "extension": [ {
+                "url": "lang",
+                "valueCode": "sw"
+              }, {
+                "url": "content",
+                "valueString": "Tarehe *"
+              } ]
+            } ]
+          }
         }
       } ]
     }, {
@@ -149,7 +303,19 @@
       } ],
       "linkId": "PR-age",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
-      "text": "Age (years)",
+      "text": "Age (years) *",
+      "_text": {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/translation",
+          "extension": [ {
+            "url": "lang",
+            "valueCode": "sw"
+          }, {
+            "url": "content",
+            "valueString": "Umri (miaka) *"
+          } ]
+        } ]
+      },
       "type": "decimal",
       "enableWhen": [ {
         "question": "birth_date_selection",
@@ -169,7 +335,19 @@
       } ],
       "linkId": "PR-birth-date",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
-      "text": "Date of Birth",
+      "text": "Date of Birth *",
+      "_text": {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/translation",
+          "extension": [ {
+            "url": "lang",
+            "valueCode": "sw"
+          }, {
+            "url": "content",
+            "valueString": "Tarehe ya Kuzaliwa *"
+          } ]
+        } ]
+      },
       "type": "date",
       "enableWhen": [ {
         "question": "birth_date_selection",
@@ -184,123 +362,39 @@
         "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
         "valueExpression": {
           "language": "text/fhirpath",
-          "expression": "Patient.maritalStatus.coding"
-        }
-      },{
-        "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-        "valueCode": "horizontal"
-      } ],
-      "linkId": "PR-marital-status",
-      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.maritalStatus",
-      "text": "Marital Status",
-      "type": "choice",
-      "required": true,
-      "answerOption": [ {
-        "valueCoding": {
-          "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
-          "code": "U",
-          "display": "Unmarried"
-        }
-      }, {
-        "valueCoding": {
-          "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
-          "code": "M",
-          "display": "Married"
-        }
-      }, {
-        "valueCoding": {
-          "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
-          "code": "D",
-          "display": "Divorced"
-        }
-      }, {
-        "valueCoding": {
-          "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
-          "code": "W",
-          "display": "Widowed"
-        }
-      } ]
-    }, {
-      "extension": [ {
-        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-        "valueExpression": {
-          "language": "text/fhirpath",
           "expression": "Condition.code.coding"
         }
-      }],
+      } ],
       "linkId": "is_pregnant",
-      "text": "Is Pregnant?",
+      "text": "Is Pregnant? *",
+      "_text": {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/translation",
+          "extension": [ {
+            "url": "lang",
+            "valueCode": "sw"
+          }, {
+            "url": "content",
+            "valueString": "Yu mja mzito? *"
+          } ]
+        } ]
+      },
       "type": "choice",
+      "enableWhen": [ {
+        "question": "PR-gender",
+        "operator": "=",
+        "answerCoding": {
+          "system": "http://hl7.org/fhir/administrative-gender",
+          "code": "female"
+        }
+      } ],
       "required": true,
       "answerOption": [ {
         "valueCoding": {
           "system": "http://snomed.info/sct",
           "code": "77386006",
-          "display": "Pregnant"
-        }
-      }, {
-        "valueCoding": {
-          "system": "http://snomed.info/sct",
-          "code": "60001007",
-          "display": "Not Pregnant"
-        }
-      } ],
-      "enableWhen": [ {
-        "question": "PR-gender",
-        "operator": "=",
-        "answerCoding": {
-          "system":"http://hl7.org/fhir/administrative-gender",
-          "code": "female"
-        }
-      } ]
-    }, {
-        "extension": [ {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
-          "valueExpression": {
-            "name": "contactPoint",
-            "language": "application/x-fhir-query",
-            "expression": "ContactPoint"
-          }
-        } ],
-        "linkId": "PR-telecom",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom",
-        "type": "group",
-        "item": [ {
-          "extension": [ {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
-            "valueExpression": {
-              "name": "contactPointSystem",
-              "language": "application/x-fhir-query",
-              "expression": "ContactPoint$ContactPointSystem"
-            }
-          } ],
-          "linkId": "PR-telecom-system",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.system",
-          "text": "system",
-          "type": "string",
-          "enableWhen": [ {
-            "question": "patient-0-gender",
-            "operator": "=",
-            "answerString": "ok"
-          } ],
-          "initial": [ {
-            "valueString": "phone"
-          } ]
-        }, {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Patient.telecom.value",
-                "name": "patientTelecom"
-              }
-            }
-          ],
-          "linkId": "PR-telecom-value",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.value",
-          "text": "Phone Number",
-          "_text": {
+          "display": "Pregnant",
+          "_display": {
             "extension": [ {
               "url": "http://hl7.org/fhir/StructureDefinition/translation",
               "extension": [ {
@@ -308,14 +402,91 @@
                 "valueCode": "sw"
               }, {
                 "url": "content",
-                "valueString": "Nambari ya simu"
+                "valueString": "Mja Mzito"
               } ]
             } ]
-          },
-          "type": "string",
-          "required": true
+          }
+        }
+      }, {
+        "valueCoding": {
+          "system": "http://snomed.info/sct",
+          "code": "60001007",
+          "display": "Not Pregnant",
+          "_display": {
+            "extension": [ {
+              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+              "extension": [ {
+                "url": "lang",
+                "valueCode": "sw"
+              }, {
+                "url": "content",
+                "valueString": "Sio Mjamzito"
+              } ]
+            } ]
+          }
+        }
+      } ]
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+        "valueExpression": {
+          "name": "contactPoint",
+          "language": "application/x-fhir-query",
+          "expression": "ContactPoint"
+        }
+      } ],
+      "linkId": "PR-telecom",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom",
+      "type": "group",
+      "item": [ {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+          "valueExpression": {
+            "name": "contactPointSystem",
+            "language": "application/x-fhir-query",
+            "expression": "ContactPoint$ContactPointSystem"
+          }
+        } ],
+        "linkId": "PR-telecom-system",
+        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.system",
+        "text": "system",
+        "type": "string",
+        "enableWhen": [ {
+          "question": "patient-0-gender",
+          "operator": "=",
+          "answerString": "ok"
+        } ],
+        "initial": [ {
+          "valueString": "phone"
         } ]
-      },{
+      }, {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "name": "patientTelecom",
+            "language": "text/fhirpath",
+            "expression": "Patient.telecom.value"
+          }
+        } ],
+        "linkId": "PR-telecom-value",
+        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.value",
+        "text": "Phone Number",
+        "_text": {
+          "extension": [ {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [ {
+              "url": "lang",
+              "valueCode": "sw"
+            }, {
+              "url": "content",
+              "valueString": "Nambari ya simu"
+            } ]
+          } ]
+        },
+        "type": "string",
+        "required": false
+      } ]
+    }, {
       "extension": [ {
         "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
         "valueExpression": {
@@ -328,157 +499,55 @@
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address",
       "type": "group",
       "item": [ {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "Patient.address.city",
-              "name": "patientCity"
-            }
+        "extension": [ {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "name": "patientCity",
+            "language": "text/fhirpath",
+            "expression": "Patient.address.city"
           }
-        ],
+        } ],
         "linkId": "PR-address-city",
         "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.city",
         "text": "City",
+        "_text": {
+          "extension": [ {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [ {
+              "url": "lang",
+              "valueCode": "sw"
+            }, {
+              "url": "content",
+              "valueString": "Jiji"
+            } ]
+          } ]
+        },
         "type": "string"
       }, {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "Patient.address.country",
-              "name": "patientCountry"
-            }
+        "extension": [ {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "name": "patientCountry",
+            "language": "text/fhirpath",
+            "expression": "Patient.address.country"
           }
-        ],
+        } ],
         "linkId": "PR-address-country",
         "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.country",
         "text": "Country",
+        "_text": {
+          "extension": [ {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [ {
+              "url": "lang",
+              "valueCode": "sw"
+            }, {
+              "url": "content",
+              "valueString": "Nchi"
+            } ]
+          } ]
+        },
         "type": "string"
-      } ]
-    },{
-      "extension": [ {
-        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
-        "valueExpression": {
-          "language": "application/x-fhir-query",
-          "expression": "Extension"
-        }
-      } ],
-      "linkId": "PR-ethnicity-group",
-      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
-      "text": "Ethnicity",
-      "type": "group",
-      "item": [ {
-        "extension": [ {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-          "valueBoolean": true
-        } ],
-        "linkId": "PR-ethnicity-authority",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.url",
-        "type": "string",
-        "initial": [ {
-          "valueString": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
-        } ]
-      }, {
-        "extension": [ {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "Patient.extension[0].value"
-          }
-        },{
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-          "valueCode": "horizontal"
-        } ],
-        "linkId": "PR-ethnicity",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.value",
-        "type": "choice",
-        "required": true,
-        "answerOption": [ {
-          "valueCoding": {
-            "system" : "urn:oid:2.16.840.1.113883.6.238",
-            "code": "black",
-            "display": "Black"
-          }
-        }, {
-          "valueCoding": {
-            "system" : "urn:oid:2.16.840.1.113883.6.238",
-            "code": "white",
-            "display": "White"
-          }
-        }, {
-          "valueCoding": {
-            "system" : "urn:oid:2.16.840.1.113883.6.238",
-            "code": "asian",
-            "display": "Asian"
-          }
-        }, {
-          "valueCoding": {
-            "system" : "urn:oid:2.16.840.1.113883.6.238",
-            "code": "other",
-            "display": "Other"
-          }
-        } ]
-      } ]
-    }, {
-      "extension": [ {
-        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
-        "valueExpression": {
-          "language": "application/x-fhir-query",
-          "expression": "Extension"
-        }
-      } ],
-      "linkId": "PR-occupation-group",
-      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
-      "text": "Occupation",
-      "type": "group",
-      "item": [ {
-        "extension": [ {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-          "valueBoolean": true
-        } ],
-        "linkId": "PR-occupation-authority",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.url",
-        "type": "string",
-        "initial": [ {
-          "valueString": "http://hl7.it/fhir/StructureDefinition/patient-occupation-it"
-        } ]
-      }, {
-        "extension": [ {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "Patient.extension[1].value"
-          }
-        },{
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-          "valueCode": "horizontal"
-        } ],
-        "linkId": "PR-occupation",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.value",
-        "type": "choice",
-        "required": true,
-        "answerOption": [ {
-          "valueCoding": {
-            "system": "http://fhir.ona.org/valueset",
-            "code": "employed",
-            "display": "Employed"
-          }
-        }, {
-          "valueCoding": {
-            "system": "http://fhir.ona.org/valueset",
-            "code": "self-employed",
-            "display": "Self-Employed"
-          }
-        }, {
-          "valueCoding": {
-            "system": "http://fhir.ona.org/valueset",
-            "code": "unemployed",
-            "display": "Unemployed"
-          }
-        } ]
       } ]
     }, {
       "extension": [ {
@@ -491,6 +560,18 @@
       "linkId": "PR-active",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.active",
       "text": "Is Active?",
+      "_text": {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/translation",
+          "extension": [ {
+            "url": "lang",
+            "valueCode": "sw"
+          }, {
+            "url": "content",
+            "valueString": "Amewezeshwa?"
+          } ]
+        } ]
+      },
       "type": "boolean",
       "initial": [ {
         "valueBoolean": true

@@ -1,4 +1,4 @@
-map "http://fhir.labs.smartregister.org/fhir/StructureMap/test-results" = 'TestResults'
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/5875" = 'TestResults'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -7,7 +7,11 @@ uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
 group TestResults(source src : QuestionnaireResponse, target bundle: Bundle) {
     src -> bundle.type = 'collection' "r_bun_type";
     src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then
-        ExtractEncounter(src, encounter), ExtractResultType(src, bundle, encounter), ExtractG6pd(src, bundle, encounter), ExtractHaemoglobin(src, bundle, encounter) "r_bun_entries";
+        ExtractEncounter(src, encounter),
+        ExtractResultType(src, bundle, encounter),
+        ExtractHbLevel(src, bundle, encounter),
+        ExtractG6pd(src, bundle, encounter),
+        ExtractHaemoglobin(src, bundle, encounter) "r_bun_entries";
 }
 
 group ExtractEncounter(source src : QuestionnaireResponse, target encounter : Encounter) {
@@ -36,6 +40,34 @@ group ExtractResultType(source src : QuestionnaireResponse, target bundle : Bund
                     src -> coding.display = 'G6PD Result Type' "r_ob_cod_disp";
                 } "r_ob_cc_cod";
                 src -> concept.text = "G6PD Result Type" "r_ob_cc_txt";
+            } "r_ob_cc";
+            src.subject as subject -> obs.subject = subject "r_ob_sub";
+            src -> obs.effective = evaluate(src, now()) "r_ob_eff";
+            src -> obs.value = create('CodeableConcept') as codeableConcept then {
+               src -> codeableConcept.coding = evaluate(result_item, $this.answer.value) "r_ob_cc_cod";
+               src -> codeableConcept.text = evaluate(result_item, $this.answer.value.display) "r_ob_cc_cod_disp";
+            } "r_ob_val";
+            src -> obs.encounter = reference(encounter) "r_ob_en";
+            src -> obs.category = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", "laboratory") as coding then {
+                    src -> coding.display = 'Laboratory' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
+                src -> concept.text = "Laboratory" "r_ob_cc_txt";
+            } "r_ob_cat";
+        } "r_ob_rt";
+    };
+}
+
+group ExtractHbLevel(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as result_item where(linkId = 'haemoglobin_level' and answer.count() > 0) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_ob_id";
+            src -> obs.status = "final" "r_ob_st";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://snomed.info/sct", "104142005") as coding then {
+                    src -> coding.display = 'Haemoglobin Level' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
+                src -> concept.text = "Haemoglobin Level" "r_ob_cc_txt";
             } "r_ob_cc";
             src.subject as subject -> obs.subject = subject "r_ob_sub";
             src -> obs.effective = evaluate(src, now()) "r_ob_eff";

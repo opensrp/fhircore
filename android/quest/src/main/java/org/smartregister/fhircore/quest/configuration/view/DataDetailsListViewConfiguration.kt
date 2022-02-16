@@ -28,6 +28,7 @@ data class DataDetailsListViewConfiguration(
   override val classification: String,
   val contentTitle: String = "Content Title",
   val valuePrefix: String = "Value Prefix",
+  val dataRowClickable: Boolean = true,
   val dynamicRows: List<List<Filter>>,
   val questionnaireFilter: SearchFilter? = null,
   val questionnaireFieldsFilter: List<QuestionnaireItemFilter> = listOf()
@@ -39,6 +40,7 @@ fun dataDetailsListViewConfigurationOf(
   classification: String = "patient_details",
   contentTitle: String = "Content Title",
   valuePrefix: String = "Value Prefix",
+  dataRowClickable: Boolean = true,
   dynamicRows: List<List<Filter>> = mutableListOf(),
   questionnaireFilter: SearchFilter? = null,
   questionnaireFieldsFilter: List<QuestionnaireItemFilter> = listOf()
@@ -48,6 +50,7 @@ fun dataDetailsListViewConfigurationOf(
     classification = classification,
     contentTitle = contentTitle,
     valuePrefix = valuePrefix,
+    dataRowClickable = dataRowClickable,
     dynamicRows = dynamicRows,
     questionnaireFilter = questionnaireFilter,
     questionnaireFieldsFilter = questionnaireFieldsFilter

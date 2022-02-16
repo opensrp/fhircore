@@ -92,16 +92,17 @@ fun Toolbar(questPatientDetailViewModel: ListDataDetailViewModel) {
       ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
     },
     actions = {
-      IconButton(
-        onClick = { showMenu = !showMenu },
-        modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON)
-      ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
-      DropdownMenu(
-        expanded = showMenu,
-        onDismissRequest = { showMenu = false },
-        Modifier.testTag(TOOLBAR_MENU)
-      ) {
-        patientItem?.let {
+      // show only if patient info exists
+      patientItem?.let {
+        IconButton(
+          onClick = { showMenu = !showMenu },
+          modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON)
+        ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
+        DropdownMenu(
+          expanded = showMenu,
+          onDismissRequest = { showMenu = false },
+          Modifier.testTag(TOOLBAR_MENU)
+        ) {
           DropdownMenuItem(
             onClick = {
               showMenu = false
@@ -163,11 +164,12 @@ fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDat
       }
     }
 
-    Image(
-      painter = painterResource(id = R.drawable.ic_forward_arrow),
-      contentDescription = "",
-      colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
-    )
+    if (questPatientDetailViewModel.patientDetailsViewConfiguration.value?.dataRowClickable == true)
+      Image(
+        painter = painterResource(id = R.drawable.ic_forward_arrow),
+        contentDescription = "",
+        colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
+      )
   }
 }
 
