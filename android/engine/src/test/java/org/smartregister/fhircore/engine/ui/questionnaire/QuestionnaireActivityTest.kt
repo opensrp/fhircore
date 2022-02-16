@@ -18,11 +18,13 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.widget.Button
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import dagger.hilt.android.testing.BindValue
@@ -89,14 +91,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     // TODO Proper set up
+    hiltRule.inject()
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "1234")
       }
-
-    hiltRule.inject()
 
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
 

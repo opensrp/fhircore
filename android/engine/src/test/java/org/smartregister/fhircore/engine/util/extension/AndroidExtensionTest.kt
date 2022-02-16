@@ -59,18 +59,6 @@ class AndroidExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetThemeShouldReturnDefaultIfInvalidNameSpecified() {
-    assertEquals(R.style.AppTheme_NoActionBar, context.getTheme("invalid"))
-  }
-
-  @Test
-  fun testGetDrawableShouldReturnCorrectTheme() {
-    val result = context.getTheme("AppTheme.PopupOverlay")
-
-    assertEquals(R.style.AppTheme_PopupOverlay, result)
-  }
-
-  @Test
   fun `Activity#refresh() should call startActivity and finish()`() {
     val activity = spyk(LoginActivity())
     val intentCapture = slot<Intent>()

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.login
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.test.core.app.ApplicationProvider
@@ -35,6 +36,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
@@ -73,6 +75,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     coEvery { accountAuthenticator.hasActivePin() } returns false
     coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
     coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
