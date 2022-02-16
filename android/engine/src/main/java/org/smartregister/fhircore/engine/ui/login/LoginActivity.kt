@@ -57,11 +57,7 @@ class LoginActivity :
         }
       )
       launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
-      appLogoResourceFile =
-        configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-            AppConfigClassification.APPLICATION
-          )
-          .appLogoIconResourceFile
+      appLogoResourceFile = getApplicationConfiguration().appLogoIconResourceFile
     }
 
     if (configurationRegistry.isAppIdInitialized()) {
@@ -79,6 +75,10 @@ class LoginActivity :
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+  }
+
+  fun getApplicationConfiguration(): ApplicationConfiguration {
+    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
   }
 
   override fun configureViews(viewConfiguration: LoginViewConfiguration) {
