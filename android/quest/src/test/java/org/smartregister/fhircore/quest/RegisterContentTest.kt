@@ -41,25 +41,26 @@ class RegisterContentTest : RobolectricTest() {
 
     val encounter = targetResource.entry[0].resource as Encounter
     val sampleEncounter =
-      "test-results-questionnaire/sample/enc.json".parseSampleResource() as Encounter
+      "test-results-questionnaire/sample/enc.json".parseSampleResourceFromFile() as Encounter
 
     assertResourceContent(sampleEncounter, encounter)
 
     val tType = targetResource.entry[1].resource as Observation
     val sampleTType =
-      "test-results-questionnaire/sample/obs_res_type.json".parseSampleResource() as Observation
+      "test-results-questionnaire/sample/obs_res_type.json".parseSampleResourceFromFile() as
+        Observation
 
     assertResourceContent(tType, sampleTType)
 
     val g6pd = targetResource.entry[2].resource as Observation
     val sampleG6pd =
-      "test-results-questionnaire/sample/obs_g6pd.json".parseSampleResource() as Observation
+      "test-results-questionnaire/sample/obs_g6pd.json".parseSampleResourceFromFile() as Observation
 
     assertResourceContent(g6pd, sampleG6pd)
 
     val hb = targetResource.entry[3].resource as Observation
     val sampleHb =
-      "test-results-questionnaire/sample/obs_hb.json".parseSampleResource() as Observation
+      "test-results-questionnaire/sample/obs_hb.json".parseSampleResourceFromFile() as Observation
 
     assertResourceContent(hb, sampleHb)
   }
@@ -92,13 +93,15 @@ class RegisterContentTest : RobolectricTest() {
 
     val patient = targetResource.entry[0].resource as Patient
     val samplePatient =
-      "patient-registration-questionnaire/sample/patient.json".parseSampleResource() as Patient
+      "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile() as
+        Patient
 
     assertResourceContent(patient, samplePatient)
 
     val condition = targetResource.entry[1].resource as Condition
     val sampleCondition =
-      "patient-registration-questionnaire/sample/condition.json".parseSampleResource() as Condition
+      "patient-registration-questionnaire/sample/condition.json".parseSampleResourceFromFile() as
+        Condition
     // replace subject as registration forms generate uuid on the fly
     sampleCondition.subject = condition.subject
 
