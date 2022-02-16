@@ -26,8 +26,8 @@ data class ApplicationConfiguration(
   var theme: String = "",
   var languages: List<String> = listOf("en"),
   var syncInterval: Long = 30,
-  var applicationName: String,
-  var appLogoIconResourceFile: String
+  var applicationName: String = "",
+  var appLogoIconResourceFile: String = "ic_default_logo"
 ) : Configuration
 
 /**
