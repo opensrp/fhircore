@@ -42,7 +42,7 @@ class PinViewConfigurationTest {
 
   @Test
   fun testLoginViewConfigurationOf() {
-    val pinViewConfigurationOf =
+    val pinConfiguration =
       pinViewConfigurationOf(
         appId = "anc",
         classification = "classification",
@@ -51,11 +51,11 @@ class PinViewConfigurationTest {
         showLogo = true,
         enablePin = false
       )
-    Assert.assertEquals("anc", pinViewConfigurationOf.appId)
-    Assert.assertEquals("classification", pinViewConfigurationOf.classification)
-    Assert.assertEquals("app", pinViewConfigurationOf.applicationName)
-    Assert.assertEquals("ic_launcher", pinViewConfigurationOf.appLogoIconResourceFile)
-    Assert.assertTrue(pinViewConfigurationOf.showLogo)
-    Assert.assertFalse(pinViewConfigurationOf.enablePin)
+    Assert.assertEquals("anc", pinConfiguration.appId)
+    Assert.assertEquals("classification", pinConfiguration.classification)
+    Assert.assertEquals("app", pinConfiguration.applicationName)
+    Assert.assertEquals("ic_launcher", pinConfiguration.appLogoIconResourceFile)
+    Assert.assertTrue(pinConfiguration.showLogo)
+    Assert.assertFalse(pinConfiguration.enablePin)
   }
 }
