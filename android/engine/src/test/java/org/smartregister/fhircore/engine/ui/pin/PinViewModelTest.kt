@@ -32,6 +32,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -55,7 +56,9 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
-  @BindValue val configurationRegistry: ConfigurationRegistry = mockk()
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -76,7 +79,8 @@ internal class PinViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { configurationRegistry.appId } returns "anc"
+    configurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
+
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, true) } returns Unit
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
@@ -89,7 +93,7 @@ internal class PinViewModelTest : RobolectricTest() {
         dispatcher = dispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
         secureSharedPreference = secureSharedPreference,
-        configurationRegistry = mockk(),
+        configurationRegistry = configurationRegistry,
         app = application
       )
     pinViewModel.apply {
@@ -140,7 +144,6 @@ internal class PinViewModelTest : RobolectricTest() {
     Assert.assertEquals(pinViewModel.onBackClick.value, true)
   }
 
-  @Ignore("temp ignore for PR")
   @Test
   fun testLoadData() {
     pinViewModel.loadData(isSetup = true)
@@ -149,7 +152,6 @@ internal class PinViewModelTest : RobolectricTest() {
     Assert.assertNotNull(pinViewModel.enterUserLoginMessage)
   }
 
-  @Ignore("temp ignore for PR")
   @Test
   fun testLoadDataForLoginScreen() {
     pinViewModel.loadData(isSetup = false)
