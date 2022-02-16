@@ -6,7 +6,7 @@
     "applicationVersion": "0.0.2",
     "darkMode": false,
     "showLogo": false,
-    "enablePin": true
+    "enablePin": false
   },
   {
     "appId": "g6pd",
@@ -15,6 +15,6 @@
     "applicationVersion": "0.0.1",
     "darkMode": false,
     "showLogo": true,
-    "enablePin": true
+    "enablePin": false
   }
 ]
