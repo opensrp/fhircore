@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.register
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -29,6 +30,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
@@ -84,6 +86,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     configurationRegistry.loadAppConfigurations(
       appId = "appId",
       accountAuthenticator = accountAuthenticator
