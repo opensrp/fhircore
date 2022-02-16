@@ -91,6 +91,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         switchFragment(
           tag = UserProfileFragment.TAG,
           isRegisterFragment = false,
+          isFilterVisible = false,
           toolbarTitle = getString(R.string.profile)
         )
       R.id.menu_item_register, R.id.menu_item_families, R.id.menu_item_family_planning_clients ->

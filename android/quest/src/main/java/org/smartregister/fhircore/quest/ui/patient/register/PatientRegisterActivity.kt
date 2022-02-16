@@ -81,11 +81,12 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
-      R.id.menu_item_clients -> switchFragment(mainFragmentTag())
+      R.id.menu_item_clients -> switchFragment(mainFragmentTag(), isFilterVisible = false)
       R.id.menu_item_settings ->
         switchFragment(
           tag = UserProfileFragment.TAG,
           isRegisterFragment = false,
+          isFilterVisible = false,
           toolbarTitle = getString(R.string.settings)
         )
       else ->

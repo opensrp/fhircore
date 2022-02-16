@@ -3,12 +3,16 @@
     "appId": "quest",
     "classification": "application",
     "theme": "QuestDefault",
-    "languages": ["en", "sw"]
+    "languages": ["en", "sw"],
+    "applicationName": "Quest",
+    "appLogoIconResourceFile": "ic_liberia"
   },
   {
     "appId": "g6pd",
     "classification": "application",
     "theme": "QuestDefault",
-    "languages": ["en", "sw"]
+    "languages": ["en", "sw"],
+    "applicationName": "G6PD Test Reader",
+    "appLogoIconResourceFile": "ic_logo_g6pd"
   }
 ]
