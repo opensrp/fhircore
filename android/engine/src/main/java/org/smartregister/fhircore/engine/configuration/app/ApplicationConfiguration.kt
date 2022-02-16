@@ -47,8 +47,8 @@ fun applicationConfigurationOf(
   theme: String = "",
   languages: List<String> = listOf("en"),
   syncInterval: Long = 30,
-  applicationName: String,
-  appLogoIconResourceFile: String
+  applicationName: String = "",
+  appLogoIconResourceFile: String = ""
 ): ApplicationConfiguration =
   ApplicationConfiguration(
     appId = appId,

@@ -192,7 +192,7 @@ fun PinSetupPreview() {
     inputPin = "",
     setPinEnabled = false,
     onMenuSettingClicked = {},
-    appLogoResFile = "ic_logo"
+    appLogoResFile = "ic_launcher"
   )
 }
 
@@ -206,6 +206,6 @@ fun PinSetupFilledPreview() {
     inputPin = "1234",
     setPinEnabled = true,
     onMenuSettingClicked = {},
-    appLogoResFile = "ic_logo"
+    appLogoResFile = "ic_launcher"
   )
 }

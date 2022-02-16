@@ -77,11 +77,6 @@ internal class PinViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { configurationRegistry.appId } returns "anc"
-    //    coEvery {
-    //      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(
-    //        AppConfigClassification.PIN
-    //      )
-    //    } returns pinViewConfiguration
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, true) } returns Unit
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
