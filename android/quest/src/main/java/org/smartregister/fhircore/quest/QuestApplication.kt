@@ -42,13 +42,15 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
       Timber.plant(Timber.DebugTree())
     }
     CoroutineScope(Dispatchers.Default).launch {
-      val fhirContext = FhirContext.forR4Cached().apply {
-        Timber.i("Loading FhirContext.forR4Cached on application init")
-      }
+      val fhirContext =
+        FhirContext.forR4Cached().apply {
+          Timber.i("Loading FhirContext.forR4Cached on application init")
+        }
       ResourceMapper.run {
         // TODO https://github.com/google/android-fhir/issues/1173
         // Action: Remove once fixed
-        // Once SDK resolves the issue this can be removed from here as there would be no duplication of objects
+        // Once SDK resolves the issue this can be removed from here as there would be no
+        // duplication of objects
         val validationSupport = extractResourceMapperValidationSupport()
         fhirContext.validationSupport = validationSupport
 
@@ -70,7 +72,8 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
           it.javaClass
             .getDeclaredField("myValidationSupport")
             .also { it.isAccessible = true }
-            .get(it) as DefaultProfileValidationSupport
+            .get(it) as
+            DefaultProfileValidationSupport
         }
       }
 

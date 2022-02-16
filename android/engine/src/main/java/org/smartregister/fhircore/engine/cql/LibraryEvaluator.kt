@@ -53,6 +53,7 @@ import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory
 import org.opencds.cqf.cql.evaluator.library.CqlFhirParametersConverter
 import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import timber.log.Timber
 
 /**
@@ -310,6 +311,8 @@ class LibraryEvaluator @Inject constructor() {
     // Load terminology content, and create a TerminologyProvider which is the interface used by the
     // evaluator for resolving terminology
     val terminologyProvider = BundleTerminologyProvider(fhirContext, valueSet)
+
+    Timber.d("Cql with data: ${data.encodeResourceToString()}")
 
     // Load data content, and create a RetrieveProvider which is the interface used for
     // implementations of CQL retrieves.

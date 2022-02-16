@@ -31,7 +31,6 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
@@ -213,21 +212,17 @@ constructor(
     questionnaire
       .cqfLibraryIds()
       .map {
-        val patient =
-          if (questionnaireResponse.hasSubject())
-            loadPatient(questionnaireResponse.subject.extractId())
-          else null
-        viewModelScope.async(Dispatchers.Default) {
+        with(Dispatchers.Default) {
+          val patient =
+            if (questionnaireResponse.hasSubject())
+              loadPatient(questionnaireResponse.subject.extractId())
+            else null
+
           libraryEvaluator.runCqlLibrary(it, patient, data, defaultRepository)
         }
       }
-      .map { jobOutput ->
-        jobOutput.join()
-        jobOutput
-      }
       .forEach { output ->
-        if (output.await().isNotEmpty())
-          extractionProgressMessage.postValue(output.await().joinToString("\n"))
+        if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
       }
   }
 

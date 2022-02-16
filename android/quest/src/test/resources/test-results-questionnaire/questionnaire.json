@@ -2,30 +2,8 @@
   "resourceType": "Questionnaire",
   "id": "3440",
   "language": "en",
-  "extension": [ {
-    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-    "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5875"
-  }, {
-    "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
-    "valueCanonical": "Library/46831"
-  }, {
-    "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
-    "valueCanonical": "Library/46823"
-  } ],
   "name": "G6PD Test Photo Result",
   "title": "G6PD Test Photo Result",
-  "_title": {
-    "extension": [ {
-      "url": "http://hl7.org/fhir/StructureDefinition/translation",
-      "extension": [ {
-        "url": "lang",
-        "valueCode": "sw"
-      }, {
-        "url": "content",
-        "valueString": "Matokeo ya Picha ya G6PD"
-      } ]
-    } ]
-  },
   "status": "active",
   "subjectType": [ "Patient" ],
   "publisher": "ONA-Systems",
@@ -38,22 +16,20 @@
       "coding": [ {
         "system": "http://fhir.ona.io",
         "code": "000002",
-        "display": "Add G6PD Test Result",
-        "_display": {
-          "extension": [ {
-            "url": "http://hl7.org/fhir/StructureDefinition/translation",
-            "extension": [ {
-              "url": "lang",
-              "valueCode": "sw"
-            }, {
-              "url": "content",
-              "valueString": "Matokeo ya Picha ya G6PD"
-            } ]
-          } ]
-        }
+        "display": "G6PD Test Photo Results"
       } ]
     }
   } ],
+  "extension": [ {
+    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+    "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5875"
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
+    "valueCanonical": "Library/46831"
+  },{
+    "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
+    "valueCanonical": "Library/46823"
+  }],
   "item": [ {
     "extension": [ {
       "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/cpg-itemImage",
@@ -64,19 +40,7 @@
       }
     } ],
     "linkId": "result_capture_image",
-    "text": "Instructions - See image below on how to extract the threshold levels from the G6PD Test device",
-    "_text": {
-      "extension": [ {
-        "url": "http://hl7.org/fhir/StructureDefinition/translation",
-        "extension": [ {
-          "url": "lang",
-          "valueCode": "sw"
-        }, {
-          "url": "content",
-          "valueString": "Ona maagizo ya kunasa maelezo ya kipimo kutoka mtandao wa G6PD"
-        } ]
-      } ]
-    },
+    "text": "Add instructions for capturing G6PD test information",
     "type": "display"
   }, {
     "extension": [ {
@@ -87,70 +51,28 @@
     "code": [ {
       "system": "http://fhir.ona.io",
       "code": "000001",
-      "display": "G6PD Result Type",
-      "_display": {
-        "extension": [ {
-          "url": "http://hl7.org/fhir/StructureDefinition/translation",
-          "extension": [ {
-            "url": "lang",
-            "valueCode": "sw"
-          }, {
-            "url": "content",
-            "valueString": "Aina ya matokeo ya G6PD"
-          } ]
-        } ]
-      }
+      "display": "G6PD Result Type"
     } ],
     "text": "G6PD Result Type",
-    "_text": {
-      "extension": [ {
-        "url": "http://hl7.org/fhir/StructureDefinition/translation",
-        "extension": [ {
-          "url": "lang",
-          "valueCode": "sw"
-        }, {
-          "url": "content",
-          "valueString": "Aina ya matokeo ya G6PD"
-        } ]
-      } ]
-    },
     "type": "choice",
     "required": true,
     "answerOption": [ {
       "valueCoding": {
         "system": "http://snomed.info/sct",
         "code": "410680006",
-        "display": "Standard result",
-        "_display": {
-          "extension": [ {
-            "url": "http://hl7.org/fhir/StructureDefinition/translation",
-            "extension": [ {
-              "url": "lang",
-              "valueCode": "sw"
-            }, {
-              "url": "content",
-              "valueString": "Namba"
-            } ]
-          } ]
-        }
+        "display": "Number"
+      }
+    }, {
+      "valueCoding": {
+        "system": "http://snomed.info/sct",
+        "code": "405358009",
+        "display": "Error"
       }
     }, {
       "valueCoding": {
         "system": "http://snomed.info/sct",
         "code": "385432009",
-        "display": "‘HI’ or NA’",
-        "_display": {
-          "extension": [ {
-            "url": "http://hl7.org/fhir/StructureDefinition/translation",
-            "extension": [ {
-              "url": "lang",
-              "valueCode": "sw"
-            }, {
-              "url": "content",
-              "valueString": "Haitumiki"
-            } ]
-          } ]
-        }
+        "display": "N/A"
       }
     } ]
   }, {
@@ -162,33 +84,9 @@
     "code": [ {
       "system": "http://snomed.info/sct",
       "code": "104142005",
-      "display": "Plasma haemoglobin level",
-      "_display": {
-        "extension": [ {
-          "url": "http://hl7.org/fhir/StructureDefinition/translation",
-          "extension": [ {
-            "url": "lang",
-            "valueCode": "sw"
-          }, {
-            "url": "content",
-            "valueString": "Kiwango cha hemoglobin ya plasma"
-          } ]
-        } ]
-      }
+      "display": "Plasma haemoglobin level"
     } ],
     "text": "Hemoglobin Levels",
-    "_text": {
-      "extension": [ {
-        "url": "http://hl7.org/fhir/StructureDefinition/translation",
-        "extension": [ {
-          "url": "lang",
-          "valueCode": "sw"
-        }, {
-          "url": "content",
-          "valueString": "Viwango vya Hemoglobini"
-        } ]
-      } ]
-    },
     "type": "choice",
     "enableWhen": [ {
       "question": "result_type",
@@ -202,37 +100,13 @@
       "valueCoding": {
         "system": "http://snomed.info/sct",
         "code": "75540009",
-        "display": "High",
-        "_display": {
-          "extension": [ {
-            "url": "http://hl7.org/fhir/StructureDefinition/translation",
-            "extension": [ {
-              "url": "lang",
-              "valueCode": "sw"
-            }, {
-              "url": "content",
-              "valueString": "Juu"
-            } ]
-          } ]
-        }
+        "display": "High"
       }
     }, {
       "valueCoding": {
         "system": "http://snomed.info/sct",
         "code": "62482003",
-        "display": "Low",
-        "_display": {
-          "extension": [ {
-            "url": "http://hl7.org/fhir/StructureDefinition/translation",
-            "extension": [ {
-              "url": "lang",
-              "valueCode": "sw"
-            }, {
-              "url": "content",
-              "valueString": "Chini"
-            } ]
-          } ]
-        }
+        "display": "Low"
       }
     } ]
   }, {
@@ -241,28 +115,16 @@
       "valueBoolean": true
     }, {
       "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-      "valueDecimal": 1
+      "valueDecimal": 1.0
     }, {
       "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-      "valueDecimal": 20
+      "valueDecimal": 6.7
     } ],
     "linkId": "g6pd",
     "code": [ {
       "system": "http://snomed.info/sct",
       "code": "86859003",
-      "display": "G6PD Enzyme",
-      "_display": {
-        "extension": [ {
-          "url": "http://hl7.org/fhir/StructureDefinition/translation",
-          "extension": [ {
-            "url": "lang",
-            "valueCode": "sw"
-          }, {
-            "url": "content",
-            "valueString": "Kimeng'enya cha G6PD"
-          } ]
-        } ]
-      }
+      "display": "G6PD Enzyme"
     } ],
     "text": "G6PD",
     "type": "decimal",
@@ -273,6 +135,13 @@
         "system": "http://snomed.info/sct",
         "code": "410680006"
       }
+    }, {
+      "question": "result_type",
+      "operator": "=",
+      "answerCoding": {
+        "system": "http://snomed.info/sct",
+        "code": "385432009"
+      }
     } ],
     "enableBehavior": "any",
     "required": true
@@ -282,42 +151,18 @@
       "valueBoolean": true
     }, {
       "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-      "valueDecimal": 4
+      "valueDecimal": 4.0
     }, {
       "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-      "valueDecimal": 20
+      "valueDecimal": 19.0
     } ],
     "linkId": "haemoglobin",
     "code": [ {
       "system": "http://snomed.info/sct",
       "code": "259695003",
-      "display": "Hemoglobin",
-      "_display": {
-        "extension": [ {
-          "url": "http://hl7.org/fhir/StructureDefinition/translation",
-          "extension": [ {
-            "url": "lang",
-            "valueCode": "sw"
-          }, {
-            "url": "content",
-            "valueString": "Hemoglobini"
-          } ]
-        } ]
-      }
+      "display": "Hemoglobin"
     } ],
     "text": "Hemoglobin (Hb)",
-    "_text": {
-      "extension": [ {
-        "url": "http://hl7.org/fhir/StructureDefinition/translation",
-        "extension": [ {
-          "url": "lang",
-          "valueCode": "sw"
-        }, {
-          "url": "content",
-          "valueString": "Hemoglobini (Hb)"
-        } ]
-      } ]
-    },
     "type": "decimal",
     "enableWhen": [ {
       "question": "result_type",
@@ -342,19 +187,7 @@
       "valueString": "photo-capture"
     } ],
     "linkId": "photo",
-    "text": "Click on 'Take Photo' to capture a photo of the G6PD device screen",
-    "_text": {
-      "extension": [ {
-        "url": "http://hl7.org/fhir/StructureDefinition/translation",
-        "extension": [ {
-          "url": "lang",
-          "valueCode": "sw"
-        }, {
-          "url": "content",
-          "valueString": "Picha ya kifaa"
-        } ]
-      } ]
-    },
+    "text": "Photo of device",
     "type": "attachment",
     "enableWhen": [ {
       "question": "result_type",

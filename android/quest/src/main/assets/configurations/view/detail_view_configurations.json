@@ -103,7 +103,9 @@
               "valueFormatter": {
                 "Deficient": "People with G6PD values <= 3.9 U/g Hb are considered G6PD deficient",
                 "Intermediate": "Females with G6PD values between 4.1 - 6.0 U/g Hb are considered G6PD intermediate",
-                "Normal": "Females with G6PD values >= 6.0 U/g Hb are considered G6PD normal\nMales with G6PD values >= 4.1 U/g Hb are considered G6PD normal"
+                "Normal": "Females with G6PD values >= 6.0 U/g Hb are considered G6PD normal\nMales with G6PD values >= 4.1 U/g Hb are considered G6PD normal",
+                "Lo Haemoglobin": "People with abnormal HB levels < 12 g/dL for women and  <13.5 g/dL for men",
+                "Hi Haemoglobin": "People with abnormal HB levels > 15 g/dL for women and  >16.6 g/dL for men"
               },
               "value": {
                 "textSize": 16

@@ -176,17 +176,6 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    def hapiFhirVersion = "5.6.2"
-    api("ca.uhn.hapi.fhir:org.hl7.fhir.r4:$hapiFhirVersion") {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
-    api("ca.uhn.hapi.fhir:hapi-fhir-base:$hapiFhirVersion") {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
-    api("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:$hapiFhirVersion") {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
-
     api 'com.google.code.gson:gson:2.8.7'
     api 'com.jakewharton.timber:timber:5.0.0'
 

@@ -69,7 +69,7 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
     configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
     Faker.initPatientRepositoryMocks(patientRepository)
 
-    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, any()) } returns
+    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
       "{\"organization\":\"111\"}"
 
     val intent =
