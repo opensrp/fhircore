@@ -35,6 +35,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.pinViewConfigurationOf
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -65,7 +66,7 @@ internal class PinViewModelTest : RobolectricTest() {
   private lateinit var pinViewModel: PinViewModel
 
   private val testPin = MutableLiveData("1234")
-  val pinViewConfiguration =
+  val testPinViewConfiguration =
     PinViewConfiguration(
       appId = "ancApp",
       classification = "classification",
@@ -102,7 +103,30 @@ internal class PinViewModelTest : RobolectricTest() {
       appName = "demo"
       appLogoResFile = "ic_launcher"
       onPinChanged("1234")
+      pinViewConfiguration = testPinViewConfiguration
     }
+  }
+
+  @Test
+  fun testPinViewConfiguration() {
+    val expectedPinConfig =
+      pinViewConfigurationOf(
+        appId = "ancApp",
+        classification = "classification",
+        applicationName = "Test App",
+        appLogoIconResourceFile = "ic_launcher",
+        enablePin = true,
+        showLogo = true
+      )
+    Assert.assertEquals(expectedPinConfig.appId, testPinViewConfiguration.appId)
+    Assert.assertEquals(expectedPinConfig.classification, testPinViewConfiguration.classification)
+    Assert.assertEquals(expectedPinConfig.applicationName, testPinViewConfiguration.applicationName)
+    Assert.assertEquals(
+      expectedPinConfig.appLogoIconResourceFile,
+      testPinViewConfiguration.appLogoIconResourceFile
+    )
+    Assert.assertEquals(expectedPinConfig.enablePin, testPinViewConfiguration.enablePin)
+    Assert.assertEquals(expectedPinConfig.showLogo, testPinViewConfiguration.showLogo)
   }
 
   @Test
