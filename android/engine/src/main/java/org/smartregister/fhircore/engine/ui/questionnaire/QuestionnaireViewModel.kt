@@ -208,22 +208,21 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     bundle: Bundle?
   ) {
-    val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
-    questionnaire
-      .cqfLibraryIds()
-      .map {
-        with(Dispatchers.Default) {
+    withContext(Dispatchers.Default) {
+      val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
+      questionnaire
+        .cqfLibraryIds()
+        .map {
           val patient =
             if (questionnaireResponse.hasSubject())
               loadPatient(questionnaireResponse.subject.extractId())
             else null
-
           libraryEvaluator.runCqlLibrary(it, patient, data, defaultRepository)
         }
-      }
-      .forEach { output ->
-        if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
-      }
+        .forEach { output ->
+          if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
+        }
+    }
   }
 
   /**
