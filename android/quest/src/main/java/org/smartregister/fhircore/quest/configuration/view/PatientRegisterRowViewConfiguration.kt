@@ -50,6 +50,16 @@ data class Filter(
 
 @Stable
 @Serializable
+data class QuestionnaireItemFilter(
+  val key: String,
+  val label: String? = null,
+  val index: Int? = null,
+  val dynamicColors: List<DynamicColor>? = null,
+  val properties: Properties? = null
+)
+
+@Stable
+@Serializable
 data class Code(val system: String? = null, val code: String? = null, val display: String? = null)
 
 fun Code.isSimilar(coding: Coding) = this.code == coding.code && this.system == coding.system

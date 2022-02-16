@@ -24,24 +24,44 @@ class LoginViewConfigurationTest {
   @Test
   fun testLoginViewConfiguration() {
     val loginViewConfiguration =
-      LoginViewConfiguration("anc", "classification", "app", "1.0.0", 2, true, true)
+      LoginViewConfiguration(
+        appId = "anc",
+        classification = "classification",
+        applicationName = "app",
+        applicationVersion = "1.0.0",
+        applicationVersionCode = 2,
+        darkMode = true,
+        showLogo = true,
+        enablePin = true
+      )
     Assert.assertEquals("anc", loginViewConfiguration.appId)
     Assert.assertEquals("classification", loginViewConfiguration.classification)
     Assert.assertEquals("1.0.0", loginViewConfiguration.applicationVersion)
     Assert.assertEquals(2, loginViewConfiguration.applicationVersionCode)
     Assert.assertTrue(loginViewConfiguration.darkMode)
     Assert.assertTrue(loginViewConfiguration.showLogo)
+    Assert.assertTrue(loginViewConfiguration.enablePin)
   }
 
   @Test
   fun testLoginViewConfigurationOf() {
     val loginViewConfigurationOf =
-      loginViewConfigurationOf("anc", "classification", "app", "1.0.0", 2, true, true)
+      LoginViewConfiguration(
+        appId = "anc",
+        classification = "classification",
+        applicationName = "app",
+        applicationVersion = "1.0.0",
+        applicationVersionCode = 2,
+        darkMode = true,
+        showLogo = true,
+        enablePin = false
+      )
     Assert.assertEquals("anc", loginViewConfigurationOf.appId)
     Assert.assertEquals("classification", loginViewConfigurationOf.classification)
     Assert.assertEquals("1.0.0", loginViewConfigurationOf.applicationVersion)
     Assert.assertEquals(2, loginViewConfigurationOf.applicationVersionCode)
     Assert.assertTrue(loginViewConfigurationOf.darkMode)
     Assert.assertTrue(loginViewConfigurationOf.showLogo)
+    Assert.assertFalse(loginViewConfigurationOf.enablePin)
   }
 }

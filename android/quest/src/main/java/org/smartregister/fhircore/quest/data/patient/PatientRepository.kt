@@ -24,20 +24,17 @@ import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
@@ -45,21 +42,25 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.engine.util.extension.asLabel
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.filterByPatient
+import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.pregnancyCondition
-import org.smartregister.fhircore.engine.util.extension.getEncounterReferenceValue
+import org.smartregister.fhircore.engine.util.extension.referenceParamForCondition
+import org.smartregister.fhircore.engine.util.extension.referenceParamForObservation
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.Filter
-import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.isSimilar
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestSourceItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
+import org.smartregister.fhircore.quest.util.FhirPathUtil.getPathValue
 import org.smartregister.fhircore.quest.util.getSearchResults
 import org.smartregister.fhircore.quest.util.loadAdditionalData
 import timber.log.Timber
@@ -72,8 +73,6 @@ constructor(
   private val dispatcherProvider: DispatcherProvider,
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterRepository<Patient, PatientItem> {
-
-  private val fhirPathEngine = FHIRPathEngine(SimpleWorkerContext())
 
   override suspend fun loadData(
     query: String,
@@ -114,55 +113,46 @@ constructor(
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
 
   suspend fun fetchTestResults(
-    patientId: String,
+    subjectId: String,
+    subjectType: ResourceType,
     forms: List<QuestionnaireConfig>,
-    config: PatientDetailsViewConfiguration
+    config: DataDetailsListViewConfiguration
   ): List<QuestResultItem> {
     return withContext(dispatcherProvider.io()) {
       val testResults = mutableListOf<QuestResultItem>()
 
       val questionnaireResponses =
-        searchQuestionnaireResponses(patientId, forms).sortedByDescending { it.authored }
+        searchQuestionnaireResponses(subjectId, subjectType, forms).sortedByDescending {
+          it.authored
+        }
       questionnaireResponses.forEach {
         val questionnaire = getQuestionnaire(it)
-        val questItem =
-          QuestSourceItem(
-            questionnaireResponseLogicalId = it.logicalId,
-            questionnaireResponseAuthored = it.authored,
-            questionnaireResponseEncounterId = it.getEncounterId(),
-            questionnaireResponseEncounterReferenceValue = it.getEncounterReferenceValue(),
-            questionnaireLogicalId = questionnaire?.logicalId,
-            questionnaireName = questionnaire?.name,
-            questionnaireTitle = questionnaire?.title
-          )
-        testResults.add(getResultItem(questItem, config))
+        testResults.add(getResultItem(questionnaire!!, it, config))
       }
       testResults
     }
   }
 
   suspend fun getResultItem(
-    questSourceItem: QuestSourceItem,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    patientDetailsViewConfiguration: DataDetailsListViewConfiguration
   ): QuestResultItem {
+    val data: MutableList<List<AdditionalData>> = mutableListOf()
 
     when {
       patientDetailsViewConfiguration.dynamicRows.isEmpty() -> {
-        val data =
+        data.add(
           listOf(
-            listOf(
-              AdditionalData(value = fetchResultItemLabel(questSourceItem)),
-              AdditionalData(
-                value = " (${questSourceItem.questionnaireResponseAuthored?.asDdMmmYyyy() ?: ""})"
-              )
-            )
+            AdditionalData(value = fetchResultItemLabel(questionnaire)),
+            AdditionalData(value = " (${questionnaireResponse.authored?.asDdMmmYyyy() ?: ""})")
           )
-
-        return QuestResultItem(questSourceItem, data)
+        )
       }
       else -> {
 
-        val data: MutableList<List<AdditionalData>> = mutableListOf()
+        val reference =
+          questionnaireResponse.getEncounterId()?.let { loadEncounter(it) } ?: questionnaireResponse
 
         patientDetailsViewConfiguration.dynamicRows.forEach { filtersList ->
           val additionalDataList = mutableListOf<AdditionalData>()
@@ -171,11 +161,11 @@ constructor(
             val value =
               when (filter.resourceType) {
                 Enumerations.ResourceType.CONDITION ->
-                  getCondition(questSourceItem, filter)
+                  getCondition(reference, filter)
                     .find { doesSatisfyFilter(it, filter) == true }
                     ?.getPathValue(filter.displayableProperty)
                 Enumerations.ResourceType.OBSERVATION ->
-                  getObservation(questSourceItem, filter)
+                  getObservation(reference, filter)
                     .find { doesSatisfyFilter(it, filter) == true }
                     ?.getPathValue(filter.displayableProperty)
                 else -> null
@@ -193,43 +183,31 @@ constructor(
           }
           data.add(additionalDataList)
         }
-
-        return QuestResultItem(questSourceItem, data)
       }
     }
-  }
 
-  fun Base.getPathValue(path: String) = fhirPathEngine.evaluate(this, path).firstOrNull()
-
-  fun doesSatisfyFilter(resource: Resource, filter: Filter): Boolean? {
-    if (filter.valueCoding == null && filter.valueString == null)
-      throw IllegalStateException("Filter must have either of one valueCoding or valueString")
-
-    // get property mentioned as filter and match value
-    // e.g. category: CodeableConcept in Condition
-    return resource
-      .getNamedProperty(filter.key)
-      .values
-      .firstOrNull()
-      ?.let {
-        when (it) {
-          // match relevant type and value
-          is CodeableConcept -> filter.valueCoding!!.isSimilar(it)
-          is Coding -> filter.valueCoding!!.isSimilar(it)
-          is StringType -> it.value == filter.valueString
-          else -> false
+    patientDetailsViewConfiguration.questionnaireFieldsFilter.groupBy { it.index }.forEach {
+      it
+        .value
+        .mapNotNull { f ->
+          questionnaireResponse.find(f.key)?.let {
+            AdditionalData(
+              label = f.label ?: it.asLabel(),
+              value = it.answerFirstRep.value.valueToString()
+            )
+          }
         }
-      }
-      .also {
-        if (it == null)
-          Timber.i("${resource.resourceType}, ${filter.key}: could not resolve key value filter")
-      }
+        .takeIf { it.isNotEmpty() }
+        ?.run { data.add(it.key ?: data.size, this) }
+    }
+
+    return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
   }
 
-  suspend fun getCondition(questSourceItem: QuestSourceItem, filter: Filter?) =
+  suspend fun getCondition(reference: Resource, filter: Filter?) =
     getSearchResults<Condition>(
-      questSourceItem.questionnaireResponseEncounterReferenceValue,
-      Condition.ENCOUNTER,
+      reference.referenceValue(),
+      reference.referenceParamForCondition(),
       filter,
       fhirEngine
     )
@@ -238,10 +216,10 @@ constructor(
       }
       .sortedByDescending { it.logicalId }
 
-  suspend fun getObservation(questSourceItem: QuestSourceItem, filter: Filter?) =
+  suspend fun getObservation(reference: Resource, filter: Filter?) =
     getSearchResults<Observation>(
-      questSourceItem.questionnaireResponseEncounterReferenceValue,
-      Observation.ENCOUNTER,
+      reference.referenceValue(),
+      reference.referenceParamForObservation(),
       filter,
       fhirEngine
     )
@@ -250,9 +228,18 @@ constructor(
       }
       .sortedByDescending { it.logicalId }
 
-  fun fetchResultItemLabel(questSourceItem: QuestSourceItem): String {
-    return questSourceItem.questionnaireName
-      ?: questSourceItem.questionnaireTitle ?: questSourceItem.questionnaireLogicalId ?: ""
+  suspend fun getMedicationRequest(reference: Resource, filter: Filter?) =
+    getSearchResults<MedicationRequest>(
+      reference.referenceValue(),
+      MedicationRequest.ENCOUNTER,
+      filter,
+      fhirEngine
+    )
+      .sortedByDescending { it.authoredOn }
+      .sortedByDescending { it.logicalId }
+
+  fun fetchResultItemLabel(questionnaire: Questionnaire): String {
+    return questionnaire.name ?: questionnaire.title ?: questionnaire.logicalId
   }
 
   suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire? {
@@ -293,14 +280,15 @@ constructor(
     withContext(dispatcherProvider.io()) { fhirEngine.load(Encounter::class.java, id) }
 
   private suspend fun searchQuestionnaireResponses(
-    patientId: String,
+    subjectId: String,
+    subjectType: ResourceType,
     forms: List<QuestionnaireConfig>
   ): List<QuestionnaireResponse> =
     mutableListOf<QuestionnaireResponse>().also { result ->
       forms.forEach {
         result.addAll(
           fhirEngine.search {
-            filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" })
+            filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
             filter(
               QuestionnaireResponse.QUESTIONNAIRE,
               { value = "Questionnaire/${it.identifier}" }

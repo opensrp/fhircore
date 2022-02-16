@@ -26,6 +26,7 @@ import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -33,14 +34,14 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.questionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.NavigationOption
-import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
 import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
@@ -50,14 +51,13 @@ import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
 class QuestPatientDetailActivity :
-  BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
+  BaseMultiLanguageActivity(), ConfigurableComposableView<DataDetailsListViewConfiguration> {
 
-  private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
   var patientResourcesList: ArrayList<String> = arrayListOf()
-  private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
+  private lateinit var patientDetailConfig: DataDetailsListViewConfiguration
   private lateinit var patientId: String
 
-  val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+  val patientViewModel by viewModels<ListDataDetailViewModel>()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
@@ -78,22 +78,16 @@ class QuestPatientDetailActivity :
     }
 
     patientDetailConfig =
-      configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
+      configurationRegistry.retrieveConfiguration(
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       )
-
-    // TODO Load binary resources
-    profileConfig =
-      AssetUtil.decodeAsset(fileName = QuestPatientDetailViewModel.PROFILE_CONFIG, this)
 
     if (configurationRegistry.isAppIdInitialized()) {
       configureViews(patientDetailConfig)
     }
-    patientViewModel.run {
-      getDemographicsWithAdditionalData(patientId, patientDetailConfig)
-      getAllResults(patientId, profileConfig, patientDetailConfig)
-      getAllForms(profileConfig)
-    }
+
+    loadData()
+
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
 
@@ -104,10 +98,19 @@ class QuestPatientDetailActivity :
   override fun onResume() {
     super.onResume()
 
+    loadData()
+  }
+
+  fun loadData() {
     patientViewModel.run {
       getDemographicsWithAdditionalData(patientId, patientDetailConfig)
-      getAllResults(patientId, profileConfig, patientDetailConfig)
-      getAllForms(profileConfig)
+      getAllResults(
+        patientId,
+        ResourceType.Patient,
+        patientDetailConfig.questionnaireFilter!!,
+        patientDetailConfig
+      )
+      getAllForms(patientDetailConfig.questionnaireFilter!!)
     }
   }
 
@@ -153,7 +156,7 @@ class QuestPatientDetailActivity :
             data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
               val response =
                 FhirContext.forR4Cached().newJsonParser().parseResource(it) as QuestionnaireResponse
-              response.getEncounterId().let {
+              response.getEncounterId()?.let {
                 startActivity(
                   Intent(this, SimpleDetailsActivity::class.java).apply {
                     putExtra(RECORD_ID_ARG, it.replace("#", ""))
@@ -197,33 +200,42 @@ class QuestPatientDetailActivity :
     when (navigationOption.action) {
       is QuestionnaireNavigationAction -> {
         resultItem?.let {
+          val questionnaireResponse = resultItem.source.first
           when {
-            resultItem.source.questionnaireLogicalId.isNullOrBlank() -> {
+            questionnaireResponse.questionnaire.isNullOrBlank() -> {
               AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
             }
             else -> {
-              val questionnaireResponse =
-                patientViewModel.loadQuestionnaireResponse(it.source.questionnaireResponseLogicalId)
-              startActivity(
-                Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
-                  .putExtras(
-                    QuestionnaireActivity.intentArgs(
-                      clientIdentifier = patientId,
-                      formName = resultItem.source.questionnaireLogicalId,
-                      questionnaireType = QuestionnaireType.READ_ONLY,
-                      questionnaireResponse = questionnaireResponse
-                    )
+              val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
+              when {
+                questionnaireUrlList.isNotEmpty() && questionnaireUrlList.size > 1 -> {
+                  startActivity(
+                    Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                      .putExtras(
+                        QuestionnaireActivity.intentArgs(
+                          clientIdentifier = patientId,
+                          formName = questionnaireUrlList[1],
+                          questionnaireType = QuestionnaireType.READ_ONLY,
+                          questionnaireResponse = questionnaireResponse
+                        )
+                      )
                   )
-              )
+                }
+                else -> {
+                  AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
+                }
+              }
             }
           }
         }
       }
       is TestDetailsNavigationAction -> {
         resultItem?.let {
+          val questionnaireResponse = resultItem.source.first
+
           startActivity(
             Intent(this@QuestPatientDetailActivity, SimpleDetailsActivity::class.java).apply {
-              putExtra(RECORD_ID_ARG, resultItem.source.questionnaireResponseEncounterId)
+              putExtra(RECORD_ID_ARG, questionnaireResponse.getEncounterId())
             }
           )
         }
@@ -236,7 +248,7 @@ class QuestPatientDetailActivity :
       configClassification = QuestConfigClassification.RESULT_DETAILS_NAVIGATION
     )
 
-  override fun configureViews(viewConfiguration: PatientDetailsViewConfiguration) {
+  override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {
     patientViewModel.updateViewConfigurations(viewConfiguration)
   }
 }

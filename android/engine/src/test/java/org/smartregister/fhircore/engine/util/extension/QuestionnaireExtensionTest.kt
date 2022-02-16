@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
@@ -105,5 +106,12 @@ class QuestionnaireExtensionTest : RobolectricTest() {
     }
 
     Assert.assertEquals("John", questionnaire.find("name")?.initialFirstRep?.valueStringType?.value)
+  }
+
+  @Test
+  fun testQuestionnaireResponseItemComponentAsLabel() {
+    val item = QuestionnaireResponse().addItem().apply { linkId = "my_test_link" }
+
+    Assert.assertEquals("My test link: ", item.asLabel())
   }
 }
