@@ -19,11 +19,11 @@ package org.smartregister.fhircore.anc.util
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
-fun computeBMIViaMetricUnits(heightInMeters: Double, weightInKgs: Double): Double {
-  return roundOffDecimal(weightInKgs / (heightInMeters * heightInMeters))
+fun computeBmiViaMetricUnits(heightInCentimeters: Double, weightInKgs: Double): Double {
+  return roundOffDecimal(weightInKgs / ((heightInCentimeters / 100) * (heightInCentimeters / 100)))
 }
 
-fun computeBMIViaStandardUnits(heightInInches: Double, weightInPounds: Double): Double {
+fun computeBmiViaUscUnits(heightInInches: Double, weightInPounds: Double): Double {
   return roundOffDecimal(703.00 * (weightInPounds / (heightInInches * heightInInches)))
 }
 

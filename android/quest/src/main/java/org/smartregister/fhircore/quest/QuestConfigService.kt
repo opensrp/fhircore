@@ -25,6 +25,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.APP_SYNC_CONFIG
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.ID
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.ORGANIZATION
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PUBLISHER
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
@@ -33,6 +34,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
+import timber.log.Timber
 
 class QuestConfigService
 @Inject
@@ -49,28 +51,37 @@ constructor(
     for (i in searchParams.indices) {
       // TODO: expressionValue supports for Organization and Publisher, extend it using
       // Composition resource
+      val paramName = searchParams[i].name!! // e.g. organization
+      val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
+      val paramExpression = searchParams[i].expression
       val expressionValue =
-        searchParams[i].expression?.let {
-          when {
-            it.contains(ORGANIZATION) -> authenticatedUserInfo?.organization
-            it.contains(PUBLISHER) -> authenticatedUserInfo?.questionnairePublisher
-            else -> null
-          }
+        when (paramName) {
+          ORGANIZATION -> authenticatedUserInfo?.organization
+          PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
+          ID -> paramExpression
+          else -> null
+        }?.let {
+          // replace the evaluated value into expression for complex expressions
+          // e.g. #organization -> 123
+          // e.g. patient.organization eq #organization -> patient.organization eq 123
+          paramExpression.replace(paramLiteral, it)
         }
 
       pairs.add(
         Pair(
           ResourceType.fromCode(searchParams[i].base[0].code),
-          expressionValue?.let { mapOf(searchParams[i].expression to it) } ?: mapOf()
+          expressionValue?.let { mapOf(searchParams[i].code to it) } ?: mapOf()
         )
       )
     }
+
+    Timber.i("SYNC CONFIG $pairs")
 
     mapOf(*pairs.toTypedArray())
   }
 
   private fun loadSearchParams(context: Context): List<SearchParameter> {
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val json = context.assets.open(APP_SYNC_CONFIG).bufferedReader().use { it.readText() }
     val searchParameters = mutableListOf<SearchParameter>()
 

@@ -17,26 +17,13 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Intent
-import android.view.View
-import android.widget.TextView
-import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
-import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Library
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert
@@ -47,15 +34,23 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowAlertDialog
-import org.robolectric.shadows.ShadowToast
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_READ_ONLY
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_TYPE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.configuration.view.NavigationOption
+import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
+import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -65,6 +60,9 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @BindValue val patientRepository: PatientRepository = mockk()
   @BindValue val libraryEvaluator: LibraryEvaluator = mockk()
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   private val hiltTestApplication = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -76,10 +74,14 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     Faker.initPatientRepositoryMocks(patientRepository)
+
+    val intent =
+      Intent().apply { this.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "123") }
     questPatientDetailActivityController =
-      Robolectric.buildActivity(QuestPatientDetailActivity::class.java)
-    questPatientDetailActivity = spyk(questPatientDetailActivityController.create().resume().get())
+      Robolectric.buildActivity(QuestPatientDetailActivity::class.java, intent)
+    questPatientDetailActivity = questPatientDetailActivityController.create().resume().get()
   }
 
   @After
@@ -90,57 +92,30 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnBackPressListenerShouldFinishActivity() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     questPatientDetailActivity.patientViewModel.onBackPressed(true)
     Assert.assertTrue(questPatientDetailActivity.isFinishing)
   }
 
   @Test
-  fun testOnMenuItemClickListenerShouldStartQuestPatientTestResultActivity() {
-    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.test_results)
-    val expectedIntent =
-      Intent(questPatientDetailActivity, QuestPatientTestResultActivity::class.java)
+  fun testOnMenuItemClickListenerShouldStartQuestionnaireActivity() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+    questPatientDetailActivity.configurationRegistry.appId = "quest"
+    questPatientDetailActivity.configurationRegistry.configurationsMap.put(
+      "quest|patient_register",
+      RegisterViewConfiguration("", "", "", "", "", "", "")
+    )
+
+    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.edit_patient_info)
+
+    val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
-  fun testOnMenuItemClickListenerShouldShowProgressAlert() = runBlockingTest {
-    Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
-
-    val fhirEngineMockk = mockk<FhirEngine>()
-    every { patientRepository.fhirEngine } returns fhirEngineMockk
-    coEvery { fhirEngineMockk.load(Patient::class.java, any()) } returns Patient()
-    coEvery { fhirEngineMockk.load(Library::class.java, any()) } returns Library()
-    coEvery { fhirEngineMockk.search<Condition>(any()) } returns listOf()
-    coEvery { fhirEngineMockk.search<Observation>(any()) } returns listOf()
-    every { libraryEvaluator.createBundle(any()) } returns Bundle()
-    every { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
-
-    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.run_cql)
-
-    Assert.assertNotNull(ShadowAlertDialog.getLatestAlertDialog())
-
-    verify { libraryEvaluator.createBundle(any()) }
-    verify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
-
-    val lastAlert = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-
-    Assert.assertNotNull(
-      lastAlert.view.findViewById<TextView>(
-          org.smartregister.fhircore.engine.R.id.tv_alert_message
-        )!!
-        .text
-    )
-
-    Assert.assertEquals(
-      View.GONE,
-      lastAlert.view.findViewById<View>(org.smartregister.fhircore.engine.R.id.pr_circular)!!
-        .visibility
-    )
-  }
-
-  @Test
   fun testOnFormItemClickListenerShouldStartQuestionnaireActivity() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     questPatientDetailActivity.patientViewModel.onFormItemClickListener(
       QuestionnaireConfig(appId = "quest", form = "test-form", title = "Title", identifier = "1234")
     )
@@ -152,8 +127,33 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
-    questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
-      QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_questionnaire",
+          title = "Questionnaire",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "quest",
+      classification = "result_details_navigation",
+      navigationOptions
+    )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      questPatientDetailActivity,
+      "onTestResultItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestResultItem::class.java,
+        QuestResultItem(
+          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }, mockk()),
+          listOf()
+        )
+      )
     )
 
     val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
@@ -161,15 +161,146 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals("12345", actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM))
-    Assert.assertEquals(true, actualIntent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false))
+    Assert.assertEquals(
+      QuestionnaireType.READ_ONLY.name,
+      actualIntent.getStringExtra(QUESTIONNAIRE_ARG_TYPE)
+    )
   }
 
   @Test
-  fun testOnTestResultItemClickListenerWithNullResponseShouldDisplayToast() {
-    questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
-      QuestionnaireResponse().apply { questionnaire = null }
+  fun testOnTestResultItemClickListenerQuestionnaireNullShouldShowAlertDialog() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_questionnaire",
+          title = "Questionnaire",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "quest",
+      classification = "result_details_navigation",
+      navigationOptions
     )
-    val latestToast = ShadowToast.getLatestToast()
-    Assert.assertEquals(Toast.LENGTH_LONG, latestToast.duration)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      questPatientDetailActivity,
+      "onTestResultItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestResultItem::class.java,
+        QuestResultItem(
+          Pair(QuestionnaireResponse().apply { questionnaire = "" }, mockk()),
+          listOf()
+        )
+      )
+    )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+  }
+
+  @Test
+  fun testOnTestResultItemClickListenerInvalidQuestionnaireUrlShouldShowAlertDialog() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_questionnaire",
+          title = "Questionnaire",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "quest",
+      classification = "result_details_navigation",
+      navigationOptions
+    )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      questPatientDetailActivity,
+      "onTestResultItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestResultItem::class.java,
+        QuestResultItem(
+          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire" }, mockk()),
+          listOf()
+        )
+      )
+    )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+  }
+
+  @Test
+  fun testOnTestResultItemClickListenerShouldStartSimpleDetailsActivityForG6pd() {
+    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_test_details",
+          title = "Test Details",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "g6pd",
+      classification = "result_details_navigation",
+      navigationOptions
+    )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      questPatientDetailActivity,
+      "onTestResultItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestResultItem::class.java,
+        QuestResultItem(
+          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }, mockk()),
+          listOf()
+        )
+      )
+    )
+
+    val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
+    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testHandlePatientResources() {
+    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+
+    val navigationOptions =
+      listOf(
+        NavigationOption(
+          id = "open_test_details",
+          title = "Test Details",
+          icon = "",
+          TestDetailsNavigationAction(form = "", readOnly = true)
+        )
+      )
+    ResultDetailsNavigationConfiguration(
+      appId = "g6pd",
+      classification = "result_details_navigation",
+      navigationOptions
+    )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      questPatientDetailActivity,
+      "handlePatientResources",
+      ReflectionHelpers.ClassParameter(ArrayList::class.java, arrayListOf("Condition"))
+    )
+
+    Assert.assertEquals("Condition", questPatientDetailActivity.patientResourcesList[0])
   }
 }

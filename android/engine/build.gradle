@@ -96,13 +96,14 @@ android {
 
 dependencies {
 
-    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.preference:preference-ktx:1.1.1'
     coreLibraryDesugaring deps.desugar
 
     implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-rc02"
     implementation 'androidx.fragment:fragment-ktx:1.3.6'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
@@ -119,11 +120,11 @@ dependencies {
     implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
     implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
     implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
-    implementation 'org.opencds.cqf.cql:engine:1.5.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator:1.2.1-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.builder:1.2.1-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.dagger:1.2.1-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:engine:1.5.4-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator:1.3.1-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.builder:1.3.1-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.dagger:1.3.1-SNAPSHOT'
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
@@ -149,15 +150,20 @@ dependencies {
     def coroutineVersion = '1.5.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api('org.smartregister:data-capture:0.1.0-alpha05-preview-8-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta02-preview5-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
         exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
         exclude group: 'com.sun.activation', module: 'javax.activation'
+        exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api('org.smartregister:engine:0.1.0-alpha04-preview-2-SNAPSHOT') {
+    api('org.smartregister:common:0.1.0-alpha01-preview3-SNAPSHOT') {
+        transitive = true
+    }
+
+    api('org.smartregister:engine:0.1.0-alpha06-preview2-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -167,17 +173,7 @@ dependencies {
         exclude group: 'org.opencds.cqf.cql', module: 'evaluator'
         exclude group: 'org.opencds.cqf.cql', module: 'evaluator.builder'
         exclude group: 'org.opencds.cqf.cql', module: 'evaluator.dagger'
-    }
-
-    def hapiFhirVersion = "5.4.2"
-    api("ca.uhn.hapi.fhir:org.hl7.fhir.r4:$hapiFhirVersion") {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
-    api("ca.uhn.hapi.fhir:hapi-fhir-base:$hapiFhirVersion") {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
-    api("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:$hapiFhirVersion") {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
+        exclude group: 'com.google.android.fhir', module: 'common'
     }
 
     api 'com.google.code.gson:gson:2.8.7'
@@ -210,7 +206,6 @@ dependencies {
     testImplementation deps.mockk
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'

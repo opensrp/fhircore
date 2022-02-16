@@ -40,8 +40,8 @@ android {
         applicationId "org.smartregister.fhircore.quest"
         minSdk 21
         targetSdk 30
-        versionCode 2
-        versionName "0.1.0"
+        versionCode 3
+        versionName "0.0.3"
         multiDexEnabled true
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
@@ -163,4 +163,6 @@ dependencies {
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 //     debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+
+    testImplementation 'info.cqframework:cql-to-elm:1.5.0'
 }

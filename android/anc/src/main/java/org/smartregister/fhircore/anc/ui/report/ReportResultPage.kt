@@ -134,7 +134,7 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
 
   val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
   val patientSelectionType by remember { mutableStateOf(viewModel.patientSelectionType.value) }
-  val selectedPatient by remember { mutableStateOf(viewModel.selectedPatientItem.value) }
+  val selectedPatient by remember { mutableStateOf(viewModel.getSelectedPatient().value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
   val isAllPatientSelected = patientSelectionType == "All"
@@ -148,7 +148,7 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
     startDate = startDate,
     endDate = endDate,
     isAllPatientSelection = isAllPatientSelected,
-    selectedPatient = selectedPatient ?: PatientItem(name = "Patient Missing"),
+    selectedPatient = selectedPatient!!,
     resultForIndividual = resultForIndividual,
     resultItemPopulation = resultForPopulation
   )

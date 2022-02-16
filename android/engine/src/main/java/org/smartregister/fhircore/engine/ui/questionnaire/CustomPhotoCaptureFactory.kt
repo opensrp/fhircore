@@ -18,9 +18,6 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.os.Environment
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -30,14 +27,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.fhir.datacapture.validation.ValidationResult
+import com.google.android.fhir.datacapture.validation.getSingleStringValidationMessage
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewHolderDelegate
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewHolderFactory
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
 import com.google.android.material.button.MaterialButton
-import id.zelory.compressor.Compressor.compress
-import id.zelory.compressor.extension
-import java.io.File
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
@@ -45,10 +42,10 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.databinding.CustomPhotoCaptureLayoutBinding
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeToByteArray
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
-import org.smartregister.fhircore.engine.util.extension.toUri
 
 class CustomPhotoCaptureFactory(
   val fragment: Fragment,
@@ -60,28 +57,24 @@ class CustomPhotoCaptureFactory(
   lateinit var tvHeader: TextView
   lateinit var ivThumbnail: ImageView
   lateinit var btnTakePhoto: MaterialButton
-  lateinit var imageFile: File
+  lateinit var tvError: TextView
   var context: Context = fragment.requireContext()
-  var cameraLauncher: ActivityResultLauncher<Uri>
-  var questionnaireResponse: QuestionnaireResponseItemAnswerComponent
+  var cameraLauncher: ActivityResultLauncher<Void>
+  var answers: MutableList<QuestionnaireResponseItemAnswerComponent> = mutableListOf()
+  lateinit var onAnswerChanged: () -> Unit
 
   init {
     cameraLauncher = registerCameraLauncher()
-    questionnaireResponse = QuestionnaireResponseItemAnswerComponent()
   }
 
-  internal fun registerCameraLauncher(): ActivityResultLauncher<Uri> {
-    return fragment.registerForActivityResult(ActivityResultContracts.TakePicture()) { result ->
-      if (result) {
-        lifecycleScope
-          .launch(dispatcher.io()) {
-            imageFile = compress(context, imageFile)
-            val imageBitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
-            loadThumbnail(imageBitmap)
-            val imageBytes = imageBitmap.encodeToByteArray()
-            populateQuestionnaireResponse(imageBytes)
-          }
-          .invokeOnCompletion { imageFile.delete() }
+  internal fun registerCameraLauncher(): ActivityResultLauncher<Void> {
+    return fragment.registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap
+      ->
+      if (bitmap != null) {
+        loadThumbnail(bitmap)
+        val bytes = bitmap.encodeToByteArray()
+        populateQuestionnaireResponse(bytes)
+        onAnswerChanged.invoke()
       }
     }
   }
@@ -91,7 +84,10 @@ class CustomPhotoCaptureFactory(
   ) {
     lifecycleScope.launch(dispatcher.main()) {
       ivThumbnail.apply {
-        Glide.with(fragment).load(imageBitmap).into(this)
+        Glide.with(fragment)
+          .load(imageBitmap)
+          .apply(RequestOptions().format(DecodeFormat.PREFER_ARGB_8888))
+          .into(this)
         show()
       }
       btnTakePhoto.text = fragment.getString(R.string.replace_photo)
@@ -99,23 +95,20 @@ class CustomPhotoCaptureFactory(
   }
 
   internal fun populateQuestionnaireResponse(imageBytes: ByteArray) {
-    questionnaireResponse.value =
-      Attachment().apply {
-        contentType = CONTENT_TYPE
-        data = imageBytes
+    answers.clear()
+    val answer =
+      QuestionnaireResponseItemAnswerComponent().apply {
+        value =
+          Attachment().apply {
+            contentType = CONTENT_TYPE
+            data = imageBytes
+          }
       }
-  }
-
-  internal fun createImageFile(): File {
-    return File.createTempFile(
-      PREFIX_BITMAP,
-      ".${Bitmap.CompressFormat.JPEG.extension()}",
-      context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-    )
+    answers.add(answer)
   }
 
   internal fun launchCamera() {
-    imageFile.toUri(context, AUTHORITY_FILE_PROVIDER).also { uri -> cameraLauncher.launch(uri) }
+    cameraLauncher.launch(null)
   }
 
   override fun getQuestionnaireItemViewHolderDelegate(): QuestionnaireItemViewHolderDelegate =
@@ -129,7 +122,9 @@ class CustomPhotoCaptureFactory(
           tvHeader = binding.tvHeader
           ivThumbnail = binding.ivThumbnail
           btnTakePhoto = binding.btnTakePhoto
+          tvError = binding.tvError as TextView
         }
+        onAnswerChanged = { onAnswerChanged(context) }
       }
 
       override fun bind(questionnaireItemViewItem: QuestionnaireItemViewItem) {
@@ -142,21 +137,33 @@ class CustomPhotoCaptureFactory(
           tvPrefix.hide(true)
         }
         tvHeader.text = questionnaireItemViewItem.questionnaireItem.text
-        btnTakePhoto.setOnClickListener {
-          imageFile = createImageFile()
-          launchCamera()
+        btnTakePhoto.setOnClickListener { launchCamera() }
+        questionnaireItemViewItem.singleAnswerOrNull?.valueAttachment?.let { attachment ->
+          loadThumbnail(attachment.data.decodeToBitmap())
+          answers.clear()
+          answers.add(QuestionnaireResponseItemAnswerComponent().apply { value = attachment })
         }
-        questionnaireItemViewItem.singleAnswerOrNull = questionnaireResponse
+        if (!questionnaireItemViewItem.questionnaireItem.readOnly) {
+          questionnaireItemViewItem.questionnaireResponseItem.answer = answers
+        }
       }
 
       override fun displayValidationResult(validationResult: ValidationResult) {
-        // Custom validation message
+        tvError.text =
+          if (validationResult.getSingleStringValidationMessage() == "") null
+          else validationResult.getSingleStringValidationMessage()
+      }
+
+      override fun setReadOnly(isReadOnly: Boolean) {
+        ivThumbnail.isEnabled = !isReadOnly
+        btnTakePhoto.apply {
+          isEnabled = !isReadOnly
+          alpha = if (isReadOnly) 0.6F else 1F
+        }
       }
     }
 
   companion object {
-    private const val AUTHORITY_FILE_PROVIDER = "org.smartregister.fhircore.fileprovider"
     const val CONTENT_TYPE = "image/jpg"
-    private const val PREFIX_BITMAP = "BITMAP_"
   }
 }

@@ -27,7 +27,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -52,9 +51,7 @@ import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumeration
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Flag
-import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Observation
@@ -74,8 +71,8 @@ import org.smartregister.fhircore.anc.app.fakes.FakeModel.getEncounter
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asCodeableConcept
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
+import org.smartregister.fhircore.anc.util.asCodeableConcept
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
@@ -297,40 +294,9 @@ class PatientRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testEnrollIntoAncShouldSaveEntities() {
-    coEvery { fhirEngine.save(any()) } just runs
-
-    val condition = slot<Condition>()
-    val episode = slot<EpisodeOfCare>()
-    val encounter = slot<Encounter>()
-    val goal = slot<Goal>()
-    val carePlan = slot<CarePlan>()
-
-    runBlocking {
-      repository.enrollIntoAnc("1111", DateType(Date()))
-
-      coVerifyOrder {
-        fhirEngine.save(capture(condition))
-        fhirEngine.save(capture(episode))
-        fhirEngine.save(capture(encounter))
-        fhirEngine.save(capture(goal))
-        fhirEngine.save(capture(carePlan))
-      }
-
-      val subject = "Patient/1111"
-
-      Assert.assertEquals(subject, condition.captured.subject.reference)
-      Assert.assertEquals(subject, episode.captured.patient.reference)
-      Assert.assertEquals(subject, encounter.captured.subject.reference)
-      Assert.assertEquals(subject, goal.captured.subject.reference)
-      Assert.assertEquals(subject, carePlan.captured.subject.reference)
-    }
-  }
-
-  @Test
   fun testFetchCarePlanShouldReturnExpectedCarePlan() {
     coEvery {
-      fhirEngine.search<CarePlan> { filter(CarePlan.SUBJECT) { value = "Patient/$PATIENT_ID_1" } }
+      fhirEngine.search<CarePlan> { filter(CarePlan.SUBJECT, { value = "Patient/$PATIENT_ID_1" }) }
     } returns listOf(buildCarePlanWithActive(PATIENT_ID_1))
 
     val carePlans = runBlocking { repository.fetchCarePlan(PATIENT_ID_1) }
@@ -505,21 +471,37 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testRecordComputedBmiShouldExtractAndSaveResources() {
-    every { repository.resourceMapperExtended } returns
-      mockk { coEvery { saveParsedResource(any(), any(), any(), any()) } returns Unit }
-
     coEvery { fhirEngine.save(any()) } returns Unit
 
     runBlocking {
       val result =
         repository.recordComputedBmi(
-          questionnaire = mockk(),
-          questionnaireResponse = mockk(),
           patientId = "patient_1",
-          encounterID = "encounter_1",
+          encounterId = "encounter_1",
           height = 1.6764,
           weight = 50.0,
-          computedBmi = 9.8
+          computedBmi = 9.8,
+          isUnitModeMetric = true
+        )
+
+      coVerify(exactly = 4) { fhirEngine.save(any()) }
+      Assert.assertTrue(result)
+    }
+  }
+
+  @Test
+  fun testRecordComputedBmiShouldExtractAndSaveResourcesInner() {
+    coEvery { fhirEngine.save(any()) } returns Unit
+
+    runBlocking {
+      val result =
+        repository.recordBmi(
+          patientId = "patient_1",
+          formEncounterId = "encounter_1",
+          height = 1.6764,
+          weight = 50.0,
+          computedBmi = 9.8,
+          isUnitModeMetric = true
         )
 
       coVerify(exactly = 4) { fhirEngine.save(any()) }

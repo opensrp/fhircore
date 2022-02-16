@@ -7,47 +7,57 @@
       "Patient"
     ],
     "type": "token",
-    "expression": "organization"
+    "expression": "#organization"
   },
   {
     "resourceType": "SearchParameter",
     "name": "organization",
-    "code": "organization",
+    "code": "subject.organization",
     "base": [
       "Encounter"
     ],
     "type": "token",
-    "expression": "subject.organization"
+    "expression": "#organization"
   },
   {
     "resourceType": "SearchParameter",
     "name": "organization",
-    "code": "organization",
+    "code": "_filter",
     "base": [
       "Observation"
     ],
     "type": "token",
-    "expression": "subject.organization"
+    "expression": "patient.organization eq #organization or focus.subject eq Organization/#organization"
   },
   {
     "resourceType": "SearchParameter",
     "name": "organization",
-    "code": "organization",
+    "code": "subject.organization",
     "base": [
       "Condition"
     ],
     "type": "token",
-    "expression": "subject.organization"
+    "expression": "#organization"
   },
   {
     "resourceType": "SearchParameter",
     "name": "organization",
-    "code": "organization",
+    "code": "subject.organization",
+    "base": [
+      "MedicationRequest"
+    ],
+    "type": "token",
+    "expression": "#organization"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "name": "organization",
+    "code": "_filter",
     "base": [
       "QuestionnaireResponse"
     ],
     "type": "token",
-    "expression": "patient.organization"
+    "expression": "patient.organization eq #organization or subject eq Organization/#organization"
   },
   {
     "resourceType": "SearchParameter",
@@ -57,36 +67,32 @@
       "Questionnaire"
     ],
     "type": "token",
-    "expression": "publisher"
+    "expression": "#publisher"
   },
   {
     "resourceType": "SearchParameter",
-    "name": "publisher",
-    "code": "publisher",
+    "name": "_id",
+    "code": "_id",
     "base": [
       "StructureMap"
-    ],
-    "type": "token",
-    "expression": "publisher"
+    ]
   },
   {
     "resourceType": "SearchParameter",
-    "name": "publisher",
-    "code": "publisher",
+    "name": "_id",
+    "code": "_id",
     "base": [
       "Library"
     ],
     "type": "token",
-    "expression": "publisher"
+    "expression": "1753,32883,46841,46831,46823"
   },
   {
     "resourceType": "SearchParameter",
-    "name": "organization",
-    "code": "organization",
+    "name": "_id",
+    "code": "_id",
     "base": [
       "Binary"
-    ],
-    "type": "token",
-    "expression": ""
+    ]
   }
 ]

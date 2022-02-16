@@ -16,14 +16,18 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
+import android.app.Application
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -31,7 +35,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class PatientRowTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Before
@@ -44,7 +47,16 @@ class PatientRowTest : RobolectricTest() {
         name = "John Doe",
         gender = "Male",
         age = "27",
-        address = "Nairobi"
+        address = "Nairobi",
+        additionalData =
+          listOf(
+            AdditionalData(
+              label = "G6PD",
+              value = "Deficient",
+              valuePrefix = " G6PD Status - ",
+              lastDateAdded = "04-Feb-2022"
+            )
+          )
       )
     composeRule.setContent { PatientRow(patientItem = patientItem, { _, _ -> }) }
   }
@@ -55,5 +67,14 @@ class PatientRowTest : RobolectricTest() {
     composeRule.onNodeWithText("Male").assertIsDisplayed()
     composeRule.onNodeWithText("John Doe, 27").assertExists()
     composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
+    composeRule.onNodeWithText("G6PD").assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithText(
+        " " +
+          ApplicationProvider.getApplicationContext<Application>()
+            .getString(R.string.last_test, "04-Feb-2022")
+      )
+      .assertExists()
+      .assertIsDisplayed()
   }
 }

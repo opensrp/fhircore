@@ -17,6 +17,10 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.DialogInterface
+import android.view.View
+import android.widget.TextView
 import androidx.lifecycle.MutableLiveData
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
@@ -43,13 +47,16 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
+import org.robolectric.shadows.ShadowAlertDialog
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 
@@ -103,6 +110,11 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     reportHomeActivitySpy.libraryMeasure = reportHomeActivitySpy.valueSetBundle
   }
 
+  @After
+  fun cleanup() {
+    unmockkObject(FileUtil)
+  }
+
   @Test
   fun testActivityNotNull() {
     Assert.assertNotNull(reportHomeActivity)
@@ -113,30 +125,30 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testHandleCQLMeasureLoadPatient() {
+  fun testHandleCqlMeasureLoadPatient() {
     val testData = patientData
     every { reportHomeActivitySpy.handleMeasureEvaluate() } returns Unit
-    reportHomeActivitySpy.handleCQLMeasureLoadPatient(testData)
+    reportHomeActivitySpy.handleCqlMeasureLoadPatient(testData)
     Assert.assertNotNull(reportHomeActivitySpy.patientDataIBase)
   }
 
   @Test
-  fun testHandleCQLLibraryData() {
+  fun testHandleCqlLibraryData() {
     val auxLibraryData = "auxLibraryData"
-    every { reportHomeActivitySpy.loadCQLHelperData() } returns Unit
+    every { reportHomeActivitySpy.loadCqlHelperData() } returns Unit
     every { FileUtil.writeFileOnInternalStorage(any(), any(), any(), any()) } returns Unit
-    reportHomeActivitySpy.handleCQLLibraryData(auxLibraryData)
+    reportHomeActivitySpy.handleCqlLibraryData(auxLibraryData)
     Assert.assertEquals(auxLibraryData, reportHomeActivitySpy.libraryData)
   }
 
   @Test
-  fun testHandleCQLHelperData() {
+  fun testHandleCqlHelperData() {
     val auxHelperData = "auxHelperData"
-    every { reportHomeActivitySpy.loadCQLValueSetData() } returns Unit
-    every { reportHomeActivitySpy.loadCQLLibrarySources() } returns Unit
+    every { reportHomeActivitySpy.loadCqlValueSetData() } returns Unit
+    every { reportHomeActivitySpy.loadCqlLibrarySources() } returns Unit
     every { FileUtil.writeFileOnInternalStorage(any(), any(), any(), any()) } returns Unit
 
-    reportHomeActivitySpy.handleCQLHelperData("auxHelperData")
+    reportHomeActivitySpy.handleCqlHelperData("auxHelperData")
     Assert.assertEquals(auxHelperData, reportHomeActivitySpy.helperData)
   }
 
@@ -147,22 +159,22 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testLoadCQLLibrarySources() {
-    reportHomeActivitySpy.loadCQLLibrarySources()
+  fun testLoadCqlLibrarySources() {
+    reportHomeActivitySpy.loadCqlLibrarySources()
     Assert.assertNotNull(reportHomeActivitySpy.libraryResources)
   }
 
   @Test
-  fun testHandleCQLValueSetData() {
+  fun testHandleCqlValueSetData() {
     val auxValueSetData = "auxValueSetData"
     every { FileUtil.writeFileOnInternalStorage(any(), any(), any(), any()) } returns Unit
     every { reportHomeActivitySpy.postValueSetData(any()) } returns Unit
-    reportHomeActivitySpy.handleCQLValueSetData(auxValueSetData)
+    reportHomeActivitySpy.handleCqlValueSetData(auxValueSetData)
     Assert.assertEquals(auxValueSetData, reportHomeActivitySpy.valueSetData)
   }
 
   @Test
-  fun testHandleCQL() {
+  fun testHandleCql() {
     val parameters = "{\"parameters\":\"parameters\"}"
 
     every {
@@ -176,7 +188,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
         contextLabel = any()
       )
     } returns parameters
-    reportHomeActivitySpy.handleCQL()
+    reportHomeActivitySpy.handleCql()
     Assert.assertNotNull(parameters)
   }
 
@@ -199,23 +211,23 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testLoadCQLLibraryData() {
+  fun testLoadCqlLibraryData() {
 
     every { reportHomeActivitySpy.dir.exists() } returns true
-    every { reportHomeActivitySpy.loadCQLHelperData() } returns Unit
+    every { reportHomeActivitySpy.loadCqlHelperData() } returns Unit
     every { FileUtil.readFileFromInternalStorage(any(), any(), any()) } returns ""
 
-    reportHomeActivitySpy.loadCQLLibraryData()
+    reportHomeActivitySpy.loadCqlLibraryData()
 
     every { reportHomeActivitySpy.dir.exists() } returns false
     val auxCQLLibraryData = "auxCQLLibraryData"
     val libraryData = MutableLiveData<String>()
     libraryData.value = auxCQLLibraryData
 
-    coEvery { reportViewModel.fetchCQLLibraryData(parser, fhirResourceDataSource, any()) } returns
+    coEvery { reportViewModel.fetchCqlLibraryData(parser, fhirResourceDataSource, any()) } returns
       libraryData
 
-    reportHomeActivitySpy.loadCQLLibraryData()
+    reportHomeActivitySpy.loadCqlLibraryData()
     Assert.assertNotNull(libraryData.value)
     Assert.assertEquals(auxCQLLibraryData, libraryData.value)
   }
@@ -232,7 +244,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     val libraMeasureEvaluateData = MutableLiveData<String>()
     libraMeasureEvaluateData.value = auxCQLMeasureEvaluateData
     coEvery {
-      reportViewModel.fetchCQLMeasureEvaluateLibraryAndValueSets(
+      reportViewModel.fetchCqlMeasureEvaluateLibraryAndValueSets(
         parser,
         fhirResourceDataSource,
         any(),
@@ -247,14 +259,14 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testLoadCQLHelperData() {
+  fun testLoadCqlHelperData() {
 
     every { reportHomeActivitySpy.dir.exists() } returns true
-    every { reportHomeActivitySpy.loadCQLLibrarySources() } returns Unit
-    every { reportHomeActivitySpy.loadCQLValueSetData() } returns Unit
+    every { reportHomeActivitySpy.loadCqlLibrarySources() } returns Unit
+    every { reportHomeActivitySpy.loadCqlValueSetData() } returns Unit
     every { FileUtil.readFileFromInternalStorage(any(), any(), any()) } returns ""
 
-    reportHomeActivitySpy.loadCQLHelperData()
+    reportHomeActivitySpy.loadCqlHelperData()
 
     every { reportHomeActivitySpy.dir.exists() } returns false
     val auxCQLHelperData = "auxCQLHelperData"
@@ -262,43 +274,43 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     helperData.value = auxCQLHelperData
 
     coEvery {
-      reportViewModel.fetchCQLFhirHelperData(parser, fhirResourceDataSource, any())
+      reportViewModel.fetchCqlFhirHelperData(parser, fhirResourceDataSource, any())
     } returns helperData
 
-    reportHomeActivitySpy.loadCQLHelperData()
+    reportHomeActivitySpy.loadCqlHelperData()
     Assert.assertNotNull(helperData.value)
     Assert.assertEquals(auxCQLHelperData, helperData.value)
   }
 
   @Test
-  fun testLoadCQLValueSetData() {
+  fun testLoadCqlValueSetData() {
 
     every { reportHomeActivitySpy.dir.exists() } returns true
     every { reportHomeActivitySpy.postValueSetData(any()) } returns Unit
     every { FileUtil.readFileFromInternalStorage(any(), any(), any()) } returns valueSetData
-    reportHomeActivitySpy.loadCQLValueSetData()
+    reportHomeActivitySpy.loadCqlValueSetData()
 
     every { reportHomeActivitySpy.dir.exists() } returns false
     val auxCQLValueSetData = "auxCQLValueSetData"
     val valueSetData = MutableLiveData<String>()
     valueSetData.value = auxCQLValueSetData
-    coEvery { reportViewModel.fetchCQLValueSetData(parser, fhirResourceDataSource, any()) } returns
+    coEvery { reportViewModel.fetchCqlValueSetData(parser, fhirResourceDataSource, any()) } returns
       valueSetData
-    reportHomeActivitySpy.loadCQLValueSetData()
+    reportHomeActivitySpy.loadCqlValueSetData()
     Assert.assertNotNull(valueSetData)
     Assert.assertEquals(auxCQLValueSetData, valueSetData.value)
   }
 
   @Test
-  fun testLoadCQLMeasurePatientData() {
+  fun testLoadCqlMeasurePatientData() {
     val auxCQLPatientData = "auxCQLPatientData"
     val patientData = MutableLiveData<String>()
     patientData.value = auxCQLPatientData
     reportHomeActivitySpy.patientId = "1"
-    coEvery { reportViewModel.fetchCQLPatientData(parser, fhirResourceDataSource, any()) } returns
+    coEvery { reportViewModel.fetchCqlPatientData(parser, fhirResourceDataSource, any()) } returns
       patientData
 
-    reportHomeActivitySpy.loadCQLMeasurePatientData()
+    reportHomeActivitySpy.loadCqlMeasurePatientData()
     Assert.assertNotNull(patientData.value)
     Assert.assertEquals(auxCQLPatientData, patientData.value)
   }
@@ -337,7 +349,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     val startDate = "01/12/2020"
     val endDate = "01/12/2021"
 
-    every { reportHomeActivitySpy.loadCQLMeasurePatientData() } returns Unit
+    every { reportHomeActivitySpy.loadCqlMeasurePatientData() } returns Unit
 
     reportHomeActivitySpy.generateMeasureReport(
       startDate,
@@ -350,10 +362,114 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun auxGenerateReportTest() {
-    every { reportHomeActivitySpy.generateMeasureReport(any(), any(), any(), any(), any()) } returns
-      Unit
+  fun testProcessGenerateReport() {
+    coEvery { reportViewModel.patientSelectionType.value } returns "All"
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.PREHOMElOADING,
+      reportViewModel.reportState.currentScreen
+    )
 
-    auxGenerateReport(reportHomeActivitySpy, "", "", ReportItem(), PatientItem())
+    val reportMeasureItem = "ANC"
+    val selectedPatientId = "123456789"
+    val selectedPatientName = "Patient Mom"
+    val startDate = "01/12/2020"
+    val endDate = "01/12/2021"
+    every { reportHomeActivitySpy.loadCqlMeasurePatientData() } returns Unit
+    reportHomeActivitySpy.generateMeasureReport(
+      startDate,
+      endDate,
+      reportMeasureItem,
+      selectedPatientId,
+      selectedPatientName
+    )
+    Assert.assertEquals(reportHomeActivitySpy.patientId, selectedPatientId)
+  }
+
+  @Test
+  fun testHandleCQLMeasureLoadPatientForEmptyData() {
+    val testData = ""
+    // every { reportHomeActivitySpy.handleMeasureEvaluate() } returns Unit
+    reportHomeActivitySpy.handleCqlMeasureLoadPatient(testData)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.RESULT,
+      reportViewModel.reportState.currentScreen
+    )
+    Assert.assertEquals("Failed", reportViewModel.resultForIndividual.value?.status)
+  }
+
+  @Test
+  fun testGenerateMeasureReport() {
+    coEvery { reportViewModel.processGenerateReport.value } returns true
+    val reportMeasureItem = "ANC"
+    val selectedPatientId = "123456789"
+    val selectedPatientName = "Patient Mom"
+    val startDate = "01/12/2020"
+    val endDate = "01/12/2021"
+    reportHomeActivitySpy.generateMeasureReport(
+      startDate,
+      endDate,
+      reportMeasureItem,
+      selectedPatientId,
+      selectedPatientName
+    )
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.PREHOMElOADING,
+      reportViewModel.reportState.currentScreen
+    )
+    Assert.assertEquals(reportHomeActivitySpy.cqlMeasureReportReportType, reportMeasureItem)
+  }
+
+  @Test
+  fun testProcessGenerateReportForInvalidData() {
+    coEvery { reportViewModel.patientSelectionType.value } returns "not-all"
+    coEvery { reportViewModel.selectedPatientItem.value } returns null
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.alertSelectPatient.value)
+
+    AlertDialogue.showErrorAlert(
+      context = reportHomeActivity,
+      message = getString(R.string.select_patient),
+      title = getString(R.string.invalid_selection)
+    )
+
+    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    assertSimpleMessageDialog(
+      dialog,
+      getString(R.string.select_patient),
+      getString(R.string.invalid_selection),
+      getString(R.string.questionnaire_alert_ack_button_title)
+    )
+  }
+
+  private fun assertSimpleMessageDialog(
+    dialog: ShadowAlertDialog,
+    message: String,
+    title: String,
+    confirmButtonTitle: String
+  ) {
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")
+
+    Assert.assertNotNull(dialog)
+    Assert.assertTrue(alertDialog.isShowing)
+
+    Assert.assertEquals(
+      message,
+      dialog.view.findViewById<TextView>(org.smartregister.fhircore.engine.R.id.tv_alert_message)!!
+        .text
+    )
+    Assert.assertEquals(title, dialog.title)
+
+    Assert.assertEquals(
+      View.GONE,
+      dialog.view.findViewById<View>(org.smartregister.fhircore.engine.R.id.pr_circular)!!
+        .visibility
+    )
+
+    val confirmButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+    Assert.assertEquals(View.VISIBLE, confirmButton.visibility)
+    Assert.assertEquals(confirmButtonTitle, confirmButton.text)
   }
 }

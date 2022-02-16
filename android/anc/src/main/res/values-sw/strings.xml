@@ -34,5 +34,6 @@
     <string name="add_conditions">Ongeza Masharti</string>
     <string name="bmi_widget">Wijeti ya BMI</string>
     <string name="remove_family">Toa Familia</string>
+    <string name="so_and_so_family">Familia ya %1$s</string>
 
 </resources>

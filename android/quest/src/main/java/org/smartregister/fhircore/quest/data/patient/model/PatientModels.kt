@@ -17,6 +17,9 @@
 package org.smartregister.fhircore.quest.data.patient.model
 
 import androidx.compose.runtime.Stable
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.quest.configuration.view.Properties
 
 @Stable
 data class PatientItem(
@@ -25,7 +28,18 @@ data class PatientItem(
   val name: String = "",
   val gender: String = "",
   val age: String = "",
-  val address: String = ""
+  val address: String = "",
+  var additionalData: List<AdditionalData>? = null
+)
+
+@Stable
+data class AdditionalData(
+  val label: String? = null,
+  val value: String,
+  var valuePrefix: String? = null,
+  var valuePostfix: String? = null,
+  var lastDateAdded: String? = null,
+  val properties: Properties? = null
 )
 
 fun PatientItem.genderFull(): String {
@@ -35,3 +49,9 @@ fun PatientItem.genderFull(): String {
     else -> gender
   }
 }
+
+@Stable
+data class QuestResultItem(
+  val source: Pair<QuestionnaireResponse, Questionnaire>,
+  val data: List<List<AdditionalData>>
+)

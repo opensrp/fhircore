@@ -26,7 +26,8 @@
         <activity android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity"/>
         <activity android:name=".ui.patient.register.PatientRegisterActivity"/>
         <activity android:name=".ui.patient.details.QuestPatientDetailActivity" />
-        <activity android:name=".ui.patient.details.QuestPatientTestResultActivity" />
+        <activity android:name=".ui.patient.details.QuestionnaireDataDetailActivity"/>
+        <activity android:name=".ui.patient.details.SimpleDetailsActivity" />
         <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity"/>
         <service android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService">
             <intent-filter>

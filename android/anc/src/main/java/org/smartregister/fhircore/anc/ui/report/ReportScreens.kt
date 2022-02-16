@@ -77,6 +77,7 @@ const val REPORT_CANCEL_PATIENT = "reportCancelPatient"
 const val REPORT_CHANGE_PATIENT = "reportChangePatient"
 const val REPORT_SELECT_PATIENT_LIST = "reportSelectPatientList"
 const val REPORT_SEARCH_PATIENT = "reportSearchPatient"
+const val REPORT_SEARCH_PATIENT_CANCEL = "reportSearchPatientCancel"
 const val REPORT_GENERATE_BUTTON = "reportGenerateButton"
 const val REPORT_RESULT_PAGE = "reportResultPage"
 const val ANC_PATIENT_ITEM = "ancPatientItem"
@@ -273,15 +274,17 @@ fun PatientSelectionBox(
     if (patientSelection.value == ReportViewModel.PatientSelectionType.INDIVIDUAL) {
       Row(modifier = Modifier.padding(start = 24.dp)) {
         Spacer(modifier = Modifier.size(8.dp))
-        SelectedPatientItem(
-          selectedPatient = selectedPatient!!,
-          onCancelSelectedPatient = {
-            onPatientSelectionChange(ReportViewModel.PatientSelectionType.ALL)
-          },
-          onChangeClickListener = {
-            onPatientSelectionChange(ReportViewModel.PatientSelectionType.INDIVIDUAL)
-          }
-        )
+        selectedPatient?.let {
+          SelectedPatientItem(
+            selectedPatient = selectedPatient,
+            onCancelSelectedPatient = {
+              onPatientSelectionChange(ReportViewModel.PatientSelectionType.ALL)
+            },
+            onChangeClickListener = {
+              onPatientSelectionChange(ReportViewModel.PatientSelectionType.INDIVIDUAL)
+            }
+          )
+        }
       }
     }
   }
