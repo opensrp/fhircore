@@ -38,11 +38,6 @@
     "relatedArtifact": [
         {
             "type": "depends-on",
-            "label": "FHIR-ModelInfo|4.0.1",
-            "resource": "Library/46841"
-        },
-        {
-            "type": "depends-on",
             "label": "FHIRHelpers|4.0.1",
             "resource": "Library/1753"
         }
