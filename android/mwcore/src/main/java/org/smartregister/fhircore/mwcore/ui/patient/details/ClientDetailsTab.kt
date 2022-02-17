@@ -48,12 +48,10 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel, co
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(Modifier.fillMaxWidth()) {
-
             Card(
                 modifier = Modifier
                     .padding(15.dp)
-                    .height(200.dp),
+                    .weight(1f),
                 elevation = 6.dp,
                 shape = MaterialTheme.shapes.medium.copy(
                     androidx.compose.foundation.shape.CornerSize(
@@ -63,24 +61,26 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel, co
             ) {
                 Column(
                     modifier = Modifier
-                        .wrapContentHeight()
-                        .padding(6.dp)
+                        .fillMaxSize()
+                        .padding(15.dp)
                 ) {
                     Text(text = "ART # " + (patientItem?.identifier ?: ""))
                     Text(text = "Name: " + (patientItem?.name ?: ""))
                     Text(text = "Age: " + (patientItem?.age ?: ""))
                     Text(text = "Gender: " + (patientItem?.genderFull() ?: ""))
-                    Text(text = "Location: " + (patientItem?.address ?: ""))
+                    Text(text = "District: Mangochi")
+                    Text(text = "TA: Mlombwa")
+                    Text(text = "Village: Thondwe")
+                    Text(text = "Location: Next to the Borehole near St James Primary school " + (patientItem?.address ?: ""))
 
                 }
             }
 
-        }
+
         Row(
             Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(10.dp),
+                .wrapContentHeight(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
