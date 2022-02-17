@@ -327,6 +327,7 @@ class PatientRepositoryTest : RobolectricTest() {
         this.id = "1"
         this.questionnaire = "Questionnaire/1"
         this.authored = today
+        this.contained = listOf(Encounter().apply { this.id = "1" })
       }
 
     val quest = createTestConfigurationsData()[0]
@@ -351,11 +352,11 @@ class PatientRepositoryTest : RobolectricTest() {
     }
 
     with(data.source) {
-      Assert.assertEquals("1", first.id)
-      Assert.assertEquals("Questionnaire/1", first.questionnaire)
+      Assert.assertEquals("1", first.logicalId)
+      Assert.assertEquals("1", first.encounterId)
       Assert.assertEquals(today, first.authored)
 
-      Assert.assertEquals("1", second.id)
+      Assert.assertEquals("1", second.logicalId)
       Assert.assertEquals("Questionnaire Name", second.name)
       Assert.assertEquals("Questionnaire Title", second.title)
     }

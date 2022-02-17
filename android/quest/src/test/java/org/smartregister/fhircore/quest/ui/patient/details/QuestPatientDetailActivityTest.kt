@@ -23,8 +23,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.mockk
+import java.util.Date
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -51,6 +51,8 @@ import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigati
 import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQRItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQuestionnaireItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -150,7 +152,10 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(
         QuestResultItem::class.java,
         QuestResultItem(
-          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }, mockk()),
+          Pair(
+            QuestSourceQRItem("12345", Date(), "12345"),
+            QuestSourceQuestionnaireItem("12345", "name", "title")
+          ),
           listOf()
         )
       )
@@ -168,7 +173,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnTestResultItemClickListenerQuestionnaireNullShouldShowAlertDialog() {
+  fun testOnTestResultItemClickListenerNullQuestionnaireIdShouldShowAlertDialog() {
     configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
 
     val navigationOptions =
@@ -192,43 +197,10 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(
         QuestResultItem::class.java,
         QuestResultItem(
-          Pair(QuestionnaireResponse().apply { questionnaire = "" }, mockk()),
-          listOf()
-        )
-      )
-    )
-
-    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-
-    Assert.assertNotNull(dialog)
-  }
-
-  @Test
-  fun testOnTestResultItemClickListenerInvalidQuestionnaireUrlShouldShowAlertDialog() {
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
-
-    val navigationOptions =
-      listOf(
-        NavigationOption(
-          id = "open_questionnaire",
-          title = "Questionnaire",
-          icon = "",
-          TestDetailsNavigationAction(form = "", readOnly = true)
-        )
-      )
-    ResultDetailsNavigationConfiguration(
-      appId = "quest",
-      classification = "result_details_navigation",
-      navigationOptions
-    )
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      questPatientDetailActivity,
-      "onTestResultItemClickListener",
-      ReflectionHelpers.ClassParameter(
-        QuestResultItem::class.java,
-        QuestResultItem(
-          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire" }, mockk()),
+          Pair(
+            QuestSourceQRItem("", Date(), "12345"),
+            QuestSourceQuestionnaireItem("", "name", "title")
+          ),
           listOf()
         )
       )
@@ -264,7 +236,10 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(
         QuestResultItem::class.java,
         QuestResultItem(
-          Pair(QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }, mockk()),
+          Pair(
+            QuestSourceQRItem("12345", Date(), "12345"),
+            QuestSourceQuestionnaireItem("1", "name", "title")
+          ),
           listOf()
         )
       )
