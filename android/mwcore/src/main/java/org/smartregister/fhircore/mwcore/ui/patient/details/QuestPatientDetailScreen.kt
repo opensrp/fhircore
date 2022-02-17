@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.mwcore.R
 import org.smartregister.fhircore.mwcore.configuration.view.patientDetailsViewConfigurationOf
@@ -165,10 +166,10 @@ fun ResultItem(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun TabWithPager(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+fun TabWithPager(questPatientDetailViewModel: QuestPatientDetailViewModel, configurationRegistry: ConfigurationRegistry) {
   val tabData = listOf(
     TabItem(0, Icons.Filled.Feed, "Details") {
-      DemographicsTab(questPatientDetailViewModel)
+      DemographicsTab(questPatientDetailViewModel, configurationRegistry)
     },
     TabItem(2, Icons.Filled.LocalHospital, "Visit") {
       VisitTab()
@@ -242,7 +243,7 @@ fun FormItem(
 }*/
 
 @Composable
-fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel, configurationRegistry: ConfigurationRegistry) {
   val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration
     .observeAsState(patientDetailsViewConfigurationOf())
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
@@ -329,7 +330,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         }
 
       }
-      TabWithPager(questPatientDetailViewModel)
+      TabWithPager(questPatientDetailViewModel, configurationRegistry)
 
       /* Forms section
       Column(

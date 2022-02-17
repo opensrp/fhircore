@@ -14,7 +14,7 @@
     "showNewClientButton": true,
     "showSideMenu": false,
     "showBottomMenu": true,
-    "registrationForm": "client-questionnaire-v2"
+    "registrationForm": "sample-quest-questionnaire"
   },
   {
     "appId": "mw-core",
@@ -31,6 +31,6 @@
     "showNewClientButton": true,
     "showSideMenu": false,
     "showBottomMenu": true,
-    "registrationForm": "exposed-infant-questionnaire-v2"
+    "registrationForm": "sample-quest-questionnaire"
   }
 ]

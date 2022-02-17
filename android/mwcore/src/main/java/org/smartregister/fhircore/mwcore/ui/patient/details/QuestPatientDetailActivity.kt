@@ -94,7 +94,7 @@ class QuestPatientDetailActivity :
       getAllResults(patientId, profileConfig, patientDetailConfig, parser)
       getAllForms(profileConfig)
     }
-    setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
+    setContent { AppTheme { QuestPatientDetailScreen(patientViewModel, configurationRegistry) } }
   }
 
   override fun onResume() {
