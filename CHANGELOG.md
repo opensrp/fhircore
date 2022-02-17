@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Quest | Updated Sync to sync user specific fhir resources using Search Parameters from assets
 - Quest | Updated Patient Details View Configurations and added configurations for routing to Test details page
+- Quest | Updated the Questionnaire alert dialog message when the form will add/edit/update. 
 
 
 ## [0.0.2 Quest, 0.0.3 - ANC] - 2021-10-27
