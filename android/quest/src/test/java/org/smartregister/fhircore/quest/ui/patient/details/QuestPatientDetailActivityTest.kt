@@ -51,8 +51,8 @@ import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigati
 import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQRItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQuestionnaireItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -153,8 +153,8 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
         QuestResultItem::class.java,
         QuestResultItem(
           Pair(
-            QuestSourceQRItem("12345", Date(), "12345"),
-            QuestSourceQuestionnaireItem("12345", "name", "title")
+            QuestionnaireResponseItem("12345", Date(), "12345"),
+            QuestionnaireItem("12345", "name", "title")
           ),
           listOf()
         )
@@ -198,8 +198,8 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
         QuestResultItem::class.java,
         QuestResultItem(
           Pair(
-            QuestSourceQRItem("", Date(), "12345"),
-            QuestSourceQuestionnaireItem("", "name", "title")
+            QuestionnaireResponseItem("", Date(), "12345"),
+            QuestionnaireItem("", "name", "title")
           ),
           listOf()
         )
@@ -237,8 +237,8 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
         QuestResultItem::class.java,
         QuestResultItem(
           Pair(
-            QuestSourceQRItem("12345", Date(), "12345"),
-            QuestSourceQuestionnaireItem("1", "name", "title")
+            QuestionnaireResponseItem("12345", Date(), "12345"),
+            QuestionnaireItem("1", "name", "title")
           ),
           listOf()
         )

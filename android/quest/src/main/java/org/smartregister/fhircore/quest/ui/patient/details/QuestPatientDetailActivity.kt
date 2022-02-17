@@ -22,9 +22,11 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -205,19 +207,21 @@ class QuestPatientDetailActivity :
               AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
             }
             else -> {
-              val questionnaireResponse =
-                patientViewModel.loadQuestionnaireResponse(it.source.first.logicalId)
-              startActivity(
-                Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
-                  .putExtras(
-                    QuestionnaireActivity.intentArgs(
-                      clientIdentifier = patientId,
-                      formName = resultItem.source.second.logicalId!!,
-                      questionnaireType = QuestionnaireType.READ_ONLY,
-                      questionnaireResponse = questionnaireResponse
+              lifecycleScope.launch {
+                val questionnaireResponse =
+                  patientViewModel.loadQuestionnaireResponse(it.source.first.logicalId)
+                startActivity(
+                  Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                    .putExtras(
+                      QuestionnaireActivity.intentArgs(
+                        clientIdentifier = patientId,
+                        formName = resultItem.source.second.logicalId!!,
+                        questionnaireType = QuestionnaireType.READ_ONLY,
+                        questionnaireResponse = questionnaireResponse
+                      )
                     )
-                  )
-              )
+                )
+              }
             }
           }
         }
@@ -229,30 +233,6 @@ class QuestPatientDetailActivity :
               putExtra(RECORD_ID_ARG, it)
             }
           )
-        }
-      }
-      else -> {
-        resultItem?.let {
-          when {
-            resultItem.source.second.logicalId.isNullOrBlank() -> {
-              AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
-            }
-            else -> {
-              val questionnaireResponse =
-                patientViewModel.loadQuestionnaireResponse(it.source.first.logicalId)
-              startActivity(
-                Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
-                  .putExtras(
-                    QuestionnaireActivity.intentArgs(
-                      clientIdentifier = patientId,
-                      formName = resultItem.source.second.logicalId!!,
-                      questionnaireType = QuestionnaireType.READ_ONLY,
-                      questionnaireResponse = questionnaireResponse
-                    )
-                  )
-              )
-            }
-          }
         }
       }
     }

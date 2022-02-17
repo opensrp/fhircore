@@ -58,8 +58,8 @@ import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQRItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQuestionnaireItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
 import org.smartregister.fhircore.quest.util.FhirPathUtil.getPathValue
@@ -204,13 +204,13 @@ constructor(
     }
 
     val questSourceQRItem =
-      QuestSourceQRItem(
+      QuestionnaireResponseItem(
         logicalId = questionnaireResponse.logicalId,
         authored = questionnaireResponse.authored,
         encounterId = questionnaireResponse.getEncounterId()
       )
     val questSourceQuestionnaireItem =
-      QuestSourceQuestionnaireItem(
+      QuestionnaireItem(
         logicalId = questionnaire.logicalId,
         name = questionnaire.name,
         title = questionnaire.title

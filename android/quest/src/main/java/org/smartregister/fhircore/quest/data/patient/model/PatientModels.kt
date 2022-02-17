@@ -51,17 +51,17 @@ fun PatientItem.genderFull(): String {
 
 @Stable
 data class QuestResultItem(
-  val source: Pair<QuestSourceQRItem, QuestSourceQuestionnaireItem>,
+  val source: Pair<QuestionnaireResponseItem, QuestionnaireItem>,
   val data: List<List<AdditionalData>>
 )
 
-data class QuestSourceQRItem(
+data class QuestionnaireResponseItem(
   val logicalId: String,
   val authored: Date? = null,
   val encounterId: String?
 )
 
-data class QuestSourceQuestionnaireItem(
+data class QuestionnaireItem(
   val logicalId: String? = null,
   val name: String? = null,
   val title: String? = null

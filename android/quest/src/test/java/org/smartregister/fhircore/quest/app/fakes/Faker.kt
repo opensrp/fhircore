@@ -33,8 +33,8 @@ import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQRItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQuestionnaireItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 
 object Faker {
 
@@ -111,8 +111,8 @@ object Faker {
       listOf(
         QuestResultItem(
           Pair(
-            QuestSourceQRItem("1", Date(), "1"),
-            QuestSourceQuestionnaireItem("1", "Sample Order", "Sample Order")
+            QuestionnaireResponseItem("1", Date(), "1"),
+            QuestionnaireItem("1", "Sample Order", "Sample Order")
           ),
           listOf(
             listOf(
@@ -123,8 +123,8 @@ object Faker {
         ),
         QuestResultItem(
           Pair(
-            QuestSourceQRItem("1", Date(), "1"),
-            QuestSourceQuestionnaireItem("1", "ample Test", "ample Test")
+            QuestionnaireResponseItem("1", Date(), "1"),
+            QuestionnaireItem("1", "ample Test", "ample Test")
           ),
           listOf(
             listOf(
