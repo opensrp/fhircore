@@ -61,12 +61,10 @@ define "G6pd Status":
       sort by recordedDate)
 
 define "Registerd Haem":
-  Last([Observation: "Haemoglobin code"] H
-    where H.status ~ 'registered')
+  Last([Observation: "Haemoglobin code"] H)
 
 define "Registerd G6PD":
-  Last([Observation: "G6PD code"] G
-    where G.status ~ 'registered')
+  Last([Observation: "G6PD code"] G)
 
 
 define "Abnormal Haemoglobin": "Registerd Haem".value.value <= 8.0
