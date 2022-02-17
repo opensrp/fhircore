@@ -58,6 +58,8 @@ import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQRItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestSourceQuestionnaireItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
 import org.smartregister.fhircore.quest.util.FhirPathUtil.getPathValue
@@ -127,7 +129,7 @@ constructor(
         }
       questionnaireResponses.forEach {
         val questionnaire = getQuestionnaire(it)
-        testResults.add(getResultItem(questionnaire!!, it, config))
+        testResults.add(getResultItem(questionnaire, it, config))
       }
       testResults
     }
@@ -201,7 +203,20 @@ constructor(
         ?.run { data.add(it.key ?: data.size, this) }
     }
 
-    return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
+    val questSourceQRItem =
+      QuestSourceQRItem(
+        logicalId = questionnaireResponse.logicalId,
+        authored = questionnaireResponse.authored,
+        encounterId = questionnaireResponse.getEncounterId()
+      )
+    val questSourceQuestionnaireItem =
+      QuestSourceQuestionnaireItem(
+        logicalId = questionnaire.logicalId,
+        name = questionnaire.name,
+        title = questionnaire.title
+      )
+
+    return QuestResultItem(Pair(questSourceQRItem, questSourceQuestionnaireItem), data)
   }
 
   suspend fun getCondition(reference: Resource, filter: Filter?) =
@@ -242,7 +257,7 @@ constructor(
     return questionnaire.name ?: questionnaire.title ?: questionnaire.logicalId
   }
 
-  suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire? {
+  suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire {
     return when {
       questionnaireResponse.questionnaire.isNullOrBlank() -> {
         Timber.e(
@@ -250,7 +265,7 @@ constructor(
             "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
           )
         )
-        null
+        Questionnaire()
       }
       else -> {
         val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
@@ -264,7 +279,7 @@ constructor(
                 "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
               )
             )
-            null
+            Questionnaire()
           }
         }
       }

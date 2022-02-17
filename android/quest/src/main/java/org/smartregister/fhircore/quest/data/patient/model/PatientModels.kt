@@ -17,8 +17,7 @@
 package org.smartregister.fhircore.quest.data.patient.model
 
 import androidx.compose.runtime.Stable
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
+import java.util.Date
 import org.smartregister.fhircore.quest.configuration.view.Properties
 
 @Stable
@@ -52,6 +51,18 @@ fun PatientItem.genderFull(): String {
 
 @Stable
 data class QuestResultItem(
-  val source: Pair<QuestionnaireResponse, Questionnaire>,
+  val source: Pair<QuestSourceQRItem, QuestSourceQuestionnaireItem>,
   val data: List<List<AdditionalData>>
+)
+
+data class QuestSourceQRItem(
+  val logicalId: String,
+  val authored: Date? = null,
+  val encounterId: String?
+)
+
+data class QuestSourceQuestionnaireItem(
+  val logicalId: String? = null,
+  val name: String? = null,
+  val title: String? = null
 )

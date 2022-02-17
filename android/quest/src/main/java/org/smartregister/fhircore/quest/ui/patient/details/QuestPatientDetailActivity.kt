@@ -200,44 +200,59 @@ class QuestPatientDetailActivity :
     when (navigationOption.action) {
       is QuestionnaireNavigationAction -> {
         resultItem?.let {
-          val questionnaireResponse = resultItem.source.first
           when {
-            questionnaireResponse.questionnaire.isNullOrBlank() -> {
+            resultItem.source.second.logicalId.isNullOrBlank() -> {
               AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
             }
             else -> {
-              val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
-              when {
-                questionnaireUrlList.isNotEmpty() && questionnaireUrlList.size > 1 -> {
-                  startActivity(
-                    Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
-                      .putExtras(
-                        QuestionnaireActivity.intentArgs(
-                          clientIdentifier = patientId,
-                          formName = questionnaireUrlList[1],
-                          questionnaireType = QuestionnaireType.READ_ONLY,
-                          questionnaireResponse = questionnaireResponse
-                        )
-                      )
+              val questionnaireResponse =
+                patientViewModel.loadQuestionnaireResponse(it.source.first.logicalId)
+              startActivity(
+                Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                  .putExtras(
+                    QuestionnaireActivity.intentArgs(
+                      clientIdentifier = patientId,
+                      formName = resultItem.source.second.logicalId!!,
+                      questionnaireType = QuestionnaireType.READ_ONLY,
+                      questionnaireResponse = questionnaireResponse
+                    )
                   )
-                }
-                else -> {
-                  AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
-                }
-              }
+              )
             }
           }
         }
       }
       is TestDetailsNavigationAction -> {
-        resultItem?.let {
-          val questionnaireResponse = resultItem.source.first
-
+        resultItem?.source?.first?.encounterId?.let {
           startActivity(
             Intent(this@QuestPatientDetailActivity, SimpleDetailsActivity::class.java).apply {
-              putExtra(RECORD_ID_ARG, questionnaireResponse.getEncounterId())
+              putExtra(RECORD_ID_ARG, it)
             }
           )
+        }
+      }
+      else -> {
+        resultItem?.let {
+          when {
+            resultItem.source.second.logicalId.isNullOrBlank() -> {
+              AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
+            }
+            else -> {
+              val questionnaireResponse =
+                patientViewModel.loadQuestionnaireResponse(it.source.first.logicalId)
+              startActivity(
+                Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                  .putExtras(
+                    QuestionnaireActivity.intentArgs(
+                      clientIdentifier = patientId,
+                      formName = resultItem.source.second.logicalId!!,
+                      questionnaireType = QuestionnaireType.READ_ONLY,
+                      questionnaireResponse = questionnaireResponse
+                    )
+                  )
+              )
+            }
+          }
         }
       }
     }
