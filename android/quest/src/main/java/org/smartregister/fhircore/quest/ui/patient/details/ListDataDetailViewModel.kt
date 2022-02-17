@@ -139,9 +139,7 @@ constructor(
   }
   suspend fun loadQuestionnaireResponse(questionnaireResponseId: String): QuestionnaireResponse? {
     var questionnaireResponse: QuestionnaireResponse? = null
-    viewModelScope.launch {
-      questionnaireResponse = defaultRepository.loadResource(questionnaireResponseId)
-    }
+    questionnaireResponse = defaultRepository.loadResource(questionnaireResponseId)
     return questionnaireResponse
   }
 }

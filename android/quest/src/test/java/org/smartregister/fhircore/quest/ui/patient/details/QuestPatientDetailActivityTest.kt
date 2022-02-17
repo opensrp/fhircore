@@ -173,7 +173,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnTestResultItemClickListenerNullQuestionnaireIdShouldShowAlertDialog() {
+  fun testOnTestResultItemClickListenerEmptyQuestionnaireIdShouldShowAlertDialog() {
     configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
 
     val navigationOptions =
