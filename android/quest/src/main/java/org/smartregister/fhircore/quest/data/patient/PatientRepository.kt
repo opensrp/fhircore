@@ -270,7 +270,7 @@ constructor(
       else -> {
         val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
         when {
-          questionnaireUrlList.isNotEmpty() && questionnaireUrlList.size > 1 -> {
+          questionnaireUrlList.size > 1 -> {
             loadQuestionnaire(questionnaireId = questionnaireUrlList[1])
           }
           else -> {
