@@ -137,9 +137,6 @@ constructor(
     }
     return resourceListLive
   }
-  suspend fun loadQuestionnaireResponse(questionnaireResponseId: String): QuestionnaireResponse? {
-    var questionnaireResponse: QuestionnaireResponse? = null
-    questionnaireResponse = defaultRepository.loadResource(questionnaireResponseId)
-    return questionnaireResponse
-  }
+  suspend fun loadQuestionnaireResponse(questionnaireResponseId: String): QuestionnaireResponse? =
+    defaultRepository.loadResource(questionnaireResponseId)
 }
