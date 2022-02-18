@@ -44,6 +44,8 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.asLabel
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.filterByPatient
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.getEncounterId
@@ -58,6 +60,8 @@ import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
 import org.smartregister.fhircore.quest.util.FhirPathUtil.getPathValue
@@ -201,7 +205,21 @@ constructor(
         ?.run { data.add(it.key ?: data.size, this) }
     }
 
-    return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
+    val questSourceQRItem =
+      QuestionnaireResponseItem(
+        logicalId = questionnaireResponse.logicalId,
+        authored = questionnaireResponse.authored,
+        encounterId = questionnaireResponse.getEncounterId(),
+        questionnaireResponseString = questionnaireResponse.encodeResourceToString()
+      )
+    val questSourceQuestionnaireItem =
+      QuestionnaireItem(
+        logicalId = questionnaire.logicalId,
+        name = questionnaire.name,
+        title = questionnaire.title
+      )
+
+    return QuestResultItem(Pair(questSourceQRItem, questSourceQuestionnaireItem), data)
   }
 
   suspend fun getCondition(reference: Resource, filter: Filter?) =
@@ -243,16 +261,31 @@ constructor(
   }
 
   suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire {
-    return if (questionnaireResponse.questionnaire != null) {
-      val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
-      loadQuestionnaire(questionnaireId = questionnaireId)
-    } else {
-      Timber.e(
-        Exception(
-          "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+    return when {
+      questionnaireResponse.questionnaire.isNullOrBlank() -> {
+        Timber.e(
+          Exception(
+            "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+          )
         )
-      )
-      Questionnaire()
+        Questionnaire()
+      }
+      else -> {
+        val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
+        when {
+          questionnaireUrlList.size > 1 -> {
+            loadQuestionnaire(questionnaireId = questionnaireUrlList[1])
+          }
+          else -> {
+            Timber.e(
+              Exception(
+                "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+              )
+            )
+            Questionnaire()
+          }
+        }
+      }
     }
   }
 

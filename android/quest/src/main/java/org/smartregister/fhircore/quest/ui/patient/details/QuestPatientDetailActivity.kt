@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
@@ -199,42 +200,33 @@ class QuestPatientDetailActivity :
     when (navigationOption.action) {
       is QuestionnaireNavigationAction -> {
         resultItem?.let {
-          val questionnaireResponse = resultItem.source.first
           when {
-            questionnaireResponse.questionnaire.isNullOrBlank() -> {
+            resultItem.source.second.logicalId.isNullOrBlank() -> {
               AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
             }
             else -> {
-              val questionnaireUrlList = questionnaireResponse.questionnaire.split("/")
-              when {
-                questionnaireUrlList.isNotEmpty() && questionnaireUrlList.size > 1 -> {
-                  startActivity(
-                    Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
-                      .putExtras(
-                        QuestionnaireActivity.intentArgs(
-                          clientIdentifier = patientId,
-                          formName = questionnaireUrlList[1],
-                          questionnaireType = QuestionnaireType.READ_ONLY,
-                          questionnaireResponse = questionnaireResponse
-                        )
-                      )
+              startActivity(
+                Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                  .putExtras(
+                    QuestionnaireActivity.intentArgs(
+                      clientIdentifier = patientId,
+                      formName = resultItem.source.second.logicalId!!,
+                      questionnaireType = QuestionnaireType.READ_ONLY,
+                      questionnaireResponse =
+                        resultItem.source.first.questionnaireResponseString
+                          .decodeResourceFromString()
+                    )
                   )
-                }
-                else -> {
-                  AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
-                }
-              }
+              )
             }
           }
         }
       }
       is TestDetailsNavigationAction -> {
-        resultItem?.let {
-          val questionnaireResponse = resultItem.source.first
-
+        resultItem?.source?.first?.encounterId?.let {
           startActivity(
             Intent(this@QuestPatientDetailActivity, SimpleDetailsActivity::class.java).apply {
-              putExtra(RECORD_ID_ARG, questionnaireResponse.getEncounterId())
+              putExtra(RECORD_ID_ARG, it)
             }
           )
         }
