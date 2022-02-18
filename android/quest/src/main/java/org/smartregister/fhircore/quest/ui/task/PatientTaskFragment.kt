@@ -72,37 +72,24 @@ class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem
     // Nothing to navigate at the moment
   }
 
-  // todo maybe we need to do a db call
   override fun performFilter(
     registerFilterType: RegisterFilterType,
     data: PatientTaskItem,
     value: Any
   ): Boolean {
-    return when (registerFilterType) {
-      RegisterFilterType.SEARCH_FILTER -> {
-        if (value is String && value.isEmpty()) return true
-        else
-          data.name.contains(value.toString(), ignoreCase = true) ||
-            data.id.contentEquals(value.toString())
-      }
-      RegisterFilterType.OVERDUE_FILTER -> {
-        data.overdue
-      }
-    }
+    // Nothing to filter at the moment
+    return false
   }
 
-  @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel():
     RegisterDataViewModel<PatientTask, PatientTaskItem> {
-    return ViewModelProvider(
-      viewModelStore,
+    val registerDataViewModel =
       RegisterDataViewModel(
-          application = requireActivity().application,
-          registerRepository = patientTaskRepository
-        )
-        .createFactory()
-    )[RegisterDataViewModel::class.java] as
-      RegisterDataViewModel<PatientTask, PatientTaskItem>
+        application = requireActivity().application,
+        registerRepository = patientTaskRepository
+      )
+    return ViewModelProvider(viewModelStore, registerDataViewModel.createFactory())[
+      registerDataViewModel::class.java]
   }
 
   companion object {

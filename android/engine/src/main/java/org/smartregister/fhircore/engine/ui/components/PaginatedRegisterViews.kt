@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+const val MAX_PAGE_COUNT = 20
 const val SEARCH_HEADER_TEXT_TAG = "searchHeaderTestTag"
 const val SEARCH_FOOTER_TAG = "searchFooterTag"
 const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
@@ -141,28 +142,28 @@ fun SearchFooter(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoPreviousButton() {
-  SearchFooter(10, 1, 20, {}, {})
+  SearchFooter(10, 1, MAX_PAGE_COUNT, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoNextButton() {
-  SearchFooter(10, 20, 20, {}, {})
+  SearchFooter(10, 20, MAX_PAGE_COUNT, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
-  SearchFooter(10, 6, 20, {}, {})
+  SearchFooter(10, 6, MAX_PAGE_COUNT, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithZeroResults() {
-  SearchFooter(0, 6, 20, {}, {})
+  SearchFooter(0, 6, MAX_PAGE_COUNT, {}, {})
 }
 
 /**
@@ -296,7 +297,7 @@ fun PaginatedRegisterPreviewWithResults() {
     body = { Text(text = "Something cool") },
     showPageCount = true,
     currentPage = 0,
-    pagesCount = 20,
+    pagesCount = MAX_PAGE_COUNT,
     previousButtonClickListener = {},
     nextButtonClickListener = {}
   )
@@ -313,7 +314,7 @@ fun PaginatedRegisterPreviewWithoutResults() {
     body = { Text(text = "Something cool") },
     showPageCount = false,
     currentPage = 0,
-    pagesCount = 20,
+    pagesCount = MAX_PAGE_COUNT,
     previousButtonClickListener = {},
     nextButtonClickListener = {}
   )

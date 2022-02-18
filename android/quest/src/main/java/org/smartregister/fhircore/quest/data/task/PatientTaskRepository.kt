@@ -24,13 +24,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.ui.task.PatientTask
 import org.smartregister.fhircore.quest.ui.task.PatientTaskItemMapper
-import org.smartregister.fhircore.quest.util.filterByPractitioner
 
 class PatientTaskRepository
 @Inject
@@ -41,13 +42,20 @@ constructor(
   private val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<PatientTask, PatientTaskItem> {
 
+  /*
+  TODO: Use the logged in user's practitionerId in line 55 and 67
+   https://github.com/opensrp/fhircore/issues/1075
+  */
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
     loadAll: Boolean
   ): List<PatientTaskItem> {
     return withContext(dispatcherProvider.io()) {
-      val tasks = fhirEngine.search<Task> { filterByPractitioner(Task.OWNER, "6744") }
+      val tasks =
+        fhirEngine.search<Task> {
+          filterByResourceTypeId(Task.OWNER, ResourceType.Practitioner, "6744")
+        }
 
       tasks.map { task ->
         val patientId = task.`for`.reference.replace("Patient/", "")
@@ -59,6 +67,8 @@ constructor(
   }
 
   override suspend fun countAll(): Long {
-    return fhirEngine.count<Task> { filterByPractitioner(Task.OWNER, "6744") }
+    return fhirEngine.count<Task> {
+      filterByResourceTypeId(Task.OWNER, ResourceType.Practitioner, "6744")
+    }
   }
 }

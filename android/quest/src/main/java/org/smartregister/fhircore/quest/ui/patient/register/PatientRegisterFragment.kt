@@ -66,6 +66,17 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
     }
   }
 
+  /**
+   * Filters the given data if there is a matching condition.
+   *
+   * SEARCH_FILTER will filters data based on name OR id OR identifier.
+   *
+   * @param registerFilterType the filter type
+   * @param data the data that will be filtered
+   * @param value the query
+   *
+   * @return true if the data should be filtered
+   */
   override fun performFilter(
     registerFilterType: RegisterFilterType,
     data: PatientItem,
@@ -83,17 +94,14 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
     }
   }
 
-  @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Patient, PatientItem> {
-    return ViewModelProvider(
-      viewModelStore,
+    val registerDataViewModel =
       RegisterDataViewModel(
-          application = requireActivity().application,
-          registerRepository = patientRepository
-        )
-        .createFactory()
-    )[RegisterDataViewModel::class.java] as
-      RegisterDataViewModel<Patient, PatientItem>
+        application = requireActivity().application,
+        registerRepository = patientRepository
+      )
+    return ViewModelProvider(viewModelStore, registerDataViewModel.createFactory())[
+      registerDataViewModel::class.java]
   }
 
   companion object {

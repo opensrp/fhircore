@@ -170,18 +170,8 @@ fun TaskLabel(
   clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit,
   modifier: Modifier
 ) {
-
-  val textColor =
-    when (patientItem.overdue) {
-      false -> BlueTextColor
-      true -> OverdueDarkRedColor
-    }
-
-  val bgColor =
-    when (patientItem.overdue) {
-      false -> DueLightColor
-      true -> OverdueLightColor
-    }
+  val textColor = if (patientItem.overdue) OverdueDarkRedColor else BlueTextColor
+  val bgColor = if (patientItem.overdue) OverdueLightColor else DueLightColor
 
   Text(
     text = "+ ${patientItem.description}",
