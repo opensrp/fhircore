@@ -96,6 +96,7 @@
     "classification": "control_test_details_view",
     "valuePrefix": "G6PD ",
     "contentTitle": "TEST RESULTS",
+    "dataRowClickable": false,
     "questionnaireFilter": {
       "key": "context",
       "code": "000005",

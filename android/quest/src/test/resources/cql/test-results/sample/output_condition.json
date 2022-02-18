@@ -31,16 +31,16 @@
     "coding": [
       {
         "system": "http://snomed.info/sct",
-        "code": "11896004",
-        "display": "Intermediate"
+        "code": "260372006",
+        "display": "Deficient"
       }
     ]
   },
   "subject": {
-    "reference": "Patient/P1"
+    "reference": "Patient/TEST_PATIENT"
   },
   "encounter": {
-    "reference": "Encounter/E1"
+    "reference": "Encounter/TEST_ENCOUNTER"
   },
   "onsetDateTime": "#NOW",
   "recordedDate": "#NOW"

@@ -14,48 +14,46 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.app
+package org.smartregister.fhircore.engine.configuration.view
 
+import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
 
+@Stable
 @Serializable
-data class ApplicationConfiguration(
+class PinViewConfiguration(
   override val appId: String = "",
   override val classification: String,
-  var theme: String = "",
-  var languages: List<String> = listOf("en"),
-  var syncInterval: Long = 30,
   var applicationName: String = "",
-  var appLogoIconResourceFile: String = "ic_default_logo"
+  var appLogoIconResourceFile: String = "",
+  var enablePin: Boolean = false,
+  var showLogo: Boolean = true
 ) : Configuration
-
 /**
- * A function providing a DSL for configuring [ApplicationConfiguration] used in a FHIR application
- *
- * @param appId Set unique identifier for the app
- * @param classification Set the
- * @param languages Sets the languages for the app
- * @param syncInterval Sets the periodic sync interval in seconds. Default 30.
- * @param applicationName Sets the application display name
+ * A function providing a DSL for configuring [PinViewConfiguration]. The configurations provided by
+ * this method are used on the register calling this method
+ * @param appId Set unique identifier for this configuration
+ * @param applicationName Set the application name
  * @param appLogoIconResourceFile Sets the application logo thumb icon, this must be png file inside
  * drawable folder
+ * @param enablePin provides PIN login feature
+ * @param showLogo Show login logo for the app otherwise
  */
-fun applicationConfigurationOf(
-  appId: String = "",
-  classification: String = "",
-  theme: String = "",
-  languages: List<String> = listOf("en"),
-  syncInterval: Long = 30,
-  applicationName: String = "",
-  appLogoIconResourceFile: String = ""
-): ApplicationConfiguration =
-  ApplicationConfiguration(
+@Stable
+fun pinViewConfigurationOf(
+  appId: String = "appId",
+  classification: String = "pin",
+  applicationName: String = "FHIR Engine App",
+  appLogoIconResourceFile: String = "ic_launcher",
+  enablePin: Boolean = false,
+  showLogo: Boolean = true,
+) =
+  PinViewConfiguration(
     appId = appId,
     classification = classification,
-    theme = theme,
-    languages = languages,
-    syncInterval = syncInterval,
     applicationName = applicationName,
-    appLogoIconResourceFile = appLogoIconResourceFile
+    appLogoIconResourceFile = appLogoIconResourceFile,
+    showLogo = showLogo,
+    enablePin = enablePin
   )

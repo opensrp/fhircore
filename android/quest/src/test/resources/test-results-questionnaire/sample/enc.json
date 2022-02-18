@@ -1,6 +1,6 @@
 {
   "resourceType": "Encounter",
-  "id": "#UID",
+  "id": "TEST_ENCOUNTER",
   "status": "finished",
   "class": {
     "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
