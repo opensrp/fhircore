@@ -156,11 +156,7 @@ fun TaskIcon(
   clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit,
   modifier: Modifier
 ) {
-  val iconId =
-    when (patientItem.overdue) {
-      false -> R.drawable.ic_due
-      true -> R.drawable.ic_overdue
-    }
+  val iconId = if (patientItem.overdue) R.drawable.ic_overdue else R.drawable.ic_due
   Image(painter = painterResource(id = iconId), contentDescription = null, modifier = modifier)
 }
 
