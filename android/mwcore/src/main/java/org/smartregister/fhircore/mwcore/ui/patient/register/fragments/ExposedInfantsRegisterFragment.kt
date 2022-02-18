@@ -30,6 +30,7 @@ class ExposedInfantsRegisterFragment : ComposeRegisterFragment<Patient, PatientI
         startActivity(
             Intent(requireActivity(), QuestPatientDetailActivity::class.java)
                 .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
+                .putExtra("patientType", "Exposed")
         )
     }
 

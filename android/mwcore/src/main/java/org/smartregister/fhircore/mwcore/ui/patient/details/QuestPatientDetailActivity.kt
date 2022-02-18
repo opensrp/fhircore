@@ -43,6 +43,8 @@ import org.smartregister.fhircore.mwcore.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.mwcore.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.mwcore.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.mwcore.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
+import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRegisterActivity
+import org.smartregister.fhircore.mwcore.ui.patient.register.fragments.ClientsRegisterFragment
 import org.smartregister.fhircore.mwcore.util.MwCoreConfigClassification
 import javax.inject.Inject
 
@@ -53,9 +55,12 @@ class QuestPatientDetailActivity :
   private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
   private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
   private lateinit var patientId: String
+  //var patientType: String? = this.intent.getStringExtra("patientType")
   private var parser: DetailConfigParser? = null
 
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+
+
 
   @Inject
   lateinit var configurationRegistry: ConfigurationRegistry
@@ -74,6 +79,7 @@ class QuestPatientDetailActivity :
       onFormItemClicked.observe(detailActivity, detailActivity::launchQuestionnaireForm)
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
+
 
     patientDetailConfig =
       configurationRegistry.retrieveConfiguration(

@@ -2,8 +2,15 @@ package org.smartregister.fhircore.mwcore.ui.patient.details
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.fonts.FontStyle
+import android.widget.ScrollView
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollScope
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.MaterialTheme
@@ -63,15 +70,42 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel, co
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(15.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    Text(text = "ART # " + (patientItem?.identifier ?: ""))
+                    Text(text = "Demographics", style = MaterialTheme.typography.h6)
+                    Text(text = "ART number: " + (patientItem?.identifier ?: ""))
                     Text(text = "Name: " + (patientItem?.name ?: ""))
                     Text(text = "Age: " + (patientItem?.age ?: ""))
                     Text(text = "Gender: " + (patientItem?.genderFull() ?: ""))
                     Text(text = "District: Mangochi")
                     Text(text = "TA: Mlombwa")
                     Text(text = "Village: Thondwe")
-                    Text(text = "Location: Next to the Borehole near St James Primary school " + (patientItem?.address ?: ""))
+                    Text(text = "Locator: Next to the Borehole near St James Primary school " + (patientItem?.address ?: ""))
+                    Text(text = "Phone: 088525892")
+
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Text(text = "Guardian", style = MaterialTheme.typography.h6)
+
+                    Text(text = "Phone Owner: Mother")
+                    Text(text = "Name: Janet Dzimbiri")
+                    Text(text = "Gender: Female")
+                    Text(text = "Relationship to client: Aunt")
+                    Text(text = "Location: Next to St James Primary school")
+                    Text(text = "Phone: 0994476384")
+                    Text(text = "Owner: Husband")
+
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Text(text = "Clinic Details", style = MaterialTheme.typography.h6)
+
+                    Text(text = "Weight at initiation: 73kg")
+                    Text(text = "Height at initiation: 173cm")
+                    Text(text = "Test Type: DBS")
+                    Text(text = "Date of test: 06/05/2018")
+                    Text(text = "WHO Stage: 2")
+                    Text(text = "CD4 count: <200")
+                    Text(text = "TB History: Currently on treatment")
+                    Text(text = "Regimen: 4A")
+                    Text(text = "ART start date: 06/05/2018")
 
                 }
             }

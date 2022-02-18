@@ -40,11 +40,11 @@ import org.smartregister.fhircore.mwcore.ui.patient.register.components.PatientR
 class ClientsRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
 
   @Inject lateinit var patientRepository: PatientRepository
-
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), QuestPatientDetailActivity::class.java)
         .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
+        .putExtra("patientType", "Client")
     )
   }
 
