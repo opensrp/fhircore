@@ -20,6 +20,12 @@
         "resource": "LoginViewConfiguration",
         "classification": "login",
         "description": "Configurations for login"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfigurations",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
       }
     ]
   }

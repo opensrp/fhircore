@@ -79,7 +79,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
       patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
     )
     Assert.assertEquals(
-      View.VISIBLE,
+      View.GONE,
       patientRegisterActivity.findViewById<View>(R.id.filter_register_button).visibility
     )
     Assert.assertEquals(

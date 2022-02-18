@@ -31,7 +31,6 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
@@ -194,46 +193,54 @@ constructor(
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
 
-        questionnaire
-          .cqfLibraryIds()
-          .map {
-            val patient =
-              if (questionnaireResponse.hasSubject())
-                loadPatient(questionnaireResponse.subject.extractId())
-              else null
-            async(Dispatchers.Default) {
-              libraryEvaluator.runCqlLibrary(it, patient, bundle, defaultRepository)
-            }
-          }
-          .map { jobOutput ->
-            jobOutput.join()
-            jobOutput
-          }
-          .forEach { output ->
-            if (output.await().isNotEmpty())
-              extractionProgressMessage.postValue(output.await().joinToString("\n"))
-          }
+        extractCqlOutput(questionnaire, questionnaireResponse, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        extractCqlOutput(questionnaire, questionnaireResponse, null)
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
+  suspend fun extractCqlOutput(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    bundle: Bundle?
+  ) {
+    withContext(Dispatchers.Default) {
+      val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
+      questionnaire
+        .cqfLibraryIds()
+        .map {
+          val patient =
+            if (questionnaireResponse.hasSubject())
+              loadPatient(questionnaireResponse.subject.extractId())
+            else null
+          libraryEvaluator.runCqlLibrary(it, patient, data, defaultRepository)
+        }
+        .forEach { output ->
+          if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
+        }
+    }
+  }
+
   /**
    * Sets questionnaireResponse subject with proper subject-type defined in questionnaire with an
-   * existing resourceId or if null generate a new one
+   * existing resourceId or organization or null
    */
-  private fun handleQuestionnaireResponseSubject(
+  fun handleQuestionnaireResponseSubject(
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
-    if (resourceId?.isNotBlank() == true) {
-      val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
-      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
-    }
+    val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
+    questionnaireResponse.subject =
+      when (subjectType) {
+        ResourceType.Organization.name ->
+          authenticatedUserInfo!!.organization!!.asReference(ResourceType.Organization)
+        else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
+      }
   }
 
   suspend fun saveQuestionnaireResponse(

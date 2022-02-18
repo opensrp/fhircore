@@ -161,7 +161,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testTextOfSaveButtonForFamilyMemberRegistration() {
+  fun testTextOfSaveButtonForFamilyMemberRegistration() = runBlockingTest {
     buildActivityFor(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, false)
 
     assertEquals(
@@ -195,7 +195,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testTextOfSavedButtonForAncRegister() {
+  fun testTextOfSavedButtonForAncRegister() = runBlockingTest {
     buildActivityFor(FamilyFormConstants.ANC_ENROLLMENT_FORM, false)
 
     assertEquals(

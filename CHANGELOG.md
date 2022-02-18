@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Patient details show height, weight and BMI post computing BMI
 - ANC | Activate language switcher on profile page
 - ANC | Implement vital signs observation extraction from questionnaires
+- ANC | Login Add Pin Setup and Login for eCBIS config only
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
@@ -74,6 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Quest | Updated Sync to sync user specific fhir resources using Search Parameters from assets
 - Quest | Updated Patient Details View Configurations and added configurations for routing to Test details page
+- Quest | Updated the Questionnaire alert dialog message when the form will add/edit/update. 
 
 
 ## [0.0.2 Quest, 0.0.3 - ANC] - 2021-10-27
