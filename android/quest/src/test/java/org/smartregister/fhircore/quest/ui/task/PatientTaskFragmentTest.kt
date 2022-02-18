@@ -35,7 +35,6 @@ import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -107,64 +106,12 @@ class PatientTaskFragmentTest : RobolectricTest() {
   }
 
   @Test
-  fun testPerformFilterShouldReturnTrueWithMatchingDataAndSearchFilter() {
-    Assert.assertTrue(
+  fun testPerformFilterShouldReturnFalseWithUnknownFilterType() {
+    Assert.assertFalse(
       patientTaskFragment.performFilter(
         RegisterFilterType.SEARCH_FILTER,
         PatientTaskItem(name = "Samia"),
         ""
-      )
-    )
-
-    Assert.assertTrue(
-      patientTaskFragment.performFilter(
-        RegisterFilterType.SEARCH_FILTER,
-        PatientTaskItem(name = "Razi"),
-        "Razi"
-      )
-    )
-
-    Assert.assertTrue(
-      patientTaskFragment.performFilter(
-        RegisterFilterType.SEARCH_FILTER,
-        PatientTaskItem(id = "1234"),
-        "1234"
-      )
-    )
-  }
-
-  @Test
-  fun testPerformFilterShouldReturnFalseWithNotMatchingDataAndSearchFilter() {
-    Assert.assertFalse(
-      patientTaskFragment.performFilter(
-        RegisterFilterType.SEARCH_FILTER,
-        PatientTaskItem(name = "Samia"),
-        0
-      )
-    )
-    Assert.assertFalse(
-      patientTaskFragment.performFilter(
-        RegisterFilterType.SEARCH_FILTER,
-        PatientTaskItem(id = "1234"),
-        "1"
-      )
-    )
-  }
-
-  @Test
-  fun testPerformFilterShouldReturnTrueForEmptyFilter() {
-    Assert.assertTrue(
-      patientTaskFragment.performFilter(RegisterFilterType.SEARCH_FILTER, PatientTaskItem(), "")
-    )
-  }
-
-  @Test
-  fun testPerformFilterShouldReturnTrueForOverdueFilterType() {
-    Assert.assertTrue(
-      patientTaskFragment.performFilter(
-        RegisterFilterType.OVERDUE_FILTER,
-        PatientTaskItem(overdue = true),
-        "222"
       )
     )
   }
