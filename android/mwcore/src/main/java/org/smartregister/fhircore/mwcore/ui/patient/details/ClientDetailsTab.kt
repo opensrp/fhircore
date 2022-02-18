@@ -82,17 +82,17 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel, co
                     Text(text = "Village: Thondwe")
                     Text(text = "Locator: Next to the Borehole near St James Primary school " + (patientItem?.address ?: ""))
                     Text(text = "Phone: 088525892")
-
+                    Text(text = "Phone Owner: Mother")
                     Spacer(modifier = Modifier.size(10.dp))
                     Text(text = "Guardian", style = MaterialTheme.typography.h6)
 
-                    Text(text = "Phone Owner: Mother")
+
                     Text(text = "Name: Janet Dzimbiri")
                     Text(text = "Gender: Female")
                     Text(text = "Relationship to client: Aunt")
                     Text(text = "Location: Next to St James Primary school")
                     Text(text = "Phone: 0994476384")
-                    Text(text = "Owner: Husband")
+                    Text(text = "Phone owner: Husband")
 
                     Spacer(modifier = Modifier.size(10.dp))
                     Text(text = "Clinic Details", style = MaterialTheme.typography.h6)
