@@ -125,9 +125,6 @@ abstract class BaseRegisterActivity :
 
     supportedFragments = supportedFragments()
 
-    // Initiate sync after registerViewModel is initialized
-    syncBroadcaster.registerSyncInitiator(this)
-
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
 
     registerViewModel.lastSyncTimestamp.observe(
@@ -161,10 +158,7 @@ abstract class BaseRegisterActivity :
   }
 
   override fun onDestroy() {
-    syncBroadcaster.run {
-      unRegisterSyncListener(this@BaseRegisterActivity)
-      unRegisterSyncInitiator()
-    }
+    syncBroadcaster.run { unRegisterSyncListener(this@BaseRegisterActivity) }
     super.onDestroy()
   }
 
@@ -427,7 +421,7 @@ abstract class BaseRegisterActivity :
   }
 
   override fun runSync() {
-    registerViewModel.runSync()
+    //registerViewModel.runSync()
   }
 
   override fun configureViews(viewConfiguration: RegisterViewConfiguration) {

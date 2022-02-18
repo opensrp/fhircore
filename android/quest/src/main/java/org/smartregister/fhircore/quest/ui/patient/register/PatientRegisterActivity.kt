@@ -140,4 +140,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         )
     }
   }
+
+  override fun onDestroy() {
+    super.onDestroy()
+  }
 }
