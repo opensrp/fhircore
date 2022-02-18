@@ -111,7 +111,7 @@ object Faker {
       listOf(
         QuestResultItem(
           Pair(
-            QuestionnaireResponseItem("1", Date(), "1"),
+            QuestionnaireResponseItem("1", Date(), "1", ""),
             QuestionnaireItem("1", "Sample Order", "Sample Order")
           ),
           listOf(
@@ -123,7 +123,7 @@ object Faker {
         ),
         QuestResultItem(
           Pair(
-            QuestionnaireResponseItem("1", Date(), "1"),
+            QuestionnaireResponseItem("1", Date(), "1", ""),
             QuestionnaireItem("1", "ample Test", "ample Test")
           ),
           listOf(

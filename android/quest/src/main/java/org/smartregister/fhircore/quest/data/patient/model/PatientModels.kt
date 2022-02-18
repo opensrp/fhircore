@@ -58,7 +58,8 @@ data class QuestResultItem(
 data class QuestionnaireResponseItem(
   val logicalId: String,
   val authored: Date? = null,
-  val encounterId: String?
+  val encounterId: String?,
+  val questionnaireResponseString: String
 )
 
 data class QuestionnaireItem(

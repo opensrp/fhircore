@@ -22,11 +22,9 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
-import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -39,6 +37,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
@@ -206,21 +205,19 @@ class QuestPatientDetailActivity :
               AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
             }
             else -> {
-              lifecycleScope.launch {
-                val questionnaireResponse =
-                  patientViewModel.loadQuestionnaireResponse(it.source.first.logicalId)
-                startActivity(
-                  Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
-                    .putExtras(
-                      QuestionnaireActivity.intentArgs(
-                        clientIdentifier = patientId,
-                        formName = resultItem.source.second.logicalId!!,
-                        questionnaireType = QuestionnaireType.READ_ONLY,
-                        questionnaireResponse = questionnaireResponse
-                      )
+              startActivity(
+                Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                  .putExtras(
+                    QuestionnaireActivity.intentArgs(
+                      clientIdentifier = patientId,
+                      formName = resultItem.source.second.logicalId!!,
+                      questionnaireType = QuestionnaireType.READ_ONLY,
+                      questionnaireResponse =
+                        resultItem.source.first.questionnaireResponseString
+                          .decodeResourceFromString()
                     )
-                )
-              }
+                  )
+              )
             }
           }
         }

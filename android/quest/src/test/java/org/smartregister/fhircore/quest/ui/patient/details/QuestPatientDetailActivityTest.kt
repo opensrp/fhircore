@@ -27,6 +27,8 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -43,14 +45,18 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_TYPE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.NavigationOption
 import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
 import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
@@ -61,7 +67,6 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
 
   @BindValue val patientRepository: PatientRepository = mockk()
   @BindValue val libraryEvaluator: LibraryEvaluator = mockk()
@@ -147,6 +152,41 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   }
 
   @Test
+  fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+    questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
+      QuestResultItem(
+        Pair(
+          QuestionnaireResponseItem(
+            "12345",
+            Date(),
+            "12345",
+            QuestionnaireResponse()
+              .apply {
+                this.id = "12345"
+                this.authored = Date()
+                this.contained = listOf(Encounter().apply { this.id = "12345" })
+              }
+              .encodeResourceToString()
+          ),
+          QuestionnaireItem("12345", "name", "title")
+        ),
+        listOf(listOf(AdditionalData("", "", "", "", "", null)))
+      )
+    )
+
+    val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
+    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertEquals("12345", actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM))
+    Assert.assertEquals(
+      QuestionnaireType.READ_ONLY.name,
+      actualIntent.getStringExtra(QUESTIONNAIRE_ARG_TYPE)
+    )
+  }
+
+  @Test
   fun testOnTestResultItemClickListenerEmptyQuestionnaireIdShouldShowAlertDialog() {
     configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
 
@@ -172,7 +212,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
         QuestResultItem::class.java,
         QuestResultItem(
           Pair(
-            QuestionnaireResponseItem("", Date(), "12345"),
+            QuestionnaireResponseItem("", Date(), "12345", ""),
             QuestionnaireItem("", "name", "title")
           ),
           listOf()
@@ -211,7 +251,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
         QuestResultItem::class.java,
         QuestResultItem(
           Pair(
-            QuestionnaireResponseItem("12345", Date(), "12345"),
+            QuestionnaireResponseItem("12345", Date(), "12345", ""),
             QuestionnaireItem("1", "name", "title")
           ),
           listOf()

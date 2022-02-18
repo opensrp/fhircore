@@ -137,6 +137,4 @@ constructor(
     }
     return resourceListLive
   }
-  suspend fun loadQuestionnaireResponse(questionnaireResponseId: String): QuestionnaireResponse? =
-    defaultRepository.loadResource(questionnaireResponseId)
 }
