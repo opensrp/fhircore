@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Add Swahili translations for patient registration questionnaire and activate language switcher
 - Quest | Swahili localization
 - Quest | Added G6PD Patient Details page to show G6PD Status and Test Results
+- Quest | Add tasking list
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
@@ -47,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Integrate Hilt Dependency Injection
 - Engine | Fixed login authentication issue.
 - Engine | Implement language switcher on profile page
+- Engine | Add tasking abstraction
 
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected

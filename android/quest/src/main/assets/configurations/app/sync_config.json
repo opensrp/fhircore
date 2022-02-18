@@ -94,5 +94,15 @@
     "base": [
       "Binary"
     ]
+  },
+  {
+    "resourceType": "SearchParameter",
+    "name": "organization",
+    "code": "subject.organization",
+    "base": [
+      "Task"
+    ],
+    "type": "token",
+    "expression": "organization"
   }
 ]
