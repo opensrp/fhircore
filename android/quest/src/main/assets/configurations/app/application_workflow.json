@@ -50,6 +50,12 @@
         "resource": "PinViewConfigurations",
         "classification": "pin",
         "description": "Configurations for pin based login"
+      },
+      {
+        "workflowPoint": "registration",
+        "resource": "RegisterViewConfiguration",
+        "classification": "patient_task_register",
+        "description": "Configurations for patient task"
       }
     ]
   },

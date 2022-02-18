@@ -16,10 +16,8 @@
 
 package org.smartregister.fhircore.anc.util
 
-import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
-import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.StringParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenFilterValue
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -145,22 +143,6 @@ class SearchExtensionTest {
     val ex = assertThrows<UnsupportedOperationException> { search.filterBy(filter) }
 
     assertEquals("SDK does not support value type STRING", ex.message)
-  }
-
-  @Test
-  fun testSearchFilterByPatientShouldAddReferenceFilter() {
-    val search = Search(ResourceType.Patient)
-
-    search.filterByPatient(ReferenceClientParam("link"), "123344")
-
-    val referenceFilterParamCriterion: MutableList<Any> =
-      ReflectionHelpers.getField(search, "referenceFilterCriteria")
-    val referenceFilters: MutableList<ReferenceParamFilterCriterion> =
-      ReflectionHelpers.getField(referenceFilterParamCriterion[0], "filters")
-
-    assertEquals(1, referenceFilters.size)
-    assertEquals("Patient/123344", referenceFilters[0].value)
-    assertEquals("link", referenceFilters[0].parameter?.paramName)
   }
 
   @Test

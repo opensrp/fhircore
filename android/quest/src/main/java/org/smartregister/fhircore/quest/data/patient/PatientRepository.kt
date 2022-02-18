@@ -45,7 +45,7 @@ import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.asLabel
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.filterByPatient
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
@@ -356,7 +356,9 @@ constructor(
 
   suspend fun fetchPregnancyCondition(patientId: String): String {
     val listOfConditions: List<Condition> =
-      fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId = patientId) }
+      fhirEngine.search {
+        filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
+      }
     val activePregnancy = listOfConditions.hasActivePregnancy()
     val activePregnancyCondition =
       if (activePregnancy) listOfConditions.pregnancyCondition() else null

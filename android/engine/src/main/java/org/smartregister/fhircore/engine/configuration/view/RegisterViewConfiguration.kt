@@ -27,11 +27,11 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 data class RegisterViewConfiguration(
   override var appId: String,
   override val classification: String,
-  var appTitle: String,
-  var filterText: String,
-  var searchBarHint: String,
-  var newClientButtonText: String,
-  var newClientButtonStyle: String,
+  var appTitle: String = "",
+  var filterText: String = "",
+  var searchBarHint: String = "",
+  var newClientButtonText: String = "",
+  var newClientButtonStyle: String = "",
   var showSearchBar: Boolean = true,
   var showFilter: Boolean = true,
   var showScanQRCode: Boolean = true,
@@ -39,6 +39,8 @@ data class RegisterViewConfiguration(
   var registrationForm: String = "patient-registration",
   var showSideMenu: Boolean = true,
   var showBottomMenu: Boolean = false,
+  var showPageCount: Boolean = true,
+  var useLabel: Boolean = true,
   var primaryFilter: SearchFilter? = null
 ) : Configuration
 
@@ -80,6 +82,8 @@ fun Context.registerViewConfigurationOf(
   registrationForm: String = "patient-registration",
   showSideMenu: Boolean = true,
   showBottomMenu: Boolean = false,
+  showPageCount: Boolean = true,
+  useLabel: Boolean = true
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     appId = appId,
@@ -96,5 +100,7 @@ fun Context.registerViewConfigurationOf(
     registrationForm = registrationForm,
     showSideMenu = showSideMenu,
     showBottomMenu = showBottomMenu,
+    showPageCount = showPageCount,
+    useLabel = useLabel
   )
 }
