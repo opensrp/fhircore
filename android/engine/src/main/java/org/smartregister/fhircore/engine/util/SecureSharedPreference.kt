@@ -53,6 +53,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     secureSharedPreferences.edit {
       remove(KEY_LATEST_CREDENTIALS_PREFERENCE)
       remove(KEY_LATEST_SESSION_TOKEN_PREFERENCE)
+      remove(KEY_SESSION_PIN)
     }
   }
 
@@ -67,9 +68,20 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
       ?.decodeJson<AuthCredentials>()
   }
 
+  fun saveSessionPin(pin: String) {
+    secureSharedPreferences.edit { putString(KEY_SESSION_PIN, pin) }
+  }
+
+  fun retrieveSessionPin() = secureSharedPreferences.getString(KEY_SESSION_PIN, null)
+
+  fun deleteSessionPin() {
+    secureSharedPreferences.edit { remove(KEY_SESSION_PIN) }
+  }
+
   companion object {
     const val SECURE_STORAGE_FILE_NAME = "fhircore_secure_preferences"
     const val KEY_LATEST_CREDENTIALS_PREFERENCE = "LATEST_SUCCESSFUL_SESSION_CREDENTIALS"
     const val KEY_LATEST_SESSION_TOKEN_PREFERENCE = "LATEST_SUCCESSFUL_SESSION_TOKEN"
+    const val KEY_SESSION_PIN = "KEY_SESSION_PIN"
   }
 }

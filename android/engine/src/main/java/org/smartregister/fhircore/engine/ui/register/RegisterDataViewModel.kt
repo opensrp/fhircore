@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
@@ -52,6 +53,10 @@ class RegisterDataViewModel<I : Any, O : Any>(
   val showResultsCount
     get() = _showResultsCount
 
+  private val _showPageCount = MutableLiveData(true)
+  val showPageCount
+    get() = _showPageCount
+
   private val _totalRecordsCount = MutableLiveData(1L)
 
   private val _currentPage = MutableLiveData(0)
@@ -63,6 +68,11 @@ class RegisterDataViewModel<I : Any, O : Any>(
     MutableStateFlow(getPagingData(currentPage = 0, loadAll = true))
 
   var registerData: MutableStateFlow<Flow<PagingData<O>>> = MutableStateFlow(emptyFlow())
+
+  private val _registerViewConfiguration: MutableLiveData<RegisterViewConfiguration> =
+    MutableLiveData()
+  val registerViewConfiguration
+    get() = _registerViewConfiguration
 
   init {
     viewModelScope.launch { _totalRecordsCount.postValue(registerRepository.countAll()) }
@@ -108,6 +118,11 @@ class RegisterDataViewModel<I : Any, O : Any>(
       )
       .flow
 
+  fun updateViewConfigurations(viewConfiguration: RegisterViewConfiguration) {
+    this._registerViewConfiguration.postValue(viewConfiguration)
+    registerViewConfiguration.value?.showPageCount?.let { this.showPageCount(it) }
+  }
+
   fun previousPage() {
     this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
   }
@@ -126,6 +141,10 @@ class RegisterDataViewModel<I : Any, O : Any>(
 
   fun showResultsCount(showResultsCount: Boolean) {
     this._showResultsCount.postValue(showResultsCount)
+  }
+
+  fun showPageCount(showPageCount: Boolean) {
+    this._showPageCount.postValue(showPageCount)
   }
 
   fun setShowLoader(showLoader: Boolean) {

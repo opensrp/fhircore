@@ -14,6 +14,12 @@
         "resource": "RegisterViewConfiguration",
         "classification": "patient_register",
         "description": "Configurations for patient register"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfigurations",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
       }
     ]
   },
@@ -32,6 +38,12 @@
         "resource": "RegisterViewConfiguration",
         "classification": "patient_register",
         "description": "Configurations for patient register"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfiguration",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
       }
     ]
   }

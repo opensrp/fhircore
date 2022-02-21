@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="menu_item_clients" type="id" />
+    <item name="menu_item_tasks" type="id" />
     <item name="menu_item_settings" type="id" />
 </resources>
