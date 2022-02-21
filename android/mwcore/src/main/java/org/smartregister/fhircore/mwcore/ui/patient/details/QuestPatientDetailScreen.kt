@@ -249,7 +249,7 @@ fun FormItem(
 
 
 @Composable
-fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel, configurationRegistry: ConfigurationRegistry) {
+fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel, configurationRegistry: ConfigurationRegistry, patientType: String) {
   val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration
     .observeAsState(patientDetailsViewConfigurationOf())
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
@@ -294,13 +294,13 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
             .align(Alignment.CenterVertically)
         )
 
-//        var items: List<String>
-//        items = if (PatientType == "Client" ){
-//          listOf("DBS,", "This")
-//        } else
-//          listOf("not DBS")
+     val items: List<String>
+       items = if (patientType == "Client" ){
+        listOf("Enter viral load results")
+        } else
+          listOf("Enter DBS results")
 
-        Column() { val items = listOf( "Test Results", "Edit Details", "Enter Lab Results")
+        Column() { //val items = listOf( "Test Results", "Edit Details", "Enter Lab Results")
 
         var showMenu by remember { mutableStateOf(false) }
         IconButton(

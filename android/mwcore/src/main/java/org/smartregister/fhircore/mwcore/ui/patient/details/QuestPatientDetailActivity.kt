@@ -55,7 +55,7 @@ class QuestPatientDetailActivity :
   private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
   private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
   private lateinit var patientId: String
-  //var patientType: String? = this.intent.getStringExtra("patientType")
+  var patientType: String? = null
   private var parser: DetailConfigParser? = null
 
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
@@ -68,7 +68,7 @@ class QuestPatientDetailActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-
+  patientType = this.intent.getStringExtra("patientType")
     patientViewModel.apply {
       val detailActivity = this@QuestPatientDetailActivity
       onBackPressClicked.observe(
@@ -100,7 +100,11 @@ class QuestPatientDetailActivity :
       getAllResults(patientId, profileConfig, patientDetailConfig, parser)
       getAllForms(profileConfig)
     }
-    setContent { AppTheme { QuestPatientDetailScreen(patientViewModel, configurationRegistry) } }
+    setContent { AppTheme { patientType?.let {
+      QuestPatientDetailScreen(patientViewModel, configurationRegistry,
+        it
+      )
+    } } }
   }
 
   override fun onResume() {
