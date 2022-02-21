@@ -256,7 +256,7 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
   @Test
   fun testGetResourceFromPractitionerDetails() {
     every {
-      sharedPreferencesHelper.read(PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY, any())
+      sharedPreferencesHelper.read(PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY, "")
     } returns getParameters().encodeResourceToString()
 
     coEvery { fhirEngine.load(CareTeam::class.java, any()) } returns careTeamList[0]
@@ -284,7 +284,7 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
   fun testRetrieveKeyClockDetails() {
     val gson = Gson()
     val keycloakUserDetails = gson.toJson(getKeycloakUserDetails())
-    every { sharedPreferencesHelper.read(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, any()) } returns
+    every { sharedPreferencesHelper.read(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, "") } returns
       keycloakUserDetails
 
     runBlocking {

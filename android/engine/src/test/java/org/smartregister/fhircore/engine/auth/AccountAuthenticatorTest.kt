@@ -227,7 +227,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference
+          sharedPreference = sharedPreference,
+          fhirResourceService = mockk()
         )
       )
 
@@ -281,7 +282,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference
+          sharedPreference = sharedPreference,
+          fhirResourceService = mockk()
         )
       )
 
