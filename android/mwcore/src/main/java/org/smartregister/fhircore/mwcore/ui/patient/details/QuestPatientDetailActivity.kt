@@ -46,6 +46,7 @@ import org.smartregister.fhircore.mwcore.ui.patient.details.SimpleDetailsActivit
 import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRegisterActivity
 import org.smartregister.fhircore.mwcore.ui.patient.register.fragments.ClientsRegisterFragment
 import org.smartregister.fhircore.mwcore.util.MwCoreConfigClassification
+import org.smartregister.fhircore.mwcore.util.RegisterType
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -55,7 +56,7 @@ class QuestPatientDetailActivity :
   private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
   private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
   private lateinit var patientId: String
-  //var patientType: String? = this.intent.getStringExtra("patientType")
+  var patientType: String? = null
   private var parser: DetailConfigParser? = null
 
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
@@ -68,7 +69,7 @@ class QuestPatientDetailActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-
+  patientType = this.intent.getStringExtra(getString(R.string.patient_type))
     patientViewModel.apply {
       val detailActivity = this@QuestPatientDetailActivity
       onBackPressClicked.observe(
@@ -100,7 +101,11 @@ class QuestPatientDetailActivity :
       getAllResults(patientId, profileConfig, patientDetailConfig, parser)
       getAllForms(profileConfig)
     }
-    setContent { AppTheme { QuestPatientDetailScreen(patientViewModel, configurationRegistry) } }
+    setContent { AppTheme { patientType?.let {
+      QuestPatientDetailScreen(patientViewModel, configurationRegistry,
+        it
+      )
+    } } }
   }
 
   override fun onResume() {
