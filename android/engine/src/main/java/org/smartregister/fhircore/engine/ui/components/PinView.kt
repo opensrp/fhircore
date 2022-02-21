@@ -188,8 +188,12 @@ fun PinCell(
       backgroundColor = backgroundColor
     ) {
       var iModifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(textTestTag)
-      if(indexValue.isEmpty() && isCursorVisible){
-       iModifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(textTestTag).focusRequester(focusRequester)
+      if (indexValue.isEmpty() && isCursorVisible) {
+        iModifier =
+          Modifier.wrapContentSize()
+            .align(Alignment.Center)
+            .testTag(textTestTag)
+            .focusRequester(focusRequester)
       }
       Text(
         text = if (isCursorVisible) cursorSymbol else textValue,
@@ -197,10 +201,8 @@ fun PinCell(
         style = MaterialTheme.typography.body1,
         modifier = iModifier
       )
-      if(indexValue.isEmpty() && isCursorVisible){
-        LaunchedEffect(indexValue.isEmpty() && isCursorVisible) {
-          focusRequester.requestFocus()
-        }
+      if (indexValue.isEmpty() && isCursorVisible) {
+        LaunchedEffect(indexValue.isEmpty() && isCursorVisible) { focusRequester.requestFocus() }
       }
     }
   }
