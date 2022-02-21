@@ -69,7 +69,7 @@ class QuestPatientDetailActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-  patientType = this.intent.getStringExtra(RegisterType.PATIENT_TYPE)
+  patientType = this.intent.getStringExtra(getString(R.string.patient_type))
     patientViewModel.apply {
       val detailActivity = this@QuestPatientDetailActivity
       onBackPressClicked.observe(

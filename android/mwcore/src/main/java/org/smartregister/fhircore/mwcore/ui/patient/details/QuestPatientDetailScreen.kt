@@ -295,7 +295,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         )
 
      val items: List<String>
-       items = if (patientType == "patient_client" ){
+       items = if (patientType == "Client" ){
         listOf("Enter viral load results")
         } else
           listOf("Enter DBS results")
