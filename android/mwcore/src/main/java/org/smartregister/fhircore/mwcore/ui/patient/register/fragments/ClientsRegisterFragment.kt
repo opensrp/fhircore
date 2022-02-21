@@ -37,7 +37,8 @@ import org.smartregister.fhircore.mwcore.ui.patient.details.QuestPatientDetailAc
 import org.smartregister.fhircore.mwcore.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.mwcore.ui.patient.register.components.PatientRegisterList
 import org.smartregister.fhircore.mwcore.util.RegisterType
-import org.smartregister.fhircore.mwcore.util.RegisterType.PATIENT_TYPE
+import org.smartregister.fhircore.mwcore.util.RegisterType.CLIENT_ID
+
 
 @AndroidEntryPoint
 class ClientsRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
@@ -47,7 +48,7 @@ class ClientsRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
     startActivity(
       Intent(requireActivity(), QuestPatientDetailActivity::class.java)
         .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
-        .putExtra(getString(R.string.patient_type), getString(R.string.adult_patient))
+        .putExtra(getString(R.string.patient_type), CLIENT_ID)
     )
   }
 
