@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.UriType
 object RegisterType {
   const val CLIENT_ID = "patient_client"
   const val EXPOSED_INFANT_ID = "patient_exposed_infant"
+  const val PATIENT_TYPE = "Patient_Type"
 }
 
 const val REGISTER_CONFIG_FILE = "register_configurations.json"

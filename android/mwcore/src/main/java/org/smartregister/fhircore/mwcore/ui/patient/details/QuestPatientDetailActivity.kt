@@ -46,6 +46,7 @@ import org.smartregister.fhircore.mwcore.ui.patient.details.SimpleDetailsActivit
 import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRegisterActivity
 import org.smartregister.fhircore.mwcore.ui.patient.register.fragments.ClientsRegisterFragment
 import org.smartregister.fhircore.mwcore.util.MwCoreConfigClassification
+import org.smartregister.fhircore.mwcore.util.RegisterType
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -68,7 +69,7 @@ class QuestPatientDetailActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-  patientType = this.intent.getStringExtra("patientType")
+  patientType = this.intent.getStringExtra(RegisterType.PATIENT_TYPE)
     patientViewModel.apply {
       val detailActivity = this@QuestPatientDetailActivity
       onBackPressClicked.observe(

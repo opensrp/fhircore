@@ -20,6 +20,9 @@ import org.smartregister.fhircore.mwcore.ui.patient.details.QuestPatientDetailAc
 import org.smartregister.fhircore.mwcore.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.mwcore.ui.patient.register.components.ExposedRegisterList
 import org.smartregister.fhircore.mwcore.ui.patient.register.components.PatientRegisterList
+import org.smartregister.fhircore.mwcore.util.RegisterType.CLIENT_ID
+import org.smartregister.fhircore.mwcore.util.RegisterType.EXPOSED_INFANT_ID
+import org.smartregister.fhircore.mwcore.util.RegisterType.PATIENT_TYPE
 
 @AndroidEntryPoint
 class ExposedInfantsRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
@@ -30,7 +33,7 @@ class ExposedInfantsRegisterFragment : ComposeRegisterFragment<Patient, PatientI
         startActivity(
             Intent(requireActivity(), QuestPatientDetailActivity::class.java)
                 .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
-                .putExtra("patientType", "Exposed")
+                .putExtra(PATIENT_TYPE, EXPOSED_INFANT_ID)
         )
     }
 
