@@ -25,10 +25,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 
 @AndroidEntryPoint
 class LoginActivity :
@@ -44,17 +46,39 @@ class LoginActivity :
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
     loginViewModel.apply {
-      navigateToHome.observe(this@LoginActivity, { loginService.navigateToHome() })
+      navigateToHome.observe(
+        this@LoginActivity,
+        {
+          if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
+            loginService.navigateToPinLogin(goForSetup = true)
+          } else {
+            loginService.navigateToHome()
+          }
+        }
+      )
       launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
-      // loginUser() TODO commented out to make user login everytime. Make it configurable via
-      // settings
+      appLogoResourceFile = getApplicationConfiguration().appLogoIconResourceFile
     }
 
     if (configurationRegistry.isAppIdInitialized()) {
       configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
     }
 
+    // Check if Pin enabled and stored then move to Pin login
+    val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
+    val forceLoginViaUsername =
+      loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
+    val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
+    if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
+      loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
+      loginService.navigateToPinLogin()
+    }
+
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+  }
+
+  fun getApplicationConfiguration(): ApplicationConfiguration {
+    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
   }
 
   override fun configureViews(viewConfiguration: LoginViewConfiguration) {

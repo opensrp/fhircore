@@ -86,15 +86,25 @@ abstract class RobolectricTest {
     return String(charArray)
   }
 
+  fun String.readDir(): List<File> = File("$ASSET_BASE_PATH/$this").listFiles().toList()
+
   fun String.readFileToBase64Encoded(): String {
     return Base64.getEncoder().encodeToString(this.readFile().toByteArray())
   }
 
-  fun String.parseSampleResource(): IBaseResource =
-    this.readFile()
-      .let {
-        it.replace("#TODAY", Date().asYyyyMmDd()).replace("#NOW", DateTimeType.now().valueAsString)
-      }
+  fun String.readStringToBase64Encoded(): String {
+    return Base64.getEncoder().encodeToString(this.toByteArray())
+  }
+
+  fun String.parseSampleResourceFromFile(): IBaseResource =
+    sanitizeSampleResourceContent(this.readFile())
+
+  fun File.parseSampleResource(): IBaseResource = sanitizeSampleResourceContent(this.readText())
+
+  fun sanitizeSampleResourceContent(content: String): IBaseResource =
+    content
+      .replace("#TODAY", Date().asYyyyMmDd())
+      .replace("#NOW", DateTimeType.now().valueAsString)
       .let { FhirContext.forR4Cached().newJsonParser().parseResource(it) }
 
   fun IBaseResource.convertToString(trimTime: Boolean) =

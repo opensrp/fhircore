@@ -30,7 +30,7 @@ class SearchExtensionTest {
   fun testSearchFilterByPatientShouldAddReferenceFilter() {
     val search = Search(ResourceType.Patient)
 
-    search.filterByPatient(ReferenceClientParam("link"), "123344")
+    search.filterByResourceTypeId(ReferenceClientParam("link"), ResourceType.Patient, "123344")
 
     val referenceFilterParamCriterion: MutableList<Any> =
       ReflectionHelpers.getField(search, "referenceFilterCriteria")

@@ -79,7 +79,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
       patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
     )
     Assert.assertEquals(
-      View.VISIBLE,
+      View.GONE,
       patientRegisterActivity.findViewById<View>(R.id.filter_register_button).visibility
     )
     Assert.assertEquals(
@@ -119,7 +119,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     with(activityBinding) {
       Assert.assertEquals("Register new client", this.btnRegisterNewClient.text)
       Assert.assertEquals("Clients", this.toolbarLayout.tvClientsListTitle.text)
-      Assert.assertEquals(2, this.bottomNavView.menu.size)
+      Assert.assertEquals(3, this.bottomNavView.menu.size)
     }
   }
 
@@ -127,17 +127,19 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   fun testBottomMenuOptionsShouldReturnNonZeroOptions() {
     val menu = patientRegisterActivity.bottomNavigationMenuOptions()
 
-    Assert.assertEquals(2, menu.size)
+    Assert.assertEquals(3, menu.size)
     Assert.assertEquals(R.id.menu_item_clients, menu[0].id)
     Assert.assertEquals(getString(R.string.menu_clients), menu[0].title)
-    Assert.assertEquals(R.id.menu_item_settings, menu[1].id)
-    Assert.assertEquals(getString(R.string.menu_settings), menu[1].title)
+    Assert.assertEquals(R.id.menu_item_tasks, menu[1].id)
+    Assert.assertEquals(getString(R.string.menu_tasks), menu[1].title)
+    Assert.assertEquals(R.id.menu_item_settings, menu[2].id)
+    Assert.assertEquals(getString(R.string.menu_settings), menu[2].title)
   }
 
   @Test
   fun testSupportedFragmentsShouldReturnPatientRegisterFragmentList() {
     val fragments = patientRegisterActivity.supportedFragments()
-    Assert.assertEquals(2, fragments.size)
+    Assert.assertEquals(3, fragments.size)
     Assert.assertTrue(fragments.containsKey(PatientRegisterFragment.TAG))
     Assert.assertTrue(fragments.containsKey(UserProfileFragment.TAG))
   }

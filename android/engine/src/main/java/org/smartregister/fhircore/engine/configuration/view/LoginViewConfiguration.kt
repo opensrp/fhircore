@@ -30,6 +30,7 @@ class LoginViewConfiguration(
   var applicationVersionCode: Int = 1,
   var darkMode: Boolean = true,
   var showLogo: Boolean = false,
+  var enablePin: Boolean = false
 ) : Configuration
 /**
  * A function providing a DSL for configuring [LoginViewConfiguration]. The configurations provided
@@ -41,6 +42,7 @@ class LoginViewConfiguration(
  * @param darkMode Change login theme; alter the background color to white when false dark blue
  * otherwise
  * @param showLogo Show login logo for the app otherwise
+ * @param enablePin provides PIN login feature
  */
 @Stable
 fun loginViewConfigurationOf(
@@ -50,7 +52,8 @@ fun loginViewConfigurationOf(
   applicationVersion: String = "0.0.1",
   applicationVersionCode: Int = 1,
   darkMode: Boolean = false,
-  showLogo: Boolean = false
+  showLogo: Boolean = false,
+  enablePin: Boolean = false
 ) =
   LoginViewConfiguration(
     appId = appId,
@@ -59,5 +62,6 @@ fun loginViewConfigurationOf(
     applicationVersion = applicationVersion,
     applicationVersionCode = applicationVersionCode,
     darkMode = darkMode,
-    showLogo = showLogo
+    showLogo = showLogo,
+    enablePin = enablePin
   )
