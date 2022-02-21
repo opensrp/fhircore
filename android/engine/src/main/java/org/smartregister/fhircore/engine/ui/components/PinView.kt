@@ -117,7 +117,8 @@ fun PinView(
         fullEditValue = editValue,
         isCursorVisible = editValue.length == index,
         isDotted = isDotted,
-        showError = showError
+        showError = showError,
+        focusRequester = focusRequester
       )
       Spacer(modifier = Modifier.size(8.dp))
     }
@@ -131,7 +132,8 @@ fun PinCell(
   fullEditValue: String,
   isCursorVisible: Boolean = false,
   isDotted: Boolean = false,
-  showError: Boolean = false
+  showError: Boolean = false,
+  focusRequester: FocusRequester = FocusRequester()
 ) {
   val scope = rememberCoroutineScope()
   val (cursorSymbol, setCursorSymbol) = remember { mutableStateOf("") }
@@ -185,12 +187,21 @@ fun PinCell(
       border = BorderStroke(width = 1.dp, color = borderColor),
       backgroundColor = backgroundColor
     ) {
+      var iModifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(textTestTag)
+      if(indexValue.isEmpty() && isCursorVisible){
+       iModifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(textTestTag).focusRequester(focusRequester)
+      }
       Text(
         text = if (isCursorVisible) cursorSymbol else textValue,
         fontSize = textSize,
         style = MaterialTheme.typography.body1,
-        modifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(textTestTag)
+        modifier = iModifier
       )
+      if(indexValue.isEmpty() && isCursorVisible){
+        LaunchedEffect(indexValue.isEmpty() && isCursorVisible) {
+          focusRequester.requestFocus()
+        }
+      }
     }
   }
 }
