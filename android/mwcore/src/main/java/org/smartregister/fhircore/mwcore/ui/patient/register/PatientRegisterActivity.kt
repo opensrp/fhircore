@@ -185,9 +185,10 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun switchFragment(
     tag: String,
     isRegisterFragment: Boolean,
+    isFilterVisible: Boolean,
     toolbarTitle: String?
   ) {
-    super.switchFragment(tag, isRegisterFragment, toolbarTitle)
+    super.switchFragment(tag, isRegisterFragment, false, toolbarTitle)
     registerActivityBinding.btnRegisterNewClient.toggleVisibility(isRegisterFragment)
   }
 }

@@ -3,6 +3,8 @@
     "appId": "mw-core",
     "classification": "application",
     "theme": "QuestDefault",
-    "languages": ["en", "sw"]
+    "languages": ["en", "sw"],
+    "applicationName": "Tingathe",
+    "appLogoIconResourceFile": "ic_malawi"
   }
 ]

@@ -17,14 +17,14 @@
 package org.smartregister.fhircore.mwcore.ui.login
 
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRegisterActivity
 
 class MwCoreLoginService @Inject constructor() : LoginService {
 
-  override lateinit var loginActivity: LoginActivity
+  override lateinit var loginActivity: AppCompatActivity
 
   override fun navigateToHome() {
     val intent =
