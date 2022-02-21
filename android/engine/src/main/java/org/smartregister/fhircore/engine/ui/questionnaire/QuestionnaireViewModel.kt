@@ -133,6 +133,14 @@ constructor(
     }
   }
 
+  fun appendPractitionerInfo(resource: Resource) {
+    authenticatedUserInfo?.sub?.let { uuid ->
+      val practitionerRef = Reference().apply { reference = "Practitioner/$uuid" }
+
+      if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
+    }
+  }
+
   fun extractAndSaveResources(
     context: Context,
     resourceId: String?,
@@ -151,6 +159,7 @@ constructor(
           // add organization to entities representing individuals in registration questionnaire
           if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
             appendOrganizationInfo(bun.resource)
+            appendPractitionerInfo(bun.resource)
 
             // if it is new registration set response subject
             if (resourceId == null) questionnaireResponse.subject = bun.resource.asReference()
