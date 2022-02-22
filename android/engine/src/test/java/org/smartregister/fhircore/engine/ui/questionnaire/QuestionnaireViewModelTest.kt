@@ -50,6 +50,7 @@ import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -69,11 +70,13 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 
 @HiltAndroidTest
@@ -103,7 +106,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
-      "{\"organization\":\"1111\"}"
+      getUserInfo().encodeJson()
 
     defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
     val configurationRegistry = mockk<ConfigurationRegistry>()
@@ -963,5 +966,37 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     Assert.assertEquals("Organization/1111", questionnaireResponse.subject.reference)
+  }
+
+  private fun getUserInfo(): UserInfo {
+    val userInfo =
+      UserInfo().apply {
+        questionnairePublisher = "ab"
+        organization = "1111"
+        sub = "123"
+      }
+    return userInfo
+  }
+
+  @Test
+  fun testAddPractitionerInfoShouldSetGeneralPractitionerReferenceToPatientResource() {
+    val patient =
+      Patient().apply {
+        Patient@ this.id = "123456"
+        this.birthDate = questionnaireViewModel.calculateDobFromAge(25)
+      }
+
+    questionnaireViewModel.appendPractitionerInfo(patient)
+
+    Assert.assertEquals("Practitioner/123", patient.generalPractitioner[0].reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
+    val encounter = Encounter().apply { this.id = "123456" }
+
+    questionnaireViewModel.appendPractitionerInfo(encounter)
+
+    Assert.assertEquals("Practitioner/123", encounter.participant[0].individual.reference)
   }
 }
