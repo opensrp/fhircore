@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+const val MAX_PAGE_COUNT = 20
 const val SEARCH_HEADER_TEXT_TAG = "searchHeaderTestTag"
 const val SEARCH_FOOTER_TAG = "searchFooterTag"
 const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
@@ -141,28 +142,28 @@ fun SearchFooter(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoPreviousButton() {
-  SearchFooter(10, 1, 20, {}, {})
+  SearchFooter(10, 1, MAX_PAGE_COUNT, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoNextButton() {
-  SearchFooter(10, 20, 20, {}, {})
+  SearchFooter(10, 20, MAX_PAGE_COUNT, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
-  SearchFooter(10, 6, 20, {}, {})
+  SearchFooter(10, 6, MAX_PAGE_COUNT, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithZeroResults() {
-  SearchFooter(0, 6, 20, {}, {})
+  SearchFooter(0, 6, MAX_PAGE_COUNT, {}, {})
 }
 
 /**
@@ -175,13 +176,23 @@ fun PaginatedRegister(
   showResultsCount: Boolean,
   resultCount: Int,
   body: (@Composable() () -> Unit),
+  showPageCount: Boolean = true,
   currentPage: Int,
   pagesCount: Int,
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val bottomPadding = if (showResultsCount) 4.dp else 40.dp
+  val bottomPadding =
+    when {
+      showResultsCount -> {
+        4.dp
+      }
+      showPageCount -> {
+        40.dp
+      }
+      else -> 0.dp
+    }
   Column(modifier = modifier.fillMaxWidth().height(200.dp)) {
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
       val (topRef, bodyRef, bottomRef, searchFooterRef) = createRefs()
@@ -230,15 +241,17 @@ fun PaginatedRegister(
           }
         }
       }
-      if (!showResultsCount) {
-        Box(modifier = Modifier.constrainAs(searchFooterRef) { bottom.linkTo(parent.bottom) }) {
-          SearchFooter(
-            resultCount = resultCount,
-            currentPage = currentPage,
-            pageNumbers = pagesCount,
-            previousButtonClickListener = previousButtonClickListener,
-            nextButtonClickListener = nextButtonClickListener
-          )
+      if (showPageCount) {
+        if (!showResultsCount) {
+          Box(modifier = Modifier.constrainAs(searchFooterRef) { bottom.linkTo(parent.bottom) }) {
+            SearchFooter(
+              resultCount = resultCount,
+              currentPage = currentPage,
+              pageNumbers = pagesCount,
+              previousButtonClickListener = previousButtonClickListener,
+              nextButtonClickListener = nextButtonClickListener
+            )
+          }
         }
       }
     }
@@ -282,8 +295,9 @@ fun PaginatedRegisterPreviewWithResults() {
     showResultsCount = true,
     resultCount = 0,
     body = { Text(text = "Something cool") },
+    showPageCount = true,
     currentPage = 0,
-    pagesCount = 20,
+    pagesCount = MAX_PAGE_COUNT,
     previousButtonClickListener = {},
     nextButtonClickListener = {}
   )
@@ -298,8 +312,9 @@ fun PaginatedRegisterPreviewWithoutResults() {
     showResultsCount = false,
     resultCount = 0,
     body = { Text(text = "Something cool") },
+    showPageCount = false,
     currentPage = 0,
-    pagesCount = 20,
+    pagesCount = MAX_PAGE_COUNT,
     previousButtonClickListener = {},
     nextButtonClickListener = {}
   )
