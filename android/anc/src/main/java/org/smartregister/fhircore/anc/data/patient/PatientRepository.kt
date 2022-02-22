@@ -56,7 +56,6 @@ import org.smartregister.fhircore.anc.util.AncOverviewType
 import org.smartregister.fhircore.anc.util.RegisterType
 import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.anc.util.filterBy
-import org.smartregister.fhircore.anc.util.filterByPatient
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
@@ -67,6 +66,7 @@ import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.format
 import org.smartregister.fhircore.engine.util.extension.generateUniqueId
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
@@ -134,20 +134,22 @@ constructor(
 
   suspend fun searchPatientByLink(linkId: String): List<Patient> {
     return fhirEngine.search {
-      filterByPatient(Patient.LINK, linkId)
+      filterByResourceTypeId(Patient.LINK, ResourceType.Patient, linkId)
       filter(Patient.ACTIVE, { value = of(true) })
     }
   }
 
   suspend fun searchCondition(patientId: String): List<Condition> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId) }
+      fhirEngine.search {
+        filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
+      }
     }
 
   suspend fun searchCarePlan(patientId: String, tag: Coding? = null): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
-        filterByPatient(CarePlan.SUBJECT, patientId)
+        filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
 
         tag?.run {
           filterBy(
@@ -181,7 +183,7 @@ constructor(
 
   suspend fun revokeFlags(patientId: String) {
     fhirEngine
-      .search<Flag> { filterByPatient(Flag.PATIENT, patientId) }
+      .search<Flag> { filterByResourceTypeId(Flag.PATIENT, ResourceType.Patient, patientId) }
       .filter { it.status == Flag.FlagStatus.ACTIVE }
       .forEach {
         it.status = Flag.FlagStatus.INACTIVE
@@ -193,7 +195,9 @@ constructor(
 
   suspend fun revokeConditions(patientId: String) {
     fhirEngine
-      .search<Condition> { filterByPatient(Condition.PATIENT, patientId) }
+      .search<Condition> {
+        filterByResourceTypeId(Condition.PATIENT, ResourceType.Patient, patientId)
+      }
       .filter { it.clinicalStatus.codingFirstRep.code == "active" }
       .forEach {
         it.clinicalStatus.codingFirstRep.code = "inactive"
@@ -251,9 +255,11 @@ constructor(
   }
 
   suspend fun fetchActiveFlag(patientId: String, flagCode: Coding): Flag? {
-    return fhirEngine.search<Flag> { filterByPatient(Flag.PATIENT, patientId) }.firstOrNull {
-      it.status == Flag.FlagStatus.ACTIVE && it.code.coding.any { it.code == flagCode.code }
-    }
+    return fhirEngine
+      .search<Flag> { filterByResourceTypeId(Flag.PATIENT, ResourceType.Patient, patientId) }
+      .firstOrNull {
+        it.status == Flag.FlagStatus.ACTIVE && it.code.coding.any { it.code == flagCode.code }
+      }
   }
 
   fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> =
@@ -280,7 +286,7 @@ constructor(
         fhirEngine.search<Observation> {
           filterBy(searchFilter)
           // for patient filter use extension created
-          filterByPatient(Observation.SUBJECT, patientId)
+          filterByResourceTypeId(Observation.SUBJECT, ResourceType.Patient, patientId)
         }
       }
     if (observations.isNotEmpty())
@@ -311,7 +317,7 @@ constructor(
         fhirEngine.search<Observation> {
           filterBy(searchFilter)
           // for patient filter use extension created
-          filterByPatient(Observation.SUBJECT, patientId)
+          filterByResourceTypeId(Observation.SUBJECT, ResourceType.Patient, patientId)
         }
       }
 

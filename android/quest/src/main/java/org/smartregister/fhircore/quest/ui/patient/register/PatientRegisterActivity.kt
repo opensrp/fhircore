@@ -38,6 +38,7 @@ import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDeta
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity.Companion.CLASSIFICATION_ARG
+import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
@@ -63,6 +64,11 @@ class PatientRegisterActivity : BaseRegisterActivity() {
           iconResource = ContextCompat.getDrawable(this, R.drawable.ic_users)!!
         ),
         NavigationMenuOption(
+          id = R.id.menu_item_tasks,
+          title = getString(R.string.menu_tasks),
+          iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
+        ),
+        NavigationMenuOption(
           id = R.id.menu_item_settings,
           title = getString(R.string.menu_settings),
           iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
@@ -82,6 +88,13 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
       R.id.menu_item_clients -> switchFragment(mainFragmentTag(), isFilterVisible = false)
+      R.id.menu_item_tasks ->
+        switchFragment(
+          tag = PatientTaskFragment.TAG,
+          isRegisterFragment = false,
+          isFilterVisible = false,
+          toolbarTitle = getString(R.string.tasks)
+        )
       R.id.menu_item_settings ->
         switchFragment(
           tag = UserProfileFragment.TAG,
@@ -104,6 +117,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun supportedFragments(): Map<String, Fragment> =
     mapOf(
       Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()),
+      Pair(PatientTaskFragment.TAG, PatientTaskFragment()),
       Pair(UserProfileFragment.TAG, UserProfileFragment())
     )
 

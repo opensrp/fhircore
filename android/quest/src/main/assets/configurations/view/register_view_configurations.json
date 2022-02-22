@@ -19,7 +19,12 @@
       "system": "http://fhir.ona.io",
       "code": "000003"
     }
-  },
+  },{
+  "appId": "quest",
+  "classification": "patient_task_register",
+  "showPageCount": false,
+  "useLabel": false
+},
   {
     "appId": "g6pd",
     "classification": "patient_register",

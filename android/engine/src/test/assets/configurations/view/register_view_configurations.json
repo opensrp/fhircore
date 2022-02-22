@@ -14,5 +14,10 @@
     "showSideMenu": true,
     "showBottomMenu": false,
     "registrationForm": "patient-registration"
-  }
+  },{
+  "appId": "appId",
+  "classification": "patient_task_register",
+  "showPageCount": false,
+  "useLabel": false
+}
 ]
