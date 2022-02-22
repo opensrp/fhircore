@@ -36,8 +36,8 @@ class PinViewConfigurationTest {
     Assert.assertEquals("classification", pinViewConfiguration.classification)
     Assert.assertEquals("app", pinViewConfiguration.applicationName)
     Assert.assertEquals("ic_launcher", pinViewConfiguration.appLogoIconResourceFile)
-    Assert.assertTrue(pinViewConfiguration.showLogo)
     Assert.assertTrue(pinViewConfiguration.enablePin)
+    Assert.assertTrue(pinViewConfiguration.showLogo)
   }
 
   @Test
@@ -55,7 +55,29 @@ class PinViewConfigurationTest {
     Assert.assertEquals("classification", pinConfiguration.classification)
     Assert.assertEquals("app", pinConfiguration.applicationName)
     Assert.assertEquals("ic_launcher", pinConfiguration.appLogoIconResourceFile)
-    Assert.assertTrue(pinConfiguration.showLogo)
     Assert.assertFalse(pinConfiguration.enablePin)
+    Assert.assertTrue(pinConfiguration.showLogo)
+  }
+
+  @Test
+  fun testLoginViewConfiguration_default() {
+    val pinViewConfiguration = PinViewConfiguration(classification = "pin")
+    Assert.assertEquals("", pinViewConfiguration.appId)
+    Assert.assertEquals("pin", pinViewConfiguration.classification)
+    Assert.assertEquals("", pinViewConfiguration.applicationName)
+    Assert.assertEquals("", pinViewConfiguration.appLogoIconResourceFile)
+    Assert.assertFalse(pinViewConfiguration.enablePin)
+    Assert.assertTrue(pinViewConfiguration.showLogo)
+  }
+
+  @Test
+  fun testLoginViewConfigurationOf_default() {
+    val pinConfiguration = pinViewConfigurationOf()
+    Assert.assertEquals("appId", pinConfiguration.appId)
+    Assert.assertEquals("pin", pinConfiguration.classification)
+    Assert.assertEquals("FHIR Engine App", pinConfiguration.applicationName)
+    Assert.assertEquals("ic_launcher", pinConfiguration.appLogoIconResourceFile)
+    Assert.assertFalse(pinConfiguration.enablePin)
+    Assert.assertTrue(pinConfiguration.showLogo)
   }
 }
