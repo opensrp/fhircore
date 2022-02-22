@@ -973,7 +973,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       UserInfo().apply {
         questionnairePublisher = "ab"
         organization = "1111"
-        sub = "123"
+        keyclockuuid = "123"
       }
     return userInfo
   }

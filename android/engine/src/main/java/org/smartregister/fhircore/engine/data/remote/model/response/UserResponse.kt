@@ -24,5 +24,5 @@ data class UserInfo(
   @SerialName("questionnaire_publisher") var questionnairePublisher: String? = null,
   @SerialName("organization") var organization: String? = null,
   @SerialName("location") var location: String? = null,
-  @SerialName("sub") var sub: String? = null
+  @SerialName("sub") var keyclockuuid: String? = null
 )

@@ -135,7 +135,7 @@ constructor(
   }
 
   fun appendPractitionerInfo(resource: Resource) {
-    authenticatedUserInfo?.sub?.let { uuid ->
+    authenticatedUserInfo?.keyclockuuid?.let { uuid ->
       val practitionerRef = Reference().apply { reference = "Practitioner/$uuid" }
 
       if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
