@@ -457,9 +457,11 @@ abstract class BaseRegisterActivity :
     val bottomMenu = registerActivityBinding.bottomNavView.menu
     registerActivityBinding.bottomNavView.apply {
       toggleVisibility(viewConfiguration.showBottomMenu)
-      setOnItemSelectedListener(this@BaseRegisterActivity)
+      setOnItemSelectedListener { item ->
+        onBottomNavigationOptionItemSelected(item, viewConfiguration)
+      }
     }
-    for ((index, it) in bottomNavigationMenuOptions().withIndex()) {
+    for ((index, it) in bottomNavigationMenuOptions(viewConfiguration).withIndex()) {
       bottomMenu.add(R.id.menu_group_default_item_id, it.id, index, it.title).apply {
         it.iconResource.let { icon -> this.icon = icon }
       }
@@ -588,8 +590,17 @@ abstract class BaseRegisterActivity :
   /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
   open fun sideMenuOptions(): List<SideMenuOption> = emptyList()
 
-  /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
-  open fun bottomNavigationMenuOptions(): List<NavigationMenuOption> = emptyList()
+  /** List of [bottomNavigationMenuOptions] representing individual menu items listed in the BottomNavigation */
+  open fun bottomNavigationMenuOptions(viewConfiguration: RegisterViewConfiguration): List<NavigationMenuOption> {
+    return viewConfiguration.bottomNavigationOptions?.map {
+      NavigationMenuOption(
+        id = it.id.hashCode(),
+        title = it.title,
+        iconResource = getDrawable(it.icon)
+      )
+    }
+      ?: emptyList()
+  }
 
   /**
    * Override this method to provide a pair of register fragment tag plus their title This MUST be
@@ -603,6 +614,8 @@ abstract class BaseRegisterActivity :
    * or [bottomNavigationMenuOptions]
    */
   open fun onNavigationOptionItemSelected(item: MenuItem): Boolean = true
+
+  open fun onBottomNavigationOptionItemSelected(item: MenuItem, viewConfiguration: RegisterViewConfiguration): Boolean = true
 
   open fun registerClient(clientIdentifier: String? = null) {
     startActivity(

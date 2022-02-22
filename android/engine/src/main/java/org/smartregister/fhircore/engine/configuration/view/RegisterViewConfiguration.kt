@@ -21,6 +21,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 
 @Serializable
 @Stable
@@ -41,7 +42,8 @@ data class RegisterViewConfiguration(
   var showBottomMenu: Boolean = false,
   var showPageCount: Boolean = true,
   var useLabel: Boolean = true,
-  var primaryFilter: SearchFilter? = null
+  var primaryFilter: SearchFilter? = null,
+  var bottomNavigationOptions: List<NavigationOption>? = null
 ) : Configuration
 
 @Serializable
@@ -83,7 +85,8 @@ fun Context.registerViewConfigurationOf(
   showSideMenu: Boolean = true,
   showBottomMenu: Boolean = false,
   showPageCount: Boolean = true,
-  useLabel: Boolean = true
+  useLabel: Boolean = true,
+  bottomNavigationOptions: List<NavigationOption>? = null
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     appId = appId,
@@ -101,6 +104,7 @@ fun Context.registerViewConfigurationOf(
     showSideMenu = showSideMenu,
     showBottomMenu = showBottomMenu,
     showPageCount = showPageCount,
-    useLabel = useLabel
+    useLabel = useLabel,
+    bottomNavigationOptions = bottomNavigationOptions
   )
 }

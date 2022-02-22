@@ -61,7 +61,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
       Pair(UserProfileFragment.TAG, UserProfileFragment())
     )
 
-  override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> =
+  /*override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> =
     listOf(
       NavigationMenuOption(
         id = R.id.menu_item_register,
@@ -83,7 +83,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         title = getString(R.string.profile),
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_user)!!
       )
-    )
+    )*/
 
   override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {

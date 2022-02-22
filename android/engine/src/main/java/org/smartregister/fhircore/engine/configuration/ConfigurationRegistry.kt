@@ -20,11 +20,12 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.serialization.decodeFromString
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.util.JsonSpecificationProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 /**
  * A configuration store used to store all the application configurations. Application
@@ -145,6 +146,10 @@ constructor(
   fun workflowPointName(key: String) = "$appId|$key"
 
   fun isAppIdInitialized() = this::appId.isInitialized
+
+  inline fun <reified T> String.decodeJson(): T {
+    return (context as JsonSpecificationProvider).getJson().decodeFromString(this)
+  }
 
   companion object {
     private const val APP_WORKFLOW_CONFIG_FILE = "configurations/app/application_workflow.json"

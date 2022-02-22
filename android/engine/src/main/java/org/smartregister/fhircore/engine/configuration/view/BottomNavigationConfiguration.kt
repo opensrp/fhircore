@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.configuration.view
+package org.smartregister.fhircore.engine.configuration.view
 
-import androidx.compose.runtime.Stable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
-import org.smartregister.fhircore.engine.configuration.view.NavigationAction
-import org.smartregister.fhircore.engine.configuration.view.NavigationOption
+
+interface NavigationAction
 
 @Serializable
-@SerialName("test_details")
-data class TestDetailsNavigationAction(val form: String, val readOnly: Boolean) :
-  NavigationAction
-
-@Stable
-@Serializable
-data class ResultDetailsNavigationConfiguration(
+class NavigationConfiguration(
   override val appId: String,
   override val classification: String,
   val navigationOptions: List<NavigationOption>
 ) : Configuration
+
+@Serializable
+data class NavigationOption(
+  val id: String,
+  val title: String,
+  val icon: String,
+  val action: NavigationAction
+)
