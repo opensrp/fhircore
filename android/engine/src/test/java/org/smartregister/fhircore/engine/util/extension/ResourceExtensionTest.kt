@@ -26,6 +26,7 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
@@ -634,6 +635,41 @@ class ResourceExtensionTest : RobolectricTest() {
     val resource = Patient().apply { id = "123456" }
 
     Assert.assertEquals("Patient/123456", resource.referenceValue())
+  }
+
+  @Test
+  fun `Patient referenceParamForCondition() should return correct reference param`() {
+    val result = Patient().referenceParamForCondition()
+
+    Assert.assertEquals(Condition.PATIENT, result)
+  }
+
+  @Test
+  fun `Encounter referenceParamForCondition() should return correct reference param`() {
+    val result = Encounter().referenceParamForCondition()
+
+    Assert.assertEquals(Condition.ENCOUNTER, result)
+  }
+
+  @Test
+  fun `Patient referenceParamForObservation() should return correct reference param`() {
+    val result = Patient().referenceParamForObservation()
+
+    Assert.assertEquals(Observation.PATIENT, result)
+  }
+
+  @Test
+  fun `Encounter referenceParamForObservation() should return correct reference param`() {
+    val result = Encounter().referenceParamForObservation()
+
+    Assert.assertEquals(Observation.ENCOUNTER, result)
+  }
+
+  @Test
+  fun `QuestionnaireResponse referenceParamForObservation() should return correct reference param`() {
+    val result = QuestionnaireResponse().referenceParamForObservation()
+
+    Assert.assertEquals(Observation.FOCUS, result)
   }
 
   @Test

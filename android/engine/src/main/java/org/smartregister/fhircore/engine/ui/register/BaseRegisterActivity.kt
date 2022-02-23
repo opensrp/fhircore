@@ -443,6 +443,7 @@ abstract class BaseRegisterActivity :
         toggleVisibility(viewConfiguration.showFilter)
         text = viewConfiguration.filterText
       }
+      filterRegisterButton.apply { toggleVisibility(viewConfiguration.showFilter) }
       editTextSearch.apply {
         toggleVisibility(viewConfiguration.showSearchBar)
         hint = viewConfiguration.searchBarHint
@@ -529,6 +530,7 @@ abstract class BaseRegisterActivity :
   open fun switchFragment(
     tag: String,
     isRegisterFragment: Boolean = true,
+    isFilterVisible: Boolean = true,
     toolbarTitle: String? = null
   ) {
     registerActivityBinding.btnRegisterNewClient.toggleVisibility(
@@ -578,7 +580,7 @@ abstract class BaseRegisterActivity :
 
     // Show searchbar/filter button for registers, hide otherwise
     registerActivityBinding.toolbarLayout.apply {
-      filterRegisterButton.toggleVisibility(isRegisterFragment)
+      filterRegisterButton.toggleVisibility(isFilterVisible)
       bottomToolbarSection.toggleVisibility(isRegisterFragment)
     }
 

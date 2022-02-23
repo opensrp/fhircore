@@ -10,10 +10,22 @@
         "description": "Configurations for patient register"
       },
       {
+        "workflowPoint": "registration",
+        "resource": "RegisterViewConfiguration",
+        "classification": "patient_task_register",
+        "description": "Configurations for patient task"
+      },
+      {
         "workflowPoint": "login",
         "resource": "LoginViewConfiguration",
         "classification": "login",
         "description": "Configurations for login"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfigurations",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
       }
     ]
   }

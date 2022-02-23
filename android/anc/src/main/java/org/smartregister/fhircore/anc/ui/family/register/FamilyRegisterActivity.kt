@@ -91,6 +91,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         switchFragment(
           tag = UserProfileFragment.TAG,
           isRegisterFragment = false,
+          isFilterVisible = false,
           toolbarTitle = getString(R.string.profile)
         )
       R.id.menu_item_register, R.id.menu_item_families, R.id.menu_item_family_planning_clients ->
@@ -127,6 +128,11 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_family_planning_clients,
         titleResource = R.string.family_planning_clients,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_family_clients)!!,
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_reports,
+        titleResource = R.string.reports,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
       ),
       SideMenuOption(
         itemId = R.id.menu_item_profile,

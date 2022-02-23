@@ -54,7 +54,7 @@ class AncConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testResourceSyncParam_shouldHaveResourceTypes() {
-    every { sharedPreferencesHelper.read(any(), any()) } returns
+    every { sharedPreferencesHelper.read(any(), null) } returns
       UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
 
     val syncParam = configService.resourceSyncParams
@@ -77,7 +77,7 @@ class AncConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testResourceSyncParam_organizationNull_shouldHaveEmptyMapForOrganizationBasedResources() {
-    every { sharedPreferencesHelper.read(any(), any()) } returns
+    every { sharedPreferencesHelper.read(any(), null) } returns
       UserInfo("ONA-Systems", null, "Nairobi").encodeJson()
 
     val syncParam = configService.resourceSyncParams
@@ -100,7 +100,7 @@ class AncConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testResourceSyncParam_publisherNull_shouldHaveEmptyMapForQuestionnaire() {
-    every { sharedPreferencesHelper.read(any(), any()) } returns
+    every { sharedPreferencesHelper.read(any(), null) } returns
       UserInfo(null, "105", "Nairobi").encodeJson()
 
     val syncParam = configService.resourceSyncParams
@@ -123,7 +123,7 @@ class AncConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testResourceSyncParam_WithNullExpressionValue_ShouldReturnEmptyMap() {
-    every { sharedPreferencesHelper.read(any(), any()) } returns
+    every { sharedPreferencesHelper.read(any(), null) } returns
       UserInfo(null, null, null).encodeJson()
 
     val syncParam = configService.resourceSyncParams

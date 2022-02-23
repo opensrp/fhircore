@@ -13,9 +13,8 @@
         "title": "Control Test",
         "icon" : "ic_reports",
         "action": {
-          "type": "questionnaire",
-          "form" : "14222",
-          "readOnly": false
+          "type": "questionnaire_data_details",
+          "classification": "control_test_details_view"
         }
       }
     ]

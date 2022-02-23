@@ -1,6 +1,6 @@
 {
   "resourceType": "QuestionnaireResponse",
-  "id": "8be67c9d-02cd-4c35-a30d-49cd5b67e33f",
+  "id": "TEST_QUESTIONNAIRE_RESPONSE",
   "meta": {
     "versionId": "1",
     "lastUpdated": "2021-12-06T09:04:21.710+00:00",
@@ -34,7 +34,7 @@
   }, {
     "linkId": "g6pd",
     "answer": [ {
-      "valueDecimal": 6.0
+      "valueDecimal": 3.0
     } ]
   }, {
     "linkId": "haemoglobin",

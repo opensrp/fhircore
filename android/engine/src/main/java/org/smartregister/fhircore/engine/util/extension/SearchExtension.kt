@@ -20,6 +20,10 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.search.Search
 import org.hl7.fhir.r4.model.ResourceType
 
-fun Search.filterByPatient(reference: ReferenceClientParam, patientId: String) {
-  filter(reference, { value = "${ResourceType.Patient.name}/$patientId" })
+fun Search.filterByResourceTypeId(
+  reference: ReferenceClientParam,
+  resourceType: ResourceType,
+  resourceId: String
+) {
+  filter(reference, { value = "${resourceType.name}/$resourceId" })
 }
