@@ -38,169 +38,202 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.showToast
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
-  @Inject lateinit var patientRepository: PatientRepository
+    @Inject
+    lateinit var patientRepository: PatientRepository
 
-  lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
+    lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
 
-  val reportViewModel by viewModels<ReportViewModel>()
+    val reportViewModel by viewModels<ReportViewModel>()
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    val currentActivity = this@ReportHomeActivity
 
-    registerDataViewModel =
-      initializeRegisterDataViewModel().also { dataViewModel ->
-        dataViewModel.currentPage.observe(currentActivity, { dataViewModel.loadPageData(it) })
-      }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val currentActivity = this@ReportHomeActivity
 
-    reportViewModel.apply {
-      setStartEndDate(
-        startDate = getString(R.string.start_date),
-        endDate = getString(R.string.end_date)
-      )
-      backPress.observe(
-        currentActivity,
-        { backPressed ->
-          if (backPressed) {
-            finish()
-          }
-        }
-      )
-      showDatePicker.observe(
-        currentActivity,
-        {
-          if (it) {
-            showDateRangePicker()
-          }
-        }
-      )
-      filterValue.observe(
-        currentActivity,
-        {
-          val (registerFilterType, value) = it
-          filterRegisterData(value, registerFilterType, currentActivity)
-        }
-      )
-      onGenerateReportClicked.observe(
-        currentActivity,
-        { generateReport ->
-          if (generateReport) {
-            if (reportViewModel.currentReportType.value!!.equals(
-                other = getString(R.string.individual),
-                ignoreCase = true
-              ) &&
-                // TODO remove charity-otala-1 check; also provide measureUrl dynamically
-                reportViewModel.selectedPatientItem.value!!.patientIdentifier == "charity-otala-1"
-            ) {
-              reportViewModel.evaluateMeasure(
-                context = currentActivity,
-                measureUrl = "http://fhir.org/guides/who/anc-cds/Measure/ANCIND01",
-                individualEvaluation = true
-              )
-            } else if (reportViewModel.currentReportType.value!!.equals(
-                other = getString(R.string.all),
-                ignoreCase = true
-              )
-            ) {
-              reportViewModel.evaluateMeasure(
-                context = currentActivity,
-                measureUrl = "http://fhir.org/guides/who/anc-cds/Measure/ANCIND01",
-                individualEvaluation = false
-              )
-            } else {
-              showToast("Test measure reporting with sample data")
+
+        registerDataViewModel =
+            initializeRegisterDataViewModel().also { dataViewModel ->
+                dataViewModel.currentPage.observe(
+                    currentActivity,
+                    { dataViewModel.loadPageData(it) })
             }
+
+        reportViewModel.apply {
+            setStartEndDate(
+                startDate = getString(R.string.start_date),
+                endDate = getString(R.string.end_date)
+            )
+            backPress.observe(
+                currentActivity
+            ) { backPressed ->
+                if (backPressed) {
+                    finish()
+                }
+            }
+            showDatePicker.observe(
+                currentActivity
+            ) {
+                if (it) {
+                    showDateRangePicker()
+                }
+            }
+            filterValue.observe(
+                currentActivity
+            ) {
+                val (registerFilterType, value) = it
+                filterRegisterData(value, registerFilterType, currentActivity)
+            }
+
             // TODO Remove static patient id; implement population measure evaluate
-          }
+            onGenerateReportClicked.observe(
+                currentActivity
+            ) { generateReport ->
+                if (generateReport) {
+                    if (reportViewModel.currentReportType.value!!.equals(
+                            other = getString(R.string.individual),
+                            ignoreCase = true
+                        )
+                    // TODO remove charity-otala-1 check as default client; also provide measureUrl dynamically
+                    //&&
+                    //reportViewModel.selectedPatientItem.value!!.patientIdentifier == "charity-otala-1"
+                    ) {
+                        //val reportName = "ANCIND01"
+                        //TODO Add error handling /validation to check name is passed and not null
+                        val reportName = selectedMeasureReportItem.value?.name
+                        Timber.d(message = "This is the measure name => ".plus(reportName))
+                        reportViewModel.evaluateMeasure(
+                            context = currentActivity,
+                            //TODO make this dynamic based on the measure selection
+                            measureUrl = buildString {
+                                append("http://fhir.org/guides/who/anc-cds/Measure/")
+                                append(reportName)
+                            },
+
+                            measureResourceBundleUrl = buildString {
+                                append("measure/")
+                                append(reportName)
+                                append("-bundle.json")
+                            },
+                            individualEvaluation = true
+                        )
+                    } else if (reportViewModel.currentReportType.value!!.equals(
+                            other = getString(R.string.all),
+                            ignoreCase = true
+                        )
+                    ) {
+
+                        //val reportName = "ANCIND01"
+                        //TODO Add error handling /validation to check name is passed and not null
+                        val reportName = selectedMeasureReportItem.value?.name
+                        Timber.d(message = "This is the measure name => ".plus(reportName))
+                        reportViewModel.evaluateMeasure(
+                            context = currentActivity,
+                            measureUrl = buildString {
+                                append("http://fhir.org/guides/who/anc-cds/Measure/")
+                                append(reportName)
+                            },
+                            measureResourceBundleUrl = buildString {
+                                append("measure/")
+                                append(reportName)
+                                append("-bundle.json")
+                            },
+                            individualEvaluation = false
+                        )
+                    } else {
+                        //TODO remove? do we need this check ?
+                        showToast("Test measure reporting with sample data")
+                    }
+
+                }
+            }
         }
-      )
-    }
 
-    setContent {
-      AppTheme {
-        Surface(color = colorResource(id = R.color.white)) {
-          ReportView(
-            reportViewModel = reportViewModel,
-            registerDataViewModel = registerDataViewModel
-          )
+        setContent {
+            AppTheme {
+                Surface(color = colorResource(id = R.color.white)) {
+                    ReportView(
+                        reportViewModel = reportViewModel,
+                        registerDataViewModel = registerDataViewModel
+                    )
+                }
+            }
         }
-      }
     }
-  }
 
-  private fun filterRegisterData(
-    value: Any?,
-    registerFilterType: RegisterFilterType,
-    reportHomeActivity: ReportHomeActivity
-  ) {
-    if (value != null) {
-      registerDataViewModel.run {
-        showResultsCount(true)
-        filterRegisterData(
-          registerFilterType = registerFilterType,
-          filterValue = value,
-          registerFilter = reportHomeActivity::performFilter
-        )
-      }
-    } else {
-      registerDataViewModel.run {
-        showResultsCount(false)
-        reloadCurrentPageData()
-      }
-    }
-  }
-
-  fun showDateRangePicker() {
-    val constraintsBuilder =
-      CalendarConstraints.Builder().setValidator(DateValidatorPointBackward.now()).build()
-    MaterialDatePicker.Builder.dateRangePicker()
-      .apply {
-        setCalendarConstraints(constraintsBuilder)
-        setTitleText("Select dates")
-        setSelection(reportViewModel.dateRange.value!!)
-      }
-      .build()
-      .run {
-        addOnPositiveButtonClickListener { selectedDateRange ->
-          reportViewModel.setDateRange(selectedDateRange)
+    private fun filterRegisterData(
+        value: Any?,
+        registerFilterType: RegisterFilterType,
+        reportHomeActivity: ReportHomeActivity
+    ) {
+        if (value != null) {
+            registerDataViewModel.run {
+                showResultsCount(true)
+                filterRegisterData(
+                    registerFilterType = registerFilterType,
+                    filterValue = value,
+                    registerFilter = reportHomeActivity::performFilter
+                )
+            }
+        } else {
+            registerDataViewModel.run {
+                showResultsCount(false)
+                reloadCurrentPageData()
+            }
         }
-        show(supportFragmentManager, DATE_PICKER_DIALOG_TAG)
-      }
-  }
-
-  private fun performFilter(
-    registerFilterType: RegisterFilterType,
-    data: PatientItem,
-    value: Any
-  ): Boolean {
-    return when (registerFilterType) {
-      RegisterFilterType.SEARCH_FILTER -> {
-        if (value is String && value.isEmpty()) return true
-        else
-          data.name.contains(value.toString(), ignoreCase = true) ||
-            data.patientIdentifier.contentEquals(value.toString())
-      }
-      RegisterFilterType.OVERDUE_FILTER -> {
-        return data.visitStatus == VisitStatus.OVERDUE
-      }
     }
-  }
 
-  @Suppress("UNCHECKED_CAST")
-  fun initializeRegisterDataViewModel(): RegisterDataViewModel<Anc, PatientItem> {
-    return ViewModelProvider(
-      viewModelStore,
-      RegisterDataViewModel(application = application, registerRepository = patientRepository)
-        .createFactory()
-    )[RegisterDataViewModel::class.java] as
-      RegisterDataViewModel<Anc, PatientItem>
-  }
+    fun showDateRangePicker() {
+        val constraintsBuilder =
+            CalendarConstraints.Builder().setValidator(DateValidatorPointBackward.now()).build()
+        MaterialDatePicker.Builder.dateRangePicker()
+            .apply {
+                setCalendarConstraints(constraintsBuilder)
+                setTitleText("Select dates")
+                setSelection(reportViewModel.dateRange.value!!)
+            }
+            .build()
+            .run {
+                addOnPositiveButtonClickListener { selectedDateRange ->
+                    reportViewModel.setDateRange(selectedDateRange)
+                }
+                show(supportFragmentManager, DATE_PICKER_DIALOG_TAG)
+            }
+    }
 
-  companion object {
-    const val DATE_PICKER_DIALOG_TAG = "DatePickerDialogTag"
-  }
+    private fun performFilter(
+        registerFilterType: RegisterFilterType,
+        data: PatientItem,
+        value: Any
+    ): Boolean {
+        return when (registerFilterType) {
+            RegisterFilterType.SEARCH_FILTER -> {
+                if (value is String && value.isEmpty()) return true
+                else
+                    data.name.contains(value.toString(), ignoreCase = true) ||
+                            data.patientIdentifier.contentEquals(value.toString())
+            }
+            RegisterFilterType.OVERDUE_FILTER -> {
+                return data.visitStatus == VisitStatus.OVERDUE
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun initializeRegisterDataViewModel(): RegisterDataViewModel<Anc, PatientItem> {
+        return ViewModelProvider(
+            viewModelStore,
+            RegisterDataViewModel(application = application, registerRepository = patientRepository)
+                .createFactory()
+        )[RegisterDataViewModel::class.java] as
+                RegisterDataViewModel<Anc, PatientItem>
+    }
+
+    companion object {
+        const val DATE_PICKER_DIALOG_TAG = "DatePickerDialogTag"
+    }
 }

@@ -176,8 +176,8 @@ constructor(
     context: Context,
     measureUrl: String,
     individualEvaluation: Boolean,
-    measureResourceBundleUrl: String = "measure/ANCIND01-bundle.json",
-    reportType: String = SUBJECT
+    //TODO make this dynamic and passed from ReportHomeActivity
+    measureResourceBundleUrl: String
   ) {
     viewModelScope.launch {
       val startDateFormatted =
@@ -202,8 +202,9 @@ constructor(
               url = measureUrl,
               start = startDateFormatted,
               end = endDateFormatted,
-              reportType = reportType,
+              reportType = SUBJECT,
               subject = selectedPatientItem.value!!.patientIdentifier,
+              //TODO Select from pref based on practitioner details endpoint, sample data is practitioner/jane
               practitioner = null
             )
           }
@@ -226,6 +227,7 @@ constructor(
               end = endDateFormatted,
               reportType = POPULATION,
               subject = null,
+              //TODO Select from pref based on practitioner details endpoint, sample data is practitioner/jane
               practitioner = null
             )
           }
