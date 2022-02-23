@@ -89,6 +89,11 @@ internal class PinViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { secureSharedPreference.saveSessionPin("1234") } returns Unit
     coEvery { secureSharedPreference.retrieveSessionPin() } returns "1234"
+    coEvery {
+      secureSharedPreference.saveCredentials(
+        AuthCredentials("username", "password", "sessionToken", "refreshToken")
+      )
+    } returns Unit
     coEvery { secureSharedPreference.retrievePinCredentials() } returns
       AuthCredentials("username", "password", "sessionToken", "refreshToken")
     coEvery { secureSharedPreference.savePinCredentials() } returns Unit
