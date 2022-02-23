@@ -176,7 +176,7 @@ constructor(
     context: Context,
     measureUrl: String,
     individualEvaluation: Boolean,
-    //TODO make this dynamic and passed from ReportHomeActivity
+    // TODO make this dynamic and passed from ReportHomeActivity
     measureResourceBundleUrl: String
   ) {
     viewModelScope.launch {
@@ -204,7 +204,8 @@ constructor(
               end = endDateFormatted,
               reportType = SUBJECT,
               subject = selectedPatientItem.value!!.patientIdentifier,
-              //TODO Select from pref based on practitioner details endpoint, sample data is practitioner/jane
+              // TODO Select from pref based on practitioner details endpoint, sample data is
+              // practitioner/jane
               practitioner = null
             )
           }
@@ -227,7 +228,8 @@ constructor(
               end = endDateFormatted,
               reportType = POPULATION,
               subject = null,
-              //TODO Select from pref based on practitioner details endpoint, sample data is practitioner/jane
+              // TODO Select from pref based on practitioner details endpoint, sample data is
+              // practitioner/jane
               practitioner = null
             )
           }

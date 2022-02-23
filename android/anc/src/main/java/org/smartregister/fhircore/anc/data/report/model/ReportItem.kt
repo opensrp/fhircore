@@ -22,28 +22,28 @@ import kotlinx.serialization.Serializable
 @Stable
 @Serializable
 data class ReportItem(
-    val id: String = "",
-    val title: String = "",
-    val description: String = "",
-    val reportType: String = "",
-    //TODO Added the name of report in the sample_data_report_measures json
-    val name: String = ""
+  val id: String = "",
+  val title: String = "",
+  val description: String = "",
+  val reportType: String = "",
+  // TODO Added the name of report in the sample_data_report_measures json
+  val name: String = ""
 )
 
 @Stable
 @Serializable
 data class ResultItem(
-    val status: String = "",
-    val isMatchedIndicator: Boolean = false,
-    val description: String = "",
-    val title: String = "",
-    val percentage: String = "",
-    val count: String = ""
+  val status: String = "",
+  val isMatchedIndicator: Boolean = false,
+  val description: String = "",
+  val title: String = "",
+  val percentage: String = "",
+  val count: String = ""
 )
 
 @Stable
 @Serializable
 data class ResultItemPopulation(
-    val title: String = "",
-    val dataList: List<ResultItem> = emptyList()
+  val title: String = "",
+  val dataList: List<ResultItem> = emptyList()
 )

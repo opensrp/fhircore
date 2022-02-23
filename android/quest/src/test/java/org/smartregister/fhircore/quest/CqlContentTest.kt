@@ -63,7 +63,7 @@ class CqlContentTest : RobolectricTest() {
       ) as
         Library
 
-    println(cqlLibrary.convertToString(false))
+    println(cqlLibrary.convertToString(false) as String)
 
     val fhirHelpersLibrary = "cql-common/helper.json".parseSampleResourceFromFile() as Library
 
@@ -127,7 +127,7 @@ class CqlContentTest : RobolectricTest() {
       ) as
         Library
 
-    println(cqlLibrary.convertToString(false))
+    println(cqlLibrary.convertToString(false) as String)
 
     val fhirHelpersLibrary = "cql-common/helper.json".parseSampleResourceFromFile() as Library
 
@@ -191,7 +191,7 @@ class CqlContentTest : RobolectricTest() {
       ) as
         Library
 
-    println(cqlLibrary.convertToString(false))
+    println(cqlLibrary.convertToString(false) as String)
 
     val fhirHelpersLibrary = "cql-common/helper.json".parseSampleResourceFromFile() as Library
 
@@ -261,7 +261,7 @@ class CqlContentTest : RobolectricTest() {
         .replaceTimePart()
 
     println(cqlResultStr)
-    println(expectedResource)
+    println(expectedResource as String)
 
     Assert.assertTrue(cqlResultStr.contains("OUTPUT -> $expectedResource"))
   }

@@ -258,7 +258,7 @@ constructor(
       .search<Flag> { filterByResourceTypeId(Flag.PATIENT, ResourceType.Patient, patientId) }
       .firstOrNull {
         it.status == Flag.FlagStatus.ACTIVE &&
-        it.code.coding.any { coding -> coding.code == flagCode.code }
+          it.code.coding.any { coding -> coding.code == flagCode.code }
       }
   }
 
