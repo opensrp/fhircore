@@ -18,13 +18,9 @@ package org.smartregister.fhircore.anc.configuration.view
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.view.NavigationAction
 
-@Serializable
-@SerialName("navigate_to_report")
-class ActionNavigateToReport :
-  NavigationAction
+@Serializable @SerialName("navigate_to_report") class ActionNavigateToReport : NavigationAction
 
 @Serializable
 @SerialName("switch_fragment")
@@ -33,4 +29,4 @@ data class ActionSwitchFragment(
   val isRegisterFragment: Boolean,
   val isFilterVisible: Boolean,
   val toolbarTitle: String?
-  ) : NavigationAction
+) : NavigationAction

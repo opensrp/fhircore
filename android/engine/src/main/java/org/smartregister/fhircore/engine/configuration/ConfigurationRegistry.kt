@@ -151,8 +151,7 @@ constructor(
   inline fun <reified T> String.decodeAsJson(): T {
     return if (context is JsonSpecificationProvider) {
       context.getJson().decodeFromString(this)
-    }
-    else {
+    } else {
       decodeJson()
     }
   }

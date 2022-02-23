@@ -590,8 +590,13 @@ abstract class BaseRegisterActivity :
   /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
   open fun sideMenuOptions(): List<SideMenuOption> = emptyList()
 
-  /** List of [bottomNavigationMenuOptions] representing individual menu items listed in the BottomNavigation */
-  open fun bottomNavigationMenuOptions(viewConfiguration: RegisterViewConfiguration): List<NavigationMenuOption> {
+  /**
+   * List of [bottomNavigationMenuOptions] representing individual menu items listed in the
+   * BottomNavigation
+   */
+  open fun bottomNavigationMenuOptions(
+    viewConfiguration: RegisterViewConfiguration
+  ): List<NavigationMenuOption> {
     return viewConfiguration.bottomNavigationOptions?.map {
       NavigationMenuOption(
         id = it.id.hashCode(),
@@ -615,7 +620,10 @@ abstract class BaseRegisterActivity :
    */
   open fun onNavigationOptionItemSelected(item: MenuItem): Boolean = true
 
-  open fun onBottomNavigationOptionItemSelected(item: MenuItem, viewConfiguration: RegisterViewConfiguration): Boolean = true
+  open fun onBottomNavigationOptionItemSelected(
+    item: MenuItem,
+    viewConfiguration: RegisterViewConfiguration
+  ): Boolean = true
 
   open fun registerClient(clientIdentifier: String? = null) {
     startActivity(

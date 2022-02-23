@@ -35,7 +35,6 @@ import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
-import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
@@ -71,12 +70,20 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     return true
   }
 
-  override fun onBottomNavigationOptionItemSelected(item: MenuItem, viewConfiguration: RegisterViewConfiguration): Boolean {
+  override fun onBottomNavigationOptionItemSelected(
+    item: MenuItem,
+    viewConfiguration: RegisterViewConfiguration
+  ): Boolean {
     viewConfiguration.bottomNavigationOptions?.forEach { navigationOption ->
       if (item.itemId == navigationOption.id.hashCode()) {
         when (val action = navigationOption.action) {
           is ActionSwitchFragment -> {
-            switchFragment(action.tag, action.isRegisterFragment, action.isFilterVisible, action.toolbarTitle)
+            switchFragment(
+              action.tag,
+              action.isRegisterFragment,
+              action.isFilterVisible,
+              action.toolbarTitle
+            )
           }
           is ActionNavigateToReport -> {
             navigateToReports()
