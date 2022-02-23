@@ -55,38 +55,37 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
-    when (item.itemId) {
-      //R.id.menu_item_clients -> switchFragment(mainFragmentTag(), isFilterVisible = false)
-      R.id.menu_item_tasks ->
-        switchFragment(
-          tag = PatientTaskFragment.TAG,
-          isRegisterFragment = false,
-          isFilterVisible = false,
-          toolbarTitle = getString(R.string.tasks)
-        )
-      /*R.id.menu_item_settings ->
-        switchFragment(
-          tag = UserProfileFragment.TAG,
-          isRegisterFragment = false,
-          isFilterVisible = false,
-          toolbarTitle = getString(R.string.settings)
-        )*/
-      else ->
-        getCustomNavigationOptions().navigationOptions.forEach {
-          if (item.itemId == it.id.hashCode()) {
-            handleCustomNavigation(it)
-          }
+    getCustomNavigationOptions().navigationOptions.forEach { navigationOption ->
+      if (item.itemId == navigationOption.id.hashCode()) {
+        when (val action = navigationOption.action) {
+          is QuestionnaireNavigationAction ->
+            startActivity(
+              Intent(this, QuestionnaireActivity::class.java)
+                .putExtras(
+                  QuestionnaireActivity.intentArgs(
+                    formName = action.form,
+                  )
+                )
+            )
         }
+      }
     }
     return true
   }
 
   override fun onBottomNavigationOptionItemSelected(item: MenuItem, viewConfiguration: RegisterViewConfiguration): Boolean {
-    viewConfiguration.bottomNavigationOptions?.forEach {
-      if (item.itemId == it.id.hashCode()) {
-        when (val action = it.action) {
+    viewConfiguration.bottomNavigationOptions?.forEach { navigationOption ->
+      if (item.itemId == navigationOption.id.hashCode()) {
+        when (val action = navigationOption.action) {
           is ActionSwitchFragment -> {
             switchFragment(action.tag, action.isRegisterFragment, action.isFilterVisible, action.toolbarTitle)
+          }
+          is QuestionnaireDataDetailsNavigationAction -> {
+            startActivity(
+              Intent(this, QuestionnaireDataDetailActivity::class.java).apply {
+                putExtra(CLASSIFICATION_ARG, action.classification)
+              }
+            )
           }
         }
       }
@@ -116,24 +115,4 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     configurationRegistry.retrieveConfiguration<NavigationConfiguration>(
       QuestConfigClassification.REGISTER_NAVIGATION
     )
-
-  fun handleCustomNavigation(navigationOption: NavigationOption) {
-    when (val action = navigationOption.action) {
-      is QuestionnaireNavigationAction ->
-        startActivity(
-          Intent(this, QuestionnaireActivity::class.java)
-            .putExtras(
-              QuestionnaireActivity.intentArgs(
-                formName = action.form,
-              )
-            )
-        )
-      is QuestionnaireDataDetailsNavigationAction ->
-        startActivity(
-          Intent(this, QuestionnaireDataDetailActivity::class.java).apply {
-            putExtra(CLASSIFICATION_ARG, action.classification)
-          }
-        )
-    }
-  }
 }

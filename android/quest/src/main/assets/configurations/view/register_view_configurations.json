@@ -60,6 +60,18 @@
         }
       },
       {
+        "id": "menu_item_tasks",
+        "title": "Tasks",
+        "icon" : "ic_tasks",
+        "action": {
+          "type": "switch_fragment",
+          "tag": "PatientTaskFragment",
+          "isRegisterFragment": false,
+          "isFilterVisible": false,
+          "toolbarTitle": "Tasks"
+        }
+      },
+      {
         "id": "control_test",
         "title": "Control Test",
         "icon" : "ic_reports",
