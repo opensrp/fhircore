@@ -30,16 +30,17 @@ class AppSettingViewModel @Inject constructor() : ViewModel() {
   val appId
     get() = _appId
 
-  private val _rememberApp = MutableLiveData(false)
-  val rememberApp
-    get() = _rememberApp
+  val rememberApp: MutableLiveData<Boolean?> = MutableLiveData(null)
+  //  private val _rememberApp = MutableLiveData(false)
+  //  val rememberApp
+  //    get() = _rememberApp
 
   fun onApplicationIdChanged(appId: String) {
     _appId.value = appId
   }
 
-  fun onRememberAppChecked(rememberApp: Boolean) {
-    _rememberApp.value = rememberApp
+  fun onRememberAppChecked(rememberMe: Boolean) {
+    rememberApp.postValue(rememberMe)
   }
 
   fun loadConfigurations(loadConfigs: Boolean) {
