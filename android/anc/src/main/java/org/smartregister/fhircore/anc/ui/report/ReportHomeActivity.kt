@@ -78,21 +78,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         filterRegisterData(value, registerFilterType, currentActivity)
       }
 
-      // TODO Remove static patient id; implement population measure evaluate
       onGenerateReportClicked.observe(currentActivity) { generateReport ->
         if (generateReport) {
           if (reportViewModel.currentReportType.value!!.equals(
               other = getString(R.string.individual),
               ignoreCase = true
             )
-          // TODO remove charity-otala-1 check as default client; also provide measureUrl
-          // dynamically
-          // &&
-          // reportViewModel.selectedPatientItem.value!!.patientIdentifier == "charity-otala-1"
           ) {
-            // val reportName = "ANCIND01"
-            // TODO Add error handling /validation to check name is passed and not null
-            val reportName = selectedMeasureReportItem.value?.name
+            val reportName = selectedMeasureReportItem.value?.name!!
             Timber.d(message = "This is the measure name => ".plus(reportName))
             reportViewModel.evaluateMeasure(
               context = currentActivity,
@@ -116,9 +109,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
             )
           ) {
 
-            // val reportName = "ANCIND01"
-            // TODO Add error handling /validation to check name is passed and not null
-            val reportName = selectedMeasureReportItem.value?.name
+            val reportName = selectedMeasureReportItem.value?.name!!
             Timber.d(message = "This is the measure name => ".plus(reportName))
             reportViewModel.evaluateMeasure(
               context = currentActivity,
@@ -135,9 +126,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 },
               individualEvaluation = false
             )
-          } else {
-            // TODO remove? do we need this check ?
-            showToast("Test measure reporting with sample data")
           }
         }
       }

@@ -26,7 +26,6 @@ data class ReportItem(
   val title: String = "",
   val description: String = "",
   val reportType: String = "",
-  // TODO Added the name of report in the sample_data_report_measures json
   val name: String = ""
 )
 

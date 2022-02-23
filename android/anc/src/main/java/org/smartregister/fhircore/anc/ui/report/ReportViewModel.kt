@@ -50,10 +50,13 @@ import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import timber.log.Timber
 
@@ -99,6 +102,10 @@ constructor(
 
   private val measureReportDateFormatter =
     SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
+
+  private val authenticatedUserInfo by lazy {
+    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+  }
 
   private val _dateRange =
     MutableLiveData(
@@ -204,9 +211,7 @@ constructor(
               end = endDateFormatted,
               reportType = SUBJECT,
               subject = selectedPatientItem.value!!.patientIdentifier,
-              // TODO Select from pref based on practitioner details endpoint, sample data is
-              // practitioner/jane
-              practitioner = null
+              practitioner = authenticatedUserInfo?.keyclockuuid!!
             )
           }
 
@@ -228,9 +233,7 @@ constructor(
               end = endDateFormatted,
               reportType = POPULATION,
               subject = null,
-              // TODO Select from pref based on practitioner details endpoint, sample data is
-              // practitioner/jane
-              practitioner = null
+              practitioner = authenticatedUserInfo?.keyclockuuid!!
             )
           }
 
