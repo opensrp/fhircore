@@ -17,14 +17,28 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.checkerframework.checker.units.qual.C
+import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.extractId
 
 /**
  * A configuration store used to store all the application configurations. Application
@@ -39,14 +53,12 @@ class ConfigurationRegistry
 constructor(
   @ApplicationContext val context: Context,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configService: ConfigService
-) {
+  val repository: DefaultRepository
+  ) {
 
   val configurationsMap = mutableMapOf<String, Configuration>()
 
   val workflowPointsMap = mutableMapOf<String, WorkflowPoint>()
-
-  val authConfiguration by lazy { configService.provideAuthConfiguration() }
 
   lateinit var appId: String
 
@@ -58,97 +70,124 @@ constructor(
    * E.g. for a workflow resource RegisterViewConfiguration, the name of the file containing configs
    * becomes register_view_configurations.json
    */
-  inline fun <reified C : Configuration> retrieveConfiguration(
-    configClassification: ConfigClassification
-  ): C {
+//  inline fun <reified C : Configuration> retrieveConfiggg(
+//    configClassification: ConfigClassification
+//  ): C {
+//
+//    val workflowPointName = workflowPointName(configClassification.classification)
+//    val isApplicationConfig =
+//      configClassification is AppConfigClassification &&
+//        configClassification.name == AppConfigClassification.APPLICATION.name
+//    val viewConfigDir = "configurations/view"
+//
+//    return configurationsMap.getOrPut(workflowPointName) {
+//      context.assets.run {
+//        val configurationFilePath =
+//          if (isApplicationConfig) {
+//            "" // TODO DELETE>.... APP_CONFIG_FILE
+//          } else {
+//            val workflowPoint = workflowPointsMap.getValue(workflowPointName)
+//            val viewConfigurationPaths = list(viewConfigDir)
+//            viewConfigurationPaths?.find {
+//              it.replace("_", "").startsWith(workflowPoint.resource, ignoreCase = true)
+//            }
+//              ?: throw Error(
+//                """
+//                Provide configurations file for resource ${workflowPoint.resource}.
+//                File name MUST start with the resource name in snake_case
+//                E.g for RegisterViewConfiguration -> register_view_configurations.json
+//               """
+//              )
+//          }
+//
+//        val content =
+//          open(
+//            if (isApplicationConfig) configurationFilePath
+//            else "$viewConfigDir/$configurationFilePath"
+//          )
+//            .bufferedReader()
+//            .use { it.readText() }
+//
+//        val configuration =
+//          content.decodeJson<List<C>>().first {
+//            it.appId.equals(other = appId, ignoreCase = true) &&
+//              it.classification.equals(
+//                other = configClassification.classification,
+//                ignoreCase = true
+//              )
+//          }
+//        configuration
+//      }
+//    } as
+//      C
+//  }
 
-    val workflowPointName = workflowPointName(configClassification.classification)
-    val isApplicationConfig =
-      configClassification is AppConfigClassification &&
-        configClassification.name == AppConfigClassification.APPLICATION.name
-    val viewConfigDir = "configurations/view"
-
-    return configurationsMap.getOrPut(workflowPointName) {
-      context.assets.run {
-        val configurationFilePath =
-          if (isApplicationConfig) {
-            APP_CONFIG_FILE
-          } else {
-            val workflowPoint = workflowPointsMap.getValue(workflowPointName)
-            val viewConfigurationPaths = list(viewConfigDir)
-            viewConfigurationPaths?.find {
-              it.replace("_", "").startsWith(workflowPoint.resource, ignoreCase = true)
-            }
-              ?: throw Error(
-                """
-                Provide configurations file for resource ${workflowPoint.resource}. 
-                File name MUST start with the resource name in snake_case
-                E.g for RegisterViewConfiguration -> register_view_configurations.json
-               """
-              )
-          }
-
-        val content =
-          open(
-            if (isApplicationConfig) configurationFilePath
-            else "$viewConfigDir/$configurationFilePath"
-          )
-            .bufferedReader()
-            .use { it.readText() }
-
-        val configuration =
-          content.decodeJson<List<C>>().first {
-            it.appId.equals(other = appId, ignoreCase = true) &&
-              it.classification.equals(
-                other = configClassification.classification,
-                ignoreCase = true
-              )
-          }
-        configuration
+  inline fun <reified T:Configuration> retrieveConfiguration(configClassification: ConfigClassification): T =
+    workflowPointName(configClassification.classification)
+      .let { workflowName ->
+        val workflowPoint = workflowPointsMap[workflowName]!!
+        configurationsMap.getOrPut(workflowName) {
+          // Binary content could be either a Configuration or a FHIR Resource
+          (workflowPoint.resource as Binary).content.decodeToString()
+              .let {
+                if (T::class.java.isAssignableFrom(FhirConfiguration::class.java))
+                  FhirConfiguration(appId,workflowPoint.classification, it.decodeResourceFromString())
+                else it.decodeJson<T>()
+              }
+        } as T
       }
-    } as
-      C
-  }
 
-  fun loadAppConfigurations(
+  suspend fun loadAppConfigurations(
     appId: String,
     accountAuthenticator: AccountAuthenticator,
     configsLoadedCallback: (Boolean) -> Unit
   ) {
     // TODO Download configurations that do not require login at this point. Default to assets
     this.appId = appId
-    val applicationWorkflowsMap =
-      context
-        .assets
-        .open(APP_WORKFLOW_CONFIG_FILE)
-        .bufferedReader()
-        .use { it.readText() }
-        .decodeJson<List<ApplicationWorkflow>>()
-        .associateBy { it.appId }
 
-    if (applicationWorkflowsMap.containsKey(appId)) {
-      applicationWorkflowsMap[appId]?.mapping
-        ?.associateBy { workflowPointName(it.classification) }
-        ?.also {
-          workflowPointsMap.clear()
-          workflowPointsMap.putAll(it)
-        }
+    // appId is identifier of Composition
+    repository.searchCompositionByIdentifier(appId)
+    .also {
+      if (it == null) configsLoadedCallback(false)
+    }
+      ?.section
+      ?.forEach {
+        // each section in composition represents workflow
+        // { "title": "register configuration",
+        //   "mode": "working",
+        //   "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } }
+        // }
 
-      retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
+        // A workflow point would be mapped like
+        //   "workflowPoint": "registration",
+        //   "resource": "RegisterViewConfiguration",
+        //   "classification": "patient_register",
+        //   "description": "register configuration"
+
+        val workflowPointName = workflowPointName(it.focus.identifier.value)
+        val workflowPoint =
+          WorkflowPoint(
+            classification = it.focus.identifier.value,
+            description = it.title,
+            resource = repository.getBinary(it.focus.extractId()),
+            workflowPoint = it.focus.identifier.value
+          )
+        workflowPointsMap[workflowPointName] = workflowPoint
+      }
+
       accountAuthenticator.launchLoginScreen()
       configsLoadedCallback(true)
-    } else {
-      configsLoadedCallback(false)
     }
-  }
+
 
   fun workflowPointName(key: String) = "$appId|$key"
 
   fun isAppIdInitialized() = this::appId.isInitialized
 
+  // TODO remove these config file link once replaced with Composition
   companion object {
-    private const val APP_WORKFLOW_CONFIG_FILE = "configurations/app/application_workflow.json"
-    const val APP_CONFIG_FILE = "configurations/app/application_configurations.json"
+    // private const val APP_WORKFLOW_CONFIG_FILE = "configurations/app/application_workflow.json"
+    //const val APP_CONFIG_FILE = "configurations/app/application_configurations.json"
     const val APP_SYNC_CONFIG = "configurations/app/sync_config.json"
     const val ORGANIZATION = "organization"
     const val PUBLISHER = "publisher"

@@ -23,6 +23,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
@@ -74,7 +75,9 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+    runBlocking {
+      configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+    }
     Faker.initPatientRepositoryMocks(patientRepository)
 
     val intent =
@@ -92,14 +95,12 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnBackPressListenerShouldFinishActivity() {
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     questPatientDetailActivity.patientViewModel.onBackPressed(true)
     Assert.assertTrue(questPatientDetailActivity.isFinishing)
   }
 
   @Test
   fun testOnMenuItemClickListenerShouldStartQuestionnaireActivity() {
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     questPatientDetailActivity.configurationRegistry.appId = "quest"
     questPatientDetailActivity.configurationRegistry.configurationsMap.put(
       "quest|patient_register",
@@ -115,7 +116,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnFormItemClickListenerShouldStartQuestionnaireActivity() {
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     questPatientDetailActivity.patientViewModel.onFormItemClickListener(
       QuestionnaireConfig(appId = "quest", form = "test-form", title = "Title", identifier = "1234")
     )
@@ -127,8 +127,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
-
     val navigationOptions =
       listOf(
         NavigationOption(
@@ -169,8 +167,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerQuestionnaireNullShouldShowAlertDialog() {
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
-
     val navigationOptions =
       listOf(
         NavigationOption(
@@ -205,8 +201,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerInvalidQuestionnaireUrlShouldShowAlertDialog() {
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
-
     val navigationOptions =
       listOf(
         NavigationOption(
@@ -241,8 +235,9 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartSimpleDetailsActivityForG6pd() {
-    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
-
+    runBlocking {
+      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    }
     val navigationOptions =
       listOf(
         NavigationOption(
@@ -278,8 +273,9 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testHandlePatientResources() {
-    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
-
+    runBlocking {
+      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    }
     val navigationOptions =
       listOf(
         NavigationOption(

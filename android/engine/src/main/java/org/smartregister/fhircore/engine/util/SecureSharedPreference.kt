@@ -49,6 +49,12 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     }
   }
 
+  fun saveSessionToken(sessionToken: String) {
+    secureSharedPreferences.edit {
+      putString(KEY_LATEST_SESSION_TOKEN_PREFERENCE, sessionToken)
+    }
+  }
+
   fun deleteCredentials() {
     secureSharedPreferences.edit {
       remove(KEY_LATEST_CREDENTIALS_PREFERENCE)

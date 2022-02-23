@@ -33,6 +33,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.register.RegisterViewModel
@@ -54,6 +55,8 @@ class RegisterViewModelTest : RobolectricTest() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  @Inject lateinit var configService: ConfigService
+
   private lateinit var viewModel: RegisterViewModel
 
   @Before
@@ -68,6 +71,7 @@ class RegisterViewModelTest : RobolectricTest() {
         syncJob = mockk(),
         fhirResourceDataSource = mockk(),
         configurationRegistry = configurationRegistry,
+        configService= configService,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper
       )

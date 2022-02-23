@@ -24,6 +24,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
@@ -66,7 +67,9 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    runBlocking {
+      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    }
     Faker.initPatientRepositoryMocks(patientRepository)
 
     every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns

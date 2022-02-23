@@ -84,7 +84,9 @@ class PatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    runBlocking {
+      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    }
     repository =
       PatientRepository(
         fhirEngine,

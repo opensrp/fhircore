@@ -17,9 +17,11 @@
 package org.smartregister.fhircore.engine.configuration
 
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
@@ -31,6 +33,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -39,11 +42,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var testConfigService: ConfigService
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @BindValue val repository: DefaultRepository = mockk()
 
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -59,7 +62,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         ConfigurationRegistry(
           context = context,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          configService = testConfigService
+          repository = repository
         )
       )
   }
@@ -74,34 +77,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertEquals(testAppId, configurationRegistry.appId)
     Assert.assertTrue(configurationRegistry.configurationsMap.isNotEmpty())
     Assert.assertTrue(configurationRegistry.configurationsMap.containsKey("appId|application"))
-
-    // Test that config service was instantiated
-    val resourceSyncParams = configurationRegistry.configService.resourceSyncParams
-    Assert.assertTrue(resourceSyncParams.isNotEmpty())
-    Assert.assertTrue(resourceSyncParams.containsKey(ResourceType.Binary))
-    Assert.assertTrue(resourceSyncParams.containsKey(ResourceType.Patient))
-    Assert.assertTrue(resourceSyncParams.containsKey(ResourceType.Questionnaire))
-
-    // Auth configuration verification
-    val testAuthConfiguration = testConfigService.provideAuthConfiguration()
-
-    Assert.assertEquals(
-      testAuthConfiguration.accountType,
-      configurationRegistry.authConfiguration.accountType
-    )
-    Assert.assertEquals(
-      testAuthConfiguration.clientId,
-      configurationRegistry.authConfiguration.clientId
-    )
-    Assert.assertEquals(
-      testAuthConfiguration.clientSecret,
-      configurationRegistry.authConfiguration.clientSecret
-    )
-    Assert.assertEquals(
-      testAuthConfiguration.fhirServerBaseUrl,
-      configurationRegistry.authConfiguration.fhirServerBaseUrl
-    )
-    Assert.assertEquals(testAuthConfiguration.scope, configurationRegistry.authConfiguration.scope)
   }
 
   @Test

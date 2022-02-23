@@ -23,7 +23,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -46,10 +48,11 @@ class AppSettingActivity : AppCompatActivity() {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
     appSettingViewModel.loadConfigs.observe(
-      this,
-      { loadConfigs ->
-        if (loadConfigs != null && loadConfigs) {
-          val applicationId = appSettingViewModel.appId.value!!
+      this
+    ) { loadConfigs ->
+      if (loadConfigs != null && loadConfigs) {
+        val applicationId = appSettingViewModel.appId.value!!
+        lifecycleScope.launch {
           configurationRegistry.loadAppConfigurations(
             appId = applicationId,
             accountAuthenticator = accountAuthenticator
@@ -63,24 +66,34 @@ class AppSettingActivity : AppCompatActivity() {
               )
             }
           }
-        } else if (loadConfigs != null && !loadConfigs)
-          showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
-      }
-    )
+        }
+      } else if (loadConfigs != null && !loadConfigs)
+        showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
+    }
+
+    appSettingViewModel.error.observe(this) {
+      if (it.isNotBlank()) showToast(getString(R.string.error_loading_config, it))
+    }
 
     sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.let {
       appSettingViewModel.onApplicationIdChanged(it)
-      appSettingViewModel.loadConfigurations(true)
+      appSettingViewModel.loadConfigurations(true, it, null, null)
     }
       ?: run {
         setContent {
           AppTheme {
             val appId by appSettingViewModel.appId.observeAsState("")
+            val username by appSettingViewModel.username.observeAsState("")
+            val password by appSettingViewModel.password.observeAsState("")
             val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
             AppSettingScreen(
               appId = appId,
+              username=username,
+              password=password,
               rememberApp = rememberApp,
               onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
+              onUsernameChanged = appSettingViewModel::onUsernameChanged,
+              onPasswordChanged = appSettingViewModel::onPasswordChanged,
               onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
               onLoadConfigurations = appSettingViewModel::loadConfigurations
             )

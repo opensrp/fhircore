@@ -23,6 +23,7 @@ import android.widget.TextView
 import androidx.core.view.size
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
@@ -53,7 +54,9 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+    runBlocking {
+      configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+    }
     patientRegisterActivity =
       Robolectric.buildActivity(PatientRegisterActivity::class.java).create().resume().get()
   }

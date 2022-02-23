@@ -89,7 +89,7 @@ constructor(
     onBackClick.value = true
   }
 
-  fun loadData(isSetup: Boolean = false) {
+  suspend fun loadData(isSetup: Boolean = false) {
     appId = retrieveAppId()
     pinViewConfiguration = getPinConfiguration()
     appName = retrieveAppName()
@@ -106,7 +106,7 @@ constructor(
       }
   }
 
-  fun getPinConfiguration(): PinViewConfiguration =
+  suspend fun getPinConfiguration(): PinViewConfiguration =
     configurationRegistry.retrieveConfiguration(AppConfigClassification.PIN)
 
   fun retrieveAppId(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!

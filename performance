@@ -1,0 +1,82 @@
+ResourceMapper
+  private val fhirPathEngine: FHIRPathEngine =
+    with(FhirContext.forR4()) {
+      FHIRPathEngine(HapiWorkerContext(this, DefaultProfileValidationSupport(this)))
+    }
+    
+    
+    questionnaire-viewmodel
+    r4-> cached
+    
+    
+    
+    
+    
+    fragment onload
+    appl onload
+    
+    
+    QuestionnaireDetailsActivity -> Remove / Unwrap images from Questionnaire and QuestionnaireResponse to reduce heap size and use a weak reference
+    
+    
+    596.891 MB onload
+    635.404 MB onlist 
+    FhirPathEngine 3+1 instances -> ResourceMapper, ResourceIndexer, PatientRepository, SimpleDetailsScreen (Looks like HapiWorkerContext consumes alot of space than SimpleWorkerContext) -> Looks like DefaultProfileValidationSupport consumes most of it
+    17.13 MB HapiWorkerContext
+    0.0018 MB SimpleWorkerContext
+    1187.476 MB ondetails 
+    FhirPathEngine 5 instances (LibraryEvaluator) -> HapiWorkerContext=2 -> FhirPathR4 -> getvalidationsupportfrom fhircontext
+    46.08 MB FhirPathEngine
+    46.83 MB byte[] -> might be images from questionnaire/response
+    1358.19 MB onform
+    1386.36 MB back
+    
+
+
+@HiltAndroidApp
+class QuestApplication : Application(), DataCaptureConfig.Provider {
+
+  @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+  private var configuration: DataCaptureConfig? = null
+
+  override fun onCreate() {
+    super.onCreate()
+    if (BuildConfig.DEBUG) {
+      Timber.plant(Timber.DebugTree())
+    }
+
+    CoroutineScope(Dispatchers.Default).launch {
+      val fhirContext = FhirContext.forR4Cached().apply {
+        Timber.i("Loading FhirContext.forR4Cached on application init")
+      }
+      ResourceMapper.run {
+        val validationSupport = extractResourceMapperValidationSupport()
+        fhirContext.validationSupport = validationSupport
+
+        Timber.i("Loading ResourceMapper on application init")
+      }
+    }
+  }
+
+  private fun extractResourceMapperValidationSupport() =
+    ResourceMapper::class
+      .java
+      .getDeclaredField("fhirPathEngine")
+      .also { it.isAccessible = true }
+      .get(null)
+      .let {
+        ((it as FHIRPathEngine).worker as HapiWorkerContext).let {
+          it.javaClass
+            .getDeclaredField("myValidationSupport")
+            .also { it.isAccessible = true }
+            .get(it) as DefaultProfileValidationSupport
+        }
+      }
+
+  override fun getDataCaptureConfig(): DataCaptureConfig {
+    configuration =
+      configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
+    return configuration as DataCaptureConfig
+  }
+}
+

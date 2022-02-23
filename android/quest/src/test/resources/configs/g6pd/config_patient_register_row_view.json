@@ -1,0 +1,30 @@
+{
+  "appId": "g6pd",
+  "classification": "patient_register_row",
+  "filters": [
+    {
+      "resourceType": "CONDITION",
+      "key": "category",
+      "valueType": "CODEABLECONCEPT",
+      "valuePrefix": " G6PD Status - ",
+      "valueCoding": {
+        "system": "http://snomed.info/sct",
+        "code": "9024005"
+      },
+      "dynamicColors": [
+        {
+          "valueEqual": "Deficient",
+          "useColor": "#FF0000"
+        },
+        {
+          "valueEqual": "Intermediate",
+          "useColor": "#FFA500"
+        },
+        {
+          "valueEqual": "Normal",
+          "useColor": "#00a000"
+        }
+      ]
+    }
+  ]
+}

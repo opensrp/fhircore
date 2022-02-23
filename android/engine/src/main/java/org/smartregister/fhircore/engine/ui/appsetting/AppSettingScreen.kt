@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.appsetting
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,22 +26,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Checkbox
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.login.PASSWORD_FIELD_TAG
+import org.smartregister.fhircore.engine.ui.login.USERNAME_FIELD_TAG
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val REMEMBER_APP_CHECKBOX_TAG = "rememberAppCheckboxTag"
@@ -50,10 +66,14 @@ const val APP_ID_TEXT_INPUT_TAG = "appIdTextInputTag"
 fun AppSettingScreen(
   modifier: Modifier = Modifier,
   appId: String,
+  username: String,
+  password: String,
   rememberApp: Boolean,
   onAppIdChanged: (String) -> Unit,
+  onUsernameChanged: (String) -> Unit,
+  onPasswordChanged: (String) -> Unit,
   onRememberAppChecked: (Boolean) -> Unit,
-  onLoadConfigurations: (Boolean) -> Unit
+  onLoadConfigurations: (Boolean, String, String, String) -> Unit
 ) {
 
   Column(
@@ -90,6 +110,47 @@ fun AppSettingScreen(
       fontSize = 12.sp,
       modifier = modifier.padding(vertical = 8.dp)
     )
+
+    Text(
+      text = stringResource(R.string.username),
+      modifier = modifier.padding(vertical = 8.dp)
+    )
+    OutlinedTextField(
+      value = username,
+      onValueChange = onUsernameChanged,
+      maxLines = 1,
+      singleLine = true,
+      placeholder = {
+        Text(
+          color = Color.LightGray,
+          text = stringResource(R.string.username_input_hint),
+        )
+      },
+      modifier =
+      modifier
+        .fillMaxWidth()
+        .padding(vertical = 4.dp)
+        .testTag(USERNAME_FIELD_TAG)
+    )
+    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
+      Text(
+        text = stringResource(R.string.password),
+        modifier = modifier.wrapContentWidth().padding(vertical = 8.dp)
+      )
+    }
+    OutlinedTextField(
+      value = password,
+      onValueChange = onPasswordChanged,
+      maxLines = 1,
+      singleLine = true,
+      placeholder = {
+        Text(
+          color = Color.LightGray,
+          text = stringResource(R.string.password_input_hint),
+        )
+      }
+    )
+
     Row(modifier = modifier.padding(vertical = 20.dp)) {
       Checkbox(
         checked = rememberApp,
@@ -104,7 +165,7 @@ fun AppSettingScreen(
     }
     Spacer(modifier = modifier.height(20.dp))
     Button(
-      onClick = { onLoadConfigurations(true) },
+      onClick = { onLoadConfigurations(true, appId,username, password) },
       enabled = appId.isNotEmpty(),
       modifier = modifier.fillMaxWidth()
     ) {
@@ -123,8 +184,12 @@ fun AppSettingScreen(
 private fun AppSettingScreenPreview() {
   AppSettingScreen(
     appId = "",
-    onLoadConfigurations = {},
+    username="",
+    password="",
+    onLoadConfigurations = {_,_,_,_ -> },
     onAppIdChanged = {},
+    onUsernameChanged={},
+    onPasswordChanged={},
     onRememberAppChecked = {},
     rememberApp = false
   )

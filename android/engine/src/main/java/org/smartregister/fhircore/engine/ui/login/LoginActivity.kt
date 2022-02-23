@@ -21,7 +21,10 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -57,11 +60,13 @@ class LoginActivity :
         }
       )
       launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
-      appLogoResourceFile = getApplicationConfiguration().appLogoIconResourceFile
+      appLogoResourceFile = runBlocking { getApplicationConfiguration().appLogoIconResourceFile }
     }
 
     if (configurationRegistry.isAppIdInitialized()) {
-      configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
+      lifecycleScope.launch {
+        configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
+      }
     }
 
     // Check if Pin enabled and stored then move to Pin login
@@ -77,7 +82,7 @@ class LoginActivity :
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
   }
 
-  fun getApplicationConfiguration(): ApplicationConfiguration {
+  suspend fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
   }
 

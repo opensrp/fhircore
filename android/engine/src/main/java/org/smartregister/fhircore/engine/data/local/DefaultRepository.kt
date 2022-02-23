@@ -24,15 +24,20 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
@@ -79,6 +84,16 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         }
       else -> listOf()
     }
+
+  suspend fun searchCompositionByIdentifier(identifier: String): Composition? =
+    fhirEngine
+      .search<Composition> {
+        filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
+      }
+      .firstOrNull()
+
+  suspend fun getBinary(id: String): Binary =
+    fhirEngine.load(Binary::class.java, id)
 
   suspend fun save(resource: Resource) {
     return withContext(dispatcherProvider.io()) {

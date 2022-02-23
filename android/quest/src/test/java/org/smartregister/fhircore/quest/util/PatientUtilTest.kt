@@ -57,10 +57,9 @@ class PatientUtilTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations(
-      appId = "g6pd",
-      accountAuthenticator = accountAuthenticator
-    ) {}
+    runBlocking {
+      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    }
     fhirEngine = spyk(fhirEngine)
   }
 

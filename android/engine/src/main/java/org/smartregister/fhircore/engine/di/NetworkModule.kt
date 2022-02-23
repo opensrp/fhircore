@@ -27,6 +27,7 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
@@ -59,11 +60,11 @@ class NetworkModule {
   @Provides
   fun provideOauthService(
     @AuthOkHttpClientQualifier okHttpClient: OkHttpClient,
-    configurationRegistry: ConfigurationRegistry,
+    configService: ConfigService,
     gson: Gson
   ): OAuthService =
     Retrofit.Builder()
-      .baseUrl(configurationRegistry.authConfiguration.oauthServerBaseUrl)
+      .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
       .client(okHttpClient)
       .addConverterFactory(GsonConverterFactory.create(gson))
       .build()
@@ -75,11 +76,11 @@ class NetworkModule {
   fun provideFhirResourceService(
     parser: IParser,
     @OkHttpClientQualifier okHttpClient: OkHttpClient,
-    configurationRegistry: ConfigurationRegistry,
+    configService: ConfigService,
     gson: Gson
   ): FhirResourceService =
     Retrofit.Builder()
-      .baseUrl(configurationRegistry.authConfiguration.fhirServerBaseUrl)
+      .baseUrl(configService.provideAuthConfiguration().fhirServerBaseUrl)
       .client(okHttpClient)
       .addConverterFactory(FhirConverterFactory(parser))
       .addConverterFactory(GsonConverterFactory.create(gson))

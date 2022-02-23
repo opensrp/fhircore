@@ -29,6 +29,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.Composition
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
@@ -40,11 +41,13 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 
 @HiltAndroidTest
 class LoginActivityTest : ActivityRobolectricTest() {
@@ -58,6 +61,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
   lateinit var loginService: LoginService
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val repository: DefaultRepository = mockk()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -81,7 +85,11 @@ class LoginActivityTest : ActivityRobolectricTest() {
     coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
     coEvery { accountAuthenticator.launchLoginScreen() } returns Unit
-    configurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
+
+    coEvery { repository.searchCompositionByIdentifier(any()) } returns
+            "/configs/quest/config_composition_quest.json".readFile().decodeResourceFromString() as Composition
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
     loginService = loginActivity.loginService

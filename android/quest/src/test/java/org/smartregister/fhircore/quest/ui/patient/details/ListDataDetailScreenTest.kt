@@ -40,6 +40,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import java.util.Date
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
@@ -90,7 +91,9 @@ class ListDataDetailScreenTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     fhirEngine = mockk()
-    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    runBlocking {
+      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+    }
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
       spyk(
