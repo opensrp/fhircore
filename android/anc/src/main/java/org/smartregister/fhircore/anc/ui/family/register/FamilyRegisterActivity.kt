@@ -130,6 +130,11 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_family_clients)!!,
       ),
       SideMenuOption(
+        itemId = R.id.menu_item_reports,
+        titleResource = R.string.reports,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
+      ),
+      SideMenuOption(
         itemId = R.id.menu_item_profile,
         titleResource = R.string.profile,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_user)!!
