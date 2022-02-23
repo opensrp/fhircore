@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
 @AndroidEntryPoint
