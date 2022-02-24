@@ -48,6 +48,7 @@ import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigation
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
+import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @AndroidEntryPoint
 class QuestPatientDetailActivity :
@@ -60,6 +61,7 @@ class QuestPatientDetailActivity :
   val patientViewModel by viewModels<ListDataDetailViewModel>()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -236,7 +238,8 @@ class QuestPatientDetailActivity :
 
   fun getResultDetailsNavigationOptions() =
     configurationRegistry.retrieveConfiguration<ResultDetailsNavigationConfiguration>(
-      configClassification = QuestConfigClassification.RESULT_DETAILS_NAVIGATION
+      configClassification = QuestConfigClassification.RESULT_DETAILS_NAVIGATION,
+      questJsonSpecificationProvider.getJson()
     )
 
   override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {

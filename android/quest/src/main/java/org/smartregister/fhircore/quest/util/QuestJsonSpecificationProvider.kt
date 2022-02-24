@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.configuration.view.NavigationAction
 import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
+import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
 
 @Singleton
 class QuestJsonSpecificationProvider @Inject constructor() {
@@ -36,6 +37,7 @@ class QuestJsonSpecificationProvider @Inject constructor() {
         subclass(ActionSwitchFragment::class)
         subclass(QuestionnaireDataDetailsNavigationAction::class)
         subclass(QuestionnaireNavigationAction::class)
+        subclass(TestDetailsNavigationAction::class)
       }
     }
 

@@ -23,6 +23,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
@@ -50,6 +51,8 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_TYPE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -70,6 +73,8 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @BindValue val patientRepository: PatientRepository = mockk()
   @BindValue val libraryEvaluator: LibraryEvaluator = mockk()
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
@@ -89,6 +94,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    every { sharedPreferencesHelper.read(any(), any<String>()) } returns ""
     fhirEngine = mockk()
     configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     Faker.initPatientRepositoryMocks(patientRepository)
