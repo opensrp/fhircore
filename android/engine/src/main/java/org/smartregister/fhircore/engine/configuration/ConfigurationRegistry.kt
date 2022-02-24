@@ -99,7 +99,7 @@ constructor(
             .use { it.readText() }
 
         val configuration =
-          content.decodeFromString<List<C>>().first {
+          content.decodeAsJson<List<C>>().first {
             it.appId.equals(other = appId, ignoreCase = true) &&
               it.classification.equals(
                 other = configClassification.classification,
@@ -125,7 +125,7 @@ constructor(
         .open(APP_WORKFLOW_CONFIG_FILE)
         .bufferedReader()
         .use { it.readText() }
-        .decodeFromString<List<ApplicationWorkflow>>()
+        .decodeAsJson<List<ApplicationWorkflow>>()
         .associateBy { it.appId }
 
     if (applicationWorkflowsMap.containsKey(appId)) {
@@ -148,7 +148,7 @@ constructor(
 
   fun isAppIdInitialized() = this::appId.isInitialized
 
-  inline fun <reified T> String.decodeFromString(): T {
+  inline fun <reified T> String.decodeAsJson(): T {
     return if (context is JsonSpecificationProvider) {
       context.getJson().decodeFromString(this)
     } else {
