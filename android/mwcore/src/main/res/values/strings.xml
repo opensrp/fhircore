@@ -26,7 +26,5 @@
     <string name="no_test_results_found">No test results found</string>
     <string name="patient_test_results">TEST RESULTS</string>
     <string name="patient_type"> Patient_Type</string>
-    <string name="adult_patient">Client</string>
-    <string name="exposed_patient">Exposed</string>
 
 </resources>

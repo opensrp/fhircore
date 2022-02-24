@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.ui.register.RegisterViewModel
 import org.smartregister.fhircore.mwcore.R
 import org.smartregister.fhircore.mwcore.data.patient.model.genderFull
 import org.smartregister.fhircore.mwcore.util.MwCoreConfigClassification
+import org.smartregister.fhircore.mwcore.util.RegisterType.CLIENT_ID
 
 
 data class TabItem(
@@ -46,7 +47,7 @@ data class TabItem(
 
 
 @Composable
-fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel, configurationRegistry: ConfigurationRegistry) {
+fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel, configurationRegistry: ConfigurationRegistry, patientType: String) {
     val context = LocalContext.current
 
     val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
@@ -86,7 +87,6 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel, co
                     Spacer(modifier = Modifier.size(10.dp))
                     Text(text = "Guardian", style = MaterialTheme.typography.h6)
 
-
                     Text(text = "Name: Janet Dzimbiri")
                     Text(text = "Gender: Female")
                     Text(text = "Relationship to client: Aunt")
@@ -106,54 +106,56 @@ fun DemographicsTab(questPatientDetailViewModel: QuestPatientDetailViewModel, co
                     Text(text = "TB History: Currently on treatment")
                     Text(text = "Regimen: 4A")
                     Text(text = "ART start date: 06/05/2018")
-
                 }
             }
-
 
         Row(
             Modifier
                 .fillMaxWidth()
+                .padding(bottom = 8.dp)
                 .wrapContentHeight(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             ExtendedFloatingActionButton(
-                onClick = {
-
-                    startActivity(
-                        context,
-                        Intent(context, QuestionnaireActivity::class.java)
-                            .putExtras(
-                                QuestionnaireActivity.intentArgs(
-                                    clientIdentifier = patientItem?.id,
-                                    formName = getRegistrationForm(configurationRegistry),
-                                    QuestionnaireType.EDIT
-                                )
-                            ), null
-                    )
-
-//                patientItem?.let { editPatient(it.id) }
-
-                },
-                icon = {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_plus),
-                        contentDescription = "add guardian icon"
-                    )
-                },
+                onClick = { onEditDetailsClicked(context, patientItem?.id, configurationRegistry, patientType) },
                 modifier = Modifier.height(60.dp),
                 backgroundColor = MaterialTheme.colors.primary,
-                text = { Text("ADD GUARDIAN", fontSize = 16.sp) })
+                text = { Text("EDIT DETAILS", fontSize = 16.sp) },
+                icon = {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_edit),
+                        contentDescription = "edit icon"
+                    )
+                })
         }
-
     }
 }
 
+fun onEditDetailsClicked(context: Context, patientID: String?, configurationRegistry: ConfigurationRegistry, patientType: String) {
+    startActivity(
+        context,
+        Intent(context, QuestionnaireActivity::class.java)
+            .putExtras(
+                QuestionnaireActivity.intentArgs(
+                    clientIdentifier = patientID,
+                    formName = getRegistrationForm(configurationRegistry, patientType),
+                    QuestionnaireType.EDIT
+                )
+            ), null
+    )
+}
 
-fun getRegistrationForm(configurationRegistry: ConfigurationRegistry): String {
+fun getRegistrationForm(configurationRegistry: ConfigurationRegistry, patientType: String): String {
+    if (patientType == CLIENT_ID) {
+        return configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
+            configClassification = MwCoreConfigClassification.PATIENT_REGISTER_CLIENT
+        )
+            .registrationForm
+    }
+
     return configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-        configClassification = MwCoreConfigClassification.PATIENT_REGISTER_CLIENT
+        configClassification = MwCoreConfigClassification.PATIENT_REGISTER_EXPOSED_INFANT
     )
         .registrationForm
 }

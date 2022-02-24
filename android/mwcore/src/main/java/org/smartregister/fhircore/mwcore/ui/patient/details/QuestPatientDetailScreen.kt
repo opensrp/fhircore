@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.mwcore.ui.patient.details
 
 import android.content.Intent
+import android.widget.Toast
+import android.widget.Toast.LENGTH_LONG
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
 import androidx.compose.foundation.Image
@@ -58,6 +60,8 @@ import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.mwcore.R
 import org.smartregister.fhircore.mwcore.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.mwcore.data.patient.model.QuestResultItem
+import org.smartregister.fhircore.mwcore.util.RegisterType.CLIENT_ID
+import org.smartregister.fhircore.mwcore.util.RegisterType.EXPOSED_INFANT_ID
 
 
 const val TOOLBAR_TITLE = "toolbarTitle"
@@ -69,6 +73,10 @@ const val FORM_ITEM = "formItemTag"
 const val RESULT_ITEM = "resultItemTag"
 const val FORM_CONTAINER_ITEM = "formItemContainerTag"
 const val RESULT_CONTAINER_ITEM = "resultItemContainerTag"
+
+const val ADD_GUARDIAN = "Add Guardian"
+const val ENTER_VIRAL_LOAD_RESULTS = "Enter Viral Load Results"
+const val ENTER_DBS_RESULTS = "Enter DBS Results"
 
 /*@Composable
 fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
@@ -171,10 +179,10 @@ fun ResultItem(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun TabWithPager(questPatientDetailViewModel: QuestPatientDetailViewModel, configurationRegistry: ConfigurationRegistry) {
+fun TabWithPager(questPatientDetailViewModel: QuestPatientDetailViewModel, configurationRegistry: ConfigurationRegistry, patientType: String) {
   val tabData = listOf(
     TabItem(0, Icons.Filled.Feed, "Details") {
-      DemographicsTab(questPatientDetailViewModel, configurationRegistry)
+      DemographicsTab(questPatientDetailViewModel, configurationRegistry, patientType)
     },
     TabItem(2, Icons.Filled.LocalHospital, "Visit") {
       VisitTab()
@@ -261,7 +269,6 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
   }
     Column {
-
       Row(
         modifier =
         Modifier
@@ -270,7 +277,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           .padding(5.dp),
         horizontalArrangement = Arrangement.SpaceBetween
       ) {
-
+        // back button
         IconButton(
           onClick = { questPatientDetailViewModel.onBackPressed(true) },
           Modifier.testTag(TOOLBAR_BACK_ARROW),
@@ -280,12 +287,12 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
             contentDescription = "",
             colorFilter = ColorFilter.tint(colorResource(id = R.color.white))
           )
-
         }
 
+        // toolbar title
         Text(
           text =
-          "${patientItem?.name ?: ""}" /*, ${patientItem?.gender ?: ""}, ${patientItem?.age ?: ""}"*/,
+          patientItem?.name ?: "" /*, ${patientItem?.gender ?: ""}, ${patientItem?.age ?: ""}"*/,
           color = colorResource(id = R.color.white),
           fontSize = 18.sp,
           fontWeight = FontWeight.Bold,
@@ -294,11 +301,15 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
             .align(Alignment.CenterVertically)
         )
 
-     val items: List<String>
-       items = if (patientType == "patient_client" ){
-        listOf("Enter viral load results")
-        } else
-          listOf("Enter DBS results")
+        // toolbar menu items
+        val items: MutableList<String> = ArrayList()
+        items.add(ADD_GUARDIAN)
+
+        if (patientType == CLIENT_ID) {
+          items.add(ENTER_VIRAL_LOAD_RESULTS)
+        } else {
+          items.add(ENTER_DBS_RESULTS)
+        }
 
         Column() { //val items = listOf( "Test Results", "Edit Details", "Enter Lab Results")
 
@@ -317,22 +328,40 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           Modifier.testTag(TOOLBAR_MENU)
         ) {
 
-          items.forEachIndexed { index, s ->
+          items.forEachIndexed { _, s ->
             DropdownMenuItem(onClick = {
               showMenu = false
 
-              //An if else function is needed to divide each selected item to open a different questionnaire
-              ContextCompat.startActivity(
-                context,
-                Intent(context, QuestionnaireActivity::class.java)
-                  .putExtras(
-                    QuestionnaireActivity.intentArgs(
+              val intent = Intent(context, QuestionnaireActivity::class.java)
+              when (s) {
+                  ADD_GUARDIAN -> {
+                    intent.putExtras(QuestionnaireActivity.intentArgs(
+                      clientIdentifier = null,
+                      formName = "manage-guardian",
+                      QuestionnaireType.DEFAULT
+                    ))
+                  }
+                  ENTER_VIRAL_LOAD_RESULTS -> {
+                    intent.putExtras(QuestionnaireActivity.intentArgs(
                       clientIdentifier = patientItem?.id,
-                      formName = getRegistrationForm(configurationRegistry),
-                      QuestionnaireType.EDIT
-                    )
-                  ), null
-              )
+                      formName = "client-viral-load-results",
+                      QuestionnaireType.DEFAULT
+                    ))
+                  }
+                  ENTER_DBS_RESULTS -> {
+                    intent.putExtras(QuestionnaireActivity.intentArgs(
+                      clientIdentifier = patientItem?.id,
+                      formName = "exposed-infant-hiv-test-results",
+                      QuestionnaireType.DEFAULT
+                    ))
+                  }
+                  else -> {
+                    Toast.makeText(context, "Invalid item selected", LENGTH_LONG).show()
+                    return@DropdownMenuItem
+                  }
+              }
+
+              ContextCompat.startActivity(context, intent, null)
               //onClick ends here
 
             }) {
@@ -356,7 +385,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         }
 
       }
-      TabWithPager(questPatientDetailViewModel, configurationRegistry)
+      TabWithPager(questPatientDetailViewModel, configurationRegistry, patientType)
 
       /* Forms section
       Column(
