@@ -33,7 +33,6 @@ import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
-import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
@@ -62,28 +61,28 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     )
 
   /*override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> =
-    listOf(
-      NavigationMenuOption(
-        id = R.id.menu_item_register,
-        title = getString(R.string.register),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_home)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.menu_item_tasks,
-        title = getString(R.string.tasks),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.menu_item_reports,
-        title = getString(R.string.reports),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.menu_item_profile,
-        title = getString(R.string.profile),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_user)!!
-      )
-    )*/
+  listOf(
+    NavigationMenuOption(
+      id = R.id.menu_item_register,
+      title = getString(R.string.register),
+      iconResource = ContextCompat.getDrawable(this, R.drawable.ic_home)!!
+    ),
+    NavigationMenuOption(
+      id = R.id.menu_item_tasks,
+      title = getString(R.string.tasks),
+      iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
+    ),
+    NavigationMenuOption(
+      id = R.id.menu_item_reports,
+      title = getString(R.string.reports),
+      iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
+    ),
+    NavigationMenuOption(
+      id = R.id.menu_item_profile,
+      title = getString(R.string.profile),
+      iconResource = ContextCompat.getDrawable(this, R.drawable.ic_user)!!
+    )
+  )*/
 
   override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {

@@ -38,6 +38,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -132,7 +133,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertTrue(supportedFragments.containsKey(TestFragment.TAG + 2))
 
     // Bottom navigation contains one menu option
-    Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions().isNotEmpty())
+    Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions(mockk()).isNotEmpty())
   }
 
   @Test
@@ -416,7 +417,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         )
       )
 
-    override fun bottomNavigationMenuOptions() =
+    override fun bottomNavigationMenuOptions(viewConfiguration: RegisterViewConfiguration) =
       listOf(
         NavigationMenuOption(
           10000,

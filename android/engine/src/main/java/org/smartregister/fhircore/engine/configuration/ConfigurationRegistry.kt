@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.JsonSpecificationProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 /**
  * A configuration store used to store all the application configurations. Application
@@ -98,7 +99,7 @@ constructor(
             .use { it.readText() }
 
         val configuration =
-          content.decodeJson<List<C>>().first {
+          content.decodeFromString<List<C>>().first {
             it.appId.equals(other = appId, ignoreCase = true) &&
               it.classification.equals(
                 other = configClassification.classification,
@@ -124,7 +125,7 @@ constructor(
         .open(APP_WORKFLOW_CONFIG_FILE)
         .bufferedReader()
         .use { it.readText() }
-        .decodeJson<List<ApplicationWorkflow>>()
+        .decodeFromString<List<ApplicationWorkflow>>()
         .associateBy { it.appId }
 
     if (applicationWorkflowsMap.containsKey(appId)) {
@@ -147,8 +148,12 @@ constructor(
 
   fun isAppIdInitialized() = this::appId.isInitialized
 
-  inline fun <reified T> String.decodeJson(): T {
-    return (context as JsonSpecificationProvider).getJson().decodeFromString(this)
+  inline fun <reified T> String.decodeFromString(): T {
+    return if (context is JsonSpecificationProvider) {
+      context.getJson().decodeFromString(this)
+    } else {
+      decodeJson()
+    }
   }
 
   companion object {

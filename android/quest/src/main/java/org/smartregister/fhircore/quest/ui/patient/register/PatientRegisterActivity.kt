@@ -24,16 +24,15 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.NavigationConfiguration
-import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
-import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity.Companion.CLASSIFICATION_ARG
 import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
@@ -73,12 +72,20 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     return true
   }
 
-  override fun onBottomNavigationOptionItemSelected(item: MenuItem, viewConfiguration: RegisterViewConfiguration): Boolean {
+  override fun onBottomNavigationOptionItemSelected(
+    item: MenuItem,
+    viewConfiguration: RegisterViewConfiguration
+  ): Boolean {
     viewConfiguration.bottomNavigationOptions?.forEach { navigationOption ->
       if (item.itemId == navigationOption.id.hashCode()) {
         when (val action = navigationOption.action) {
           is ActionSwitchFragment -> {
-            switchFragment(action.tag, action.isRegisterFragment, action.isFilterVisible, action.toolbarTitle)
+            switchFragment(
+              action.tag,
+              action.isRegisterFragment,
+              action.isFilterVisible,
+              action.toolbarTitle
+            )
           }
           is QuestionnaireDataDetailsNavigationAction -> {
             startActivity(
