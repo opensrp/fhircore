@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 import timber.log.Timber
 
 /**
@@ -80,7 +79,7 @@ constructor(
 
   val languages: List<Language> by lazy { loadLanguages() }
 
-  val sharedSyncStatus = MutableSharedFlow<State>()
+
 
   var selectedLanguage =
     MutableLiveData(
@@ -98,20 +97,6 @@ constructor(
     applicationConfiguration.languages.map { Language(it, Locale.forLanguageTag(it).displayName) }
 
   fun allowLanguageSwitching() = languages.size > 1
-
-  fun runSync() =
-    viewModelScope.launch(dispatcher.io()) {
-      try {
-        fhirEngine.runOneTimeSync(
-          sharedSyncStatus = sharedSyncStatus,
-          syncJob = syncJob,
-          resourceSyncParams = configurationRegistry.configService.resourceSyncParams,
-          fhirResourceDataSource = fhirResourceDataSource
-        )
-      } catch (exception: Exception) {
-        Timber.e("Error syncing data", exception.stackTraceToString())
-      }
-    }
 
   /**
    * Update [_filterValue]. Null means filtering has been reset therefore data for the current page
