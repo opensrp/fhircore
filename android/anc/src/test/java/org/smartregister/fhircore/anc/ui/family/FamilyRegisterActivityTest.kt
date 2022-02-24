@@ -149,6 +149,47 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testSideMenuList() {
+    val listRegisterItem = familyRegisterActivity.sideMenuOptions()
+    assertEquals(listRegisterItem.size, 7)
+
+    with(listRegisterItem[0]) {
+      assertEquals(R.id.menu_item_families, this.itemId)
+      assertEquals(R.string.households, this.titleResource)
+    }
+
+    with(listRegisterItem[1]) {
+      assertEquals(R.id.menu_item_anc_clients, this.itemId)
+      assertEquals(R.string.pregnant_clients, this.titleResource)
+    }
+
+    with(listRegisterItem[2]) {
+      assertEquals(R.id.menu_item_post_natal_clients, this.itemId)
+      assertEquals(R.string.post_natal_clients, this.titleResource)
+    }
+
+    with(listRegisterItem[3]) {
+      assertEquals(R.id.menu_item_child_clients, this.itemId)
+      assertEquals(R.string.child_clients, this.titleResource)
+    }
+
+    with(listRegisterItem[4]) {
+      assertEquals(R.id.menu_item_family_planning_clients, this.itemId)
+      assertEquals(R.string.family_planning_clients, this.titleResource)
+    }
+
+    with(listRegisterItem[5]) {
+      assertEquals(R.id.menu_item_reports, this.itemId)
+      assertEquals(R.string.reports, this.titleResource)
+    }
+
+    with(listRegisterItem[6]) {
+      assertEquals(R.id.menu_item_profile, this.itemId)
+      assertEquals(R.string.profile, this.titleResource)
+    }
+  }
+
+  @Test
   fun testMainFragmentTagShouldReturnFamilyRegisterFragmentTag() {
     assertEquals(FamilyRegisterFragment.TAG, familyRegisterActivity.mainFragmentTag())
   }
