@@ -21,8 +21,11 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.view.size
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.mockk
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
@@ -36,6 +39,9 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 
@@ -48,11 +54,25 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+
   private lateinit var patientRegisterActivity: PatientRegisterActivity
 
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(any(), any<String>()) } answers
+      {
+        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
+          ""
+        } else {
+          "1234"
+        }
+      }
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+
     configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     patientRegisterActivity =
       Robolectric.buildActivity(PatientRegisterActivity::class.java).create().resume().get()
@@ -90,8 +110,9 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
-    patientRegisterActivity.onNavigationOptionItemSelected(
-      RoboMenuItem().apply { itemId = R.id.menu_item_settings }
+    patientRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_settings".hashCode() },
+      patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
     )
     // switched to user profile fragment
     Assert.assertEquals(
@@ -119,21 +140,25 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     with(activityBinding) {
       Assert.assertEquals("Register new client", this.btnRegisterNewClient.text)
       Assert.assertEquals("Clients", this.toolbarLayout.tvClientsListTitle.text)
-      Assert.assertEquals(3, this.bottomNavView.menu.size)
+      Assert.assertEquals(4, this.bottomNavView.menu.size)
     }
   }
 
   @Test
   fun testBottomMenuOptionsShouldReturnNonZeroOptions() {
-    val menu = patientRegisterActivity.bottomNavigationMenuOptions()
+    val registerViewConfiguration =
+      patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+    val menu = patientRegisterActivity.bottomNavigationMenuOptions(registerViewConfiguration)
 
-    Assert.assertEquals(3, menu.size)
-    Assert.assertEquals(R.id.menu_item_clients, menu[0].id)
+    Assert.assertEquals(4, menu.size)
+    Assert.assertEquals("menu_item_clients".hashCode(), menu[0].id)
     Assert.assertEquals(getString(R.string.menu_clients), menu[0].title)
-    Assert.assertEquals(R.id.menu_item_tasks, menu[1].id)
+    Assert.assertEquals("menu_item_tasks".hashCode(), menu[1].id)
     Assert.assertEquals(getString(R.string.menu_tasks), menu[1].title)
-    Assert.assertEquals(R.id.menu_item_settings, menu[2].id)
-    Assert.assertEquals(getString(R.string.menu_settings), menu[2].title)
+    Assert.assertEquals("control_test".hashCode(), menu[2].id)
+    Assert.assertEquals("Control Test", menu[2].title)
+    Assert.assertEquals("menu_item_settings".hashCode(), menu[3].id)
+    Assert.assertEquals(getString(R.string.menu_settings), menu[3].title)
   }
 
   @Test

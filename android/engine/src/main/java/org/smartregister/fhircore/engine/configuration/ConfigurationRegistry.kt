@@ -20,11 +20,10 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.util.JsonSpecificationProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 
@@ -61,7 +60,8 @@ constructor(
    * becomes register_view_configurations.json
    */
   inline fun <reified C : Configuration> retrieveConfiguration(
-    configClassification: ConfigClassification
+    configClassification: ConfigClassification,
+    jsonSerializer: Json? = null
   ): C {
 
     val workflowPointName = workflowPointName(configClassification.classification)
@@ -99,7 +99,7 @@ constructor(
             .use { it.readText() }
 
         val configuration =
-          content.decodeAsJson<List<C>>().first {
+          content.decodeJson<List<C>>(jsonSerializer).first {
             it.appId.equals(other = appId, ignoreCase = true) &&
               it.classification.equals(
                 other = configClassification.classification,
@@ -125,7 +125,7 @@ constructor(
         .open(APP_WORKFLOW_CONFIG_FILE)
         .bufferedReader()
         .use { it.readText() }
-        .decodeAsJson<List<ApplicationWorkflow>>()
+        .decodeJson<List<ApplicationWorkflow>>()
         .associateBy { it.appId }
 
     if (applicationWorkflowsMap.containsKey(appId)) {
@@ -147,14 +147,6 @@ constructor(
   fun workflowPointName(key: String) = "$appId|$key"
 
   fun isAppIdInitialized() = this::appId.isInitialized
-
-  inline fun <reified T> String.decodeAsJson(): T {
-    return if (context is JsonSpecificationProvider) {
-      context.getJson().decodeFromString(this)
-    } else {
-      decodeJson()
-    }
-  }
 
   companion object {
     private const val APP_WORKFLOW_CONFIG_FILE = "configurations/app/application_workflow.json"

@@ -23,53 +23,34 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
-import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity.Companion.CLASSIFICATION_ARG
 import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
+import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val registerViewConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-        configClassification = QuestConfigClassification.PATIENT_REGISTER
+        configClassification = QuestConfigClassification.PATIENT_REGISTER,
+        questJsonSpecificationProvider.getJson()
       )
     configureViews(registerViewConfiguration)
-  }
-
-  override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
-    getCustomNavigationOptions().navigationOptions.forEach { navigationOption ->
-      if (item.itemId == navigationOption.id.hashCode()) {
-        when (val action = navigationOption.action) {
-          is QuestionnaireNavigationAction ->
-            startActivity(
-              Intent(this, QuestionnaireActivity::class.java)
-                .putExtras(
-                  QuestionnaireActivity.intentArgs(
-                    formName = action.form,
-                  )
-                )
-            )
-        }
-      }
-    }
-    return true
   }
 
   override fun onBottomNavigationOptionItemSelected(
@@ -116,10 +97,5 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         title = getString(R.string.clients),
         isSelected = true
       )
-    )
-
-  fun getCustomNavigationOptions() =
-    configurationRegistry.retrieveConfiguration<NavigationConfiguration>(
-      QuestConfigClassification.REGISTER_NAVIGATION
     )
 }

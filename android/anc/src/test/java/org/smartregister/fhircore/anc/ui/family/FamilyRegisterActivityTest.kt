@@ -21,6 +21,7 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -48,6 +49,8 @@ import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
@@ -58,6 +61,9 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
 
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+
   @Before
   fun setUp() {
     mockkObject(Sync)
@@ -66,6 +72,8 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
     every { accountAuthenticator.launchLoginScreen() } just runs
 
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(any(), any<String>()) } returns "1234"
 
     configurationRegistry.loadAppConfigurations(
       appId = "anc",
@@ -96,8 +104,9 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnClientMenuOptionSelectedShouldLaunchPatientRegisterFragment() {
-    familyRegisterActivity.onNavigationOptionItemSelected(
-      RoboMenuItem().apply { itemId = R.id.menu_item_register }
+    familyRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_register".hashCode() },
+      familyRegisterActivity.registerViewModel.registerViewConfiguration.value!!
     )
     // switched to patient register fragment
     assertEquals(
@@ -116,8 +125,9 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
-    familyRegisterActivity.onNavigationOptionItemSelected(
-      RoboMenuItem().apply { itemId = R.id.menu_item_profile }
+    familyRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_profile".hashCode() },
+      familyRegisterActivity.registerViewModel.registerViewConfiguration.value!!
     )
     // switched to user profile fragment
     assertEquals(

@@ -27,7 +27,7 @@
         "action": {
           "type": "switch_fragment",
           "tag": "PatientRegisterFragment",
-          "isRegisterFragment": false,
+          "isRegisterFragment": true,
           "isFilterVisible": false,
           "toolbarTitle": null
         }
@@ -101,7 +101,7 @@
         "action": {
           "type": "switch_fragment",
           "tag": "PatientRegisterFragment",
-          "isRegisterFragment": false,
+          "isRegisterFragment": true,
           "isFilterVisible": false,
           "toolbarTitle": null
         }

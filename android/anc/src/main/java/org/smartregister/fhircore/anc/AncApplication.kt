@@ -18,39 +18,14 @@ package org.smartregister.fhircore.anc
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
-import org.smartregister.fhircore.anc.configuration.view.ActionNavigateToReport
-import org.smartregister.fhircore.anc.configuration.view.ActionSwitchFragment
-import org.smartregister.fhircore.engine.configuration.view.NavigationAction
-import org.smartregister.fhircore.engine.util.JsonSpecificationProvider
 import timber.log.Timber
 
 @HiltAndroidApp
-class AncApplication : Application(), JsonSpecificationProvider {
+class AncApplication : Application() {
   override fun onCreate() {
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
-    }
-  }
-
-  override fun getJson(): Json {
-
-    val module = SerializersModule {
-      polymorphic(NavigationAction::class) {
-        subclass(ActionSwitchFragment::class)
-        subclass(ActionNavigateToReport::class)
-      }
-    }
-
-    return Json {
-      encodeDefaults = true
-      ignoreUnknownKeys = true
-      isLenient = true
-      serializersModule = module
     }
   }
 }

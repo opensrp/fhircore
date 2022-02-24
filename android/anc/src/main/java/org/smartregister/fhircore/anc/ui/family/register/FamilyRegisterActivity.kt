@@ -31,6 +31,7 @@ import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
 import org.smartregister.fhircore.anc.util.AncConfigClassification
+import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
 import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -45,12 +46,14 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   @Inject lateinit var patientRepository: PatientRepository
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var jsonSpecificationProvider: AncJsonSpecificationProvider
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val registerViewConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
         configClassification = AncConfigClassification.PATIENT_REGISTER,
+        jsonSpecificationProvider.getJson()
       )
     configureViews(registerViewConfiguration)
   }
@@ -66,6 +69,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     when (item.itemId) {
       R.id.menu_item_families, R.id.menu_item_family_planning_clients ->
         switchFragment(mainFragmentTag())
+      R.id.menu_item_anc_clients -> switchFragment(tag = AncRegisterFragment.TAG)
     }
     return true
   }

@@ -22,8 +22,8 @@
         "action": {
           "type": "switch_fragment",
           "tag": "FamilyRegisterFragment",
-          "isRegisterFragment": false,
-          "isFilterVisible": false,
+          "isRegisterFragment": true,
+          "isFilterVisible": true,
           "toolbarTitle": null
         }
       },
@@ -34,8 +34,8 @@
         "action": {
           "type": "switch_fragment",
           "tag": "FamilyRegisterFragment",
-          "isRegisterFragment": false,
-          "isFilterVisible": false,
+          "isRegisterFragment": true,
+          "isFilterVisible": true,
           "toolbarTitle": null
         }
       },

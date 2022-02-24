@@ -26,21 +26,12 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.smartregister.fhircore.engine.configuration.view.NavigationAction
-import org.smartregister.fhircore.engine.util.JsonSpecificationProvider
-import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
-import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
-import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider, JsonSpecificationProvider {
+class QuestApplication : Application(), DataCaptureConfig.Provider {
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
   private var configuration: DataCaptureConfig? = null
@@ -90,23 +81,5 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, JsonSpecific
     configuration =
       configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
     return configuration as DataCaptureConfig
-  }
-
-  override fun getJson(): Json {
-
-    val module = SerializersModule {
-      polymorphic(NavigationAction::class) {
-        subclass(ActionSwitchFragment::class)
-        subclass(QuestionnaireDataDetailsNavigationAction::class)
-        subclass(QuestionnaireNavigationAction::class)
-      }
-    }
-
-    return Json {
-      encodeDefaults = true
-      ignoreUnknownKeys = true
-      isLenient = true
-      serializersModule = module
-    }
   }
 }
