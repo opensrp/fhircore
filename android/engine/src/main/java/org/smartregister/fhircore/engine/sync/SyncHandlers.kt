@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
@@ -41,15 +42,6 @@ interface OnSyncListener {
 }
 
 /**
- * This interface qualifies an Activity/View to initiate sync. NOTE. There can only be one sync
- * initiator for the entire application
- */
-interface SyncInitiator {
-  /** Run one time sync */
-  fun runSync()
-}
-
-/**
  * A broadcaster that maintains a list of [OnSyncListener]. Whenever a new sync [State] is received
  * the [SyncBroadcaster] will transmit the [State] to every [OnSyncListener] that registered by
  * invoking [broadcastSync] method
@@ -62,11 +54,6 @@ class SyncBroadcaster(
   val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow(),
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) {
-
-  var syncInitiator: SyncInitiator? = null
-
-  val syncListeners = mutableListOf<WeakReference<OnSyncListener>>()
-
   fun runSync() {
     CoroutineScope(dispatcherProvider.main()).launch {
       try {
@@ -76,27 +63,15 @@ class SyncBroadcaster(
           resourceSyncParams = configurationRegistry.configService.resourceSyncParams,
           subscribeTo = sharedSyncStatus
         )
-
-        sharedSyncStatus.collect { broadcastSync(it) }
       } catch (exception: Exception) {
         Timber.e("Error syncing data", exception.stackTraceToString())
       }
     }
   }
 
-  fun registerSyncListener(onSyncListener: OnSyncListener) {
-    syncListeners.add(WeakReference(onSyncListener))
-  }
-
-  fun unRegisterSyncInitiator() {
-    this.syncInitiator = null
-  }
-
-  fun unRegisterSyncListener(onSyncListener: OnSyncListener) {
-    syncListeners.removeIf { it.get() == onSyncListener }
-  }
-
-  fun broadcastSync(state: State) {
-    syncListeners.forEach { it.get()?.onSync(state = state) }
+  fun registerSyncListener(onSyncListener: OnSyncListener, scope: LifecycleCoroutineScope) {
+    scope.launch {
+      sharedSyncStatus.collect { onSyncListener.onSync(state = it) }
+    }
   }
 }

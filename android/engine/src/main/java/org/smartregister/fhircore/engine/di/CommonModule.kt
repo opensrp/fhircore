@@ -32,34 +32,14 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 @InstallIn(SingletonComponent::class)
-@Module(includes = [NetworkModule::class, DispatcherModule::class])
+@Module
 class CommonModule {
 
   @Singleton
   @Provides
-  fun provideFhirEngine(@ApplicationContext context: Context) =
-    FhirEngineProvider.getInstance(context)
-
-  @Singleton
-  @Provides
-  fun provideSyncJob(@ApplicationContext context: Context) = Sync.basicSyncJob(context)
-
-  @Singleton
-  @Provides
-  fun provideSyncBroadcaster(
-    fhirResourceDataSource: FhirResourceDataSource,
-    configurationRegistry: ConfigurationRegistry,
-    syncJob: SyncJob,
-    fhirEngine: FhirEngine
-  ) =
-    SyncBroadcaster(
-      fhirEngine = fhirEngine,
-      syncJob = syncJob,
-      configurationRegistry = configurationRegistry,
-      fhirResourceDataSource = fhirResourceDataSource
-    )
-
-  @Singleton @Provides fun provideWorkerContextProvider() = SimpleWorkerContext()
+  fun provideSecureSharedPreference(@ApplicationContext context: Context):SecureSharedPreference =
+    SecureSharedPreference(context)
 }

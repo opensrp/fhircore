@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import androidx.work.Configuration
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import dagger.hilt.android.HiltAndroidApp
@@ -28,12 +30,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.sync.FhirWorkerFactory
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider {
+class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+  @Inject lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var configService: QuestConfigService
+  @Inject lateinit var fhirResourceDataSource: FhirResourceDataSource
+
   private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {
@@ -41,6 +49,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
+
     CoroutineScope(Dispatchers.Default).launch {
       val fhirContext =
         FhirContext.forR4Cached().apply {
@@ -82,4 +91,9 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
       configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
     return configuration as DataCaptureConfig
   }
+
+  override fun getWorkManagerConfiguration(): Configuration =
+    Configuration.Builder()
+      .setWorkerFactory(FhirWorkerFactory(fhirEngine, fhirResourceDataSource, configService))
+      .build()
 }

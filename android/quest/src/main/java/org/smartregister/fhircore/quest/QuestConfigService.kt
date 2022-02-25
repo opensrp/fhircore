@@ -93,13 +93,4 @@ constructor(
     }
     return searchParameters
   }
-
-  override fun provideAuthConfiguration() =
-    AuthConfiguration(
-      fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
-      oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-      clientId = BuildConfig.OAUTH_CIENT_ID,
-      clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-      accountType = context.getString(R.string.authenticator_account_type)
-    )
 }

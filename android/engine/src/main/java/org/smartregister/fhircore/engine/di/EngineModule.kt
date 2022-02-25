@@ -62,9 +62,4 @@ class EngineModule {
     )
 
   @Singleton @Provides fun provideWorkerContextProvider() = SimpleWorkerContext()
-
-  @Singleton
-  @Provides
-  fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
-    AccountManager.get(context)
 }

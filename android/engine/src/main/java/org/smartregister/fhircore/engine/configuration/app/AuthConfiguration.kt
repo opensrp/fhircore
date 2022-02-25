@@ -22,6 +22,5 @@ data class AuthConfiguration(
   var fhirServerBaseUrl: String,
   var clientId: String,
   var clientSecret: String,
-  var accountType: String,
   var scope: String = "openid"
 )

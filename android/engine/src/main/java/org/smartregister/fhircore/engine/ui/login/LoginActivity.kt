@@ -26,6 +26,7 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -41,6 +42,8 @@ class LoginActivity :
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  @Inject lateinit var configService: ConfigService
+
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
   private val loginViewModel by viewModels<LoginViewModel>()
@@ -52,10 +55,11 @@ class LoginActivity :
       navigateToHome.observe(
         this@LoginActivity,
         {
-          syncBroadcaster.runSync()
           if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
             loginService.navigateToPinLogin(goForSetup = true)
           } else {
+            //TODO???????????????????
+            configService.schedulePeriodicSync(syncBroadcaster.syncJob, configurationRegistry, syncBroadcaster)
             loginService.navigateToHome()
           }
         }

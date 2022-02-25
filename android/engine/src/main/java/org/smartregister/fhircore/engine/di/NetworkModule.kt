@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.di
 
+import android.accounts.AccountManager
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.gson.Gson
@@ -23,22 +25,41 @@ import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
-@Module
+@Module(includes = [CommonModule::class])
 class NetworkModule {
 
   @Provides fun provideGson(): Gson = GsonBuilder().setLenient().create()
+
+  @Singleton
+  @Provides
+  fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
+    AccountManager.get(context)
+
+  @Provides fun provideTokenManagerService(@ApplicationContext context: Context,
+    applicationManager: AccountManager, secureSharedPreference: SecureSharedPreference
+  ): TokenManagerService =
+    TokenManagerService(context, applicationManager, secureSharedPreference)
+
+  @Provides fun provideOAuthInterceptor(
+    @ApplicationContext context: Context, tokenManagerService: TokenManagerService): OAuthInterceptor =
+    OAuthInterceptor(context, tokenManagerService)
 
   @Provides
   @AuthOkHttpClientQualifier
@@ -75,11 +96,11 @@ class NetworkModule {
   fun provideFhirResourceService(
     parser: IParser,
     @OkHttpClientQualifier okHttpClient: OkHttpClient,
-    configurationRegistry: ConfigurationRegistry,
     gson: Gson
   ): FhirResourceService =
     Retrofit.Builder()
-      .baseUrl(configurationRegistry.authConfiguration.fhirServerBaseUrl)
+            // TODO???????????????????
+      .baseUrl("https://fhir.labs.smartregister.org/fhir/")
       .client(okHttpClient)
       .addConverterFactory(FhirConverterFactory(parser))
       .addConverterFactory(GsonConverterFactory.create(gson))

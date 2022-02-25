@@ -34,6 +34,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import okhttp3.ResponseBody
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
@@ -321,7 +322,7 @@ constructor(
 
   fun getLoginActivityClass(): Class<*> = LoginActivity::class.java
 
-  fun getAccountType(): String = configurationRegistry.authConfiguration.accountType
+  fun getAccountType(): String = context.getString(R.string.authenticator_account_type)
 
   fun clientSecret(): String = configurationRegistry.authConfiguration.clientSecret
 

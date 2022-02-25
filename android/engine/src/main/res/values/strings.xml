@@ -1,4 +1,6 @@
 <resources>
+    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore</string>
+
     <string name="sync">Sync</string>
     <string name="last_sync_timestamp">Last: %1$s</string>
     <string name="language">Language</string>

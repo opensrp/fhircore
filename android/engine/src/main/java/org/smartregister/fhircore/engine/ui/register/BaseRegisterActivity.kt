@@ -51,7 +51,6 @@ import java.text.ParseException
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -61,7 +60,6 @@ import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.sync.SyncInitiator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -91,8 +89,7 @@ abstract class BaseRegisterActivity :
   NavigationView.OnNavigationItemSelectedListener,
   NavigationBarView.OnItemSelectedListener,
   ConfigurableView<RegisterViewConfiguration>,
-  OnSyncListener,
-  SyncInitiator {
+  OnSyncListener{
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
@@ -121,7 +118,7 @@ abstract class BaseRegisterActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    syncBroadcaster.registerSyncListener(this)
+    syncBroadcaster.registerSyncListener(this, lifecycleScope)
 
     supportedFragments = supportedFragments()
 
@@ -155,11 +152,6 @@ abstract class BaseRegisterActivity :
   override fun onResume() {
     super.onResume()
     sideMenuOptions().forEach { updateCount(it) }
-  }
-
-  override fun onDestroy() {
-    syncBroadcaster.run { unRegisterSyncListener(this@BaseRegisterActivity) }
-    super.onDestroy()
   }
 
   private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
@@ -418,10 +410,6 @@ abstract class BaseRegisterActivity :
         registerActivityBinding.updateSyncStatus(state)
       }
     }
-  }
-
-  override fun runSync() {
-    //registerViewModel.runSync()
   }
 
   override fun configureViews(viewConfiguration: RegisterViewConfiguration) {

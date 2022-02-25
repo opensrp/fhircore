@@ -38,9 +38,7 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class UserProfileFragment : Fragment() {
-
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
-
+  
   val userProfileViewModel: UserProfileViewModel by viewModels()
 
   override fun onCreateView(
