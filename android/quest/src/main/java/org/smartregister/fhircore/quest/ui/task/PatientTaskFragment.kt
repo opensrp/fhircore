@@ -34,19 +34,22 @@ import org.smartregister.fhircore.quest.data.task.PatientTaskRepository
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.ui.task.component.PatientTaskList
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
+import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @AndroidEntryPoint
 class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem>() {
 
   @Inject lateinit var patientTaskRepository: PatientTaskRepository
+  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   override lateinit var registerViewConfiguration: RegisterViewConfiguration
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     registerViewConfiguration =
-      configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
+      configurationRegistry.retrieveConfiguration(
         configClassification = QuestConfigClassification.PATIENT_TASK_REGISTER,
+        questJsonSpecificationProvider.getJson()
       )
     configureViews(registerViewConfiguration)
   }
