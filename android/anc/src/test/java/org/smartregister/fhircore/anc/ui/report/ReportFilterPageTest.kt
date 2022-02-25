@@ -16,47 +16,33 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.MutableLiveData
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.workflow.FhirOperator
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.anc.ui.TestDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
-@HiltAndroidTest
-class ReportFilterPageTest {
-
-  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-
-  @get:Rule(order = 1) val composeRule = createComposeRule()
-
-  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
-
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+class ReportFilterPageTest : RobolectricTest() {
 
   private lateinit var viewModel: ReportViewModel
-
+  @get:Rule val composeRule = createComposeRule()
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
+  private val patientSelectionType = MutableLiveData("")
+  private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
   private val selectionPatient =
     MutableLiveData(
       PatientItem(
@@ -65,43 +51,33 @@ class ReportFilterPageTest {
         familyName = "Test patient name"
       )
     )
-
   private val listenerObjectSpy =
     spyk(
       object {
         // Imitate click action by doing nothing
+        fun onStartDatePress() {}
+        fun onEndDatePress() {}
+        fun onPatientSelectionChanged() {}
         fun onGenerateReportClick() {}
       }
     )
 
   @Before
   fun setUp() {
-    hiltAndroidRule.inject()
-    val fhirEngine = mockk<FhirEngine>(relaxed = true)
-    val fhirOperator = mockk<FhirOperator>(relaxed = true)
-    val reportRepository = mockk<ReportRepository>()
-    val ancPatientRepository = mockk<PatientRepository>()
     viewModel =
-      spyk(
-        ReportViewModel(
-          repository = reportRepository,
-          dispatcher = TestDispatcherProvider.instance,
-          patientRepository = ancPatientRepository,
-          fhirEngine = fhirEngine,
-          fhirOperator = fhirOperator,
-          sharedPreferencesHelper = sharedPreferencesHelper
-        )
-      )
-  }
-
-  @After
-  fun tearDown() {
-    viewModel.resetValues()
+      mockk {
+        every { selectedMeasureReportItem } returns this@ReportFilterPageTest.testMeasureReportItem
+        every { isReadyToGenerateReport } returns MutableLiveData(true)
+        every { startDate } returns MutableLiveData("")
+        every { endDate } returns MutableLiveData("")
+        every { patientSelectionType } returns this@ReportFilterPageTest.patientSelectionType
+        every { selectedPatientItem } returns this@ReportFilterPageTest.selectionPatient
+        every { getSelectedPatient() } returns this@ReportFilterPageTest.selectionPatient
+      }
   }
 
   @Test
   fun testReportFilterScreen() {
-    viewModel.selectedMeasureReportItem.value = ReportItem(title = "Test Report Title")
     composeRule.setContent { ReportFilterScreen(viewModel = viewModel) }
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("Test Report Title")
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
@@ -115,12 +91,13 @@ class ReportFilterPageTest {
         onBackPress = {},
         startDate = "",
         endDate = "",
-        selectedPatient = selectionPatient.value,
-        generateReport = true,
-        onDateRangeClick = {},
-        reportType = "All",
-        onReportTypeSelected = { _, _ -> },
-        onGenerateReportClicked = listenerObjectSpy::onGenerateReportClick
+        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
+        onEndDatePress = { listenerObjectSpy.onEndDatePress() },
+        patientSelectionText = "All",
+        onPatientSelectionTypeChanged = { listenerObjectSpy.onPatientSelectionChanged() },
+        generateReportEnabled = true,
+        onGenerateReportPress = { listenerObjectSpy.onGenerateReportClick() },
+        selectedPatient = selectionPatient.value
       )
     }
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("FilterPageReportTitle")

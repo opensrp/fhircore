@@ -23,64 +23,56 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import io.mockk.spyk
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.ui.TestDispatcherProvider
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
-class ReportHomePageTest {
-
-  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  @get:Rule(order = 1) val composeRule = createComposeRule()
-
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+class ReportHomePageTest : RobolectricTest() {
 
   private val app = ApplicationProvider.getApplicationContext<Application>()
+  private lateinit var fhirEngine: FhirEngine
   private lateinit var repository: ReportRepository
   private lateinit var ancPatientRepository: PatientRepository
   private lateinit var viewModel: ReportViewModel
-  private val fhirEngine: FhirEngine = spyk()
-  private val fhirOperator = mockk<FhirOperator>()
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val composeRule = createComposeRule()
+  @get:Rule(order = 2) val coroutinesTestRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    fhirEngine = mockk()
     repository = spyk(ReportRepository(fhirEngine, ApplicationProvider.getApplicationContext()))
 
     ancPatientRepository =
       spyk(
         PatientRepository(
-          context = app,
-          fhirEngine = fhirEngine,
-          domainMapper = AncItemMapper(app),
-          dispatcherProvider = TestDispatcherProvider.instance
+          app,
+          fhirEngine,
+          AncItemMapper(app),
+          coroutinesTestRule.testDispatcherProvider
         )
       )
     viewModel =
       spyk(
         objToCopy =
           ReportViewModel(
-            repository = repository,
-            dispatcher = TestDispatcherProvider.instance,
-            patientRepository = ancPatientRepository,
-            fhirOperator = fhirOperator,
-            fhirEngine = fhirEngine,
-            sharedPreferencesHelper = sharedPreferencesHelper
+            repository,
+            coroutinesTestRule.testDispatcherProvider,
+            ancPatientRepository
           )
       )
   }

@@ -45,12 +45,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusYears
 
-class FamilyDetailScreenTest {
+class FamilyDetailScreenTest : RobolectricTest() {
 
-  @get:Rule(order = 2) val composeRule = createComposeRule()
+  @get:Rule val composeRule = createComposeRule()
 
   private val listenerObjectSpy =
     spyk(
@@ -58,19 +59,15 @@ class FamilyDetailScreenTest {
         fun onSeeAllEncounterClick() {
           // imitate see all encounter click action by doing nothing
         }
-
         fun onEncounterItemClick(item: Encounter) {
           // imitate encounter item click action by doing nothing
         }
-
         fun onMemberItemClick(memberItem: FamilyMemberItem) {
           // imitate member item click action by doing nothing
         }
-
         fun onAddMemberItemClick() {
           // imitate add member click action by doing nothing
         }
-
         fun onSeeAllUpcomingServiceClick() {
 
           // imitate see all upcoming services click action by doing nothing

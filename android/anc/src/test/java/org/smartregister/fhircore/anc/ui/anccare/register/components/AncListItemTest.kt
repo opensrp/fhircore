@@ -27,13 +27,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.anc.ui.anccare.register.RecordAncVisit
 import org.smartregister.fhircore.anc.ui.report.PATIENT_ANC_VISIT
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-class AncListItemTest {
+class AncListItemTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 

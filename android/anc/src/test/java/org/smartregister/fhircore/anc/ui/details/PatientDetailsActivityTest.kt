@@ -29,6 +29,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -38,7 +39,6 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -76,6 +76,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
   @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
 
+  private val appContext = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var patientDetailsActivity: PatientDetailsActivity
   private lateinit var patientDetailsActivitySpy: PatientDetailsActivity
   private lateinit var fhirEngine: FhirEngine
@@ -103,12 +104,6 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     patientDetailsActivity =
       Robolectric.buildActivity(PatientDetailsActivity::class.java, null).create().get()
     patientDetailsActivitySpy = spyk(objToCopy = patientDetailsActivity)
-  }
-
-  @After
-  override fun tearDown() {
-    super.tearDown()
-    patientDetailsActivitySpy.finish()
   }
 
   @Test

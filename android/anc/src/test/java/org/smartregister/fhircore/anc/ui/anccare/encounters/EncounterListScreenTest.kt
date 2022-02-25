@@ -30,9 +30,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.EncounterRepository
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class EncounterListScreenTest {
+class EncounterListScreenTest : RobolectricTest() {
 
   @Inject lateinit var encounterRepository: EncounterRepository
 
