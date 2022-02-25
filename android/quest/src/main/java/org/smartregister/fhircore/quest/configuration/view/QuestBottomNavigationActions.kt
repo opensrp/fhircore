@@ -16,21 +16,24 @@
 
 package org.smartregister.fhircore.quest.configuration.view
 
-import androidx.compose.runtime.Stable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.view.NavigationAction
-import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 
 @Serializable
-@SerialName("test_details")
-data class TestDetailsNavigationAction(val form: String, val readOnly: Boolean) : NavigationAction
+@SerialName("questionnaire")
+data class QuestionnaireNavigationAction(val form: String, val readOnly: Boolean) :
+  NavigationAction
 
-@Stable
 @Serializable
-data class ResultDetailsNavigationConfiguration(
-  override val appId: String,
-  override val classification: String,
-  val navigationOptions: List<NavigationOption>
-) : Configuration
+@SerialName("questionnaire_data_details")
+data class QuestionnaireDataDetailsNavigationAction(val classification: String) : NavigationAction
+
+@Serializable
+@SerialName("switch_fragment")
+data class ActionSwitchFragment(
+  val tag: String,
+  val isRegisterFragment: Boolean,
+  val isFilterVisible: Boolean,
+  val toolbarTitle: String?
+) : NavigationAction
