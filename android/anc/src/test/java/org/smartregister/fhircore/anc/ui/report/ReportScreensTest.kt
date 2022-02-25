@@ -16,12 +16,11 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Rule
@@ -33,7 +32,9 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 @ExperimentalCoroutinesApi
 class ReportScreensTest : RobolectricTest() {
 
-  @get:Rule val composeRule = createComposeRule()
+  @get:Rule(order = 1) val composeRule = createComposeRule()
+
+  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val listenerObjectSpy =
     spyk(
@@ -41,22 +42,17 @@ class ReportScreensTest : RobolectricTest() {
         // Imitate click action by doing nothing
         fun onBackPress() {}
         fun onReportMeasureItemClick() {}
-        fun onStartDatePress() {}
-        fun onEndDatePress() {}
+        fun onDateRangeClick() {}
         fun onPatientSelectionChanged(patientSelectionType: String) {}
         fun onCancelSelectedPatient() {}
         fun onPatientChangeClick() {}
-        fun onGenerateReportClick() {}
       }
     )
 
   @Test
   fun testReportMeasureList() {
     composeRule.setContent {
-      ReportHomeListBox(
-        dataList = emptyFlow(),
-        onReportMeasureItemClick = { listenerObjectSpy.onReportMeasureItemClick() }
-      )
+      ReportHomeListBox(dataList = emptyFlow(), onReportMeasureItemClick = {})
     }
     composeRule.onNodeWithTag(REPORT_MEASURE_LIST).assertExists()
   }
@@ -83,8 +79,8 @@ class ReportScreensTest : RobolectricTest() {
         startDate = "startDate",
         endDate = "endDate",
         canChange = true,
-        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
-        onEndDatePress = { listenerObjectSpy.onEndDatePress() }
+        showDateRangePicker = true,
+        onDateRangeClick = listenerObjectSpy::onDateRangeClick
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
@@ -97,8 +93,8 @@ class ReportScreensTest : RobolectricTest() {
         startDate = "startDate",
         endDate = "endDate",
         canChange = false,
-        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
-        onEndDatePress = { listenerObjectSpy.onEndDatePress() }
+        showDateRangePicker = true,
+        onDateRangeClick = listenerObjectSpy::onDateRangeClick
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
@@ -110,23 +106,19 @@ class ReportScreensTest : RobolectricTest() {
       DateRangeItem(
         text = "startDate",
         canChange = true,
-        clickListener = { listenerObjectSpy.onStartDatePress() }
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).assertExists()
-    // composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).performClick()
-    // verify { listenerObjectSpy.onDateRangePress() }
   }
 
   @Test
   fun testPatientSelectionForAll() {
     composeRule.setContent {
       PatientSelectionBox(
-        patientSelectionText = "All",
+        reportType = "All",
         selectedPatient = null,
-        onPatientSelectionChange = {
-          listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.ALL)
-        }
+        onReportTypeSelected = { it, _ -> listenerObjectSpy.onPatientSelectionChanged(it) },
+        radioOptions = listOf(Pair("All", true), Pair("Individual", false))
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -136,13 +128,10 @@ class ReportScreensTest : RobolectricTest() {
   fun testPatientSelectionForIndividual() {
     composeRule.setContent {
       PatientSelectionBox(
-        patientSelectionText = "Individual",
+        reportType = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = {
-          listenerObjectSpy.onPatientSelectionChanged(
-            ReportViewModel.PatientSelectionType.INDIVIDUAL
-          )
-        }
+        onReportTypeSelected = { it, _ -> listenerObjectSpy.onPatientSelectionChanged(it) },
+        radioOptions = listOf(Pair("All", false), Pair("Individual", true))
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -153,26 +142,16 @@ class ReportScreensTest : RobolectricTest() {
   fun testPatientSelectionChangeListener() {
     composeRule.setContent {
       PatientSelectionBox(
-        patientSelectionText = "Individual",
+        reportType = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = {
-          listenerObjectSpy.onPatientSelectionChanged(
-            ReportViewModel.PatientSelectionType.INDIVIDUAL
-          )
-        }
+        onReportTypeSelected = { reportType, _ ->
+          listenerObjectSpy.onPatientSelectionChanged(reportType)
+        },
+        radioOptions = listOf(Pair("All", false), Pair("Individual", true))
       )
     }
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
-    composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).performClick()
-    verify {
-      listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
-    }
-
     composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).assertExists()
-    composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).performClick()
-    verify {
-      listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
-    }
   }
 
   @Test
