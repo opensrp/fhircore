@@ -140,7 +140,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     with(activityBinding) {
       Assert.assertEquals("Register new client", this.btnRegisterNewClient.text)
       Assert.assertEquals("Clients", this.toolbarLayout.tvClientsListTitle.text)
-      Assert.assertEquals(4, this.bottomNavView.menu.size)
+      Assert.assertEquals(3, this.bottomNavView.menu.size)
     }
   }
 
@@ -150,15 +150,13 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
       patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
     val menu = patientRegisterActivity.bottomNavigationMenuOptions(registerViewConfiguration)
 
-    Assert.assertEquals(4, menu.size)
+    Assert.assertEquals(3, menu.size)
     Assert.assertEquals("menu_item_clients".hashCode(), menu[0].id)
     Assert.assertEquals(getString(R.string.menu_clients), menu[0].title)
     Assert.assertEquals("menu_item_tasks".hashCode(), menu[1].id)
     Assert.assertEquals(getString(R.string.menu_tasks), menu[1].title)
-    Assert.assertEquals("control_test".hashCode(), menu[2].id)
-    Assert.assertEquals("Control Test", menu[2].title)
-    Assert.assertEquals("menu_item_settings".hashCode(), menu[3].id)
-    Assert.assertEquals(getString(R.string.menu_settings), menu[3].title)
+    Assert.assertEquals("menu_item_settings".hashCode(), menu[2].id)
+    Assert.assertEquals(getString(R.string.menu_settings), menu[2].title)
   }
 
   @Test
