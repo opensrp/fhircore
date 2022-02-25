@@ -41,6 +41,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
@@ -333,6 +334,10 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val languageMenuItem = RoboMenuItem(R.id.menu_item_language)
     testRegisterActivity.onNavigationItemSelected(languageMenuItem)
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    dialog.clickOnItem(0)
+
+    verify(exactly = 1) { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "en") }
+
     Assert.assertEquals(
       testRegisterActivity.getString(R.string.select_language),
       dialog.title,
