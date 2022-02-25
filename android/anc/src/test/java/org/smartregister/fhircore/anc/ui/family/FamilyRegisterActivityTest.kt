@@ -17,13 +17,16 @@
 package org.smartregister.fhircore.anc.ui.family
 
 import android.app.Activity
+import android.content.Intent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -40,12 +43,14 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
+import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
@@ -138,6 +143,21 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
       View.GONE,
       familyRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility
     )
+  }
+
+  @Test
+  fun testOnBottomNavigationOptionItemSelectedShouldLaunchReportHomeActivity() {
+    familyRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_reports".hashCode() },
+      familyRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+    )
+
+    val expectedIntent = Intent(familyRegisterActivity, ReportHomeActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+        .nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test

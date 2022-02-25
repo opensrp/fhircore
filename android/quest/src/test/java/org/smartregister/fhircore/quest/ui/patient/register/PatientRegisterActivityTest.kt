@@ -17,13 +17,16 @@
 package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.app.Activity
+import android.content.Intent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.view.size
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
@@ -32,10 +35,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
@@ -43,7 +48,9 @@ import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 
 @HiltAndroidTest
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
@@ -109,7 +116,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
+  fun testOnBottomNavigationOptionItemSelectedShouldLaunchUserProfileFragment() {
     patientRegisterActivity.onBottomNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = "menu_item_settings".hashCode() },
       patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
@@ -127,6 +134,36 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
       View.GONE,
       patientRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility
     )
+  }
+
+  @Test
+  fun testOnBottomNavigationOptionItemSelectedShouldLaunchQuestionnaireDataDetailActivity() {
+
+    val config = patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+
+    val bottomNavigationOptions =
+      config.bottomNavigationOptions?.plus(
+        NavigationOption(
+          "control_test",
+          "Control Test",
+          "ic_reports",
+          QuestionnaireDataDetailsNavigationAction(classification = "control_test_details_view")
+        )
+      )
+
+    config.bottomNavigationOptions = bottomNavigationOptions
+
+    patientRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "control_test".hashCode() },
+      config
+    )
+
+    val expectedIntent =
+      Intent(patientRegisterActivity, QuestionnaireDataDetailActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
