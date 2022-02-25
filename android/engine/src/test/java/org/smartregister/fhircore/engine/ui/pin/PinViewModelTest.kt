@@ -33,6 +33,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.pinViewConfigurationOf
@@ -88,6 +89,14 @@ internal class PinViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { secureSharedPreference.saveSessionPin("1234") } returns Unit
     coEvery { secureSharedPreference.retrieveSessionPin() } returns "1234"
+    coEvery {
+      secureSharedPreference.saveCredentials(
+        AuthCredentials("username", "password", "sessionToken", "refreshToken")
+      )
+    } returns Unit
+    coEvery { secureSharedPreference.retrievePinCredentials() } returns
+      AuthCredentials("username", "password", "sessionToken", "refreshToken")
+    coEvery { secureSharedPreference.savePinCredentials() } returns Unit
 
     pinViewModel =
       PinViewModel(
