@@ -38,7 +38,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -51,7 +50,6 @@ class CqlContentTest : RobolectricTest() {
   val evaluator = LibraryEvaluator().apply { initialize() }
 
   @Test
-  @Ignore("Fix failing test: runs locally intermittently fails in CI ")
   fun runCqlLibraryTestForPqMedication() {
     val resourceDir = "cql/pq-medication"
     val cql = "$resourceDir/cql.txt".readFile()
@@ -115,7 +113,6 @@ class CqlContentTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix failing test: runs locally intermittently fails in CI ")
   fun runCqlLibraryTestForTestResults() {
     val resourceDir = "cql/test-results"
     val cql = "$resourceDir/cql.txt".readFile()
@@ -180,7 +177,6 @@ class CqlContentTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix failing test: runs locally intermittently fails in CI ")
   fun runCqlLibraryTestForControlTest() {
     val resourceDir = "cql/control-test"
     val cql = "$resourceDir/cql.txt".readFile()
