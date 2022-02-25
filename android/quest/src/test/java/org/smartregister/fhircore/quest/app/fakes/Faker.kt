@@ -134,6 +134,8 @@ object Faker {
           )
         )
       )
+
+    coEvery { patientRepository.fetchPregnancyCondition(any()) } returns ""
   }
 
   fun initPatientRepositoryEmptyMocks(patientRepository: PatientRepository) {
