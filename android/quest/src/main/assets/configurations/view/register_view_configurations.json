@@ -45,15 +45,6 @@
         }
       },
       {
-        "id": "control_test",
-        "title": "Control Test",
-        "icon" : "ic_reports",
-        "action": {
-          "type": "questionnaire_data_details",
-          "classification": "control_test_details_view"
-        }
-      },
-      {
         "id": "menu_item_settings",
         "title": "Settings",
         "icon" : "ic_settings",
@@ -104,18 +95,6 @@
           "isRegisterFragment": true,
           "isFilterVisible": false,
           "toolbarTitle": null
-        }
-      },
-      {
-        "id": "menu_item_tasks",
-        "title": "Tasks",
-        "icon" : "ic_tasks",
-        "action": {
-          "type": "switch_fragment",
-          "tag": "PatientTaskFragment",
-          "isRegisterFragment": false,
-          "isFilterVisible": false,
-          "toolbarTitle": "Tasks"
         }
       },
       {
