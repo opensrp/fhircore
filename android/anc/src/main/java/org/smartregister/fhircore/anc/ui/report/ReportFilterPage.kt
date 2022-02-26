@@ -68,13 +68,17 @@ fun ReportFilterPage(
         if (showProgressIndicator) {
           Column(
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.testTag(PROGRESS_BAR_COLUMN)
           ) {
-            CircularProgressIndicator(modifier = Modifier.size(40.dp), strokeWidth = 2.dp)
+            CircularProgressIndicator(
+              modifier = Modifier.size(40.dp).testTag(PROGRESS_BAR),
+              strokeWidth = 2.dp
+            )
             Text(
               text = stringResource(R.string.please_wait),
               textAlign = TextAlign.Center,
-              modifier = Modifier.padding(vertical = 16.dp)
+              modifier = Modifier.padding(vertical = 16.dp).testTag(PROGRESS_BAR_TEXT)
             )
           }
         } else {

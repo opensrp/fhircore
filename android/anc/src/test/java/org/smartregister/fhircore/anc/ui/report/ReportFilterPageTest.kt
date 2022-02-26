@@ -136,6 +136,29 @@ class ReportFilterPageTest : RobolectricTest() {
   }
 
   @Test
+  fun testReportFilterPageWithIndicator() {
+    composeRule.setContent {
+      ReportFilterPage(
+        topBarTitle = "FilterPageReportTitle",
+        onBackPress = {},
+        startDate = "",
+        endDate = "",
+        selectedPatient = selectionPatient.value,
+        generateReport = true,
+        onDateRangeClick = {},
+        reportType = "All",
+        onReportTypeSelected = { _, _ -> },
+        onGenerateReportClicked = {},
+        showProgressIndicator = true
+      )
+    }
+    composeRule.onNodeWithTag(PROGRESS_BAR_TEXT).assertTextEquals("Please wait…")
+    composeRule.onNodeWithTag(PROGRESS_BAR).assertExists()
+    composeRule.onNodeWithTag(PROGRESS_BAR_COLUMN).assertExists()
+    composeRule.onNodeWithTag(PROGRESS_BAR_TEXT).assertExists()
+  }
+
+  @Test
   fun testGenerateReportButton() {
     composeRule.setContent {
       GenerateReportButton(

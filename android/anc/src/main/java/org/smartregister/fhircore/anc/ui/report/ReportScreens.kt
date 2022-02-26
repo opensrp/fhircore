@@ -91,6 +91,9 @@ const val REPORT_RESULT_POPULATION_DATA = "reportResultPopulationData"
 const val REPORT_RESULT_POPULATION_BOX = "reportResultPopulationBox"
 const val REPORT_RESULT_POPULATION_ITEM = "reportResultPopulationItem"
 const val INDICATOR_STATUS = "indicatorStatus"
+const val PROGRESS_BAR_COLUMN = "progressBarColumn"
+const val PROGRESS_BAR = "progressBar"
+const val PROGRESS_BAR_TEXT = "progressBarText"
 
 @Composable
 fun ReportView(
