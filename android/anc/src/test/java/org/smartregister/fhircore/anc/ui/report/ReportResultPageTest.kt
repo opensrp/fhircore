@@ -122,6 +122,14 @@ class ReportResultPageTest : RobolectricTest() {
   }
 
   @Test
+  fun testResultItemIndividualWithIndicator() {
+    composeRule.setContent {
+      ResultItemIndividual(selectedPatient = PatientItem(), indicatorDescription = "show")
+    }
+    composeRule.onNodeWithTag(INDICATOR_TEXT).assertExists()
+  }
+
+  @Test
   fun testResultPopulationData() {
     composeRule.setContent { ResultForPopulation(emptyList()) }
     composeRule.onNodeWithTag(REPORT_RESULT_POPULATION_DATA).assertExists()

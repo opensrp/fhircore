@@ -283,7 +283,7 @@ fun ResultItemIndividual(
               color = SubtitleTextColor,
               text = indicatorDescription,
               fontSize = 14.sp,
-              modifier = modifier.wrapContentWidth()
+              modifier = modifier.wrapContentWidth().testTag(INDICATOR_TEXT)
             )
           }
         }

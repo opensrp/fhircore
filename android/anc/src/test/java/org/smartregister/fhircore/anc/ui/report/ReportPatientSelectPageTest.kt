@@ -125,6 +125,12 @@ class ReportPatientSelectPageTest : RobolectricTest() {
   }
 
   @Test
+  fun testReportSelectPatientSearchViewWithBackArrow() {
+    composeRule.setContent { SearchView(searchTextStateWithText, viewModel = reportViewModel) }
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertExists()
+  }
+
+  @Test
   fun testReportSelectPatientSearchHint() {
     composeRule.setContent { SearchHint() }
     composeRule.onNodeWithTag(REPORT_SEARCH_HINT).assertExists()

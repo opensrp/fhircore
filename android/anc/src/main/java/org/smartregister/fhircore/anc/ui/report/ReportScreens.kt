@@ -94,10 +94,10 @@ const val INDICATOR_STATUS = "indicatorStatus"
 const val PROGRESS_BAR_COLUMN = "progressBarColumn"
 const val PROGRESS_BAR = "progressBar"
 const val PROGRESS_BAR_TEXT = "progressBarText"
+const val INDICATOR_TEXT = "indicatorText"
 
 @Composable
 fun ReportView(
-  modifier: Modifier = Modifier,
   reportViewModel: ReportViewModel,
   registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>,
 ) {
