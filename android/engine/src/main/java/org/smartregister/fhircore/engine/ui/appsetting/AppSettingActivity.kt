@@ -55,7 +55,9 @@ class AppSettingActivity : AppCompatActivity() {
             accountAuthenticator = accountAuthenticator
           ) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
-              sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
+              if (appSettingViewModel.rememberApp.value == true) {
+                sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
+              }
               finish()
             } else {
               showToast(
@@ -68,7 +70,23 @@ class AppSettingActivity : AppCompatActivity() {
       }
     )
 
-    sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.let {
+    appSettingViewModel.rememberApp.observe(
+      this,
+      { doRememberApp ->
+        doRememberApp?.let {
+          if (doRememberApp) {
+            if (!appSettingViewModel.appId.value.isNullOrEmpty()) {
+              sharedPreferencesHelper.write(APP_ID_CONFIG, appSettingViewModel.appId.value ?: "")
+            }
+          } else {
+            sharedPreferencesHelper.remove(APP_ID_CONFIG)
+          }
+        }
+      }
+    )
+
+    val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
+    lastAppId?.let {
       appSettingViewModel.onApplicationIdChanged(it)
       appSettingViewModel.loadConfigurations(true)
     }
@@ -79,7 +97,7 @@ class AppSettingActivity : AppCompatActivity() {
             val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
             AppSettingScreen(
               appId = appId,
-              rememberApp = rememberApp,
+              rememberApp = rememberApp ?: false,
               onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
               onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
               onLoadConfigurations = appSettingViewModel::loadConfigurations
