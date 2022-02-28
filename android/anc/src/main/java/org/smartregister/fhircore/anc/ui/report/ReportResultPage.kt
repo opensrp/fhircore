@@ -198,8 +198,7 @@ fun ReportResultPage(
           startDate = startDate,
           endDate = endDate,
           canChange = false,
-          showDateRangePicker = false,
-          onDateRangeClick = {}
+          showDateRangePicker = false
         )
         Spacer(modifier = Modifier.height(16.dp))
         if (resultForIndividual != null && selectedPatient != null) {

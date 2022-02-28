@@ -189,7 +189,7 @@ fun DateSelectionBox(
   endDate: String = "",
   canChange: Boolean = false,
   showDateRangePicker: Boolean = true,
-  onDateRangeClick: () -> Unit
+  onDateRangeClick: () -> Unit = {}
 ) {
   Column(
     modifier = modifier.wrapContentWidth().testTag(REPORT_DATE_RANGE_SELECTION),
