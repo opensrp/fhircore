@@ -70,6 +70,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
       R.id.menu_item_families, R.id.menu_item_family_planning_clients ->
         switchFragment(mainFragmentTag())
       R.id.menu_item_anc_clients -> switchFragment(tag = AncRegisterFragment.TAG)
+      R.id.menu_item_reports -> navigateToReports()
     }
     return true
   }
