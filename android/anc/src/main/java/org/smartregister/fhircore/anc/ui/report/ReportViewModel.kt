@@ -243,9 +243,7 @@ constructor(
     }
   }
 
-  private fun formatPopulationMeasureReport(
-    measureReport: MeasureReport
-  ): List<ResultItemPopulation> {
+  fun formatPopulationMeasureReport(measureReport: MeasureReport): List<ResultItemPopulation> {
     return measureReport.group.flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
       reportGroup.stratifier.map { stratifier ->
         val resultItems: List<ResultItem> =

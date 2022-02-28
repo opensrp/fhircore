@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.report
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.util.Pair
 import androidx.lifecycle.MutableLiveData
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -28,6 +29,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -182,9 +184,42 @@ internal class ReportViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testEvaluateMeasureForIndividual() {
+    reportViewModel.evaluateMeasure(
+      context = ApplicationProvider.getApplicationContext(),
+      measureUrl = "measure/ancInd03",
+      individualEvaluation = true,
+      measureResourceBundleUrl = "measure/ancInd03"
+    )
+    Assert.assertNotNull(reportViewModel.resultForIndividual.value)
+  }
+
+  @Test
+  fun testEvaluateMeasureForPopulation() {
+    reportViewModel.evaluateMeasure(
+      context = ApplicationProvider.getApplicationContext(),
+      measureUrl = "measure/ancInd03",
+      individualEvaluation = false,
+      measureResourceBundleUrl = "measure/ancInd03"
+    )
+    Assert.assertNotNull(reportViewModel.resultForPopulation.value)
+  }
+
+  @Test
+  fun testFormatPopulationMeasureReport() {
+    Assert.assertNotNull(reportViewModel.formatPopulationMeasureReport(getTestMeasureReport()))
+  }
+
+  @Test
   fun auxGenerateReportTestForIndividual() {
     every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
     reportViewModel.onReportTypeSelected("Individual", true)
     Assert.assertEquals(ReportViewModel.ReportScreen.PICK_PATIENT, reportViewModel.currentScreen)
+  }
+
+  private fun getTestMeasureReport(): MeasureReport {
+    return MeasureReport().apply {
+      addGroup().apply { stratifier = listOf(addStratifier().apply { id = "123" }) }
+    }
   }
 }
