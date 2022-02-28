@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
 import org.smartregister.fhircore.mwcore.R
 import org.smartregister.fhircore.mwcore.ui.fragments.AppointmentsFragment
@@ -36,6 +37,7 @@ import org.smartregister.fhircore.mwcore.ui.fragments.TracingFragment
 import org.smartregister.fhircore.mwcore.ui.patient.register.fragments.ClientsRegisterFragment
 import org.smartregister.fhircore.mwcore.util.MwCoreConfigClassification
 import org.smartregister.fhircore.mwcore.util.SharedPrefsKeys.REGISTER_CONFIG
+import timber.log.Timber
 
 @AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
@@ -50,9 +52,17 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         configClassification = MwCoreConfigClassification.PATIENT_REGISTER_CLIENT
       )
     configureViews(registerViewConfiguration)
+
+    val username = secureSharedPreference.retrieveSessionUsername()
+    val sessionToken = secureSharedPreference.retrieveSessionToken()
+    val credentials = secureSharedPreference.retrieveCredentials().toString()
+
+    Timber.i("HERE 1: $username")
+    Timber.i("HERE 2: $sessionToken")
+    Timber.i("HERE 3: $credentials")
   }
 
-  override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
+  override fun bottomNavigationMenuOptions(viewConfiguration: RegisterViewConfiguration): List<NavigationMenuOption> {
     return listOf(
       NavigationMenuOption(
         id = R.id.menu_item_register,
@@ -144,7 +154,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       return
     }
 
-    for ((index, it) in bottomNavigationMenuOptions().withIndex()) {
+    for ((index, it) in bottomNavigationMenuOptions(viewConfiguration).withIndex()) {
       bottomMenu.add(org.smartregister.fhircore.engine.R.id.menu_group_default_item_id, it.id, index, it.title).apply {
         it.iconResource.let { icon -> this.icon = icon }
       }
