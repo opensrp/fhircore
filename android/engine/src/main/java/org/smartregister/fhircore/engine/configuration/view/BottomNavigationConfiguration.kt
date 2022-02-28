@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.configuration.view
+package org.smartregister.fhircore.engine.configuration.view
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
 
-@Serializable sealed class NavigationAction
-
-@Serializable
-@SerialName("questionnaire")
-data class QuestionnaireNavigationAction(val form: String, val readOnly: Boolean) :
-  NavigationAction()
-
-@Serializable
-@SerialName("questionnaire_data_details")
-data class QuestionnaireDataDetailsNavigationAction(val classification: String) :
-  NavigationAction()
+interface NavigationAction
 
 @Serializable
 class NavigationConfiguration(

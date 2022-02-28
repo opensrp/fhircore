@@ -34,12 +34,6 @@
         "description": "Configurations for Test Results Details"
       },
       {
-        "workflowPoint": "register_navigation",
-        "resource": "RegisterNavigationConfiguration",
-        "classification": "register_navigation",
-        "description": "Configurations for Custom Navigation"
-      },
-      {
         "workflowPoint": "result_details_navigation",
         "resource": "ResultDetailsNavigationConfiguration",
         "classification": "result_details_navigation",
@@ -92,12 +86,6 @@
         "resource": "DataDetailsListViewConfiguration",
         "classification": "patient_details_view",
         "description": "Configurations for patient details view"
-      },
-      {
-        "workflowPoint": "register_navigation",
-        "resource": "RegisterNavigationConfiguration",
-        "classification": "register_navigation",
-        "description": "Configurations for Custom Navigation"
       },
       {
         "workflowPoint": "result_details_navigation",
