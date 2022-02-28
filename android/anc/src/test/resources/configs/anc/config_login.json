@@ -1,0 +1,9 @@
+{
+  "appId": "anc",
+  "classification": "login",
+  "applicationName": "ANC",
+  "applicationVersion": "0.0.3",
+  "darkMode": true,
+  "showLogo": false,
+  "enablePin": false
+}

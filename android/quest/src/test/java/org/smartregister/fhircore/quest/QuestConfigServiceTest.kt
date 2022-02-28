@@ -62,7 +62,7 @@ class QuestConfigServiceTest : RobolectricTest() {
     coEvery { repository.getBinary(any()) } returns Binary()
     coEvery { repository.getBinary("56181") } returns
             Binary().apply {
-              content = "/configs/quest/config_sync.json".readFile().toByteArray()
+              content = "/configs/config_sync.json".readFile().toByteArray()
             }
 
     runBlocking { configurationRegistry.loadAppConfigurations("quest", mockk(relaxed = true), {}) }

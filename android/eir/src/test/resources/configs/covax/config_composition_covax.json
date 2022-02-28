@@ -1,6 +1,6 @@
 {
   "resourceType": "Composition",
-  "id": "71728",
+  "id": "71749",
   "status": "final",
   "date": "2022-02-08",
   "type": {
@@ -14,16 +14,20 @@
   },
   "identifier": {
     "use": "official",
-    "value": "quest"
+    "value": "covax"
   },
   "title": "Device configurations",
   "confidentiality": "L",
+  "custodian": {
+    "reference": "Organization/361",
+    "display": "G6PD"
+  },
   "section": [
     {
       "title": "App configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/62938",
+        "reference": "Binary/71741",
         "identifier": { "value": "application" }
       }
     },
@@ -31,7 +35,7 @@
       "title": "Login configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/62940",
+        "reference": "Binary/71743",
         "identifier": { "value": "login" }
       }
     },
@@ -39,40 +43,16 @@
       "title": "Patient Register configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/62952",
+        "reference": "Binary/71745",
         "identifier": { "value": "patient_register" }
       }
     },
     {
-      "title": "Pin View configuration",
+      "title": "Immunization Profile View configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/63003",
-        "identifier": { "value": "pin_view" }
-      }
-    },
-    {
-      "title": "Patient Details View configuration",
-      "mode": "working",
-      "focus": {
-        "reference": "Binary/63011",
-        "identifier": { "value": "patient_details_view" }
-      }
-    },
-    {
-      "title": "Result Details Navigation configuration",
-      "mode": "working",
-      "focus": {
-        "reference": "Binary/63007",
-        "identifier": { "value": "result_details_navigation" }
-      }
-    },
-    {
-      "title": "Sync configuration",
-      "mode": "working",
-      "focus": {
-        "reference": "Binary/56181",
-        "identifier": { "value": "sync" }
+        "reference": "Binary/71747",
+        "identifier": { "value": "immunization_profile" }
       }
     }
   ]
