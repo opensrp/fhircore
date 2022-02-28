@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
@@ -210,6 +211,12 @@ internal class ReportViewModelTest : RobolectricTest() {
     Assert.assertNotNull(reportViewModel.formatPopulationMeasureReport(getTestMeasureReport()))
   }
 
+  private fun getTestMeasureReport(): MeasureReport {
+    return MeasureReport().apply {
+      addGroup().apply { stratifier = listOf(addStratifier().apply { id = "123" }) }
+    }
+  }
+
   @Test
   fun auxGenerateReportTestForIndividual() {
     every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
@@ -217,9 +224,25 @@ internal class ReportViewModelTest : RobolectricTest() {
     Assert.assertEquals(ReportViewModel.ReportScreen.PICK_PATIENT, reportViewModel.currentScreen)
   }
 
-  private fun getTestMeasureReport(): MeasureReport {
-    return MeasureReport().apply {
-      addGroup().apply { stratifier = listOf(addStratifier().apply { id = "123" }) }
-    }
+  @Ignore("should work but")
+  @Test
+  fun testStringReplaceDashed() {
+    val testString: String = "hel-lo"
+    val resultString = "" // testString.replaceDashes()
+    val expectedString = "HELLO"
+    Assert.assertEquals(expectedString, resultString)
+  }
+
+  @Test
+  fun testOnReportTypeSelected() {
+    reportViewModel.onReportTypeSelected("ancInd01", true)
+    Assert.assertNotNull(reportViewModel.filterValue.value)
+    Assert.assertEquals(reportViewModel.currentScreen, ReportViewModel.ReportScreen.PICK_PATIENT)
+  }
+
+  @Test
+  fun testOnClear() {
+    reportViewModel.resetValues()
+    Assert.assertEquals("", reportViewModel.currentReportType.value)
   }
 }
