@@ -24,16 +24,18 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.configuration.view.ActionNavigateToReport
+import org.smartregister.fhircore.anc.configuration.view.ActionSwitchFragment
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
 import org.smartregister.fhircore.anc.util.AncConfigClassification
+import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
 import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
-import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
@@ -44,12 +46,14 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   @Inject lateinit var patientRepository: PatientRepository
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var jsonSpecificationProvider: AncJsonSpecificationProvider
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val registerViewConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
         configClassification = AncConfigClassification.PATIENT_REGISTER,
+        jsonSpecificationProvider.getJson()
       )
     configureViews(registerViewConfiguration)
   }
@@ -61,45 +65,37 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
       Pair(UserProfileFragment.TAG, UserProfileFragment())
     )
 
-  override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> =
-    listOf(
-      NavigationMenuOption(
-        id = R.id.menu_item_register,
-        title = getString(R.string.register),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_home)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.menu_item_tasks,
-        title = getString(R.string.tasks),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.menu_item_reports,
-        title = getString(R.string.reports),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.menu_item_profile,
-        title = getString(R.string.profile),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_user)!!
-      )
-    )
-
   override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
-      R.id.menu_item_profile ->
-        switchFragment(
-          tag = UserProfileFragment.TAG,
-          isRegisterFragment = false,
-          isFilterVisible = false,
-          toolbarTitle = getString(R.string.profile)
-        )
-      R.id.menu_item_register, R.id.menu_item_families, R.id.menu_item_family_planning_clients ->
+      R.id.menu_item_families, R.id.menu_item_family_planning_clients ->
         switchFragment(mainFragmentTag())
-      R.id.menu_item_reports -> navigateToReports()
       R.id.menu_item_anc_clients -> switchFragment(tag = AncRegisterFragment.TAG)
     }
     return true
+  }
+
+  override fun onBottomNavigationOptionItemSelected(
+    item: MenuItem,
+    viewConfiguration: RegisterViewConfiguration
+  ): Boolean {
+    viewConfiguration.bottomNavigationOptions?.forEach { navigationOption ->
+      if (item.itemId == navigationOption.id.hashCode()) {
+        when (val action = navigationOption.action) {
+          is ActionSwitchFragment -> {
+            switchFragment(
+              action.tag,
+              action.isRegisterFragment,
+              action.isFilterVisible,
+              action.toolbarTitle
+            )
+          }
+          is ActionNavigateToReport -> {
+            navigateToReports()
+          }
+        }
+      }
+    }
+    return super.onBottomNavigationOptionItemSelected(item, viewConfiguration)
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
@@ -128,6 +124,11 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_family_planning_clients,
         titleResource = R.string.family_planning_clients,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_family_clients)!!,
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_reports,
+        titleResource = R.string.reports,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
       ),
       SideMenuOption(
         itemId = R.id.menu_item_profile,

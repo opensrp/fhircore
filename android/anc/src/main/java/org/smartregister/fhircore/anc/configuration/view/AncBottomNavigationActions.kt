@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.remote.model.response
+package org.smartregister.fhircore.anc.configuration.view
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.view.NavigationAction
+
+@Serializable @SerialName("navigate_to_report") class ActionNavigateToReport : NavigationAction
 
 @Serializable
-data class UserInfo(
-  @SerialName("questionnaire_publisher") var questionnairePublisher: String? = null,
-  @SerialName("organization") var organization: String? = null,
-  @SerialName("location") var location: String? = null,
-  @SerialName("sub") var keyclockuuid: String? = null
-)
+@SerialName("switch_fragment")
+data class ActionSwitchFragment(
+  val tag: String,
+  val isRegisterFragment: Boolean,
+  val isFilterVisible: Boolean,
+  val toolbarTitle: String?
+) : NavigationAction

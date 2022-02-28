@@ -21,6 +21,7 @@ import android.content.Intent
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -55,6 +56,8 @@ import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @HiltAndroidTest
@@ -63,7 +66,8 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  // @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   private lateinit var registerFragment: FamilyRegisterFragment
 
@@ -75,6 +79,8 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
     every { accountAuthenticator.launchLoginScreen() } just runs
 
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(any(), any<String>()) } returns ""
 
     configurationRegistry.loadAppConfigurations(
       appId = "anc",

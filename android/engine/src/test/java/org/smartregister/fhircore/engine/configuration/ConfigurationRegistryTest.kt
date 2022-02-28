@@ -17,9 +17,11 @@
 package org.smartregister.fhircore.engine.configuration
 
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
@@ -32,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -44,6 +47,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 

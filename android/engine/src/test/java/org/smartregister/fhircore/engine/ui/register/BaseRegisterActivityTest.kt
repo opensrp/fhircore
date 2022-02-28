@@ -35,10 +35,13 @@ import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
@@ -54,18 +57,21 @@ import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.app.fakes.FakeModel
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asString
 
 @HiltAndroidTest
@@ -79,6 +85,9 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+
   private lateinit var testRegisterActivityController: ActivityController<TestRegisterActivity>
 
   private lateinit var testRegisterActivity: TestRegisterActivity
@@ -86,6 +95,13 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(any(), any<String>()) } returns ""
+    every { sharedPreferencesHelper.write(any(), any<String>()) } returns Unit
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    every { secureSharedPreference.retrieveCredentials() } returns FakeModel.authCredentials
+    every { secureSharedPreference.deleteCredentials() } returns Unit
+
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     configurationRegistry.loadAppConfigurations(
       appId = "appId",
@@ -131,8 +147,23 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertTrue(supportedFragments.containsKey(TestFragment.TAG + 1))
     Assert.assertTrue(supportedFragments.containsKey(TestFragment.TAG + 2))
 
+    val config = testRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+
+    // Bottom navigation should not contains any menu option
+    Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions(config).isEmpty())
+
+    config.bottomNavigationOptions =
+      listOf(
+        NavigationOption(
+          id = "profile",
+          title = getString(R.string.profile),
+          icon = "ic_user",
+          mockk()
+        )
+      )
+
     // Bottom navigation contains one menu option
-    Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions().isNotEmpty())
+    Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions(config).isNotEmpty())
   }
 
   @Test
@@ -229,6 +260,15 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val result = spyk(Result.Success)
     val currentDateTime = OffsetDateTime.now()
     every { result.timestamp } returns currentDateTime
+    every { sharedPreferencesHelper.read(any(), any<String>()) } answers
+      {
+        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
+          currentDateTime.asString()
+        } else {
+          ""
+        }
+      }
+
     testRegisterActivity.onSync(State.Finished(result))
     Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
     Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
@@ -252,6 +292,14 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       )
     val lastDateTimestamp = OffsetDateTime.now()
     every { result.timestamp } returns lastDateTimestamp
+    every { sharedPreferencesHelper.read(any(), any<String>()) } answers
+      {
+        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
+          lastDateTimestamp.asString()
+        } else {
+          ""
+        }
+      }
     testRegisterActivity.onSync(State.Failed(result))
     Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
     Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
@@ -286,6 +334,10 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val languageMenuItem = RoboMenuItem(R.id.menu_item_language)
     testRegisterActivity.onNavigationItemSelected(languageMenuItem)
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    dialog.clickOnItem(0)
+
+    verify(exactly = 1) { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "en") }
+
     Assert.assertEquals(
       testRegisterActivity.getString(R.string.select_language),
       dialog.title,
@@ -413,15 +465,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
           iconResource = ContextCompat.getDrawable(this, R.drawable.ic_menu)!!,
           count = 10,
           countMethod = { 10L }
-        )
-      )
-
-    override fun bottomNavigationMenuOptions() =
-      listOf(
-        NavigationMenuOption(
-          10000,
-          getString(R.string.profile),
-          ContextCompat.getDrawable(this, R.drawable.ic_user)!!
         )
       )
 
