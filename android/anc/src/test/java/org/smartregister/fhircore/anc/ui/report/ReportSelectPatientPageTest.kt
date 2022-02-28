@@ -33,8 +33,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.model.PatientItem
@@ -46,7 +46,7 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
 @ExperimentalCoroutinesApi
-class ReportPatientSelectPageTest : RobolectricTest() {
+class ReportSelectPatientPageTest : RobolectricTest() {
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -81,9 +81,11 @@ class ReportPatientSelectPageTest : RobolectricTest() {
         every { startDate } returns MutableLiveData("")
         every { endDate } returns MutableLiveData("")
         every { filterValue } returns MutableLiveData<Pair<RegisterFilterType, Any?>>()
-        every { currentScreen } returns ReportViewModel.ReportScreen.HOME
-        every { selectedPatientItem } returns this@ReportPatientSelectPageTest.selectedPatient
-        every { searchTextState } returns this@ReportPatientSelectPageTest.searchTextState
+        every { currentScreen } returns ReportViewModel.ReportScreen.FILTER
+        every { selectedPatientItem } returns this@ReportSelectPatientPageTest.selectedPatient
+        every { searchTextState } returns this@ReportSelectPatientPageTest.searchTextState
+        every { onBackPress(ReportViewModel.ReportScreen.FILTER) } returns Unit
+        every { currentReportType } returns MutableLiveData("")
       }
 
     registerDataViewModel =
@@ -111,7 +113,6 @@ class ReportPatientSelectPageTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("failing locally")
   fun testReportSelectPatientSearchView() {
     composeRule.setContent { SearchView(searchTextState, viewModel = reportViewModel) }
     composeRule.onNodeWithTag(REPORT_SEARCH_PATIENT).assertExists().assertTextContains("")
@@ -128,6 +129,9 @@ class ReportPatientSelectPageTest : RobolectricTest() {
   fun testReportSelectPatientSearchViewWithBackArrow() {
     composeRule.setContent { SearchView(searchTextStateWithText, viewModel = reportViewModel) }
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertExists()
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).performClick()
+    Assert.assertEquals(ReportViewModel.ReportScreen.FILTER, reportViewModel.currentScreen)
+    Assert.assertEquals("", reportViewModel.currentReportType.value)
   }
 
   @Test
