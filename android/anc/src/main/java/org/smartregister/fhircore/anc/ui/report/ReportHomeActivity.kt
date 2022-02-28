@@ -88,7 +88,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
             Timber.d(message = "This is the measure name => ".plus(reportName))
             reportViewModel.evaluateMeasure(
               context = currentActivity,
-              // TODO make this dynamic based on the measure selection
               measureUrl =
                 buildString {
                   append("http://fhir.org/guides/who/anc-cds/Measure/")

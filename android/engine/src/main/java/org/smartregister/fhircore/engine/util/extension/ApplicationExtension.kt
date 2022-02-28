@@ -135,7 +135,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
   try {
     val jsonParser = FhirContext.forR4().newJsonParser()
     val savedResources =
-      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "false")
+      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
 
     context.assets.open(resourcesBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
       val bundle = jsonParser.parseResource(it) as Bundle
@@ -143,10 +143,15 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
         if (entry.resource.resourceType == ResourceType.Library) {
           fhirOperator.loadLib(entry.resource as Library)
         } else {
-          if (!savedResources!!.toBooleanStrict()) save(entry.resource)
+          if (!savedResources!!.contains(resourcesBundlePath)) {
+            save(entry.resource)
+            sharedPreferencesHelper.write(
+              SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,
+              savedResources.plus(",").plus(resourcesBundlePath)
+            )
+          }
         }
       }
-      sharedPreferencesHelper.write(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "true")
     }
   } catch (exception: Exception) {
     Timber.e(exception)

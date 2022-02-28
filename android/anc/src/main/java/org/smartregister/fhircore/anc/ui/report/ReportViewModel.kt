@@ -183,7 +183,6 @@ constructor(
     context: Context,
     measureUrl: String,
     individualEvaluation: Boolean,
-    // TODO make this dynamic and passed from ReportHomeActivity
     measureResourceBundleUrl: String
   ) {
     viewModelScope.launch {
