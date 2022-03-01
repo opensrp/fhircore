@@ -125,6 +125,8 @@ constructor(
   val endDate: LiveData<String>
     get() = _endDate
 
+  val dateException: MutableLiveData<Boolean> = MutableLiveData(false)
+
   private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any?>>()
   val filterValue
     get() = _filterValue
@@ -289,6 +291,7 @@ constructor(
 
   fun setDateRange(dateRange: androidx.core.util.Pair<Long, Long>) {
     this._dateRange.value = dateRange
+    dateException.postValue(false)
     // Format displayed date e.g 16 Nov, 2020 - 29 Oct, 2021
     try {
       setStartEndDate(
@@ -297,6 +300,7 @@ constructor(
       )
     } catch (illegalArgumentException: IllegalArgumentException) {
       Timber.e(illegalArgumentException)
+      dateException.postValue(true)
     }
   }
 

@@ -167,6 +167,13 @@ internal class ReportViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testSetDateRangeInvalidData() {
+    reportViewModel.currentReportType.value = "All"
+    reportViewModel.setDateRange(Pair(1637798400000L, 0))
+    Assert.assertEquals(false, reportViewModel.dateException.value)
+  }
+
+  @Test
   fun testReportResultForIndividual() {
     val expectedResult = ResultItem(status = "True", isMatchedIndicator = true)
     Assert.assertEquals(expectedResult, reportViewModel.resultForIndividual.value)
@@ -227,6 +234,7 @@ internal class ReportViewModelTest : RobolectricTest() {
     every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
     reportViewModel.onReportTypeSelected("Individual", true)
     Assert.assertEquals(ReportViewModel.ReportScreen.PICK_PATIENT, reportViewModel.currentScreen)
+    Assert.assertNotNull(reportViewModel.filterValue.value)
   }
 
   @Ignore("should work but")
