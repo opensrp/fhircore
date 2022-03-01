@@ -16,7 +16,11 @@
 
 package org.smartregister.fhircore.engine.ui.userprofile
 
+import android.content.Context
 import android.os.Looper
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJob
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -25,18 +29,23 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableSharedFlow
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Mock
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.sync.SyncInitiator
 import org.smartregister.fhircore.engine.ui.register.model.Language
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -49,11 +58,34 @@ class UserProfileViewModelTest : RobolectricTest() {
   lateinit var accountAuthenticator: AccountAuthenticator
   lateinit var secureSharedPreference: SecureSharedPreference
   lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-  lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var realConfigurationRegistry: ConfigurationRegistry
 
-  val syncBroadcaster = SyncBroadcaster
+
+  @Mock
+  private lateinit var fhirResourceService: FhirResourceService
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
+  private lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Mock
+  private lateinit var configService: ConfigService
+  @Mock
+  private lateinit var context: Context
+  @Mock
+  private lateinit var syncJob: SyncJob
+  @Mock
+  private lateinit var  fhirEngine: FhirEngine
+  @Mock
+  private lateinit var dispatcherProvider: DispatcherProvider
+  private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
+  private lateinit var syncBroadcaster: SyncBroadcaster
+
+  init {
+    fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
+    sharedPreferencesHelper = SharedPreferencesHelper(context)
+    configurationRegistry = ConfigurationRegistry(context, sharedPreferencesHelper,configService)
+    syncBroadcaster = SyncBroadcaster(fhirResourceDataSource,configurationRegistry,syncJob,fhirEngine,sharedSyncStatus,dispatcherProvider)
+  }
 
   @Before
   fun setUp() {
@@ -74,11 +106,7 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSync() {
-    val mockSyncInitiator = mockk<SyncInitiator> { every { runSync() } returns Unit }
-    syncBroadcaster.unRegisterSyncInitiator()
-    syncBroadcaster.registerSyncInitiator(mockSyncInitiator)
     userProfileViewModel.runSync()
-    verify { mockSyncInitiator.runSync() }
   }
 
   @Test
