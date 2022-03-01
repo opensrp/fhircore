@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.bmicompute
+package org.smartregister.fhircore.anc.ui.details.bmicompute
 
 import android.content.Context
 import android.graphics.Color
@@ -30,7 +30,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireViewModel
 
 @HiltAndroidTest
 class BmiQuestionnaireViewModelTest : RobolectricTest() {

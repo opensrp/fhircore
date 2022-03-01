@@ -108,7 +108,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       updateViews()
 
-      fragment.whenStarted { loadProgress.dismiss() }
+      fragment.whenStarted { withContext(dispatcherProvider.main()) { loadProgress.dismiss() } }
     }
   }
 

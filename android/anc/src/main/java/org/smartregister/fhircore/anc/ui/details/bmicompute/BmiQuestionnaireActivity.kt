@@ -20,13 +20,14 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 class BmiQuestionnaireActivity : QuestionnaireActivity() {
@@ -71,15 +72,18 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   private fun showErrorAlert(title: String, message: String) {
-    AlertDialog.Builder(this)
-      .setTitle(title)
-      .setMessage(message)
-      .setCancelable(true)
-      .setPositiveButton(android.R.string.ok) { dialogInterface, _ ->
-        dialogInterface.dismiss()
+    AlertDialogue.showAlert(
+      this,
+      AlertIntent.ERROR,
+      message,
+      title,
+      { dialog ->
+        dialog.dismiss()
         resumeForm()
-      }
-      .show()
+      },
+      android.R.string.ok,
+      neutralButtonText = android.R.string.cancel
+    )
   }
 
   private fun resumeForm() {
@@ -96,15 +100,13 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     computedBMI: Double
   ) {
     val message = questionnaireViewModel.getBmiResult(computedBMI, this)
-    AlertDialog.Builder(this)
-      .setTitle(getString(R.string.your_bmi) + " $computedBMI")
-      .setMessage(message)
-      .setCancelable(false)
-      .setNegativeButton(R.string.re_compute) { dialogInterface, _ ->
-        dialogInterface.dismiss()
-        resumeForm()
-      }
-      .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
+
+    AlertDialogue.showAlert(
+      this,
+      AlertIntent.INFO,
+      message,
+      getString(R.string.your_bmi) + " $computedBMI",
+      { dialogInterface ->
         dialogInterface.dismiss()
 
         lifecycleScope.launch {
@@ -116,7 +118,13 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
           )
           exitForm()
         }
-      }
-      .show()
+      },
+      R.string.str_save,
+      { dialogInterface ->
+        dialogInterface.dismiss()
+        resumeForm()
+      },
+      R.string.re_compute,
+    )
   }
 }

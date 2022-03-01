@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.bmicompute
+package org.smartregister.fhircore.anc.ui.details.bmicompute
 
 import android.app.Activity
 import android.content.Intent
+import android.text.SpannableString
 import android.view.View
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
@@ -60,8 +61,8 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireViewModel
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -116,6 +117,7 @@ class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     coEvery { bmiQuestionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
     coEvery { bmiQuestionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
+    // coEvery { bmiQuestionnaireViewModel.libraryEvaluator.initialize() } just runs
     val questionnaireConfig = QuestionnaireConfig("appId", "form", "title", "form-id")
     coEvery { bmiQuestionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
       questionnaireConfig
@@ -234,6 +236,98 @@ class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
         "showErrorAlert" withArguments
         listOf("Try again", "Error encountered cannot save form")
     }
+  }
+
+  @Test
+  fun resumeFormShouldCallDismissSaveProcessing() {
+    ReflectionHelpers.callInstanceMethod<Void>(bmiQuestionnaireActivitySpy, "resumeForm")
+
+    verify { bmiQuestionnaireActivitySpy invoke "dismissSaveProcessing" withArguments listOf() }
+  }
+
+  @Test
+  fun showErrorAlertShouldShowDialogWithErrorTitleAndMessage() {
+    mockkObject(AlertDialogue)
+
+    every {
+      AlertDialogue.showAlert(
+        context = any(),
+        alertIntent = any(),
+        message = any(),
+        title = any(),
+        confirmButtonListener = any(),
+        confirmButtonText = any(),
+        neutralButtonText = any()
+      )
+    } returns mockk()
+
+    ReflectionHelpers.callInstanceMethod<Void>(
+      bmiQuestionnaireActivitySpy,
+      "showErrorAlert",
+      ReflectionHelpers.ClassParameter.from(String::class.java, "Error title"),
+      ReflectionHelpers.ClassParameter.from(String::class.java, "Error message")
+    )
+
+    verify {
+      AlertDialogue.showAlert(
+        context = bmiQuestionnaireActivitySpy,
+        alertIntent = AlertIntent.ERROR,
+        message = "Error message",
+        title = "Error title",
+        confirmButtonListener = any(),
+        confirmButtonText = android.R.string.ok,
+        neutralButtonText = android.R.string.cancel
+      )
+    }
+
+    unmockkObject(AlertDialogue)
+  }
+
+  @Test
+  fun showBmiDataAlertShouldShowBmiDialog() {
+    mockkObject(AlertDialogue)
+    val qr = QuestionnaireResponse()
+
+    every { bmiQuestionnaireActivitySpy.getString(R.string.your_bmi) } returns "Your BMI ="
+
+    every {
+      AlertDialogue.showAlert(
+        context = any(),
+        alertIntent = any(),
+        message = any(),
+        title = any(),
+        confirmButtonListener = any(),
+        confirmButtonText = any(),
+        neutralButtonListener = any(),
+        neutralButtonText = any()
+      )
+    } returns mockk()
+
+    every { bmiQuestionnaireViewModel.getBmiResult(any(), any()) } returns
+      SpannableString("Bmi result")
+
+    ReflectionHelpers.callInstanceMethod<Void>(
+      bmiQuestionnaireActivitySpy,
+      "showBmiDataAlert",
+      ReflectionHelpers.ClassParameter.from(String::class.java, "patient-id"),
+      ReflectionHelpers.ClassParameter.from(QuestionnaireResponse::class.java, qr),
+      ReflectionHelpers.ClassParameter.from(Double::class.java, 20.0)
+    )
+
+    verify {
+      AlertDialogue.showAlert(
+        context = bmiQuestionnaireActivitySpy,
+        alertIntent = AlertIntent.INFO,
+        message = any(),
+        title = "Your BMI = 20.0",
+        confirmButtonListener = any(),
+        confirmButtonText = R.string.str_save,
+        neutralButtonText = R.string.re_compute,
+        neutralButtonListener = any()
+      )
+    }
+
+    unmockkObject(AlertDialogue)
   }
 
   private fun getQuestionnaireResponse(): QuestionnaireResponse {
