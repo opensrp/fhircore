@@ -137,8 +137,6 @@ abstract class BaseRegisterActivity :
         this@BaseRegisterActivity,
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
-
-
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
@@ -216,7 +214,6 @@ abstract class BaseRegisterActivity :
   private fun syncButtonClick() {
     registerActivityBinding.progressSync.show()
     manipulateDrawer(false)
-
   }
 
   private fun String.formatSyncDate(): String {

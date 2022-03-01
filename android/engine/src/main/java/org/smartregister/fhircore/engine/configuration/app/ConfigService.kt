@@ -24,7 +24,6 @@ import com.google.android.fhir.sync.SyncJob
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType

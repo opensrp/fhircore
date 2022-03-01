@@ -17,11 +17,9 @@
 package org.smartregister.fhircore.engine.sync
 
 import androidx.lifecycle.LifecycleCoroutineScope
-import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
-import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
@@ -70,8 +68,6 @@ class SyncBroadcaster(
   }
 
   fun registerSyncListener(onSyncListener: OnSyncListener, scope: LifecycleCoroutineScope) {
-    scope.launch {
-      sharedSyncStatus.collect { onSyncListener.onSync(state = it) }
-    }
+    scope.launch { sharedSyncStatus.collect { onSyncListener.onSync(state = it) } }
   }
 }

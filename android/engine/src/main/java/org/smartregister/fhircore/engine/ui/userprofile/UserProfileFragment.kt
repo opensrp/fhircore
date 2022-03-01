@@ -31,7 +31,7 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 @AndroidEntryPoint
 class UserProfileFragment : Fragment() {
-  
+
   val userProfileViewModel: UserProfileViewModel by viewModels()
 
   override fun onCreateView(
@@ -72,5 +72,4 @@ class UserProfileFragment : Fragment() {
   companion object {
     const val TAG = "UserProfileFragment"
   }
-
 }
