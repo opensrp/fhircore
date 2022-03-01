@@ -37,22 +37,22 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
-//suspend fun FhirEngine.runOneTimeSync(
-//  sharedSyncStatus: MutableSharedFlow<State>,
-//  syncJob: SyncJob,
-//  resourceSyncParams: ResourceSyncParams,
-//  fhirResourceDataSource: FhirResourceDataSource
-//) {
-//
-//  // TODO run initial sync for binary and library resources
-//
-//  syncJob.run(
-//    fhirEngine = this,
-//    dataSource = fhirResourceDataSource,
-//    resourceSyncParams = resourceSyncParams,
-//    subscribeTo = sharedSyncStatus
-//  )
-//}
+suspend fun FhirEngine.runOneTimeSync(
+  sharedSyncStatus: MutableSharedFlow<State>,
+  syncJob: SyncJob,
+  resourceSyncParams: ResourceSyncParams,
+  fhirResourceDataSource: FhirResourceDataSource
+) {
+
+  // TODO run initial sync for binary and library resources
+
+  syncJob.run(
+    fhirEngine = this,
+    dataSource = fhirResourceDataSource,
+    resourceSyncParams = resourceSyncParams,
+    subscribeTo = sharedSyncStatus
+  )
+}
 
 fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
   var json = assets.open(id).bufferedReader().use { it.readText() }
