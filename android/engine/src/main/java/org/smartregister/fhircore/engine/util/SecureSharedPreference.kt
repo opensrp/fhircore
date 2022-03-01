@@ -27,6 +27,7 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 
+@Singleton
 class SecureSharedPreference @Inject constructor(@ApplicationContext val context: Context) {
 
   val secureSharedPreferences =

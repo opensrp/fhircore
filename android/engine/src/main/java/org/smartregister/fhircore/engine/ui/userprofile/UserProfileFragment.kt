@@ -23,18 +23,11 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.sync.OnSyncListener
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.engine.util.extension.showToast
-import timber.log.Timber
 
 @AndroidEntryPoint
 class UserProfileFragment : Fragment() {

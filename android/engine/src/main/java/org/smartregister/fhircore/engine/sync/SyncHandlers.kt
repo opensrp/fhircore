@@ -55,7 +55,7 @@ class SyncBroadcaster(
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) {
   fun runSync() {
-    CoroutineScope(dispatcherProvider.main()).launch {
+    CoroutineScope(dispatcherProvider.io()).launch {
       try {
         syncJob.run(
           fhirEngine = fhirEngine,

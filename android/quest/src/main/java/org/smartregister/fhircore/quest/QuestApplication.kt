@@ -30,18 +30,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.sync.FhirWorkerFactory
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
+class QuestApplication : Application(), DataCaptureConfig.Provider {
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
-  @Inject lateinit var fhirEngine: FhirEngine
-  @Inject lateinit var configService: QuestConfigService
-  @Inject lateinit var fhirResourceDataSource: FhirResourceDataSource
-
   private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {
@@ -49,7 +43,6 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
-
     CoroutineScope(Dispatchers.Default).launch {
       val fhirContext =
         FhirContext.forR4Cached().apply {
@@ -91,9 +84,4 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
     return configuration as DataCaptureConfig
   }
-
-  override fun getWorkManagerConfiguration(): Configuration =
-    Configuration.Builder()
-      .setWorkerFactory(FhirWorkerFactory(fhirEngine, fhirResourceDataSource, configService))
-      .build()
 }

@@ -25,14 +25,10 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.sync.PeriodicSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 
 /**
@@ -45,12 +41,7 @@ interface ConfigService {
   val resourceSyncParams: Map<ResourceType, Map<String, String>>
 
   /** Provide [AuthConfiguration] for the Application */
-  fun provideAuthConfiguration(): AuthConfiguration = AuthConfiguration(
-    fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
-    oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-    clientId = BuildConfig.OAUTH_CIENT_ID,
-    clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-  )
+  fun provideAuthConfiguration(): AuthConfiguration
 
   /**
    * Schedule periodic sync periodically as defined in the [configurationRegistry] application
@@ -69,7 +60,7 @@ interface ConfigService {
     syncJob.poll(
       periodicSyncConfiguration =
         PeriodicSyncConfiguration(repeat = RepeatInterval(syncInterval, TimeUnit.MINUTES)),
-      clazz = PeriodicSyncWorker::class.java
+      clazz = FhirSyncWorker::class.java
     )
   }
 }

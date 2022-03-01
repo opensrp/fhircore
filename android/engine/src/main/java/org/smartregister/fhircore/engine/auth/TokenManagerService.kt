@@ -24,8 +24,6 @@ import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.UnsupportedJwtException
-import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.R
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,6 +37,7 @@ class TokenManagerService
 constructor(
   @ApplicationContext val context: Context,
   val accountManager: AccountManager,
+  val configurationRegistry: ConfigurationRegistry,
   val secureSharedPreference: SecureSharedPreference
 ) {
 
@@ -55,7 +54,7 @@ constructor(
   fun getActiveAccount(): Account? {
     Timber.v("Checking for an active account stored")
     return secureSharedPreference.retrieveSessionUsername()?.let { username ->
-      accountManager.getAccountsByType(context.getString(R.string.authenticator_account_type)).find {
+      accountManager.getAccountsByType(configurationRegistry.authConfiguration.accountType).find {
         it.name.equals(username)
       }
     }

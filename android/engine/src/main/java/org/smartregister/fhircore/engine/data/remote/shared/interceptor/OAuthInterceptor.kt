@@ -22,9 +22,7 @@ import javax.inject.Inject
 import okhttp3.Interceptor
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import timber.log.Timber
-import javax.inject.Singleton
 
-@Singleton
 class OAuthInterceptor
 @Inject
 constructor(

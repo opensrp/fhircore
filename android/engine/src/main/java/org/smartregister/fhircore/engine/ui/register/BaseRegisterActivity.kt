@@ -89,7 +89,7 @@ abstract class BaseRegisterActivity :
   NavigationView.OnNavigationItemSelectedListener,
   NavigationBarView.OnItemSelectedListener,
   ConfigurableView<RegisterViewConfiguration>,
-  OnSyncListener{
+  OnSyncListener {
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
