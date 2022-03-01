@@ -475,7 +475,6 @@ abstract class BaseRegisterActivity :
     when (item.itemId) {
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
-        finish()
         accountAuthenticator.logout()
         manipulateDrawer(open = false)
       }
