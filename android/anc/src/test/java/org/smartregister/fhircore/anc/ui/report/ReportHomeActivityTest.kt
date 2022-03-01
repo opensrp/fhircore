@@ -17,7 +17,11 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.app.Activity
+import android.content.Context
 import android.os.Looper
+import androidx.lifecycle.MutableLiveData
+import androidx.paging.PagingData
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.BindValue
@@ -28,6 +32,9 @@ import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -35,9 +42,13 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -50,6 +61,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @Inject lateinit var patientRepository: PatientRepository
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @BindValue lateinit var reportViewModel: ReportViewModel
+  private lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
   private lateinit var reportHomeActivity: ReportHomeActivity
   private lateinit var reportHomeActivitySpy: ReportHomeActivity
   private val fhirEngine: FhirEngine = spyk()
@@ -58,6 +70,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     reportViewModel =
       spyk(
         ReportViewModel(
@@ -69,7 +82,19 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper
         )
       )
-    reportHomeActivity = Robolectric.buildActivity(ReportHomeActivity::class.java).create().get()
+    val allRegisterData: MutableStateFlow<Flow<PagingData<PatientItem>>> =
+      MutableStateFlow(emptyFlow())
+    registerDataViewModel =
+      mockk {
+        every { registerData } returns allRegisterData
+        every { showResultsCount } returns MutableLiveData(false)
+        every { showLoader } returns MutableLiveData(false)
+        every { currentPage() } returns 1
+        every { countPages() } returns 1
+      }
+
+    reportHomeActivity =
+      spyk(Robolectric.buildActivity(ReportHomeActivity::class.java).create().resume().get())
     reportHomeActivitySpy = spyk(objToCopy = reportHomeActivity)
     every { reportHomeActivitySpy.reportViewModel } returns reportViewModel
   }
@@ -94,5 +119,11 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     reportHomeActivitySpy.showDateRangePicker()
     // Date range was set when the dialog is displayed
     Assert.assertNotNull(reportViewModel.dateRange.value)
+  }
+
+  @Test
+  fun testOnBackPressShouldCallFinish() {
+    reportHomeActivity.reportViewModel.onBackPress()
+    Assert.assertTrue(reportHomeActivitySpy.isFinishing)
   }
 }
