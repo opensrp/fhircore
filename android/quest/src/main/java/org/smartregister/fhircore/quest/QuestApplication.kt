@@ -17,10 +17,8 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
-import androidx.work.Configuration
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import dagger.hilt.android.HiltAndroidApp

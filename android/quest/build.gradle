@@ -134,14 +134,10 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.6.0'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
-    implementation deps.work.runtime
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
-    implementation "androidx.hilt:hilt-work:1.0.0"
-    kapt "androidx.hilt:hilt-compiler:1.0.0"
-    implementation "androidx.startup:startup-runtime:1.0.0"
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine

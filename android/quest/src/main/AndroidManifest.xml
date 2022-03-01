@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="org.smartregister.fhircore.quest">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -46,17 +45,6 @@
         </service>
 
         <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="remove">
-            <!-- //TODO The code blow with merge was not working -->
-            <!--<meta-data
-                android:name="androidx.work.impl.WorkManagerInitializer"
-                android:value="${applicationId}.androidx.startup"
-                tools:node="remove" />-->
-        </provider>
-        <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="org.smartregister.fhircore.fileprovider"
             android:exported="false"
@@ -65,7 +53,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
-
 
     </application>
 
