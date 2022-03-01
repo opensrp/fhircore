@@ -121,7 +121,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testViewSetup() {
 
-
     // Main Fragment is displayed
     Assert.assertTrue(testRegisterActivity.supportFragmentManager.fragments.isNotEmpty())
     val findFragmentByTag: Fragment? =

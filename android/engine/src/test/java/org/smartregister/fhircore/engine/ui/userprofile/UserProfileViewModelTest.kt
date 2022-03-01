@@ -29,8 +29,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.flow.MutableSharedFlow
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -61,30 +61,31 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Inject lateinit var realConfigurationRegistry: ConfigurationRegistry
 
-
-  @Mock
-  private lateinit var fhirResourceService: FhirResourceService
+  @Mock private lateinit var fhirResourceService: FhirResourceService
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Mock
-  private lateinit var configService: ConfigService
-  @Mock
-  private lateinit var context: Context
-  @Mock
-  private lateinit var syncJob: SyncJob
-  @Mock
-  private lateinit var  fhirEngine: FhirEngine
-  @Mock
-  private lateinit var dispatcherProvider: DispatcherProvider
+  @Mock private lateinit var configService: ConfigService
+  @Mock private lateinit var context: Context
+  @Mock private lateinit var syncJob: SyncJob
+  @Mock private lateinit var fhirEngine: FhirEngine
+  @Mock private lateinit var dispatcherProvider: DispatcherProvider
   private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
   private lateinit var syncBroadcaster: SyncBroadcaster
 
   init {
     fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
     sharedPreferencesHelper = SharedPreferencesHelper(context)
-    configurationRegistry = ConfigurationRegistry(context, sharedPreferencesHelper,configService)
-    syncBroadcaster = SyncBroadcaster(fhirResourceDataSource,configurationRegistry,syncJob,fhirEngine,sharedSyncStatus,dispatcherProvider)
+    configurationRegistry = ConfigurationRegistry(context, sharedPreferencesHelper, configService)
+    syncBroadcaster =
+      SyncBroadcaster(
+        fhirResourceDataSource,
+        configurationRegistry,
+        syncJob,
+        fhirEngine,
+        sharedSyncStatus,
+        dispatcherProvider
+      )
   }
 
   @Before

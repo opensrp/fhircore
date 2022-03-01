@@ -20,19 +20,10 @@ import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
-import io.mockk.confirmVerified
-import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.test.runBlockingTest
-import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
 import org.mockito.Mock
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -40,6 +31,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+
 @ExperimentalCoroutinesApi
 internal class SyncBroadcasterTest {
 
@@ -62,20 +54,14 @@ internal class SyncBroadcasterTest {
       }
     )
 
-  @Mock
-  private lateinit var fhirResourceService: FhirResourceService
+  @Mock private lateinit var fhirResourceService: FhirResourceService
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var configurationRegistry: ConfigurationRegistry
-  @Mock
-  private lateinit var configService: ConfigService
-  @Mock
-  private lateinit var context:Context
-  @Mock
-  private lateinit var syncJob: SyncJob
-  @Mock
-  private lateinit var  fhirEngine: FhirEngine
-  @Mock
-  private lateinit var dispatcherProvider: DispatcherProvider
+  @Mock private lateinit var configService: ConfigService
+  @Mock private lateinit var context: Context
+  @Mock private lateinit var syncJob: SyncJob
+  @Mock private lateinit var fhirEngine: FhirEngine
+  @Mock private lateinit var dispatcherProvider: DispatcherProvider
   private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
@@ -85,9 +71,15 @@ internal class SyncBroadcasterTest {
   fun setup() {
     fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
     sharedPreferencesHelper = SharedPreferencesHelper(context)
-    configurationRegistry = ConfigurationRegistry(context, sharedPreferencesHelper,configService)
-    syncBroadcaster = SyncBroadcaster(fhirResourceDataSource,configurationRegistry,syncJob,fhirEngine,sharedSyncStatus,dispatcherProvider)
+    configurationRegistry = ConfigurationRegistry(context, sharedPreferencesHelper, configService)
+    syncBroadcaster =
+      SyncBroadcaster(
+        fhirResourceDataSource,
+        configurationRegistry,
+        syncJob,
+        fhirEngine,
+        sharedSyncStatus,
+        dispatcherProvider
+      )
   }
-
-
 }
