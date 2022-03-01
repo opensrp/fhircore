@@ -193,6 +193,7 @@ internal class ReportViewModelTest : RobolectricTest() {
       measureResourceBundleUrl = "measure/ancInd03"
     )
     Assert.assertNotNull(reportViewModel.resultForIndividual.value)
+    Assert.assertFalse(reportViewModel.showProgressIndicator.value!!)
   }
 
   @Test
@@ -204,6 +205,10 @@ internal class ReportViewModelTest : RobolectricTest() {
       measureResourceBundleUrl = "measure/ancInd03"
     )
     Assert.assertNotNull(reportViewModel.resultForPopulation.value)
+    Assert.assertFalse(reportViewModel.showProgressIndicator.value!!)
+    Assert.assertNotNull(
+      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
+    )
   }
 
   @Test
