@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,13 +28,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -47,15 +43,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
@@ -70,8 +61,8 @@ import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
+import org.smartregister.fhircore.engine.ui.components.CircularPercentageIndicator
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.engine.ui.theme.ProgressBarBlueColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.plusYears
@@ -362,52 +353,6 @@ fun ResultPopulationItem(
       )
     }
   }
-}
-
-@Composable
-fun CircularPercentageIndicator(
-  modifier: Modifier = Modifier,
-  percentage: String,
-) {
-  Box(
-    modifier = Modifier.size(60.dp).padding(2.dp).clip(CircleShape).background(Color.Transparent),
-    contentAlignment = Alignment.Center
-  ) {
-    Canvas(
-      modifier = modifier.fillMaxSize(),
-      onDraw = {
-        drawCircle(
-          Brush.linearGradient(colors = listOf(Color.LightGray, Color.LightGray)),
-          radius = size.width / 2,
-          center = center,
-          style = Stroke(width = size.width * 0.075f)
-        )
-      }
-    )
-    CircularProgressIndicator(
-      progress = percentage.toFloat() / 100,
-      modifier = modifier.fillMaxSize(),
-      strokeWidth = 2.4.dp,
-      color = ProgressBarBlueColor
-    )
-    Text(
-      text =
-        buildAnnotatedString {
-          pushStyle(SpanStyle(fontSize = 20.sp))
-          append(percentage)
-          pushStyle(SpanStyle(fontSize = 14.sp))
-          append(stringResource(R.string.percentage))
-        },
-      textAlign = TextAlign.Center
-    )
-  }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun CircularPercentageIndicatorPreview() {
-  CircularPercentageIndicator(percentage = "10")
 }
 
 @Composable
