@@ -33,7 +33,6 @@ import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import java.time.OffsetDateTime
@@ -43,12 +42,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.HiltActivityForTest
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
@@ -64,20 +61,15 @@ class ComposeRegisterFragmentTest : RobolectricTest() {
   @get:Rule(order = 1)
   val activityScenarioRule = ActivityScenarioRule(HiltActivityForTest::class.java)
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  val defaultRepository: DefaultRepository = mockk()
+
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
 
   private lateinit var testComposeRegisterFragment: TestComposableRegisterFragment
 
   @Before
   fun setUp() {
     hiltRule.inject()
-
-    every {
-      hint(ApplicationConfiguration::class)
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
-      )
-    } returns applicationConfigurationOf("appId")
 
     testComposeRegisterFragment = TestComposableRegisterFragment()
     activityScenarioRule.scenario.onActivity {

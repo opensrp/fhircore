@@ -56,7 +56,6 @@ import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.dataDetailsListViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
@@ -64,7 +63,6 @@ import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @HiltAndroidTest
 class ListDataDetailScreenTest : RobolectricTest() {
@@ -74,8 +72,9 @@ class ListDataDetailScreenTest : RobolectricTest() {
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
-
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("g6pd", mockk())
   val application = ApplicationProvider.getApplicationContext<Application>()
 
   val patientRepository: PatientRepository = mockk()
@@ -107,13 +106,6 @@ class ListDataDetailScreenTest : RobolectricTest() {
 
     patientDetailsViewConfig =
       "configs/g6pd/config_patient_details_view.json".readFile().decodeJson()
-
-    Faker.initConfigurationRegistry<PatientRegisterRowViewConfiguration>(
-      configurationRegistry,
-      null,
-      QuestConfigClassification.PATIENT_REGISTER_ROW,
-      "configs/g6pd/config_patient_register_row_view.json".readFile()
-    )
   }
 
   @Test

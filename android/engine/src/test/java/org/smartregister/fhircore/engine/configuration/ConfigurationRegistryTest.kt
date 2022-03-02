@@ -16,19 +16,22 @@
 
 package org.smartregister.fhircore.engine.configuration
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coVerify
 import io.mockk.mockk
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -39,28 +42,35 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  val context = ApplicationProvider.getApplicationContext<Context>()
 
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   private val testAppId = "appId"
 
-  val configurationRegistry: ConfigurationRegistry = mockk()
+  lateinit var configurationRegistry: ConfigurationRegistry
+  val defaultRepository: DefaultRepository = mockk()
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking { configurationRegistry.loadConfigurations(appId = testAppId) {} }
+
+    configurationRegistry = ConfigurationRegistry(context, mockk(), defaultRepository)
   }
 
   @Test
-  fun testLoadConfiguration() = runBlockingTest {
+  fun testLoadConfiguration() {
+    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+
     Assert.assertEquals(testAppId, configurationRegistry.appId)
-    Assert.assertTrue(configurationRegistry.configurationsMap.isNotEmpty())
-    Assert.assertTrue(configurationRegistry.configurationsMap.containsKey("appId|application"))
+    Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
+    Assert.assertTrue(configurationRegistry.workflowPointsMap.containsKey("appId|application"))
   }
 
   @Test
-  fun testRetrieveConfigurationShouldReturnLoginViewConfiguration() = runBlockingTest {
+  fun testRetrieveConfigurationShouldReturnLoginViewConfiguration() {
+    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
         AppConfigClassification.LOGIN
@@ -80,25 +90,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertEquals("0.0.1", retrievedConfiguration.applicationVersion)
   }
 
-  @Test(expected = UninitializedPropertyAccessException::class)
-  fun testRetrieveConfigurationShouldThrowAnExceptionWhenAppIdNotProvided() {
-    // AppId not initialized; throw UninitializedPropertyAccessException
-    configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
-      AppConfigClassification.LOGIN
-    )
-  }
-
-  @Test(expected = NoSuchElementException::class)
-  fun testRetrieveConfigurationShouldThrowAnExceptionWhenAppIdProvided() {
-    configurationRegistry.appId = testAppId
-    // WorkflowPoint not initialized; throw NoSuchElementException
-    configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
-      AppConfigClassification.LOGIN
-    )
-  }
-
   @Test
-  fun testRetrievePinConfigurationShouldReturnLoginViewConfiguration() = runBlockingTest {
+  fun testRetrievePinConfigurationShouldReturnLoginViewConfiguration() {
+    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
 
@@ -116,16 +111,32 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertTrue(retrievedConfiguration.showLogo)
   }
 
-  @Test(expected = UninitializedPropertyAccessException::class)
-  fun testRetrievePinConfigurationShouldThrowAnExceptionWhenAppIdNotProvided() {
-    // AppId not initialized; throw UninitializedPropertyAccessException
-    configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(AppConfigClassification.PIN)
+  @Test
+  fun testLoadConfigurationRegistry() {
+    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+
+    coVerify { defaultRepository.searchCompositionByIdentifier(testAppId) }
+    coVerify { defaultRepository.getBinary("b_application") }
+    coVerify { defaultRepository.getBinary("b_login") }
+    coVerify { defaultRepository.getBinary("b_pin_view") }
+    coVerify { defaultRepository.getBinary("b_patient_register") }
+    coVerify { defaultRepository.getBinary("b_sync") }
   }
 
-  @Test(expected = NoSuchElementException::class)
-  fun testRetrievePinConfigurationShouldThrowAnExceptionWhenAppIdProvided() {
-    configurationRegistry.appId = testAppId
-    // WorkflowPoint not initialized; throw NoSuchElementException
-    configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
+  @Test
+  fun testIsAppIdInitialized() {
+    Assert.assertFalse(configurationRegistry.isAppIdInitialized())
+
+    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+
+    Assert.assertTrue(configurationRegistry.isAppIdInitialized())
+  }
+
+  @Test
+  fun testIsWorkflowPointName() {
+    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+
+    Assert.assertEquals("$testAppId|123", configurationRegistry.workflowPointName("123"))
+    Assert.assertEquals("$testAppId|abbb", configurationRegistry.workflowPointName("abbb"))
   }
 }

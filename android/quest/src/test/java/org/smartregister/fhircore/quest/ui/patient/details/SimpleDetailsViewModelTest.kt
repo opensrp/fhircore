@@ -21,7 +21,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.test.runBlockingTest
@@ -40,15 +39,12 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.Code
-import org.smartregister.fhircore.quest.configuration.view.DetailViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @HiltAndroidTest
 class SimpleDetailsViewModelTest : RobolectricTest() {
@@ -69,15 +65,8 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
 
   @Test
   fun testLoadData() = runBlockingTest {
-    val configurationRegistry: ConfigurationRegistry = mockk()
-    every { patientRepository.configurationRegistry } returns configurationRegistry
-    every {
-      hint(DetailViewConfiguration::class)
-      configurationRegistry.retrieveConfiguration<DetailViewConfiguration>(
-        QuestConfigClassification.TEST_RESULT_DETAIL_VIEW
-      )
-    } returns "configs/g6pd/config_test_result_detail_view.json".readFile().decodeJson()
-
+    coEvery { patientRepository.configurationRegistry } returns
+      Faker.buildTestConfigurationRegistry("g6pd", mockk())
     coEvery { patientRepository.loadEncounter(any()) } returns
       Encounter().apply { id = encounterId }
 

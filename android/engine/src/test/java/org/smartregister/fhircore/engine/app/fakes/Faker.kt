@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.fake
+package org.smartregister.fhircore.engine.app.fakes
 
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -22,43 +22,34 @@ import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
-import org.smartregister.fhircore.eir.robolectric.RobolectricTest.Companion.readFile
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.readFile
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.engine.util.extension.extractId
 
 object Faker {
-
   fun loadTestConfigurationRegistryData(
-    appId: String,
     defaultRepository: DefaultRepository,
     configurationRegistry: ConfigurationRegistry
   ) {
-    val composition =
-      "/configs/$appId/config_composition.json".readFile().decodeResourceFromString() as Composition
-    coEvery { defaultRepository.searchCompositionByIdentifier(appId) } returns composition
+    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns
+      "/configs/config_composition.json".readFile().decodeResourceFromString() as Composition
 
     coEvery { defaultRepository.getBinary(any()) } answers
       {
-        val section =
-          composition.section.first { it.focus.extractId() == this.args.first().toString() }
+        val idArg = this.args.first().toString().replace("b_", "")
         Binary().apply {
-          content =
-            "/configs/$appId/config_${section.focus.identifier.value}.json".readFile().toByteArray()
+          content = "/configs/${idArg}_configurations.json".readFile().toByteArray()
         }
       }
 
-    runBlocking { configurationRegistry.loadConfigurations(appId) {} }
+    runBlocking { configurationRegistry.loadConfigurations(appId = "appId") {} }
   }
 
-  fun buildTestConfigurationRegistry(
-    appId: String,
-    defaultRepository: DefaultRepository
-  ): ConfigurationRegistry {
+  fun buildTestConfigurationRegistry(defaultRepository: DefaultRepository): ConfigurationRegistry {
     val configurationRegistry = spyk(ConfigurationRegistry(mockk(), mockk(), defaultRepository))
 
-    loadTestConfigurationRegistryData(appId, defaultRepository, configurationRegistry)
+    loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
 
     return configurationRegistry
   }

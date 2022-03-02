@@ -1,6 +1,6 @@
 {
   "resourceType": "Composition",
-  "id": "71739",
+  "id": "71728",
   "status": "final",
   "date": "2022-02-08",
   "type": {
@@ -14,7 +14,7 @@
   },
   "identifier": {
     "use": "official",
-    "value": "anc"
+    "value": "quest"
   },
   "title": "Device configurations",
   "confidentiality": "L",
@@ -23,40 +23,50 @@
       "title": "App configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/71737",
-        "identifier": { "value": "application" }
+        "reference": "Binary/b_application",
+        "identifier": {
+          "value": "application"
+        }
       }
     },
     {
       "title": "Login configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/71731",
-        "identifier": { "value": "login" }
-      }
-    },
-    {
-      "title": "Pin View configuration",
-      "mode": "working",
-      "focus": {
-        "reference": "Binary/71733",
-        "identifier": { "value": "pin_view" }
+        "reference": "Binary/b_login",
+        "identifier": {
+          "value": "login"
+        }
       }
     },
     {
       "title": "Patient Register configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/71735",
-        "identifier": { "value": "patient_register" }
+        "reference": "Binary/b_patient_register",
+        "identifier": {
+          "value": "patient_register"
+        }
+      }
+    },
+    {
+      "title": "Pin View configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/b_pin_view",
+        "identifier": {
+          "value": "pin"
+        }
       }
     },
     {
       "title": "Sync configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/71729",
-        "identifier": { "value": "sync" }
+        "reference": "Binary/b_sync",
+        "identifier": {
+          "value": "sync"
+        }
       }
     }
   ]

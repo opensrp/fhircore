@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
@@ -55,7 +54,9 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @BindValue val libraryEvaluator: LibraryEvaluator = mockk()
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("g6pd", mockk())
   @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   private val hiltTestApplication = ApplicationProvider.getApplicationContext<HiltTestApplication>()
@@ -68,13 +69,6 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-
-    Faker.initConfigurationRegistry<DataDetailsListViewConfiguration>(
-      configurationRegistry,
-      null,
-      QuestConfigClassification.CONTROL_TEST_DETAILS_VIEW,
-      "configs/g6pd/config_control_test_details_view.json".readFile()
-    )
 
     Faker.initPatientRepositoryMocks(patientRepository)
 

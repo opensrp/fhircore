@@ -56,7 +56,7 @@
       "mode": "working",
       "focus": {
         "reference": "Binary/63003",
-        "identifier": { "value": "pin_view" }
+        "identifier": { "value": "pin" }
       }
     },
     {

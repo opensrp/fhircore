@@ -58,7 +58,7 @@ constructor(
    * E.g. for a workflow resource RegisterViewConfiguration, the name of the file containing configs
    * becomes register_view_configurations.json
    */
-  fun <T : Configuration> retrieveConfiguration(
+  inline fun <reified T : Configuration> retrieveConfiguration(
     configClassification: ConfigClassification,
     jsonSerializer: Json? = null
   ): T =
@@ -66,24 +66,16 @@ constructor(
       val workflowPoint = workflowPointsMap[workflowName]!!
       configurationsMap.getOrPut(workflowName) {
         // Binary content could be either a Configuration or a FHIR Resource
-        (workflowPoint.resource as Binary).asConfiguration(workflowPoint, jsonSerializer)
+        (workflowPoint.resource as Binary).content.decodeToString().let {
+          if (T::class.java.isAssignableFrom(FhirConfiguration::class.java))
+            FhirConfiguration(appId, workflowPoint.classification, it.decodeResourceFromString())
+          else it.decodeJson<T>(jsonSerializer)
+        }
       } as
         T
     }
 
-  private inline fun <reified T> Binary.asConfiguration(
-    workflowPoint: WorkflowPoint,
-    jsonSerializer: Json?
-  ) =
-    this.content.decodeToString().let {
-      if (T::class.java.isAssignableFrom(FhirConfiguration::class.java))
-        FhirConfiguration(appId, workflowPoint.classification, it.decodeResourceFromString())
-      else it.decodeJson<T>(jsonSerializer)
-    } as
-      T
-
   suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
-    // TODO Download configurations that do not require login at this point. Default to assets
     this.appId = appId
 
     // appId is identifier of Composition

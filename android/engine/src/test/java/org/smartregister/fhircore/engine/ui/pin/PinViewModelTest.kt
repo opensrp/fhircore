@@ -24,7 +24,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,11 +32,11 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AuthCredentials
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.pinViewConfigurationOf
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -60,8 +59,8 @@ internal class PinViewModelTest : RobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
-  val configurationRegistry: ConfigurationRegistry = mockk()
-
+  val defaultRepository: DefaultRepository = mockk()
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
   private lateinit var pinViewModel: PinViewModel
@@ -80,11 +79,6 @@ internal class PinViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-
-    every {
-      hint(PinViewConfiguration::class)
-      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
-    } returns pinViewConfigurationOf("appId")
 
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, true) } returns Unit

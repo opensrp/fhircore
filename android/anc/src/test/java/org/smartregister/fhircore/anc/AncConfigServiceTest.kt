@@ -57,7 +57,7 @@ class AncConfigServiceTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { repository.searchCompositionByIdentifier(any()) } returns
-      "/configs/anc/config_composition_anc.json".parseSampleResource() as Composition
+      "/configs/anc/config_composition.json".parseSampleResource() as Composition
 
     coEvery { repository.getBinary(any()) } returns Binary()
     coEvery { repository.getBinary("71729") } returns

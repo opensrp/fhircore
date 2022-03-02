@@ -50,11 +50,7 @@ import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.fake.Faker
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-import org.smartregister.fhircore.eir.util.EirConfigClassification
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
 @HiltAndroidTest
@@ -66,23 +62,12 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientRegisterActivity: PatientRegisterActivity
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
-
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("covax", mockk())
   @Before
   fun setUp() {
     mockkObject(Sync)
-
-    Faker.initConfigurationRegistry<ApplicationConfiguration>(
-      configurationRegistry,
-      AppConfigClassification.APPLICATION,
-      "configs/covax/config_application.json".readFile()
-    )
-
-    Faker.initConfigurationRegistry<RegisterViewConfiguration>(
-      configurationRegistry,
-      EirConfigClassification.PATIENT_REGISTER,
-      "configs/covax/config_register_view.json".readFile()
-    )
 
     hiltAndroidRule.inject()
 

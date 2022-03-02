@@ -50,10 +50,8 @@ import org.junit.Test
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.fake.Faker
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.util.EirConfigClassification
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.ImmunizationProfileViewConfiguration
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 @ExperimentalCoroutinesApi
@@ -67,8 +65,9 @@ internal class PatientDetailsFragmentTest : RobolectricTest() {
 
   @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
-
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("covax", mockk())
   private lateinit var patientDetailsFragment: PatientDetailsFragment
 
   private val patientId = "samplePatientId"
@@ -76,12 +75,6 @@ internal class PatientDetailsFragmentTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-
-    Faker.initConfigurationRegistry<ImmunizationProfileViewConfiguration>(
-      configurationRegistry,
-      EirConfigClassification.IMMUNIZATION_PROFILE,
-      "configs/covax/config_immunization_profile.json".readFile()
-    )
 
     patientDetailsFragment =
       PatientDetailsFragment.newInstance(

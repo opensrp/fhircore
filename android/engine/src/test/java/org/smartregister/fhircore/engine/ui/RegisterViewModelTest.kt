@@ -32,11 +32,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -57,7 +55,9 @@ class RegisterViewModelTest : RobolectricTest() {
 
   @BindValue var defaultRepository: DefaultRepository = mockk()
 
-  val configurationRegistry: ConfigurationRegistry = mockk()
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry(defaultRepository)
 
   @Inject lateinit var configService: ConfigService
 
@@ -69,13 +69,6 @@ class RegisterViewModelTest : RobolectricTest() {
 
     val fhirEngine = spyk<FhirEngine>()
     coEvery { fhirEngine.load(Patient::class.java, "barcodeId") } returns Patient()
-
-    every {
-      hint(ApplicationConfiguration::class)
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
-      )
-    } returns applicationConfigurationOf("appId")
 
     viewModel =
       RegisterViewModel(
@@ -105,7 +98,7 @@ class RegisterViewModelTest : RobolectricTest() {
   @Test
   fun testLoadLanguagesShouldLoadEnglishLocaleOnly() {
     viewModel.loadLanguages()
-    Assert.assertEquals(1, viewModel.languages.size)
+    Assert.assertEquals(2, viewModel.languages.size)
     Assert.assertEquals("English", viewModel.languages[0].displayName)
   }
 

@@ -47,13 +47,14 @@ class AppSettingActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
+
     appSettingViewModel.loadConfigs.observe(this) { loadConfigs ->
-      if (loadConfigs != null && loadConfigs) {
+      if (loadConfigs == true) {
         val applicationId = appSettingViewModel.appId.value!!
         lifecycleScope.launch {
+          // TODO may be do not load everytime
           appSettingViewModel.fetchConfigurations(applicationId)
-          configurationRegistry.loadConfigurations(appId = applicationId) { loadSuccessful: Boolean
-            ->
+          configurationRegistry.loadConfigurations(applicationId) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
               if (appSettingViewModel.rememberApp.value == true) {
                 sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
@@ -111,4 +112,6 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
   }
+
+  fun handleLoadConfigurationRequest() {}
 }

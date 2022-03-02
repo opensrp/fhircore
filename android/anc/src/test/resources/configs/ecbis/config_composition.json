@@ -40,7 +40,7 @@
       "mode": "working",
       "focus": {
         "reference": "Binary/71732",
-        "identifier": { "value": "pin_view" }
+        "identifier": { "value": "pin" }
       }
     },
     {

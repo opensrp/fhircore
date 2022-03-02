@@ -24,7 +24,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
@@ -40,11 +39,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.DynamicColor
 import org.smartregister.fhircore.quest.configuration.view.Filter
-import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.Properties
 import org.smartregister.fhircore.quest.configuration.view.Property
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -52,7 +50,9 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class PatientUtilTest : RobolectricTest() {
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("g6pd", mockk())
   @Inject lateinit var fhirEngine: FhirEngine
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -66,13 +66,6 @@ class PatientUtilTest : RobolectricTest() {
 
   @Test
   fun testLoadAdditionalDataShouldReturnExpectedData() {
-    every {
-      hint(PatientRegisterRowViewConfiguration::class)
-      configurationRegistry.retrieveConfiguration<PatientRegisterRowViewConfiguration>(
-        QuestConfigClassification.PATIENT_REGISTER_ROW
-      )
-    } returns "/configs/g6pd/config_patient_register_row_view.json".readFile().decodeJson()
-
     val searchSlot = slot<Search>()
     coEvery { fhirEngine.search<Condition>(capture(searchSlot)) } returns getConditions()
 

@@ -28,6 +28,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
@@ -42,7 +43,6 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.NavigationOption
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -55,7 +55,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
 import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
@@ -65,7 +64,6 @@ import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @HiltAndroidTest
@@ -78,11 +76,13 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  val defaultRepository: DefaultRepository = mockk()
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("g6pd", defaultRepository)
   @Inject lateinit var patientItemMapper: PatientItemMapper
   @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
-  val defaultRepository: DefaultRepository = mockk()
   lateinit var questPatientDetailViewModel: ListDataDetailViewModel
   lateinit var fhirEngine: FhirEngine
 
@@ -99,22 +99,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
     every { sharedPreferencesHelper.read(any(), any<String>()) } returns ""
     fhirEngine = mockk()
-
-    every { configurationRegistry.isAppIdInitialized() } returns true
-
-    Faker.initConfigurationRegistry<ResultDetailsNavigationConfiguration>(
-      configurationRegistry,
-      questJsonSpecificationProvider,
-      QuestConfigClassification.RESULT_DETAILS_NAVIGATION,
-      "configs/quest/config_result_details_navigation.json".readFile()
-    )
-
-    Faker.initConfigurationRegistry<DataDetailsListViewConfiguration>(
-      configurationRegistry,
-      questJsonSpecificationProvider,
-      QuestConfigClassification.PATIENT_DETAILS_VIEW,
-      "configs/quest/config_patient_details_view.json".readFile()
-    )
 
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
@@ -149,13 +133,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnMenuItemClickListenerShouldStartQuestionnaireActivity() {
-    Faker.initConfigurationRegistry<RegisterViewConfiguration>(
-      configurationRegistry,
-      questJsonSpecificationProvider,
-      QuestConfigClassification.PATIENT_REGISTER,
-      "configs/quest/config_register_view.json".readFile()
-    )
-
     questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.edit_patient_info)
 
     val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
@@ -176,6 +153,11 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
+    runBlocking {
+      configurationRegistry = Faker.buildTestConfigurationRegistry("quest", defaultRepository)
+      questPatientDetailActivity.configurationRegistry = configurationRegistry
+    }
+
     questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
       QuestResultItem(
         Pair(
@@ -210,6 +192,11 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerEmptyQuestionnaireIdShouldShowAlertDialog() {
+    runBlocking {
+      configurationRegistry = Faker.buildTestConfigurationRegistry("quest", defaultRepository)
+      questPatientDetailActivity.configurationRegistry = configurationRegistry
+    }
+
     val navigationOptions =
       listOf(
         NavigationOption(
@@ -247,12 +234,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartSimpleDetailsActivityForG6pd() {
-    Faker.initConfigurationRegistry<ResultDetailsNavigationConfiguration>(
-      configurationRegistry,
-      questJsonSpecificationProvider,
-      QuestConfigClassification.RESULT_DETAILS_NAVIGATION,
-      "configs/g6pd/config_result_details_navigation.json".readFile()
-    )
     val navigationOptions =
       listOf(
         NavigationOption(
@@ -291,12 +272,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testHandlePatientResources() {
-    Faker.initConfigurationRegistry<ResultDetailsNavigationConfiguration>(
-      configurationRegistry,
-      questJsonSpecificationProvider,
-      QuestConfigClassification.RESULT_DETAILS_NAVIGATION,
-      "configs/g6pd/config_result_details_navigation.json".readFile()
-    )
     val navigationOptions =
       listOf(
         NavigationOption(

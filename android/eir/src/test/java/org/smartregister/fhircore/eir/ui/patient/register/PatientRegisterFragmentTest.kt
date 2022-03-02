@@ -39,11 +39,7 @@ import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
-import org.smartregister.fhircore.eir.util.EirConfigClassification
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
 @HiltAndroidTest
@@ -53,29 +49,12 @@ class PatientRegisterFragmentTest : RobolectricTest() {
 
   @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
 
-  @BindValue val configurationRegistry: ConfigurationRegistry = mockk()
-
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("covax", mockk())
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-
-    Faker.initConfigurationRegistry<ApplicationConfiguration>(
-      configurationRegistry,
-      AppConfigClassification.APPLICATION,
-      "configs/covax/config_application.json".readFile()
-    )
-
-    Faker.initConfigurationRegistry<ApplicationConfiguration>(
-      configurationRegistry,
-      AppConfigClassification.APPLICATION,
-      "configs/covax/config_application.json".readFile()
-    )
-
-    Faker.initConfigurationRegistry<RegisterViewConfiguration>(
-      configurationRegistry,
-      EirConfigClassification.PATIENT_REGISTER,
-      "configs/covax/config_register_view.json".readFile()
-    )
 
     registerFragment = PatientRegisterFragment()
     val registerActivity =

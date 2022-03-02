@@ -57,11 +57,11 @@ class QuestConfigServiceTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { repository.searchCompositionByIdentifier(any()) } returns
-      "/configs/quest/config_composition_quest.json".parseSampleResourceFromFile() as Composition
+      "/configs/quest/config_composition.json".parseSampleResourceFromFile() as Composition
 
     coEvery { repository.getBinary(any()) } returns Binary()
     coEvery { repository.getBinary("56181") } returns
-      Binary().apply { content = "/configs/config_sync.json".readFile().toByteArray() }
+      Binary().apply { content = "/configs/quest/config_sync.json".readFile().toByteArray() }
 
     runBlocking { configurationRegistry.loadConfigurations("quest", {}) }
 

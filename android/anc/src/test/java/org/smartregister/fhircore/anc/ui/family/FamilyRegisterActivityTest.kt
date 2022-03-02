@@ -50,12 +50,8 @@ import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
-import org.smartregister.fhircore.anc.util.AncConfigClassification
 import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -65,7 +61,9 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("anc", mockk())
   @Inject lateinit var jsonSpecificationProvider: AncJsonSpecificationProvider
 
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
@@ -78,20 +76,6 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
     mockkObject(Sync)
 
     hiltRule.inject()
-
-    Faker.initConfigurationRegistry<ApplicationConfiguration>(
-      configurationRegistry,
-      null,
-      AppConfigClassification.APPLICATION,
-      "configs/anc/config_application.json".readFile()
-    )
-
-    Faker.initConfigurationRegistry<RegisterViewConfiguration>(
-      configurationRegistry,
-      jsonSpecificationProvider,
-      AncConfigClassification.PATIENT_REGISTER,
-      "configs/anc/config_register_view.json".readFile()
-    )
 
     every { sharedPreferencesHelper.read(any(), any<String>()) } returns "1234"
 

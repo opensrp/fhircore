@@ -38,11 +38,8 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.NavigationOption
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
@@ -54,7 +51,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @HiltAndroidTest
@@ -62,7 +58,9 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("quest", mockk())
   @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
@@ -73,20 +71,6 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-
-    Faker.initConfigurationRegistry<ApplicationConfiguration>(
-      configurationRegistry,
-      null,
-      AppConfigClassification.APPLICATION,
-      "configs/quest/config_application.json".readFile()
-    )
-
-    Faker.initConfigurationRegistry<RegisterViewConfiguration>(
-      configurationRegistry,
-      questJsonSpecificationProvider,
-      QuestConfigClassification.PATIENT_REGISTER,
-      "configs/quest/config_register_view.json".readFile()
-    )
 
     every { sharedPreferencesHelper.read(any(), any<String>()) } answers
       {

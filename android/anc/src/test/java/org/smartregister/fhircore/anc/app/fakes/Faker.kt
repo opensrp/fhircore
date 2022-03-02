@@ -16,24 +16,50 @@
 
 package org.smartregister.fhircore.anc.app.fakes
 
-import io.mockk.every
-import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
-import org.smartregister.fhircore.engine.configuration.Configuration
+import io.mockk.coEvery
+import io.mockk.mockk
+import io.mockk.spyk
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Composition
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest.Companion.readFile
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.extractId
 
 object Faker {
 
-  inline fun <reified T : Configuration> initConfigurationRegistry(
-    configurationRegistry: ConfigurationRegistry,
-    jsonSpecificationProvider: AncJsonSpecificationProvider?,
-    configClassification: ConfigClassification,
-    configJsonContent: String
+  fun loadTestConfigurationRegistryData(
+    appId: String,
+    defaultRepository: DefaultRepository,
+    configurationRegistry: ConfigurationRegistry
   ) {
-    every {
-      hint(T::class)
-      configurationRegistry.retrieveConfiguration<T>(configClassification, any())
-    } returns configJsonContent.decodeJson(jsonSpecificationProvider?.getJson())
+    val composition =
+      "/configs/$appId/config_composition.json".readFile().decodeResourceFromString() as Composition
+    coEvery { defaultRepository.searchCompositionByIdentifier(appId) } returns composition
+
+    coEvery { defaultRepository.getBinary(any()) } answers
+      {
+        val section =
+          composition.section.first { it.focus.extractId() == this.args.first().toString() }
+        Binary().apply {
+          content =
+            "/configs/$appId/config_${section.focus.identifier.value}.json".readFile().toByteArray()
+        }
+      }
+
+    runBlocking { configurationRegistry.loadConfigurations(appId) {} }
+  }
+
+  fun buildTestConfigurationRegistry(
+    appId: String,
+    defaultRepository: DefaultRepository
+  ): ConfigurationRegistry {
+    val configurationRegistry = spyk(ConfigurationRegistry(mockk(), mockk(), defaultRepository))
+
+    loadTestConfigurationRegistryData(appId, defaultRepository, configurationRegistry)
+
+    return configurationRegistry
   }
 }

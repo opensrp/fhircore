@@ -26,7 +26,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
@@ -37,12 +36,8 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
-import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
@@ -67,8 +62,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
-  @BindValue val configurationRegistry: ConfigurationRegistry = mockk()
-
+  val defaultRepository: DefaultRepository = mockk()
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
   @BindValue
   val loginViewModel =
     LoginViewModel(
@@ -86,20 +81,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
     coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
     coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
-
-    every { configurationRegistry.isAppIdInitialized() } returns true
-    every {
-      hint(ApplicationConfiguration::class)
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
-      )
-    } returns applicationConfigurationOf("appId")
-    every {
-      hint(LoginViewConfiguration::class)
-      configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
-        AppConfigClassification.LOGIN
-      )
-    } returns loginViewConfigurationOf("appId")
 
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())

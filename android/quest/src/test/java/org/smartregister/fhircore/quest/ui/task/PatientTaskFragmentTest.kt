@@ -38,9 +38,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -50,7 +48,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 import org.smartregister.fhircore.quest.ui.task.component.ROW_PATIENT_TASK
 import org.smartregister.fhircore.quest.ui.task.component.dummyPatientTaskPagingList
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @HiltAndroidTest
@@ -59,7 +56,9 @@ class PatientTaskFragmentTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("g6pd", mockk())
   @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   private lateinit var patientTaskFragment: PatientTaskFragment
@@ -69,20 +68,6 @@ class PatientTaskFragmentTest : RobolectricTest() {
     mockkObject(Sync)
 
     hiltRule.inject()
-
-    Faker.initConfigurationRegistry<ApplicationConfiguration>(
-      configurationRegistry,
-      null,
-      AppConfigClassification.APPLICATION,
-      "configs/quest/config_application.json".readFile()
-    )
-
-    Faker.initConfigurationRegistry<RegisterViewConfiguration>(
-      configurationRegistry,
-      questJsonSpecificationProvider,
-      QuestConfigClassification.PATIENT_REGISTER,
-      "configs/quest/config_register_view.json".readFile()
-    )
 
     patientTaskFragment = PatientTaskFragment()
     val patientRegisterActivity =

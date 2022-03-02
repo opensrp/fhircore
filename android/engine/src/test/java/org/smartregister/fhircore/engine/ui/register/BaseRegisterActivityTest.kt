@@ -57,13 +57,11 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -83,7 +81,9 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
-  @BindValue val configurationRegistry: ConfigurationRegistry = mockk()
+
+  val defaultRepository: DefaultRepository = mockk()
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
 
   private lateinit var testRegisterActivityController: ActivityController<TestRegisterActivity>
 
@@ -98,13 +98,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     every { secureSharedPreference.retrieveCredentials() } returns FakeModel.authCredentials
     every { secureSharedPreference.deleteCredentials() } returns Unit
-
-    every {
-      hint(ApplicationConfiguration::class)
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
-      )
-    } returns applicationConfigurationOf("appId")
 
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 
@@ -442,8 +435,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       val registerViewConfiguration = registerViewConfigurationOf("appId")
       configureViews(registerViewConfiguration)
     }
-
-    override fun runSync() {}
 
     override fun mainFragmentTag() = TestFragment.TAG + 1
 
