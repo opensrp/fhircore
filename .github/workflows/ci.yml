@@ -35,6 +35,8 @@ jobs:
         with:
           name: property_configs
           path: property_configs
+          retention-days: 5
+          if-no-files-found: error
         
   engine-tests:
     needs: setup
@@ -54,7 +56,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: property_configs
-          path: android       
+          path: android
+      
+      - name: Display structure of downloaded files
+        run: ls -R      
+        working-directory: android
           
       - name: Grant read permission for keyfile
         run: chmod 644 /home/runner/work/fhircore/fhircore/android/keystore.jks
