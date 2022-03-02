@@ -49,20 +49,6 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
     }
 
-    signingConfigs {
-
-        release {
-
-            v1SigningEnabled true
-            v2SigningEnabled true
-
-            keyAlias keystoreProperties['KEYSTORE_ALIAS']
-            keyPassword keystoreProperties['KEY_PASSWORD']
-            storeFile file(keystoreProperties['KEYSTORE_FILE'])
-            storePassword keystoreProperties['KEYSTORE_PASSWORD']
-        }
-    }
-
     buildTypes {
         debug {
             testCoverageEnabled true
@@ -70,7 +56,6 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
 
         }
     }

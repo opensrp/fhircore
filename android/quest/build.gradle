@@ -40,21 +40,19 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
     }
-
-
+    
     signingConfigs {
-
-	release {
+        release {
 
             v1SigningEnabled true
             v2SigningEnabled true
 
-            keyAlias keystoreProperties['KEYSTORE_ALIAS']
-            keyPassword keystoreProperties['KEY_PASSWORD']
-            storeFile file(keystoreProperties['KEYSTORE_FILE'])
-            storePassword keystoreProperties['KEYSTORE_PASSWORD']
-        }   
-    }   
+            keyAlias System.getProperty("KEYSTORE_ALIAS")
+            keyPassword System.getProperty("KEY_PASSWORD")
+            storePassword System.getProperty("KEYSTORE_PASSWORD")
+            storeFile file(System.getProperty("user.home") + "/keystore.jks")
+        }
+    }
 
     buildTypes {
         debug {
@@ -136,18 +134,6 @@ android {
         abortOnError false
     }
 
-    signingConfigs {
-        release {
-
-            v1SigningEnabled true
-            v2SigningEnabled true
-
-            keyAlias keystoreProperties['KEYSTORE_ALIAS']
-            keyPassword keystoreProperties['KEY_PASSWORD']
-            storeFile file(keystoreProperties['KEYSTORE_FILE'])
-            storePassword keystoreProperties['KEYSTORE_PASSWORD']
-        }
-    }
 }
 
 dependencies {
