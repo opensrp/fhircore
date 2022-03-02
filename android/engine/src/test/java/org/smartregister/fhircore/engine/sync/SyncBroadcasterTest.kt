@@ -16,16 +16,23 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import android.content.Context
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
-import io.mockk.confirmVerified
-import io.mockk.mockk
+import com.google.android.fhir.sync.SyncJob
 import io.mockk.spyk
-import io.mockk.verify
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
+import org.junit.Before
+import org.mockito.Mock
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@ExperimentalCoroutinesApi
 internal class SyncBroadcasterTest {
 
   private val syncListenerSpy =
@@ -38,61 +45,41 @@ internal class SyncBroadcasterTest {
     )
 
   private val syncInitiatorSpy =
-    spyk<SyncInitiator>(
-      object : SyncInitiator {
-        override fun runSync() {
-          // SyncInitiator that does nothing
+    spyk<OnSyncListener>(
+      object : OnSyncListener {
+
+        override fun onSync(state: State) {
+          TODO("Not yet implemented")
         }
       }
     )
 
-  private val syncBroadcaster = SyncBroadcaster
+  @Mock private lateinit var fhirResourceService: FhirResourceService
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
+  private lateinit var configurationRegistry: ConfigurationRegistry
+  @Mock private lateinit var configService: ConfigService
+  @Mock private lateinit var context: Context
+  @Mock private lateinit var syncJob: SyncJob
+  @Mock private lateinit var fhirEngine: FhirEngine
+  @Mock private lateinit var dispatcherProvider: DispatcherProvider
+  private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
 
-  @BeforeEach
-  fun setUp() {
-    syncBroadcaster.apply {
-      syncInitiator = null
-      syncListeners.clear()
-      registerSyncListener(syncListenerSpy)
-    }
-  }
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var syncBroadcaster: SyncBroadcaster
 
-  @Test
-  @DisplayName("Should register sync listener")
-  fun testListenerRegistration() {
-    Assertions.assertEquals(1, syncBroadcaster.syncListeners.size)
-    Assertions.assertNull(syncBroadcaster.syncInitiator)
-  }
-
-  @Test
-  @DisplayName("Should call the onSync method when sync is triggered")
-  fun testListenerOnSync() {
-    val state = mockk<State>()
-    syncBroadcaster.broadcastSync(state)
-    verify { syncListenerSpy.onSync(state = state) }
-    confirmVerified(syncListenerSpy)
-  }
-
-  @Test
-  @DisplayName("Should register sync initiator once")
-  fun testRegisterSyncInitiator() {
-    syncBroadcaster.registerSyncInitiator(syncInitiatorSpy)
-    Assertions.assertNotNull(syncBroadcaster.syncInitiator)
-    verify { syncInitiatorSpy.runSync() }
-    confirmVerified(syncInitiatorSpy)
-  }
-
-  @Test
-  @DisplayName("Should remove listener")
-  fun testUnRegisterSyncListener() {
-    syncBroadcaster.unRegisterSyncListener(syncListenerSpy)
-    Assertions.assertTrue(syncBroadcaster.syncListeners.isEmpty())
-  }
-
-  @Test
-  @DisplayName("Should do nothing as a sync initiator has already been registered")
-  fun testRegisterSyncInitiatorTwiceShouldDoNothing() {
-    syncBroadcaster.registerSyncInitiator(syncInitiatorSpy)
-    Assertions.assertNotNull(syncBroadcaster.syncInitiator)
+  @Before
+  fun setup() {
+    fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
+    sharedPreferencesHelper = SharedPreferencesHelper(context)
+    configurationRegistry = ConfigurationRegistry(context, sharedPreferencesHelper, configService)
+    syncBroadcaster =
+      SyncBroadcaster(
+        fhirResourceDataSource,
+        configurationRegistry,
+        syncJob,
+        fhirEngine,
+        sharedSyncStatus,
+        dispatcherProvider
+      )
   }
 }

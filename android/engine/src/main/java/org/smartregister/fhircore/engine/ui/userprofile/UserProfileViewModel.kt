@@ -53,7 +53,7 @@ constructor(
   val language = MutableLiveData<Language?>(null)
 
   fun runSync() {
-    syncBroadcaster.syncInitiator?.runSync()
+    syncBroadcaster.runSync()
   }
 
   fun logoutUser() {

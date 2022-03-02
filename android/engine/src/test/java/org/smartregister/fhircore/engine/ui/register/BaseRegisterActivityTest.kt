@@ -114,16 +114,12 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   override fun tearDown() {
     // Reset syncBroadcaster
-    testRegisterActivity.syncBroadcaster.syncInitiator = null
-    testRegisterActivity.syncBroadcaster.syncListeners.clear()
     super.tearDown()
   }
   override fun getActivity(): Activity = testRegisterActivity
 
   @Test
   fun testViewSetup() {
-
-    Assert.assertTrue(testRegisterActivity.syncBroadcaster.syncInitiator is TestRegisterActivity)
 
     // Main Fragment is displayed
     Assert.assertTrue(testRegisterActivity.supportFragmentManager.fragments.isNotEmpty())
@@ -367,9 +363,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testDestroyActivity() {
     testRegisterActivityController.pause().stop().destroy()
-    // SyncListener removed from sync broadcaster and sync initiator set to null
-    Assert.assertTrue(testRegisterActivity.syncBroadcaster.syncListeners.isEmpty())
-    Assert.assertNull(testRegisterActivity.syncBroadcaster.syncInitiator)
   }
 
   @Test(expected = IllegalArgumentException::class)
