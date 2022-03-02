@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
@@ -40,6 +41,8 @@ class LoginActivity :
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
   private val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +52,7 @@ class LoginActivity :
       navigateToHome.observe(
         this@LoginActivity,
         {
+          syncBroadcaster.runSync()
           if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
             loginService.navigateToPinLogin(goForSetup = true)
           } else {
