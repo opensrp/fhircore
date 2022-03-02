@@ -16,9 +16,18 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import androidx.lifecycle.LifecycleCoroutineScope
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
-import java.lang.ref.WeakReference
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster.broadcastSync
+import com.google.android.fhir.sync.SyncJob
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
 
 /**
@@ -31,49 +40,34 @@ interface OnSyncListener {
 }
 
 /**
- * This interface qualifies an Activity/View to initiate sync. NOTE. There can only be one sync
- * initiator for the entire application
- */
-interface SyncInitiator {
-  /** Run one time sync */
-  fun runSync()
-}
-
-/**
  * A broadcaster that maintains a list of [OnSyncListener]. Whenever a new sync [State] is received
  * the [SyncBroadcaster] will transmit the [State] to every [OnSyncListener] that registered by
  * invoking [broadcastSync] method
  */
-object SyncBroadcaster {
-
-  var syncInitiator: SyncInitiator? = null
-
-  val syncListeners = mutableListOf<WeakReference<OnSyncListener>>()
-
-  fun registerSyncInitiator(syncInitiator: SyncInitiator) =
-    if (this.syncInitiator == null) {
-      this.syncInitiator = syncInitiator
-      this.syncInitiator?.runSync() ?: Timber.e("Register at least one sync initiator")
-    } else {
-      Timber.w(
-        "One time sync can only be triggered from one place within the entire application e.g." +
-          " when loading the landing register page. Other views can register as listeners to respond to Sync State"
-      )
+class SyncBroadcaster(
+  val fhirResourceDataSource: FhirResourceDataSource,
+  val configurationRegistry: ConfigurationRegistry,
+  val syncJob: SyncJob,
+  val fhirEngine: FhirEngine,
+  val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow(),
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
+) {
+  fun runSync() {
+    CoroutineScope(dispatcherProvider.io()).launch {
+      try {
+        syncJob.run(
+          fhirEngine = fhirEngine,
+          dataSource = fhirResourceDataSource,
+          resourceSyncParams = configurationRegistry.configService.resourceSyncParams,
+          subscribeTo = sharedSyncStatus
+        )
+      } catch (exception: Exception) {
+        Timber.e("Error syncing data", exception.stackTraceToString())
+      }
     }
-
-  fun registerSyncListener(onSyncListener: OnSyncListener) {
-    syncListeners.add(WeakReference(onSyncListener))
   }
 
-  fun unRegisterSyncInitiator() {
-    this.syncInitiator = null
-  }
-
-  fun unRegisterSyncListener(onSyncListener: OnSyncListener) {
-    syncListeners.removeIf { it.get() == onSyncListener }
-  }
-
-  fun broadcastSync(state: State) {
-    syncListeners.forEach { it.get()?.onSync(state = state) }
+  fun registerSyncListener(onSyncListener: OnSyncListener, scope: LifecycleCoroutineScope) {
+    scope.launch { sharedSyncStatus.collect { onSyncListener.onSync(state = it) } }
   }
 }

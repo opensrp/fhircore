@@ -29,9 +29,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.impl.annotations.MockK
-import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -53,12 +50,6 @@ import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FileUtil
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -71,8 +62,6 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @BindValue lateinit var reportViewModel: ReportViewModel
   private lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
-  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
-  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
   private lateinit var reportHomeActivity: ReportHomeActivity
   private lateinit var reportHomeActivitySpy: ReportHomeActivity
   private val fhirEngine: FhirEngine = spyk()
@@ -82,9 +71,6 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
-    every { sharedPreferencesHelper.read(any(), any<String>()) } returns ""
-    MockKAnnotations.init(this, relaxUnitFun = true)
-    mockkObject(FileUtil)
     reportViewModel =
       spyk(
         ReportViewModel(
