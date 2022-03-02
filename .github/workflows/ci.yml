@@ -15,38 +15,15 @@ env:
  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
-  setup:
+  engine-tests:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Cancel Previous workflow runs
         uses: styfle/cancel-workflow-action@0.9.1
         with:
           access_token: ${{ github.token }}
-
-      - name: Create properties folder
-        run: mkdir property_configs
-        
-      - name: Generate local.properties file
-        run: echo $LOCAL_PROPERTIES_FILE > property_configs/local.properties
-        
-      - name: Generate keystore properties file
-        run: echo $KEYSTORE_CREDENTIALS > property_configs/keystore.properties
-
-      - name: Generate keystore file
-        run: echo $KEYSTORE_FILE > property_configs/keystore.jks
-        
-      - name: Upload setup artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: property_configs
-          path: property_configs
-          retention-days: 5
-          if-no-files-found: error
-        
-  engine-tests:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
+          
       - name: Checkout 🛎️
         uses: actions/checkout@v2
         with:
@@ -56,20 +33,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-       
-      - name: Download configuration setup artifacts 
-        uses: actions/download-artifact@v2
-        with:
-          name: property_configs
-          path: android
-      
-      - name: Display structure of downloaded files
-        run: ls -ldhR -1 "$PWD/android/"*     
-        working-directory: android
-          
-      - name: Grant read permission for keyfile
-        run: chmod 644 /home/runner/work/fhircore/fhircore/android/keystore.jks
-        working-directory: android  
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -131,6 +94,7 @@ jobs:
   anc-tests:
     runs-on: macos-11.0
     needs: setup
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout 🛎️
@@ -160,8 +124,6 @@ jobs:
       - name: Spotless check anc application
         run: ./gradlew :anc:spotlessCheck
         working-directory: android
-  
-      - name: Run ANC unit tests with Gradle
         run: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
         working-directory: android
 
@@ -194,6 +156,7 @@ jobs:
         run: chmod 644 /home/runner/work/fhircore/fhircore/android/keystore.jks
         working-directory: android  
       
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
@@ -209,5 +172,4 @@ jobs:
       - name: Upload Quest Test Report to codecov
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-
 
