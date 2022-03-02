@@ -18,8 +18,6 @@ package org.smartregister.fhircore.engine.di
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.workflow.FhirOperator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,9 +31,4 @@ class CqlModule {
   @Singleton
   @Provides
   fun provideFhirContext(): FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
-
-  @Singleton
-  @Provides
-  fun provideFhirOperator(fhirContext: FhirContext, fhirEngine: FhirEngine): FhirOperator =
-    FhirOperator(fhirContext = fhirContext, fhirEngine = fhirEngine)
 }

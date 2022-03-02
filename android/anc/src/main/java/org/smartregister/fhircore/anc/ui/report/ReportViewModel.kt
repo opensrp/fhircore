@@ -29,7 +29,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -49,6 +48,7 @@ import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -68,7 +68,7 @@ constructor(
   val dispatcher: DispatcherProvider,
   val patientRepository: PatientRepository,
   val fhirEngine: FhirEngine,
-  val fhirOperator: FhirOperator,
+  val fhirOperatorDecorator: FhirOperatorDecorator,
   val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
@@ -197,7 +197,7 @@ constructor(
       withContext(dispatcher.io()) {
         fhirEngine.loadCqlLibraryBundle(
           context = context,
-          fhirOperator = fhirOperator,
+          fhirOperator = fhirOperatorDecorator,
           sharedPreferencesHelper = sharedPreferencesHelper,
           resourcesBundlePath = measureResourceBundleUrl
         )
@@ -206,7 +206,7 @@ constructor(
       if (selectedPatientItem.value != null && individualEvaluation) {
         val measureReport =
           withContext(dispatcher.io()) {
-            fhirOperator.evaluateMeasure(
+            fhirOperatorDecorator.evaluateMeasure(
               url = measureUrl,
               start = startDateFormatted,
               end = endDateFormatted,
@@ -228,7 +228,7 @@ constructor(
       } else if (selectedPatientItem.value == null && !individualEvaluation) {
         val measureReport =
           withContext(dispatcher.io()) {
-            fhirOperator.evaluateMeasure(
+            fhirOperatorDecorator.evaluateMeasure(
               url = measureUrl,
               start = startDateFormatted,
               end = endDateFormatted,

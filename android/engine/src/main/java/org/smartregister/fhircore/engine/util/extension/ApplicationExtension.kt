@@ -29,7 +29,6 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.ResourceSyncParams
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
-import com.google.android.fhir.workflow.FhirOperator
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.hl7.fhir.r4.model.Bundle
@@ -39,6 +38,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -129,7 +129,7 @@ suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immuniz
 suspend fun FhirEngine.loadCqlLibraryBundle(
   context: Context,
   sharedPreferencesHelper: SharedPreferencesHelper,
-  fhirOperator: FhirOperator,
+  fhirOperator: FhirOperatorDecorator,
   resourcesBundlePath: String
 ) =
   try {
