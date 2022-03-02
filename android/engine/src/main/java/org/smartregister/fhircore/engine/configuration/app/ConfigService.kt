@@ -24,7 +24,7 @@ import com.google.android.fhir.sync.SyncJob
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
@@ -58,15 +58,15 @@ interface ConfigService {
     syncBroadcaster: SyncBroadcaster,
     syncInterval: Long = 30
   ) {
+    CoroutineScope(Dispatchers.Main).launch {
+      syncBroadcaster.sharedSyncStatus.emitAll(syncJob.stateFlow())
+    }
+
     syncJob.poll(
       periodicSyncConfiguration =
         PeriodicSyncConfiguration(repeat = RepeatInterval(syncInterval, TimeUnit.MINUTES)),
       clazz = FhirSyncWorker::class.java
     )
-
-    CoroutineScope(Dispatchers.Main).launch {
-      syncJob.stateFlow().collect { syncBroadcaster.broadcastSync(it) }
-    }
   }
 
   fun loadRegistrySyncParams(
