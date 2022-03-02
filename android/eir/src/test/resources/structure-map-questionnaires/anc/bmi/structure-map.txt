@@ -1,4 +1,4 @@
-map "http://fhir.labs.smartregister.org/fhir/StructureMap/BmiExtraction" = 'BmiExtraction'
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/12060" = '12060'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -8,7 +8,7 @@ uses "http://hl7.org/fhir/StructureDefinition/positiveInt" as target
 uses "http://hl7.org/fhir/StructureDefinition/Quantity" as target
 uses "http://hl7.org/fhir/StructureDefinition/Quantity" as target
 
-group VitalSigns(source src : QuestionnaireResponse, target bundle: Bundle) {
+group BmiExtraction(source src : QuestionnaireResponse, target bundle: Bundle) {
     src -> bundle.id = uuid() "rule_a";
     src -> bundle.type = 'collection' "rule_b";
     src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
@@ -145,6 +145,7 @@ group ExtractHeightStandard(source src : QuestionnaireResponse, target bundle : 
                        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
                        } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh_6";
+                src -> obs.effective = evaluate(item, now()) "eh_7";
             } "eh_2";
         } "eh_1";
 }
