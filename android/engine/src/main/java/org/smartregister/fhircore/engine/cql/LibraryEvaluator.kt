@@ -24,6 +24,8 @@ import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.tuple.Pair
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
 import org.cqframework.cql.cql2elm.ModelManager
@@ -346,6 +348,11 @@ class LibraryEvaluator @Inject constructor() {
   }
 
   companion object {
+
+    fun init() {
+      GlobalScope.launch { LibraryEvaluator().initialize() }
+    }
+
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
   }
 }
