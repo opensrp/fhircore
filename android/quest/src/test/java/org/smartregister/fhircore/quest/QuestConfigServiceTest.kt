@@ -83,7 +83,6 @@ class QuestConfigServiceTest : RobolectricTest() {
 
     val resourceTypes =
       arrayOf(
-          ResourceType.Binary,
           ResourceType.Library,
           ResourceType.StructureMap,
           ResourceType.MedicationRequest,
@@ -116,7 +115,6 @@ class QuestConfigServiceTest : RobolectricTest() {
     val syncParam = questConfigService.resourceSyncParams
     val resourceTypes =
       arrayOf(
-          ResourceType.Binary,
           ResourceType.Library,
           ResourceType.StructureMap,
           ResourceType.MedicationRequest,

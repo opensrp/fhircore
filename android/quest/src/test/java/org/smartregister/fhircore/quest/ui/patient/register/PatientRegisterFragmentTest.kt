@@ -28,7 +28,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
-import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -46,7 +45,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.register.components.PATIENT_BIO
 import org.smartregister.fhircore.quest.ui.patient.register.components.dummyPatientPagingList
-import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @HiltAndroidTest
 class PatientRegisterFragmentTest : RobolectricTest() {
@@ -58,7 +56,6 @@ class PatientRegisterFragmentTest : RobolectricTest() {
   @BindValue
   var configurationRegistry: ConfigurationRegistry =
     Faker.buildTestConfigurationRegistry("g6pd", mockk())
-  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   private lateinit var registerFragment: PatientRegisterFragment
 

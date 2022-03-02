@@ -85,16 +85,6 @@
         "type": "token",
         "expression": "1753,32883,46841,46831,46823"
       }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
-        "base": [
-          "Binary"
-        ]
-      }
     }
   ]
 }

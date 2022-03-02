@@ -29,7 +29,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
-import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -51,7 +50,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
-import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @HiltAndroidTest
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
@@ -61,7 +59,6 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   @BindValue
   var configurationRegistry: ConfigurationRegistry =
     Faker.buildTestConfigurationRegistry("quest", mockk())
-  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()

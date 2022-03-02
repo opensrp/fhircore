@@ -64,7 +64,6 @@ import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
-import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @HiltAndroidTest
 class QuestPatientDetailActivityTest : RobolectricTest() {
@@ -81,7 +80,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   var configurationRegistry: ConfigurationRegistry =
     Faker.buildTestConfigurationRegistry("g6pd", defaultRepository)
   @Inject lateinit var patientItemMapper: PatientItemMapper
-  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   lateinit var questPatientDetailViewModel: ListDataDetailViewModel
   lateinit var fhirEngine: FhirEngine

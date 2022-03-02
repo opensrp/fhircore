@@ -24,7 +24,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
-import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -43,7 +42,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
-import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @HiltAndroidTest
 class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
@@ -57,7 +55,6 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @BindValue
   var configurationRegistry: ConfigurationRegistry =
     Faker.buildTestConfigurationRegistry("g6pd", mockk())
-  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   private val hiltTestApplication = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 

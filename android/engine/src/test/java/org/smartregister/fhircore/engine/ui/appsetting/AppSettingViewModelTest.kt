@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.appsetting
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
@@ -25,6 +26,7 @@ import io.mockk.spyk
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -58,5 +60,22 @@ class AppSettingViewModelTest {
     appSettingViewModel.loadConfigurations(true)
     Assert.assertNotNull(appSettingViewModel.loadConfigs.value)
     Assert.assertEquals(true, appSettingViewModel.loadConfigs.value)
+  }
+
+  @Test
+  fun testFetchConfigurations() = runBlockingTest {
+    coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
+      Bundle().apply {
+        addEntry().resource =
+          Composition().apply {
+            addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
+          }
+      }
+    coEvery { appSettingViewModel.defaultRepository.save(any()) } just runs
+
+    appSettingViewModel.fetchConfigurations("appId")
+
+    coVerify { appSettingViewModel.fhirResourceDataSource.loadData(any()) }
+    coVerify { appSettingViewModel.defaultRepository.save(any()) }
   }
 }

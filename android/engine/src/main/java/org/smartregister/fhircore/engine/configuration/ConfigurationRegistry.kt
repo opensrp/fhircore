@@ -27,6 +27,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import timber.log.Timber
 
 /**
  * A configuration store used to store all the application configurations. Application
@@ -63,7 +64,11 @@ constructor(
     jsonSerializer: Json? = null
   ): T =
     workflowPointName(configClassification.classification).let { workflowName ->
-      val workflowPoint = workflowPointsMap[workflowName]!!
+      val workflowPoint = workflowPointsMap[workflowName]
+      if (workflowPoint == null) {
+        Timber.w("No configuration found for $workflowName. Initializing default instance")
+        return T::class.java.newInstance()
+      }
       configurationsMap.getOrPut(workflowName) {
         // Binary content could be either a Configuration or a FHIR Resource
         (workflowPoint.resource as Binary).content.decodeToString().let {
@@ -106,8 +111,7 @@ constructor(
           )
         workflowPointsMap[workflowPointName] = workflowPoint
       }
-
-    configsLoadedCallback(true)
+      ?.also { configsLoadedCallback(true) }
   }
 
   fun workflowPointName(key: String) = "$appId|$key"

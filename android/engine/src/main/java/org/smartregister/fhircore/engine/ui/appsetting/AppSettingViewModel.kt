@@ -36,6 +36,7 @@ constructor(
 ) : ViewModel() {
 
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
+  val fetchConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   private val _appId = MutableLiveData("")
   val appId
@@ -59,12 +60,23 @@ constructor(
     this.loadConfigs.postValue(loadConfigs)
   }
 
+  fun fetchConfigurations(fetchConfigs: Boolean) {
+    this.fetchConfigs.postValue(fetchConfigs)
+  }
+
   suspend fun fetchConfigurations(appId: String) {
     kotlin
       .runCatching {
         val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
-        val composition =
-          fhirResourceDataSource.loadData(cPath).entryFirstRep.resource as Composition
+        val data =
+          fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
+            if (!it.hasResource()) {
+              error.postValue("Unable to fetch configuration on path $cPath")
+              return
+            }
+          }
+
+        val composition = data.resource as Composition
         defaultRepository.save(composition)
 
         composition.section.groupBy { it.focus.reference.split("/")[0] }.entries.forEach {
@@ -74,9 +86,11 @@ constructor(
             defaultRepository.save(it.resource)
           }
         }
+
+        loadConfigurations(true)
       }
       .onFailure {
-        Timber.e(it)
+        Timber.w(it)
         error.postValue("${it.message}")
       }
   }
