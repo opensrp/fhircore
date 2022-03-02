@@ -21,7 +21,6 @@ import androidx.core.util.Pair
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -44,6 +43,7 @@ import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -69,7 +69,7 @@ internal class ReportViewModelTest : RobolectricTest() {
     MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
   private val resultForPopulation =
     MutableLiveData(listOf(ResultItemPopulation(title = "resultForPopulation")))
-  private val fhirOperator = mockk<FhirOperator>()
+  private val fhirOperatorDecorator = mockk<FhirOperatorDecorator>()
 
   @Before
   fun setUp() {
@@ -84,7 +84,7 @@ internal class ReportViewModelTest : RobolectricTest() {
           dispatcher = coroutinesTestRule.testDispatcherProvider,
           patientRepository = ancPatientRepository,
           fhirEngine = fhirEngine,
-          fhirOperator = fhirOperator,
+          fhirOperatorDecorator = fhirOperatorDecorator,
           sharedPreferencesHelper = sharedPreferencesHelper
         )
       )

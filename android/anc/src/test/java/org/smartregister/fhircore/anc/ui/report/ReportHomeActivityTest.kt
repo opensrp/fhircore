@@ -23,7 +23,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagingData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -48,6 +47,7 @@ import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -65,7 +65,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   private lateinit var reportHomeActivity: ReportHomeActivity
   private lateinit var reportHomeActivitySpy: ReportHomeActivity
   private val fhirEngine: FhirEngine = spyk()
-  private val fhirOperator: FhirOperator = mockk()
+  private val fhirOperatorDecorator: FhirOperatorDecorator = mockk()
 
   @Before
   fun setUp() {
@@ -78,7 +78,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
           dispatcher = coroutinesTestRule.testDispatcherProvider,
           patientRepository = patientRepository,
           fhirEngine = fhirEngine,
-          fhirOperator = fhirOperator,
+          fhirOperatorDecorator = fhirOperatorDecorator,
           sharedPreferencesHelper = sharedPreferencesHelper
         )
       )

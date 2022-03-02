@@ -23,7 +23,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
@@ -39,6 +38,7 @@ import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -58,7 +58,7 @@ class ReportHomePageTest : RobolectricTest() {
   private lateinit var ancPatientRepository: PatientRepository
   private lateinit var viewModel: ReportViewModel
   private val fhirEngine: FhirEngine = spyk()
-  private val fhirOperator = mockk<FhirOperator>()
+  private val fhirOperatorDecorator = mockk<FhirOperatorDecorator>()
 
   @Before
   fun setUp() {
@@ -81,7 +81,7 @@ class ReportHomePageTest : RobolectricTest() {
             repository = repository,
             dispatcher = coroutinesTestRule.testDispatcherProvider,
             patientRepository = ancPatientRepository,
-            fhirOperator = fhirOperator,
+            fhirOperatorDecorator = fhirOperatorDecorator,
             fhirEngine = fhirEngine,
             sharedPreferencesHelper = sharedPreferencesHelper
           )
