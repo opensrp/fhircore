@@ -126,4 +126,11 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     reportHomeActivity.reportViewModel.onBackPress()
     Assert.assertTrue(reportHomeActivitySpy.isFinishing)
   }
+
+  @Test
+  fun testOnDateRangeClickShouldShowDateRangePicker() {
+    reportHomeActivity.reportViewModel.onDateRangeClick()
+    // Date picker is displayed onDateRangeClick and date range was set when the dialog is displayed
+    Assert.assertNotNull(reportViewModel.dateRange.value)
+  }
 }
