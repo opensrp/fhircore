@@ -92,7 +92,8 @@ class QuestConfigServiceTest : RobolectricTest() {
           ResourceType.Patient,
           ResourceType.Condition,
           ResourceType.Observation,
-          ResourceType.Encounter
+          ResourceType.Encounter,
+          ResourceType.Task
         )
         .sorted()
 
@@ -124,7 +125,8 @@ class QuestConfigServiceTest : RobolectricTest() {
           ResourceType.Patient,
           ResourceType.Condition,
           ResourceType.Observation,
-          ResourceType.Encounter
+          ResourceType.Encounter,
+          ResourceType.Task
         )
         .sorted()
 

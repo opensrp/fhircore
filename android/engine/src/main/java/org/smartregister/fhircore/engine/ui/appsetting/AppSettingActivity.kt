@@ -51,6 +51,7 @@ class AppSettingActivity : AppCompatActivity() {
       if (loadConfigs != null && loadConfigs) {
         val applicationId = appSettingViewModel.appId.value!!
         lifecycleScope.launch {
+          appSettingViewModel.fetchConfigurations(applicationId)
           configurationRegistry.loadConfigurations(appId = applicationId) { loadSuccessful: Boolean
             ->
             if (loadSuccessful) {
@@ -92,7 +93,7 @@ class AppSettingActivity : AppCompatActivity() {
     val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
     lastAppId?.let {
       appSettingViewModel.onApplicationIdChanged(it)
-      appSettingViewModel.loadConfigurations(true, it)
+      appSettingViewModel.loadConfigurations(true)
     }
       ?: run {
         setContent {

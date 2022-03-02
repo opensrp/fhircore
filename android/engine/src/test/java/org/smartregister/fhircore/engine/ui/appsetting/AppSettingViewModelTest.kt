@@ -55,7 +55,7 @@ class AppSettingViewModelTest {
       Bundle().apply { addEntry().resource = Composition() }
     coEvery { appSettingViewModel.defaultRepository.save(any()) } just runs
 
-    appSettingViewModel.loadConfigurations("appId")
+    appSettingViewModel.loadConfigurations(true)
     Assert.assertNotNull(appSettingViewModel.loadConfigs.value)
     Assert.assertEquals(true, appSettingViewModel.loadConfigs.value)
   }

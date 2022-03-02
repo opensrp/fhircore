@@ -18,11 +18,8 @@ package org.smartregister.fhircore.engine.ui.appsetting
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -58,11 +55,11 @@ constructor(
   val error
     get() = _error
 
-  fun loadConfigurations(loadConfigs: Boolean, appId: String) {
-    viewModelScope.launch(Dispatchers.Default) { loadConfigurations(appId) }
+  fun loadConfigurations(loadConfigs: Boolean) {
+    this.loadConfigs.postValue(loadConfigs)
   }
 
-  suspend fun loadConfigurations(appId: String) {
+  suspend fun fetchConfigurations(appId: String) {
     kotlin
       .runCatching {
         val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
@@ -77,7 +74,6 @@ constructor(
             defaultRepository.save(it.resource)
           }
         }
-        this@AppSettingViewModel.loadConfigs.postValue(true)
       }
       .onFailure {
         Timber.e(it)

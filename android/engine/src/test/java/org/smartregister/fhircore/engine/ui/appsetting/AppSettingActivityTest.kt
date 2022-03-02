@@ -26,6 +26,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import io.mockk.spyk
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -36,17 +37,21 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 
 @HiltAndroidTest
 class AppSettingActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val testAppId = "appId"
 
-  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    spyk(ConfigurationRegistry(ApplicationProvider.getApplicationContext(), mockk(), mockk()))
 
   private lateinit var appSettingActivity: AppSettingActivity
 
@@ -60,10 +65,13 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testThatConfigsAreLoadedCorrectlyAndActivityIsFinished() {
-    appSettingActivity.appSettingViewModel.run {
-      onApplicationIdChanged(testAppId)
-      loadConfigurations(true, testAppId)
+    coroutineTestRule.runBlockingTest {
+      appSettingActivity.appSettingViewModel.run {
+        onApplicationIdChanged(testAppId)
+        loadConfigurations(true)
+      }
     }
+
     val configurationsMap = appSettingActivity.configurationRegistry.configurationsMap
     Assert.assertTrue(configurationsMap.isNotEmpty())
     Assert.assertTrue(configurationsMap.containsKey("appId|application"))
@@ -81,7 +89,7 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
   fun testThatConfigsAreNotLoadedAndToastNotificationDisplayed() {
     appSettingActivity.appSettingViewModel.run {
       onApplicationIdChanged("fakeAppId")
-      loadConfigurations(true, "fakeAppId")
+      loadConfigurations(true)
     }
     val latestToast = ShadowToast.getLatestToast()
     Assert.assertEquals(Toast.LENGTH_LONG, latestToast.duration)

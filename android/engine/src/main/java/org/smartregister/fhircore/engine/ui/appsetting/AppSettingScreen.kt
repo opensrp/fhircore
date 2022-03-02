@@ -53,7 +53,7 @@ fun AppSettingScreen(
   rememberApp: Boolean,
   onAppIdChanged: (String) -> Unit,
   onRememberAppChecked: (Boolean) -> Unit,
-  onLoadConfigurations: (Boolean, String) -> Unit
+  onLoadConfigurations: (Boolean) -> Unit
 ) {
 
   Column(
@@ -104,7 +104,7 @@ fun AppSettingScreen(
     }
     Spacer(modifier = modifier.height(20.dp))
     Button(
-      onClick = { onLoadConfigurations(true, appId) },
+      onClick = { onLoadConfigurations(true) },
       enabled = appId.isNotEmpty(),
       modifier = modifier.fillMaxWidth()
     ) {
@@ -123,7 +123,7 @@ fun AppSettingScreen(
 private fun AppSettingScreenPreview() {
   AppSettingScreen(
     appId = "",
-    onLoadConfigurations = { _, _ -> },
+    onLoadConfigurations = {},
     onAppIdChanged = {},
     onRememberAppChecked = {},
     rememberApp = false
