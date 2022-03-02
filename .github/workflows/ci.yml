@@ -59,7 +59,7 @@ jobs:
           path: android
       
       - name: Display structure of downloaded files
-        run: ls -R      
+        run: ls -dhR      
         working-directory: android
           
       - name: Grant read permission for keyfile
