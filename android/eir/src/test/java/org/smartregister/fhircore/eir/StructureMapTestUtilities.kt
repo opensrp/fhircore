@@ -19,8 +19,6 @@ package org.smartregister.fhircore.eir
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import java.io.File
-import java.io.FileReader
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
@@ -376,23 +374,5 @@ class StructureMapTestUtilities : RobolectricTest() {
     scu.transform(contextR4, baseElement, map, targetResource)
 
     System.out.println(iParser.encodeResourceToString(targetResource))
-  }
-
-  fun String.readFile(): String {
-    val file = File("$ASSET_BASE_PATH/$this")
-    val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
-    return String(charArray)
-  }
-
-  companion object {
-    val ASSET_BASE_PATH =
-      (System.getProperty("user.dir") +
-        File.separator +
-        "src" +
-        File.separator +
-        "test" +
-        File.separator +
-        "resources" +
-        File.separator)
   }
 }

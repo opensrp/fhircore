@@ -23,9 +23,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Binary
-import javax.inject.Inject
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -57,15 +57,13 @@ class QuestConfigServiceTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { repository.searchCompositionByIdentifier(any()) } returns
-            "/configs/quest/config_composition_quest.json".parseSampleResourceFromFile() as Composition
+      "/configs/quest/config_composition_quest.json".parseSampleResourceFromFile() as Composition
 
     coEvery { repository.getBinary(any()) } returns Binary()
     coEvery { repository.getBinary("56181") } returns
-            Binary().apply {
-              content = "/configs/config_sync.json".readFile().toByteArray()
-            }
+      Binary().apply { content = "/configs/config_sync.json".readFile().toByteArray() }
 
-    runBlocking { configurationRegistry.loadAppConfigurations("quest", mockk(relaxed = true), {}) }
+    runBlocking { configurationRegistry.loadConfigurations("quest", {}) }
 
     questConfigService =
       QuestConfigService(
@@ -85,29 +83,28 @@ class QuestConfigServiceTest : RobolectricTest() {
 
     val resourceTypes =
       arrayOf(
-        ResourceType.Binary,
-        ResourceType.Library,
-        ResourceType.StructureMap,
-        ResourceType.MedicationRequest,
-        ResourceType.QuestionnaireResponse,
-        ResourceType.Questionnaire,
-        ResourceType.Patient,
-        ResourceType.Condition,
-        ResourceType.Observation,
-        ResourceType.Encounter
-      ).sorted()
+          ResourceType.Binary,
+          ResourceType.Library,
+          ResourceType.StructureMap,
+          ResourceType.MedicationRequest,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.Questionnaire,
+          ResourceType.Patient,
+          ResourceType.Condition,
+          ResourceType.Observation,
+          ResourceType.Encounter
+        )
+        .sorted()
 
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
-    syncParam.keys
-      .filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
+    syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
       Assert.assertTrue(syncParam[it]!!.isEmpty())
     }
 
-    syncParam.keys
-      .filter { !it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
-        Assert.assertTrue(syncParam[it]!!.isNotEmpty())
-      }
+    syncParam.keys.filter { !it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.isNotEmpty())
+    }
   }
 
   @Test
@@ -115,28 +112,26 @@ class QuestConfigServiceTest : RobolectricTest() {
     every { sharedPreferencesHelper.read(any(), null) } returns
       UserInfo(null, null, null).encodeJson()
 
-
-
     val syncParam = questConfigService.resourceSyncParams
     val resourceTypes =
       arrayOf(
-        ResourceType.Binary,
-        ResourceType.Library,
-        ResourceType.StructureMap,
-        ResourceType.MedicationRequest,
-        ResourceType.QuestionnaireResponse,
-        ResourceType.Questionnaire,
-        ResourceType.Patient,
-        ResourceType.Condition,
-        ResourceType.Observation,
-        ResourceType.Encounter
-      ).sorted()
+          ResourceType.Binary,
+          ResourceType.Library,
+          ResourceType.StructureMap,
+          ResourceType.MedicationRequest,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.Questionnaire,
+          ResourceType.Patient,
+          ResourceType.Condition,
+          ResourceType.Observation,
+          ResourceType.Encounter
+        )
+        .sorted()
 
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
-    syncParam.keys
-      .filter { !it.isIn(ResourceType.Library) }.forEach {
-        Assert.assertTrue(syncParam[it]!!.isEmpty())
-      }
+    syncParam.keys.filter { !it.isIn(ResourceType.Library) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.isEmpty())
+    }
   }
 }

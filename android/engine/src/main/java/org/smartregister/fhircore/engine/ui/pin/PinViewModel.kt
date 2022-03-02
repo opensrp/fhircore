@@ -89,7 +89,7 @@ constructor(
     onBackClick.value = true
   }
 
-  suspend fun loadData(isSetup: Boolean = false) {
+  fun loadData(isSetup: Boolean = false) {
     appId = retrieveAppId()
     pinViewConfiguration = getPinConfiguration()
     appName = retrieveAppName()
@@ -106,7 +106,7 @@ constructor(
       }
   }
 
-  suspend fun getPinConfiguration(): PinViewConfiguration =
+  fun getPinConfiguration(): PinViewConfiguration =
     configurationRegistry.retrieveConfiguration(AppConfigClassification.PIN)
 
   fun retrieveAppId(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!
@@ -123,6 +123,7 @@ constructor(
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
       _showError.postValue(false)
       secureSharedPreference.saveSessionPin(newPin)
+      secureSharedPreference.savePinCredentials()
       _navigateToHome.postValue(true)
     } else {
       _showError.postValue(true)
@@ -137,6 +138,7 @@ constructor(
       showError.value = !pinMatched
       _pin.postValue(newPin)
       if (pinMatched && !isSetupPage) {
+        secureSharedPreference.saveCredentials(secureSharedPreference.retrievePinCredentials()!!)
         _navigateToHome.value = true
       }
     } else {
@@ -156,6 +158,8 @@ constructor(
     // _launchDialPad.value = "tel:####"
   }
 
+  // Todo: discuss with ben, whether we need user to redirect to settings or not,
+  //  considering Maimoona's data syncing concerns
   fun onMenuSettingClicked() {
     sharedPreferences.remove(APP_ID_CONFIG)
     _navigateToSettings.value = true

@@ -25,8 +25,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -47,18 +47,17 @@ class AppSettingActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
-    appSettingViewModel.loadConfigs.observe(
-      this
-    ) { loadConfigs ->
+    appSettingViewModel.loadConfigs.observe(this) { loadConfigs ->
       if (loadConfigs != null && loadConfigs) {
         val applicationId = appSettingViewModel.appId.value!!
         lifecycleScope.launch {
-          configurationRegistry.loadAppConfigurations(
-            appId = applicationId,
-            accountAuthenticator = accountAuthenticator
-          ) { loadSuccessful: Boolean ->
+          configurationRegistry.loadConfigurations(appId = applicationId) { loadSuccessful: Boolean
+            ->
             if (loadSuccessful) {
-              sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
+              if (appSettingViewModel.rememberApp.value == true) {
+                sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
+              }
+              accountAuthenticator.launchLoginScreen()
               finish()
             } else {
               showToast(
@@ -75,25 +74,35 @@ class AppSettingActivity : AppCompatActivity() {
       if (it.isNotBlank()) showToast(getString(R.string.error_loading_config, it))
     }
 
-    sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.let {
+    appSettingViewModel.rememberApp.observe(
+      this,
+      { doRememberApp ->
+        doRememberApp?.let {
+          if (doRememberApp) {
+            if (!appSettingViewModel.appId.value.isNullOrEmpty()) {
+              sharedPreferencesHelper.write(APP_ID_CONFIG, appSettingViewModel.appId.value ?: "")
+            }
+          } else {
+            sharedPreferencesHelper.remove(APP_ID_CONFIG)
+          }
+        }
+      }
+    )
+
+    val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
+    lastAppId?.let {
       appSettingViewModel.onApplicationIdChanged(it)
-      appSettingViewModel.loadConfigurations(true, it, null, null)
+      appSettingViewModel.loadConfigurations(true, it)
     }
       ?: run {
         setContent {
           AppTheme {
             val appId by appSettingViewModel.appId.observeAsState("")
-            val username by appSettingViewModel.username.observeAsState("")
-            val password by appSettingViewModel.password.observeAsState("")
             val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
             AppSettingScreen(
               appId = appId,
-              username=username,
-              password=password,
-              rememberApp = rememberApp,
+              rememberApp = rememberApp ?: false,
               onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
-              onUsernameChanged = appSettingViewModel::onUsernameChanged,
-              onPasswordChanged = appSettingViewModel::onPasswordChanged,
               onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
               onLoadConfigurations = appSettingViewModel::loadConfigurations
             )

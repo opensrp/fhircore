@@ -20,13 +20,12 @@ import android.content.Intent
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.runs
 import io.mockk.unmockkObject
 import javax.inject.Inject
 import org.junit.After
@@ -37,20 +36,31 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.app.fakes.Faker
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.anc.util.AncConfigClassification
+import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
+import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class AncRegisterFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  @Inject lateinit var jsonSpecificationProvider: AncJsonSpecificationProvider
+
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   private lateinit var registerFragment: AncRegisterFragment
 
@@ -58,14 +68,24 @@ class AncRegisterFragmentTest : RobolectricTest() {
   fun setUp() {
     mockkObject(Sync)
 
-    val accountAuthenticator = mockk<AccountAuthenticator>()
-    every { accountAuthenticator.launchLoginScreen() } just runs
-
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations(
-      appId = "anc",
-      accountAuthenticator = accountAuthenticator
-    ) {}
+
+    every { sharedPreferencesHelper.read(any(), any<String>()) } returns ""
+
+    Faker.initConfigurationRegistry<ApplicationConfiguration>(
+      configurationRegistry,
+      null,
+      AppConfigClassification.APPLICATION,
+      "configs/anc/config_application.json".readFile()
+    )
+
+    Faker.initConfigurationRegistry<RegisterViewConfiguration>(
+      configurationRegistry,
+      jsonSpecificationProvider,
+      AncConfigClassification.PATIENT_REGISTER,
+      "configs/anc/config_register_view.json".readFile()
+    )
+
     registerFragment = AncRegisterFragment()
 
     val registerActivity =

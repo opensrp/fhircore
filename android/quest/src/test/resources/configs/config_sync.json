@@ -21,7 +21,8 @@
         "base": [
           "Encounter",
           "Condition",
-          "MedicationRequest"
+          "MedicationRequest",
+          "Task"
         ],
         "type": "token",
         "expression": "#organization"

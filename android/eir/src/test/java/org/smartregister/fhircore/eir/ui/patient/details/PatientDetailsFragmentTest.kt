@@ -26,11 +26,12 @@ import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.ext.junit.rules.ActivityScenarioRule
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -47,10 +48,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.fake.Faker
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
+import org.smartregister.fhircore.eir.util.EirConfigClassification
 import org.smartregister.fhircore.engine.HiltActivityForTest
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.ImmunizationProfileViewConfiguration
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 @ExperimentalCoroutinesApi
@@ -64,9 +67,7 @@ internal class PatientDetailsFragmentTest : RobolectricTest() {
 
   @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
 
   private lateinit var patientDetailsFragment: PatientDetailsFragment
 
@@ -75,7 +76,13 @@ internal class PatientDetailsFragmentTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("covax", accountAuthenticator) {}
+
+    Faker.initConfigurationRegistry<ImmunizationProfileViewConfiguration>(
+      configurationRegistry,
+      EirConfigClassification.IMMUNIZATION_PROFILE,
+      "configs/covax/config_immunization_profile.json".readFile()
+    )
+
     patientDetailsFragment =
       PatientDetailsFragment.newInstance(
         bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))

@@ -24,6 +24,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,7 +33,8 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.auth.AuthCredentials
+import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.pinViewConfigurationOf
@@ -58,8 +60,7 @@ internal class PinViewModelTest : RobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry = mockk()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -68,7 +69,7 @@ internal class PinViewModelTest : RobolectricTest() {
   private val testPin = MutableLiveData("1234")
   val testPinViewConfiguration =
     PinViewConfiguration(
-      appId = "ancApp",
+      appId = "appId",
       classification = "classification",
       applicationName = "Test App",
       appLogoIconResourceFile = "ic_launcher",
@@ -80,7 +81,10 @@ internal class PinViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    configurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
+    every {
+      hint(PinViewConfiguration::class)
+      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
+    } returns pinViewConfigurationOf("appId")
 
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, true) } returns Unit
@@ -88,6 +92,14 @@ internal class PinViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { secureSharedPreference.saveSessionPin("1234") } returns Unit
     coEvery { secureSharedPreference.retrieveSessionPin() } returns "1234"
+    coEvery {
+      secureSharedPreference.saveCredentials(
+        AuthCredentials("username", "password", "sessionToken", "refreshToken")
+      )
+    } returns Unit
+    coEvery { secureSharedPreference.retrievePinCredentials() } returns
+      AuthCredentials("username", "password", "sessionToken", "refreshToken")
+    coEvery { secureSharedPreference.savePinCredentials() } returns Unit
 
     pinViewModel =
       PinViewModel(
@@ -111,7 +123,7 @@ internal class PinViewModelTest : RobolectricTest() {
   fun testPinViewConfiguration() {
     val expectedPinConfig =
       pinViewConfigurationOf(
-        appId = "ancApp",
+        appId = "appId",
         classification = "classification",
         applicationName = "Test App",
         appLogoIconResourceFile = "ic_launcher",

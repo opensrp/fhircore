@@ -17,26 +17,30 @@
 package org.smartregister.fhircore.quest.app.fakes
 
 import io.mockk.coEvery
+import io.mockk.every
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import org.hl7.fhir.r4.model.Address
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Identifier
-import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
+import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 object Faker {
 
@@ -113,14 +117,8 @@ object Faker {
       listOf(
         QuestResultItem(
           Pair(
-            QuestionnaireResponse().apply {
-              meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Order" }) }
-              authored = Date()
-            },
-            Questionnaire().apply {
-              name = "Sample Order"
-              title = "Sample Order"
-            }
+            QuestionnaireResponseItem("1", Date(), "1", ""),
+            QuestionnaireItem("1", "Sample Order", "Sample Order")
           ),
           listOf(
             listOf(
@@ -131,14 +129,8 @@ object Faker {
         ),
         QuestResultItem(
           Pair(
-            QuestionnaireResponse().apply {
-              meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
-              authored = Date()
-            },
-            Questionnaire().apply {
-              name = "Sample Test"
-              title = "Sample Test"
-            }
+            QuestionnaireResponseItem("1", Date(), "1", ""),
+            QuestionnaireItem("1", "ample Test", "ample Test")
           ),
           listOf(
             listOf(
@@ -148,6 +140,8 @@ object Faker {
           )
         )
       )
+
+    coEvery { patientRepository.fetchPregnancyCondition(any()) } returns ""
   }
 
   fun initPatientRepositoryEmptyMocks(patientRepository: PatientRepository) {
@@ -155,5 +149,17 @@ object Faker {
     coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
     coEvery { patientRepository.fetchTestForms(any()) } returns emptyList()
     coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns emptyList()
+  }
+
+  inline fun <reified T : Configuration> initConfigurationRegistry(
+    configurationRegistry: ConfigurationRegistry,
+    questJsonSpecificationProvider: QuestJsonSpecificationProvider?,
+    configClassification: ConfigClassification,
+    configJsonContent: String
+  ) {
+    every {
+      hint(T::class)
+      configurationRegistry.retrieveConfiguration<T>(configClassification, any())
+    } returns configJsonContent.decodeJson(questJsonSpecificationProvider?.getJson())
   }
 }

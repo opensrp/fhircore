@@ -20,9 +20,12 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import java.util.Date
@@ -36,11 +39,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.DynamicColor
 import org.smartregister.fhircore.quest.configuration.view.Filter
+import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.Properties
 import org.smartregister.fhircore.quest.configuration.view.Property
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -48,8 +52,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class PatientUtilTest : RobolectricTest() {
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
   @Inject lateinit var fhirEngine: FhirEngine
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -57,14 +60,18 @@ class PatientUtilTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking {
-      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
-    }
+
     fhirEngine = spyk(fhirEngine)
   }
 
   @Test
   fun testLoadAdditionalDataShouldReturnExpectedData() {
+    every {
+      hint(PatientRegisterRowViewConfiguration::class)
+      configurationRegistry.retrieveConfiguration<PatientRegisterRowViewConfiguration>(
+        QuestConfigClassification.PATIENT_REGISTER_ROW
+      )
+    } returns "/configs/g6pd/config_patient_register_row_view.json".readFile().decodeJson()
 
     val searchSlot = slot<Search>()
     coEvery { fhirEngine.search<Condition>(capture(searchSlot)) } returns getConditions()

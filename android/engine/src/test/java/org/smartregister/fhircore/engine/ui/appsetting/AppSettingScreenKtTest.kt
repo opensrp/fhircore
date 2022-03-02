@@ -34,7 +34,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 class AppSettingScreenKtTest : RobolectricTest() {
 
   private class Listeners {
-    val onLoadConfigurations: (Boolean) -> Unit = spyk()
+    val onLoadConfigurations: (Boolean, String) -> Unit = spyk()
 
     val onRememberAppChecked: (Boolean) -> Unit = spyk()
 

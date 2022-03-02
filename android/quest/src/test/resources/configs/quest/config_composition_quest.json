@@ -44,6 +44,14 @@
       }
     },
     {
+      "title": "Patient Task Register View configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/87021",
+        "identifier": { "value": "patient_task_register" }
+      }
+    },
+    {
       "title": "Pin View configuration",
       "mode": "working",
       "focus": {

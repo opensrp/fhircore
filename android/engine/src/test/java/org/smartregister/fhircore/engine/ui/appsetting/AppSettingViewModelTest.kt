@@ -17,16 +17,23 @@
 package org.smartregister.fhircore.engine.ui.appsetting
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import io.mockk.coEvery
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Composition
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
 class AppSettingViewModelTest {
 
-  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private val appSettingViewModel = spyk(AppSettingViewModel())
+  private val appSettingViewModel = spyk(AppSettingViewModel(mockk(), mockk()))
 
   @Test
   fun testOnApplicationIdChanged() {
@@ -43,8 +50,12 @@ class AppSettingViewModelTest {
   }
 
   @Test
-  fun testLoadConfigurations() {
-    appSettingViewModel.loadConfigurations(true)
+  fun testLoadConfigurations() = runBlockingTest {
+    coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
+      Bundle().apply { addEntry().resource = Composition() }
+    coEvery { appSettingViewModel.defaultRepository.save(any()) } just runs
+
+    appSettingViewModel.loadConfigurations("appId")
     Assert.assertNotNull(appSettingViewModel.loadConfigs.value)
     Assert.assertEquals(true, appSettingViewModel.loadConfigs.value)
   }

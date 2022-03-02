@@ -27,7 +27,6 @@ import io.jsonwebtoken.UnsupportedJwtException
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import timber.log.Timber

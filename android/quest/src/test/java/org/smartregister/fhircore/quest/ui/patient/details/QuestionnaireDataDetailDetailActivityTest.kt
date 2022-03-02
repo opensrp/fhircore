@@ -24,7 +24,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
@@ -34,7 +33,6 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -42,8 +40,11 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.util.QuestConfigClassification
+import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @HiltAndroidTest
 class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
@@ -54,8 +55,8 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @BindValue val libraryEvaluator: LibraryEvaluator = mockk()
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
+  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   private val hiltTestApplication = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -67,10 +68,17 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking {
-      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
-    }
+
+    Faker.initConfigurationRegistry<DataDetailsListViewConfiguration>(
+      configurationRegistry,
+      null,
+      QuestConfigClassification.CONTROL_TEST_DETAILS_VIEW,
+      "configs/g6pd/config_control_test_details_view.json".readFile()
+    )
+
     Faker.initPatientRepositoryMocks(patientRepository)
+
+    QuestConfigClassification.CONTROL_TEST_DETAILS_VIEW
 
     every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
       "{\"organization\":\"111\"}"

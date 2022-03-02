@@ -33,6 +33,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -40,7 +41,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.runBlocking
 import java.util.Date
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
@@ -48,14 +48,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.dataDetailsListViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
@@ -73,8 +74,7 @@ class ListDataDetailScreenTest : RobolectricTest() {
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
 
   val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -91,10 +91,9 @@ class ListDataDetailScreenTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     fhirEngine = mockk()
-    runBlocking {
-      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
-    }
+
     Faker.initPatientRepositoryMocks(patientRepository)
+
     questPatientDetailViewModel =
       spyk(
         ListDataDetailViewModel(
@@ -107,21 +106,14 @@ class ListDataDetailScreenTest : RobolectricTest() {
       )
 
     patientDetailsViewConfig =
-      configurationRegistry.retrieveConfiguration(
-        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
-      )
+      "configs/g6pd/config_patient_details_view.json".readFile().decodeJson()
 
-    // Simulate retrieval of data from repository
-    questPatientDetailViewModel.run {
-      getDemographicsWithAdditionalData(patientId, patientDetailsViewConfig)
-      getAllResults(
-        patientId,
-        ResourceType.Patient,
-        patientDetailsViewConfig.questionnaireFilter!!,
-        patientDetailsViewConfig
-      )
-      getAllForms(patientDetailsViewConfig.questionnaireFilter!!)
-    }
+    Faker.initConfigurationRegistry<PatientRegisterRowViewConfiguration>(
+      configurationRegistry,
+      null,
+      QuestConfigClassification.PATIENT_REGISTER_ROW,
+      "configs/g6pd/config_patient_register_row_view.json".readFile()
+    )
   }
 
   @Test

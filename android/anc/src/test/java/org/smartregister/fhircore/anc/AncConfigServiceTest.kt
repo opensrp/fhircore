@@ -21,9 +21,13 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -31,6 +35,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -43,15 +48,27 @@ class AncConfigServiceTest : RobolectricTest() {
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue val repository: DefaultRepository = mockk()
 
   private lateinit var configService: AncConfigService
 
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    coEvery { repository.searchCompositionByIdentifier(any()) } returns
+      "/configs/anc/config_composition_anc.json".parseSampleResource() as Composition
+
+    coEvery { repository.getBinary(any()) } returns Binary()
+    coEvery { repository.getBinary("71729") } returns
+      Binary().apply { content = "/configs/config_sync.json".readFile().toByteArray() }
+
+    runBlocking { configurationRegistry.loadConfigurations("anc", {}) }
+
     configService =
       AncConfigService(
         context = ApplicationProvider.getApplicationContext(),
+        configurationRegistry,
         sharedPreferencesHelper
       )
   }

@@ -16,25 +16,21 @@
 
 package org.smartregister.fhircore.engine.configuration
 
-import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.mockk
-import io.mockk.spyk
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.ResourceType
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -44,44 +40,27 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
-  @BindValue val repository: DefaultRepository = mockk()
-
-  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   private val testAppId = "appId"
 
-  private lateinit var configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry = mockk()
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry =
-      spyk(
-        ConfigurationRegistry(
-          context = context,
-          sharedPreferencesHelper = sharedPreferencesHelper,
-          repository = repository
-        )
-      )
+    runBlocking { configurationRegistry.loadConfigurations(appId = testAppId) {} }
   }
 
   @Test
-  fun testLoadConfiguration() {
-    // appId should be provided in assets/configurations/application_configurations.json
-    configurationRegistry.loadAppConfigurations(
-      appId = testAppId,
-      accountAuthenticator = accountAuthenticator
-    ) {}
+  fun testLoadConfiguration() = runBlockingTest {
     Assert.assertEquals(testAppId, configurationRegistry.appId)
     Assert.assertTrue(configurationRegistry.configurationsMap.isNotEmpty())
     Assert.assertTrue(configurationRegistry.configurationsMap.containsKey("appId|application"))
   }
 
   @Test
-  fun testRetrieveConfigurationShouldReturnLoginViewConfiguration() {
-    configurationRegistry.loadAppConfigurations(testAppId, accountAuthenticator) {}
+  fun testRetrieveConfigurationShouldReturnLoginViewConfiguration() = runBlockingTest {
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
         AppConfigClassification.LOGIN
@@ -119,8 +98,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testRetrievePinConfigurationShouldReturnLoginViewConfiguration() {
-    configurationRegistry.loadAppConfigurations(testAppId, accountAuthenticator) {}
+  fun testRetrievePinConfigurationShouldReturnLoginViewConfiguration() = runBlockingTest {
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
 

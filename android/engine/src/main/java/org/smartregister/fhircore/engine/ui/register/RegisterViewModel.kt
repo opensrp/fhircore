@@ -29,7 +29,6 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -63,6 +62,11 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel() {
 
+  private val applicationConfiguration =
+    configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+      AppConfigClassification.APPLICATION
+    )
+
   private val _lastSyncTimestamp =
     MutableLiveData(sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, ""))
   val lastSyncTimestamp
@@ -93,9 +97,7 @@ constructor(
   }
 
   fun loadLanguages() =
-    runBlocking { configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-      AppConfigClassification.APPLICATION
-    ) }.languages.map { Language(it, Locale.forLanguageTag(it).displayName) }
+    applicationConfiguration.languages.map { Language(it, Locale.forLanguageTag(it).displayName) }
 
   fun allowLanguageSwitching() = languages.size > 1
 

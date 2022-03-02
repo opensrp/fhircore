@@ -22,7 +22,6 @@ import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
@@ -48,7 +47,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
 
     pinViewModel.apply {
       if (configurationRegistry.isAppIdInitialized()) {
-        runBlocking { loadData(isSetup = true) }
+        loadData(isSetup = true)
       }
       val pinSetupActivity = this@PinSetupActivity
       navigateToHome.observe(pinSetupActivity) { pinSetupActivity.moveToHome() }

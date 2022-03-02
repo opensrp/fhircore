@@ -21,8 +21,10 @@ import android.content.Context
 import android.widget.Toast
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockk
 import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
@@ -31,6 +33,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 
@@ -42,6 +45,8 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val testAppId = "appId"
+
+  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
 
   private lateinit var appSettingActivity: AppSettingActivity
 
@@ -57,7 +62,7 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
   fun testThatConfigsAreLoadedCorrectlyAndActivityIsFinished() {
     appSettingActivity.appSettingViewModel.run {
       onApplicationIdChanged(testAppId)
-      loadConfigurations(true)
+      loadConfigurations(true, testAppId)
     }
     val configurationsMap = appSettingActivity.configurationRegistry.configurationsMap
     Assert.assertTrue(configurationsMap.isNotEmpty())
@@ -76,7 +81,7 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
   fun testThatConfigsAreNotLoadedAndToastNotificationDisplayed() {
     appSettingActivity.appSettingViewModel.run {
       onApplicationIdChanged("fakeAppId")
-      loadConfigurations(true)
+      loadConfigurations(true, "fakeAppId")
     }
     val latestToast = ShadowToast.getLatestToast()
     Assert.assertEquals(Toast.LENGTH_LONG, latestToast.duration)

@@ -20,10 +20,12 @@ import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -49,7 +51,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -74,8 +75,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -84,9 +84,9 @@ class PatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking {
-      configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
-    }
+
+    every { configurationRegistry.appId } returns "quest"
+
     repository =
       PatientRepository(
         fhirEngine,
@@ -329,6 +329,7 @@ class PatientRepositoryTest : RobolectricTest() {
         this.id = "1"
         this.questionnaire = "Questionnaire/1"
         this.authored = today
+        this.contained = listOf(Encounter().apply { this.id = "1" })
       }
 
     val quest = createTestConfigurationsData()[0]
@@ -353,11 +354,11 @@ class PatientRepositoryTest : RobolectricTest() {
     }
 
     with(data.source) {
-      Assert.assertEquals("1", first.id)
-      Assert.assertEquals("Questionnaire/1", first.questionnaire)
+      Assert.assertEquals("1", first.logicalId)
+      Assert.assertEquals("1", first.encounterId)
       Assert.assertEquals(today, first.authored)
 
-      Assert.assertEquals("1", second.id)
+      Assert.assertEquals("1", second.logicalId)
       Assert.assertEquals("Questionnaire Name", second.name)
       Assert.assertEquals("Questionnaire Title", second.title)
     }

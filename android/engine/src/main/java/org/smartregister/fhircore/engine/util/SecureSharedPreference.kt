@@ -49,17 +49,10 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     }
   }
 
-  fun saveSessionToken(sessionToken: String) {
-    secureSharedPreferences.edit {
-      putString(KEY_LATEST_SESSION_TOKEN_PREFERENCE, sessionToken)
-    }
-  }
-
   fun deleteCredentials() {
     secureSharedPreferences.edit {
       remove(KEY_LATEST_CREDENTIALS_PREFERENCE)
       remove(KEY_LATEST_SESSION_TOKEN_PREFERENCE)
-      remove(KEY_SESSION_PIN)
     }
   }
 
@@ -78,6 +71,19 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     secureSharedPreferences.edit { putString(KEY_SESSION_PIN, pin) }
   }
 
+  fun savePinCredentials() {
+    secureSharedPreferences.edit {
+      putString(KEY_PIN_CREDENTIALS, retrieveCredentials().encodeJson())
+      putString(KEY_LATEST_SESSION_TOKEN_PREFERENCE, retrieveCredentials()!!.sessionToken)
+    }
+  }
+
+  fun retrievePinCredentials(): AuthCredentials? {
+    return secureSharedPreferences
+      .getString(KEY_PIN_CREDENTIALS, null)
+      ?.decodeJson<AuthCredentials>()
+  }
+
   fun retrieveSessionPin() = secureSharedPreferences.getString(KEY_SESSION_PIN, null)
 
   fun deleteSessionPin() {
@@ -89,5 +95,6 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     const val KEY_LATEST_CREDENTIALS_PREFERENCE = "LATEST_SUCCESSFUL_SESSION_CREDENTIALS"
     const val KEY_LATEST_SESSION_TOKEN_PREFERENCE = "LATEST_SUCCESSFUL_SESSION_TOKEN"
     const val KEY_SESSION_PIN = "KEY_SESSION_PIN"
+    const val KEY_PIN_CREDENTIALS = "KEY_PIN_CREDENTIALS"
   }
 }

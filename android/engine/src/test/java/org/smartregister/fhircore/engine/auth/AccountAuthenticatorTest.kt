@@ -44,7 +44,6 @@ import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.app.fakes.FakeModel
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.IS_NEW_ACCOUNT
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse

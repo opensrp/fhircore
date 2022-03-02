@@ -25,14 +25,17 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import javax.inject.Inject
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncInitiator
@@ -50,8 +53,6 @@ class UserProfileViewModelTest : RobolectricTest() {
   lateinit var secureSharedPreference: SecureSharedPreference
   lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   lateinit var configurationRegistry: ConfigurationRegistry
-
-  @Inject lateinit var realConfigurationRegistry: ConfigurationRegistry
 
   val syncBroadcaster = SyncBroadcaster
 
@@ -146,17 +147,13 @@ class UserProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() {
-    every { accountAuthenticator.launchLoginScreen() } just runs
-    realConfigurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
-    userProfileViewModel =
-      UserProfileViewModel(
-        syncBroadcaster,
-        accountAuthenticator,
-        secureSharedPreference,
-        sharedPreferencesHelper,
-        realConfigurationRegistry
+  fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() = runBlockingTest {
+    every {
+      hint(ApplicationConfiguration::class)
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        AppConfigClassification.APPLICATION
       )
+    } returns applicationConfigurationOf(appId = "appId", languages = listOf("en", "sw"))
 
     val languages = userProfileViewModel.fetchLanguages()
     Assert.assertEquals("English", languages[0].displayName)
@@ -167,19 +164,12 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun languagesLazyPropertyShouldRunFetchLanguagesAndReturnConfiguredLanguages() {
-    realConfigurationRegistry.appId = "appId"
-    every { accountAuthenticator.launchLoginScreen() } just runs
-    userProfileViewModel =
-      spyk(
-        UserProfileViewModel(
-          syncBroadcaster,
-          accountAuthenticator,
-          secureSharedPreference,
-          sharedPreferencesHelper,
-          realConfigurationRegistry
-        )
+    every {
+      hint(ApplicationConfiguration::class)
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        AppConfigClassification.APPLICATION
       )
-    every { userProfileViewModel.fetchLanguages() } returns mockk()
+    } returns applicationConfigurationOf(appId = "appId", languages = listOf("en", "sw"))
 
     val languages = userProfileViewModel.languages
 

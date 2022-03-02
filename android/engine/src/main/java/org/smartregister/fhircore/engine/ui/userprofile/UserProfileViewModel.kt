@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.ui.userprofile
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.runBlocking
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -42,9 +41,9 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : ViewModel() {
 
-  val languages by lazy { runBlocking { fetchLanguages() } }
+  val languages by lazy { fetchLanguages() }
 
-  suspend fun fetchLanguages() =
+  fun fetchLanguages() =
     configurationRegistry
       .retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
       .run { this@run.languages }
