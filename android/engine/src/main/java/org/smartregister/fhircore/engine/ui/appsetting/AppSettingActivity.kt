@@ -69,9 +69,7 @@ class AppSettingActivity : AppCompatActivity() {
         showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
     }
 
-    appSettingViewModel.rememberApp.observe(
-      this
-    ) { doRememberApp ->
+    appSettingViewModel.rememberApp.observe(this) { doRememberApp ->
       doRememberApp?.let {
         if (doRememberApp) {
           if (!appSettingViewModel.appId.value.isNullOrEmpty()) {
