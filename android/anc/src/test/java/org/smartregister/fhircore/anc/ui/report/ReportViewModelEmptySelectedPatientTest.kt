@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.core.util.Pair
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
@@ -30,22 +29,15 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.After
-import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.app.fakes.FakeModel
 import org.smartregister.fhircore.anc.app.fakes.FakeModel.getUserInfo
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
