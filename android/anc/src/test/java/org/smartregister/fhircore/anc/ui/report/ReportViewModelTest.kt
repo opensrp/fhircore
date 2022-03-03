@@ -28,6 +28,9 @@ import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.After
 import org.junit.Assert
@@ -197,11 +200,7 @@ internal class ReportViewModelTest : RobolectricTest() {
   fun testEvaluateMeasureForIndividual() {
     every {
       fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
-    } returns
-      MeasureReport().apply {
-        status = MeasureReport.MeasureReportStatus.COMPLETE
-        type = MeasureReport.MeasureReportType.INDIVIDUAL
-      }
+    } returns getMeasureReport(typeMR = MeasureReport.MeasureReportType.INDIVIDUAL)
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),
       measureUrl = "measure/ancInd03",
@@ -228,11 +227,7 @@ internal class ReportViewModelTest : RobolectricTest() {
   fun testEvaluateMeasureForPopulation() {
     every {
       fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
-    } returns
-      MeasureReport().apply {
-        status = MeasureReport.MeasureReportStatus.COMPLETE
-        type = MeasureReport.MeasureReportType.SUBJECTLIST
-      }
+    } returns getMeasureReport(typeMR = MeasureReport.MeasureReportType.SUBJECTLIST)
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),
       measureUrl = "measure/ancInd03",
@@ -260,13 +255,12 @@ internal class ReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testFormatPopulationMeasureReport() {
-    Assert.assertNotNull(reportViewModel.formatPopulationMeasureReport(getTestMeasureReport()))
-  }
-
-  private fun getTestMeasureReport(): MeasureReport {
-    return MeasureReport().apply {
-      addGroup().apply { stratifier = listOf(addStratifier().apply { id = "123" }) }
-    }
+    val listOfResult =
+      reportViewModel.formatPopulationMeasureReport(
+        getMeasureReport(typeMR = MeasureReport.MeasureReportType.INDIVIDUAL)
+      )
+    Assert.assertNotNull(listOfResult)
+    Assert.assertEquals(1, listOfResult.size)
   }
 
   @Test
@@ -297,5 +291,35 @@ internal class ReportViewModelTest : RobolectricTest() {
   fun testResetValues() {
     reportViewModel.resetValues()
     Assert.assertEquals("", reportViewModel.currentReportType.value)
+  }
+
+  private fun getMeasureReport(typeMR: MeasureReport.MeasureReportType): MeasureReport {
+    return MeasureReport().apply {
+      id = "12333"
+      status = MeasureReport.MeasureReportStatus.COMPLETE
+      type = typeMR
+      addGroup().apply {
+        id = "222"
+        addStratifier().apply {
+          id = "123"
+          addStratum().apply {
+            id = "1234"
+            addPopulation().apply {
+              id = "1235"
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(2)
+            }
+            addPopulation().apply {
+              id = "1237"
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(3)
+            }
+            value =
+              CodeableConcept().apply {
+                id = "123"
+                coding = arrayListOf(Coding("hh", "hh", "hh"), Coding("", "hh2", "hh2"))
+              }
+          }
+        }
+      }
+    }
   }
 }
