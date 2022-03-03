@@ -74,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Updated on save vaccine received alert dialogue
 
 - ANC | Removed custom extraction handling and moved Family/ANC forms to structure map
+- ANC | Implement CHW ANC BMI questionnaire extraction using StructureMap
 
 - Quest | Updated Sync to sync user specific fhir resources using Search Parameters from assets
 - Quest | Updated Patient Details View Configurations and added configurations for routing to Test details page
