@@ -188,6 +188,18 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testNavigateToReports() {
+    familyRegisterActivity.navigateToReports()
+
+    val expectedIntent = Intent(familyRegisterActivity, ReportHomeActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+        .nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
   fun testRegistersListShouldReturnFamilyAndAncRegisterItemList() {
     val listRegisterItem = familyRegisterActivity.registersList()
     assertEquals(listRegisterItem.size, 2)

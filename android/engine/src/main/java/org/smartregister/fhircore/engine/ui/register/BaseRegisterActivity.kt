@@ -291,6 +291,7 @@ abstract class BaseRegisterActivity :
         this.background = getDrawable(registerViewConfiguration.newClientButtonStyle)
       }
       this.text = registerViewConfiguration.newClientButtonText
+      toggleVisibility(registerViewConfiguration.showNewClientButton)
     }
   }
 
@@ -512,7 +513,10 @@ abstract class BaseRegisterActivity :
     isFilterVisible: Boolean = true,
     toolbarTitle: String? = null
   ) {
-    registerActivityBinding.btnRegisterNewClient.toggleVisibility(tag == mainFragmentTag())
+    registerActivityBinding.btnRegisterNewClient.toggleVisibility(
+      tag == mainFragmentTag() &&
+        registerViewModel.registerViewConfiguration.value!!.showNewClientButton
+    )
     if (supportedFragments.isEmpty() && !supportedFragments.containsKey(tag)) {
       throw IllegalAccessException("No fragment exists with the tag $tag")
     }

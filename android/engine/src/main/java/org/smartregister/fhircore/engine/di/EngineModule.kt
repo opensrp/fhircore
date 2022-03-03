@@ -34,12 +34,12 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 
 @InstallIn(SingletonComponent::class)
-@Module(includes = [NetworkModule::class, DispatcherModule::class])
+@Module(includes = [NetworkModule::class, DispatcherModule::class, CqlModule::class])
 class EngineModule {
 
   @Singleton
   @Provides
-  fun provideFhirEngine(@ApplicationContext context: Context) =
+  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine =
     FhirEngineProvider.getInstance(context)
 
   @Singleton
