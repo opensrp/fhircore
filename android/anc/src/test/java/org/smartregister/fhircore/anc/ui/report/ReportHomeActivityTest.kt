@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.os.Looper
 import androidx.lifecycle.MutableLiveData
