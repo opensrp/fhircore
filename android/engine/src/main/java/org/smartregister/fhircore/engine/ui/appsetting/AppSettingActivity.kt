@@ -55,9 +55,7 @@ class AppSettingActivity : AppCompatActivity() {
             accountAuthenticator = accountAuthenticator
           ) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
-              if (appSettingViewModel.rememberApp.value == true) {
-                sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
-              }
+              sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
               finish()
             } else {
               showToast(
@@ -70,6 +68,7 @@ class AppSettingActivity : AppCompatActivity() {
       }
     )
 
+    /* will require in future enhancement
     appSettingViewModel.rememberApp.observe(
       this,
       { doRememberApp ->
@@ -84,6 +83,7 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
     )
+    */
 
     val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
     lastAppId?.let {
