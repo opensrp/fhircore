@@ -21,35 +21,45 @@ import android.graphics.Color
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
-import androidx.lifecycle.ViewModel
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
-import org.smartregister.fhircore.anc.util.computeBmiViaMetricUnits
-import org.smartregister.fhircore.anc.util.computeBmiViaUscUnits
-import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltViewModel
-class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: PatientRepository) :
-  ViewModel() {
-
-  init {
-    patientRepository.setAncItemMapperType(AncItemMapper.AncItemMapperType.DETAILS)
-  }
+class BmiQuestionnaireViewModel
+@Inject
+constructor(
+  fhirEngine: FhirEngine,
+  defaultRepository: DefaultRepository,
+  configurationRegistry: ConfigurationRegistry,
+  transformSupportServices: TransformSupportServices,
+  dispatcherProvider: DispatcherProvider,
+  sharedPreferencesHelper: SharedPreferencesHelper,
+  libraryEvaluator: LibraryEvaluator
+) :
+  QuestionnaireViewModel(
+    fhirEngine,
+    defaultRepository,
+    configurationRegistry,
+    transformSupportServices,
+    dispatcherProvider,
+    sharedPreferencesHelper,
+    libraryEvaluator
+  ) {
 
   companion object {
 
     const val KEY_UNIT_SELECTION = "select-mode"
-    const val KEY_WEIGHT_LB = "vital-signs-body-wight_lb"
-    const val KEY_HEIGHT_FT = "vital-signs-height_ft"
-    const val KEY_HEIGHT_INCH = "vital-signs-height_in"
     const val KEY_WEIGHT_KG = "vital-signs-body-wight_kg"
     const val KEY_HEIGHT_CM = "vital-signs-height_cm"
-
-    const val HEIGHT_FEET_INCHES_MULTIPLIER = 12
 
     const val BMI_CATEGORY_UNDERWEIGHT_MAX_THRESHOLD = 18.5
     const val BMI_CATEGORY_NORMAL_MAX_THRESHOLD = 25
@@ -61,50 +71,6 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     NORMAL(R.string.bmi_category_normal),
     OVERWEIGHT(R.string.bmi_category_overweight),
     OBESITY(R.string.bmi_category_obesity)
-  }
-
-  fun isUnitModeMetric(questionnaireResponse: QuestionnaireResponse): Boolean {
-    val unitMode = questionnaireResponse.find(KEY_UNIT_SELECTION)
-    return (unitMode?.answer?.get(0)?.valueCoding?.code ?: "none" == "metric")
-  }
-
-  fun getInputHeight(
-    questionnaireResponse: QuestionnaireResponse,
-    isUnitModeMetric: Boolean
-  ): Double {
-    return if (isUnitModeMetric) {
-      val heightCms = questionnaireResponse.find(KEY_HEIGHT_CM)
-      val height = heightCms?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-      height
-    } else {
-      val heightFeets = questionnaireResponse.find(KEY_HEIGHT_FT)
-      val heightInches = questionnaireResponse.find(KEY_HEIGHT_INCH)
-      val heightInFeets = heightFeets?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-      val heightInInches = heightInches?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-      val height =
-        (heightInFeets.toDouble() * HEIGHT_FEET_INCHES_MULTIPLIER) + heightInInches.toDouble()
-      height
-    }
-  }
-
-  fun getInputWeight(
-    questionnaireResponse: QuestionnaireResponse,
-    isUnitModeMetric: Boolean
-  ): Double {
-    return if (isUnitModeMetric) {
-      val weightKgs = questionnaireResponse.find(KEY_WEIGHT_KG)
-      weightKgs?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-    } else {
-      val weightPounds = questionnaireResponse.find(KEY_WEIGHT_LB)
-      weightPounds?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-    }
-  }
-
-  fun calculateBmi(height: Double, weight: Double, isUnitModeMetric: Boolean): Double {
-    return if (height <= 0 || weight <= 0) -1.0
-    else if (isUnitModeMetric)
-      computeBmiViaMetricUnits(heightInCentimeters = height, weightInKgs = weight)
-    else computeBmiViaUscUnits(heightInInches = height, weightInPounds = weight)
   }
 
   fun getBmiResult(computedBMI: Double, context: Context): SpannableString {
@@ -155,23 +121,5 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
   fun getEndingIndexInCategories(bmiCategory: BmiCategory, context: Context): Int {
     return getStartingIndexInCategories(bmiCategory = bmiCategory, context = context) +
       context.getString(bmiCategory.value).length
-  }
-
-  suspend fun saveComputedBmi(
-    patientId: String,
-    encounterId: String,
-    weight: Double,
-    height: Double,
-    computedBmi: Double,
-    isUnitModeMetric: Boolean
-  ): Boolean {
-    return patientRepository.recordComputedBmi(
-      patientId = patientId,
-      encounterId = encounterId,
-      weight = weight,
-      height = height,
-      computedBmi = computedBmi,
-      isUnitModeMetric = isUnitModeMetric
-    )
   }
 }
