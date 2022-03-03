@@ -28,17 +28,14 @@ import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.Narrative
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.app.fakes.FakeModel
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
@@ -201,7 +198,7 @@ internal class ReportViewModelTest : RobolectricTest() {
   fun testEvaluateMeasureForIndividual() {
     every {
       fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
-    } returns getMeasureReport(typeMR = MeasureReport.MeasureReportType.INDIVIDUAL)
+    } returns FakeModel.getMeasureReport(typeMR = MeasureReport.MeasureReportType.INDIVIDUAL)
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),
       measureUrl = "measure/ancInd03",
@@ -233,7 +230,7 @@ internal class ReportViewModelTest : RobolectricTest() {
   fun testEvaluateMeasureForPopulation() {
     every {
       fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
-    } returns getMeasureReport(typeMR = MeasureReport.MeasureReportType.SUBJECTLIST)
+    } returns FakeModel.getMeasureReport(typeMR = MeasureReport.MeasureReportType.SUBJECTLIST)
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),
       measureUrl = "measure/ancInd03",
@@ -265,7 +262,7 @@ internal class ReportViewModelTest : RobolectricTest() {
   fun testFormatPopulationMeasureReport() {
     val listOfResult =
       reportViewModel.formatPopulationMeasureReport(
-        getMeasureReport(typeMR = MeasureReport.MeasureReportType.INDIVIDUAL)
+        FakeModel.getMeasureReport(typeMR = MeasureReport.MeasureReportType.INDIVIDUAL)
       )
     Assert.assertNotNull(listOfResult)
     Assert.assertEquals(1, listOfResult.size)
@@ -273,14 +270,16 @@ internal class ReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testFormatPopulationMeasureReportEmptyCoding() {
-    val listOfResult = reportViewModel.formatPopulationMeasureReport(getMeasureReportWithoutValue())
+    val listOfResult =
+      reportViewModel.formatPopulationMeasureReport(FakeModel.getMeasureReportWithoutValue())
     Assert.assertNotNull(listOfResult)
     Assert.assertEquals(1, listOfResult.size)
   }
 
   @Test
   fun testFormatPopulationMeasureReportWithText() {
-    val listOfResult = reportViewModel.formatPopulationMeasureReport(getMeasureReportWithText())
+    val listOfResult =
+      reportViewModel.formatPopulationMeasureReport(FakeModel.getMeasureReportWithText())
     Assert.assertNotNull(listOfResult)
     Assert.assertEquals(1, listOfResult.size)
   }
@@ -320,90 +319,5 @@ internal class ReportViewModelTest : RobolectricTest() {
   fun testResetValues() {
     reportViewModel.resetValues()
     Assert.assertEquals("", reportViewModel.currentReportType.value)
-  }
-
-  private fun getMeasureReport(typeMR: MeasureReport.MeasureReportType): MeasureReport {
-    return MeasureReport().apply {
-      id = "12333"
-      status = MeasureReport.MeasureReportStatus.COMPLETE
-      type = typeMR
-      addGroup().apply {
-        id = "222"
-        addStratifier().apply {
-          id = "123"
-          addStratum().apply {
-            id = "1234"
-            addPopulation().apply {
-              id = ReportViewModel.NUMERATOR
-              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(2)
-            }
-            addPopulation().apply {
-              id = ReportViewModel.DENOMINATOR
-              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(3)
-            }
-            value =
-              CodeableConcept().apply {
-                id = "123"
-                coding = arrayListOf(Coding("hh", "hh", "hh"), Coding("", "hh2", "hh2"))
-              }
-          }
-        }
-      }
-    }
-  }
-
-  private fun getMeasureReportWithoutValue(): MeasureReport {
-    return MeasureReport().apply {
-      id = "12333"
-      status = MeasureReport.MeasureReportStatus.COMPLETE
-      addGroup().apply {
-        id = "222"
-        addStratifier().apply {
-          id = "123"
-          addStratum().apply {
-            id = "1234"
-            addPopulation().apply {
-              id = ReportViewModel.NUMERATOR
-              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(2)
-            }
-            addPopulation().apply {
-              id = ReportViewModel.DENOMINATOR
-              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(3)
-            }
-            value =
-              CodeableConcept().apply {
-                id = "123"
-                coding = arrayListOf()
-              }
-          }
-        }
-      }
-    }
-  }
-
-  private fun getMeasureReportWithText(): MeasureReport {
-    return MeasureReport().apply {
-      id = "12333"
-      status = MeasureReport.MeasureReportStatus.COMPLETE
-      addGroup().apply {
-        id = "222"
-        addStratifier().apply {
-          id = "123"
-          text = Narrative().apply { status = Narrative.NarrativeStatus.GENERATED }
-          addStratum().apply {
-            id = "1234"
-            addPopulation().apply {
-              id = ReportViewModel.NUMERATOR
-              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(0)
-            }
-            addPopulation().apply {
-              id = ReportViewModel.DENOMINATOR
-              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(0)
-            }
-            text = Narrative().apply { status = Narrative.NarrativeStatus.GENERATED }
-          }
-        }
-      }
-    }
   }
 }

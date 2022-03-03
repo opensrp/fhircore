@@ -24,6 +24,8 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.IntegerType
+import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Narrative
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
@@ -32,6 +34,9 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
 
 object FakeModel {
+
+  const val NUMERATOR = "numerator"
+  const val DENOMINATOR = "denominator"
 
   fun buildCarePlan(subject: String): CarePlan {
     return CarePlan().apply {
@@ -96,4 +101,89 @@ object FakeModel {
       value = Quantity(testValue)
       effective = DateTimeType.now()
     }
+
+  fun getMeasureReport(typeMR: MeasureReport.MeasureReportType): MeasureReport {
+    return MeasureReport().apply {
+      id = "12333"
+      status = MeasureReport.MeasureReportStatus.COMPLETE
+      type = typeMR
+      addGroup().apply {
+        id = "222"
+        addStratifier().apply {
+          id = "123"
+          addStratum().apply {
+            id = "1234"
+            addPopulation().apply {
+              id = NUMERATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(2)
+            }
+            addPopulation().apply {
+              id = DENOMINATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(3)
+            }
+            value =
+              CodeableConcept().apply {
+                id = "123"
+                coding = arrayListOf(Coding("hh", "hh", "hh"), Coding("", "hh2", "hh2"))
+              }
+          }
+        }
+      }
+    }
+  }
+
+  fun getMeasureReportWithoutValue(): MeasureReport {
+    return MeasureReport().apply {
+      id = "12333"
+      status = MeasureReport.MeasureReportStatus.COMPLETE
+      addGroup().apply {
+        id = "222"
+        addStratifier().apply {
+          id = "123"
+          addStratum().apply {
+            id = "1234"
+            addPopulation().apply {
+              id = NUMERATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(2)
+            }
+            addPopulation().apply {
+              id = DENOMINATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(3)
+            }
+            value =
+              CodeableConcept().apply {
+                id = "123"
+                coding = arrayListOf()
+              }
+          }
+        }
+      }
+    }
+  }
+
+  fun getMeasureReportWithText(): MeasureReport {
+    return MeasureReport().apply {
+      id = "12333"
+      status = MeasureReport.MeasureReportStatus.COMPLETE
+      addGroup().apply {
+        id = "222"
+        addStratifier().apply {
+          id = "123"
+          text = Narrative().apply { status = Narrative.NarrativeStatus.GENERATED }
+          addStratum().apply {
+            id = "1234"
+            addPopulation().apply {
+              id = NUMERATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(0)
+            }
+            addPopulation().apply {
+              id = DENOMINATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(0)
+            }
+            text = Narrative().apply { status = Narrative.NarrativeStatus.GENERATED }
+          }
+        }
+      }
+    }
+  }
 }

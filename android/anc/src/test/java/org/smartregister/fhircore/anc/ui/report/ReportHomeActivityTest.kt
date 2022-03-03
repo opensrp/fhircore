@@ -41,6 +41,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
+import org.smartregister.fhircore.anc.app.fakes.FakeModel
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
@@ -166,11 +167,33 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testGenerateReportAction() {
+  fun testGenerateReportForIndividual() {
+    every { reportViewModel.currentReportType } returns MutableLiveData("Individual")
+    every {
+      fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
+    } returns FakeModel.getMeasureReport(typeMR = MeasureReport.MeasureReportType.INDIVIDUAL)
+
     reportHomeActivity.reportViewModel.onGenerateReportClicked.postValue(true)
     Assert.assertNotNull(reportHomeActivity.reportViewModel.selectedMeasureReportItem.value!!.name)
     Assert.assertEquals(
       "Individual",
+      reportHomeActivity.reportViewModel.selectedMeasureReportItem.value!!.reportType
+    )
+  }
+
+  @Test
+  fun testGenerateReportForAll() {
+    every { reportViewModel.currentReportType } returns MutableLiveData("All")
+    every { reportViewModel.selectedMeasureReportItem } returns
+      MutableLiveData(ReportItem(name = "First ANC", reportType = "All"))
+    every {
+      fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
+    } returns FakeModel.getMeasureReport(typeMR = MeasureReport.MeasureReportType.SUBJECTLIST)
+
+    reportHomeActivity.reportViewModel.onGenerateReportClicked.postValue(true)
+    Assert.assertNotNull(reportHomeActivity.reportViewModel.selectedMeasureReportItem.value!!.name)
+    Assert.assertEquals(
+      "All",
       reportHomeActivity.reportViewModel.selectedMeasureReportItem.value!!.reportType
     )
   }
