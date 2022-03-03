@@ -57,8 +57,8 @@ constructor(
   }
 
   fun logoutUser() {
-    accountAuthenticator.logout()
     onLogout.postValue(true)
+    accountAuthenticator.logout()
   }
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
