@@ -28,8 +28,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Surface
@@ -45,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
@@ -55,9 +57,11 @@ import androidx.compose.ui.unit.sp
 import java.util.Date
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
+import org.smartregister.fhircore.engine.ui.components.CircularPercentageIndicator
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
@@ -72,7 +76,7 @@ fun PreviewResultItemIndividual() {
       PatientItem(name = "Jacky Coughlin", gender = "F", birthDate = Date().plusYears(27)),
     isMatchedIndicator = true,
     indicatorStatus = "True",
-    indicatorDescription = "Jacky Got her first ANC contact"
+    indicatorDescription = ""
   )
 }
 
@@ -81,7 +85,7 @@ fun PreviewResultItemIndividual() {
 @ExcludeFromJacocoGeneratedReport
 fun PreviewIndividualReportResult() {
   ReportResultPage(
-    topBarTitle = "PageTitle",
+    topBarTitle = "First ANC",
     onBackPress = {},
     reportMeasureItem =
       ReportItem(
@@ -89,14 +93,9 @@ fun PreviewIndividualReportResult() {
       ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
-    isAllPatientSelection = false,
     selectedPatient =
-      PatientItem(name = "Test Selected Patient", gender = "F", birthDate = Date().plusYears(28)),
-    ResultItem(
-      status = "True",
-      isMatchedIndicator = true,
-      description = "Jacky Got her first ANC contact"
-    ),
+      PatientItem(name = "Jacky Coughlin", gender = "F", birthDate = Date().plusYears(28)),
+    ResultItem(status = "True", isMatchedIndicator = true, description = ""),
     null
   )
 }
@@ -105,10 +104,10 @@ fun PreviewIndividualReportResult() {
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PreviewAllPatientReportResult() {
-  val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10%", count = "1/10")
-  val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50%", count = "30/60")
+  val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10", count = "1/10")
+  val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50", count = "30/60")
   ReportResultPage(
-    topBarTitle = "PageTitle",
+    topBarTitle = "First ANC",
     onBackPress = {},
     reportMeasureItem =
       ReportItem(
@@ -116,10 +115,9 @@ fun PreviewAllPatientReportResult() {
       ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
-    isAllPatientSelection = true,
     selectedPatient =
-      PatientItem(name = "Test Selected Patient", gender = "F", birthDate = Date().plusYears(27)),
-    resultForIndividual = ResultItem(),
+      PatientItem(name = "Jacky Coughlin", gender = "F", birthDate = Date().plusYears(27)),
+    resultForIndividual = null,
     resultItemPopulation =
       listOf(
         ResultItemPopulation(title = "Age Range", listOf(testResultItem1, testResultItem2)),
@@ -133,22 +131,20 @@ fun PreviewAllPatientReportResult() {
 fun ReportResultScreen(viewModel: ReportViewModel) {
 
   val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
-  val patientSelectionType by remember { mutableStateOf(viewModel.patientSelectionType.value) }
   val selectedPatient by remember { mutableStateOf(viewModel.getSelectedPatient().value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
-  val isAllPatientSelected = patientSelectionType == "All"
   val resultForIndividual by viewModel.resultForIndividual.observeAsState(ResultItem())
   val resultForPopulation by viewModel.resultForPopulation.observeAsState(emptyList())
 
   ReportResultPage(
     topBarTitle = reportMeasureItem?.title ?: "",
-    onBackPress = viewModel::onBackPressFromResult,
-    reportMeasureItem = reportMeasureItem ?: ReportItem(title = "Measure Report Missing"),
+    onBackPress = viewModel::onBackPress,
+    reportMeasureItem = reportMeasureItem
+        ?: ReportItem(title = stringResource(R.string.missing_measure_report)),
     startDate = startDate,
     endDate = endDate,
-    isAllPatientSelection = isAllPatientSelected,
-    selectedPatient = selectedPatient!!,
+    selectedPatient = selectedPatient,
     resultForIndividual = resultForIndividual,
     resultItemPopulation = resultForPopulation
   )
@@ -157,12 +153,11 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
 @Composable
 fun ReportResultPage(
   topBarTitle: String,
-  onBackPress: () -> Unit,
+  onBackPress: (ReportViewModel.ReportScreen) -> Unit,
   reportMeasureItem: ReportItem,
   startDate: String,
   endDate: String,
-  isAllPatientSelection: Boolean,
-  selectedPatient: PatientItem,
+  selectedPatient: PatientItem?,
   resultForIndividual: ResultItem?,
   resultItemPopulation: List<ResultItemPopulation>?
 ) {
@@ -173,12 +168,15 @@ fun ReportResultPage(
           .fillMaxSize()
           .testTag(REPORT_RESULT_PAGE)
     ) {
-      TopBarBox(topBarTitle = topBarTitle, onBackPress = onBackPress)
+      TopBarBox(
+        topBarTitle = topBarTitle,
+        onBackPress = { onBackPress(ReportViewModel.ReportScreen.FILTER) }
+      )
       Column(modifier = Modifier.padding(16.dp)) {
         Box(
           modifier =
             Modifier.clip(RoundedCornerShape(8.dp))
-              .background(color = colorResource(id = R.color.light_gray))
+              .background(color = colorResource(id = R.color.light_gray_background))
               .padding(12.dp)
               .wrapContentWidth()
               .testTag(REPORT_RESULT_MEASURE_DESCRIPTION),
@@ -187,17 +185,23 @@ fun ReportResultPage(
           Text(text = reportMeasureItem.description, textAlign = TextAlign.Start, fontSize = 16.sp)
         }
         Spacer(modifier = Modifier.height(16.dp))
-        DateSelectionBox(startDate = startDate, endDate = endDate, canChange = false)
+        DateSelectionBox(
+          startDate = startDate,
+          endDate = endDate,
+          canChange = false,
+          showDateRangePicker = false
+        )
         Spacer(modifier = Modifier.height(16.dp))
-        if (isAllPatientSelection) {
-          ResultForPopulation(resultItemPopulation!!)
-        } else {
+        if (resultForIndividual != null && selectedPatient != null) {
           ResultItemIndividual(
             selectedPatient = selectedPatient,
-            isMatchedIndicator = resultForIndividual!!.isMatchedIndicator,
+            isMatchedIndicator = resultForIndividual.isMatchedIndicator,
             indicatorStatus = resultForIndividual.status,
             indicatorDescription = resultForIndividual.description
           )
+        }
+        if (resultItemPopulation != null) {
+          ResultForPopulation(resultItemPopulation)
         }
       }
     }
@@ -206,11 +210,11 @@ fun ReportResultPage(
 
 @Composable
 fun ResultItemIndividual(
+  modifier: Modifier = Modifier,
   selectedPatient: PatientItem,
   isMatchedIndicator: Boolean = true,
   indicatorStatus: String = "",
-  indicatorDescription: String = "",
-  modifier: Modifier = Modifier
+  indicatorDescription: String = ""
 ) {
   Box(
     modifier =
@@ -228,7 +232,7 @@ fun ResultItemIndividual(
     ) {
       Text(
         color = SubtitleTextColor,
-        text = selectedPatient.address,
+        text = selectedPatient.demographics(),
         fontSize = 16.sp,
         modifier = Modifier.wrapContentWidth().testTag(REPORT_RESULT_PATIENT_DATA)
       )
@@ -264,12 +268,14 @@ fun ResultItemIndividual(
             modifier = Modifier.wrapContentWidth()
           )
           Spacer(modifier = Modifier.height(4.dp))
-          Text(
-            color = SubtitleTextColor,
-            text = indicatorDescription,
-            fontSize = 14.sp,
-            modifier = modifier.wrapContentWidth()
-          )
+          if (indicatorDescription.isNotEmpty()) {
+            Text(
+              color = SubtitleTextColor,
+              text = indicatorDescription,
+              fontSize = 14.sp,
+              modifier = modifier.wrapContentWidth().testTag(INDICATOR_TEXT)
+            )
+          }
         }
       }
     }
@@ -286,7 +292,7 @@ fun ResultPopulationBox(
       modifier =
         Modifier.clip(RoundedCornerShape(8.dp))
           .background(color = colorResource(id = R.color.white))
-          .padding(12.dp)
+          .padding(16.dp)
           .fillMaxWidth()
     ) {
       Column {
@@ -296,9 +302,7 @@ fun ResultPopulationBox(
           fontSize = 16.sp,
           modifier = modifier.wrapContentWidth()
         )
-        Spacer(modifier = modifier.height(6.dp))
-        Divider(color = DividerColor)
-        Spacer(modifier = modifier.height(6.dp))
+        Divider(color = DividerColor, modifier = modifier.padding(vertical = 20.dp))
         resultItem.dataList.forEach { item -> ResultPopulationItem(item) }
       }
     }
@@ -313,22 +317,34 @@ fun ResultPopulationItem(
   Row(
     modifier =
       Modifier.fillMaxWidth().padding(vertical = 4.dp).testTag(REPORT_RESULT_POPULATION_ITEM),
-    horizontalArrangement = Arrangement.SpaceBetween
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically
   ) {
-    Text(
-      text = resultItem.title,
-      fontSize = 16.sp,
-      fontWeight = FontWeight.Bold,
-      modifier = modifier.wrapContentWidth()
-    )
-    Row(modifier = Modifier.wrapContentWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      CircularPercentageIndicator(percentage = resultItem.percentage)
+
       Text(
-        text = resultItem.percentage,
+        text = resultItem.title,
         fontSize = 16.sp,
         fontWeight = FontWeight.Bold,
+        modifier = modifier.wrapContentWidth().padding(horizontal = 20.dp),
+      )
+    }
+
+    Column(
+      modifier = Modifier.wrapContentWidth(),
+      verticalArrangement = Arrangement.SpaceBetween,
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Text(
+        text = "${resultItem.percentage}%",
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Normal,
         modifier = modifier.wrapContentWidth()
       )
-      Spacer(modifier = modifier.width(12.dp))
       Text(
         text = resultItem.count,
         fontSize = 16.sp,
@@ -341,7 +357,7 @@ fun ResultPopulationItem(
 
 @Composable
 fun ResultForPopulation(dataList: List<ResultItemPopulation>) {
-  Column(modifier = Modifier.testTag(REPORT_RESULT_POPULATION_DATA)) {
-    dataList.forEach { message -> ResultPopulationBox(message) }
+  LazyColumn(modifier = Modifier.testTag(REPORT_RESULT_POPULATION_DATA)) {
+    items(dataList, key = { it.title }) { item -> ResultPopulationBox(item) }
   }
 }

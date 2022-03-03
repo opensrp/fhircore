@@ -80,6 +80,7 @@ fun getAgeStringFromDays(days: Long): String {
   val diffDaysFromMonth = diffDaysFromYear % DAYS_IN_MONTH
   val elapsedWeeks = diffDaysFromMonth / DAYS_IN_WEEK
   val elapsedDays = diffDaysFromMonth % DAYS_IN_WEEK
+  // TODO use translatable abbreviations - extract abbr to string resource
   if (elapsedYears > 0) elapseYearsString = elapsedYears.toString() + "y"
   if (elapsedMonths > 0) elapseMonthsString = elapsedMonths.toString() + "m"
   if (elapsedWeeks > 0) elapseWeeksString = elapsedWeeks.toString() + "w"
@@ -89,15 +90,15 @@ fun getAgeStringFromDays(days: Long): String {
     elapseYearsString
   } else if (days >= DAYS_IN_YEAR) {
     if (elapsedMonths > 0) {
-      elapseYearsString + " " + elapseMonthsString
+      "$elapseYearsString $elapseMonthsString"
     } else elapseYearsString
   } else if (days >= DAYS_IN_MONTH) {
     if (elapsedWeeks > 0) {
-      elapseMonthsString + " " + elapseWeeksString
+      "$elapseMonthsString $elapseWeeksString"
     } else elapseMonthsString
   } else if (days >= DAYS_IN_WEEK) {
     if (elapsedDays > 0) {
-      elapseWeeksString + " " + elapseDaysString
+      "$elapseWeeksString $elapseDaysString"
     } else elapseWeeksString
   } else elapseDaysString
 }
