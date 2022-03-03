@@ -21,13 +21,16 @@ import androidx.core.util.Pair
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.After
@@ -37,6 +40,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.app.fakes.FakeModel
+import org.smartregister.fhircore.anc.app.fakes.FakeModel.getUserInfo
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
@@ -47,6 +51,9 @@ import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper.Companion.MEASURE_RESOURCES_LOADED
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -58,7 +65,7 @@ internal class ReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 3) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   private lateinit var fhirEngine: FhirEngine
   private lateinit var reportRepository: ReportRepository
@@ -76,6 +83,12 @@ internal class ReportViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, "") } returns
+      getUserInfo().encodeJson()
+    every { sharedPreferencesHelper.read(MEASURE_RESOURCES_LOADED, "") } returns ""
+    every { sharedPreferencesHelper.write(MEASURE_RESOURCES_LOADED, "") } returns Unit
+
     fhirEngine = mockk(relaxed = true)
     reportRepository = mockk()
     ancPatientRepository = mockk()
@@ -192,34 +205,15 @@ internal class ReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testEvaluateMeasureForIndividual() {
-    every {
-      fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
-    } returns FakeModel.getMeasureReport(typeMR = MeasureReport.MeasureReportType.INDIVIDUAL)
+    coEvery { fhirOperatorDecorator.loadLib(any()) } just runs
+    coEvery { fhirEngine.save(any()) } returns Unit
+
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),
       measureUrl = "measure/ancInd03",
       individualEvaluation = true,
       measureResourceBundleUrl = "measure/ancInd03"
     )
-    Assert.assertNotNull(reportViewModel.startDate.value)
-    Assert.assertNotNull(reportViewModel.endDate.value)
-    val result =
-      fhirOperatorDecorator.evaluateMeasure(
-        "url",
-        "start",
-        "end",
-        "report_type",
-        "subject",
-        "practitioner"
-      )
-    Assert.assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, result.status)
-    Assert.assertEquals(MeasureReport.MeasureReportType.INDIVIDUAL, result.type)
-    Assert.assertNotNull(reportViewModel.resultForIndividual.value)
-    Assert.assertNotNull(reportViewModel.showProgressIndicator.value)
-    Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
-    )
-    Assert.assertNotNull(reportViewModel.currentScreen)
   }
 
   @Test

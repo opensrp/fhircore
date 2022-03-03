@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 
 object FakeModel {
 
@@ -185,5 +186,15 @@ object FakeModel {
         }
       }
     }
+  }
+
+  fun getUserInfo(): UserInfo {
+    val userInfo =
+      UserInfo().apply {
+        questionnairePublisher = "ab"
+        organization = "1111"
+        keyclockuuid = "123"
+      }
+    return userInfo
   }
 }
