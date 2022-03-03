@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.os.Looper
 import androidx.lifecycle.MutableLiveData
@@ -34,6 +35,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -44,11 +46,13 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
+import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -84,6 +88,15 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
       )
     val allRegisterData: MutableStateFlow<Flow<PagingData<PatientItem>>> =
       MutableStateFlow(emptyFlow())
+
+    every {
+      fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
+    } returns
+      MeasureReport().apply {
+        status = MeasureReport.MeasureReportStatus.COMPLETE
+        type = MeasureReport.MeasureReportType.INDIVIDUAL
+      }
+
     registerDataViewModel =
       mockk {
         every { registerData } returns allRegisterData
@@ -91,12 +104,15 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
         every { showLoader } returns MutableLiveData(false)
         every { currentPage() } returns 1
         every { countPages() } returns 1
+        every { filterRegisterData(any(), any(), any()) } returns Unit
       }
 
     reportHomeActivity =
       spyk(Robolectric.buildActivity(ReportHomeActivity::class.java).create().resume().get())
     reportHomeActivitySpy = spyk(objToCopy = reportHomeActivity)
     every { reportHomeActivitySpy.reportViewModel } returns reportViewModel
+    every { reportViewModel.selectedMeasureReportItem } returns
+      MutableLiveData(ReportItem(name = "First ANC", reportType = "Individual"))
   }
 
   override fun tearDown() {
@@ -132,5 +148,31 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     reportHomeActivity.reportViewModel.onDateRangeClick()
     // Date picker is displayed onDateRangeClick and date range was set when the dialog is displayed
     Assert.assertNotNull(reportViewModel.dateRange.value)
+  }
+
+  @Test
+  fun testFilterRegisterData() {
+    reportHomeActivity.reportViewModel.filterValue.postValue(
+      Pair(RegisterFilterType.SEARCH_FILTER, "")
+    )
+    Assert.assertNotNull(reportHomeActivity.registerDataViewModel.showResultsCount.value)
+  }
+
+  @Test
+  fun testFilterRegisterDataWithNullValue() {
+    reportHomeActivity.reportViewModel.filterValue.postValue(
+      Pair(RegisterFilterType.SEARCH_FILTER, null)
+    )
+    Assert.assertNotNull(reportHomeActivity.registerDataViewModel.showResultsCount.value)
+  }
+
+  @Test
+  fun testGenerateReportAction() {
+    reportHomeActivity.reportViewModel.onGenerateReportClicked.postValue(true)
+    Assert.assertNotNull(reportHomeActivity.reportViewModel.selectedMeasureReportItem.value!!.name)
+    Assert.assertEquals(
+      "Individual",
+      reportHomeActivity.reportViewModel.selectedMeasureReportItem.value!!.reportType
+    )
   }
 }
