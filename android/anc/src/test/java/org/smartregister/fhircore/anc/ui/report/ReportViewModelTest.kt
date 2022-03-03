@@ -264,6 +264,13 @@ internal class ReportViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testFormatPopulationMeasureReportEmptyCoding() {
+    val listOfResult = reportViewModel.formatPopulationMeasureReport(getMeasureReportWithoutValue())
+    Assert.assertNotNull(listOfResult)
+    Assert.assertEquals(1, listOfResult.size)
+  }
+
+  @Test
   fun auxGenerateReportTestForIndividual() {
     every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
     reportViewModel.onReportTypeSelected("Individual", true)
@@ -305,17 +312,46 @@ internal class ReportViewModelTest : RobolectricTest() {
           addStratum().apply {
             id = "1234"
             addPopulation().apply {
-              id = "1235"
+              id = ReportViewModel.NUMERATOR
               MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(2)
             }
             addPopulation().apply {
-              id = "1237"
+              id = ReportViewModel.DENOMINATOR
               MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(3)
             }
             value =
               CodeableConcept().apply {
                 id = "123"
                 coding = arrayListOf(Coding("hh", "hh", "hh"), Coding("", "hh2", "hh2"))
+              }
+          }
+        }
+      }
+    }
+  }
+
+  private fun getMeasureReportWithoutValue(): MeasureReport {
+    return MeasureReport().apply {
+      id = "12333"
+      status = MeasureReport.MeasureReportStatus.COMPLETE
+      addGroup().apply {
+        id = "222"
+        addStratifier().apply {
+          id = "123"
+          addStratum().apply {
+            id = "1234"
+            addPopulation().apply {
+              id = ReportViewModel.NUMERATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(2)
+            }
+            addPopulation().apply {
+              id = ReportViewModel.DENOMINATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(3)
+            }
+            value =
+              CodeableConcept().apply {
+                id = "123"
+                coding = arrayListOf()
               }
           }
         }
