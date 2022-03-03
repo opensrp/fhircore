@@ -146,6 +146,20 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testOnSettingMenuOptionSelectedShouldLaunchReportScreen() {
+    familyRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_reports".hashCode() },
+      familyRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+    )
+    // switched to report screen
+    val expectedIntent = Intent(familyRegisterActivity, ReportHomeActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+        .nextStartedActivity
+    assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
   fun testOnBottomNavigationOptionItemSelectedShouldLaunchReportHomeActivity() {
     familyRegisterActivity.onBottomNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = "menu_item_reports".hashCode() },
@@ -217,6 +231,18 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
       assertEquals(R.id.menu_item_profile, this.itemId)
       assertEquals(R.string.profile, this.titleResource)
     }
+  }
+
+  @Test
+  fun testNavigateToReports() {
+    familyRegisterActivity.navigateToReports()
+
+    val expectedIntent = Intent(familyRegisterActivity, ReportHomeActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+        .nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
