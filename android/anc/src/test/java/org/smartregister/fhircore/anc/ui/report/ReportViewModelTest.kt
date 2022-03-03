@@ -88,6 +88,8 @@ internal class ReportViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper
         )
       )
+    every { reportViewModel.startDate } returns MutableLiveData("")
+    every { reportViewModel.endDate } returns MutableLiveData("")
     every { reportViewModel.resultForIndividual } returns
       this@ReportViewModelTest.resultForIndividual
     every { reportViewModel.resultForPopulation } returns
@@ -211,6 +213,8 @@ internal class ReportViewModelTest : RobolectricTest() {
       individualEvaluation = false,
       measureResourceBundleUrl = "measure/ancInd03"
     )
+    Assert.assertNotNull(reportViewModel.startDate.value)
+    Assert.assertNotNull(reportViewModel.endDate.value)
     Assert.assertNotNull(reportViewModel.resultForPopulation.value)
     Assert.assertFalse(reportViewModel.showProgressIndicator.value!!)
     Assert.assertNotNull(
