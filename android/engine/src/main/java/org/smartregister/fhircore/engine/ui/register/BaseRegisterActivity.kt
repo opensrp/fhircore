@@ -51,7 +51,6 @@ import java.text.ParseException
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -61,7 +60,6 @@ import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.sync.SyncInitiator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -91,8 +89,7 @@ abstract class BaseRegisterActivity :
   NavigationView.OnNavigationItemSelectedListener,
   NavigationBarView.OnItemSelectedListener,
   ConfigurableView<RegisterViewConfiguration>,
-  OnSyncListener,
-  SyncInitiator {
+  OnSyncListener {
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
@@ -121,12 +118,9 @@ abstract class BaseRegisterActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    syncBroadcaster.registerSyncListener(this)
+    syncBroadcaster.registerSyncListener(this, lifecycleScope)
 
     supportedFragments = supportedFragments()
-
-    // Initiate sync after registerViewModel is initialized
-    syncBroadcaster.registerSyncInitiator(this)
 
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
 
@@ -143,8 +137,6 @@ abstract class BaseRegisterActivity :
         this@BaseRegisterActivity,
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
-
-      lifecycleScope.launch { sharedSyncStatus.collect { state -> onSync(state) } }
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
@@ -158,14 +150,6 @@ abstract class BaseRegisterActivity :
   override fun onResume() {
     super.onResume()
     sideMenuOptions().forEach { updateCount(it) }
-  }
-
-  override fun onDestroy() {
-    syncBroadcaster.run {
-      unRegisterSyncListener(this@BaseRegisterActivity)
-      unRegisterSyncInitiator()
-    }
-    super.onDestroy()
   }
 
   private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
@@ -230,7 +214,6 @@ abstract class BaseRegisterActivity :
   private fun syncButtonClick() {
     registerActivityBinding.progressSync.show()
     manipulateDrawer(false)
-    registerViewModel.runSync()
   }
 
   private fun String.formatSyncDate(): String {
@@ -426,10 +409,6 @@ abstract class BaseRegisterActivity :
     }
   }
 
-  override fun runSync() {
-    registerViewModel.runSync()
-  }
-
   override fun configureViews(viewConfiguration: RegisterViewConfiguration) {
     registerViewModel.updateViewConfigurations(viewConfiguration)
   }
@@ -442,6 +421,7 @@ abstract class BaseRegisterActivity :
         toggleVisibility(viewConfiguration.showFilter)
         text = viewConfiguration.filterText
       }
+      filterRegisterButton.apply { toggleVisibility(viewConfiguration.showFilter) }
       editTextSearch.apply {
         toggleVisibility(viewConfiguration.showSearchBar)
         hint = viewConfiguration.searchBarHint
@@ -456,9 +436,11 @@ abstract class BaseRegisterActivity :
     val bottomMenu = registerActivityBinding.bottomNavView.menu
     registerActivityBinding.bottomNavView.apply {
       toggleVisibility(viewConfiguration.showBottomMenu)
-      setOnItemSelectedListener(this@BaseRegisterActivity)
+      setOnItemSelectedListener { item ->
+        onBottomNavigationOptionItemSelected(item, viewConfiguration)
+      }
     }
-    for ((index, it) in bottomNavigationMenuOptions().withIndex()) {
+    for ((index, it) in bottomNavigationMenuOptions(viewConfiguration).withIndex()) {
       bottomMenu.add(R.id.menu_group_default_item_id, it.id, index, it.title).apply {
         it.iconResource.let { icon -> this.icon = icon }
       }
@@ -528,6 +510,7 @@ abstract class BaseRegisterActivity :
   open fun switchFragment(
     tag: String,
     isRegisterFragment: Boolean = true,
+    isFilterVisible: Boolean = true,
     toolbarTitle: String? = null
   ) {
     registerActivityBinding.btnRegisterNewClient.toggleVisibility(tag == mainFragmentTag())
@@ -574,7 +557,7 @@ abstract class BaseRegisterActivity :
 
     // Show searchbar/filter button for registers, hide otherwise
     registerActivityBinding.toolbarLayout.apply {
-      filterRegisterButton.toggleVisibility(isRegisterFragment)
+      filterRegisterButton.toggleVisibility(isFilterVisible)
       bottomToolbarSection.toggleVisibility(isRegisterFragment)
     }
 
@@ -586,8 +569,22 @@ abstract class BaseRegisterActivity :
   /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
   open fun sideMenuOptions(): List<SideMenuOption> = emptyList()
 
-  /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
-  open fun bottomNavigationMenuOptions(): List<NavigationMenuOption> = emptyList()
+  /**
+   * List of [bottomNavigationMenuOptions] representing individual menu items listed in the
+   * BottomNavigation
+   */
+  open fun bottomNavigationMenuOptions(
+    viewConfiguration: RegisterViewConfiguration
+  ): List<NavigationMenuOption> {
+    return viewConfiguration.bottomNavigationOptions?.map {
+      NavigationMenuOption(
+        id = it.id.hashCode(),
+        title = it.title,
+        iconResource = getDrawable(it.icon)
+      )
+    }
+      ?: emptyList()
+  }
 
   /**
    * Override this method to provide a pair of register fragment tag plus their title This MUST be
@@ -601,6 +598,11 @@ abstract class BaseRegisterActivity :
    * or [bottomNavigationMenuOptions]
    */
   open fun onNavigationOptionItemSelected(item: MenuItem): Boolean = true
+
+  open fun onBottomNavigationOptionItemSelected(
+    item: MenuItem,
+    viewConfiguration: RegisterViewConfiguration
+  ): Boolean = true
 
   open fun registerClient(clientIdentifier: String? = null) {
     startActivity(

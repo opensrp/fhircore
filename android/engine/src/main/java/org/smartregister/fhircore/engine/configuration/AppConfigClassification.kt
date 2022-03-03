@@ -18,7 +18,8 @@ package org.smartregister.fhircore.engine.configuration
 
 enum class AppConfigClassification : ConfigClassification {
   APPLICATION,
-  LOGIN;
+  LOGIN,
+  PIN;
 
   override val classification: String = name.lowercase()
 }

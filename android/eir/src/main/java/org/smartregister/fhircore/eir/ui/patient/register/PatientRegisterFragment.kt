@@ -80,6 +80,19 @@ class PatientRegisterFragment :
     }
   }
 
+  /**
+   * Filters the given data if there is a matching condition.
+   *
+   * SEARCH_FILTER will filters data based on name OR identifier.
+   *
+   * OVERDUE_FILTER will filters data based on vaccine status overdue.
+   *
+   * @param registerFilterType the filter type
+   * @param data the data that will be filtered
+   * @param value the query
+   *
+   * @return true if the data should be filtered
+   */
   override fun performFilter(
     registerFilterType: RegisterFilterType,
     data: PatientItem,
@@ -99,19 +112,15 @@ class PatientRegisterFragment :
     }
   }
 
-  @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel():
     RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem> {
-
-    return ViewModelProvider(
-      viewModelStore,
+    val registerDataViewModel =
       RegisterDataViewModel(
-          application = requireActivity().application,
-          registerRepository = (activity as PatientRegisterActivity).patientRepository
-        )
-        .createFactory()
-    )[RegisterDataViewModel::class.java] as
-      RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
+        application = requireActivity().application,
+        registerRepository = (activity as PatientRegisterActivity).patientRepository
+      )
+    return ViewModelProvider(viewModelStore, registerDataViewModel.createFactory())[
+      registerDataViewModel::class.java]
   }
 
   companion object {

@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Patient details show height, weight and BMI post computing BMI
 - ANC | Activate language switcher on profile page
 - ANC | Implement vital signs observation extraction from questionnaires
+- ANC | Login Add Pin Setup and Login for eCBIS config only
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
@@ -38,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Add Swahili translations for patient registration questionnaire and activate language switcher
 - Quest | Swahili localization
 - Quest | Added G6PD Patient Details page to show G6PD Status and Test Results
+- Quest | Add tasking list
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
@@ -47,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Fixed login authentication issue.
 - Engine | Implement language switcher on profile page
 - Engine | Added the composition Id settings on the settings page
+- Engine | Add tasking abstraction
 
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected
@@ -61,18 +64,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Fixed mislabeling of questionnaire responses on quest patient detail screen
 - Quest | Fix patient registration with estimated age/dob
 - Quest | Fix patient register data list items display
+- Quest | Fix and reduce the time taken to load patient details page
 
 - Engine | Fixed app crash when wrong appId is provided
 - Engine | Fixed login error message
+- Engine | Fixed redirect after logout when press back button
 
 ### Changed
 - EIR | Updated overdue trigger flow for Vaccine Due date
 - EIR | Updated on save vaccine received alert dialogue
 
 - ANC | Removed custom extraction handling and moved Family/ANC forms to structure map
+- ANC | Implement CHW ANC BMI questionnaire extraction using StructureMap
 
 - Quest | Updated Sync to sync user specific fhir resources using Search Parameters from assets
 - Quest | Updated Patient Details View Configurations and added configurations for routing to Test details page
+- Quest | Updated the Questionnaire alert dialog message when the form will add/edit/update. 
 
 
 ## [0.0.2 Quest, 0.0.3 - ANC] - 2021-10-27

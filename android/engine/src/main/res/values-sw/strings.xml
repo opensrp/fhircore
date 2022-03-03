@@ -98,4 +98,12 @@
         <string name="composition_id">Composition ID</string>
         <string name="enter_composition_id">Enter Composition ID</string>
         <string name="composition_id_sample" translatable="false">E.g. 123, 8676</string>
+        <string name="set_pin">Weka Pin</string>
+        <string name="set_pin_message">CHA itatumia pini hii kuingia</string>
+        <string name="enter_login_pin">Weka pin ya mtumiaji</string>
+        <string name="enter_pin_for_user">Weka pin kwa %1$s</string>
+        <string name="incorrect_pin_please_retry">Pini isiyo sahihi, jaribu tena</string>
+        <string name="pin_menu_login">Ingia</string>
+        <string name="forgot_pin">Umesahau pini?</string>
+        <string name="please_contact_supervisor">Tafadhali wasiliana na msimamizi wako.</string>
 </resources>

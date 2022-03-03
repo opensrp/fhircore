@@ -39,7 +39,6 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.toSha1
@@ -212,6 +211,11 @@ constructor(
     return tokenManagerService.getLocalSessionToken()?.isNotBlank() == true
   }
 
+  fun hasActivePin(): Boolean {
+    Timber.v("Checking for an active PIN")
+    return secureSharedPreference.retrieveSessionPin()?.isNotBlank() == true
+  }
+
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
     Timber.v("Validating credentials with local storage")
     return secureSharedPreference.retrieveCredentials()?.let {
@@ -294,7 +298,6 @@ constructor(
       secureSharedPreference.deleteCredentials()
       launchScreen(AppSettingActivity::class.java)
     }
-    sharedPreference.remove(APP_ID_CONFIG)
   }
 
   fun launchLoginScreen() {
@@ -308,7 +311,7 @@ constructor(
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         addCategory(Intent.CATEGORY_LAUNCHER)
       }
     )

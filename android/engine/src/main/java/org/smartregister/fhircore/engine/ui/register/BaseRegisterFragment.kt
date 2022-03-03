@@ -20,6 +20,9 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import javax.inject.Inject
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
@@ -28,6 +31,10 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
   open lateinit var registerDataViewModel: RegisterDataViewModel<I, O>
 
   open val registerViewModel by activityViewModels<RegisterViewModel>()
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  open lateinit var registerViewConfiguration: RegisterViewConfiguration
 
   /**
    * Implement functionality to navigate to details view when an item with [uniqueIdentifier] is

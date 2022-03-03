@@ -33,6 +33,7 @@ import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
@@ -59,6 +60,8 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -73,6 +76,8 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @MockK lateinit var parser: IParser
   @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
   @BindValue lateinit var reportViewModel: ReportViewModel
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
   private lateinit var reportHomeActivity: ReportHomeActivity
   private lateinit var reportHomeActivitySpy: ReportHomeActivity
   var libraryData = FileUtil.readJsonFile("test/resources/cql/library.json")
@@ -86,6 +91,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    every { sharedPreferencesHelper.read(any(), any<String>()) } returns ""
     MockKAnnotations.init(this, relaxUnitFun = true)
     mockkObject(FileUtil)
     reportViewModel =

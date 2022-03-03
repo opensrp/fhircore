@@ -25,6 +25,7 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -41,7 +42,6 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -50,6 +50,7 @@ import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -69,16 +70,19 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -100,6 +104,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
+      getUserInfo().encodeJson()
+
     defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
     val configurationRegistry = mockk<ConfigurationRegistry>()
     every { configurationRegistry.appId } returns "appId"
@@ -138,7 +146,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns
       Questionnaire().apply { id = "12345" }
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345") }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.DEFAULT)
+    }
 
     coVerify { fhirEngine.load(Questionnaire::class.java, "12345") }
     Assert.assertEquals("12345", result!!.logicalId)
@@ -176,7 +186,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", true) }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.READ_ONLY)
+    }
 
     Assert.assertTrue(result!!.item[0].item[0].readOnly)
     Assert.assertEquals("q1-name", result.item[0].item[0].linkId)
@@ -235,38 +247,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", true) }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.READ_ONLY)
+    }
 
     Assert.assertEquals("12345", result!!.logicalId)
     Assert.assertTrue(result!!.item[0].readOnly)
     Assert.assertEquals("patient-first-name", result!!.item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.value",
-      (result!!.item[0].extension[0].value as Expression).expression
-    )
     Assert.assertEquals("patient-last-name", result!!.item[0].item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.item.where(linkId = 'patient-last-name').answer.value",
-      (result!!.item[0].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertTrue(result!!.item[1].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-age').answer.value",
-      (result!!.item[1].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result!!.item[2].readOnly)
     Assert.assertEquals(0, result!!.item[2].extension.size)
     Assert.assertTrue(result!!.item[2].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-dob').answer.value",
-      (result!!.item[2].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result!!.item[2].item[1].readOnly)
     Assert.assertTrue(result!!.item[2].item[1].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-related-person').item.where(linkId = 'rp-name').answer.value",
-      (result!!.item[2].item[1].item[0].extension[0].value as Expression).expression
-    )
   }
 
   @Test
@@ -318,38 +312,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
 
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", editMode = true) }
+    val result = runBlocking {
+      questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT)
+    }
 
     Assert.assertEquals("12345", result!!.logicalId)
     Assert.assertFalse(result.item[0].readOnly)
     Assert.assertEquals("patient-first-name", result.item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.value",
-      (result.item[0].extension[0].value as Expression).expression
-    )
     Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.item.where(linkId = 'patient-last-name').answer.value",
-      (result.item[0].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result.item[1].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-age').answer.value",
-      (result.item[1].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result.item[2].readOnly)
     Assert.assertEquals(0, result.item[2].extension.size)
     Assert.assertFalse(result.item[2].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-dob').answer.value",
-      (result!!.item[2].item[0].extension[0].value as Expression).expression
-    )
     Assert.assertFalse(result!!.item[2].item[1].readOnly)
     Assert.assertFalse(result!!.item[2].item[1].item[0].readOnly)
-    Assert.assertEquals(
-      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-related-person').item.where(linkId = 'rp-name').answer.value",
-      (result!!.item[2].item[1].item[0].extension[0].value as Expression).expression
-    )
   }
 
   @Test
@@ -490,7 +466,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       "12345",
       questionnaire,
       QuestionnaireResponse(),
-      true
+      QuestionnaireType.EDIT
     )
 
     coVerifyOrder {
@@ -731,7 +707,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       "12345",
       questionnaire,
       questionnaireResponse,
-      true
+      QuestionnaireType.EDIT
     )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
@@ -959,5 +935,68 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking { structureMapProvider.invoke(resourceUrl, SimpleWorkerContext()) }
 
     coVerify { questionnaireViewModel.fetchStructureMap(resourceUrl) }
+  }
+
+  fun testHandlePatientSubjectShouldReturnSetCorrectReference() {
+    val questionnaire = Questionnaire().apply { addSubjectType("Patient") }
+    val questionnaireResponse = QuestionnaireResponse()
+
+    Assert.assertFalse(questionnaireResponse.hasSubject())
+
+    questionnaireViewModel.handleQuestionnaireResponseSubject(
+      "123",
+      questionnaire,
+      questionnaireResponse
+    )
+
+    Assert.assertEquals("Patient/123", questionnaireResponse.subject.reference)
+  }
+
+  @Test
+  fun testHandleOrganizationSubjectShouldReturnSetCorrectReference() {
+    val questionnaire = Questionnaire().apply { addSubjectType("Organization") }
+    val questionnaireResponse = QuestionnaireResponse()
+
+    Assert.assertFalse(questionnaireResponse.hasSubject())
+
+    questionnaireViewModel.handleQuestionnaireResponseSubject(
+      "123",
+      questionnaire,
+      questionnaireResponse
+    )
+
+    Assert.assertEquals("Organization/1111", questionnaireResponse.subject.reference)
+  }
+
+  private fun getUserInfo(): UserInfo {
+    val userInfo =
+      UserInfo().apply {
+        questionnairePublisher = "ab"
+        organization = "1111"
+        keyclockuuid = "123"
+      }
+    return userInfo
+  }
+
+  @Test
+  fun testAddPractitionerInfoShouldSetGeneralPractitionerReferenceToPatientResource() {
+    val patient =
+      Patient().apply {
+        Patient@ this.id = "123456"
+        this.birthDate = questionnaireViewModel.calculateDobFromAge(25)
+      }
+
+    questionnaireViewModel.appendPractitionerInfo(patient)
+
+    Assert.assertEquals("Practitioner/123", patient.generalPractitioner[0].reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
+    val encounter = Encounter().apply { this.id = "123456" }
+
+    questionnaireViewModel.appendPractitionerInfo(encounter)
+
+    Assert.assertEquals("Practitioner/123", encounter.participant[0].individual.reference)
   }
 }

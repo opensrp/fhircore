@@ -26,7 +26,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.BooleanType
@@ -44,20 +46,23 @@ import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_EDIT_INFO
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_TYPE
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 
 @HiltAndroidTest
 internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
@@ -73,6 +78,8 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
   }
 
   @Test
@@ -154,7 +161,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testTextOfSaveButtonForFamilyMemberRegistration() {
+  fun testTextOfSaveButtonForFamilyMemberRegistration() = runBlockingTest {
     buildActivityFor(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, false)
 
     assertEquals(
@@ -171,7 +178,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testTextOfSaveButtonForFamilyRegistration() {
+  fun testTextOfSaveButtonForFamilyRegistration() = runBlockingTest {
     buildActivityFor(FamilyFormConstants.FAMILY_REGISTER_FORM, false)
 
     assertEquals(
@@ -188,7 +195,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testTextOfSavedButtonForAncRegister() {
+  fun testTextOfSavedButtonForAncRegister() = runBlockingTest {
     buildActivityFor(FamilyFormConstants.ANC_ENROLLMENT_FORM, false)
 
     assertEquals(
@@ -205,7 +212,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   private fun buildActivityFor(form: String, editForm: Boolean, headId: String? = null) {
-    coEvery { questionnaireViewModel.loadQuestionnaire(any()) } returns
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
       Questionnaire().apply {
         name = form
         title = form
@@ -217,7 +224,10 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     val intent =
       Intent().apply {
         putExtra(QUESTIONNAIRE_ARG_FORM, form)
-        putExtra(FAMILY_EDIT_INFO, editForm)
+        putExtra(
+          QUESTIONNAIRE_ARG_TYPE,
+          if (editForm) QuestionnaireType.EDIT.name else QuestionnaireType.DEFAULT.name
+        )
         putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, headId)
       }
 

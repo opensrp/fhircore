@@ -17,27 +17,40 @@
 package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.app.Activity
+import android.content.Intent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.view.size
+import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.every
+import io.mockk.mockk
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 
 @HiltAndroidTest
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
@@ -48,11 +61,25 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+
   private lateinit var patientRegisterActivity: PatientRegisterActivity
 
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(any(), any<String>()) } answers
+      {
+        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
+          ""
+        } else {
+          "1234"
+        }
+      }
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+
     configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     patientRegisterActivity =
       Robolectric.buildActivity(PatientRegisterActivity::class.java).create().resume().get()
@@ -79,7 +106,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
       patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
     )
     Assert.assertEquals(
-      View.VISIBLE,
+      View.GONE,
       patientRegisterActivity.findViewById<View>(R.id.filter_register_button).visibility
     )
     Assert.assertEquals(
@@ -89,9 +116,10 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
-    patientRegisterActivity.onNavigationOptionItemSelected(
-      RoboMenuItem().apply { itemId = R.id.menu_item_settings }
+  fun testOnBottomNavigationOptionItemSelectedShouldLaunchUserProfileFragment() {
+    patientRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_settings".hashCode() },
+      patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
     )
     // switched to user profile fragment
     Assert.assertEquals(
@@ -109,6 +137,36 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testOnBottomNavigationOptionItemSelectedShouldLaunchQuestionnaireDataDetailActivity() {
+
+    val config = patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+
+    val bottomNavigationOptions =
+      config.bottomNavigationOptions?.plus(
+        NavigationOption(
+          "control_test",
+          "Control Test",
+          "ic_reports",
+          QuestionnaireDataDetailsNavigationAction(classification = "control_test_details_view")
+        )
+      )
+
+    config.bottomNavigationOptions = bottomNavigationOptions
+
+    patientRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "control_test".hashCode() },
+      config
+    )
+
+    val expectedIntent =
+      Intent(patientRegisterActivity, QuestionnaireDataDetailActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
   fun testSetupConfigurableViewsShouldUpdateViews() {
     val activityBinding =
       ReflectionHelpers.getField<BaseRegisterActivityBinding>(
@@ -119,25 +177,29 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     with(activityBinding) {
       Assert.assertEquals("Register new client", this.btnRegisterNewClient.text)
       Assert.assertEquals("Clients", this.toolbarLayout.tvClientsListTitle.text)
-      Assert.assertEquals(2, this.bottomNavView.menu.size)
+      Assert.assertEquals(3, this.bottomNavView.menu.size)
     }
   }
 
   @Test
   fun testBottomMenuOptionsShouldReturnNonZeroOptions() {
-    val menu = patientRegisterActivity.bottomNavigationMenuOptions()
+    val registerViewConfiguration =
+      patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+    val menu = patientRegisterActivity.bottomNavigationMenuOptions(registerViewConfiguration)
 
-    Assert.assertEquals(2, menu.size)
-    Assert.assertEquals(R.id.menu_item_clients, menu[0].id)
+    Assert.assertEquals(3, menu.size)
+    Assert.assertEquals("menu_item_clients".hashCode(), menu[0].id)
     Assert.assertEquals(getString(R.string.menu_clients), menu[0].title)
-    Assert.assertEquals(R.id.menu_item_settings, menu[1].id)
-    Assert.assertEquals(getString(R.string.menu_settings), menu[1].title)
+    Assert.assertEquals("menu_item_tasks".hashCode(), menu[1].id)
+    Assert.assertEquals(getString(R.string.menu_tasks), menu[1].title)
+    Assert.assertEquals("menu_item_settings".hashCode(), menu[2].id)
+    Assert.assertEquals(getString(R.string.menu_settings), menu[2].title)
   }
 
   @Test
   fun testSupportedFragmentsShouldReturnPatientRegisterFragmentList() {
     val fragments = patientRegisterActivity.supportedFragments()
-    Assert.assertEquals(2, fragments.size)
+    Assert.assertEquals(3, fragments.size)
     Assert.assertTrue(fragments.containsKey(PatientRegisterFragment.TAG))
     Assert.assertTrue(fragments.containsKey(UserProfileFragment.TAG))
   }

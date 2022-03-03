@@ -17,12 +17,16 @@
 package org.smartregister.fhircore.anc.ui.family
 
 import android.app.Activity
+import android.content.Intent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -39,15 +43,19 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
+import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
@@ -58,6 +66,9 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
 
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+
   @Before
   fun setUp() {
     mockkObject(Sync)
@@ -66,6 +77,8 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
     every { accountAuthenticator.launchLoginScreen() } just runs
 
     hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(any(), any<String>()) } returns "1234"
 
     configurationRegistry.loadAppConfigurations(
       appId = "anc",
@@ -96,8 +109,9 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnClientMenuOptionSelectedShouldLaunchPatientRegisterFragment() {
-    familyRegisterActivity.onNavigationOptionItemSelected(
-      RoboMenuItem().apply { itemId = R.id.menu_item_register }
+    familyRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_register".hashCode() },
+      familyRegisterActivity.registerViewModel.registerViewConfiguration.value!!
     )
     // switched to patient register fragment
     assertEquals(
@@ -116,8 +130,9 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
-    familyRegisterActivity.onNavigationOptionItemSelected(
-      RoboMenuItem().apply { itemId = R.id.menu_item_profile }
+    familyRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_profile".hashCode() },
+      familyRegisterActivity.registerViewModel.registerViewConfiguration.value!!
     )
     // switched to user profile fragment
     assertEquals(
@@ -128,6 +143,21 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
       View.GONE,
       familyRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility
     )
+  }
+
+  @Test
+  fun testOnBottomNavigationOptionItemSelectedShouldLaunchReportHomeActivity() {
+    familyRegisterActivity.onBottomNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_reports".hashCode() },
+      familyRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+    )
+
+    val expectedIntent = Intent(familyRegisterActivity, ReportHomeActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+        .nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
@@ -145,6 +175,47 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
       assertEquals(AncRegisterFragment.TAG, uniqueTag)
       assertEquals(familyRegisterActivity.getString(R.string.anc_clients), title)
       assertFalse(isSelected)
+    }
+  }
+
+  @Test
+  fun testSideMenuList() {
+    val listRegisterItem = familyRegisterActivity.sideMenuOptions()
+    assertEquals(listRegisterItem.size, 7)
+
+    with(listRegisterItem[0]) {
+      assertEquals(R.id.menu_item_families, this.itemId)
+      assertEquals(R.string.households, this.titleResource)
+    }
+
+    with(listRegisterItem[1]) {
+      assertEquals(R.id.menu_item_anc_clients, this.itemId)
+      assertEquals(R.string.pregnant_clients, this.titleResource)
+    }
+
+    with(listRegisterItem[2]) {
+      assertEquals(R.id.menu_item_post_natal_clients, this.itemId)
+      assertEquals(R.string.post_natal_clients, this.titleResource)
+    }
+
+    with(listRegisterItem[3]) {
+      assertEquals(R.id.menu_item_child_clients, this.itemId)
+      assertEquals(R.string.child_clients, this.titleResource)
+    }
+
+    with(listRegisterItem[4]) {
+      assertEquals(R.id.menu_item_family_planning_clients, this.itemId)
+      assertEquals(R.string.family_planning_clients, this.titleResource)
+    }
+
+    with(listRegisterItem[5]) {
+      assertEquals(R.id.menu_item_reports, this.itemId)
+      assertEquals(R.string.reports, this.titleResource)
+    }
+
+    with(listRegisterItem[6]) {
+      assertEquals(R.id.menu_item_profile, this.itemId)
+      assertEquals(R.string.profile, this.titleResource)
     }
   }
 

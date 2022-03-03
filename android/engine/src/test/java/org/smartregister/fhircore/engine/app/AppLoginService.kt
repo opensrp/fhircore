@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.engine.app
 
+import androidx.appcompat.app.AppCompatActivity
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 
 class AppLoginService @Inject constructor() : LoginService {
 
-  override lateinit var loginActivity: LoginActivity
+  override lateinit var loginActivity: AppCompatActivity
 
   override fun navigateToHome() {
     // Do nothing

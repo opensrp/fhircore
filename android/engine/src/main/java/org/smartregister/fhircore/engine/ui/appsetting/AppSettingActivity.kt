@@ -46,6 +46,7 @@ class AppSettingActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
+
     appSettingViewModel.loadConfigs.observe(this) { loadConfigs ->
       if (loadConfigs != null && loadConfigs) {
         val applicationId = appSettingViewModel.appId.value!!
@@ -68,7 +69,22 @@ class AppSettingActivity : AppCompatActivity() {
         showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
     }
 
-    sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.let {
+    appSettingViewModel.rememberApp.observe(
+      this
+    ) { doRememberApp ->
+      doRememberApp?.let {
+        if (doRememberApp) {
+          if (!appSettingViewModel.appId.value.isNullOrEmpty()) {
+            sharedPreferencesHelper.write(APP_ID_CONFIG, appSettingViewModel.appId.value ?: "")
+          }
+        } else {
+          sharedPreferencesHelper.remove(APP_ID_CONFIG)
+        }
+      }
+    }
+
+    val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
+    lastAppId?.let {
       appSettingViewModel.onApplicationIdChanged(it)
       appSettingViewModel.onCompositionIdChanged(it)
       appSettingViewModel.loadConfigurations(true)
@@ -82,7 +98,7 @@ class AppSettingActivity : AppCompatActivity() {
             AppSettingScreen(
               appId = appId,
               compositionId = compositionId,
-              rememberApp = rememberApp,
+              rememberApp = rememberApp ?: false,
               onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
               onCompositionIdChanged = appSettingViewModel::onCompositionIdChanged,
               onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
