@@ -88,8 +88,8 @@ internal class ReportViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper
         )
       )
-    every { reportViewModel.startDate } returns MutableLiveData("")
-    every { reportViewModel.endDate } returns MutableLiveData("")
+    every { reportViewModel.startDate } returns MutableLiveData("25 Nov, 2021")
+    every { reportViewModel.endDate } returns MutableLiveData("10 Dec, 2021")
     every { reportViewModel.resultForIndividual } returns
       this@ReportViewModelTest.resultForIndividual
     every { reportViewModel.resultForPopulation } returns
@@ -195,18 +195,44 @@ internal class ReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testEvaluateMeasureForIndividual() {
+    every {
+      fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
+    } returns
+      MeasureReport().apply {
+        status = MeasureReport.MeasureReportStatus.COMPLETE
+        type = MeasureReport.MeasureReportType.INDIVIDUAL
+      }
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),
       measureUrl = "measure/ancInd03",
       individualEvaluation = true,
       measureResourceBundleUrl = "measure/ancInd03"
     )
+    Assert.assertNotNull(reportViewModel.startDate.value)
+    Assert.assertNotNull(reportViewModel.endDate.value)
+    val result =
+      fhirOperatorDecorator.evaluateMeasure(
+        "url",
+        "start",
+        "end",
+        "report_type",
+        "subject",
+        "practitioner"
+      )
+    Assert.assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, result.status)
+    Assert.assertEquals(MeasureReport.MeasureReportType.INDIVIDUAL, result.type)
     Assert.assertNotNull(reportViewModel.resultForIndividual.value)
-    Assert.assertFalse(reportViewModel.showProgressIndicator.value!!)
   }
 
   @Test
   fun testEvaluateMeasureForPopulation() {
+    every {
+      fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
+    } returns
+      MeasureReport().apply {
+        status = MeasureReport.MeasureReportStatus.COMPLETE
+        type = MeasureReport.MeasureReportType.SUBJECTLIST
+      }
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),
       measureUrl = "measure/ancInd03",
@@ -215,8 +241,18 @@ internal class ReportViewModelTest : RobolectricTest() {
     )
     Assert.assertNotNull(reportViewModel.startDate.value)
     Assert.assertNotNull(reportViewModel.endDate.value)
+    val result =
+      fhirOperatorDecorator.evaluateMeasure(
+        "url",
+        "start",
+        "end",
+        "report_type",
+        "subject",
+        "practitioner"
+      )
+    Assert.assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, result.status)
+    Assert.assertEquals(MeasureReport.MeasureReportType.SUBJECTLIST, result.type)
     Assert.assertNotNull(reportViewModel.resultForPopulation.value)
-    Assert.assertFalse(reportViewModel.showProgressIndicator.value!!)
     Assert.assertNotNull(
       sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
     )
