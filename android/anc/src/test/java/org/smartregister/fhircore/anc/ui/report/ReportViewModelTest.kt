@@ -26,6 +26,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.MeasureReport
@@ -125,12 +126,14 @@ internal class ReportViewModelTest : RobolectricTest() {
   fun testShouldVerifyBackFromPatientSelection() {
     reportViewModel.onBackPress(ReportViewModel.ReportScreen.PICK_PATIENT)
     Assert.assertEquals(ReportViewModel.ReportScreen.PICK_PATIENT, reportViewModel.currentScreen)
+    verify { reportViewModel.resetValues() }
   }
 
   @Test
   fun testShouldVerifyBackFromResultClickListener() {
     reportViewModel.onBackPress(ReportViewModel.ReportScreen.RESULT)
     Assert.assertEquals(ReportViewModel.ReportScreen.RESULT, reportViewModel.currentScreen)
+    verify { reportViewModel.resetValues() }
   }
 
   @Test
@@ -167,13 +170,6 @@ internal class ReportViewModelTest : RobolectricTest() {
     Assert.assertEquals(expectedStartDate, reportViewModel.startDate.value)
     Assert.assertEquals(expectedEndDate, reportViewModel.endDate.value)
     Assert.assertEquals(true, reportViewModel.generateReport.value)
-  }
-
-  @Test
-  fun testSetDateRangeInvalidData() {
-    reportViewModel.currentReportType.value = "All"
-    reportViewModel.setDateRange(Pair(1637798400000L, 0))
-    Assert.assertEquals(false, reportViewModel.dateException.value)
   }
 
   @Test
