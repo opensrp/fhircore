@@ -17,7 +17,13 @@ env:
 jobs:
   engine-tests:
     runs-on: ubuntu-latest
+    
     steps:
+      - name: Cancel Previous workflow runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+          
       - name: Checkout 🛎️
         uses: actions/checkout@v2
         with:
@@ -133,5 +139,4 @@ jobs:
       - name: Upload Quest Test Report to codecov
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-
 
