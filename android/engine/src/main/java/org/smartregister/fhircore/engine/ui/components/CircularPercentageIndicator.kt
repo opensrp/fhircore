@@ -44,7 +44,9 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.ProgressBarBlueColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-const val CIRCULAR_PERCENTAGE_INDICATOR = "circularPercentageIndicator"
+const val CIRCULAR_PERCENTAGE_INDICATOR = "CIRCULAR_PERCENTAGE_INDICATOR"
+const val CIRCULAR_CANVAS_CIRCLE_TAG = "CIRCULAR_CANVAS_CIRCLE_TAG"
+const val CIRCULAR_PERCENTAGE_TEXT_TAG = "CIRCULAR_PERCENTAGE_TEXT_TAG"
 
 @Composable
 fun CircularPercentageIndicator(
@@ -61,7 +63,6 @@ fun CircularPercentageIndicator(
     contentAlignment = Alignment.Center
   ) {
     Canvas(
-      modifier = modifier.fillMaxSize(),
       onDraw = {
         drawCircle(
           Brush.linearGradient(colors = listOf(Color.LightGray, Color.LightGray)),
@@ -69,7 +70,8 @@ fun CircularPercentageIndicator(
           center = center,
           style = Stroke(width = size.width * 0.075f)
         )
-      }
+      },
+      modifier = modifier.fillMaxSize().testTag(CIRCULAR_CANVAS_CIRCLE_TAG),
     )
     CircularProgressIndicator(
       progress = percentage.toFloat() / 100,
@@ -85,7 +87,8 @@ fun CircularPercentageIndicator(
           pushStyle(SpanStyle(fontSize = 14.sp))
           append(stringResource(R.string.percentage))
         },
-      textAlign = TextAlign.Center
+      textAlign = TextAlign.Center,
+      modifier = Modifier.testTag(CIRCULAR_PERCENTAGE_TEXT_TAG)
     )
   }
 }

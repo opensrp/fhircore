@@ -294,7 +294,7 @@ internal class ReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnClear() {
+  fun testResetValues() {
     reportViewModel.resetValues()
     Assert.assertEquals("", reportViewModel.currentReportType.value)
   }
