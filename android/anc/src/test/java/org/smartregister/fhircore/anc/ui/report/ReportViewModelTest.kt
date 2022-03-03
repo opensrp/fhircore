@@ -221,6 +221,11 @@ internal class ReportViewModelTest : RobolectricTest() {
     Assert.assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, result.status)
     Assert.assertEquals(MeasureReport.MeasureReportType.INDIVIDUAL, result.type)
     Assert.assertNotNull(reportViewModel.resultForIndividual.value)
+    Assert.assertNotNull(reportViewModel.showProgressIndicator.value)
+    Assert.assertNotNull(
+      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
+    )
+    Assert.assertNotNull(reportViewModel.currentScreen)
   }
 
   @Test
@@ -248,9 +253,11 @@ internal class ReportViewModelTest : RobolectricTest() {
     Assert.assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, result.status)
     Assert.assertEquals(MeasureReport.MeasureReportType.SUBJECTLIST, result.type)
     Assert.assertNotNull(reportViewModel.resultForPopulation.value)
+    Assert.assertNotNull(reportViewModel.showProgressIndicator.value)
     Assert.assertNotNull(
       sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
     )
+    Assert.assertNotNull(reportViewModel.currentScreen)
   }
 
   @Test
@@ -292,6 +299,13 @@ internal class ReportViewModelTest : RobolectricTest() {
     reportViewModel.onReportTypeSelected("ancInd01", true)
     Assert.assertNotNull(reportViewModel.filterValue.value)
     Assert.assertEquals(reportViewModel.currentScreen, ReportViewModel.ReportScreen.PICK_PATIENT)
+    Assert.assertNotNull(reportViewModel.generateReport.value)
+  }
+
+  @Test
+  fun testOnReportTypeSelectedWithoutLaunchPateint() {
+    reportViewModel.onReportTypeSelected("ancInd01", false)
+    Assert.assertNotNull(reportViewModel.generateReport.value)
   }
 
   @Test
