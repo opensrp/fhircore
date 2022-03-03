@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Narrative
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -271,6 +272,13 @@ internal class ReportViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testFormatPopulationMeasureReportWithText() {
+    val listOfResult = reportViewModel.formatPopulationMeasureReport(getMeasureReportWithText())
+    Assert.assertNotNull(listOfResult)
+    Assert.assertEquals(1, listOfResult.size)
+  }
+
+  @Test
   fun auxGenerateReportTestForIndividual() {
     every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
     reportViewModel.onReportTypeSelected("Individual", true)
@@ -353,6 +361,32 @@ internal class ReportViewModelTest : RobolectricTest() {
                 id = "123"
                 coding = arrayListOf()
               }
+          }
+        }
+      }
+    }
+  }
+
+  private fun getMeasureReportWithText(): MeasureReport {
+    return MeasureReport().apply {
+      id = "12333"
+      status = MeasureReport.MeasureReportStatus.COMPLETE
+      addGroup().apply {
+        id = "222"
+        addStratifier().apply {
+          id = "123"
+          text = Narrative().apply { status = Narrative.NarrativeStatus.GENERATED }
+          addStratum().apply {
+            id = "1234"
+            addPopulation().apply {
+              id = ReportViewModel.NUMERATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(0)
+            }
+            addPopulation().apply {
+              id = ReportViewModel.DENOMINATOR
+              MeasureReport.StratifierGroupPopulationComponent().countElement = IntegerType(0)
+            }
+            text = Narrative().apply { status = Narrative.NarrativeStatus.GENERATED }
           }
         }
       }
