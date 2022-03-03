@@ -16,25 +16,62 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.lifecycle.MutableLiveData
+import androidx.paging.PagingData
+import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import org.hl7.fhir.r4.model.MeasureReport
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
+@HiltAndroidTest
 class ReportScreensTest : RobolectricTest() {
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
-  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 2) val coroutinesTestRule = CoroutineTestRule()
+
+  @get:Rule(order = 3) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @BindValue lateinit var reportViewModel: ReportViewModel
+
+  @Inject lateinit var reportRepository: ReportRepository
+  @Inject lateinit var patientRepository: PatientRepository
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
+  private val fhirEngine: FhirEngine = spyk()
+  private val fhirOperatorDecorator: FhirOperatorDecorator = mockk()
 
   private val listenerObjectSpy =
     spyk(
@@ -48,6 +85,46 @@ class ReportScreensTest : RobolectricTest() {
         fun onPatientChangeClick() {}
       }
     )
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+    reportViewModel =
+      spyk(
+        ReportViewModel(
+          repository = reportRepository,
+          dispatcher = coroutinesTestRule.testDispatcherProvider,
+          patientRepository = patientRepository,
+          fhirEngine = fhirEngine,
+          fhirOperatorDecorator = fhirOperatorDecorator,
+          sharedPreferencesHelper = sharedPreferencesHelper
+        )
+      )
+    val allRegisterData: MutableStateFlow<Flow<PagingData<PatientItem>>> =
+      MutableStateFlow(emptyFlow())
+
+    every {
+      fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
+    } returns
+      MeasureReport().apply {
+        status = MeasureReport.MeasureReportStatus.COMPLETE
+        type = MeasureReport.MeasureReportType.INDIVIDUAL
+      }
+
+    registerDataViewModel =
+      mockk {
+        every { registerData } returns allRegisterData
+        every { showResultsCount } returns MutableLiveData(false)
+        every { showLoader } returns MutableLiveData(false)
+        every { currentPage() } returns 1
+        every { countPages() } returns 1
+        every { filterRegisterData(any(), any(), any()) } returns Unit
+      }
+
+    every { reportViewModel.selectedMeasureReportItem } returns
+      MutableLiveData(ReportItem(name = "First ANC", reportType = "Individual"))
+  }
 
   @Test
   fun testReportMeasureList() {
@@ -166,5 +243,46 @@ class ReportScreensTest : RobolectricTest() {
     composeRule.onNodeWithTag(REPORT_PATIENT_ITEM).assertExists()
     composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).assertExists()
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
+  }
+
+  @Test
+  fun testReportView() {
+    every { reportViewModel.currentScreen } returns ReportViewModel.ReportScreen.RESULT
+
+    composeRule.setContent {
+      ReportView(reportViewModel = reportViewModel, registerDataViewModel = registerDataViewModel)
+    }
+  }
+
+  @Test
+  fun testReportViewHome() {
+    every { reportViewModel.currentScreen } returns ReportViewModel.ReportScreen.HOME
+
+    composeRule.setContent {
+      ReportView(reportViewModel = reportViewModel, registerDataViewModel = registerDataViewModel)
+    }
+  }
+
+  @Test
+  fun testReportViewFilter() {
+    every { reportViewModel.currentScreen } returns ReportViewModel.ReportScreen.FILTER
+
+    composeRule.setContent {
+      ReportView(reportViewModel = reportViewModel, registerDataViewModel = registerDataViewModel)
+    }
+  }
+
+  @Test
+  fun testReportViewPickPatient() {
+    every { reportViewModel.currentScreen } returns ReportViewModel.ReportScreen.PICK_PATIENT
+
+    composeRule.setContent {
+      ReportView(reportViewModel = reportViewModel, registerDataViewModel = registerDataViewModel)
+    }
+  }
+
+  @Test
+  fun testReportResultScreen() {
+    composeRule.setContent { ReportResultScreen(viewModel = reportViewModel) }
   }
 }
