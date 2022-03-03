@@ -23,7 +23,7 @@
       },
       {
         "workflowPoint": "patient_details_view",
-        "resource": "PatientDetailsViewConfiguration",
+        "resource": "DataDetailsListViewConfiguration",
         "classification": "patient_details_view",
         "description": "Configurations for patient details view"
       },
@@ -32,6 +32,24 @@
         "resource": "DetailViewConfiguration",
         "classification": "test_result_detail_view",
         "description": "Configurations for Test Results Details"
+      },
+      {
+        "workflowPoint": "result_details_navigation",
+        "resource": "ResultDetailsNavigationConfiguration",
+        "classification": "result_details_navigation",
+        "description": "Configurations for Result Details Navigation"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfigurations",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
+      },
+      {
+        "workflowPoint": "registration",
+        "resource": "RegisterViewConfiguration",
+        "classification": "patient_task_register",
+        "description": "Configurations for patient task"
       }
     ]
   },
@@ -65,9 +83,27 @@
       },
       {
         "workflowPoint": "patient_details_view",
-        "resource": "PatientDetailsViewConfiguration",
+        "resource": "DataDetailsListViewConfiguration",
         "classification": "patient_details_view",
         "description": "Configurations for patient details view"
+      },
+      {
+        "workflowPoint": "result_details_navigation",
+        "resource": "ResultDetailsNavigationConfiguration",
+        "classification": "result_details_navigation",
+        "description": "Configurations for Result Details Navigation"
+      },
+      {
+        "workflowPoint": "control_test_details_view",
+        "resource": "DataDetailsListViewConfiguration",
+        "classification": "control_test_details_view",
+        "description": "Configurations for patient details view"
+      },
+      {
+        "workflowPoint": "pin",
+        "resource": "PinViewConfigurations",
+        "classification": "pin",
+        "description": "Configurations for pin based login"
       }
     ]
   }

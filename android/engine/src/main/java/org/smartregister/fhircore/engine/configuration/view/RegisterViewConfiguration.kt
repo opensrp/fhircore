@@ -27,11 +27,11 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 data class RegisterViewConfiguration(
   override var appId: String,
   override val classification: String,
-  var appTitle: String,
-  var filterText: String,
-  var searchBarHint: String,
-  var newClientButtonText: String,
-  var newClientButtonStyle: String,
+  var appTitle: String = "",
+  var filterText: String = "",
+  var searchBarHint: String = "",
+  var newClientButtonText: String = "",
+  var newClientButtonStyle: String = "",
   var showSearchBar: Boolean = true,
   var showFilter: Boolean = true,
   var showScanQRCode: Boolean = true,
@@ -39,7 +39,10 @@ data class RegisterViewConfiguration(
   var registrationForm: String = "patient-registration",
   var showSideMenu: Boolean = true,
   var showBottomMenu: Boolean = false,
-  var primaryFilter: SearchFilter? = null
+  var showPageCount: Boolean = true,
+  var useLabel: Boolean = true,
+  var primaryFilter: SearchFilter? = null,
+  var bottomNavigationOptions: List<NavigationOption>? = null
 ) : Configuration
 
 @Serializable
@@ -80,6 +83,9 @@ fun Context.registerViewConfigurationOf(
   registrationForm: String = "patient-registration",
   showSideMenu: Boolean = true,
   showBottomMenu: Boolean = false,
+  showPageCount: Boolean = true,
+  useLabel: Boolean = true,
+  bottomNavigationOptions: List<NavigationOption>? = null
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     appId = appId,
@@ -96,5 +102,8 @@ fun Context.registerViewConfigurationOf(
     registrationForm = registrationForm,
     showSideMenu = showSideMenu,
     showBottomMenu = showBottomMenu,
+    showPageCount = showPageCount,
+    useLabel = useLabel,
+    bottomNavigationOptions = bottomNavigationOptions
   )
 }

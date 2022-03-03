@@ -23,20 +23,20 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
-import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.quest.configuration.view.DetailViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemCell
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemRow
+import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
+import org.smartregister.fhircore.quest.util.FhirPathUtil.getPathValue
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
-import org.smartregister.fhircore.quest.util.getSearchResults
 import timber.log.Timber
 
 @HiltViewModel
@@ -65,17 +65,17 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
       val dataItem = DetailsViewItem()
       dataItem.label = config.label
 
+      val dataMap = getDataMap(encounter)
+
       config.rows.forEach {
         val row = DetailsViewItemRow()
 
         it.filters.forEach { f ->
+          // get the required property from pre-loaded resources e.g. CONDITION
           val value =
-            when (f.resourceType) {
-              Enumerations.ResourceType.CONDITION ->
-                getCondition(encounter, f)?.code?.codingFirstRep
-              Enumerations.ResourceType.OBSERVATION -> getObservation(encounter, f)?.value
-              else -> null
-            }
+            dataMap[f.resourceType]
+              ?.find { doesSatisfyFilter(it, f) == true }
+              ?.getPathValue(f.displayableProperty)
 
           row.cells.add(DetailsViewItemCell(value, f))
         }
@@ -89,23 +89,23 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
     }
   }
 
-  suspend fun getCondition(encounter: Encounter, filter: Filter): Condition? {
-    return getSearchResults<Condition>(
-        encounter.referenceValue(),
-        Condition.ENCOUNTER,
-        filter,
-        patientRepository.fhirEngine
-      )
-      .firstOrNull()
+  /**
+   * we are loading data for an encounter hence it makes most sense to load all relevant data rather
+   * than running multiple queries for each cell. This improves screen loading speed we can further
+   * scale this when needed. Has data sorted by date in descending order
+   */
+  suspend fun getDataMap(
+    encounter: Encounter
+  ): MutableMap<Enumerations.ResourceType, List<Resource>> {
+    return mutableMapOf(
+      Enumerations.ResourceType.PATIENT to listOf(getPatient(encounter)),
+      Enumerations.ResourceType.CONDITION to patientRepository.getCondition(encounter, null),
+      Enumerations.ResourceType.OBSERVATION to patientRepository.getObservation(encounter, null),
+      Enumerations.ResourceType.MEDICATIONREQUEST to
+        patientRepository.getMedicationRequest(encounter, null)
+    )
   }
 
-  suspend fun getObservation(encounter: Encounter, filter: Filter): Observation? {
-    return getSearchResults<Observation>(
-        encounter.referenceValue(),
-        Observation.ENCOUNTER,
-        filter,
-        patientRepository.fhirEngine
-      )
-      .firstOrNull()
-  }
+  suspend fun getPatient(encounter: Encounter) =
+    patientRepository.fetchDemographics(encounter.subject.extractId())
 }

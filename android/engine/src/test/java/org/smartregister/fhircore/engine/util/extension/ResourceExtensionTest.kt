@@ -26,7 +26,9 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -38,6 +40,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.UriType
 import org.json.JSONObject
 import org.junit.Assert
@@ -476,6 +479,38 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `QuestionnaireResponse#getEncounterId() should return logicalId`() {
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply { contained = listOf(Encounter().apply { id = "1234" }) }
+
+    val id = questionnaireResponse.getEncounterId()
+
+    Assert.assertEquals("1234", id)
+  }
+
+  @Test
+  fun `QuestionnaireResponse#getEncounterId() replace# should return logicalId`() {
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply { contained = listOf(Encounter().apply { id = "#1234" }) }
+
+    val id = questionnaireResponse.getEncounterId()
+
+    Assert.assertEquals("1234", id)
+  }
+
+  @Test
+  fun `QuestionnaireResponse#getEncounterId() Id null should return empty id`() {
+
+    val questionnaireResponse = QuestionnaireResponse().apply { contained = listOf(Encounter()) }
+
+    val id = questionnaireResponse.getEncounterId()
+
+    Assert.assertEquals("", id)
+  }
+
+  @Test
   fun `Resource#generateMissingId() should generate Id if empty`() {
     val resource = Patient()
     resource.id = "1"
@@ -505,6 +540,15 @@ class ResourceExtensionTest : RobolectricTest() {
         .apply {
           this.value = BigDecimal.valueOf(3.4)
           this.unit = "G"
+        }
+        .valueToString()
+    )
+    Assert.assertEquals(
+      "8 Week (s)",
+      Timing()
+        .apply {
+          repeat.period = BigDecimal(8.0)
+          repeat.periodUnit = Timing.UnitsOfTime.WK
         }
         .valueToString()
     )
@@ -591,6 +635,41 @@ class ResourceExtensionTest : RobolectricTest() {
     val resource = Patient().apply { id = "123456" }
 
     Assert.assertEquals("Patient/123456", resource.referenceValue())
+  }
+
+  @Test
+  fun `Patient referenceParamForCondition() should return correct reference param`() {
+    val result = Patient().referenceParamForCondition()
+
+    Assert.assertEquals(Condition.PATIENT, result)
+  }
+
+  @Test
+  fun `Encounter referenceParamForCondition() should return correct reference param`() {
+    val result = Encounter().referenceParamForCondition()
+
+    Assert.assertEquals(Condition.ENCOUNTER, result)
+  }
+
+  @Test
+  fun `Patient referenceParamForObservation() should return correct reference param`() {
+    val result = Patient().referenceParamForObservation()
+
+    Assert.assertEquals(Observation.PATIENT, result)
+  }
+
+  @Test
+  fun `Encounter referenceParamForObservation() should return correct reference param`() {
+    val result = Encounter().referenceParamForObservation()
+
+    Assert.assertEquals(Observation.ENCOUNTER, result)
+  }
+
+  @Test
+  fun `QuestionnaireResponse referenceParamForObservation() should return correct reference param`() {
+    val result = QuestionnaireResponse().referenceParamForObservation()
+
+    Assert.assertEquals(Observation.FOCUS, result)
   }
 
   @Test

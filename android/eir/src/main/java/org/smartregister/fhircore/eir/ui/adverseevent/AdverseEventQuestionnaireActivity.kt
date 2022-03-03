@@ -31,9 +31,11 @@ import timber.log.Timber
 
 class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
 
+  private var immunizationId: String? = null
   val adverseEventViewModel: AdverseEventViewModel by viewModels()
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    immunizationId = intent.getStringExtra(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
     lifecycleScope.launch {
       immunizationId?.let { immunizationId ->
         adverseEventViewModel.loadImmunization(immunizationId).observe(
@@ -67,7 +69,7 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
                   .run {
                     val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
                     if (immunizationEntry == null) {
-                      val fhirJsonParser = FhirContext.forR4().newJsonParser()
+                      val fhirJsonParser = FhirContext.forR4Cached().newJsonParser()
                       Timber.e(
                         "Immunization extraction failed for ${fhirJsonParser.encodeResourceToString(questionnaireResponse)} producing ${fhirJsonParser.encodeResourceToString(this)}"
                       )

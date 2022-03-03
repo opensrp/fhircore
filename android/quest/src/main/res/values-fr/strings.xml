@@ -1,9 +1,6 @@
 <resources>
     <string name="back_to_clients">Retour à la liste des clients</string>
     <string name="test_results">Résultat du test</string>
-    <string name="run_cql">Exécuter CQL</string>
-    <string name="run_cql_log">CQL journal complet</string>
-    <string name="run_cql_output">CQL données de sortie</string>
   
     <string name="edit_patient_info">Modifier info</string>
 
@@ -15,5 +12,6 @@
     <string name="loading_responses">Chargement des réponses</string>
     <string name="no_test_results_found">Aucun résultat trouvé</string>
     <string name="patient_test_results">Résultat du test</string>
+    <string name="last_test">" Dernier Test - %1$s"</string>
 
 </resources>

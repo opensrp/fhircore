@@ -17,9 +17,13 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.widget.TextView
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -31,21 +35,24 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.ui.core.Direction
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.Type
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.R
@@ -82,11 +89,11 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
         }
       )
 
-      Column(modifier = Modifier.padding(20.dp).testTag(DETAILS_DATA_ROWS)) {
+      Column(modifier = Modifier.padding(5.dp).testTag(DETAILS_DATA_ROWS)) {
         dataItem?.rows?.forEachIndexed { i, r ->
           kotlin
             .runCatching {
-              Row(Modifier.padding(10.dp).testTag(DETAILS_DATA_ROW)) {
+              Row(Modifier.padding(5.dp).testTag(DETAILS_DATA_ROW)) {
                 r.cells.forEach { c ->
                   if (c.filter.properties?.labelDirection == Direction.UP) {
                     Column(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
@@ -98,11 +105,21 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
               if (r.cells.size == 0) {
                 Divider(
                   color = colorResource(id = R.color.white_smoke),
-                  modifier = Modifier.padding(20.dp)
+                  modifier = Modifier.padding(2.dp)
                 )
               }
             }
             .onFailure { Timber.e(it) }
+        }
+      }
+
+      Column(
+        modifier = Modifier.padding(20.dp).fillMaxWidth().fillMaxHeight(),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        Button(onClick = { dataProvider.onBackPressed(true) }) {
+          Text(text = stringResource(R.string.done), fontSize = 20.sp)
         }
       }
     }
@@ -113,12 +130,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
 fun DetailsViewCell(cell: DetailsViewItemCell) {
   with(cell.filter) {
     this.label?.let {
-      TextView(
-        this.properties?.label,
-        StringType(this.label),
-        this.dynamicColors,
-        this.properties?.valueFormatter
-      )
+      TextView(this.properties?.label, StringType(this.label), this.dynamicColors, null)
     }
 
     TextView(
@@ -134,7 +146,7 @@ fun DetailsViewCell(cell: DetailsViewItemCell) {
 @Composable
 fun TextView(
   property: Property?,
-  value: Type?,
+  value: Base?,
   colors: List<DynamicColor>?,
   valueFormatter: Map<String, String>?
 ) {
@@ -147,10 +159,11 @@ fun TextView(
       else -> "FF888888"
     }
 
-  val formattedValue = valueFormatter?.get(valueStr) ?: valueStr
+  val formattedValue =
+    if (valueStr.isBlank()) valueFormatter?.get("missing") else valueFormatter?.get(valueStr)
   val size = property?.textSize?.toFloat() ?: 16f
   Text(
-    text = formattedValue,
+    text = formattedValue ?: valueStr,
     color = Color(color.toLong(radix = 16)),
     fontSize = TextUnit(size, TextUnitType.Sp),
   )
@@ -203,6 +216,23 @@ fun simpleDetailsScreenView1() {
         )
     )
 
+  val row5Props =
+    Properties(
+      labelDirection = Direction.UP,
+      label = Property(color = "FF888888", textSize = 15),
+      value = Property(textSize = 40)
+    )
+
+  val row6Props =
+    Properties(
+      labelDirection = Direction.UP,
+      valueFormatter =
+        mapOf(
+          "Dynamic Value 1" to "Another Dynamic value 1 having a different sample text",
+          "Dynamic Value 2" to "Another Dynamic value 2 having a different sample text"
+        )
+    )
+
   SimpleDetailsScreen(
     object : SimpleDetailsDataProvider {
       override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
@@ -227,6 +257,7 @@ fun simpleDetailsScreenView1() {
                         )
                       )
                   ),
+                  // section 2
                   DetailsViewItemRow(),
                   DetailsViewItemRow(
                     cells =
@@ -243,6 +274,25 @@ fun simpleDetailsScreenView1() {
                         DetailsViewItemCell(
                           StringType("Dynamic Value 1"),
                           filterOf("key 1", "What is the value of Label", row4Props)
+                        )
+                      )
+                  ),
+                  // section 3
+                  DetailsViewItemRow(
+                    cells =
+                      mutableListOf(
+                        DetailsViewItemCell(
+                          StringType("Value of Gray"),
+                          filterOf("key 1", "My test label with long text", row5Props)
+                        )
+                      )
+                  ),
+                  DetailsViewItemRow(
+                    cells =
+                      mutableListOf(
+                        DetailsViewItemCell(
+                          StringType("Dynamic Value 1"),
+                          filterOf("key 1", "Here is the long value of line", row6Props)
                         )
                       )
                   )

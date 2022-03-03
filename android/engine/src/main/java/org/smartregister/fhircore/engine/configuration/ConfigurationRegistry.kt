@@ -20,6 +20,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.serialization.json.Json
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -59,7 +60,8 @@ constructor(
    * becomes register_view_configurations.json
    */
   inline fun <reified C : Configuration> retrieveConfiguration(
-    configClassification: ConfigClassification
+    configClassification: ConfigClassification,
+    jsonSerializer: Json? = null
   ): C {
 
     val workflowPointName = workflowPointName(configClassification.classification)
@@ -97,7 +99,7 @@ constructor(
             .use { it.readText() }
 
         val configuration =
-          content.decodeJson<List<C>>().first {
+          content.decodeJson<List<C>>(jsonSerializer).first {
             it.appId.equals(other = appId, ignoreCase = true) &&
               it.classification.equals(
                 other = configClassification.classification,
@@ -152,5 +154,6 @@ constructor(
     const val APP_SYNC_CONFIG = "configurations/app/sync_config.json"
     const val ORGANIZATION = "organization"
     const val PUBLISHER = "publisher"
+    const val ID = "_id"
   }
 }

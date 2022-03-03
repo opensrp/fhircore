@@ -16,62 +16,69 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
-import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
+import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
+import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
+import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity.Companion.CLASSIFICATION_ARG
+import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
+import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val registerViewConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-        configClassification = QuestConfigClassification.PATIENT_REGISTER
+        configClassification = QuestConfigClassification.PATIENT_REGISTER,
+        questJsonSpecificationProvider.getJson()
       )
     configureViews(registerViewConfiguration)
   }
 
-  override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
-    return listOf(
-      NavigationMenuOption(
-        id = R.id.menu_item_clients,
-        title = getString(R.string.menu_clients),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_users)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.menu_item_settings,
-        title = getString(R.string.menu_settings),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
-      )
-    )
-  }
-
-  override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
-    when (item.itemId) {
-      R.id.menu_item_clients -> switchFragment(mainFragmentTag())
-      R.id.menu_item_settings ->
-        switchFragment(
-          tag = UserProfileFragment.TAG,
-          isRegisterFragment = false,
-          toolbarTitle = getString(R.string.settings)
-        )
+  override fun onBottomNavigationOptionItemSelected(
+    item: MenuItem,
+    viewConfiguration: RegisterViewConfiguration
+  ): Boolean {
+    viewConfiguration.bottomNavigationOptions?.forEach { navigationOption ->
+      if (item.itemId == navigationOption.id.hashCode()) {
+        when (val action = navigationOption.action) {
+          is ActionSwitchFragment -> {
+            switchFragment(
+              action.tag,
+              action.isRegisterFragment,
+              action.isFilterVisible,
+              action.toolbarTitle
+            )
+          }
+          is QuestionnaireDataDetailsNavigationAction -> {
+            startActivity(
+              Intent(this, QuestionnaireDataDetailActivity::class.java).apply {
+                putExtra(CLASSIFICATION_ARG, action.classification)
+              }
+            )
+          }
+        }
+      }
     }
-    return true
+    return super.onBottomNavigationOptionItemSelected(item, viewConfiguration)
   }
 
   override fun mainFragmentTag() = PatientRegisterFragment.TAG
@@ -79,6 +86,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun supportedFragments(): Map<String, Fragment> =
     mapOf(
       Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()),
+      Pair(PatientTaskFragment.TAG, PatientTaskFragment()),
       Pair(UserProfileFragment.TAG, UserProfileFragment())
     )
 
