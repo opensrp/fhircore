@@ -58,7 +58,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
-import timber.log.Timber
 
 @HiltViewModel
 class ReportViewModel
@@ -290,10 +289,10 @@ constructor(
   fun setDateRange(dateRange: androidx.core.util.Pair<Long, Long>) {
     this._dateRange.value = dateRange
     // Format displayed date e.g 16 Nov, 2020 - 29 Oct, 2021
-      setStartEndDate(
-        startDate = dateRangeDateFormatter.format(Date(dateRange.first)),
-        endDate = dateRangeDateFormatter.format(Date(dateRange.second))
-      )
+    setStartEndDate(
+      startDate = dateRangeDateFormatter.format(Date(dateRange.first)),
+      endDate = dateRangeDateFormatter.format(Date(dateRange.second))
+    )
   }
 
   fun setStartEndDate(startDate: String, endDate: String) {
