@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.base
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import java.lang.UnsupportedOperationException
@@ -50,6 +51,10 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
     baseContext.setAppLocale(lang).run {
       super.attachBaseContext(baseContext)
       applyOverrideConfiguration(this)
+    }
+
+    if (Build.VERSION.SDK_INT <= 23) {
+      Locale.setDefault(Locale(lang))
     }
   }
 
