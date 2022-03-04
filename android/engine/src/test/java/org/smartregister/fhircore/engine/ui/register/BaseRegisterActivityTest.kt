@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.register
 
 import android.Manifest
+import android.accounts.Account
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -59,6 +60,7 @@ import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.NavigationOption
@@ -81,6 +83,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
+  @BindValue var tokenManagerService: TokenManagerService = mockk()
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
@@ -343,6 +346,8 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnNavigationLogoutItemClickedShouldFinishActivity() {
+    every { tokenManagerService.getActiveAccount() } returns Account("abc", "type")
+
     val logoutMenuItem = RoboMenuItem(R.id.menu_item_logout)
     testRegisterActivity.onNavigationItemSelected(logoutMenuItem)
     Assert.assertTrue(testRegisterActivity.isFinishing)

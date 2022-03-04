@@ -123,7 +123,6 @@ constructor(
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
       _showError.postValue(false)
       secureSharedPreference.saveSessionPin(newPin)
-      secureSharedPreference.savePinCredentials()
       _navigateToHome.postValue(true)
     } else {
       _showError.postValue(true)
@@ -138,7 +137,6 @@ constructor(
       showError.value = !pinMatched
       _pin.postValue(newPin)
       if (pinMatched && !isSetupPage) {
-        secureSharedPreference.saveCredentials(secureSharedPreference.retrievePinCredentials()!!)
         _navigateToHome.value = true
       }
     } else {

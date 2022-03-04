@@ -23,17 +23,23 @@ import android.accounts.AccountManager.KEY_ACCOUNT_TYPE
 import android.accounts.AccountManager.KEY_AUTHTOKEN
 import android.accounts.AccountManager.KEY_INTENT
 import android.content.Intent
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.verify
 import java.util.Locale
 import javax.inject.Inject
-import org.junit.After
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -49,8 +55,10 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
 import retrofit2.Response
 
@@ -58,18 +66,21 @@ import retrofit2.Response
 class AccountAuthenticatorTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @Inject lateinit var accountManager: AccountManager
+  var accountManager: AccountManager = mockk()
 
-  @Inject lateinit var oAuthService: OAuthService
+  var oAuthService: OAuthService = mockk()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+  @BindValue var secureSharedPreference: SecureSharedPreference = mockk()
 
-  @Inject lateinit var tokenManagerService: TokenManagerService
+  @BindValue var tokenManagerService: TokenManagerService = mockk()
 
   @Inject lateinit var sharedPreference: SharedPreferencesHelper
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private lateinit var accountAuthenticator: AccountAuthenticator
 
@@ -85,18 +96,14 @@ class AccountAuthenticatorTest : RobolectricTest() {
         AccountAuthenticator(
           context = context,
           accountManager = accountManager,
-          oAuthService = spyk(oAuthService),
+          oAuthService = oAuthService,
           configurationRegistry = configurationRegistry,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference
+          sharedPreference = sharedPreference,
+          dispatcherProvider = dispatcherProvider
         )
       )
-  }
-
-  @After
-  fun tearDown() {
-    secureSharedPreference.deleteCredentials()
   }
 
   @Test
@@ -176,6 +183,11 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testGetAuthToken() {
+    every { tokenManagerService.getLocalSessionToken() } returns null
+    every { tokenManagerService.isTokenActive(any()) } returns false
+    every { secureSharedPreference.retrieveCredentials() } returns AuthCredentials("abc", "123")
+    every { accountManager.notifyAccountAuthenticated(any()) } returns false
+
     val account = spyk(Account("newAccName", "newAccType"))
     val authToken = accountAuthenticator.getAuthToken(mockk(), account, authTokenType, bundleOf())
     val parcelable = authToken.getParcelable<Intent>(KEY_INTENT)
@@ -189,7 +201,6 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testGetAuthTokenWhenAccessTokenIsNullShouldReturnValidAccount() {
-    val tokenManagerService = mockk<TokenManagerService>()
     val emptySessionToken = null
     every { tokenManagerService.getLocalSessionToken() } returns emptySessionToken
 
@@ -206,7 +217,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference
+          sharedPreference = sharedPreference,
+          dispatcherProvider = dispatcherProvider
         )
       )
 
@@ -243,7 +255,6 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testGetAuthTokenWhenAccessTokenIsBlankAndNewTokenResponseIsNullShouldReturnValidAccountFromAuthActivity() {
-    val tokenManagerService = mockk<TokenManagerService>()
     val emptySessionToken = ""
     every { tokenManagerService.getLocalSessionToken() } returns emptySessionToken
 
@@ -260,7 +271,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference
+          sharedPreference = sharedPreference,
+          dispatcherProvider = dispatcherProvider
         )
       )
 
@@ -292,7 +304,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testGetUserInfo() {
-    every { accountAuthenticator.oAuthService.userInfo() } returns mockk()
+    every { oAuthService.userInfo() } returns mockk()
     Assert.assertNotNull(accountAuthenticator.getUserInfo())
   }
 
@@ -301,7 +313,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val callMock = mockk<Call<OAuthResponse>>()
     val mockResponse = Response.success<OAuthResponse?>(mockk())
     every { callMock.execute() } returns mockResponse
-    every { accountAuthenticator.oAuthService.fetchToken(any()) } returns callMock
+    every { oAuthService.fetchToken(any()) } returns callMock
     val token =
       accountAuthenticator.fetchToken(
         FakeModel.authCredentials.username,
@@ -319,26 +331,33 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { callMock.execute() } returns mockResponse
 
     every { accountAuthenticator.oAuthService.fetchToken(any()) } returns callMock
-    val token = accountAuthenticator.refreshToken(FakeModel.authCredentials.refreshToken)
+    val token = accountAuthenticator.refreshToken(FakeModel.authCredentials.refreshToken!!)
     Assert.assertNotNull(token)
   }
 
   @Test
   fun testGetRefreshToken() {
-    // Save credentials first; refresh token cannot be active so returns null
-    secureSharedPreference.saveCredentials(FakeModel.authCredentials)
+    every { tokenManagerService.isTokenActive(any()) } returns false
+
+    every { secureSharedPreference.retrieveCredentials() } returns null
+    Assert.assertNull(accountAuthenticator.getRefreshToken())
+
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("abc", "123", null, null)
     Assert.assertNull(accountAuthenticator.getRefreshToken())
   }
 
   @Test
   fun testHasActiveSession() {
-    // token cannot be active so returns false
+    every { tokenManagerService.getLocalSessionToken() } returns ""
     Assert.assertFalse(accountAuthenticator.hasActiveSession())
   }
 
   @Test
   fun testValidLocalCredentials() {
-    secureSharedPreference.saveCredentials(FakeModel.authCredentials)
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("demo", "51r1K4l1".toSha1())
+
     Assert.assertTrue(accountAuthenticator.validLocalCredentials("demo", "51r1K4l1".toCharArray()))
     Assert.assertFalse(
       accountAuthenticator.validLocalCredentials("WrongUsername", "51r1K4l1".toCharArray())
@@ -350,16 +369,24 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testUpdateSession() {
-    secureSharedPreference.saveCredentials(FakeModel.authCredentials)
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("abc", "123", null, null)
+    every { secureSharedPreference.saveCredentials(any()) } just runs
+
     val successResponse: OAuthResponse = mockk()
     every { successResponse.accessToken } returns "newAccessToken"
     every { successResponse.refreshToken } returns "newRefreshToken"
 
     accountAuthenticator.updateSession(successResponse)
 
-    val retrieveCredentials = secureSharedPreference.retrieveCredentials()
+    val slot = slot<AuthCredentials>()
+
+    verify { secureSharedPreference.retrieveCredentials() }
+    verify { secureSharedPreference.saveCredentials(capture(slot)) }
+
+    val retrieveCredentials = slot.captured
     Assert.assertNotNull(retrieveCredentials)
-    Assert.assertEquals(successResponse.accessToken, retrieveCredentials!!.sessionToken)
+    Assert.assertEquals(successResponse.accessToken, retrieveCredentials.sessionToken)
     Assert.assertEquals(successResponse.refreshToken, retrieveCredentials.refreshToken)
   }
 
@@ -370,5 +397,29 @@ class AccountAuthenticatorTest : RobolectricTest() {
       shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>()).nextStartedActivity
     val shadowIntent: ShadowIntent = shadowOf(startedIntent)
     Assert.assertEquals(LoginActivity::class.java, shadowIntent.intentClass)
+  }
+
+  @Test
+  fun testLogoutShouldCleanSessionAndStartLoginActivity() = runBlockingTest {
+    every { accountManager.clearPassword(any()) } just runs
+    every { tokenManagerService.isTokenActive(any()) } returns true
+    every { tokenManagerService.getActiveAccount() } returns Account("abc", "typ")
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("abc", "111", "mystoken", "myrtoken")
+    every { secureSharedPreference.deleteSessionPin() } just runs
+    every { secureSharedPreference.deleteSession() } just runs
+
+    accountAuthenticator.logout()
+
+    val startedIntent: Intent =
+      shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>()).nextStartedActivity
+    val shadowIntent: ShadowIntent = shadowOf(startedIntent)
+    Assert.assertEquals(LoginActivity::class.java, shadowIntent.intentClass)
+
+    verify { oAuthService.logout(any(), any(), any()) }
+    verify { accountManager.clearPassword(any()) }
+    verify { tokenManagerService.getActiveAccount() }
+    verify { secureSharedPreference.deleteSessionPin() }
+    verify { secureSharedPreference.deleteSession() }
   }
 }
