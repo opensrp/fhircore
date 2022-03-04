@@ -108,5 +108,6 @@
     <string name="pin_menu_login">Login</string>
     <string name="forgot_pin">Forgot pin?</string>
     <string name="please_contact_supervisor">Please contact your supervisor.</string>
+    <string name="percentage">%</string>
     <string name="logging_out">Please wait.... Logging out</string>
 </resources>

@@ -16,9 +16,10 @@
     <color name="grey_text_color">#555555</color>
     <color name="orange">#FFA500</color>
     <color name="light_gray">#d3d3d3</color>
+    <color name="light_gray_background">#E8E8E8</color>
     <color name="profile_header_background">#ECF1F7</color>
     <color name="black">#000000</color>
-    <color name="light">#E9E9E9</color>
+    <color name="light">#F2F4F7</color>
     <color name="grayText">#929496</color>
     <color name="darkGrayText">#6F7274</color>
     <color name="backgroundGray">#f2f5f6</color>

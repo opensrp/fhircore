@@ -56,10 +56,7 @@ class AppSettingActivity : AppCompatActivity() {
         lifecycleScope.launch {
           configurationRegistry.loadConfigurations(applicationId) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
-              if (appSettingViewModel.rememberApp.value == true) {
-                sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
-              }
-              accountAuthenticator.launchLoginScreen()
+              sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
               finish()
             } else {
               showToast(
@@ -77,7 +74,7 @@ class AppSettingActivity : AppCompatActivity() {
         val viewModel = this
         if (it == true && this.appId.value?.isNotBlank() == true)
           lifecycleScope.launch(dispatcherProvider.io()) {
-            viewModel.fetchConfigurations(viewModel.appId.value!!)
+            viewModel.fetchConfigurations(viewModel.appId.value!!, this@AppSettingActivity)
           }
       }
     }
@@ -86,6 +83,7 @@ class AppSettingActivity : AppCompatActivity() {
       if (it.isNotBlank()) showToast(getString(R.string.error_loading_config, it))
     }
 
+    /* will require in future enhancement
     appSettingViewModel.rememberApp.observe(
       this,
       { doRememberApp ->
@@ -100,6 +98,7 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
     )
+    */
 
     val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
     lastAppId?.let {

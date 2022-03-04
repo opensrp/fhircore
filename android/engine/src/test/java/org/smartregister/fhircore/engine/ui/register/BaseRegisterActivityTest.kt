@@ -339,7 +339,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   fun testOnNavigationLogoutItemClickedShouldFinishActivity() {
     val logoutMenuItem = RoboMenuItem(R.id.menu_item_logout)
     testRegisterActivity.onNavigationItemSelected(logoutMenuItem)
-    Assert.assertTrue(testRegisterActivity.isFinishing)
     Assert.assertFalse(
       testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
     )

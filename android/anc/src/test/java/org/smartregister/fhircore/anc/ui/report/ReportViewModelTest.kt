@@ -17,23 +17,30 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.core.util.Pair
 import androidx.lifecycle.MutableLiveData
-import ca.uhn.fhir.parser.IParser
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import io.mockk.MockKAnnotations
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.MeasureReport
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.app.fakes.FakeModel
+import org.smartregister.fhircore.anc.app.fakes.FakeModel.getUserInfo
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
@@ -41,37 +48,46 @@ import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper.Companion.MEASURE_RESOURCES_LOADED
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 @ExperimentalCoroutinesApi
-internal class ReportViewModelTest {
+@HiltAndroidTest
+internal class ReportViewModelTest : RobolectricTest() {
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 2) val coroutinesTestRule = CoroutineTestRule()
+
+  @get:Rule(order = 3) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   private lateinit var fhirEngine: FhirEngine
   private lateinit var reportRepository: ReportRepository
   private lateinit var ancPatientRepository: PatientRepository
   private lateinit var reportViewModel: ReportViewModel
-  @MockK lateinit var parser: IParser
-  @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
-  @MockK lateinit var resource: Resource
-  @MockK lateinit var entryList: List<Bundle.BundleEntryComponent>
-  @MockK lateinit var bundle: Bundle
-
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
   private val testReportItem = ReportItem(title = "TestReportItem")
-  private val patientSelectionType = MutableLiveData("All")
   private val selectedPatient =
     MutableLiveData(PatientItem(patientIdentifier = "Select Patient", name = "Select Patient"))
-  private val isChangingStartDate = MutableLiveData(true)
-  private val isChangingEndDate = MutableLiveData(true)
   private val resultForIndividual =
     MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
   private val resultForPopulation =
     MutableLiveData(listOf(ResultItemPopulation(title = "resultForPopulation")))
+  private val fhirOperatorDecorator = mockk<FhirOperatorDecorator>()
 
   @Before
   fun setUp() {
-    MockKAnnotations.init(this, relaxUnitFun = true)
+    hiltRule.inject()
+
+    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, "") } returns
+      getUserInfo().encodeJson()
+    every { sharedPreferencesHelper.read(MEASURE_RESOURCES_LOADED, "") } returns ""
+    every { sharedPreferencesHelper.write(MEASURE_RESOURCES_LOADED, "") } returns Unit
 
     fhirEngine = mockk(relaxed = true)
     reportRepository = mockk()
@@ -79,18 +95,26 @@ internal class ReportViewModelTest {
     reportViewModel =
       spyk(
         ReportViewModel(
-          reportRepository,
-          coroutinesTestRule.testDispatcherProvider,
-          ancPatientRepository
+          repository = reportRepository,
+          dispatcher = coroutinesTestRule.testDispatcherProvider,
+          patientRepository = ancPatientRepository,
+          fhirEngine = fhirEngine,
+          fhirOperatorDecorator = fhirOperatorDecorator,
+          sharedPreferencesHelper = sharedPreferencesHelper
         )
       )
-    every { reportViewModel.patientSelectionType } returns
-      this@ReportViewModelTest.patientSelectionType
+    every { reportViewModel.startDate } returns MutableLiveData("25 Nov, 2021")
+    every { reportViewModel.endDate } returns MutableLiveData("10 Dec, 2021")
     every { reportViewModel.resultForIndividual } returns
       this@ReportViewModelTest.resultForIndividual
     every { reportViewModel.resultForPopulation } returns
       this@ReportViewModelTest.resultForPopulation
     every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
+  }
+
+  @After
+  fun tearDown() {
+    reportViewModel
   }
 
   @Test
@@ -100,127 +124,29 @@ internal class ReportViewModelTest {
   }
 
   @Test
-  fun testFetchCqlLibraryData() {
-    val auxCQLLibraryData = "Library JSON"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { bundle.entry } returns entryList
-      coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCQLLibraryData
-    }
-    val libraryDataLiveData: String =
-      reportViewModel.fetchCqlLibraryData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCQLLibraryData, libraryDataLiveData)
-  }
-
-  @Test
-  fun testFetchCqlFhirHelperData() {
-    val auxCqlHelperData = "Helper JSON"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { bundle.entry } returns entryList
-      coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCqlHelperData
-    }
-    val libraryDataLiveData: String =
-      reportViewModel.fetchCqlFhirHelperData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCqlHelperData, libraryDataLiveData)
-  }
-
-  @Test
-  fun testFetchCqlValueSetData() {
-    val auxCqlValueSetData = "ValueSet JSON"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { parser.encodeResourceToString(bundle) } returns auxCqlValueSetData
-    }
-    val libraryDataLiveData: String =
-      reportViewModel.fetchCqlValueSetData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCqlValueSetData, libraryDataLiveData)
-  }
-
-  @Test
-  fun testFetchCqlPatientData() {
-    val auxCqlValueSetData = "Patient Data JSON"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { parser.encodeResourceToString(bundle) } returns auxCqlValueSetData
-    }
-    val libraryDataLiveData: String =
-      reportViewModel.fetchCqlPatientData(parser, fhirResourceDataSource, "1").value!!
-    Assert.assertEquals(auxCqlValueSetData, libraryDataLiveData)
-  }
-
-  @Test
-  fun testFetchCqlMeasureEvaluateLibraryAndValueSets() {
-    val auxCqlLibraryAndValueSetData = "{\"parameters\":\"parameters\"}"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { bundle.entry } returns entryList
-      coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCqlLibraryAndValueSetData
-    }
-    val libraryDataLiveData: String =
-      reportViewModel.fetchCqlMeasureEvaluateLibraryAndValueSets(
-          parser,
-          fhirResourceDataSource,
-          "https://hapi.fhir.org/baseR4/Library?_id=ANCDataElements,WHOCommon,ANCConcepts,ANCContactDataElements,FHIRHelpers,ANCStratifiers,ANCIND01,ANCCommon,ANCBaseDataElements,FHIRCommon,ANCBaseConcepts",
-          "https://hapi.fhir.org/baseR4/Measure?_id=ANCIND01",
-          ""
-        )
-        .value!!
-    Assert.assertNotNull(libraryDataLiveData)
-  }
-
-  @Test
-  fun testShouldVerifyStartDatePressListener() {
-    reportViewModel.onStartDatePress()
-    Assert.assertEquals(true, reportViewModel.isChangingStartDate.value)
+  fun testShouldVerifyChangeDatePickerPressListener() {
+    reportViewModel.onDateRangeClick()
     Assert.assertEquals(true, reportViewModel.showDatePicker.value)
-  }
-
-  @Test
-  fun testShouldVerifyEndDatePressListener() {
-    reportViewModel.onEndDatePress()
-    Assert.assertEquals(true, reportViewModel.showDatePicker.value)
-    Assert.assertEquals(false, reportViewModel.isChangingStartDate.value)
   }
 
   @Test
   fun testShouldVerifyBackFromFilterClickListener() {
-    reportViewModel.onBackPressFromFilter()
-    Assert.assertEquals(
-      ReportViewModel.ReportScreen.HOME,
-      reportViewModel.reportState.currentScreen
-    )
+    reportViewModel.onBackPress(ReportViewModel.ReportScreen.FILTER)
+    Assert.assertEquals(ReportViewModel.ReportScreen.FILTER, reportViewModel.currentScreen)
   }
 
   @Test
   fun testShouldVerifyBackFromPatientSelection() {
-    reportViewModel.onBackPressFromPatientSearch()
-    Assert.assertEquals(
-      ReportViewModel.ReportScreen.FILTER,
-      reportViewModel.reportState.currentScreen
-    )
+    reportViewModel.onBackPress(ReportViewModel.ReportScreen.PICK_PATIENT)
+    Assert.assertEquals(ReportViewModel.ReportScreen.PICK_PATIENT, reportViewModel.currentScreen)
+    verify { reportViewModel.resetValues() }
   }
 
   @Test
   fun testShouldVerifyBackFromResultClickListener() {
-    reportViewModel.onBackPressFromResult()
-    Assert.assertEquals(
-      ReportViewModel.ReportScreen.FILTER,
-      reportViewModel.reportState.currentScreen
-    )
-  }
-
-  @Test
-  fun testGetSelectionDate() {
-    Assert.assertNotNull(reportViewModel.getSelectionDate())
-  }
-
-  @Test
-  fun testLoadDummyResultData() {
-    Assert.assertNotNull(reportViewModel.loadDummyResultForPopulation())
+    reportViewModel.onBackPress(ReportViewModel.ReportScreen.RESULT)
+    Assert.assertEquals(ReportViewModel.ReportScreen.RESULT, reportViewModel.currentScreen)
+    verify { reportViewModel.resetValues() }
   }
 
   @Test
@@ -228,26 +154,20 @@ internal class ReportViewModelTest {
     val expectedReportItem = testReportItem
     reportViewModel.onReportMeasureItemClicked(testReportItem)
     Assert.assertEquals(expectedReportItem, reportViewModel.selectedMeasureReportItem.value)
-    Assert.assertEquals(
-      ReportViewModel.ReportScreen.FILTER,
-      reportViewModel.reportState.currentScreen
-    )
+    Assert.assertEquals(ReportViewModel.ReportScreen.FILTER, reportViewModel.currentScreen)
   }
 
   @Test
   fun testShouldVerifyPatientSelectionChanged() {
-    val expectedSelection = ReportViewModel.PatientSelectionType.ALL
-    reportViewModel.onPatientSelectionTypeChanged("All")
-    Assert.assertEquals(expectedSelection, reportViewModel.patientSelectionType.value)
+    val reportType = "All"
+    reportViewModel.onReportTypeSelected(reportType, true)
+    Assert.assertEquals(reportType, reportViewModel.currentReportType.value)
   }
 
   @Test
   fun testShouldVerifyGenerateReportClickListener() {
-    reportViewModel.onGenerateReportPress()
-    Assert.assertEquals(
-      ReportViewModel.ReportScreen.RESULT,
-      reportViewModel.reportState.currentScreen
-    )
+    reportViewModel.onGenerateReportClicked()
+    Assert.assertTrue(reportViewModel.onGenerateReportClicked.value!!)
   }
 
   @Test
@@ -258,23 +178,11 @@ internal class ReportViewModelTest {
     val expectedStartDate = "25 Nov, 2021"
     val expectedEndDate = "10 Dec, 2021"
 
-    every { reportViewModel.isChangingStartDate } returns
-      this@ReportViewModelTest.isChangingStartDate
-    every { reportViewModel.startDate.value } returns "25 Nov, 2021"
-    every { reportViewModel.endDate.value } returns "10 Dec, 2021"
-
-    reportViewModel.onDatePicked(1637798400000)
+    reportViewModel.currentReportType.value = "All"
+    reportViewModel.setDateRange(Pair(1637798400000L, 1639094400000))
     Assert.assertEquals(expectedStartDate, reportViewModel.startDate.value)
-
-    every { reportViewModel.isChangingStartDate } returns this@ReportViewModelTest.isChangingEndDate
-    reportViewModel.onDatePicked(1639094400000)
     Assert.assertEquals(expectedEndDate, reportViewModel.endDate.value)
-
-    Assert.assertEquals(true, reportViewModel.isReadyToGenerateReport.value)
-    Assert.assertEquals(
-      ReportViewModel.ReportScreen.FILTER,
-      reportViewModel.reportState.currentScreen
-    )
+    Assert.assertEquals(true, reportViewModel.generateReport.value)
   }
 
   @Test
@@ -291,22 +199,115 @@ internal class ReportViewModelTest {
 
   @Test
   fun testGetSelectedPatient() {
+    reportViewModel.updateSelectedPatient(PatientItem())
     Assert.assertNotNull(reportViewModel.getSelectedPatient().value)
   }
 
   @Test
-  fun auxGenerateReportTest() {
-    every { reportViewModel.selectedPatientItem.value } returns null
-    reportViewModel.onPatientSelectionTypeChanged("All")
-    reportViewModel.auxGenerateReport()
-    Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
+  fun testEvaluateMeasureForIndividual() {
+    coEvery { fhirOperatorDecorator.loadLib(any()) } just runs
+    coEvery { fhirEngine.save(any()) } returns Unit
+
+    reportViewModel.evaluateMeasure(
+      context = ApplicationProvider.getApplicationContext(),
+      measureUrl = "measure/ancInd03",
+      individualEvaluation = true,
+      measureResourceBundleUrl = "measure/ancInd03"
+    )
+  }
+
+  @Test
+  fun testEvaluateMeasureForPopulation() {
+    every {
+      fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
+    } returns FakeModel.getMeasureReport(typeMR = MeasureReport.MeasureReportType.SUBJECTLIST)
+    reportViewModel.evaluateMeasure(
+      context = ApplicationProvider.getApplicationContext(),
+      measureUrl = "measure/ancInd03",
+      individualEvaluation = false,
+      measureResourceBundleUrl = "measure/ancInd03"
+    )
+    Assert.assertNotNull(reportViewModel.startDate.value)
+    Assert.assertNotNull(reportViewModel.endDate.value)
+    val result =
+      fhirOperatorDecorator.evaluateMeasure(
+        "url",
+        "start",
+        "end",
+        "report_type",
+        "subject",
+        "practitioner"
+      )
+    Assert.assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, result.status)
+    Assert.assertEquals(MeasureReport.MeasureReportType.SUBJECTLIST, result.type)
+    Assert.assertNotNull(reportViewModel.resultForPopulation.value)
+    Assert.assertNotNull(reportViewModel.showProgressIndicator.value)
+    Assert.assertNotNull(
+      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
+    )
+    Assert.assertNotNull(reportViewModel.currentScreen)
+  }
+
+  @Test
+  fun testFormatPopulationMeasureReport() {
+    val listOfResult =
+      reportViewModel.formatPopulationMeasureReport(
+        FakeModel.getMeasureReport(typeMR = MeasureReport.MeasureReportType.INDIVIDUAL)
+      )
+    Assert.assertNotNull(listOfResult)
+    Assert.assertEquals(1, listOfResult.size)
+  }
+
+  @Test
+  fun testFormatPopulationMeasureReportEmptyCoding() {
+    val listOfResult =
+      reportViewModel.formatPopulationMeasureReport(FakeModel.getMeasureReportWithoutValue())
+    Assert.assertNotNull(listOfResult)
+    Assert.assertEquals(1, listOfResult.size)
+  }
+
+  @Test
+  fun testFormatPopulationMeasureReportWithText() {
+    val listOfResult =
+      reportViewModel.formatPopulationMeasureReport(FakeModel.getMeasureReportWithText())
+    Assert.assertNotNull(listOfResult)
+    Assert.assertEquals(1, listOfResult.size)
   }
 
   @Test
   fun auxGenerateReportTestForIndividual() {
     every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
-    reportViewModel.onPatientSelectionTypeChanged("test-patient-id")
-    reportViewModel.auxGenerateReport()
-    Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
+    reportViewModel.onReportTypeSelected("Individual", true)
+    Assert.assertEquals(ReportViewModel.ReportScreen.PICK_PATIENT, reportViewModel.currentScreen)
+    Assert.assertNotNull(reportViewModel.filterValue.value)
+  }
+
+  @Ignore("should work but")
+  @Test
+  fun testStringReplaceDashed() {
+    val testString: String = "hel-lo"
+    val resultString = "" // testString.replaceDashes()
+    val expectedString = "HELLO"
+    Assert.assertEquals(expectedString, resultString)
+  }
+
+  @Test
+  fun testOnReportTypeSelected() {
+    reportViewModel.onReportTypeSelected("ancInd01", true)
+    Assert.assertNotNull(reportViewModel.filterValue.value)
+    Assert.assertEquals(reportViewModel.currentScreen, ReportViewModel.ReportScreen.PICK_PATIENT)
+    Assert.assertNotNull(reportViewModel.generateReport.value)
+  }
+
+  @Test
+  fun testOnReportTypeSelectedWithoutLaunchPateint() {
+    reportViewModel.onReportTypeSelected("ancInd01", false)
+    Assert.assertNotNull(reportViewModel.generateReport.value)
+  }
+
+  @Test
+  fun testResetValues() {
+    reportViewModel.resetValues()
+    Assert.assertEquals("", reportViewModel.currentReportType.value)
   }
 }

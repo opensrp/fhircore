@@ -124,7 +124,7 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
+  fun testOnBottomOptionSelectedShouldLaunchUserProfileFragment() {
     familyRegisterActivity.onBottomNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = "menu_item_profile".hashCode() },
       familyRegisterActivity.registerViewModel.registerViewConfiguration.value!!
@@ -141,11 +141,50 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
+    familyRegisterActivity.onNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_profile".hashCode() }
+    )
+    // switched to user profile fragment
+
+    assertEquals(
+      View.VISIBLE,
+      familyRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility
+    )
+  }
+
+  @Test
+  fun testOnSettingMenuOptionSelectedShouldLaunchReportScreen() {
+    familyRegisterActivity.onNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = "menu_item_reports".hashCode() }
+    )
+    familyRegisterActivity.navigateToReports()
+    // switched to report screen
+    val expectedIntent = Intent(familyRegisterActivity, ReportHomeActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+        .nextStartedActivity
+    assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
   fun testOnBottomNavigationOptionItemSelectedShouldLaunchReportHomeActivity() {
     familyRegisterActivity.onBottomNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = "menu_item_reports".hashCode() },
       familyRegisterActivity.registerViewModel.registerViewConfiguration.value!!
     )
+
+    val expectedIntent = Intent(familyRegisterActivity, ReportHomeActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+        .nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testNavigateToReports() {
+    familyRegisterActivity.navigateToReports()
 
     val expectedIntent = Intent(familyRegisterActivity, ReportHomeActivity::class.java)
     val actualIntent =
