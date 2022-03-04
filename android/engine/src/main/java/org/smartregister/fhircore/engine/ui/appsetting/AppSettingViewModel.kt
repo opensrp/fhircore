@@ -16,12 +16,14 @@
 
 package org.smartregister.fhircore.engine.ui.appsetting
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -64,14 +66,15 @@ constructor(
     this.fetchConfigs.postValue(fetchConfigs)
   }
 
-  suspend fun fetchConfigurations(appId: String) {
+  suspend fun fetchConfigurations(appId: String, context: Context) {
     kotlin
       .runCatching {
         val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
         val data =
           fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
             if (!it.hasResource()) {
-              error.postValue("Unable to fetch configuration on path $cPath")
+              Timber.w("Empty data on path $cPath")
+              error.postValue(context.getString(R.string.application_not_supported, appId))
               return
             }
           }

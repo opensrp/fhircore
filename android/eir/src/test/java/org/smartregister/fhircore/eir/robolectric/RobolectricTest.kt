@@ -58,14 +58,8 @@ abstract class RobolectricTest {
 
   companion object {
     val ASSET_BASE_PATH =
-      (System.getProperty("user.dir") +
-        File.separator +
-        "src" +
-        File.separator +
-        "test" +
-        File.separator +
-        "resources" +
-        File.separator)
+      listOf(System.getProperty("user.dir"), "src", "test", "resources")
+        .joinToString(File.separator)
 
     fun String.readFile(): String {
       val file = File("$ASSET_BASE_PATH/$this")
