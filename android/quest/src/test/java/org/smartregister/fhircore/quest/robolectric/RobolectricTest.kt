@@ -80,14 +80,6 @@ abstract class RobolectricTest {
     return data[0] as T?
   }
 
-  fun String.readFile(): String {
-    val file = File("$ASSET_BASE_PATH/$this")
-    val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
-    return String(charArray)
-  }
-
-  fun String.readDir(): List<File> = File("$ASSET_BASE_PATH/$this").listFiles().toList()
-
   fun String.readFileToBase64Encoded(): String {
     return Base64.getEncoder().encodeToString(this.readFile().toByteArray())
   }
@@ -176,6 +168,14 @@ abstract class RobolectricTest {
         File.separator +
         "resources" +
         File.separator)
+
+    fun String.readFile(): String {
+      val file = File("$ASSET_BASE_PATH/$this")
+      val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
+      return String(charArray)
+    }
+
+    fun String.readDir(): List<File> = File("$ASSET_BASE_PATH/$this").listFiles().toList()
 
     @JvmStatic
     @BeforeClass

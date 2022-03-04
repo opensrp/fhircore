@@ -69,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Fixed app crash when wrong appId is provided
 - Engine | Fixed login error message
 - Engine | Fixed redirect after logout when press back button
+- Engine | Fixed MLS in forms for Android 6(API 23) and below
 
 ### Changed
 - EIR | Updated overdue trigger flow for Vaccine Due date

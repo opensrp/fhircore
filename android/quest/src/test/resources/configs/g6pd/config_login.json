@@ -1,0 +1,9 @@
+{
+  "appId": "g6pd",
+  "classification": "login",
+  "applicationName": "G6PD Test Reader",
+  "applicationVersion": "0.0.1",
+  "darkMode": false,
+  "showLogo": true,
+  "enablePin": false
+}

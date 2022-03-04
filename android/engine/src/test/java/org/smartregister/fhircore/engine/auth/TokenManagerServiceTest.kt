@@ -33,7 +33,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
@@ -46,7 +46,7 @@ class TokenManagerServiceTest : RobolectricTest() {
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var configService: ConfigService
 
   private lateinit var tokenManagerService: TokenManagerService
 
@@ -60,7 +60,7 @@ class TokenManagerServiceTest : RobolectricTest() {
         TokenManagerService(
           context = context,
           accountManager = accountManager,
-          configurationRegistry = configurationRegistry,
+          configService = configService,
           secureSharedPreference = secureSharedPreference
         )
       )
@@ -98,13 +98,13 @@ class TokenManagerServiceTest : RobolectricTest() {
   fun testGetActiveAccount() {
     secureSharedPreference.saveCredentials(authCredentials)
     accountManager.addAccountExplicitly(
-      Account(authCredentials.username, configurationRegistry.authConfiguration.accountType),
+      Account(authCredentials.username, configService.provideAuthConfiguration().accountType),
       authCredentials.password,
       bundleOf()
     )
     val activeAccount = tokenManagerService.getActiveAccount()
     Assert.assertNotNull(activeAccount)
     Assert.assertEquals(authCredentials.username, activeAccount!!.name)
-    Assert.assertEquals(configurationRegistry.authConfiguration.accountType, activeAccount.type)
+    Assert.assertEquals(configService.provideAuthConfiguration().accountType, activeAccount.type)
   }
 }
