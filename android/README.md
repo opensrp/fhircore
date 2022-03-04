@@ -26,12 +26,12 @@ In order for the `assembleRelease` and/or `bundleRelease` Gradle task to work e.
 
 To generate your own release keystore you can use the `keytool` utility (installed as part of the java runtime) by running the the command:
 
-`keytool -genkey -v -keystore <my_release_key.keystore> -alias <my_alias_name> -keyalg RSA -keysize 4096 -validity 1000`
+`keytool -genkey -v -keystore fhircore.keystore.jks -alias <my_alias_name> -keyalg RSA -keysize 4096 -validity 1000`
 
-Place the Keystore file in your _user(home)_ directory i.e. `/Users/username/<my_release_key.keystore>`
+Place the Keystore file in your _user(home)_ directory i.e. `/Users/username/fhircore.keystore.jks` or `~/fhircore.keystore.jks`
 
 You then need to create the following _System variables_ and set the corresponding values `KEYSTORE_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`
-**Note:** The values used in generating the keystore will be the values assigned to the system properties above.
+**Note:** The values used in generating the keystore will be the values assigned to the system properties above. Also note, if your platform doesn't prompt you for a second password when generating the Keystore (e.g. of type PKCS12) then the KEYSTORE_PASSWORD and KEY_PASSWORD values will be the same.
 
 - For more on the `keytool` utility see: [Java Key and Certificate Management Tool](https://docs.oracle.com/javase/6/docs/technotes/tools/windows/keytool.html)
 - For more on signing your application see: [Signing your Android app](https://developer.android.com/studio/publish/app-signing)

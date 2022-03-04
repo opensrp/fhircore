@@ -50,7 +50,7 @@ android {
             keyAlias System.getProperty("KEYSTORE_ALIAS")
             keyPassword System.getProperty("KEY_PASSWORD")
             storePassword System.getProperty("KEYSTORE_PASSWORD")
-            storeFile file(System.getProperty("user.home") + "/keystore.jks")
+            storeFile file(System.getProperty("user.home") + "/fhircore.keystore.jks")
         }
     }
 
