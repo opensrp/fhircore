@@ -30,7 +30,7 @@ data class TestDetailsNavigationAction(val form: String, val readOnly: Boolean) 
 @Stable
 @Serializable
 data class ResultDetailsNavigationConfiguration(
-  override val appId: String,
-  override val classification: String,
-  val navigationOptions: List<NavigationOption>
+  override val appId: String = "",
+  override val classification: String = "",
+  val navigationOptions: List<NavigationOption> = listOf()
 ) : Configuration

@@ -16,13 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.test.runBlockingTest
@@ -41,7 +39,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
@@ -67,13 +65,8 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
 
   @Test
   fun testLoadData() = runBlockingTest {
-    val config =
-      ConfigurationRegistry(ApplicationProvider.getApplicationContext(), mockk(), mockk()).apply {
-        appId = "g6pd"
-      }
-    config.loadAppConfigurations("g6pd", mockk(relaxed = true), {})
-
-    every { patientRepository.configurationRegistry } returns config
+    coEvery { patientRepository.configurationRegistry } returns
+      Faker.buildTestConfigurationRegistry("g6pd", mockk())
     coEvery { patientRepository.loadEncounter(any()) } returns
       Encounter().apply { id = encounterId }
 
