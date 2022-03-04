@@ -49,18 +49,20 @@ class LoginActivity :
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
     loginViewModel.apply {
-      navigateToHome.observe(
-        this@LoginActivity,
-        {
-          syncBroadcaster.runSync()
-          if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
-            loginService.navigateToPinLogin(goForSetup = true)
-          } else {
+      navigateToHome.observe(this@LoginActivity) {
+        if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
+          val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
+          if (lastPinExist) {
+            loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
             loginService.navigateToHome()
+          } else {
+            loginService.navigateToPinLogin(goForSetup = true)
           }
+        } else {
+          loginService.navigateToHome()
         }
-      )
-      launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
+      }
+      launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
       appLogoResourceFile = getApplicationConfiguration().appLogoIconResourceFile
     }
 
@@ -87,6 +89,19 @@ class LoginActivity :
 
   override fun configureViews(viewConfiguration: LoginViewConfiguration) {
     loginViewModel.updateViewConfigurations(viewConfiguration)
+  }
+
+  private fun moveToLoginViaUsername() {
+    startActivity(
+      Intent(this, LoginActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addCategory(Intent.CATEGORY_LAUNCHER)
+      }
+    )
+    finish()
   }
 
   private fun launchDialPad(phone: String) {
