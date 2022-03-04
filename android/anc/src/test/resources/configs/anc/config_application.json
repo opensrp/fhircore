@@ -1,0 +1,8 @@
+{
+  "appId": "anc",
+  "classification": "application",
+  "theme": "AppTheme",
+  "languages": ["en", "sw"],
+  "applicationName": "Anc",
+  "appLogoIconResourceFile": "ic_liberia"
+}

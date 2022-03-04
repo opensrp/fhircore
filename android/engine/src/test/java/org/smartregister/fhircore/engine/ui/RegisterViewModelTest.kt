@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -31,8 +32,10 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.register.RegisterViewModel
@@ -48,26 +51,32 @@ class RegisterViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue var defaultRepository: DefaultRepository = mockk()
+
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry(defaultRepository)
+
+  @Inject lateinit var configService: ConfigService
 
   private lateinit var viewModel: RegisterViewModel
 
   @Before
-  fun setUp() {
+  fun setUp() = runBlockingTest {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
+
     val fhirEngine = spyk<FhirEngine>()
     coEvery { fhirEngine.load(Patient::class.java, "barcodeId") } returns Patient()
+
     viewModel =
       RegisterViewModel(
         fhirEngine = fhirEngine,
         syncJob = mockk(),
         fhirResourceDataSource = mockk(),
         configurationRegistry = configurationRegistry,
+        configService = configService,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper
       )
