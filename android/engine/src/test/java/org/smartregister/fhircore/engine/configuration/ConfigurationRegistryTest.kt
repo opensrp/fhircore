@@ -112,6 +112,19 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  fun testRetrieveConfigurationWithNoEntryShouldReturnNewConfiguration() {
+    configurationRegistry.appId = "testApp"
+
+    Assert.assertTrue(configurationRegistry.workflowPointsMap.isEmpty())
+    Assert.assertTrue(configurationRegistry.configurationsMap.isEmpty())
+
+    val retrievedConfiguration =
+      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
+
+    Assert.assertNotNull(retrievedConfiguration)
+  }
+
+  @Test
   fun testLoadConfigurationRegistry() {
     Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
 
