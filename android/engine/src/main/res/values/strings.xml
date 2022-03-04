@@ -49,6 +49,7 @@
     <string name="syncing_in_progress">Sync in progress</string>
     <string name="loading">Loading</string>
     <string name="error_contacting_server">Error contacting server. Error code %1$s</string>
+    <string name="error_loading_config">Error loading configuration. Details: %1$s</string>
     <string name="error_loading_form">Error loading form</string>
     <string name="error_saving_form">Error encountered cannot save form</string>
     <string name="form_progress_message">Processing data. Please wait</string>
@@ -108,4 +109,6 @@
     <string name="pin_menu_login">Login</string>
     <string name="forgot_pin">Forgot pin?</string>
     <string name="please_contact_supervisor">Please contact your supervisor.</string>
+    <string name="percentage">%</string>
+    <string name="logging_out">Please wait.... Logging out</string>
 </resources>

@@ -37,7 +37,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
@@ -57,7 +57,7 @@ constructor(
   @ApplicationContext val context: Context,
   val accountManager: AccountManager,
   val oAuthService: OAuthService,
-  val configurationRegistry: ConfigurationRegistry,
+  val configService: ConfigService,
   val secureSharedPreference: SecureSharedPreference,
   val tokenManagerService: TokenManagerService,
   val sharedPreference: SharedPreferencesHelper,
@@ -322,7 +322,7 @@ constructor(
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         addCategory(Intent.CATEGORY_LAUNCHER)
       }
     )
@@ -330,13 +330,13 @@ constructor(
 
   fun getLoginActivityClass(): Class<*> = LoginActivity::class.java
 
-  fun getAccountType(): String = configurationRegistry.authConfiguration.accountType
+  fun getAccountType(): String = configService.provideAuthConfiguration().accountType
 
-  fun clientSecret(): String = configurationRegistry.authConfiguration.clientSecret
+  fun clientSecret(): String = configService.provideAuthConfiguration().clientSecret
 
-  fun clientId(): String = configurationRegistry.authConfiguration.clientId
+  fun clientId(): String = configService.provideAuthConfiguration().clientId
 
-  fun providerScope(): String = configurationRegistry.authConfiguration.scope
+  fun providerScope(): String = configService.provideAuthConfiguration().scope
 
   companion object {
     const val AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE"

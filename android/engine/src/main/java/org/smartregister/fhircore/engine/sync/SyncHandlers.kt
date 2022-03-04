@@ -24,7 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -46,7 +46,7 @@ interface OnSyncListener {
  */
 class SyncBroadcaster(
   val fhirResourceDataSource: FhirResourceDataSource,
-  val configurationRegistry: ConfigurationRegistry,
+  val configService: ConfigService,
   val syncJob: SyncJob,
   val fhirEngine: FhirEngine,
   val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow(),
@@ -58,7 +58,7 @@ class SyncBroadcaster(
         syncJob.run(
           fhirEngine = fhirEngine,
           dataSource = fhirResourceDataSource,
-          resourceSyncParams = configurationRegistry.configService.resourceSyncParams,
+          resourceSyncParams = configService.resourceSyncParams,
           subscribeTo = sharedSyncStatus
         )
       } catch (exception: Exception) {

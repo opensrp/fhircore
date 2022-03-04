@@ -1,0 +1,115 @@
+{
+  "resourceType": "Composition",
+  "id": "63012",
+  "status": "final",
+  "date": "2022-02-08",
+  "type": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "1156600005",
+        "display": "Device setting parameter"
+      }
+    ]
+  },
+  "identifier": {
+    "use": "official",
+    "value": "g6pd"
+  },
+  "title": "Device configurations",
+  "confidentiality": "L",
+  "custodian": {
+    "reference": "Organization/361",
+    "display": "G6PD"
+  },
+  "section": [
+    {
+      "title": "App configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/62939",
+        "identifier": { "value": "application" }
+      }
+    },
+    {
+      "title": "Login configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/62941",
+        "identifier": { "value": "login" }
+      }
+    },
+    {
+      "title": "Patient Register configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/62953",
+        "identifier": { "value": "patient_register" }
+      }
+    },
+    {
+      "title": "Patient Register Row configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/63002",
+        "identifier": { "value": "patient_register_row" }
+      }
+    },
+    {
+      "title": "Register Navigation configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/63008",
+        "identifier": { "value": "register_navigation" }
+      }
+    },
+    {
+      "title": "Patient Details View configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/63009",
+        "identifier": { "value": "patient_details_view" }
+      }
+    },
+    {
+      "title": "Control Test Details View configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/63010",
+        "identifier": { "value": "control_test_details_view" }
+      }
+    },
+    {
+      "title": "Pin View configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/63004",
+        "identifier": { "value": "pin" }
+      }
+    },
+    {
+      "title": "Test Result Detail View configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/63005",
+        "identifier": { "value": "test_result_detail_view" }
+      }
+    },
+    {
+      "title": "Result Details Navigation configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/63006",
+        "identifier": { "value": "result_details_navigation" }
+      }
+    },
+    {
+      "title": "Sync configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/56181",
+        "identifier": { "value": "sync" }
+      }
+    }
+  ]
+}

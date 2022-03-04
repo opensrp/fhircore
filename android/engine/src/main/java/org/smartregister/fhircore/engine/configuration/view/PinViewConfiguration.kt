@@ -24,7 +24,7 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Serializable
 class PinViewConfiguration(
   override val appId: String = "",
-  override val classification: String,
+  override val classification: String = "",
   var applicationName: String = "",
   var appLogoIconResourceFile: String = "",
   var enablePin: Boolean = false,

@@ -30,13 +30,15 @@ class ReportItemTest : RobolectricTest() {
       Assert.assertEquals("", title)
       Assert.assertEquals("", description)
       Assert.assertEquals("", reportType)
+      Assert.assertEquals("", name)
     }
 
-    with(ReportItem("1", "Title", "Description", "Report Type")) {
+    with(ReportItem("1", "Title", "Description", "Report Type", "name")) {
       Assert.assertEquals("1", id)
       Assert.assertEquals("Title", title)
       Assert.assertEquals("Description", description)
       Assert.assertEquals("Report Type", reportType)
+      Assert.assertEquals("name", name)
     }
   }
 }
