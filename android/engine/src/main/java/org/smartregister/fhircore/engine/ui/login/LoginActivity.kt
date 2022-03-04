@@ -91,19 +91,6 @@ class LoginActivity :
     loginViewModel.updateViewConfigurations(viewConfiguration)
   }
 
-  private fun moveToLoginViaUsername() {
-    startActivity(
-      Intent(this, LoginActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        addCategory(Intent.CATEGORY_LAUNCHER)
-      }
-    )
-    finish()
-  }
-
   private fun launchDialPad(phone: String) {
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
