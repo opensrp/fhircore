@@ -28,10 +28,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.runs
 import io.mockk.unmockkObject
 import javax.inject.Inject
 import org.junit.After
@@ -46,12 +44,13 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.app.fakes.Faker
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -62,7 +61,10 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("anc", mockk())
+  @Inject lateinit var jsonSpecificationProvider: AncJsonSpecificationProvider
 
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
 
@@ -73,17 +75,10 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   fun setUp() {
     mockkObject(Sync)
 
-    val accountAuthenticator = mockk<AccountAuthenticator>()
-    every { accountAuthenticator.launchLoginScreen() } just runs
-
     hiltRule.inject()
 
     every { sharedPreferencesHelper.read(any(), any<String>()) } returns "1234"
 
-    configurationRegistry.loadAppConfigurations(
-      appId = "anc",
-      accountAuthenticator = accountAuthenticator
-    ) {}
     familyRegisterActivity =
       Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().get()
   }

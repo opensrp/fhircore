@@ -31,6 +31,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.register.model.Language
@@ -52,6 +53,7 @@ constructor(
   val syncJob: SyncJob,
   val fhirResourceDataSource: FhirResourceDataSource,
   val configurationRegistry: ConfigurationRegistry,
+  val configService: ConfigService,
   val dispatcher: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel() {

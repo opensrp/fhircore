@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.engine.configuration
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Resource
 
 @Serializable
 data class ApplicationWorkflow(
@@ -28,7 +30,7 @@ data class ApplicationWorkflow(
 @Serializable
 data class WorkflowPoint(
   val workflowPoint: String,
-  val resource: String,
+  @Contextual val resource: Resource,
   val classification: String,
   val description: String
 )

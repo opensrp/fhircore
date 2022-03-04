@@ -1,0 +1,9 @@
+{
+  "appId": "ecbis",
+  "classification": "login",
+  "applicationName": "eCBIS",
+  "applicationVersion": "0.0.1",
+  "darkMode": false,
+  "showLogo": true,
+  "enablePin": true
+}

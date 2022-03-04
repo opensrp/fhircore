@@ -23,9 +23,9 @@ interface NavigationAction
 
 @Serializable
 class NavigationConfiguration(
-  override val appId: String,
-  override val classification: String,
-  val navigationOptions: List<NavigationOption>
+  override val appId: String = "",
+  override val classification: String = "",
+  val navigationOptions: List<NavigationOption> = listOf()
 ) : Configuration
 
 @Serializable
