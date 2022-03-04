@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.appsetting
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -30,8 +31,9 @@ import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class AppSettingViewModelTest {
+class AppSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -73,7 +75,7 @@ class AppSettingViewModelTest {
       }
     coEvery { appSettingViewModel.defaultRepository.save(any()) } just runs
 
-    appSettingViewModel.fetchConfigurations("appId")
+    appSettingViewModel.fetchConfigurations("appId", ApplicationProvider.getApplicationContext())
 
     coVerify { appSettingViewModel.fhirResourceDataSource.loadData(any()) }
     coVerify { appSettingViewModel.defaultRepository.save(any()) }
