@@ -25,8 +25,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
-  override var appId: String,
-  override val classification: String,
+  override var appId: String = "",
+  override val classification: String = "",
   var appTitle: String = "",
   var filterText: String = "",
   var searchBarHint: String = "",

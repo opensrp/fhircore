@@ -79,6 +79,7 @@ class UserProfileScreenKtTest : RobolectricTest() {
   fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
     val languages = listOf(Language("es", "Spanish"), Language("en", "English"))
     every { userProfileViewModel.languages } returns languages
+    every { userProfileViewModel.fetchLanguages() } returns languages
     every { userProfileViewModel.allowSwitchingLanguages() } returns true
     every { userProfileViewModel.loadSelectedLanguage() } returns "Some lang"
     composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }

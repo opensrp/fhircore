@@ -81,7 +81,8 @@ class QuestPatientDetailActivity :
 
     patientDetailConfig =
       configurationRegistry.retrieveConfiguration(
-        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
+        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW,
+        questJsonSpecificationProvider.getJson()
       )
 
     if (configurationRegistry.isAppIdInitialized()) {
@@ -143,7 +144,8 @@ class QuestPatientDetailActivity :
 
   fun getRegistrationForm(): String {
     return configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-        configClassification = QuestConfigClassification.PATIENT_REGISTER
+        configClassification = QuestConfigClassification.PATIENT_REGISTER,
+        questJsonSpecificationProvider.getJson()
       )
       .registrationForm
   }

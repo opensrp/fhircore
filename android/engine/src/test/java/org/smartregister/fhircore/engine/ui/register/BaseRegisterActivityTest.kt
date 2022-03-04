@@ -43,7 +43,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import java.time.OffsetDateTime
-import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -58,12 +57,11 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.NavigationOption
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -81,12 +79,11 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+
+  val defaultRepository: DefaultRepository = mockk()
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
 
   private lateinit var testRegisterActivityController: ActivityController<TestRegisterActivity>
 
@@ -103,10 +100,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     every { secureSharedPreference.deleteCredentials() } returns Unit
 
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
-    configurationRegistry.loadAppConfigurations(
-      appId = "appId",
-      accountAuthenticator = accountAuthenticator
-    ) {}
+
     testRegisterActivityController = Robolectric.buildActivity(TestRegisterActivity::class.java)
     testRegisterActivity = testRegisterActivityController.get()
     testRegisterActivityController.create().resume()
@@ -435,15 +429,9 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @AndroidEntryPoint
   class TestRegisterActivity : BaseRegisterActivity() {
-
-    @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
     override fun onCreate(savedInstanceState: Bundle?) {
       super.onCreate(savedInstanceState)
-      val registerViewConfiguration =
-        configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-          configClassification = TestConfigClassification.PATIENT_REGISTER,
-        )
+      val registerViewConfiguration = registerViewConfigurationOf("appId")
       configureViews(registerViewConfiguration)
     }
 
