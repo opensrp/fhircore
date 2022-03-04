@@ -71,7 +71,14 @@ class PatientModelsTest : RobolectricTest() {
     upcomingServiceItem = UpcomingServiceItem("111", "1bc", "2020-02-12")
     patientDetailItem = PatientDetailItem(patientItem, patientItemHead)
     patientBmiItem = PatientBmiItem("1111", "testBMI1", "5'7", "50lbs", "22.22")
-    reportItem = ReportItem("1111", "test report ANC", "women having test report ANC", "4")
+    reportItem =
+      ReportItem(
+        id = "1111",
+        title = "test report ANC",
+        description = "women having test report ANC",
+        reportType = "4",
+        name = "testReportANC"
+      )
     resulttItem = ResultItem("True", true, "Test description")
     resulttItemPopulation =
       ResultItemPopulation(title = "testTitlePopulation", dataList = emptyList())
@@ -144,6 +151,7 @@ class PatientModelsTest : RobolectricTest() {
     Assert.assertEquals("test report ANC", reportItem.title)
     Assert.assertEquals("women having test report ANC", reportItem.description)
     Assert.assertEquals("4", reportItem.reportType)
+    Assert.assertEquals("testReportANC", reportItem.name)
   }
 
   @Test

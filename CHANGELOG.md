@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected
 - ANC | Resolved a bug in the Patient details : App crash when computing BMI
+- ANC | Refactor measure-report evaluate
 
 - EIR | Resolved a bug in the vaccination flow : App crush when saving vaccine
 - EIR | Ability for a complete immunixation flow from Record 1st Vaccine to Full Immunization
@@ -67,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Engine | Fixed app crash when wrong appId is provided
 - Engine | Fixed login error message
+- Engine | Fixed redirect after logout when press back button
 
 ### Changed
 - EIR | Updated overdue trigger flow for Vaccine Due date

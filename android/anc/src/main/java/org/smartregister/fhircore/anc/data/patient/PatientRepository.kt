@@ -24,7 +24,6 @@ import com.google.android.fhir.search.count
 import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.lang.IllegalStateException
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
@@ -258,7 +257,8 @@ constructor(
     return fhirEngine
       .search<Flag> { filterByResourceTypeId(Flag.PATIENT, ResourceType.Patient, patientId) }
       .firstOrNull {
-        it.status == Flag.FlagStatus.ACTIVE && it.code.coding.any { it.code == flagCode.code }
+        it.status == Flag.FlagStatus.ACTIVE &&
+          it.code.coding.any { coding -> coding.code == flagCode.code }
       }
   }
 
@@ -267,7 +267,7 @@ constructor(
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search { apply { filter(CarePlan.SUBJECT, { value = "Patient/$patientId" }) } }
+      fhirEngine.search { filter(CarePlan.SUBJECT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun fetchObservations(patientId: String, searchFilterString: String): Observation {
@@ -326,9 +326,7 @@ constructor(
 
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        apply { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }.getQuery()
-      }
+      fhirEngine.search { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun markDeceased(patientId: String, deathDate: Date) {
@@ -390,7 +388,7 @@ constructor(
         var task: Task
         withContext(dispatcherProvider.io()) {
           val carePlanId = it.logicalId
-          var tasks =
+          val tasks =
             fhirEngine.search<Task> {
               apply { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }.getQuery()
             }

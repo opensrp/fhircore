@@ -16,33 +16,50 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.MutableLiveData
-import io.mockk.every
+import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
+@HiltAndroidTest
 class ReportFilterPageTest : RobolectricTest() {
 
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val composeRule = createComposeRule()
+
+  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule(order = 3) val coroutinesTestRule = CoroutineTestRule()
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   private lateinit var viewModel: ReportViewModel
-  @get:Rule val composeRule = createComposeRule()
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-  private val patientSelectionType = MutableLiveData("")
-  private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
+
   private val selectionPatient =
     MutableLiveData(
       PatientItem(
@@ -51,33 +68,43 @@ class ReportFilterPageTest : RobolectricTest() {
         familyName = "Test patient name"
       )
     )
+
   private val listenerObjectSpy =
     spyk(
       object {
         // Imitate click action by doing nothing
-        fun onStartDatePress() {}
-        fun onEndDatePress() {}
-        fun onPatientSelectionChanged() {}
         fun onGenerateReportClick() {}
       }
     )
 
   @Before
   fun setUp() {
+    hiltAndroidRule.inject()
+    val fhirEngine = mockk<FhirEngine>(relaxed = true)
+    val fhirOperatorDecorator = mockk<FhirOperatorDecorator>(relaxed = true)
+    val reportRepository = mockk<ReportRepository>()
+    val ancPatientRepository = mockk<PatientRepository>()
     viewModel =
-      mockk {
-        every { selectedMeasureReportItem } returns this@ReportFilterPageTest.testMeasureReportItem
-        every { isReadyToGenerateReport } returns MutableLiveData(true)
-        every { startDate } returns MutableLiveData("")
-        every { endDate } returns MutableLiveData("")
-        every { patientSelectionType } returns this@ReportFilterPageTest.patientSelectionType
-        every { selectedPatientItem } returns this@ReportFilterPageTest.selectionPatient
-        every { getSelectedPatient() } returns this@ReportFilterPageTest.selectionPatient
-      }
+      spyk(
+        ReportViewModel(
+          repository = reportRepository,
+          dispatcher = coroutinesTestRule.testDispatcherProvider,
+          patientRepository = ancPatientRepository,
+          fhirEngine = fhirEngine,
+          fhirOperatorDecorator = fhirOperatorDecorator,
+          sharedPreferencesHelper = sharedPreferencesHelper
+        )
+      )
+  }
+
+  @After
+  fun tearDown() {
+    viewModel.resetValues()
   }
 
   @Test
   fun testReportFilterScreen() {
+    viewModel.selectedMeasureReportItem.value = ReportItem(title = "Test Report Title")
     composeRule.setContent { ReportFilterScreen(viewModel = viewModel) }
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("Test Report Title")
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
@@ -91,13 +118,12 @@ class ReportFilterPageTest : RobolectricTest() {
         onBackPress = {},
         startDate = "",
         endDate = "",
-        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
-        onEndDatePress = { listenerObjectSpy.onEndDatePress() },
-        patientSelectionText = "All",
-        onPatientSelectionTypeChanged = { listenerObjectSpy.onPatientSelectionChanged() },
-        generateReportEnabled = true,
-        onGenerateReportPress = { listenerObjectSpy.onGenerateReportClick() },
-        selectedPatient = selectionPatient.value
+        selectedPatient = selectionPatient.value,
+        generateReport = true,
+        onDateRangeClick = {},
+        reportType = "All",
+        onReportTypeSelected = { _, _ -> },
+        onGenerateReportClicked = listenerObjectSpy::onGenerateReportClick
       )
     }
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("FilterPageReportTitle")
@@ -107,6 +133,29 @@ class ReportFilterPageTest : RobolectricTest() {
     composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).assertExists()
     composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).performClick()
     verify { listenerObjectSpy.onGenerateReportClick() }
+  }
+
+  @Test
+  fun testReportFilterPageWithIndicator() {
+    composeRule.setContent {
+      ReportFilterPage(
+        topBarTitle = "FilterPageReportTitle",
+        onBackPress = {},
+        startDate = "",
+        endDate = "",
+        selectedPatient = selectionPatient.value,
+        generateReport = true,
+        onDateRangeClick = {},
+        reportType = "All",
+        onReportTypeSelected = { _, _ -> },
+        onGenerateReportClicked = {},
+        showProgressIndicator = true
+      )
+    }
+    composeRule.onNodeWithTag(PROGRESS_BAR_TEXT).assertTextEquals("Please wait…")
+    composeRule.onNodeWithTag(PROGRESS_BAR).assertExists()
+    composeRule.onNodeWithTag(PROGRESS_BAR_COLUMN).assertExists()
+    composeRule.onNodeWithTag(PROGRESS_BAR_TEXT).assertExists()
   }
 
   @Test
