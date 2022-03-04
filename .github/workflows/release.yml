@@ -1,7 +1,7 @@
 # This workflow will build a Java project with Gradle
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
-name: Release
+name: APK Release
 
 on:
   push:
@@ -19,7 +19,7 @@ env:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Cancel previous workflow runs
         uses: styfle/cancel-workflow-action@0.9.1
@@ -58,17 +58,19 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
       - name: Generate AAB (Android App Bundle) file
+        if: ${{ false }}
         run: ./gradlew :quest:bundleRelease -x :quest:testDebugUnitTest --stacktrace
         working-directory: android
         
       - name: Upload AAB file to tag assets
+        if: ${{ false }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: quest/build/outputs/bundle/release/quest-release.aab
           asset_name: "quest-$tag.aab"
           tag: ${{ github.ref }}
-          overwrite: true      
+          overwrite: true
       
       - name: Generate APK (Android App PacKage) file
         run: ./gradlew :quest:assembleRelease -x :quest:testDebugUnitTest --stacktrace

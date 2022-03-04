@@ -62,7 +62,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
-
         }
     }
 
@@ -124,16 +123,11 @@ android {
         }
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.0.1'
-    }
-
     compileSdkVersion 30
 
     lintOptions {
         abortOnError false
     }
-
 }
 
 dependencies {
@@ -177,4 +171,3 @@ dependencies {
 
     testImplementation 'info.cqframework:cql-to-elm:1.5.0'
 }
-
