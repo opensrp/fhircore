@@ -194,6 +194,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     unmockkStatic(Resource::generateMissingId)
   }
 
+  @Test
   fun testSearchCompositionByIdentifier() = runBlockingTest {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<Composition>(any()) } returns
@@ -209,6 +210,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals("123", result!!.logicalId)
   }
 
+  @Test
   fun testGetBinaryResource() = runBlockingTest {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.load(Binary::class.java, any()) } returns Binary().apply { id = "111" }
