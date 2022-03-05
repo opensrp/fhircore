@@ -29,7 +29,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -37,9 +36,10 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.pin.PinLoginActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -48,7 +48,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class LoginActivityHasActivePinTrueTest : ActivityRobolectricTest() {
-
   private lateinit var loginActivity: LoginActivity
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
@@ -58,11 +57,12 @@ class LoginActivityHasActivePinTrueTest : ActivityRobolectricTest() {
   lateinit var loginService: LoginService
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val repository: DefaultRepository = mockk()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
+  val defaultRepository: DefaultRepository = mockk()
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
   @BindValue
   val loginViewModel =
     LoginViewModel(
@@ -80,8 +80,7 @@ class LoginActivityHasActivePinTrueTest : ActivityRobolectricTest() {
     coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
     coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
     coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
-    coEvery { accountAuthenticator.launchLoginScreen() } returns Unit
-    configurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
+
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
     loginService = loginActivity.loginService
