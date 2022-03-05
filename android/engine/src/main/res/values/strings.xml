@@ -110,4 +110,5 @@
     <string name="please_contact_supervisor">Please contact your supervisor.</string>
     <string name="percentage">%</string>
     <string name="logging_out">Please wait.... Logging out</string>
+    <string name="session_expired">Session has been expired and must login again</string>
 </resources>
