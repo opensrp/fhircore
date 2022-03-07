@@ -27,7 +27,7 @@ jobs:
           access_token: ${{ github.token }}
           
       - name: Decode Keystore file
-        run: echo $ENCODED_KEYSTORE | base64 -di > "${HOME}"/keystore.jks
+        run: echo $ENCODED_KEYSTORE | base64 -di > "${HOME}"/fhircore.keystore.jks
         env:
           ENCODED_KEYSTORE: ${{ secrets.KEYSTORE_FILE }}  
 
