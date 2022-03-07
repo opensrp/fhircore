@@ -52,7 +52,7 @@ class PatientTaskListItemTest : RobolectricTest() {
             id = "1",
             name = "Eve",
             gender = "F",
-            birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
+            birthdate = "2020-02-10".getDate("yyyy-MM-dd"),
             address = "Nairobi",
             description = "Sick Visit",
             overdue = true
@@ -65,7 +65,7 @@ class PatientTaskListItemTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(TEXT_TITLE).assertExists()
     composeRule.onNodeWithTag(TEXT_TITLE).assertIsDisplayed()
-    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 11m")
+    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 2y")
 
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertExists()
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertIsDisplayed()
@@ -88,7 +88,7 @@ class PatientTaskListItemTest : RobolectricTest() {
             id = "",
             name = "Eve",
             gender = "F",
-            birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
+            birthdate = "2020-02-10".getDate("yyyy-MM-dd"),
             address = "Nairobi",
             description = "Sick Visit",
             overdue = false
@@ -101,7 +101,7 @@ class PatientTaskListItemTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(TEXT_TITLE).assertExists()
     composeRule.onNodeWithTag(TEXT_TITLE).assertIsDisplayed()
-    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 11m")
+    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 2y")
 
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertExists()
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertIsDisplayed()
@@ -122,7 +122,7 @@ class PatientTaskListItemTest : RobolectricTest() {
             id = "1",
             name = "Eve",
             gender = "F",
-            birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
+            birthdate = "2020-02-10".getDate("yyyy-MM-dd"),
             address = "Nairobi",
             description = "Sick Visit",
             overdue = true
@@ -135,7 +135,7 @@ class PatientTaskListItemTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(TEXT_TITLE).assertExists()
     composeRule.onNodeWithTag(TEXT_TITLE).assertIsDisplayed()
-    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 11m")
+    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 2y")
 
     composeRule.onNodeWithTag(ICON_SUBTITLE).assertExists()
 

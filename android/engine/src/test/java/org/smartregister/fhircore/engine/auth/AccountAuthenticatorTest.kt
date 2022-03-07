@@ -96,7 +96,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
         AccountAuthenticator(
           context = context,
           accountManager = accountManager,
-          oAuthService = spyk(oAuthService),
+          oAuthService = oAuthService,
           configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
@@ -311,15 +311,17 @@ class AccountAuthenticatorTest : RobolectricTest() {
   @Test
   fun testFetchToken() {
     val callMock = mockk<Call<OAuthResponse>>()
-    val mockResponse = Response.success<OAuthResponse?>(mockk())
+    val mockResponse = Response.success<OAuthResponse?>(OAuthResponse("testToken"))
     every { callMock.execute() } returns mockResponse
     every { oAuthService.fetchToken(any()) } returns callMock
     val token =
-      accountAuthenticator.fetchToken(
-        FakeModel.authCredentials.username,
-        FakeModel.authCredentials.password.toCharArray()
-      )
-    Assert.assertNotNull(token)
+      accountAuthenticator
+        .fetchToken(
+          FakeModel.authCredentials.username,
+          FakeModel.authCredentials.password.toCharArray()
+        )
+        .execute()
+    Assert.assertEquals("testToken", token.body()!!.accessToken)
   }
 
   @Test
@@ -408,6 +410,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
       AuthCredentials("abc", "111", "mystoken", "myrtoken")
     every { secureSharedPreference.deleteSessionPin() } just runs
     every { secureSharedPreference.deleteSession() } just runs
+    every { oAuthService.logout(any(), any(), any()) } returns mockk()
 
     accountAuthenticator.logout()
 

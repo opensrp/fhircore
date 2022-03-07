@@ -40,7 +40,9 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import java.time.OffsetDateTime
@@ -58,9 +60,9 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.auth.TokenManagerService
-import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
@@ -83,13 +85,13 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
   @BindValue var tokenManagerService: TokenManagerService = mockk()
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-  
+
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   val defaultRepository: DefaultRepository = mockk()
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
 
   private lateinit var testRegisterActivityController: ActivityController<TestRegisterActivity>
 
@@ -344,6 +346,8 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnNavigationLogoutItemClickedShouldFinishActivity() {
     every { tokenManagerService.getActiveAccount() } returns Account("abc", "type")
+    every { tokenManagerService.isTokenActive(any()) } returns false
+    every { accountAuthenticator.logout() } just runs
 
     val logoutMenuItem = RoboMenuItem(R.id.menu_item_logout)
     testRegisterActivity.onNavigationItemSelected(logoutMenuItem)
