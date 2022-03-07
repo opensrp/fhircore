@@ -58,6 +58,7 @@ import org.robolectric.android.controller.ActivityController
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowIntent
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel
 import org.smartregister.fhircore.engine.app.fakes.Faker
@@ -76,6 +77,7 @@ import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asString
+import retrofit2.HttpException
 
 @HiltAndroidTest
 class BaseRegisterActivityTest : ActivityRobolectricTest() {
@@ -88,10 +90,10 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+  @BindValue val accountAuthenticator = mockk<AccountAuthenticator>()
 
   val defaultRepository: DefaultRepository = mockk()
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
-  @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
 
   private lateinit var testRegisterActivityController: ActivityController<TestRegisterActivity>
 
@@ -354,6 +356,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertFalse(
       testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
     )
+    verify(exactly = 1) { accountAuthenticator.logout() }
   }
 
   @Test
@@ -437,6 +440,51 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     testRegisterActivitySpy.registerActivityBinding.toolbarLayout.btnScanBarcode.performClick()
     Assert.assertTrue(testRegisterActivitySpy.liveBarcodeScanningFragment.isVisible)
     testRegisterActivitySpy.finish()
+  }
+
+  @Test
+  fun testHandleSyncFailedShouldVerifyAllInternalState() {
+
+    every { accountAuthenticator.logout() } returns Unit
+
+    val glitchState =
+      State.Glitch(
+        listOf(
+          mockk {
+            every { exception } returns mockk<HttpException> { every { code() } returns 401 }
+          }
+        )
+      )
+
+    handleSyncFailed(glitchState)
+    verify(exactly = 1) { accountAuthenticator.logout() }
+
+    val failedState =
+      State.Failed(
+        Result.Error(
+          listOf(
+            mockk {
+              every { exception } returns mockk<HttpException> { every { code() } returns 401 }
+            }
+          )
+        )
+      )
+
+    handleSyncFailed(failedState)
+    verify(exactly = 1, inverse = true) { accountAuthenticator.logout() }
+
+    handleSyncFailed(State.Glitch(listOf()))
+    Assert.assertFalse(
+      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
+    )
+  }
+
+  private fun handleSyncFailed(state: State) {
+    ReflectionHelpers.callInstanceMethod<Any>(
+      testRegisterActivity,
+      "handleSyncFailed",
+      ReflectionHelpers.ClassParameter(State::class.java, state)
+    )
   }
 
   @AndroidEntryPoint
