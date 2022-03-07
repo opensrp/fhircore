@@ -59,6 +59,7 @@ class AppSettingActivity : AppCompatActivity() {
               sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
               accountAuthenticator.launchLoginScreen()
               finish()
+              accountAuthenticator.launchLoginScreen()
             } else {
               showToast(
                 getString(R.string.application_not_supported, appSettingViewModel.appId.value)
