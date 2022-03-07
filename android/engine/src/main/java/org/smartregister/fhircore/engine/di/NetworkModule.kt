@@ -24,6 +24,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -54,6 +55,9 @@ class NetworkModule {
     OkHttpClient.Builder()
       .addInterceptor(interceptor)
       .addInterceptor(HttpLoggingInterceptor().apply { HttpLoggingInterceptor.Level.BODY })
+      .connectTimeout(120, TimeUnit.SECONDS)
+      .readTimeout(120, TimeUnit.SECONDS)
+      .callTimeout(120, TimeUnit.SECONDS)
       .build()
 
   @Provides
