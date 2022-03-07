@@ -77,6 +77,10 @@ class LoginActivityTest : ActivityRobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+    coEvery { accountAuthenticator.hasActivePin() } returns false
+    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
+    coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
+    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
 
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
@@ -85,27 +89,9 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
-    coEvery { accountAuthenticator.hasActivePin() } returns false
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
-    coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
-    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
     loginViewModel.navigateToHome()
 
     verify { loginService.navigateToHome() }
-  }
-
-  @Test
-  fun testNavigateToPinSetupShouldVerifyExpectedIntent() {
-    coEvery { accountAuthenticator.hasActivePin() } returns false
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
-    coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
-    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
-    val loginConfig = loginViewConfigurationOf(enablePin = true)
-    loginViewModel.updateViewConfigurations(loginConfig)
-    loginViewModel.navigateToHome()
-    val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
-    val actualIntent = Shadows.shadowOf(application).nextStartedActivity
-    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
@@ -122,11 +108,17 @@ class LoginActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testNavigateToPinSetupShouldVerifyExpectedIntent() {
+    val loginConfig = loginViewConfigurationOf(enablePin = true)
+    loginViewModel.updateViewConfigurations(loginConfig)
+    loginViewModel.navigateToHome()
+    val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
+    val actualIntent = Shadows.shadowOf(application).nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
   fun testGetApplicationConfiguration() {
-    coEvery { accountAuthenticator.hasActivePin() } returns false
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
-    coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
-    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
     Assert.assertNotNull(loginActivity.getApplicationConfiguration())
   }
 
