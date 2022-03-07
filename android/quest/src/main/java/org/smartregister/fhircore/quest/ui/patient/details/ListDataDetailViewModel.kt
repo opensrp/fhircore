@@ -22,6 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -118,7 +119,8 @@ constructor(
   }
 
   fun fetchResultItemLabel(testResult: Pair<QuestionnaireResponse, Questionnaire>): String {
-    return testResult.second.name ?: testResult.second.title ?: testResult.second.logicalId
+    return testResult.second.titleElement.getLocalizedText()
+      ?: testResult.second.nameElement.getLocalizedText() ?: testResult.second.logicalId
   }
 
   fun updateViewConfigurations(patientDetailsViewConfiguration: DataDetailsListViewConfiguration) {
