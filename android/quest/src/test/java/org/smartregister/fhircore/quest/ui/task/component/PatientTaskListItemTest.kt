@@ -65,7 +65,7 @@ class PatientTaskListItemTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(TEXT_TITLE).assertExists()
     composeRule.onNodeWithTag(TEXT_TITLE).assertIsDisplayed()
-    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 11m")
+    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 12m")
 
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertExists()
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertIsDisplayed()
@@ -101,7 +101,7 @@ class PatientTaskListItemTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(TEXT_TITLE).assertExists()
     composeRule.onNodeWithTag(TEXT_TITLE).assertIsDisplayed()
-    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 11m")
+    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 12m")
 
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertExists()
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertIsDisplayed()
@@ -135,7 +135,7 @@ class PatientTaskListItemTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(TEXT_TITLE).assertExists()
     composeRule.onNodeWithTag(TEXT_TITLE).assertIsDisplayed()
-    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 11m")
+    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 12m")
 
     composeRule.onNodeWithTag(ICON_SUBTITLE).assertExists()
 
