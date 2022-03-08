@@ -102,14 +102,26 @@ interface ConfigService {
 
       // for each entity in base create and add param map
       // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital ],..]
-      sp.base
-        .map { base ->
-          Pair(
-            ResourceType.fromCode(base.code),
-            expressionValue?.let { mapOf(sp.code to it) } ?: mapOf()
+      sp.base.forEach { base ->
+        val resourceType = ResourceType.fromCode(base.code)
+        val pair = pairs.find { it.first == resourceType }
+        if (pair == null) {
+          pairs.add(
+            Pair(
+              resourceType,
+              expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf()
+            )
           )
+        } else {
+          expressionValue?.let {
+            // add another parameter if there is a matching resource type
+            // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
+            val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
+            val index = pairs.indexOfFirst { it.first == resourceType }
+            pairs.set(index, Pair(resourceType, updatedPair))
+          }
         }
-        .run { pairs.addAll(this) }
+      }
     }
 
     Timber.i("SYNC CONFIG $pairs")
