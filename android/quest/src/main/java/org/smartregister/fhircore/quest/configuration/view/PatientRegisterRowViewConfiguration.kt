@@ -27,8 +27,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Stable
 @Serializable
 class PatientRegisterRowViewConfiguration(
-  override val appId: String,
-  override val classification: String,
+  override val appId: String = "",
+  override val classification: String = "",
   val filters: List<Filter>? = null
 ) : Configuration
 

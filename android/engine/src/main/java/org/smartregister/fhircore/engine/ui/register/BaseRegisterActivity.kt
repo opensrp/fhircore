@@ -82,6 +82,7 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.show
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
+import retrofit2.HttpException
 import timber.log.Timber
 
 abstract class BaseRegisterActivity :
@@ -291,6 +292,7 @@ abstract class BaseRegisterActivity :
         this.background = getDrawable(registerViewConfiguration.newClientButtonStyle)
       }
       this.text = registerViewConfiguration.newClientButtonText
+      toggleVisibility(registerViewConfiguration.showNewClientButton)
     }
   }
 
@@ -389,11 +391,7 @@ abstract class BaseRegisterActivity :
         registerActivityBinding.updateSyncStatus(state)
       }
       is State.Failed, is State.Glitch -> {
-        showToast(getString(R.string.sync_failed))
-        registerActivityBinding.updateSyncStatus(state)
-        sideMenuOptions().forEach { updateCount(it) }
-        manipulateDrawer(open = false)
-        this.registerViewModel.setRefreshRegisterData(true)
+        handleSyncFailed(state)
       }
       is State.Finished -> {
         showToast(getString(R.string.sync_completed))
@@ -454,7 +452,6 @@ abstract class BaseRegisterActivity :
     when (item.itemId) {
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
-        finish()
         accountAuthenticator.logout()
         manipulateDrawer(open = false)
       }
@@ -513,7 +510,10 @@ abstract class BaseRegisterActivity :
     isFilterVisible: Boolean = true,
     toolbarTitle: String? = null
   ) {
-    registerActivityBinding.btnRegisterNewClient.toggleVisibility(tag == mainFragmentTag())
+    registerActivityBinding.btnRegisterNewClient.toggleVisibility(
+      tag == mainFragmentTag() &&
+        registerViewModel.registerViewConfiguration.value!!.showNewClientButton
+    )
     if (supportedFragments.isEmpty() && !supportedFragments.containsKey(tag)) {
       throw IllegalAccessException("No fragment exists with the tag $tag")
     }
@@ -694,6 +694,29 @@ abstract class BaseRegisterActivity :
   }
 
   open fun onBarcodeResult(barcode: String, view: View) {}
+
+  private fun handleSyncFailed(state: State) {
+
+    val exceptions =
+      when (state) {
+        is State.Glitch -> state.exceptions
+        is State.Failed -> state.result.exceptions
+        else -> listOf()
+      }
+
+    if (exceptions.map { it.exception }.filterIsInstance<HttpException>().firstOrNull()?.code() ==
+        401
+    ) {
+      showToast(getString(R.string.session_expired))
+      accountAuthenticator.logout()
+    } else {
+      showToast(getString(R.string.sync_failed))
+      registerActivityBinding.updateSyncStatus(state)
+      sideMenuOptions().forEach { updateCount(it) }
+      manipulateDrawer(open = false)
+      this.registerViewModel.setRefreshRegisterData(true)
+    }
+  }
 
   companion object {
     const val BARCODE_RESULT_KEY = "result"

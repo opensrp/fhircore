@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data.patient
 
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
@@ -256,7 +257,8 @@ constructor(
       .sortedByDescending { it.logicalId }
 
   fun fetchResultItemLabel(questionnaire: Questionnaire): String {
-    return questionnaire.name ?: questionnaire.title ?: questionnaire.logicalId
+    return questionnaire.titleElement.getLocalizedText()
+      ?: questionnaire.nameElement.getLocalizedText() ?: questionnaire.logicalId
   }
 
   suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire {
@@ -338,8 +340,9 @@ constructor(
       result.map {
         QuestionnaireConfig(
           appId = configurationRegistry.appId,
-          form = it.name ?: it.logicalId,
-          title = it.title ?: it.name ?: it.logicalId,
+          form = it.nameElement.getLocalizedText() ?: it.logicalId,
+          title = it.titleElement.getLocalizedText()
+              ?: it.nameElement.getLocalizedText() ?: it.logicalId,
           identifier = it.logicalId
         )
       }
