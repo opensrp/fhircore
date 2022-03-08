@@ -29,8 +29,8 @@ if (rootProject.file("local.properties").exists()) {
 }
 
 android {
-    compileSdkVersion 30
-    compileSdk 30
+    compileSdkVersion 31
+    compileSdk 31
 
     dataBinding {
         enabled true
@@ -134,6 +134,7 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.6.0'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
+    implementation(project(":p2p-lib"))
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
