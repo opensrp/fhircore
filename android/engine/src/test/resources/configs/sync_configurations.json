@@ -97,24 +97,26 @@
       }
     },
     {
-      "resourceType": "SearchParameter",
-      "name": "count",
-      "code": "_count",
-      "base": [
-        "Patient",
-        "Encounter",
-        "Condition",
-        "MedicationRequest",
-        "Task",
-        "Observation",
-        "QuestionnaireResponse",
-        "Questionnaire",
-        "StructureMap",
-        "Library",
-        "Binary"
-      ],
-      "type": "token",
-      "expression": "#count"
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "count",
+        "code": "_count",
+        "base": [
+          "Patient",
+          "Encounter",
+          "Condition",
+          "MedicationRequest",
+          "Task",
+          "Observation",
+          "QuestionnaireResponse",
+          "Questionnaire",
+          "StructureMap",
+          "Library",
+          "Binary"
+        ],
+        "type": "token",
+        "expression": "#count"
+      }
     }
   ]
 }
