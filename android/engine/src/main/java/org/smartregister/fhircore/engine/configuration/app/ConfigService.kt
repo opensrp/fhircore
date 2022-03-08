@@ -80,6 +80,11 @@ interface ConfigService {
         AppConfigClassification.SYNC
       )
 
+    val appConfig =
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        AppConfigClassification.APPLICATION
+      )
+
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
     syncConfig.resource.parameter.map { it.resource as SearchParameter }.forEach { sp ->
@@ -91,7 +96,7 @@ interface ConfigService {
           ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
           ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
           ConfigurationRegistry.ID -> paramExpression
-          ConfigurationRegistry.COUNT -> ConfigurationRegistry.DEFAULT_COUNT
+          ConfigurationRegistry.COUNT -> appConfig.count
           else -> null
         }?.let {
           // replace the evaluated value into expression for complex expressions
