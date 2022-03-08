@@ -45,18 +45,19 @@ class PatientTaskListItemTest : RobolectricTest() {
 
   @Test
   fun testPatientTaskListItemWhenIdIsNotEmptyShouldDisplayLabel() {
+    val patientTaskItem =
+      PatientTaskItem(
+        id = "1",
+        name = "Eve",
+        gender = "F",
+        birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
+        address = "Nairobi",
+        description = "Sick Visit",
+        overdue = true
+      )
     composeRule.setContent {
       PatientTaskRow(
-        patientItem =
-          PatientTaskItem(
-            id = "1",
-            name = "Eve",
-            gender = "F",
-            birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
-            address = "Nairobi",
-            description = "Sick Visit",
-            overdue = true
-          ),
+        patientItem = patientTaskItem,
         useLabel = true,
         clickListener = listenerObjectSpy.onRowClick(),
         modifier = Modifier
@@ -65,7 +66,7 @@ class PatientTaskListItemTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(TEXT_TITLE).assertExists()
     composeRule.onNodeWithTag(TEXT_TITLE).assertIsDisplayed()
-    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 12m")
+    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals(patientTaskItem.demographics())
 
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertExists()
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertIsDisplayed()
@@ -81,18 +82,19 @@ class PatientTaskListItemTest : RobolectricTest() {
 
   @Test
   fun testPatientTaskListItemWhenIdIsEmptyShouldDisplayLabel() {
+    val patientTaskItem =
+      PatientTaskItem(
+        id = "",
+        name = "Eve",
+        gender = "F",
+        birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
+        address = "Nairobi",
+        description = "Sick Visit",
+        overdue = false
+      )
     composeRule.setContent {
       PatientTaskRow(
-        patientItem =
-          PatientTaskItem(
-            id = "",
-            name = "Eve",
-            gender = "F",
-            birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
-            address = "Nairobi",
-            description = "Sick Visit",
-            overdue = false
-          ),
+        patientItem = patientTaskItem,
         useLabel = true,
         clickListener = listenerObjectSpy.onRowClick(),
         modifier = Modifier
@@ -101,7 +103,7 @@ class PatientTaskListItemTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(TEXT_TITLE).assertExists()
     composeRule.onNodeWithTag(TEXT_TITLE).assertIsDisplayed()
-    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 12m")
+    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals(patientTaskItem.demographics())
 
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertExists()
     composeRule.onNodeWithTag(TEXT_SUBTITLE_ADDRESS).assertIsDisplayed()
@@ -115,18 +117,19 @@ class PatientTaskListItemTest : RobolectricTest() {
 
   @Test
   fun testPatientTaskListItemShouldDisplayIcon() {
+    val patientTaskItem =
+      PatientTaskItem(
+        id = "1",
+        name = "Eve",
+        gender = "F",
+        birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
+        address = "Nairobi",
+        description = "Sick Visit",
+        overdue = true
+      )
     composeRule.setContent {
       PatientTaskRow(
-        patientItem =
-          PatientTaskItem(
-            id = "1",
-            name = "Eve",
-            gender = "F",
-            birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
-            address = "Nairobi",
-            description = "Sick Visit",
-            overdue = true
-          ),
+        patientItem = patientTaskItem,
         useLabel = false,
         clickListener = listenerObjectSpy.onRowClick(),
         modifier = Modifier
@@ -135,7 +138,7 @@ class PatientTaskListItemTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(TEXT_TITLE).assertExists()
     composeRule.onNodeWithTag(TEXT_TITLE).assertIsDisplayed()
-    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals("Eve, F, 1y 12m")
+    composeRule.onNodeWithTag(TEXT_TITLE).assertTextEquals(patientTaskItem.demographics())
 
     composeRule.onNodeWithTag(ICON_SUBTITLE).assertExists()
 
