@@ -55,9 +55,9 @@ class NetworkModule {
     OkHttpClient.Builder()
       .addInterceptor(interceptor)
       .addInterceptor(HttpLoggingInterceptor().apply { HttpLoggingInterceptor.Level.BODY })
-      .connectTimeout(120, TimeUnit.SECONDS)
-      .readTimeout(120, TimeUnit.SECONDS)
-      .callTimeout(120, TimeUnit.SECONDS)
+      .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
+      .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
+      .callTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .build()
 
   @Provides
@@ -89,4 +89,8 @@ class NetworkModule {
       .addConverterFactory(GsonConverterFactory.create(gson))
       .build()
       .create(FhirResourceService::class.java)
+
+  companion object {
+    const val TIMEOUT_DURATION = 120L
+  }
 }
