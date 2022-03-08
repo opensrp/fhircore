@@ -2,5 +2,6 @@
   "appId": "jnj",
   "classification": "application",
   "theme": "AppTheme",
-  "languages": ["en", "sw"]
+  "languages": ["en", "sw"],
+  "count": "100"
 }
