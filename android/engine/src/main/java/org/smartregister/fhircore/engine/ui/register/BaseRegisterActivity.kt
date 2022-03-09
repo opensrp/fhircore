@@ -51,7 +51,6 @@ import java.text.ParseException
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -61,7 +60,6 @@ import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.sync.SyncInitiator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -84,6 +82,7 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.show
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
+import retrofit2.HttpException
 import timber.log.Timber
 
 abstract class BaseRegisterActivity :
@@ -91,8 +90,7 @@ abstract class BaseRegisterActivity :
   NavigationView.OnNavigationItemSelectedListener,
   NavigationBarView.OnItemSelectedListener,
   ConfigurableView<RegisterViewConfiguration>,
-  OnSyncListener,
-  SyncInitiator {
+  OnSyncListener {
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
@@ -121,12 +119,9 @@ abstract class BaseRegisterActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    syncBroadcaster.registerSyncListener(this)
+    syncBroadcaster.registerSyncListener(this, lifecycleScope)
 
     supportedFragments = supportedFragments()
-
-    // Initiate sync after registerViewModel is initialized
-    syncBroadcaster.registerSyncInitiator(this)
 
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
 
@@ -143,8 +138,6 @@ abstract class BaseRegisterActivity :
         this@BaseRegisterActivity,
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
-
-      lifecycleScope.launch { sharedSyncStatus.collect { state -> onSync(state) } }
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
@@ -158,14 +151,6 @@ abstract class BaseRegisterActivity :
   override fun onResume() {
     super.onResume()
     sideMenuOptions().forEach { updateCount(it) }
-  }
-
-  override fun onDestroy() {
-    syncBroadcaster.run {
-      unRegisterSyncListener(this@BaseRegisterActivity)
-      unRegisterSyncInitiator()
-    }
-    super.onDestroy()
   }
 
   private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
@@ -230,7 +215,6 @@ abstract class BaseRegisterActivity :
   private fun syncButtonClick() {
     registerActivityBinding.progressSync.show()
     manipulateDrawer(false)
-    registerViewModel.runSync()
   }
 
   private fun String.formatSyncDate(): String {
@@ -308,6 +292,7 @@ abstract class BaseRegisterActivity :
         this.background = getDrawable(registerViewConfiguration.newClientButtonStyle)
       }
       this.text = registerViewConfiguration.newClientButtonText
+      toggleVisibility(registerViewConfiguration.showNewClientButton)
     }
   }
 
@@ -406,11 +391,7 @@ abstract class BaseRegisterActivity :
         registerActivityBinding.updateSyncStatus(state)
       }
       is State.Failed, is State.Glitch -> {
-        showToast(getString(R.string.sync_failed))
-        registerActivityBinding.updateSyncStatus(state)
-        sideMenuOptions().forEach { updateCount(it) }
-        manipulateDrawer(open = false)
-        this.registerViewModel.setRefreshRegisterData(true)
+        handleSyncFailed(state)
       }
       is State.Finished -> {
         showToast(getString(R.string.sync_completed))
@@ -424,10 +405,6 @@ abstract class BaseRegisterActivity :
         registerActivityBinding.updateSyncStatus(state)
       }
     }
-  }
-
-  override fun runSync() {
-    registerViewModel.runSync()
   }
 
   override fun configureViews(viewConfiguration: RegisterViewConfiguration) {
@@ -475,7 +452,6 @@ abstract class BaseRegisterActivity :
     when (item.itemId) {
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
-        finish()
         accountAuthenticator.logout()
         manipulateDrawer(open = false)
       }
@@ -534,7 +510,10 @@ abstract class BaseRegisterActivity :
     isFilterVisible: Boolean = true,
     toolbarTitle: String? = null
   ) {
-    registerActivityBinding.btnRegisterNewClient.toggleVisibility(tag == mainFragmentTag())
+    registerActivityBinding.btnRegisterNewClient.toggleVisibility(
+      tag == mainFragmentTag() &&
+        registerViewModel.registerViewConfiguration.value!!.showNewClientButton
+    )
     if (supportedFragments.isEmpty() && !supportedFragments.containsKey(tag)) {
       throw IllegalAccessException("No fragment exists with the tag $tag")
     }
@@ -715,6 +694,29 @@ abstract class BaseRegisterActivity :
   }
 
   open fun onBarcodeResult(barcode: String, view: View) {}
+
+  private fun handleSyncFailed(state: State) {
+
+    val exceptions =
+      when (state) {
+        is State.Glitch -> state.exceptions
+        is State.Failed -> state.result.exceptions
+        else -> listOf()
+      }
+
+    if (exceptions.map { it.exception }.filterIsInstance<HttpException>().firstOrNull()?.code() ==
+        401
+    ) {
+      showToast(getString(R.string.session_expired))
+      accountAuthenticator.logout()
+    } else {
+      showToast(getString(R.string.sync_failed))
+      registerActivityBinding.updateSyncStatus(state)
+      sideMenuOptions().forEach { updateCount(it) }
+      manipulateDrawer(open = false)
+      this.registerViewModel.setRefreshRegisterData(true)
+    }
+  }
 
   companion object {
     const val BARCODE_RESULT_KEY = "result"

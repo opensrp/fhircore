@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
@@ -40,23 +41,28 @@ class LoginActivity :
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
   private val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
     loginViewModel.apply {
-      navigateToHome.observe(
-        this@LoginActivity,
-        {
-          if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
-            loginService.navigateToPinLogin(goForSetup = true)
-          } else {
+      navigateToHome.observe(this@LoginActivity) {
+        if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
+          val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
+          if (lastPinExist) {
+            loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
             loginService.navigateToHome()
+          } else {
+            loginService.navigateToPinLogin(goForSetup = true)
           }
+        } else {
+          loginService.navigateToHome()
         }
-      )
-      launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
+      }
+      launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
       appLogoResourceFile = getApplicationConfiguration().appLogoIconResourceFile
     }
 

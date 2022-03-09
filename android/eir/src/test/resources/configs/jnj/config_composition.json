@@ -1,0 +1,59 @@
+{
+  "resourceType": "Composition",
+  "id": "71750",
+  "status": "final",
+  "date": "2022-02-08",
+  "type": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "1156600005",
+        "display": "Device setting parameter"
+      }
+    ]
+  },
+  "identifier": {
+    "use": "official",
+    "value": "jnj"
+  },
+  "title": "Device configurations",
+  "confidentiality": "L",
+  "custodian": {
+    "reference": "Organization/361",
+    "display": "G6PD"
+  },
+  "section": [
+    {
+      "title": "App configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/71742",
+        "identifier": { "value": "application" }
+      }
+    },
+    {
+      "title": "Login configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/71744",
+        "identifier": { "value": "login" }
+      }
+    },
+    {
+      "title": "Patient Register configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/71746",
+        "identifier": { "value": "patient_register" }
+      }
+    },
+    {
+      "title": "Immunization Profile View configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/71748",
+        "identifier": { "value": "immunization_profile" }
+      }
+    }
+  ]
+}

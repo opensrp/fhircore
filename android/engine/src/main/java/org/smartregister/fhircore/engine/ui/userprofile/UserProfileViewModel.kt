@@ -53,12 +53,12 @@ constructor(
   val language = MutableLiveData<Language?>(null)
 
   fun runSync() {
-    syncBroadcaster.syncInitiator?.runSync()
+    syncBroadcaster.runSync()
   }
 
   fun logoutUser() {
-    accountAuthenticator.logout()
     onLogout.postValue(true)
+    accountAuthenticator.logout()
   }
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
