@@ -54,11 +54,13 @@ class LoginActivity :
           val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
           if (lastPinExist) {
             loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
+            syncBroadcaster.runSync()
             loginService.navigateToHome()
           } else {
             loginService.navigateToPinLogin(goForSetup = true)
           }
         } else {
+          syncBroadcaster.runSync()
           loginService.navigateToHome()
         }
       }
