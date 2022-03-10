@@ -1,11 +1,11 @@
 
 # App Configurability
----
+
 - #### Bottom Navigation Configuration
-  - ##### Navigation Item
-  - ##### Action Configuration
-  - ##### Handle Navigation Action
-  - ##### JSON Specification Provider
+  - **Navigation Item**
+  - **Action Configuration**
+  - **Handle Navigation Action**
+  - **JSON Specification Provider**
 
 ##### Navigation Item:
 Navigation item will be added in `register_view_configuration.json` in the `bottomNavigationOptions` JSON array section. i.e as shown in the below JSON snippet. All keys are required `id`, `title`, `icon`, `action`.
