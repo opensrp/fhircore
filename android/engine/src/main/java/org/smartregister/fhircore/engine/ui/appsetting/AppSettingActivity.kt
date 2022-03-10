@@ -57,6 +57,7 @@ class AppSettingActivity : AppCompatActivity() {
           configurationRegistry.loadConfigurations(applicationId) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
               sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
+              accountAuthenticator.launchLoginScreen()
               finish()
             } else {
               showToast(

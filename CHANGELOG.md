@@ -65,11 +65,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Fix patient registration with estimated age/dob
 - Quest | Fix patient register data list items display
 - Quest | Fix and reduce the time taken to load patient details page
+- Quest | Fix MLS for questionnaire and questionnaire response titles on the patient profile page
 
 - Engine | Fixed app crash when wrong appId is provided
 - Engine | Fixed login error message
 - Engine | Fixed redirect after logout when press back button
 - Engine | Fixed MLS in forms for Android 6(API 23) and below
+- Engine | Fixed logout when sync failed
 
 ### Changed
 - EIR | Updated overdue trigger flow for Vaccine Due date
