@@ -7,5 +7,6 @@
     "sw"
   ],
   "applicationName": "G6PD Test Reader",
-  "appLogoIconResourceFile": "ic_logo_g6pd"
+  "appLogoIconResourceFile": "ic_logo_g6pd",
+  "count": "100"
 }
