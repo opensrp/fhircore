@@ -4,5 +4,6 @@
   "theme": "AppTheme",
   "languages": ["en", "sw"],
   "applicationName": "Anc",
-  "appLogoIconResourceFile": "ic_liberia"
+  "appLogoIconResourceFile": "ic_liberia",
+  "count": "100"
 }

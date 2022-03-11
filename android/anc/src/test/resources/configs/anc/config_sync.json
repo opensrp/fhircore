@@ -66,6 +66,27 @@
           "Task"
         ]
       }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "count",
+        "code": "_count",
+        "base": [
+          "Patient",
+          "Encounter",
+          "Observation",
+          "Condition",
+          "CarePlan",
+          "QuestionnaireResponse",
+          "Questionnaire",
+          "StructureMap",
+          "Binary",
+          "Task"
+        ],
+        "type": "token",
+        "expression": "#count"
+      }
     }
   ]
 }
