@@ -50,7 +50,7 @@ class UserInfoItemMapper :
       givenName = givenName,
       name = name,
       preferredUsername = preferredUsername,
-      sub = domainModelSource.sub
+      keyclockuuid = domainModelSource.keyclockuuid
     )
   }
 }

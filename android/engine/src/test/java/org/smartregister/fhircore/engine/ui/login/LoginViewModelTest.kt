@@ -110,7 +110,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   @Ignore
   fun testTestTest() = runBlockingTest {
-    loginViewModel.callPractitionerDetails(UserInfo(sub = "111"))
+    loginViewModel.callPractitionerDetails(UserInfo(keyclockuuid = "111"))
   }
 
   @Test

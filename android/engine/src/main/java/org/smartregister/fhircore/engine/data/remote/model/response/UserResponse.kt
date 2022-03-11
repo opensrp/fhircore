@@ -28,5 +28,5 @@ data class UserInfo(
   @SerialName("given_name") var givenName: String? = null,
   @SerialName("name") var name: String? = null,
   @SerialName("preferred_username") var preferredUsername: String? = null,
-  @SerialName("sub") var sub: String? = null
+  @SerialName("sub") var keyclockuuid: String? = null
 )

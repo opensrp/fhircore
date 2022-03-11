@@ -302,7 +302,7 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
         questionnairePublisher = "ab"
         organization = "lm"
         name = "ab"
-        sub = "123"
+        keyclockuuid = "123"
       }
     return userInfo
   }

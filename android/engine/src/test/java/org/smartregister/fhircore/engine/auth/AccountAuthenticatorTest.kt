@@ -92,8 +92,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
-             fhirResourceService = spyk(fhirResourceService),
-             configService = configService,
+          fhirResourceService = spyk(fhirResourceService),
+          configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
           sharedPreference = sharedPreference

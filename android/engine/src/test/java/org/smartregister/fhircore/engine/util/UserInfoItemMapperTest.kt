@@ -69,7 +69,7 @@ class UserInfoItemMapperTest : RobolectricTest() {
 
   private fun verifyUserDetailsEmpty(userInfo: UserInfo) {
     with(userInfo) {
-      Assert.assertEquals("123", sub)
+      Assert.assertEquals("123", keyclockuuid)
       Assert.assertEquals("", name)
       Assert.assertEquals("", familyName)
       Assert.assertEquals("", givenName)
@@ -80,7 +80,7 @@ class UserInfoItemMapperTest : RobolectricTest() {
 
   private fun verifyUserDetails(userInfo: UserInfo) {
     with(userInfo) {
-      Assert.assertEquals("123", sub)
+      Assert.assertEquals("123", keyclockuuid)
       Assert.assertEquals("axyz", name)
       Assert.assertEquals("abc", familyName)
       Assert.assertEquals("xyz", givenName)
@@ -122,7 +122,7 @@ class UserInfoItemMapperTest : RobolectricTest() {
       questionnairePublisher = "ab"
       organization = "lm"
       name = "ab"
-      sub = "123"
+      keyclockuuid = "123"
     }
   }
 

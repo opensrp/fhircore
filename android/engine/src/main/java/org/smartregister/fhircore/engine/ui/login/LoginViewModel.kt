@@ -118,7 +118,7 @@ constructor(
   }
 
   suspend fun callPractitionerDetails(userResponse: UserInfo) {
-    val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
+    val bundle = accountAuthenticator.getPractitionerDetails(userResponse.keyclockuuid!!)
     if (bundle.hasEntry()) {
       val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
       val careTeamList = practitionerDetails.fhirPractitionerDetails.careTeams
