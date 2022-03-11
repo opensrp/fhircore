@@ -24,7 +24,7 @@ class FhirContextUtilsTest {
 
   @Test
   fun `getPractitionerDetailParser() should return IParser`() {
-    val iParser = FhirContextUtil().getPractitionerDetailParser()
+    val iParser = FhirContextUtil.getPractitionerDetailParser()
 
     Assert.assertNotNull(iParser)
     Assert.assertTrue(iParser is IParser)

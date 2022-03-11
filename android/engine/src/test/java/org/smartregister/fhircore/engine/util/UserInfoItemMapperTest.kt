@@ -16,13 +16,18 @@
 
 package org.smartregister.fhircore.engine.util
 
+import io.mockk.every
+import io.mockk.mockk
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
@@ -30,7 +35,7 @@ import org.smartregister.model.practitioner.UserBioData
 
 class UserInfoItemMapperTest : RobolectricTest() {
 
-  private val userInfoItemMapper = UserInfoItemMapper()
+  lateinit var userInfoItemMapper: UserInfoItemMapper
 
   private val keycloakUserDetails: KeycloakUserDetails = getKeycloakUserDetails()
 
@@ -41,7 +46,18 @@ class UserInfoItemMapperTest : RobolectricTest() {
   private val fhirPractitionerDetailEmptyLocation: FhirPractitionerDetails =
     getFhirPractitionerDetailsEmptyLocation()
 
-  private val userInfo: UserInfo = getUserInfo()
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Before
+  fun setUp() {
+
+    sharedPreferencesHelper = mockk()
+
+    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
+      getUserInfo().encodeJson()
+
+    userInfoItemMapper = UserInfoItemMapper(sharedPreferencesHelper = sharedPreferencesHelper)
+  }
 
   @Test
   fun testMapToDomainModel() {
@@ -50,8 +66,7 @@ class UserInfoItemMapperTest : RobolectricTest() {
         userDetail = keycloakUserDetails
         fhirPractitionerDetails = fhirPractitionerDetail
       }
-    val userInfo =
-      userInfoItemMapper.mapToDomainModel(dto = practitionerDetails, domainModelSource = userInfo)
+    val userInfo = userInfoItemMapper.mapToDomainModel(dto = practitionerDetails)
     verifyUserDetails(userInfo)
   }
 
@@ -62,8 +77,7 @@ class UserInfoItemMapperTest : RobolectricTest() {
         userDetail = keycloakUserDetailsEmptyNames
         fhirPractitionerDetails = fhirPractitionerDetailEmptyLocation
       }
-    val userInfo =
-      userInfoItemMapper.mapToDomainModel(dto = practitionerDetails, domainModelSource = userInfo)
+    val userInfo = userInfoItemMapper.mapToDomainModel(dto = practitionerDetails)
     verifyUserDetailsEmpty(userInfo)
   }
 

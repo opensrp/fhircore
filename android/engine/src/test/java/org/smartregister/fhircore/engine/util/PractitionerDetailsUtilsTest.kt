@@ -72,6 +72,10 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
 
   val fhirEngine = spyk<FhirEngine>()
 
+  val gson = spyk<Gson>()
+
+  lateinit var userInfoItemMapper: UserInfoItemMapper
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -80,10 +84,17 @@ class PractitionerDetailsUtilsTest : RobolectricTest() {
 
     sharedPreferencesHelper = mockk()
 
+    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
+      getUserInfo().encodeJson()
+
+    userInfoItemMapper = UserInfoItemMapper(sharedPreferencesHelper = sharedPreferencesHelper)
+
     practitionerDetailsUtils =
       PractitionerDetailsUtils(
         fhirEngine = fhirEngine,
         sharedPreferences = sharedPreferencesHelper,
+        gson = gson,
+        userInfoItemMapper = userInfoItemMapper
       )
   }
 

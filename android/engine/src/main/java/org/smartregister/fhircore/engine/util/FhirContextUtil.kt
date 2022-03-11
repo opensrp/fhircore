@@ -24,7 +24,7 @@ import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import org.smartregister.model.practitioner.UserBioData
 
-class FhirContextUtil {
+object FhirContextUtil {
 
   fun getPractitionerDetailParser(): IParser {
     val fhirContext = FhirContext.forR4Cached()

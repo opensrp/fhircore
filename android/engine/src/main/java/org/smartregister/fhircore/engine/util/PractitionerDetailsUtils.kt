@@ -39,7 +39,12 @@ import org.smartregister.model.practitioner.PractitionerDetails
 @Singleton
 class PractitionerDetailsUtils
 @Inject
-constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: FhirEngine) {
+constructor(
+  val sharedPreferences: SharedPreferencesHelper,
+  val fhirEngine: FhirEngine,
+  val gson: Gson,
+  val userInfoItemMapper: UserInfoItemMapper
+) {
 
   suspend fun getResourceFromPractitionerDetails(resourceType: String): List<Resource> {
     val practitionerDetails: Parameters =
@@ -64,7 +69,7 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
           ResourceType.Location.name,
           Location::class.java
         )
-      else -> arrayListOf()
+      else -> mutableListOf()
     }
   }
 
@@ -72,24 +77,21 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
     practitionerDetails: Parameters,
     resourceName: String,
     clazz: Class<T>
-  ): ArrayList<T> {
-    val resourceList = arrayListOf<T>()
-    practitionerDetails.parameter.forEach {
-      if (it.name.equals(resourceName)) {
-        val result = it.resource as ListResource
-        if (result.hasEntry()) {
-          result.entry.forEach { entry ->
-            resourceList.add(
-              fhirEngine.load(
-                clazz = clazz,
-                id = entry.item.reference.replace("$resourceName/", "")
-              )
-            )
-          }
-        }
+  ): List<T> {
+    return practitionerDetails
+      .parameter
+      .filter { parameterComponent ->
+        parameterComponent.hasName() &&
+          parameterComponent.name.equals(resourceName, ignoreCase = true) &&
+          parameterComponent.resource is ListResource
       }
-    }
-    return resourceList
+      .flatMap { (it.resource as ListResource).entry }
+      .map { entryComponent ->
+        fhirEngine.load(
+          clazz = clazz,
+          id = entryComponent.item.reference.replace("$resourceName/", "")
+        )
+      }
   }
 
   fun saveParameter(
@@ -136,15 +138,11 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
     practitionerDetails: PractitionerDetails,
     userResponse: UserInfo
   ) {
-    storeUserPreferences(
-      userInfo =
-        UserInfoItemMapper().mapToDomainModel(practitionerDetails, domainModelSource = userResponse)
-    )
+    storeUserPreferences(userInfo = userInfoItemMapper.mapToDomainModel(practitionerDetails))
   }
 
   fun storeKeyClockInfo(practitionerDetails: PractitionerDetails) {
     val userData = practitionerDetails.userDetail as KeycloakUserDetails
-    val gson = Gson()
     val json = gson.toJson(userData)
     sharedPreferences.write(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, json)
   }
@@ -152,8 +150,6 @@ constructor(val sharedPreferences: SharedPreferencesHelper, val fhirEngine: Fhir
   fun retrieveKeyClockInfo(): KeycloakUserDetails {
     val keycloakUserDetailsString =
       sharedPreferences.read(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, "")!!
-    val gson = Gson()
-
     return gson.fromJson(keycloakUserDetailsString, KeycloakUserDetails::class.java)
   }
 }

@@ -35,7 +35,6 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.R
@@ -89,15 +88,15 @@ constructor(
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         if (response.isSuccessful)
-          runBlocking {
+          viewModelScope.launch(dispatcher.io()) {
             response.body()!!.run {
-              val responseBodyString = this.string()
+              val responseBodyString = this.toString()
               Timber.d(responseBodyString)
               val userResponse = responseBodyString.decodeJson<UserInfo>()
               storeUserPreferences(userResponse)
               callPractitionerDetails(userResponse)
               _showProgressBar.postValue(false)
-              _navigateToHome.value = true
+              _navigateToHome.postValue(true)
             }
           }
         else {
@@ -137,17 +136,11 @@ constructor(
         locationList = locationList
       )
 
-      if (locationList.isNotEmpty()) {
-        locationList.forEach { fhirEngine.save(it) }
-      }
+      locationList.forEach { fhirEngine.save(it) }
 
-      if (organizationList.isNotEmpty()) {
-        organizationList.forEach { fhirEngine.save(it) }
-      }
+      organizationList.forEach { fhirEngine.save(it) }
 
-      if (careTeamList.isNotEmpty()) {
-        careTeamList.forEach { fhirEngine.save(it) }
-      }
+      careTeamList.forEach { fhirEngine.save(it) }
     }
   }
 

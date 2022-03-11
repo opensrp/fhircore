@@ -183,7 +183,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testThatGetPractitionerDetailsReturnsACustomBundle() {
-    val iParser: IParser = FhirContextUtil().getPractitionerDetailParser()
+    val iParser: IParser = FhirContextUtil.getPractitionerDetailParser()
     val qJson =
       context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }
     val bundleCurrent = iParser.parseResource(qJson) as org.hl7.fhir.r4.model.Bundle

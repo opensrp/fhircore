@@ -16,14 +16,16 @@
 
 package org.smartregister.fhircore.engine.util
 
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapperWithDomainModelSource
+import javax.inject.Inject
+import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.model.practitioner.PractitionerDetails
 
-class UserInfoItemMapper :
-  DomainMapperWithDomainModelSource<PractitionerDetails, UserInfo, UserInfo> {
+class UserInfoItemMapper @Inject constructor(val sharedPreferencesHelper: SharedPreferencesHelper) :
+  DomainMapper<PractitionerDetails, UserInfo> {
 
-  override fun mapToDomainModel(dto: PractitionerDetails, domainModelSource: UserInfo): UserInfo {
+  override fun mapToDomainModel(dto: PractitionerDetails): UserInfo {
     val userData = dto.userDetail.userBioData
     var location = ""
     var familyName = ""
@@ -42,8 +44,11 @@ class UserInfoItemMapper :
 
     if (userData.preferredName.hasValue()) preferredUsername = userData.preferredName.valueAsString
 
+    val domainModelSource =
+      sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+
     return UserInfo(
-      questionnairePublisher = domainModelSource.questionnairePublisher,
+      questionnairePublisher = domainModelSource!!.questionnairePublisher,
       organization = domainModelSource.organization,
       location = location,
       familyName = familyName,
