@@ -25,8 +25,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
-  override var appId: String,
-  override val classification: String,
+  override var appId: String = "",
+  override val classification: String = "",
   var appTitle: String = "",
   var filterText: String = "",
   var searchBarHint: String = "",
@@ -41,7 +41,8 @@ data class RegisterViewConfiguration(
   var showBottomMenu: Boolean = false,
   var showPageCount: Boolean = true,
   var useLabel: Boolean = true,
-  var primaryFilter: SearchFilter? = null
+  var primaryFilter: SearchFilter? = null,
+  var bottomNavigationOptions: List<NavigationOption>? = null
 ) : Configuration
 
 @Serializable
@@ -83,7 +84,8 @@ fun Context.registerViewConfigurationOf(
   showSideMenu: Boolean = true,
   showBottomMenu: Boolean = false,
   showPageCount: Boolean = true,
-  useLabel: Boolean = true
+  useLabel: Boolean = true,
+  bottomNavigationOptions: List<NavigationOption>? = null
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     appId = appId,
@@ -101,6 +103,7 @@ fun Context.registerViewConfigurationOf(
     showSideMenu = showSideMenu,
     showBottomMenu = showBottomMenu,
     showPageCount = showPageCount,
-    useLabel = useLabel
+    useLabel = useLabel,
+    bottomNavigationOptions = bottomNavigationOptions
   )
 }

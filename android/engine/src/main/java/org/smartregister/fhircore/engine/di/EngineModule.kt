@@ -18,8 +18,10 @@ package org.smartregister.fhircore.engine.di
 
 import android.accounts.AccountManager
 import android.content.Context
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
+import com.google.android.fhir.sync.SyncJob
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,22 +29,37 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 
 @InstallIn(SingletonComponent::class)
-@Module(includes = [NetworkModule::class, DispatcherModule::class])
+@Module(includes = [NetworkModule::class, DispatcherModule::class, CqlModule::class])
 class EngineModule {
 
   @Singleton
   @Provides
-  fun provideFhirEngine(@ApplicationContext context: Context) =
+  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine =
     FhirEngineProvider.getInstance(context)
 
   @Singleton
   @Provides
   fun provideSyncJob(@ApplicationContext context: Context) = Sync.basicSyncJob(context)
 
-  @Singleton @Provides fun provideSyncBroadcaster() = SyncBroadcaster
+  @Singleton
+  @Provides
+  fun provideSyncBroadcaster(
+    fhirResourceDataSource: FhirResourceDataSource,
+    configService: ConfigService,
+    syncJob: SyncJob,
+    fhirEngine: FhirEngine
+  ) =
+    SyncBroadcaster(
+      fhirEngine = fhirEngine,
+      syncJob = syncJob,
+      configService = configService,
+      fhirResourceDataSource = fhirResourceDataSource
+    )
 
   @Singleton @Provides fun provideWorkerContextProvider() = SimpleWorkerContext()
 

@@ -46,7 +46,7 @@ import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.app.fakes.FakeModel
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.IS_NEW_ACCOUNT
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
@@ -69,7 +69,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Inject lateinit var fhirResourceService: FhirResourceService
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
@@ -92,8 +92,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
-          fhirResourceService = spyk(fhirResourceService),
-          configurationRegistry = configurationRegistry,
+             fhirResourceService = spyk(fhirResourceService),
+             configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
           sharedPreference = sharedPreference
@@ -112,7 +112,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val bundle =
       accountAuthenticator.addAccount(
         response = mockk(relaxed = true),
-        accountType = configurationRegistry.authConfiguration.accountType,
+        accountType = configService.provideAuthConfiguration().accountType,
         authTokenType = authTokenType,
         requiredFeatures = emptyArray(),
         options = bundleOf()
@@ -122,7 +122,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertNotNull(parcelable)
     Assert.assertNotNull(parcelable!!.extras)
     Assert.assertEquals(
-      configurationRegistry.authConfiguration.accountType,
+      configService.provideAuthConfiguration().accountType,
       parcelable.getStringExtra(KEY_ACCOUNT_TYPE)
     )
 
@@ -137,7 +137,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertNotNull(
       accountAuthenticator.editProperties(
         response = null,
-        accountType = configurationRegistry.authConfiguration.accountType
+        accountType = configService.provideAuthConfiguration().accountType
       )
     )
   }
@@ -224,7 +224,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
-          configurationRegistry = configurationRegistry,
+          configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
           sharedPreference = sharedPreference,
@@ -279,7 +279,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
-          configurationRegistry = configurationRegistry,
+          configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
           sharedPreference = sharedPreference,

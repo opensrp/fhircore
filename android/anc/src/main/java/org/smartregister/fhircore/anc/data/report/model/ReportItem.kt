@@ -26,6 +26,7 @@ data class ReportItem(
   val title: String = "",
   val description: String = "",
   val reportType: String = "",
+  val name: String = ""
 )
 
 @Stable

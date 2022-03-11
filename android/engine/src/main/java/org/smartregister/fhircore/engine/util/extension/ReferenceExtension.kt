@@ -20,7 +20,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 
 fun Reference.extractId(): String {
-  return this.reference.split("/").last().trim()
+  return this.reference.split("/").elementAtOrNull(1) ?: ""
 }
 
 fun String.asReference(resourceType: ResourceType): Reference {
