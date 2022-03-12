@@ -7,5 +7,6 @@
     "sw"
   ],
   "applicationName": "Quest",
-  "appLogoIconResourceFile": "ic_liberia"
+  "appLogoIconResourceFile": "ic_liberia",
+  "count": "100"
 }

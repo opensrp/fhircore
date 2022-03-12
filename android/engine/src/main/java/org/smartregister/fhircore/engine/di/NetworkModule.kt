@@ -24,6 +24,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -54,6 +55,9 @@ class NetworkModule {
     OkHttpClient.Builder()
       .addInterceptor(interceptor)
       .addInterceptor(HttpLoggingInterceptor().apply { HttpLoggingInterceptor.Level.BODY })
+      .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
+      .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
+      .callTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .build()
 
   @Provides
@@ -85,4 +89,8 @@ class NetworkModule {
       .addConverterFactory(GsonConverterFactory.create(gson))
       .build()
       .create(FhirResourceService::class.java)
+
+  companion object {
+    const val TIMEOUT_DURATION = 120L
+  }
 }

@@ -50,7 +50,7 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  private lateinit var questConfigService: QuestConfigService
+  private lateinit var configService: QuestConfigService
 
   @Before
   fun setUp() {
@@ -60,12 +60,27 @@ class QuestConfigServiceTest : RobolectricTest() {
       "/configs/quest/config_composition.json".parseSampleResourceFromFile() as Composition
 
     coEvery { repository.getBinary(any()) } returns Binary()
-    coEvery { repository.getBinary("56181") } returns
-      Binary().apply { content = "/configs/quest/config_sync.json".readFile().toByteArray() }
+    coEvery { repository.getBinary(any()) } answers
+      {
+        val idArg = this.args.first().toString()
+        val valueArg =
+          when (idArg) {
+            "62938" -> "application"
+            "62940" -> "login"
+            "62952" -> "patient_register"
+            "87021" -> "patient_task_register"
+            "63003" -> "pin"
+            "63011" -> "patient_details_view"
+            "63007" -> "result_details_navigation"
+            "56181" -> "sync"
+            else -> null
+          }
+        Binary().apply { content = "/configs/quest/config_$valueArg.json".readFile().toByteArray() }
+      }
 
     runBlocking { configurationRegistry.loadConfigurations("quest", {}) }
 
-    questConfigService =
+    configService =
       QuestConfigService(
         context = ApplicationProvider.getApplicationContext(),
         sharedPreferencesHelper = sharedPreferencesHelper,
@@ -78,7 +93,7 @@ class QuestConfigServiceTest : RobolectricTest() {
     every { sharedPreferencesHelper.read(any(), null) } returns
       UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
 
-    val syncParam = questConfigService.resourceSyncParams
+    val syncParam = configService.resourceSyncParams
     Assert.assertTrue(syncParam.isNotEmpty())
 
     val resourceTypes =
@@ -99,20 +114,52 @@ class QuestConfigServiceTest : RobolectricTest() {
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
     syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.isEmpty())
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
 
-    syncParam.keys.filter { !it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.isNotEmpty())
+    syncParam.keys.filter { it.isIn(ResourceType.Library) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("_id"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+    }
+
+    syncParam.keys.filter { it.isIn(ResourceType.Patient) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+    }
+
+    syncParam.keys
+      .filter {
+        it.isIn(
+          ResourceType.Encounter,
+          ResourceType.Condition,
+          ResourceType.MedicationRequest,
+          ResourceType.Task
+        )
+      }
+      .forEach {
+        Assert.assertTrue(syncParam[it]!!.containsKey("subject.organization"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+      }
+
+    syncParam.keys
+      .filter { it.isIn(ResourceType.Observation, ResourceType.QuestionnaireResponse) }
+      .forEach {
+        Assert.assertTrue(syncParam[it]!!.containsKey("_filter"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+      }
+
+    syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("publisher"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
   }
 
   @Test
-  fun testResourceSyncParam_organization_and_publisher_Null_shouldHaveEmptyMapForRelevantResources() {
+  fun testResourceSyncParam_allExpressionNull_shouldHaveResourceTypes() {
     every { sharedPreferencesHelper.read(any(), null) } returns
       UserInfo(null, null, null).encodeJson()
 
-    val syncParam = questConfigService.resourceSyncParams
+    val syncParam = configService.resourceSyncParams
     val resourceTypes =
       arrayOf(
           ResourceType.Library,
@@ -130,8 +177,44 @@ class QuestConfigServiceTest : RobolectricTest() {
 
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
-    syncParam.keys.filter { !it.isIn(ResourceType.Library) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.isEmpty())
+    syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+    }
+
+    syncParam.keys.filter { it.isIn(ResourceType.Library) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("_id"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+    }
+
+    syncParam.keys.filter { it.isIn(ResourceType.Patient) }.forEach {
+      Assert.assertTrue(!syncParam[it]!!.containsKey("organization"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+    }
+
+    syncParam.keys
+      .filter {
+        it.isIn(
+          ResourceType.Encounter,
+          ResourceType.Condition,
+          ResourceType.MedicationRequest,
+          ResourceType.Task
+        )
+      }
+      .forEach {
+        Assert.assertTrue(!syncParam[it]!!.containsKey("subject.organization"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+      }
+
+    syncParam.keys
+      .filter { it.isIn(ResourceType.Observation, ResourceType.QuestionnaireResponse) }
+      .forEach {
+        Assert.assertTrue(!syncParam[it]!!.containsKey("_filter"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+      }
+
+    syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
+      Assert.assertTrue(!syncParam[it]!!.containsKey("publisher"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
   }
 }
