@@ -24,6 +24,7 @@ import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
@@ -36,6 +37,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
   val pinViewModel by viewModels<PinViewModel>()
 
@@ -61,6 +63,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
 
   private fun moveToHome() {
     sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false)
+    syncBroadcaster.runSync()
     loginService.navigateToHome()
   }
 
