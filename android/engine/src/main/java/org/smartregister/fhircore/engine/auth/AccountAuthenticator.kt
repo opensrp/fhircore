@@ -33,6 +33,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -284,7 +285,7 @@ constructor(
       val logoutService = oAuthService.logout(clientId(), clientSecret(), this)
       kotlin
         .runCatching {
-          CoroutineScope(dispatcherProvider.io()).launch {
+          CoroutineScope(dispatcherProvider.io() + coroutineExceptionHandler).launch {
             logoutService.execute().run {
               if (!this.isSuccessful) {
                 Timber.w(this.errorBody()?.toString())
@@ -303,6 +304,10 @@ constructor(
 
     deleteLocalSessions(account)
     launchLoginScreen()
+  }
+
+  val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+    throwable.printStackTrace()
   }
 
   fun deleteLocalSessions(account: Account) {
