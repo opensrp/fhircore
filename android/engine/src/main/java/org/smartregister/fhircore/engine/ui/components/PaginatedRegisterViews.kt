@@ -20,10 +20,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Icon
@@ -176,83 +174,57 @@ fun PaginatedRegister(
   loadState: LoadState,
   showResultsCount: Boolean,
   resultCount: Int,
+  showHeader: Boolean,
   body: (@Composable() () -> Unit),
-  showPageCount: Boolean = true,
+  showFooter: Boolean,
   currentPage: Int,
   pagesCount: Int,
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val bottomPadding =
-    when {
-      showResultsCount -> {
-        4.dp
-      }
-      showPageCount -> {
-        40.dp
-      }
-      else -> 0.dp
-    }
-  Column(modifier = modifier.fillMaxWidth().fillMaxHeight(0.75f)) {
-    ConstraintLayout(modifier = Modifier.fillMaxSize()) {
-      val (topRef, bodyRef, bottomRef, searchFooterRef) = createRefs()
-      Column(
-        modifier =
-          modifier.constrainAs(topRef) {
-            width = Dimension.wrapContent
-            height = Dimension.value(4.dp)
-            start.linkTo(parent.start)
-            top.linkTo(parent.top)
-            end.linkTo(parent.end)
-          }
-      ) { Text(text = "hidden") }
-      Column(
-        modifier =
-          modifier.constrainAs(bottomRef) {
-            width = Dimension.fillToConstraints
-            height = Dimension.value(4.dp)
-            start.linkTo(parent.start)
-            bottom.linkTo(parent.bottom)
-            end.linkTo(parent.end)
-          }
-      ) { Text(text = "hidden", color = MaterialTheme.colors.primary) }
-      Column(
-        modifier =
-          modifier.padding(bottom = bottomPadding).fillMaxSize().constrainAs(bodyRef) {
-            height = Dimension.fillToConstraints
-            start.linkTo(parent.start)
-            top.linkTo(topRef.bottom)
-            end.linkTo(parent.end)
-            bottom.linkTo(bottomRef.top)
-          }
-      ) {
+  val bottomPadding = if (showFooter) 48.dp else 0.dp
+  ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+    val (bodyRef, searchFooterRef) = createRefs()
+    Column(
+      modifier =
+        modifier.fillMaxSize().constrainAs(bodyRef) {
+          height = Dimension.wrapContent
+          start.linkTo(parent.start)
+          top.linkTo(parent.top)
+          end.linkTo(parent.end)
+        }
+    ) {
+      if (showHeader) {
         if (showResultsCount) {
           SearchHeader(resultCount = resultCount)
         }
-        Box(contentAlignment = Alignment.TopCenter, modifier = modifier.fillMaxSize()) {
-          if (loadState == LoadState.Loading) {
-            CircularProgressBar()
+      }
+      Box(
+        contentAlignment = Alignment.TopCenter,
+        modifier = modifier.fillMaxSize().padding(bottom = bottomPadding)
+      ) {
+        if (loadState == LoadState.Loading) {
+          CircularProgressBar()
+        } else {
+          if (resultCount == 0 && showResultsCount) {
+            NoResults(modifier = modifier)
           } else {
-            if (resultCount == 0 && showResultsCount) {
-              NoResults(modifier = modifier)
-            } else {
-              body()
-            }
+            body()
           }
         }
       }
-      if (showPageCount) {
-        if (!showResultsCount) {
-          Box(modifier = Modifier.constrainAs(searchFooterRef) { bottom.linkTo(parent.bottom) }) {
-            SearchFooter(
-              resultCount = resultCount,
-              currentPage = currentPage,
-              pageNumbers = pagesCount,
-              previousButtonClickListener = previousButtonClickListener,
-              nextButtonClickListener = nextButtonClickListener
-            )
-          }
+    }
+    if (showFooter) {
+      if (!showResultsCount) {
+        Box(modifier = Modifier.constrainAs(searchFooterRef) { bottom.linkTo(parent.bottom) }) {
+          SearchFooter(
+            resultCount = resultCount,
+            currentPage = currentPage,
+            pageNumbers = pagesCount,
+            previousButtonClickListener = previousButtonClickListener,
+            nextButtonClickListener = nextButtonClickListener
+          )
         }
       }
     }
@@ -295,8 +267,9 @@ fun PaginatedRegisterPreviewWithResults() {
     loadState = LoadState.Loading,
     showResultsCount = true,
     resultCount = 0,
+    showHeader = true,
     body = { Text(text = "Something cool") },
-    showPageCount = true,
+    showFooter = true,
     currentPage = 0,
     pagesCount = MAX_PAGE_COUNT,
     previousButtonClickListener = {},
@@ -312,8 +285,27 @@ fun PaginatedRegisterPreviewWithoutResults() {
     loadState = LoadState.Loading,
     showResultsCount = false,
     resultCount = 0,
+    showHeader = true,
     body = { Text(text = "Something cool") },
-    showPageCount = false,
+    showFooter = true,
+    currentPage = 0,
+    pagesCount = MAX_PAGE_COUNT,
+    previousButtonClickListener = {},
+    nextButtonClickListener = {}
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PaginatedRegisterPreviewWithoutHeaderAndFooter() {
+  PaginatedRegister(
+    loadState = LoadState.Loading,
+    showResultsCount = false,
+    resultCount = 0,
+    showHeader = false,
+    body = { Text(text = "Something cool") },
+    showFooter = false,
     currentPage = 0,
     pagesCount = MAX_PAGE_COUNT,
     previousButtonClickListener = {},
