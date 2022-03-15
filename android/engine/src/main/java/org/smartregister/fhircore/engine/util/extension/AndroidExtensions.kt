@@ -56,6 +56,11 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   } catch (e: Exception) {
     Timber.e(e)
   }
+
+  if (Build.VERSION.SDK_INT <= 23) {
+    Locale.setDefault(Locale(languageTag))
+  }
+
   return configuration
 }
 

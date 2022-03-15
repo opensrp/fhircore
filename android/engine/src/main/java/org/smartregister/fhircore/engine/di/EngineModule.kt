@@ -29,17 +29,17 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 
 @InstallIn(SingletonComponent::class)
-@Module(includes = [NetworkModule::class, DispatcherModule::class])
+@Module(includes = [NetworkModule::class, DispatcherModule::class, CqlModule::class])
 class EngineModule {
 
   @Singleton
   @Provides
-  fun provideFhirEngine(@ApplicationContext context: Context) =
+  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine =
     FhirEngineProvider.getInstance(context)
 
   @Singleton
@@ -50,14 +50,14 @@ class EngineModule {
   @Provides
   fun provideSyncBroadcaster(
     fhirResourceDataSource: FhirResourceDataSource,
-    configurationRegistry: ConfigurationRegistry,
+    configService: ConfigService,
     syncJob: SyncJob,
     fhirEngine: FhirEngine
   ) =
     SyncBroadcaster(
       fhirEngine = fhirEngine,
       syncJob = syncJob,
-      configurationRegistry = configurationRegistry,
+      configService = configService,
       fhirResourceDataSource = fhirResourceDataSource
     )
 

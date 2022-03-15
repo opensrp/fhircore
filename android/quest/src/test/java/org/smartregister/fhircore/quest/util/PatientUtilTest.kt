@@ -20,9 +20,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import java.util.Date
@@ -36,8 +38,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.DynamicColor
 import org.smartregister.fhircore.quest.configuration.view.Filter
@@ -48,8 +50,9 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class PatientUtilTest : RobolectricTest() {
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("g6pd", mockk())
   @Inject lateinit var fhirEngine: FhirEngine
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -57,16 +60,12 @@ class PatientUtilTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations(
-      appId = "g6pd",
-      accountAuthenticator = accountAuthenticator
-    ) {}
+
     fhirEngine = spyk(fhirEngine)
   }
 
   @Test
   fun testLoadAdditionalDataShouldReturnExpectedData() {
-
     val searchSlot = slot<Search>()
     coEvery { fhirEngine.search<Condition>(capture(searchSlot)) } returns getConditions()
 
