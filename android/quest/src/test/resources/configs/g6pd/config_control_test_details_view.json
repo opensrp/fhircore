@@ -1,0 +1,58 @@
+{
+  "appId": "g6pd",
+  "classification": "control_test_details_view",
+  "valuePrefix": "G6PD ",
+  "contentTitle": "TEST RESULTS",
+  "dataRowClickable": false,
+  "questionnaireFilter": {
+    "key": "context",
+    "code": "000005",
+    "system": "http://fhir.ona.io"
+  },
+  "questionnaireFieldsFilter": [
+    {
+      "key": "device",
+      "label": "Device ID: ",
+      "index": 0
+    },
+    {
+      "key": "result_type",
+      "label": "Type: "
+    },
+    {
+      "key": "g6pd"
+    },
+    {
+      "key": "haemoglobin",
+      "label": "Hb: "
+    }
+  ],
+  "dynamicRows": [
+    [
+      {
+        "resourceType": "OBSERVATION",
+        "key": "code",
+        "displayableProperty": "effective",
+        "valueType": "DATETIME",
+        "label": "Date: ",
+        "valueCoding": {
+          "system": "http://snomed.info/sct",
+          "code": "15361003"
+        }
+      }
+    ],
+    [
+      {
+        "resourceType": "OBSERVATION",
+        "key": "code",
+        "displayableProperty": "value",
+        "valueType": "CODEABLECONCEPT",
+        "label": "Calibration: ",
+        "valueCoding": {
+          "system": "http://snomed.info/sct",
+          "code": "15361003"
+        }
+      }
+    ]
+  ]
+}

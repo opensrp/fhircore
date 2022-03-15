@@ -23,8 +23,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Stable
 @Serializable
 class LoginViewConfiguration(
-  override val appId: String,
-  override val classification: String,
+  override val appId: String = "",
+  override val classification: String = "",
   var applicationName: String = "App Name",
   var applicationVersion: String = "0.0.1",
   var applicationVersionCode: Int = 1,
