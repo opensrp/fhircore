@@ -154,7 +154,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT
   ) {
-    viewModelScope.launch {
+    viewModelScope.launch(dispatcherProvider.io()) {
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
