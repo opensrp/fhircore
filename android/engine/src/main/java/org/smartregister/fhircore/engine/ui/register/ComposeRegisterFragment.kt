@@ -67,7 +67,7 @@ abstract class ComposeRegisterFragment<I : Any, O : Any> :
             pagesCount = registerDataViewModel.countPages(),
             previousButtonClickListener = { registerDataViewModel.previousPage() },
             nextButtonClickListener = { registerDataViewModel.nextPage() },
-            modifier = modifier
+            modifier = modifier,
           )
         }
       }

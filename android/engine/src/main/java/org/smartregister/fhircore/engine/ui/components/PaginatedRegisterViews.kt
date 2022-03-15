@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -46,7 +47,8 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-const val MAX_PAGE_COUNT = 20
+const val DEFAULT_MAX_PAGE_COUNT = 20
+const val DEFAULT_MAX_HEIGHT = 0.5f
 const val SEARCH_HEADER_TEXT_TAG = "searchHeaderTestTag"
 const val SEARCH_FOOTER_TAG = "searchFooterTag"
 const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
@@ -141,28 +143,28 @@ fun SearchFooter(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoPreviousButton() {
-  SearchFooter(10, 1, MAX_PAGE_COUNT, {}, {})
+  SearchFooter(10, 1, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoNextButton() {
-  SearchFooter(10, 20, MAX_PAGE_COUNT, {}, {})
+  SearchFooter(10, 20, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
-  SearchFooter(10, 6, MAX_PAGE_COUNT, {}, {})
+  SearchFooter(10, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithZeroResults() {
-  SearchFooter(0, 6, MAX_PAGE_COUNT, {}, {})
+  SearchFooter(0, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
 /**
@@ -181,10 +183,11 @@ fun PaginatedRegister(
   pagesCount: Int,
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  maxHeight: Float = DEFAULT_MAX_HEIGHT
 ) {
   val bottomPadding = if (showFooter) 48.dp else 0.dp
-  ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+  ConstraintLayout(modifier = Modifier.fillMaxWidth().fillMaxHeight(maxHeight)) {
     val (bodyRef, searchFooterRef) = createRefs()
     Column(
       modifier =
@@ -271,9 +274,9 @@ fun PaginatedRegisterPreviewWithResults() {
     body = { Text(text = "Something cool") },
     showFooter = true,
     currentPage = 0,
-    pagesCount = MAX_PAGE_COUNT,
+    pagesCount = DEFAULT_MAX_PAGE_COUNT,
     previousButtonClickListener = {},
-    nextButtonClickListener = {}
+    nextButtonClickListener = {},
   )
 }
 
@@ -289,7 +292,7 @@ fun PaginatedRegisterPreviewWithoutResults() {
     body = { Text(text = "Something cool") },
     showFooter = true,
     currentPage = 0,
-    pagesCount = MAX_PAGE_COUNT,
+    pagesCount = DEFAULT_MAX_PAGE_COUNT,
     previousButtonClickListener = {},
     nextButtonClickListener = {}
   )
@@ -307,7 +310,7 @@ fun PaginatedRegisterPreviewWithoutHeaderAndFooter() {
     body = { Text(text = "Something cool") },
     showFooter = false,
     currentPage = 0,
-    pagesCount = MAX_PAGE_COUNT,
+    pagesCount = DEFAULT_MAX_PAGE_COUNT,
     previousButtonClickListener = {},
     nextButtonClickListener = {}
   )

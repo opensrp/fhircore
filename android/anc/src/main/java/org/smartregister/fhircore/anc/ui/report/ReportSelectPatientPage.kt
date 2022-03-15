@@ -67,6 +67,8 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
+const val DEFAULT_MAX_HEIGHT = 1f
+
 @Composable
 fun ReportSelectPatientScreen(
   viewModel: ReportViewModel,
@@ -100,7 +102,8 @@ fun ReportSelectPatientScreen(
       currentPage = registerDataViewModel.currentPage(),
       pagesCount = registerDataViewModel.countPages(),
       previousButtonClickListener = { registerDataViewModel.previousPage() },
-      nextButtonClickListener = { registerDataViewModel.nextPage() }
+      nextButtonClickListener = { registerDataViewModel.nextPage() },
+      maxHeight = DEFAULT_MAX_HEIGHT
     )
   }
 }
