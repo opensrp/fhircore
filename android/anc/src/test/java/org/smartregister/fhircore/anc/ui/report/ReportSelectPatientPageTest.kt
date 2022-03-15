@@ -92,6 +92,8 @@ class ReportSelectPatientPageTest : RobolectricTest() {
     registerDataViewModel =
       mockk {
         every { registerData } returns allRegisterData
+        every { showHeader } returns MutableLiveData(true)
+        every { showFooter } returns MutableLiveData(true)
         every { showResultsCount } returns MutableLiveData(false)
         every { showLoader } returns MutableLiveData(false)
         every { currentPage() } returns 1
