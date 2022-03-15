@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Application
 import android.content.Intent
+import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
@@ -42,6 +43,7 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -66,6 +68,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Shadows
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
@@ -73,7 +76,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -108,7 +111,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
       getUserInfo().encodeJson()
 
-    defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    defaultRepo = spyk(DefaultRepository(fhirEngine, TestDispatcher()))
     val configurationRegistry = mockk<ConfigurationRegistry>()
     every { configurationRegistry.appId } returns "appId"
     questionnaireViewModel =
@@ -359,6 +362,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           CanonicalType("1234")
         )
       }
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     coroutineRule.runBlockingTest {
       val questionnaireResponse = QuestionnaireResponse()
@@ -998,5 +1003,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     questionnaireViewModel.appendPractitionerInfo(encounter)
 
     Assert.assertEquals("Practitioner/123", encounter.participant[0].individual.reference)
+  }
+
+  class TestDispatcher : DispatcherProvider {
+    override fun main() = Dispatchers.Main
+
+    override fun default() = Dispatchers.Main
+
+    override fun io() = Dispatchers.Main
+
+    override fun unconfined() = Dispatchers.Main
   }
 }
