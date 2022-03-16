@@ -41,8 +41,7 @@ interface OnSyncListener {
 
 /**
  * A broadcaster that maintains a list of [OnSyncListener]. Whenever a new sync [State] is received
- * the [SyncBroadcaster] will transmit the [State] to every [OnSyncListener] that registered by
- * invoking [broadcastSync] method
+ * the [SyncBroadcaster] will transmit the [State] to every [OnSyncListener] that registered
  */
 class SyncBroadcaster(
   val fhirResourceDataSource: FhirResourceDataSource,

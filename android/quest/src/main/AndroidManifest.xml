@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.smartregister.fhircore.quest">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <application
         android:name=".QuestApplication"
         android:allowBackup="true"
@@ -14,27 +12,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity
-            android:name="org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity" />
         <activity android:name=".ui.patient.register.PatientRegisterActivity" />
-        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinLoginActivity" />
-        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinSetupActivity" />
         <activity android:name=".ui.patient.details.QuestPatientDetailActivity" />
         <activity android:name=".ui.patient.details.QuestionnaireDataDetailActivity" />
         <activity android:name=".ui.patient.details.SimpleDetailsActivity" />
-        <activity
-            android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity"
-            android:theme="@style/AppTheme" />
 
-        <service android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService">
+        <service
+            android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -47,11 +33,11 @@
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="org.smartregister.fhircore.fileprovider"
-            android:exported="false"
+
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"></meta-data>
+                android:resource="@xml/file_paths" />
         </provider>
 
     </application>

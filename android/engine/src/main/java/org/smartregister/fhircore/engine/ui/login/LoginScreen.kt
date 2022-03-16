@@ -136,7 +136,7 @@ fun LoginPage(
   val backgroundColor = if (viewConfiguration.darkMode) LoginBackgroundColor else Color.White
   val contentColor = if (viewConfiguration.darkMode) Color.White else LoginDarkColor
   val textFieldBackgroundColor =
-    if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.Transparent
+    if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.Unspecified
   val forgotPasswordColor = if (viewConfiguration.darkMode) Color.White else LoginButtonColor
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
 

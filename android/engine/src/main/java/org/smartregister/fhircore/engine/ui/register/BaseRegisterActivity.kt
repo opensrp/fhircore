@@ -98,8 +98,6 @@ abstract class BaseRegisterActivity :
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
-  override val configurableViews: Map<String, View> = mutableMapOf()
-
   val registerViewModel: RegisterViewModel by viewModels()
 
   val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
