@@ -50,13 +50,13 @@ class ReportHomeActivity :
 
   @Inject lateinit var patientRepository: PatientRepository
 
-  lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
-
-  val reportViewModel by viewModels<ReportViewModel>()
-
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var jsonSpecificationProvider: AncJsonSpecificationProvider
+
+  lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
+
+  val reportViewModel by viewModels<ReportViewModel>()
 
   lateinit var registerViewConfiguration: RegisterViewConfiguration
 
