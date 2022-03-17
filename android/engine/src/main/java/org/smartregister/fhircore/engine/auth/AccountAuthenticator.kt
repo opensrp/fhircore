@@ -279,8 +279,6 @@ constructor(
   }
 
   fun logout() {
-    val account = tokenManagerService.getActiveAccount()!!
-
     getRefreshToken()?.run {
       val logoutService = oAuthService.logout(clientId(), clientSecret(), this)
       kotlin
@@ -302,7 +300,6 @@ constructor(
         }
     }
 
-    deleteLocalSessions(account)
     launchLoginScreen()
   }
 
@@ -310,6 +307,7 @@ constructor(
     throwable.printStackTrace()
   }
 
+  // keeping this method just in-case if in future we need to remove credentials at somewhere
   fun deleteLocalSessions(account: Account) {
     accountManager.clearPassword(account)
     secureSharedPreference.deleteSession()

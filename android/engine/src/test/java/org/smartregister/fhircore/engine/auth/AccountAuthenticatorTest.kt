@@ -39,6 +39,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
@@ -62,6 +63,7 @@ import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
 import retrofit2.Response
 
+@ExperimentalCoroutinesApi
 @HiltAndroidTest
 class AccountAuthenticatorTest : RobolectricTest() {
 
@@ -403,13 +405,9 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testLogoutShouldCleanSessionAndStartLoginActivity() = runBlockingTest {
-    every { accountManager.clearPassword(any()) } just runs
     every { tokenManagerService.isTokenActive(any()) } returns true
-    every { tokenManagerService.getActiveAccount() } returns Account("abc", "typ")
     every { secureSharedPreference.retrieveCredentials() } returns
       AuthCredentials("abc", "111", "mystoken", "myrtoken")
-    every { secureSharedPreference.deleteSessionPin() } just runs
-    every { secureSharedPreference.deleteSession() } just runs
     every { oAuthService.logout(any(), any(), any()) } returns mockk()
 
     accountAuthenticator.logout()
@@ -420,9 +418,5 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertEquals(LoginActivity::class.java, shadowIntent.intentClass)
 
     verify { oAuthService.logout(any(), any(), any()) }
-    verify { accountManager.clearPassword(any()) }
-    verify { tokenManagerService.getActiveAccount() }
-    verify { secureSharedPreference.deleteSessionPin() }
-    verify { secureSharedPreference.deleteSession() }
   }
 }
