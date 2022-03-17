@@ -177,7 +177,9 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 1,
         pagesCount = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = true
       )
     }
 
@@ -205,7 +207,9 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 1,
         pagesCount = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = true
       )
     }
 
@@ -236,7 +240,9 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 2,
         pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = true
       )
     }
 
@@ -270,7 +276,9 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 2,
         pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = false
       )
     }
 
@@ -298,11 +306,12 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         showResultsCount = false,
         resultCount = 52,
         body = { RegisterBody() },
-        showPageCount = true,
         currentPage = 2,
         pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = true
       )
     }
 
@@ -330,11 +339,12 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         showResultsCount = false,
         resultCount = 52,
         body = { RegisterBody() },
-        showPageCount = false,
         currentPage = 2,
         pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = false
       )
     }
 
