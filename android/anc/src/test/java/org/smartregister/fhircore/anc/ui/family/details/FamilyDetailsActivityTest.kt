@@ -37,7 +37,6 @@ import java.util.Date
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -76,6 +75,7 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
       listOf(FakeModel.getEncounter("1"))
     familyDetailsActivity =
       Robolectric.buildActivity(FamilyDetailsActivity::class.java).create().resume().get()
+    familyDetailsActivity.familyName = "Test Family"
   }
 
   @Test
@@ -146,16 +146,12 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
     verify { familyDetailsActivitySpy.familyDetailViewModel.changeFamilyHead(any(), any()) }
   }
 
-  @Ignore("fails locally")
   @Test
   fun testRemoveShouldShowRemoveFamilyConfirmationDialogue() {
-
     familyDetailsActivity.familyDetailViewModel.onRemoveFamilyMenuItemClicked()
-
     val expectedIntent =
       Intent(familyDetailsActivity, RemoveFamilyQuestionnaireActivity::class.java)
     val actualIntent = shadowOf(application).nextStartedActivity
-
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 

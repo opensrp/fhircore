@@ -48,7 +48,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   val familyDetailViewModel by viewModels<FamilyDetailViewModel>()
 
   private lateinit var familyId: String
-  private lateinit var familyName: String
+  lateinit var familyName: String
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
