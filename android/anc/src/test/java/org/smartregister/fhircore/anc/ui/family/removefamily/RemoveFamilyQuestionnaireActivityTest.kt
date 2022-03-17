@@ -55,7 +55,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_TYPE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
-import org.smartregister.fhircore.engine.ui.removefamily.RemoveFamilyQuestionnaireActivity
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
