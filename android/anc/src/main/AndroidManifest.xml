@@ -34,6 +34,9 @@
             android:name=".ui.details.bmicompute.BmiQuestionnaireActivity"
             android:theme="@style/AppTheme" />
         <activity
+            android:name=".ui.details.removefamilymember.RemoveFamilyQuestionnaireActivity"
+            android:theme="@style/AppTheme" />
+        <activity
             android:name=".ui.family.form.FamilyQuestionnaireActivity"
             android:noHistory="true"
             android:theme="@style/AppTheme" />
