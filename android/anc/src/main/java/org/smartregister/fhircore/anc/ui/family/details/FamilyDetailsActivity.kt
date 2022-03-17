@@ -35,9 +35,11 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedKey
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FAMILY_NAME_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.removefamily.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
@@ -46,6 +48,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   val familyDetailViewModel by viewModels<FamilyDetailViewModel>()
 
   private lateinit var familyId: String
+  private lateinit var familyName: String
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -91,6 +94,9 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
       familyDetailViewModel.apply {
         isRemoveFamily.observe(familyDetailsActivity, { if (it) finish() })
+        demographics.observe(familyDetailsActivity) {
+          it?.let { familyName = it.extractFamilyName() }
+        }
       }
 
       familyDetailViewModel.apply {
@@ -166,6 +172,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
         )
         putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_CALLING_ACTIVITY, getCallerActivity())
         putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, familyId)
+        putExtra(QUESTIONNAIRE_ARG_FAMILY_NAME_KEY, familyName)
       }
     )
   }

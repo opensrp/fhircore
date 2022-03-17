@@ -38,13 +38,11 @@ constructor(
   var isRemoveFamily = MutableLiveData(false)
 
   fun removeFamily(familyId: String) {
-
     viewModelScope.launch {
       try {
         val family: Patient =
           repository.loadResource(familyId)
             ?: throw ResourceNotFoundException("Family resource for that ID NOT Found")
-
         repository.delete(family)
         Log.e("aw-test", "remove family in VM done")
         isRemoveFamily.postValue(true)
@@ -52,5 +50,9 @@ constructor(
         Timber.e(e)
       }
     }
+  }
+
+  fun discardRemovingFamily() {
+    isRemoveFamily.postValue(true)
   }
 }

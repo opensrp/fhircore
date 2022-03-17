@@ -50,6 +50,7 @@ import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_TYPE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -143,12 +144,15 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
     mockkObject(AlertDialogue)
 
     every {
-      AlertDialogue.showConfirmAlert(
+      AlertDialogue.showAlert(
         context = any(),
+        alertIntent = AlertIntent.CONFIRM,
         message = any(),
         title = any(),
         confirmButtonListener = any(),
-        confirmButtonText = any()
+        confirmButtonText = any(),
+        neutralButtonListener = any(),
+        neutralButtonText = any()
       )
     } returns mockk()
 
@@ -159,12 +163,15 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
     )
 
     verify {
-      AlertDialogue.showConfirmAlert(
+      AlertDialogue.showAlert(
         context = removeFamilyQuestionnaireActivitySpy,
+        alertIntent = AlertIntent.CONFIRM,
         message = any(),
         title = any(),
         confirmButtonListener = any(),
-        confirmButtonText = android.R.string.ok
+        confirmButtonText = android.R.string.ok,
+        neutralButtonListener = any(),
+        neutralButtonText = android.R.string.cancel
       )
     }
 

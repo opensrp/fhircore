@@ -27,6 +27,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.ui.family.removefamily.RemoveFamilyViewModel
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
@@ -35,10 +36,12 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   private lateinit var saveBtn: Button
   private lateinit var familyId: String
+  private lateinit var familyName: String
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     familyId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    familyName = intent.extras?.getString(QUESTIONNAIRE_ARG_FAMILY_NAME_KEY) ?: ""
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
     saveBtn.text = getString(R.string.remove_family)
 
@@ -63,12 +66,21 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   private fun removeFamilyMember(familyId: String) {
-    AlertDialogue.showConfirmAlert(
-      this,
-      R.string.remove_family_warning,
-      R.string.confirm_remove_family_title,
-      { removeFamilyViewModel.removeFamily(familyId = familyId) },
-      R.string.family_register_ok_title
+    AlertDialogue.showAlert(
+      context = this,
+      alertIntent = AlertIntent.CONFIRM,
+      message = getString(R.string.remove_family_warning, familyName),
+      title = getString(R.string.confirm_remove_family_title),
+      confirmButtonListener = { dialog ->
+        dialog.dismiss()
+        removeFamilyViewModel.removeFamily(familyId = familyId)
+      },
+      confirmButtonText = R.string.family_register_ok_title,
+      neutralButtonListener = { dialog ->
+        dialog.dismiss()
+        removeFamilyViewModel.discardRemovingFamily()
+        dismissSaveProcessing()
+      }
     )
   }
 }
