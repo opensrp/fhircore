@@ -26,7 +26,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
-import org.smartregister.fhircore.anc.ui.details.removefamilymember.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.getCallerActivity
@@ -37,6 +36,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSe
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.engine.ui.removefamily.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
 

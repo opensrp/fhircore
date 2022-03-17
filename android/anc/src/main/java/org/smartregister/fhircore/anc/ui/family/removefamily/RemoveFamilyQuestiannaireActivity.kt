@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.details.removefamilymember
+package org.smartregister.fhircore.engine.ui.removefamily
 
 import android.os.Bundle
 import android.util.Log
@@ -25,6 +25,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.ui.family.removefamily.RemoveFamilyViewModel
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
