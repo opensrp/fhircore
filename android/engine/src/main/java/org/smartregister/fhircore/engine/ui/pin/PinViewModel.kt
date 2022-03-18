@@ -29,7 +29,6 @@ import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -145,8 +144,8 @@ constructor(
     }
   }
 
-  fun onMenuLoginClicked() {
-    sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, true)
+  fun onMenuLoginClicked(sharedPreferencesKey: String) {
+    sharedPreferences.write(sharedPreferencesKey, true)
     _navigateToLogin.value = true
   }
 

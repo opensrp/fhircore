@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
@@ -54,6 +55,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
       val pinSetupActivity = this@PinSetupActivity
       navigateToHome.observe(pinSetupActivity) { pinSetupActivity.moveToHome() }
       navigateToSettings.observe(pinSetupActivity) { pinSetupActivity.moveToSettings() }
+      navigateToLogin.observe(pinSetupActivity) { pinSetupActivity.moveToLoginViaUsername() }
       pin.observe(pinSetupActivity) {
         it.let { enableSetPin.postValue(it.length >= PIN_INPUT_MAX_THRESHOLD) }
       }
@@ -70,6 +72,19 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
   private fun moveToSettings() {
     startActivity(
       Intent(this, AppSettingActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addCategory(Intent.CATEGORY_LAUNCHER)
+      }
+    )
+    finish()
+  }
+
+  private fun moveToLoginViaUsername() {
+    startActivity(
+      Intent(this, LoginActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)

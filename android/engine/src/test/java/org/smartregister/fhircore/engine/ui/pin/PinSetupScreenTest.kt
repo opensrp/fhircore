@@ -50,6 +50,7 @@ class PinSetupScreenTest : RobolectricTest() {
         fun onPinChanged() {}
         fun onPinConfirmed() {}
         fun onMenuSettingsClicked() {}
+        fun onMenuLoginClicked() {}
       }
     )
 
@@ -82,6 +83,7 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         setPinEnabled = false,
         inputPin = "",
         appLogoResFile = "ic_liberia"
@@ -113,6 +115,7 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         setPinEnabled = true,
         inputPin = "0000",
         appLogoResFile = "ic_logo_g6pd"

@@ -209,7 +209,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnMenuLoginClicked() {
-    pinViewModel.onMenuLoginClicked()
+    pinViewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME)
     Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
   }
 
