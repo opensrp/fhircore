@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.family.removefamily
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -24,6 +25,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -46,6 +48,17 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
     removeFamilyViewModel.apply {
       isRemoveFamily.observe(this@RemoveFamilyQuestionnaireActivity) {
         if (it) {
+          val intent =
+            Intent(this@RemoveFamilyQuestionnaireActivity, FamilyRegisterActivity::class.java)
+              .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+          this@RemoveFamilyQuestionnaireActivity.run {
+            startActivity(intent)
+            finish()
+          }
+        }
+      }
+      discardRemoving.observe(this@RemoveFamilyQuestionnaireActivity) {
+        if (it) {
           finish()
         }
       }
@@ -59,6 +72,7 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    dismissSaveProcessing()
     lifecycleScope.launch { removeFamilyMember(familyId = familyId) }
   }
 
@@ -70,13 +84,14 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
       title = getString(R.string.confirm_remove_family_title),
       confirmButtonListener = { dialog ->
         dialog.dismiss()
+        dismissSaveProcessing()
         removeFamilyViewModel.removeFamily(familyId = familyId)
       },
       confirmButtonText = R.string.family_register_ok_title,
       neutralButtonListener = { dialog ->
         dialog.dismiss()
-        removeFamilyViewModel.discardRemovingFamily()
         dismissSaveProcessing()
+        removeFamilyViewModel.discardRemovingFamily()
       }
     )
   }

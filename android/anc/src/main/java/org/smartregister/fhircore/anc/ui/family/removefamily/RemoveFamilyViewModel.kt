@@ -35,6 +35,7 @@ constructor(
 ) : ViewModel() {
 
   var isRemoveFamily = MutableLiveData(false)
+  var discardRemoving = MutableLiveData(false)
 
   fun removeFamily(familyId: String) {
     viewModelScope.launch {
@@ -46,11 +47,12 @@ constructor(
         isRemoveFamily.postValue(true)
       } catch (e: Exception) {
         Timber.e(e)
+        discardRemoving.postValue(true)
       }
     }
   }
 
   fun discardRemovingFamily() {
-    isRemoveFamily.postValue(true)
+    discardRemoving.postValue(true)
   }
 }
