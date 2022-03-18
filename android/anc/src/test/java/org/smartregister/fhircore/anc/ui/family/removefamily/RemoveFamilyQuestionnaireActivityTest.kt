@@ -74,8 +74,6 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
   private lateinit var removeFamilyQuestionnaireActivity: RemoveFamilyQuestionnaireActivity
   private lateinit var removeFamilyQuestionnaireActivitySpy: RemoveFamilyQuestionnaireActivity
 
-  private val patientId = "123"
-
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -96,7 +94,6 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
   @Test
   fun testOnBackPressedShouldCallConfirmationDialogue() {
     buildActivityFor(FamilyFormConstants.REMOVE_FAMILY, false)
-
     removeFamilyQuestionnaireActivity.onBackPressed()
 
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())

@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.ui.family.removefamily
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
@@ -47,7 +46,6 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
     removeFamilyViewModel.apply {
       isRemoveFamily.observe(this@RemoveFamilyQuestionnaireActivity) {
         if (it) {
-          Log.e("aw=test", "finishing now")
           finish()
         }
       }

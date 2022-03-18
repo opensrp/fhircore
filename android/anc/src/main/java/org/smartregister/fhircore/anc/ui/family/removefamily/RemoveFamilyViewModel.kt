@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.family.removefamily
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -44,7 +43,6 @@ constructor(
           repository.loadResource(familyId)
             ?: throw ResourceNotFoundException("Family resource for that ID NOT Found")
         repository.delete(family)
-        Log.e("aw-test", "remove family in VM done")
         isRemoveFamily.postValue(true)
       } catch (e: Exception) {
         Timber.e(e)
