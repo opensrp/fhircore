@@ -42,6 +42,9 @@ class RegisterViewConfigurationTest : RobolectricTest() {
         registrationForm = "patient-registration",
         showSideMenu = true,
         showBottomMenu = false,
+        useLabel = true,
+        showHeader = false,
+        showFooter = false,
         primaryFilter = null
       )
     Assert.assertEquals("anc", registerViewConfiguration.appId)
@@ -54,6 +57,27 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     Assert.assertTrue(registerViewConfiguration.showNewClientButton)
     Assert.assertTrue(registerViewConfiguration.showSideMenu)
     Assert.assertFalse(registerViewConfiguration.showBottomMenu)
+    Assert.assertTrue(registerViewConfiguration.useLabel)
+    Assert.assertFalse(registerViewConfiguration.showHeader)
+    Assert.assertFalse(registerViewConfiguration.showFooter)
+  }
+
+  @Test
+  fun testDefaultRegisterViewConfiguration() {
+    val registerViewConfiguration = RegisterViewConfiguration("anc", "classification")
+    Assert.assertEquals("anc", registerViewConfiguration.appId)
+    Assert.assertEquals("", registerViewConfiguration.appTitle)
+    Assert.assertEquals("", registerViewConfiguration.searchBarHint)
+    Assert.assertEquals("", registerViewConfiguration.newClientButtonText)
+    Assert.assertEquals("", registerViewConfiguration.newClientButtonStyle)
+    Assert.assertTrue(registerViewConfiguration.showSearchBar)
+    Assert.assertTrue(registerViewConfiguration.showScanQRCode)
+    Assert.assertTrue(registerViewConfiguration.showNewClientButton)
+    Assert.assertTrue(registerViewConfiguration.showSideMenu)
+    Assert.assertFalse(registerViewConfiguration.showBottomMenu)
+    Assert.assertTrue(registerViewConfiguration.useLabel)
+    Assert.assertTrue(registerViewConfiguration.showHeader)
+    Assert.assertTrue(registerViewConfiguration.showFooter)
   }
 
   @Test
@@ -80,7 +104,10 @@ class RegisterViewConfigurationTest : RobolectricTest() {
           showNewClientButton = true,
           registrationForm = "patient-reg-form",
           showSideMenu = false,
-          showBottomMenu = false
+          showBottomMenu = false,
+          useLabel = true,
+          showHeader = false,
+          showFooter = false
         )
     Assert.assertEquals("anc", registerViewConfigurationOf.appId)
     Assert.assertEquals("clasification", registerViewConfigurationOf.classification)
@@ -95,5 +122,30 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     Assert.assertTrue(registerViewConfigurationOf.showNewClientButton)
     Assert.assertFalse(registerViewConfigurationOf.showSideMenu)
     Assert.assertFalse(registerViewConfigurationOf.showBottomMenu)
+    Assert.assertTrue(registerViewConfigurationOf.useLabel)
+    Assert.assertFalse(registerViewConfigurationOf.showHeader)
+    Assert.assertFalse(registerViewConfigurationOf.showFooter)
+  }
+
+  @Test
+  fun testDefaultRegisterViewConfigurationOf() {
+    val registerViewConfigurationOf =
+      ApplicationProvider.getApplicationContext<Application>().registerViewConfigurationOf()
+    Assert.assertEquals("", registerViewConfigurationOf.appId)
+    Assert.assertEquals("", registerViewConfigurationOf.classification)
+    Assert.assertEquals("Fhir App", registerViewConfigurationOf.appTitle)
+    Assert.assertEquals("Show overdue", registerViewConfigurationOf.filterText)
+    Assert.assertEquals("Search name or ID", registerViewConfigurationOf.searchBarHint)
+    Assert.assertEquals("Register new client", registerViewConfigurationOf.newClientButtonText)
+    Assert.assertEquals("", registerViewConfigurationOf.newClientButtonStyle)
+    Assert.assertEquals("patient-registration", registerViewConfigurationOf.registrationForm)
+    Assert.assertTrue(registerViewConfigurationOf.showSearchBar)
+    Assert.assertTrue(registerViewConfigurationOf.showScanQRCode)
+    Assert.assertTrue(registerViewConfigurationOf.showNewClientButton)
+    Assert.assertTrue(registerViewConfigurationOf.showSideMenu)
+    Assert.assertFalse(registerViewConfigurationOf.showBottomMenu)
+    Assert.assertTrue(registerViewConfigurationOf.useLabel)
+    Assert.assertTrue(registerViewConfigurationOf.showHeader)
+    Assert.assertTrue(registerViewConfigurationOf.showFooter)
   }
 }

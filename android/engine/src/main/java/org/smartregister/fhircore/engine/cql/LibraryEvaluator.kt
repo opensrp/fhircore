@@ -24,6 +24,8 @@ import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.tuple.Pair
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
 import org.cqframework.cql.cql2elm.ModelManager
@@ -53,6 +55,8 @@ import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory
 import org.opencds.cqf.cql.evaluator.library.CqlFhirParametersConverter
 import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import timber.log.Timber
 
 /**
  * This class contains methods to run CQL evaluators given Fhir expressions It borrows code from
@@ -72,10 +76,21 @@ class LibraryEvaluator @Inject constructor() {
   private var libEvaluator: LibraryEvaluator? = null
   private val bundleLinks = BundleLinks("", null, true, BundleTypeEnum.COLLECTION)
   val fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
-  val cqlFhirParametersConverter by lazy {
+  val cqlFhirParametersConverter =
     CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
+  lateinit var fhirModelResolver: R4FhirModelResolverExt
+  lateinit var modelManager: ModelManager
+  var initialized = false
+
+  fun initialize() {
+    if (initialized) return
+
+    fhirModelResolver = R4FhirModelResolverExt()
+    modelManager = ModelManager()
+
+    initialized = true
   }
-  val fhirModelResolver by lazy { R4FhirModelResolverExt() }
+
   /**
    * This method loads configurations for CQL evaluation
    * @param libraryResources Fhir resource type Library
@@ -206,6 +221,8 @@ class LibraryEvaluator @Inject constructor() {
     repository: DefaultRepository,
     outputLog: Boolean = false
   ): List<String> {
+    initialize()
+
     val library = repository.fhirEngine.load(org.hl7.fhir.r4.model.Library::class.java, libraryId)
 
     val helpers =
@@ -223,7 +240,13 @@ class LibraryEvaluator @Inject constructor() {
       helpers,
       Bundle(),
       // TODO check and handle when data bundle has multiple Patient resources
-      createBundle(listOfNotNull(patient, *data.entry.map { it.resource }.toTypedArray()))
+      createBundle(
+        listOfNotNull(
+          patient,
+          *data.entry.map { it.resource }.toTypedArray(),
+          *repository.search(library.dataRequirementFirstRep).toTypedArray()
+        )
+      )
     )
 
     val result =
@@ -238,6 +261,8 @@ class LibraryEvaluator @Inject constructor() {
     parser.setPrettyPrint(false)
     return result.parameter.mapNotNull { p ->
       (p.value ?: p.resource)?.let {
+        Timber.d("Param found: ${p.name} with value: ${getStringRepresentation(it)}")
+
         if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
           data.addEntry().apply { this.resource = p.resource }
           repository.save(it as Resource)
@@ -289,6 +314,8 @@ class LibraryEvaluator @Inject constructor() {
     // evaluator for resolving terminology
     val terminologyProvider = BundleTerminologyProvider(fhirContext, valueSet)
 
+    Timber.d("Cql with data: ${data.encodeResourceToString()}")
+
     // Load data content, and create a RetrieveProvider which is the interface used for
     // implementations of CQL retrieves.
     val retrieveProvider =
@@ -299,7 +326,7 @@ class LibraryEvaluator @Inject constructor() {
 
     cqlEvaluator =
       CqlEvaluator(
-        LibraryLoaderExt(ModelManager(), listOf(libraryProvider)),
+        LibraryLoaderExt(modelManager, listOf(libraryProvider)),
         mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
         terminologyProvider
       )
@@ -321,6 +348,11 @@ class LibraryEvaluator @Inject constructor() {
   }
 
   companion object {
+
+    fun init() {
+      GlobalScope.launch { LibraryEvaluator().initialize() }
+    }
+
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
   }
 }

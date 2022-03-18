@@ -27,7 +27,9 @@ val json = Json {
 }
 
 /** Decode string to an entity of type [T] */
-inline fun <reified T> String.decodeJson(): T = json.decodeFromString(this)
+inline fun <reified T> String.decodeJson(jsonSerializer: Json? = null): T =
+  jsonSerializer?.decodeFromString(this) ?: json.decodeFromString(this)
 
 /** Encode the type [T] into a Json string */
-inline fun <reified T> T.encodeJson(): String = json.encodeToString(this)
+inline fun <reified T> T.encodeJson(jsonSerializer: Json? = null): String =
+  jsonSerializer?.encodeToString(this) ?: json.encodeToString(this)

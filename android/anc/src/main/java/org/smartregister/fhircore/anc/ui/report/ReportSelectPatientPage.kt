@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -59,22 +60,28 @@ import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
-import org.smartregister.fhircore.engine.ui.components.LoaderDialog
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.ui.components.PaginatedRegister
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
+const val DEFAULT_MAX_HEIGHT = 1f
+
 @Composable
-fun ReportSelectPatientScreen(viewModel: ReportViewModel) {
+fun ReportSelectPatientScreen(
+  viewModel: ReportViewModel,
+  registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
+) {
 
-  val registerData = viewModel.registerDataViewModel.registerData.collectAsState(emptyFlow())
+  val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
   val pagingItems = registerData.value.collectAsLazyPagingItems()
-  val showResultsCount by viewModel.registerDataViewModel.showResultsCount.observeAsState(false)
-  val showLoader by viewModel.registerDataViewModel.showLoader.observeAsState(false)
+  val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
+  val showHeader by registerDataViewModel.showHeader.observeAsState(false)
+  val showFooter by registerDataViewModel.showFooter.observeAsState(false)
 
-  if (showLoader) LoaderDialog(modifier = Modifier)
-  Column(modifier = Modifier.testTag(REPORT_SELECT_PATIENT_LIST)) {
+  Column(modifier = Modifier.fillMaxHeight().fillMaxWidth().testTag(REPORT_SELECT_PATIENT_LIST)) {
     SearchView(state = viewModel.searchTextState, viewModel)
     Divider(color = DividerColor)
     Spacer(modifier = Modifier.height(16.dp))
@@ -82,19 +89,21 @@ fun ReportSelectPatientScreen(viewModel: ReportViewModel) {
       color = SubtitleTextColor,
       text = stringResource(id = R.string.select_patient),
       fontSize = 14.sp,
-      modifier = Modifier.wrapContentWidth().padding(horizontal = 16.dp)
+      modifier = Modifier.wrapContentWidth().padding(16.dp)
     )
     Divider(color = DividerColor)
-    Spacer(modifier = Modifier.height(8.dp))
     PaginatedRegister(
       loadState = pagingItems.loadState.refresh,
       showResultsCount = showResultsCount,
       resultCount = pagingItems.itemCount,
+      showHeader = showHeader,
       body = { ConstructPatientSelectList(pagingItems, viewModel) },
-      currentPage = viewModel.registerDataViewModel.currentPage(),
-      pagesCount = viewModel.registerDataViewModel.countPages(),
-      previousButtonClickListener = { viewModel.registerDataViewModel.previousPage() },
-      nextButtonClickListener = { viewModel.registerDataViewModel.nextPage() }
+      showFooter = showFooter,
+      currentPage = registerDataViewModel.currentPage(),
+      pagesCount = registerDataViewModel.countPages(),
+      previousButtonClickListener = { registerDataViewModel.previousPage() },
+      nextButtonClickListener = { registerDataViewModel.nextPage() },
+      maxHeight = DEFAULT_MAX_HEIGHT
     )
   }
 }
@@ -114,46 +123,48 @@ fun ConstructPatientSelectList(
 }
 
 @Composable
-fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) {
+fun SearchView(
+  state: MutableState<TextFieldValue>,
+  viewModel: ReportViewModel,
+  modifier: Modifier = Modifier
+) {
   Box(modifier = Modifier.background(color = colorResource(id = R.color.white))) {
     TextField(
       value = state.value,
       onValueChange = { value ->
         state.value = value
         viewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, value.text))
-        viewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
       },
-      modifier = Modifier.fillMaxWidth().testTag(REPORT_SEARCH_PATIENT),
+      modifier = modifier.fillMaxWidth().testTag(REPORT_SEARCH_PATIENT),
       textStyle = TextStyle(fontSize = 18.sp),
       leadingIcon = {
         IconButton(
-          onClick = viewModel::onBackPressFromPatientSearch,
-          Modifier.testTag(TOOLBAR_BACK_ARROW)
+          onClick = { viewModel.onBackPress(ReportViewModel.ReportScreen.FILTER) },
+          modifier.testTag(TOOLBAR_BACK_ARROW)
         ) {
           Icon(
             Icons.Filled.ArrowBack,
             contentDescription = "Back arrow",
-            modifier = Modifier.padding(15.dp)
+            modifier = modifier.padding(15.dp)
           )
         }
       },
       trailingIcon = {
         if (state.value != TextFieldValue("")) {
           IconButton(
-            modifier = Modifier.testTag(REPORT_SEARCH_PATIENT_CANCEL),
+            modifier = modifier.testTag(REPORT_SEARCH_PATIENT_CANCEL),
             onClick = {
               // Remove text from TextField when you press the 'X' icon
               state.value = TextFieldValue("")
               viewModel.filterValue.postValue(
                 Pair(RegisterFilterType.SEARCH_FILTER, state.value.text)
               )
-              viewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
             }
           ) {
             Icon(
               Icons.Default.Close,
               contentDescription = "",
-              modifier = Modifier.padding(15.dp).size(24.dp)
+              modifier = modifier.padding(15.dp).size(24.dp)
             )
           }
         }

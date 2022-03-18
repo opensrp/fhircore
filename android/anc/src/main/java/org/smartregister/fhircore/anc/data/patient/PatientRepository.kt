@@ -24,7 +24,6 @@ import com.google.android.fhir.search.count
 import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.lang.IllegalStateException
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
@@ -56,7 +55,6 @@ import org.smartregister.fhircore.anc.util.AncOverviewType
 import org.smartregister.fhircore.anc.util.RegisterType
 import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.anc.util.filterBy
-import org.smartregister.fhircore.anc.util.filterByPatient
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
@@ -67,6 +65,7 @@ import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.format
 import org.smartregister.fhircore.engine.util.extension.generateUniqueId
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
@@ -134,20 +133,22 @@ constructor(
 
   suspend fun searchPatientByLink(linkId: String): List<Patient> {
     return fhirEngine.search {
-      filterByPatient(Patient.LINK, linkId)
+      filterByResourceTypeId(Patient.LINK, ResourceType.Patient, linkId)
       filter(Patient.ACTIVE, { value = of(true) })
     }
   }
 
   suspend fun searchCondition(patientId: String): List<Condition> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId) }
+      fhirEngine.search {
+        filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
+      }
     }
 
   suspend fun searchCarePlan(patientId: String, tag: Coding? = null): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
-        filterByPatient(CarePlan.SUBJECT, patientId)
+        filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
 
         tag?.run {
           filterBy(
@@ -181,7 +182,7 @@ constructor(
 
   suspend fun revokeFlags(patientId: String) {
     fhirEngine
-      .search<Flag> { filterByPatient(Flag.PATIENT, patientId) }
+      .search<Flag> { filterByResourceTypeId(Flag.PATIENT, ResourceType.Patient, patientId) }
       .filter { it.status == Flag.FlagStatus.ACTIVE }
       .forEach {
         it.status = Flag.FlagStatus.INACTIVE
@@ -193,7 +194,9 @@ constructor(
 
   suspend fun revokeConditions(patientId: String) {
     fhirEngine
-      .search<Condition> { filterByPatient(Condition.PATIENT, patientId) }
+      .search<Condition> {
+        filterByResourceTypeId(Condition.PATIENT, ResourceType.Patient, patientId)
+      }
       .filter { it.clinicalStatus.codingFirstRep.code == "active" }
       .forEach {
         it.clinicalStatus.codingFirstRep.code = "inactive"
@@ -242,7 +245,8 @@ constructor(
             isPregnant = searchCondition(patient.logicalId).hasActivePregnancy(),
             birthDate = patient.birthDate,
             address = patient.extractAddress(),
-            isHouseHoldHead = patient.link.isEmpty()
+            isHouseHoldHead = patient.link.isEmpty(),
+            headId = ancPatientItemHead.patientIdentifier
           )
         ancPatientDetailItem = PatientDetailItem(ancPatientItem, ancPatientItemHead)
       }
@@ -250,9 +254,12 @@ constructor(
   }
 
   suspend fun fetchActiveFlag(patientId: String, flagCode: Coding): Flag? {
-    return fhirEngine.search<Flag> { filterByPatient(Flag.PATIENT, patientId) }.firstOrNull {
-      it.status == Flag.FlagStatus.ACTIVE && it.code.coding.any { it.code == flagCode.code }
-    }
+    return fhirEngine
+      .search<Flag> { filterByResourceTypeId(Flag.PATIENT, ResourceType.Patient, patientId) }
+      .firstOrNull {
+        it.status == Flag.FlagStatus.ACTIVE &&
+          it.code.coding.any { coding -> coding.code == flagCode.code }
+      }
   }
 
   fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> =
@@ -260,7 +267,7 @@ constructor(
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search { apply { filter(CarePlan.SUBJECT, { value = "Patient/$patientId" }) } }
+      fhirEngine.search { filter(CarePlan.SUBJECT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun fetchObservations(patientId: String, searchFilterString: String): Observation {
@@ -279,7 +286,7 @@ constructor(
         fhirEngine.search<Observation> {
           filterBy(searchFilter)
           // for patient filter use extension created
-          filterByPatient(Observation.SUBJECT, patientId)
+          filterByResourceTypeId(Observation.SUBJECT, ResourceType.Patient, patientId)
         }
       }
     if (observations.isNotEmpty())
@@ -310,7 +317,7 @@ constructor(
         fhirEngine.search<Observation> {
           filterBy(searchFilter)
           // for patient filter use extension created
-          filterByPatient(Observation.SUBJECT, patientId)
+          filterByResourceTypeId(Observation.SUBJECT, ResourceType.Patient, patientId)
         }
       }
 
@@ -319,9 +326,7 @@ constructor(
 
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        apply { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }.getQuery()
-      }
+      fhirEngine.search { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun markDeceased(patientId: String, deathDate: Date) {
@@ -383,7 +388,7 @@ constructor(
         var task: Task
         withContext(dispatcherProvider.io()) {
           val carePlanId = it.logicalId
-          var tasks =
+          val tasks =
             fhirEngine.search<Task> {
               apply { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }.getQuery()
             }

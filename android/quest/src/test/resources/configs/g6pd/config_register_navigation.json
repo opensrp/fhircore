@@ -1,0 +1,15 @@
+{
+  "appId": "g6pd",
+  "classification": "register_navigation",
+  "navigationOptions": [
+    {
+      "id": "control_test",
+      "title": "Control Test",
+      "icon": "ic_reports",
+      "action": {
+        "type": "questionnaire_data_details",
+        "classification": "control_test_details_view"
+      }
+    }
+  ]
+}

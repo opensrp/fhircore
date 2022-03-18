@@ -23,15 +23,19 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
-import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
@@ -43,32 +47,37 @@ import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.eir.fake.Faker
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
 @HiltAndroidTest
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
-  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
-
-  private lateinit var patientRegisterActivity: PatientRegisterActivity
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  private lateinit var patientRegisterActivity: PatientRegisterActivity
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("covax", mockk())
   @Before
   fun setUp() {
+    mockkObject(Sync)
+
     hiltAndroidRule.inject()
-    configurationRegistry.appId = "covax"
-    configurationRegistry.loadAppConfigurations("covax", accountAuthenticator) {}
+
     patientRegisterActivity =
-      Robolectric.buildActivity(PatientRegisterActivity::class.java).create().resume().get()
+      Robolectric.buildActivity(PatientRegisterActivity::class.java).create().get()
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(Sync)
   }
 
   @Test

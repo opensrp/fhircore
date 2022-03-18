@@ -25,13 +25,13 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
-  override var appId: String,
-  override val classification: String,
-  var appTitle: String,
-  var filterText: String,
-  var searchBarHint: String,
-  var newClientButtonText: String,
-  var newClientButtonStyle: String,
+  override var appId: String = "",
+  override val classification: String = "",
+  var appTitle: String = "",
+  var filterText: String = "",
+  var searchBarHint: String = "",
+  var newClientButtonText: String = "",
+  var newClientButtonStyle: String = "",
   var showSearchBar: Boolean = true,
   var showFilter: Boolean = true,
   var showScanQRCode: Boolean = true,
@@ -39,7 +39,11 @@ data class RegisterViewConfiguration(
   var registrationForm: String = "patient-registration",
   var showSideMenu: Boolean = true,
   var showBottomMenu: Boolean = false,
-  var primaryFilter: SearchFilter? = null
+  var useLabel: Boolean = true,
+  var showHeader: Boolean = true,
+  var showFooter: Boolean = true,
+  var primaryFilter: SearchFilter? = null,
+  var bottomNavigationOptions: List<NavigationOption>? = null
 ) : Configuration
 
 @Serializable
@@ -63,6 +67,9 @@ data class SearchFilter(val key: String, val code: String, val system: String)
  * @param registrationForm Name of questionnaire form used for registration
  * @param showSideMenu Hide or show the side menu
  * @param showBottomMenu Hide or show the Bottom navigation menu
+ * @param useLabel Use label if true, otherwise use icon
+ * @param showHeader Hide or show the header
+ * @param showFooter Hide or show the footer
  */
 @Stable
 fun Context.registerViewConfigurationOf(
@@ -80,6 +87,10 @@ fun Context.registerViewConfigurationOf(
   registrationForm: String = "patient-registration",
   showSideMenu: Boolean = true,
   showBottomMenu: Boolean = false,
+  useLabel: Boolean = true,
+  showHeader: Boolean = true,
+  showFooter: Boolean = true,
+  bottomNavigationOptions: List<NavigationOption>? = null
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     appId = appId,
@@ -96,5 +107,9 @@ fun Context.registerViewConfigurationOf(
     registrationForm = registrationForm,
     showSideMenu = showSideMenu,
     showBottomMenu = showBottomMenu,
+    useLabel = useLabel,
+    showHeader = showHeader,
+    showFooter = showFooter,
+    bottomNavigationOptions = bottomNavigationOptions
   )
 }

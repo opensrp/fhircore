@@ -89,11 +89,11 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
         }
       )
 
-      Column(modifier = Modifier.padding(20.dp).testTag(DETAILS_DATA_ROWS)) {
+      Column(modifier = Modifier.padding(5.dp).testTag(DETAILS_DATA_ROWS)) {
         dataItem?.rows?.forEachIndexed { i, r ->
           kotlin
             .runCatching {
-              Row(Modifier.padding(10.dp).testTag(DETAILS_DATA_ROW)) {
+              Row(Modifier.padding(5.dp).testTag(DETAILS_DATA_ROW)) {
                 r.cells.forEach { c ->
                   if (c.filter.properties?.labelDirection == Direction.UP) {
                     Column(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
@@ -105,7 +105,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
               if (r.cells.size == 0) {
                 Divider(
                   color = colorResource(id = R.color.white_smoke),
-                  modifier = Modifier.padding(15.dp)
+                  modifier = Modifier.padding(2.dp)
                 )
               }
             }

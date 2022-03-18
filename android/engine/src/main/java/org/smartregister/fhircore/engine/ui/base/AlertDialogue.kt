@@ -56,7 +56,7 @@ object AlertDialogue {
   fun showAlert(
     context: Activity,
     alertIntent: AlertIntent,
-    message: String,
+    message: CharSequence,
     title: String? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit)? = null,
     @StringRes confirmButtonText: Int = R.string.questionnaire_alert_confirm_button_title,

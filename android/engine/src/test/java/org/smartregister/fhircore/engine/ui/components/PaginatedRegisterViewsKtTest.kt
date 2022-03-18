@@ -177,7 +177,9 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 1,
         pagesCount = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = true
       )
     }
 
@@ -205,7 +207,9 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 1,
         pagesCount = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = true
       )
     }
 
@@ -236,7 +240,9 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 2,
         pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = true
       )
     }
 
@@ -270,7 +276,75 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 2,
         pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = false
+      )
+    }
+
+    // CircularProgressBar is not displayed
+    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_BAR).assertDoesNotExist()
+
+    // No results is not displayed
+    composeRule.onNodeWithText("No results").assertDoesNotExist()
+
+    // Register body is displayed
+    composeRule.onNodeWithTag(registerBodyTag).assertExists()
+    composeRule.onNodeWithTag(registerBodyTag).assertIsDisplayed()
+
+    // Pagination is not displayed
+    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertDoesNotExist()
+    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertDoesNotExist()
+    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertDoesNotExist()
+  }
+
+  @Test
+  fun testPaginatedRegisterShouldDisplayResultsBodyWithFooterAbsolute() {
+    composeRule.setContent {
+      PaginatedRegister(
+        loadState = LoadState.NotLoading(true),
+        showResultsCount = false,
+        resultCount = 52,
+        body = { RegisterBody() },
+        currentPage = 2,
+        pagesCount = 3,
+        previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = true
+      )
+    }
+
+    // CircularProgressBar is not displayed
+    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_BAR).assertDoesNotExist()
+
+    // No results is not displayed
+    composeRule.onNodeWithText("No results").assertDoesNotExist()
+
+    // Register body is displayed
+    composeRule.onNodeWithTag(registerBodyTag).assertExists()
+    composeRule.onNodeWithTag(registerBodyTag).assertIsDisplayed()
+
+    // Pagination is displayed
+    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertExists()
+    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertExists()
+    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertExists()
+  }
+
+  @Test
+  fun testPaginatedRegisterShouldDisplayResultsBodyWithNoFooterAbsolute() {
+    composeRule.setContent {
+      PaginatedRegister(
+        loadState = LoadState.NotLoading(true),
+        showResultsCount = false,
+        resultCount = 52,
+        body = { RegisterBody() },
+        currentPage = 2,
+        pagesCount = 3,
+        previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
+        showHeader = true,
+        showFooter = false
       )
     }
 

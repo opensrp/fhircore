@@ -27,7 +27,7 @@
   },
   "effectiveDateTime": "#NOW",
   "valueQuantity": {
-    "value": 6.0,
+    "value": 3.0,
     "unit": "U/g Hb",
     "system": "http://unitsofmeasure.org",
     "code": "U/g Hb"

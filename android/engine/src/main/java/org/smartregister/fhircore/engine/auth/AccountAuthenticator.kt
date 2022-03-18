@@ -34,12 +34,11 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import okhttp3.ResponseBody
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.toSha1
@@ -55,7 +54,7 @@ constructor(
   @ApplicationContext val context: Context,
   val accountManager: AccountManager,
   val oAuthService: OAuthService,
-  val configurationRegistry: ConfigurationRegistry,
+  val configService: ConfigService,
   val secureSharedPreference: SecureSharedPreference,
   val tokenManagerService: TokenManagerService,
   val sharedPreference: SharedPreferencesHelper
@@ -212,6 +211,11 @@ constructor(
     return tokenManagerService.getLocalSessionToken()?.isNotBlank() == true
   }
 
+  fun hasActivePin(): Boolean {
+    Timber.v("Checking for an active PIN")
+    return secureSharedPreference.retrieveSessionPin()?.isNotBlank() == true
+  }
+
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
     Timber.v("Validating credentials with local storage")
     return secureSharedPreference.retrieveCredentials()?.let {
@@ -294,7 +298,6 @@ constructor(
       secureSharedPreference.deleteCredentials()
       launchScreen(AppSettingActivity::class.java)
     }
-    sharedPreference.remove(APP_ID_CONFIG)
   }
 
   fun launchLoginScreen() {
@@ -308,7 +311,7 @@ constructor(
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         addCategory(Intent.CATEGORY_LAUNCHER)
       }
     )
@@ -316,13 +319,13 @@ constructor(
 
   fun getLoginActivityClass(): Class<*> = LoginActivity::class.java
 
-  fun getAccountType(): String = configurationRegistry.authConfiguration.accountType
+  fun getAccountType(): String = configService.provideAuthConfiguration().accountType
 
-  fun clientSecret(): String = configurationRegistry.authConfiguration.clientSecret
+  fun clientSecret(): String = configService.provideAuthConfiguration().clientSecret
 
-  fun clientId(): String = configurationRegistry.authConfiguration.clientId
+  fun clientId(): String = configService.provideAuthConfiguration().clientId
 
-  fun providerScope(): String = configurationRegistry.authConfiguration.scope
+  fun providerScope(): String = configService.provideAuthConfiguration().scope
 
   companion object {
     const val AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE"

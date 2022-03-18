@@ -1,0 +1,9 @@
+{
+  "appId": "ecbis",
+  "classification": "application",
+  "theme": "AppTheme",
+  "languages": ["en", "sw"],
+  "applicationName": "eCBIS",
+  "appLogoIconResourceFile": "ic_liberia",
+  "count": "100"
+}

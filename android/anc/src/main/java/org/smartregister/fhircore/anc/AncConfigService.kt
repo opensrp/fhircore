@@ -17,13 +17,9 @@
 package org.smartregister.fhircore.anc
 
 import android.content.Context
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.SearchParameter
-import org.json.JSONArray
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -36,7 +32,8 @@ class AncConfigService
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  val sharedPreferences: SharedPreferencesHelper
+  configurationRegistry: ConfigurationRegistry,
+  sharedPreferences: SharedPreferencesHelper
 ) : ConfigService {
 
   private val authenticatedUserInfo by lazy {
@@ -44,47 +41,7 @@ constructor(
   }
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>> by lazy {
-    val searchParams = loadSearchParams(context)
-    val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-    for (i in searchParams.indices) {
-      // TODO: expressionValue supports for Organization and Publisher, extend it using
-      // Composition resource
-      val expressionValue =
-        searchParams[i].expression?.let {
-          when {
-            it.contains(ConfigurationRegistry.ORGANIZATION) -> authenticatedUserInfo?.organization
-            it.contains(ConfigurationRegistry.PUBLISHER) ->
-              authenticatedUserInfo?.questionnairePublisher
-            else -> null
-          }
-        }
-
-      pairs.add(
-        Pair(
-          ResourceType.fromCode(searchParams[i].base[0].code),
-          expressionValue?.let { mapOf(searchParams[i].expression to it) } ?: mapOf()
-        )
-      )
-    }
-
-    mapOf(*pairs.toTypedArray())
-  }
-
-  private fun loadSearchParams(context: Context): List<SearchParameter> {
-    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
-    val json =
-      context.assets.open(ConfigurationRegistry.APP_SYNC_CONFIG).bufferedReader().use {
-        it.readText()
-      }
-    val searchParameters = mutableListOf<SearchParameter>()
-
-    val jsonArrayEntry = JSONArray(json)
-    (0 until jsonArrayEntry.length()).forEach {
-      searchParameters.add(
-        iParser.parseResource(jsonArrayEntry.getJSONObject(it).toString()) as SearchParameter
-      )
-    }
-    return searchParameters
+    loadRegistrySyncParams(configurationRegistry, authenticatedUserInfo)
   }
 
   override fun provideAuthConfiguration() =

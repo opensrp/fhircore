@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.util
 
-import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.search.Search
@@ -25,17 +24,12 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.ResourceType
 
 fun Coding.asCodeableConcept() =
   CodeableConcept().apply {
     addCoding(this@asCodeableConcept)
     text = this@asCodeableConcept.display
   }
-
-fun Search.filterByPatient(reference: ReferenceClientParam, patientId: String) {
-  filter(reference, { value = "${ResourceType.Patient.name}/$patientId" })
-}
 
 fun Search.filterByPatientName(name: String?) {
   if (name?.isNotBlank() == true) {
@@ -56,8 +50,8 @@ fun Search.filterBy(filter: SearchFilter) {
       filter(
         StringClientParam(filter.key),
         {
-          modifier = StringFilterModifier.MATCHES_EXACTLY
-          value = filter.valueString!!
+          this.modifier = StringFilterModifier.MATCHES_EXACTLY
+          this.value = filter.valueString!!
         }
       )
     else ->

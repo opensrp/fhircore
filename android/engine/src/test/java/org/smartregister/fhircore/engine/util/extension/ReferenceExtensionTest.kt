@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 
@@ -29,5 +30,14 @@ class ReferenceExtensionTest {
     val result = ref.extractId()
 
     Assert.assertEquals("123456", result)
+  }
+
+  @Test
+  fun testStringAsReferenceShouldReturnReference() {
+    val ref = "123456"
+
+    val result = ref.asReference(ResourceType.Patient)
+
+    Assert.assertEquals("Patient/123456", result.reference)
   }
 }

@@ -10,26 +10,15 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
+apply from: '../properties.gradle'
 apply from: '../jacoco.gradle'
-
-Properties props = new Properties()
-
-def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
-if (rootProject.file("local.properties").exists()) {
-    props.load(rootProject.file("local.properties").newDataInputStream())
-
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
-    }
-} else {
-    println("local.properties does not exist. The following values are required " + arr.join(", "))
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
-    }
-}
 
 android {
     compileSdkVersion 30
+
+    lintOptions {
+        abortOnError false
+    }
 
     dataBinding {
         enabled true
@@ -41,15 +30,23 @@ android {
         }
     }
 
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.test:monitor:1.4.0'
+        }
+    }
+
     defaultConfig {
         applicationId "org.smartregister.fhircore.anc"
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName "0.0.3"
+        versionName "0.0.4"
         multiDexEnabled true
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "org.smartregister.fhircore.anc.ui.AncTestRunner"
+        // This command ensures that the app's state is completely cleared between tests
+        testInstrumentationRunnerArguments 'clearPackageData': 'true', 'package': 'org.smartregister.fhircore.anc'
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
 
@@ -67,8 +64,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -82,7 +81,7 @@ android {
         viewBinding true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.0.1'
+        kotlinCompilerExtensionVersion '1.0.4'
     }
     packagingOptions {
         exclude 'META-INF/ASL-2.0.txt'
@@ -141,9 +140,9 @@ dependencies {
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
+    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 
-    androidTestImplementation deps.atsl.ext_junit
-    androidTestImplementation deps.atsl.espresso
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
 
     testImplementation deps.junit5_api
@@ -154,9 +153,11 @@ dependencies {
     testImplementation deps.atsl.ext_junit_ktx
     testImplementation deps.coroutines.test
     testImplementation deps.androidx.core_test
+    androidTestImplementation deps.androidx.core_test
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
+    androidTestImplementation deps.mockk_android
 
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
@@ -168,4 +169,5 @@ dependencies {
     def composeVersion = "1.0.5"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 }

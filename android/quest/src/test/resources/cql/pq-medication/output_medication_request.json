@@ -3,13 +3,24 @@
   "status": "active",
   "intent": "proposal",
   "subject": {
-    "reference": "Patient/P1"
+    "reference": "Patient/TEST_PATIENT"
   },
   "encounter": {
-    "reference": "Encounter/E1"
+    "reference": "Encounter/TEST_ENCOUNTER"
   },
   "authoredOn": "#NOW",
   "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "86859003",
+          "display": "Glucose-6-phosphate dehydrogenase deficiency anaemia"
+        }
+      ]
+    }
+  ],
+  "reasonCode": [
     {
       "coding": [
         {

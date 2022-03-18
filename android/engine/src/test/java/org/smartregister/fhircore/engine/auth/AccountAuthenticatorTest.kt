@@ -20,6 +20,7 @@ import android.accounts.Account
 import android.accounts.AccountManager
 import android.accounts.AccountManager.KEY_ACCOUNT_NAME
 import android.accounts.AccountManager.KEY_ACCOUNT_TYPE
+import android.accounts.AccountManager.KEY_AUTHTOKEN
 import android.accounts.AccountManager.KEY_INTENT
 import android.content.Intent
 import androidx.core.os.bundleOf
@@ -43,7 +44,7 @@ import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.app.fakes.FakeModel
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.IS_NEW_ACCOUNT
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -62,7 +63,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Inject lateinit var oAuthService: OAuthService
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
@@ -85,7 +86,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
-          configurationRegistry = configurationRegistry,
+          configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
           sharedPreference = sharedPreference
@@ -104,7 +105,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val bundle =
       accountAuthenticator.addAccount(
         response = mockk(relaxed = true),
-        accountType = configurationRegistry.authConfiguration.accountType,
+        accountType = configService.provideAuthConfiguration().accountType,
         authTokenType = authTokenType,
         requiredFeatures = emptyArray(),
         options = bundleOf()
@@ -114,7 +115,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertNotNull(parcelable)
     Assert.assertNotNull(parcelable!!.extras)
     Assert.assertEquals(
-      configurationRegistry.authConfiguration.accountType,
+      configService.provideAuthConfiguration().accountType,
       parcelable.getStringExtra(KEY_ACCOUNT_TYPE)
     )
 
@@ -129,7 +130,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertNotNull(
       accountAuthenticator.editProperties(
         response = null,
-        accountType = configurationRegistry.authConfiguration.accountType
+        accountType = configService.provideAuthConfiguration().accountType
       )
     )
   }
@@ -184,6 +185,104 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertTrue(parcelable.hasExtra(KEY_ACCOUNT_TYPE))
     Assert.assertEquals(account.name, parcelable.getStringExtra(KEY_ACCOUNT_NAME))
     Assert.assertEquals(account.type, parcelable.getStringExtra(KEY_ACCOUNT_TYPE))
+  }
+
+  @Test
+  fun testGetAuthTokenWhenAccessTokenIsNullShouldReturnValidAccount() {
+    val tokenManagerService = mockk<TokenManagerService>()
+    val emptySessionToken = null
+    every { tokenManagerService.getLocalSessionToken() } returns emptySessionToken
+
+    val accountManager = mockk<AccountManager>()
+    val isAuthAcknowledged = true
+    every { accountManager.notifyAccountAuthenticated(any()) } returns isAuthAcknowledged
+
+    val accountAuthenticator =
+      spyk(
+        AccountAuthenticator(
+          context = context,
+          accountManager = accountManager,
+          oAuthService = spyk(oAuthService),
+          configService = configService,
+          secureSharedPreference = secureSharedPreference,
+          tokenManagerService = tokenManagerService,
+          sharedPreference = sharedPreference
+        )
+      )
+
+    val refreshToken = "refreshToken"
+    every { accountAuthenticator.getRefreshToken() } returns refreshToken
+
+    val newAccessToken = "newAccessToken"
+    val refreshExpiresIn = 2
+    val expiresIn = 1
+    val scope = "scope"
+
+    val oAuthResponse =
+      OAuthResponse(
+        accessToken = newAccessToken,
+        tokenType = authTokenType,
+        refreshToken = refreshToken,
+        refreshExpiresIn = refreshExpiresIn,
+        expiresIn = expiresIn,
+        scope = scope
+      )
+    every { accountAuthenticator.refreshToken(any()) } returns oAuthResponse
+
+    val account = Account("newAccName", "newAccType")
+    val authToken = accountAuthenticator.getAuthToken(mockk(), account, authTokenType, bundleOf())
+
+    val actualAccountName = authToken[KEY_ACCOUNT_NAME]
+    val actualAccountType = authToken[KEY_ACCOUNT_TYPE]
+    val actualAccountAuthToken = authToken[KEY_AUTHTOKEN]
+
+    Assert.assertEquals(account.name, actualAccountName)
+    Assert.assertEquals(account.type, actualAccountType)
+    Assert.assertEquals(newAccessToken, actualAccountAuthToken)
+  }
+
+  @Test
+  fun testGetAuthTokenWhenAccessTokenIsBlankAndNewTokenResponseIsNullShouldReturnValidAccountFromAuthActivity() {
+    val tokenManagerService = mockk<TokenManagerService>()
+    val emptySessionToken = ""
+    every { tokenManagerService.getLocalSessionToken() } returns emptySessionToken
+
+    val accountManager = mockk<AccountManager>()
+    val isAuthAcknowledged = true
+    every { accountManager.notifyAccountAuthenticated(any()) } returns isAuthAcknowledged
+
+    val accountAuthenticator =
+      spyk(
+        AccountAuthenticator(
+          context = context,
+          accountManager = accountManager,
+          oAuthService = spyk(oAuthService),
+          configService = configService,
+          secureSharedPreference = secureSharedPreference,
+          tokenManagerService = tokenManagerService,
+          sharedPreference = sharedPreference
+        )
+      )
+
+    val refreshToken = "refreshToken"
+    every { accountAuthenticator.getRefreshToken() } returns refreshToken
+
+    val oAuthResponse = null
+    every { accountAuthenticator.refreshToken(any()) } returns oAuthResponse
+
+    val account = Account("newAccName", "newAccType")
+    val authToken = accountAuthenticator.getAuthToken(mockk(), account, authTokenType, bundleOf())
+    val parcelable = authToken.getParcelable<Intent>(KEY_INTENT)
+
+    val actualAccountName = parcelable?.getStringExtra(KEY_ACCOUNT_NAME)
+    val actualAccountType = parcelable?.getStringExtra(KEY_ACCOUNT_TYPE)
+
+    Assert.assertNotNull(authToken)
+    Assert.assertNotNull(parcelable)
+    Assert.assertTrue(parcelable!!.hasExtra(KEY_ACCOUNT_NAME))
+    Assert.assertTrue(parcelable.hasExtra(KEY_ACCOUNT_TYPE))
+    Assert.assertEquals(account.name, actualAccountName)
+    Assert.assertEquals(account.type, actualAccountType)
   }
 
   @Test

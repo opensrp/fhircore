@@ -31,9 +31,11 @@ import timber.log.Timber
 
 class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
 
+  private var immunizationId: String? = null
   val adverseEventViewModel: AdverseEventViewModel by viewModels()
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    immunizationId = intent.getStringExtra(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
     lifecycleScope.launch {
       immunizationId?.let { immunizationId ->
         adverseEventViewModel.loadImmunization(immunizationId).observe(

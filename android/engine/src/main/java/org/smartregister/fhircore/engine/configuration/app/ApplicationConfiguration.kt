@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.app
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 
 @Serializable
 data class ApplicationConfiguration(
@@ -25,7 +26,10 @@ data class ApplicationConfiguration(
   override val classification: String,
   var theme: String = "",
   var languages: List<String> = listOf("en"),
-  var syncInterval: Long = 30
+  var syncInterval: Long = 30,
+  var applicationName: String = "",
+  var appLogoIconResourceFile: String = "ic_default_logo",
+  var count: String = ConfigurationRegistry.DEFAULT_COUNT
 ) : Configuration
 
 /**
@@ -35,18 +39,27 @@ data class ApplicationConfiguration(
  * @param classification Set the
  * @param languages Sets the languages for the app
  * @param syncInterval Sets the periodic sync interval in seconds. Default 30.
+ * @param applicationName Sets the application display name
+ * @param appLogoIconResourceFile Sets the application logo thumb icon, this must be png file inside
+ * @param count Sets the application maximum records when downloading resource drawable folder
  */
 fun applicationConfigurationOf(
   appId: String = "",
   classification: String = "",
   theme: String = "",
   languages: List<String> = listOf("en"),
-  syncInterval: Long = 30
+  syncInterval: Long = 30,
+  applicationName: String = "",
+  appLogoIconResourceFile: String = "",
+  count: String = ConfigurationRegistry.DEFAULT_COUNT
 ): ApplicationConfiguration =
   ApplicationConfiguration(
     appId = appId,
     classification = classification,
     theme = theme,
     languages = languages,
-    syncInterval = syncInterval
+    syncInterval = syncInterval,
+    applicationName = applicationName,
+    appLogoIconResourceFile = appLogoIconResourceFile,
+    count = count
   )

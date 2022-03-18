@@ -14,6 +14,8 @@ codesystem "DosageTypeCodes": 'http://terminology.hl7.org/CodeSystem/dose-rate-t
 
 //Code used as identifers
 code "Pregnancy code": '77386006' from "SNOMED" display 'Pregnant'
+code "Underage code": '410599005' from "SNOMED" display 'Minor'
+
 code "G6PD code": '86859003' from "SNOMED" display 'G6PD Enzyme'
 code "Haemoglobin code": '259695003' from "SNOMED" display 'Haemoglobin'
 code "active": 'active' from "ConditionClinicalStatusCodes"
@@ -59,12 +61,10 @@ define "G6pd Status":
       sort by recordedDate)
 
 define "Registerd Haem":
-  Last([Observation: "Haemoglobin code"] H
-    where H.status ~ 'registered')
+  Last([Observation: "Haemoglobin code"] H)
 
 define "Registerd G6PD":
-  Last([Observation: "G6PD code"] G
-    where G.status ~ 'registered')
+  Last([Observation: "G6PD code"] G)
 
 
 define "Abnormal Haemoglobin": "Registerd Haem".value.value <= 8.0
@@ -82,13 +82,22 @@ define "recommendedDosageTiming":
   else if not "Abnormal Haemoglobin" then decimal { value: 2.0 }
 else null
 
-define "patientRef": ReplaceMatches('Patient/'+Patient.id,'#','')
-define "encounterRef": ReplaceMatches('Encounter/'+Encounter.id,'#','')
 
 define "medication": if "AgeRange" and "recommendedDosageTiming" is not null and not "is Pregnant"
 then CreateConcept("pqRegimenCode") else null
 
-define "dosage": Dosage {
+define "medicationNotPrescribed": if "medication" is null then boolean {value: true} else null
+
+define "medicationReasonCode":
+  if "is Pregnant" then "Pregnancy code"
+  else if not "AgeRange" then "Underage code"
+  else "g6pdAnaemiaCode"
+
+define "patientRef": ReplaceMatches('Patient/'+Patient.id,'#','')
+define "encounterRef": ReplaceMatches('Encounter/'+Encounter.id,'#','')
+
+define "dosage": if "medication" is not null
+  then Dosage {
   timing: Timing {
     repeat: FHIR.Timing.Repeat {
      frequency: positiveInt {value: 1},
@@ -107,10 +116,9 @@ define "dosage": Dosage {
        }
     }
   }
-}
+} else null
 
-define "medicationRequest": if "medication" is not null
-   then MedicationRequest {
+define "medicationRequest": MedicationRequest {
      subject: Reference {reference: string { value: "patientRef" } },
      encounter: Reference {reference: string { value: "encounterRef" } },
      authoredOn: dateTime{ value: Now() },
@@ -118,8 +126,10 @@ define "medicationRequest": if "medication" is not null
      intent: MedicationRequestIntent {value: 'proposal'},
      category: { CreateConcept("g6pdAnaemiaCode") },
      medication: "medication",
+     doNotPerform: "medicationNotPrescribed",
+     reasonCode: { CreateConcept("medicationReasonCode") },
      dosageInstruction: { "dosage" }
-} else null
+}
 
 // output to save or display by the engine or parser
 define "OUTPUT": List { "medicationRequest" }

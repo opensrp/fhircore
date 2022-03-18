@@ -24,20 +24,44 @@ class ApplicationConfigurationTest {
   @Test
   fun testApplicationConfiguration() {
     val applicationConfiguration =
-      ApplicationConfiguration("ancApp", "classification", "dark theme", listOf("en"), 15)
+      ApplicationConfiguration(
+        appId = "ancApp",
+        classification = "classification",
+        theme = "dark theme",
+        languages = listOf("en"),
+        syncInterval = 15,
+        applicationName = "Test App",
+        appLogoIconResourceFile = "ic_launcher",
+        count = "100"
+      )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
     Assert.assertEquals("classification", applicationConfiguration.classification)
     Assert.assertEquals("dark theme", applicationConfiguration.theme)
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
+    Assert.assertEquals("Test App", applicationConfiguration.applicationName)
+    Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
+    Assert.assertEquals("100", applicationConfiguration.count)
   }
 
   @Test
   fun testApplicationConfigurationOf() {
     val applicationConfiguration =
-      applicationConfigurationOf("ancApp", "classification", "dark theme", listOf("en"), 15)
+      applicationConfigurationOf(
+        appId = "ancApp",
+        classification = "classification",
+        theme = "dark theme",
+        languages = listOf("en"),
+        syncInterval = 15,
+        applicationName = "Test App",
+        appLogoIconResourceFile = "ic_launcher",
+        count = "100"
+      )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
     Assert.assertEquals("classification", applicationConfiguration.classification)
     Assert.assertEquals("dark theme", applicationConfiguration.theme)
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
+    Assert.assertEquals("Test App", applicationConfiguration.applicationName)
+    Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
+    Assert.assertEquals("100", applicationConfiguration.count)
   }
 }
