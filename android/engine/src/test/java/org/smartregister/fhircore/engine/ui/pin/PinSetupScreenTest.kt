@@ -112,13 +112,13 @@ class PinSetupScreenTest : RobolectricTest() {
   fun testPinSetupPageLogin() {
     composeRule.setContent {
       PinSetupPage(
-      onPinChanged = { listenerObjectSpy.onPinChanged() },
-      onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
-      onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
-      onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
-      setPinEnabled = false,
-      inputPin = "",
-      appLogoResFile = "ic_liberia"
+        onPinChanged = { listenerObjectSpy.onPinChanged() },
+        onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
+        onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
+        setPinEnabled = false,
+        inputPin = "",
+        appLogoResFile = "ic_liberia"
       )
     }
 
@@ -132,14 +132,13 @@ class PinSetupScreenTest : RobolectricTest() {
     composeRule.onNodeWithTag(PIN_TOOLBAR_MENU).assertIsDisplayed()
 
     composeRule
-    .onNodeWithTag(PIN_TOOLBAR_MENU)
-    .onChildAt(1)
-    .assertTextEquals(application.getString(R.string.pin_menu_login))
-    .assertHasClickAction()
-    .performClick()
+      .onNodeWithTag(PIN_TOOLBAR_MENU)
+      .onChildAt(1)
+      .assertTextEquals(application.getString(R.string.pin_menu_login))
+      .assertHasClickAction()
+      .performClick()
 
     verify { listenerObjectSpy.onMenuLoginClicked() }
-
   }
 
   @Test
