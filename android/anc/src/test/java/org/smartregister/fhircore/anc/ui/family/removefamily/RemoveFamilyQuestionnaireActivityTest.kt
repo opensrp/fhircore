@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.family.removefamily
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.view.View
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -114,6 +115,22 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
       getString(R.string.family_register_ok_title),
       alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
     )
+  }
+
+  @Test
+  fun testOnClickRemoveFamilyButtonShouldCallRemoveFamilyMethod() {
+    buildActivityFor(FamilyFormConstants.REMOVE_FAMILY, false)
+    ReflectionHelpers.setField(
+      removeFamilyQuestionnaireActivity,
+      "questionnaire",
+      Questionnaire().apply { experimental = false }
+    )
+    removeFamilyQuestionnaireActivity
+      .findViewById<View>(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
+      .performClick()
+    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+    assertNotNull(alertDialog)
   }
 
   override fun getActivity(): Activity {

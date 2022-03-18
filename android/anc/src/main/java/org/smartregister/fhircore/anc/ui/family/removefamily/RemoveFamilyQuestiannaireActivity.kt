@@ -84,13 +84,11 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
       title = getString(R.string.confirm_remove_family_title),
       confirmButtonListener = { dialog ->
         dialog.dismiss()
-        dismissSaveProcessing()
         removeFamilyViewModel.removeFamily(familyId = familyId)
       },
       confirmButtonText = R.string.family_register_ok_title,
       neutralButtonListener = { dialog ->
         dialog.dismiss()
-        dismissSaveProcessing()
         removeFamilyViewModel.discardRemovingFamily()
       }
     )
