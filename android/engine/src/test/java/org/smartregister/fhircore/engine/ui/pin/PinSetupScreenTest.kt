@@ -109,6 +109,40 @@ class PinSetupScreenTest : RobolectricTest() {
   }
 
   @Test
+  fun testPinSetupPageLogin() {
+    composeRule.setContent {
+      PinSetupPage(
+      onPinChanged = { listenerObjectSpy.onPinChanged() },
+      onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
+      onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+      onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
+      setPinEnabled = false,
+      inputPin = "",
+      appLogoResFile = "ic_liberia"
+      )
+    }
+
+    composeRule.onNodeWithTag(PIN_VIEW).assertExists()
+
+    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).assertExists()
+    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).assertHasClickAction()
+
+    composeRule.onNodeWithTag(PIN_TOOLBAR_TITLE).assertExists()
+    composeRule.onNodeWithTag(PIN_TOOLBAR_MENU_BUTTON).assertHasClickAction().performClick()
+    composeRule.onNodeWithTag(PIN_TOOLBAR_MENU).assertIsDisplayed()
+
+    composeRule
+    .onNodeWithTag(PIN_TOOLBAR_MENU)
+    .onChildAt(1)
+    .assertTextEquals(application.getString(R.string.pin_menu_login))
+    .assertHasClickAction()
+    .performClick()
+
+    verify { listenerObjectSpy.onMenuLoginClicked() }
+
+  }
+
+  @Test
   fun testPinSetupPageSetPinButtonEnabled() {
     composeRule.setContent {
       PinSetupPage(

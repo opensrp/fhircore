@@ -307,13 +307,6 @@ constructor(
     throwable.printStackTrace()
   }
 
-  // keeping this method just in-case if in future we need to remove credentials at somewhere
-  fun deleteLocalSessions(account: Account) {
-    accountManager.clearPassword(account)
-    secureSharedPreference.deleteSession()
-    secureSharedPreference.deleteSessionPin()
-  }
-
   fun launchLoginScreen() {
     launchScreen(getLoginActivityClass())
   }
