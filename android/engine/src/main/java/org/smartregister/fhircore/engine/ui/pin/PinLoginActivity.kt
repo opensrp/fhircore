@@ -30,7 +30,6 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import timber.log.Timber
 
 @AndroidEntryPoint
 class PinLoginActivity : BaseMultiLanguageActivity() {
@@ -69,7 +68,6 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   }
 
   private fun moveToLoginViaUsername() {
-    Timber.i("login 2")
     startActivity(
       Intent(this, LoginActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
