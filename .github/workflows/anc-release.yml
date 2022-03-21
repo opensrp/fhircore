@@ -4,12 +4,12 @@
 name: ANC APK Release
 
 on:
-- workflow_dispatch
-inputs:
-  tags:
-    description: 'Github tag'     
-    required: true
-    default: 'v1.x.x-anc'
+ workflow_dispatch:
+  inputs:
+    tags:
+      description: 'Github tag'     
+      required: true
+      default: 'v1.x.x-anc'
 
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
@@ -78,4 +78,4 @@ jobs:
           asset_name: "anc-$tag.apk"
           tag: ${{ github.ref }}
           prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
-          overwrite: false
+          overwrite: true
