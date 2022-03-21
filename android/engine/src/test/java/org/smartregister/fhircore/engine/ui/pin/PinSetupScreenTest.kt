@@ -37,6 +37,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 
 @ExperimentalCoroutinesApi
 class PinSetupScreenTest : RobolectricTest() {
@@ -50,7 +51,7 @@ class PinSetupScreenTest : RobolectricTest() {
         fun onPinChanged() {}
         fun onPinConfirmed() {}
         fun onMenuSettingsClicked() {}
-        fun onMenuLoginClicked() {}
+        fun onMenuLoginClicked(value: String) {}
       }
     )
 
@@ -83,7 +84,9 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
+        onMenuLoginClicked = {
+          listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
+        },
         setPinEnabled = false,
         inputPin = "",
         appLogoResFile = "ic_liberia"
@@ -115,7 +118,9 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
+        onMenuLoginClicked = {
+          listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
+        },
         setPinEnabled = false,
         inputPin = "",
         appLogoResFile = "ic_liberia"
@@ -138,7 +143,7 @@ class PinSetupScreenTest : RobolectricTest() {
       .assertHasClickAction()
       .performClick()
 
-    verify { listenerObjectSpy.onMenuLoginClicked() }
+    verify { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP) }
   }
 
   @Test
@@ -148,7 +153,9 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
+        onMenuLoginClicked = {
+          listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
+        },
         setPinEnabled = true,
         inputPin = "0000",
         appLogoResFile = "ic_logo_g6pd"
