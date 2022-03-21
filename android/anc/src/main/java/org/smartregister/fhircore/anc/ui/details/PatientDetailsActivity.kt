@@ -47,6 +47,7 @@ import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_REGISTER_FORM
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.AlertDialogListItem
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
@@ -108,7 +109,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
       menu.findItem(R.id.remove_this_person).run {
         highlightItem(this)
-        this.isVisible = it.isHouseHoldHead != true
       }
       menu.findItem(R.id.log_death).run { highlightItem(this) }
     }
@@ -201,14 +201,24 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         true
       }
       R.id.remove_this_person -> {
-        AlertDialogue.showConfirmAlert(
-          this,
-          R.string.remove_this_person_confirm_message,
-          R.string.remove_this_person_confirm_title,
-          this::onDeleteFamilyMemberRequested,
-          R.string.remove_this_person_button_title,
-          DeletionReason.values().map { AlertDialogListItem(it.name, getString(it.label)) }
+        startActivity(
+          Intent(this, RemoveFamilyQuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.intentArgs(
+                clientIdentifier = patientId,
+                formName = FormConfig.REMOVE_FAMILY_FORM
+
+              )
+            )
         )
+//        AlertDialogue.showConfirmAlert(
+//          this,
+//          R.string.remove_this_person_confirm_message,
+//          R.string.remove_this_person_confirm_title,
+//          this::onDeleteFamilyMemberRequested,
+//          R.string.remove_this_person_button_title,
+//          DeletionReason.values().map { AlertDialogListItem(it.name, getString(it.label)) }
+//        )
         return true
       }
       else -> return super.onOptionsItemSelected(item)
