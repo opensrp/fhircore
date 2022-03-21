@@ -19,8 +19,12 @@ package org.smartregister.fhircore.anc.ui.family.removefamily
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -39,7 +43,7 @@ class RemoveFamilyViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
 
-  private val familyDetailRepository: FamilyDetailRepository = mockk()
+  private val familyDetailRepository: FamilyDetailRepository = mockk(relaxed = true)
 
   private lateinit var removeFamilyViewModel: RemoveFamilyViewModel
 
@@ -47,6 +51,23 @@ class RemoveFamilyViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     removeFamilyViewModel = RemoveFamilyViewModel(familyDetailRepository)
+
+    coEvery { familyDetailRepository.fetchDemographics("111") } returns getPatient()
+  }
+
+  private fun getPatient(): Patient {
+    val patient =
+      Patient().apply {
+        id = "111"
+        name =
+          listOf(
+            HumanName().apply {
+              given = listOf(StringType("john"))
+              family = "doe"
+            }
+          )
+      }
+    return patient
   }
 
   @Test
@@ -55,22 +76,15 @@ class RemoveFamilyViewModelTest : RobolectricTest() {
     Assert.assertEquals(true, removeFamilyViewModel.discardRemoving.value)
   }
 
-  // Todo: fix isRemoveFamily should be true here
   @Test
   fun testRemoveFamilyShouldCallRepositoryMethod() {
-    // val mockPatent: Patient = mockk(relaxed = true)
-    // val testPatient = Patient().apply { id = "2" }
-    // coEvery { familyDetailRepository.delete(any()) } answers {}
-    // coEvery { familyDetailRepository.loadResource<Patient>(resourceId = "2") } returns
-    // mockPatient
     removeFamilyViewModel.removeFamily("111")
-    // coVerify { removeFamilyViewModel.repository.delete(any()) }
-    Assert.assertEquals(false, removeFamilyViewModel.isRemoveFamily.value)
+    Assert.assertEquals(true, removeFamilyViewModel.isRemoveFamily.value)
   }
 
   @Test
   fun testRemoveFamilyShouldCallRepositoryMethodWithError() {
     removeFamilyViewModel.removeFamily("111")
-    Assert.assertEquals(true, removeFamilyViewModel.discardRemoving.value)
+    Assert.assertEquals(false, removeFamilyViewModel.discardRemoving.value)
   }
 }

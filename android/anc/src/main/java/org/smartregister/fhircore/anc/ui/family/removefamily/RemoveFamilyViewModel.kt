@@ -19,7 +19,6 @@ package org.smartregister.fhircore.anc.ui.family.removefamily
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -36,14 +35,11 @@ constructor(
 
   var isRemoveFamily = MutableLiveData(false)
   var discardRemoving = MutableLiveData(false)
-  lateinit var familyResourceNotFoundText: String
 
   fun removeFamily(familyId: String) {
     viewModelScope.launch {
       try {
-        val family: Patient =
-          repository.loadResource(familyId)
-            ?: throw ResourceNotFoundException(familyResourceNotFoundText)
+        val family: Patient = repository.fetchDemographics(familyId)
         repository.delete(family)
         isRemoveFamily.postValue(true)
       } catch (e: Exception) {
