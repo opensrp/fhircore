@@ -45,6 +45,18 @@ class RegisterDataViewModel<I : Any, O : Any>(
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
 
+  private val _registerViewConfiguration = MutableLiveData(RegisterViewConfiguration())
+  val registerViewConfiguration
+    get() = _registerViewConfiguration
+
+  private val _showHeader = MutableLiveData(true)
+  val showHeader
+    get() = _showHeader
+
+  private val _showFooter = MutableLiveData(true)
+  val showFooter
+    get() = _showFooter
+
   private val _showLoader = MutableLiveData(false)
   val showLoader
     get() = _showLoader
@@ -52,10 +64,6 @@ class RegisterDataViewModel<I : Any, O : Any>(
   private val _showResultsCount = MutableLiveData(false)
   val showResultsCount
     get() = _showResultsCount
-
-  private val _showPageCount = MutableLiveData(true)
-  val showPageCount
-    get() = _showPageCount
 
   private val _totalRecordsCount = MutableLiveData(1L)
 
@@ -68,11 +76,6 @@ class RegisterDataViewModel<I : Any, O : Any>(
     MutableStateFlow(getPagingData(currentPage = 0, loadAll = true))
 
   var registerData: MutableStateFlow<Flow<PagingData<O>>> = MutableStateFlow(emptyFlow())
-
-  private val _registerViewConfiguration: MutableLiveData<RegisterViewConfiguration> =
-    MutableLiveData()
-  val registerViewConfiguration
-    get() = _registerViewConfiguration
 
   init {
     viewModelScope.launch { _totalRecordsCount.postValue(registerRepository.countAll()) }
@@ -120,7 +123,8 @@ class RegisterDataViewModel<I : Any, O : Any>(
 
   fun updateViewConfigurations(viewConfiguration: RegisterViewConfiguration) {
     this._registerViewConfiguration.postValue(viewConfiguration)
-    registerViewConfiguration.value?.showPageCount?.let { this.showPageCount(it) }
+    this._showHeader.postValue(viewConfiguration.showHeader)
+    this._showFooter.postValue(viewConfiguration.showFooter)
   }
 
   fun previousPage() {
@@ -141,10 +145,6 @@ class RegisterDataViewModel<I : Any, O : Any>(
 
   fun showResultsCount(showResultsCount: Boolean) {
     this._showResultsCount.postValue(showResultsCount)
-  }
-
-  fun showPageCount(showPageCount: Boolean) {
-    this._showPageCount.postValue(showPageCount)
   }
 
   fun setShowLoader(showLoader: Boolean) {

@@ -85,6 +85,27 @@
         "type": "token",
         "expression": "1753,32883,46841,46831,46823"
       }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "count",
+        "code": "_count",
+        "base": [
+          "Patient",
+          "Encounter",
+          "Condition",
+          "MedicationRequest",
+          "Task",
+          "Observation",
+          "QuestionnaireResponse",
+          "Questionnaire",
+          "StructureMap",
+          "Library"
+        ],
+        "type": "token",
+        "expression": "#count"
+      }
     }
   ]
 }
