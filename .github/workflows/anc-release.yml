@@ -62,8 +62,8 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: android/anc/build/outputs/bundle/release/anc-release.aab
-          asset_name: "anc-$tag.aab"
-          tag: ${{ github.ref }}
+          asset_name: "anc-${{ github.event.inputs.tags }}.aab"
+          tag: ${{ github.event.inputs.tags }}
           overwrite: true
       
       - name: Generate APK (Android App PacKage) file
@@ -75,7 +75,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: android/anc/build/outputs/apk/release/anc-release.apk
-          asset_name: "anc-$tag.apk"
-          tag: ${{ github.ref }}
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+          asset_name: "anc-${{ github.event.inputs.tags }}.apk"
+          tag: ${{ github.event.inputs.tags }}
+          prerelease: ${{ contains(github.event.inputs.tags, '-alpha') || contains(github.event.inputs.tags, '-beta') }}
           overwrite: true
