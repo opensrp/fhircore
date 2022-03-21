@@ -57,6 +57,19 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
     }
 
+    signingConfigs {
+        release {
+
+            v1SigningEnabled false
+            v2SigningEnabled true
+
+            keyAlias System.getenv("KEYSTORE_ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            storeFile file(System.getProperty("user.home") + "/fhircore.keystore.jks")
+        }
+    }
+
     buildTypes {
         debug {
             testCoverageEnabled true
@@ -64,7 +77,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-
+	    signingConfig signingConfigs.release
         }
     }
 

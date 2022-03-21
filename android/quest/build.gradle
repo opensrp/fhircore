@@ -44,7 +44,7 @@ android {
     signingConfigs {
         release {
 
-            v1SigningEnabled true
+            v1SigningEnabled false
             v2SigningEnabled true
 
             keyAlias System.getenv("KEYSTORE_ALIAS")
