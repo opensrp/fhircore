@@ -91,9 +91,6 @@ internal class PinViewModelTest : RobolectricTest() {
         AuthCredentials("username", "password", "sessionToken", "refreshToken")
       )
     } returns Unit
-    coEvery { secureSharedPreference.retrievePinCredentials() } returns
-      AuthCredentials("username", "password", "sessionToken", "refreshToken")
-    coEvery { secureSharedPreference.savePinCredentials() } returns Unit
 
     pinViewModel =
       PinViewModel(
@@ -212,7 +209,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnMenuLoginClicked() {
-    pinViewModel.onMenuLoginClicked()
+    pinViewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME)
     Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
   }
 
