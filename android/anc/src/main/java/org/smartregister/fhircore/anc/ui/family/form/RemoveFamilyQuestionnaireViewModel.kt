@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
@@ -52,7 +53,7 @@ constructor(
     val familyMembers = MutableLiveData<List<FamilyMemberItem>>()
 
     private suspend fun saveResponse(questionnaire: Questionnaire, questionnaireResponse: QuestionnaireResponse) {
-        reasonRemove = questionnaireResponse.item[0].answer.first().item.toString()
+        reasonRemove = (questionnaireResponse.item?.first()?.answer?.first()?.value as Coding).display
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
