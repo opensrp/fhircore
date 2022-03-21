@@ -46,23 +46,33 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
     saveBtn.text = getString(R.string.remove_family)
 
     removeFamilyViewModel.apply {
+      familyResourceNotFoundText = getString(R.string.family_resource_not_found)
       isRemoveFamily.observe(this@RemoveFamilyQuestionnaireActivity) {
         if (it) {
-          val intent =
-            Intent(this@RemoveFamilyQuestionnaireActivity, FamilyRegisterActivity::class.java)
-              .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-          this@RemoveFamilyQuestionnaireActivity.run {
-            startActivity(intent)
-            finish()
-          }
+          moveToHomePage()
         }
       }
       discardRemoving.observe(this@RemoveFamilyQuestionnaireActivity) {
         if (it) {
-          finish()
+          discardRemovingAncBackToFamilyDetailPage()
         }
       }
     }
+  }
+
+  private fun moveToHomePage() {
+    val intent =
+      Intent(this@RemoveFamilyQuestionnaireActivity, FamilyRegisterActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      }
+    this@RemoveFamilyQuestionnaireActivity.run {
+      startActivity(intent)
+      finish()
+    }
+  }
+
+  private fun discardRemovingAncBackToFamilyDetailPage() {
+    finish()
   }
 
   override fun onClick(view: View) {
@@ -84,6 +94,12 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
       title = getString(R.string.confirm_remove_family_title),
       confirmButtonListener = { dialog ->
         dialog.dismiss()
+        lifecycleScope.launch {
+          questionnaireViewModel.saveQuestionnaireResponse(
+            questionnaire = questionnaire,
+            questionnaireResponse = getQuestionnaireResponse()
+          )
+        }
         removeFamilyViewModel.removeFamily(familyId = familyId)
       },
       confirmButtonText = R.string.family_register_ok_title,

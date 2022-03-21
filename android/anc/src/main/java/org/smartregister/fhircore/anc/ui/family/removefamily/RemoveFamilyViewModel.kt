@@ -36,13 +36,14 @@ constructor(
 
   var isRemoveFamily = MutableLiveData(false)
   var discardRemoving = MutableLiveData(false)
+  lateinit var familyResourceNotFoundText: String
 
   fun removeFamily(familyId: String) {
     viewModelScope.launch {
       try {
         val family: Patient =
           repository.loadResource(familyId)
-            ?: throw ResourceNotFoundException("Family resource for that ID NOT Found")
+            ?: throw ResourceNotFoundException(familyResourceNotFoundText)
         repository.delete(family)
         isRemoveFamily.postValue(true)
       } catch (e: Exception) {
