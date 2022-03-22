@@ -20,7 +20,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
 class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
-    lateinit var saveBtn: Button
+    private lateinit var saveBtn: Button
     private lateinit var familyId: String
 
     override val questionnaireViewModel by viewModels<RemoveFamilyQuestionnaireViewModel>()

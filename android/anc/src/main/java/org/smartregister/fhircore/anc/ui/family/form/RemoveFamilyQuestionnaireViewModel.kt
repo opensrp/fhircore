@@ -91,10 +91,19 @@ constructor(
     fun deleteFamilyMember(patientId: String): LiveData<Boolean>  {
         val deletion = MutableLiveData(false)
         viewModelScope.launch {
-            patientRepository.deletePatient(patientId, DeletionReason.values().single { it.name == reasonRemove })
+            patientRepository.deletePatient(patientId, getReasonRemove())
             deletion.postValue(true)
         }
         return deletion
+    }
+
+    private fun getReasonRemove(): DeletionReason {
+        return when (reasonRemove) {
+            "Moved away" -> DeletionReason.MOVED_AWAY
+            "Died" -> DeletionReason.DIED
+            "Other" -> DeletionReason.OTHER
+            else -> DeletionReason.OTHER
+        }
     }
 
     fun process(
