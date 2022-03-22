@@ -87,4 +87,10 @@ class RemoveFamilyViewModelTest : RobolectricTest() {
     removeFamilyViewModel.removeFamily("111")
     Assert.assertEquals(false, removeFamilyViewModel.discardRemoving.value)
   }
+
+  @Test
+  fun testFetchFamilyName() {
+    removeFamilyViewModel.fetchFamilyName("1234")
+    Assert.assertNotNull(removeFamilyViewModel.demographics.value)
+  }
 }

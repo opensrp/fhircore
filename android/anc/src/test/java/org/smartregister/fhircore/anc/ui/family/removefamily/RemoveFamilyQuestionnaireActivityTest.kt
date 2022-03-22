@@ -106,7 +106,8 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
     ReflectionHelpers.callInstanceMethod<Void>(
       removeFamilyQuestionnaireActivity,
       "removeFamilyMember",
-      ReflectionHelpers.ClassParameter.from(String::class.java, "123")
+      ReflectionHelpers.ClassParameter.from(String::class.java, "1234"),
+      ReflectionHelpers.ClassParameter.from(String::class.java, "Test FamilyName")
     )
 
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())
@@ -123,7 +124,7 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
   @Test
   fun testRemovingFamilyMoveToHomeAndFinishActivity() {
     buildActivityFor(FamilyFormConstants.REMOVE_FAMILY, false)
-    ReflectionHelpers.callInstanceMethod<Void>(removeFamilyQuestionnaireActivity, "moveToHomePage")
+    removeFamilyQuestionnaireActivity.moveToHomePage()
     val expectedIntent =
       Intent(removeFamilyQuestionnaireActivity, FamilyRegisterActivity::class.java)
     val actualIntent =
@@ -136,13 +137,7 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
   @Test
   fun testDiscardRemovingFinishActivity() {
     buildActivityFor(FamilyFormConstants.REMOVE_FAMILY, false)
-    //    removeFamilyQuestionnaireActivitySpy = spyk(removeFamilyQuestionnaireActivity,
-    // recordPrivateCalls = true)
-
-    ReflectionHelpers.callInstanceMethod<Void>(
-      removeFamilyQuestionnaireActivity,
-      "discardRemovingAncBackToFamilyDetailPage"
-    )
+    removeFamilyQuestionnaireActivity.discardRemovingAncBackToFamilyDetailPage()
     assertTrue(removeFamilyQuestionnaireActivity.isFinishing)
   }
 

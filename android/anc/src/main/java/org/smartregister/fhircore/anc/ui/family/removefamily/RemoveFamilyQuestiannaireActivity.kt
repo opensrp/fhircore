@@ -29,6 +29,7 @@ import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 
 class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
 
@@ -41,7 +42,6 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     familyId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    familyName = intent.extras?.getString(QUESTIONNAIRE_ARG_FAMILY_NAME_KEY) ?: ""
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
     saveBtn.text = getString(R.string.remove_family)
 
@@ -55,6 +55,10 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
         if (it) {
           discardRemovingAncBackToFamilyDetailPage()
         }
+      }
+      fetchFamilyName(familyId = familyId)
+      demographics.observe(this@RemoveFamilyQuestionnaireActivity) {
+        it.let { familyName = it.extractFamilyName() }
       }
     }
   }
@@ -70,7 +74,7 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
     }
   }
 
-  private fun discardRemovingAncBackToFamilyDetailPage() {
+  fun discardRemovingAncBackToFamilyDetailPage() {
     finish()
   }
 
@@ -82,10 +86,10 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     dismissSaveProcessing()
-    lifecycleScope.launch { removeFamilyMember(familyId = familyId) }
+    lifecycleScope.launch { removeFamilyMember(familyId = familyId, familyName = familyName) }
   }
 
-  private fun removeFamilyMember(familyId: String) {
+  private fun removeFamilyMember(familyId: String, familyName: String) {
     AlertDialogue.showAlert(
       context = this,
       alertIntent = AlertIntent.CONFIRM,

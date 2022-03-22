@@ -35,6 +35,11 @@ constructor(
 
   var isRemoveFamily = MutableLiveData(false)
   var discardRemoving = MutableLiveData(false)
+  val demographics = MutableLiveData<Patient>()
+
+  fun fetchFamilyName(familyId: String) {
+    viewModelScope.launch { demographics.postValue(repository.fetchDemographics(familyId)) }
+  }
 
   fun removeFamily(familyId: String) {
     viewModelScope.launch {
