@@ -359,7 +359,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
   fun testOnDeleteFamilyMemberRequested() {
     var dialog = mockk<AlertDialog>()
 
-    every { patientDetailsActivitySpy.getSelectedKey(any()) } returns DeletionReason.MOVED_OUT.name
+    every { patientDetailsActivitySpy.getSelectedKey(any()) } returns DeletionReason.MOVED_AWAY.name
     coEvery { patientDetailsActivitySpy.ancDetailsViewModel.deletePatient(any(), any()) } returns
       MutableLiveData(true)
 
