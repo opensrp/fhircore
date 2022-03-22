@@ -22,6 +22,6 @@ import kotlinx.serialization.Serializable
 data class AuthCredentials(
   val username: String,
   val password: String,
-  var sessionToken: String,
-  var refreshToken: String
+  var sessionToken: String? = null,
+  var refreshToken: String? = null
 )

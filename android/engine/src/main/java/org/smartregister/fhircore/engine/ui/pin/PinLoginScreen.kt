@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 
@@ -90,7 +91,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     onPinChanged = viewModel::onPinChanged,
     showError = showError,
     enterUserPinMessage = viewModel.enterUserLoginMessage,
-    onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
+    onMenuLoginClicked = { viewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
     forgotPin = viewModel::forgotPin,
     appName = viewModel.appName,
     appLogoResFile = viewModel.appLogoResFile
