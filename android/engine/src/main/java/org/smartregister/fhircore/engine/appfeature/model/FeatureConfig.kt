@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration
+package org.smartregister.fhircore.engine.appfeature.model
 
-enum class AppConfigClassification : ConfigClassification {
-  APPLICATION,
-  LOGIN,
-  PIN,
-  SYNC;
+import kotlinx.serialization.Serializable
 
-  override val classification: String = name.lowercase()
-}
+@Serializable
+data class FeatureConfig(
+  val feature: String,
+  val active: Boolean,
+  val settings: Map<String, String> = emptyMap(),
+  val target: AppTarget,
+  val healthModule: HealthModule,
+  val useCases: List<String>
+)

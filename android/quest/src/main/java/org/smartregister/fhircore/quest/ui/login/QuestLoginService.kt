@@ -19,21 +19,25 @@ package org.smartregister.fhircore.quest.ui.login
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.ui.login.LoginService
-import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
+import org.smartregister.fhircore.engine.ui.main.AppMainActivity
 
-class QuestLoginService @Inject constructor() : LoginService {
+class QuestLoginService @Inject constructor(val appFeatureManager: AppFeatureManager) :
+  LoginService {
 
   override lateinit var loginActivity: AppCompatActivity
 
   override fun navigateToHome() {
     val intent =
-      Intent(loginActivity, PatientRegisterActivity::class.java).apply {
+      Intent(loginActivity, AppMainActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
     loginActivity.run {
       startActivity(intent)
       finish()
     }
+
+    appFeatureManager.loadAndActivateFeatures()
   }
 }

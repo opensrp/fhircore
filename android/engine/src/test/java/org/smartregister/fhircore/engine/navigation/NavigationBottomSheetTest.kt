@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.navigation
+package org.smartregister.fhircore.engine.navigation
 
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
+import android.content.Context
+import androidx.appcompat.app.AppCompatActivity
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.spyk
-import io.mockk.verify
+import org.junit.After
+import org.junit.Assert
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Robolectric.buildActivity
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 
-class RegisterBottomSheetViewsKtTest : RobolectricTest() {
+class NavigationBottomSheetTest : RobolectricTest() {
 
-  private val mockListener: (String) -> Unit = spyk({})
+  private val navigationBottomSheet = spyk(NavigationBottomSheet {})
 
-  @get:Rule val composeRule = createComposeRule()
+  private lateinit var activity: AppCompatActivity
 
   private val registerItems =
     listOf(
@@ -42,25 +43,20 @@ class RegisterBottomSheetViewsKtTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    composeRule.setContent {
-      RegisterBottomSheet(registers = registerItems, itemListener = mockListener)
-    }
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+    activity = buildActivity(AppCompatActivity::class.java).create().resume().get()
+    navigationBottomSheet.registersList = registerItems
+  }
+
+  @After
+  fun tearDown() {
+    activity.finish()
   }
 
   @Test
-  fun testThatMenuItemsAreShowing() {
-    composeRule.onNodeWithText("Menu 1").assertExists()
-    composeRule.onNodeWithText("Menu 2").assertExists()
-
-    // A tick icon showing for selected menu
-    composeRule.onNodeWithContentDescription("Tick").assertExists()
-  }
-
-  @Test
-  fun testThatMenuClickCallsTheListener() {
-    val menu2 = composeRule.onNodeWithText("Menu 2")
-    menu2.assertExists()
-    menu2.performClick()
-    verify { mockListener(any()) }
+  fun testThatBottomSheetIsShown() {
+    Assert.assertEquals(2, navigationBottomSheet.registersList.size)
+    navigationBottomSheet.show(activity.supportFragmentManager, NavigationBottomSheet.TAG)
+    Assert.assertTrue(navigationBottomSheet.showsDialog)
   }
 }

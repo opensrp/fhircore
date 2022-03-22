@@ -22,8 +22,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.register.model.Language
@@ -43,14 +43,15 @@ constructor(
 
   val languages by lazy { fetchLanguages() }
 
+  val onLogout = MutableLiveData<Boolean?>(null)
+
+  val language = MutableLiveData<Language?>(null)
+
   fun fetchLanguages() =
     configurationRegistry
       .retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
       .run { this@run.languages }
       .map { Language(it, Locale.forLanguageTag(it).displayName) }
-
-  val onLogout = MutableLiveData<Boolean?>(null)
-  val language = MutableLiveData<Language?>(null)
 
   fun runSync() {
     syncBroadcaster.runSync()

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.navigation
+package org.smartregister.fhircore.engine.navigation
 
 import android.os.Bundle
 import android.view.LayoutInflater

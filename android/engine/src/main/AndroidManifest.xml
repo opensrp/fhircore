@@ -33,13 +33,12 @@
         <activity android:name=".ui.login.LoginActivity" />
         <activity android:name=".ui.pin.PinLoginActivity" />
         <activity android:name=".ui.pin.PinSetupActivity" />
+        <activity android:name=".ui.main.AppMainActivity" />
         <activity
             android:name=".ui.questionnaire.QuestionnaireActivity"
-
             android:theme="@style/AppTheme" />
         <activity
             android:name=".HiltActivityForTest"
-
             android:theme="@style/AppTheme" />
 
     </application>

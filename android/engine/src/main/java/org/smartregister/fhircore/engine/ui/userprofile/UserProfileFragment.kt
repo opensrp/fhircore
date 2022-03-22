@@ -41,9 +41,7 @@ class UserProfileFragment : Fragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    return ComposeView(requireContext()).apply {
-      setContent { AppTheme { UserProfileScreen(userProfileViewModel) } }
-    }
+    return ComposeView(requireContext()).apply { setContent { AppTheme { UserProfileScreen() } } }
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

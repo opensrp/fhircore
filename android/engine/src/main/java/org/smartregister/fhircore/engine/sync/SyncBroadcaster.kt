@@ -22,22 +22,12 @@ import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
-
-/**
- * An interface the exposes a callback method [onSync] which accepts an application level FHIR Sync
- * [State].
- */
-interface OnSyncListener {
-  /** Callback method invoked to handle sync [state] */
-  fun onSync(state: State)
-}
 
 /**
  * A broadcaster that maintains a list of [OnSyncListener]. Whenever a new sync [State] is received

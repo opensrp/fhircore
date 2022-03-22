@@ -72,7 +72,7 @@ class ReportHomeActivity :
 
     registerDataViewModel =
       initializeRegisterDataViewModel().also { dataViewModel ->
-        dataViewModel.currentPage.observe(currentActivity, { dataViewModel.loadPageData(it) })
+        dataViewModel.currentPage.observe(currentActivity) { dataViewModel.loadPageData(it) }
       }
 
     configureViews(registerViewConfiguration)

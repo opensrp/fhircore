@@ -17,7 +17,6 @@
         <activity android:name=".ui.patient.details.QuestPatientDetailActivity" />
         <activity android:name=".ui.patient.details.QuestionnaireDataDetailActivity" />
         <activity android:name=".ui.patient.details.SimpleDetailsActivity" />
-
         <service
             android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService"
             android:exported="false">

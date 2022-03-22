@@ -29,7 +29,6 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.FhirConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo

@@ -58,10 +58,10 @@ import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
+import org.smartregister.fhircore.engine.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
@@ -123,19 +123,15 @@ abstract class BaseRegisterActivity :
 
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
 
-    registerViewModel.lastSyncTimestamp.observe(
-      this,
-      {
-        registerActivityBinding.btnRegisterNewClient.isEnabled = !it.isNullOrEmpty()
-        registerActivityBinding.tvLastSyncTimestamp.text = it?.formatSyncDate() ?: ""
-      }
-    )
+    registerViewModel.lastSyncTimestamp.observe(this) {
+      registerActivityBinding.btnRegisterNewClient.isEnabled = !it.isNullOrEmpty()
+      registerActivityBinding.tvLastSyncTimestamp.text = it?.formatSyncDate() ?: ""
+    }
 
     registerViewModel.run {
-      selectedLanguage.observe(
-        this@BaseRegisterActivity,
-        { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
-      )
+      selectedLanguage.observe(this@BaseRegisterActivity) {
+        updateLanguage(Language(it, Locale.forLanguageTag(it).displayName))
+      }
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
