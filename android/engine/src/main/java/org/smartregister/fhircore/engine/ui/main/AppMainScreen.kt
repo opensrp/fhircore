@@ -39,13 +39,6 @@ fun MainScreen(appMainViewModel: AppMainViewModel = hiltViewModel()) {
   val scope = rememberCoroutineScope()
   val scaffoldState = rememberScaffoldState()
   val openDrawer = { scope.launch { scaffoldState.drawerState.open() } }
-  val navigationScreens =
-    listOf(
-      NavigationScreen.Home,
-      NavigationScreen.Tasks,
-      NavigationScreen.Reports,
-      NavigationScreen.Settings
-    )
 
   Scaffold(
     drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
@@ -60,13 +53,16 @@ fun MainScreen(appMainViewModel: AppMainViewModel = hiltViewModel()) {
       )
     },
     bottomBar = {
-      BottomScreenSection(navController = navController, navigationScreens = navigationScreens)
+      BottomScreenSection(
+        navController = navController,
+        navigationScreens = NavigationScreen.appScreens
+      )
     }
   ) {
     AppMainNavigationGraph(
-      navController,
-      navigationScreens,
-      openDrawer,
+      navController = navController,
+      navigationScreens = NavigationScreen.appScreens,
+      openDrawer = openDrawer,
     )
   }
 }
@@ -83,7 +79,7 @@ private fun AppMainNavigationGraph(
         is NavigationScreen.Home ->
           composable(it.route) {
             PatientRegisterScreen(
-              openDrawer = openDrawer,
+              openDrawer = openDrawer
             )
           }
         NavigationScreen.Tasks -> composable(NavigationScreen.Tasks.route) {}

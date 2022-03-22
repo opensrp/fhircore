@@ -33,5 +33,7 @@ sealed class NavigationScreen(
     const val TASKS_ROUTE = "tasksRoute"
     const val REPORTS_ROUTE = "reportsRoute"
     const val SETTINGS_ROUTE = "settingsRoute"
+
+    val appScreens = listOf(Home, Tasks, Reports, Settings)
   }
 }

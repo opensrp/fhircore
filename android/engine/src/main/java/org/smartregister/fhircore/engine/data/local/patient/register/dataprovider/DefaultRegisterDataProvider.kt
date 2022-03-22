@@ -25,7 +25,6 @@ import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterRow
@@ -47,7 +46,7 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatche
           filter(Patient.ACTIVE, { value = of(true) })
           sort(Patient.NAME, Order.ASCENDING)
           count = DEFAULT_PAGE_SIZE
-          from = 0 * PaginationUtil.DEFAULT_PAGE_SIZE
+          from = 0 * DEFAULT_PAGE_SIZE
         }
 
       patients.map {
