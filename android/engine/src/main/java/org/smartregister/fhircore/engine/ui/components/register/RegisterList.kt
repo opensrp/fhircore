@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.ui.components.register
 
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -33,13 +35,13 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 fun RegisterList(modifier: Modifier = Modifier, pagingItems: LazyPagingItems<RegisterRow>) {
   LazyColumn {
     items(pagingItems, key = { it.identifier }) {
-      RegisterListRow(it!!)
+      RegisterListRow(registerRow = it!!)
       Divider(color = DividerColor, thickness = 1.dp)
     }
     pagingItems.apply {
       when {
         loadState.refresh is LoadState.Loading ->
-          item { CircularProgressBar(modifier = modifier.fillParentMaxSize()) }
+          item { CircularProgressBar(modifier = modifier.wrapContentSize(Alignment.Center)) }
         loadState.append is LoadState.Loading -> item { CircularProgressBar() }
         loadState.refresh is LoadState.Error -> {
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error

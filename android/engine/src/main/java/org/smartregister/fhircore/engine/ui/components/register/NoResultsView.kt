@@ -16,36 +16,46 @@
 
 package org.smartregister.fhircore.engine.ui.components.register
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
-fun RegisterListRow(modifier: Modifier = Modifier, registerRow: RegisterRow) {
+fun NoResults(modifier: Modifier = Modifier) {
   Column(
-    modifier =
-      modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 16.dp, vertical = 24.dp)
-  ) { Text(text = registerRow.name) }
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    Text(
+      fontWeight = FontWeight.Bold,
+      text = stringResource(R.string.no_results),
+      modifier = modifier.padding(8.dp),
+      textAlign = TextAlign.Center
+    )
+    Text(
+      color = GreyTextColor,
+      text = stringResource(id = R.string.no_results_message),
+      modifier = modifier.padding(8.dp),
+      textAlign = TextAlign.Center
+    )
+  }
 }
 
 @Composable
 @Preview(showBackground = true)
-fun RegisterListRowPreview() {
-  RegisterListRow(
-    registerRow =
-      RegisterRow(
-        identifier = "1234",
-        logicalId = "1234",
-        name = "John Doe",
-        gender = "Male",
-        address = "Nairobi"
-      )
-  )
+@ExcludeFromJacocoGeneratedReport
+fun NoResultsPreview() {
+  NoResults(modifier = Modifier)
 }

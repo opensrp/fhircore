@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -27,19 +26,15 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.paging.LoadState
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.register.DEFAULT_MAX_PAGE_COUNT
+import org.smartregister.fhircore.engine.ui.components.register.NoResults
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
-import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val DEFAULT_MAX_HEIGHT = 0.5f
@@ -109,34 +104,6 @@ fun PaginatedRegister(
       }
     }
   }
-}
-
-@Composable
-fun NoResults(modifier: Modifier = Modifier) {
-  Column(
-    verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    Text(
-      fontWeight = FontWeight.Bold,
-      text = stringResource(R.string.no_results),
-      modifier = modifier.padding(8.dp),
-      textAlign = TextAlign.Center
-    )
-    Text(
-      color = GreyTextColor,
-      text = stringResource(id = R.string.no_results_message),
-      modifier = modifier.padding(8.dp),
-      textAlign = TextAlign.Center
-    )
-  }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun NoResultsPreview() {
-  NoResults(modifier = Modifier)
 }
 
 @Composable

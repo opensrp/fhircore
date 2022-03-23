@@ -20,7 +20,7 @@ import androidx.compose.runtime.Stable
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 
 /**
- * @property feature Name of the feature
+ * @property appFeatureName Name of the feature
  * @property healthModule Optional healthModule property
  * @property iconResource Android drawable resource used as icon for menu option
  * @property titleResource Android translatable string resource used as the menu option title
@@ -30,7 +30,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
  */
 @Stable
 data class SideMenuOption(
-  val feature: String,
+  val appFeatureName: String,
   val healthModule: HealthModule? = null,
   val iconResource: Int,
   val titleResource: Int,

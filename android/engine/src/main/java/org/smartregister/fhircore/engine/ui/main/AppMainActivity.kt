@@ -18,25 +18,50 @@ package org.smartregister.fhircore.engine.ui.main
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.showToast
+import timber.log.Timber
 
 @AndroidEntryPoint
 open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
+  val appMainViewModel by viewModels<AppMainViewModel>()
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent { AppTheme { MainScreen() } }
+    setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
   }
 
-  override fun onSync(state: State) {}
+  override fun onSync(state: State) {
+    Timber.i("Sync state received is $state")
+    when (state) {
+      is State.Started -> {
+        showToast(getString(R.string.syncing))
+        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state))
+      }
+      is State.Failed, is State.Glitch -> {
+        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state))
+      }
+      is State.Finished -> {
+        showToast(getString(R.string.sync_completed))
+        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state))
+      }
+      is State.InProgress -> {
+        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state))
+      }
+    }
+  }
 }

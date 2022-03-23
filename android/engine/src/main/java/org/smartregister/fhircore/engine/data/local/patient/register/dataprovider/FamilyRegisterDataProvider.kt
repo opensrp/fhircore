@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.data.local.patient.register.dataprovid
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterRow
 import org.smartregister.fhircore.engine.domain.repository.RegisterDataProvider
@@ -28,14 +27,23 @@ import org.smartregister.fhircore.engine.domain.repository.RegisterDataProvider
 class FamilyRegisterDataProvider @Inject constructor(val fhirEngine: FhirEngine) :
   RegisterDataProvider {
 
-  override suspend fun provideRegisterData(appFeature: AppFeature?): List<RegisterRow> {
+  override suspend fun provideRegisterData(
+    currentPage: Int,
+    loadAll: Boolean,
+    appFeatureName: String?
+  ): List<RegisterRow> {
     return emptyList()
   }
 
   override suspend fun provideProfileData(
-    appFeature: AppFeature?,
+    appFeatureName: String?,
     patientId: String
   ): PatientProfileData? {
     return null
+  }
+
+  override suspend fun provideRegisterDataCount(appFeatureName: String?): Long {
+    // TODO("Return count for Family register clients")
+    return 0
   }
 }

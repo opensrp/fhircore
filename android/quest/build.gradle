@@ -119,8 +119,6 @@ android {
         }
     }
 
-    compileSdkVersion 30
-
     lintOptions {
         abortOnError false
     }

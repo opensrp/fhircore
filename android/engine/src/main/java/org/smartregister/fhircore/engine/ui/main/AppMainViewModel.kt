@@ -16,13 +16,17 @@
 
 package org.smartregister.fhircore.engine.ui.main
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.navigation.SideMenuOptionFactory
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 @HiltViewModel
 class AppMainViewModel
@@ -30,19 +34,37 @@ class AppMainViewModel
 constructor(
   val accountAuthenticator: AccountAuthenticator,
   val syncBroadcaster: SyncBroadcaster,
-  val sideMenuOptionFactory: SideMenuOptionFactory
+  val sideMenuOptionFactory: SideMenuOptionFactory,
+  val secureSharedPreference: SecureSharedPreference
 ) : ViewModel() {
 
-  fun onSideMenuEvent(event: SideMenuEvent) {
+  var appMainUiState by mutableStateOf(AppMainUiState())
+    private set
+
+  init {
+    updateUiState()
+  }
+
+  fun onEvent(event: AppMainEvent) {
     when (event) {
-      SideMenuEvent.Logout -> accountAuthenticator.logout()
-      SideMenuEvent.SwitchLanguage -> TODO("Change application language")
-      is SideMenuEvent.SwitchRegister -> TODO("Reload data on register fragment")
-      SideMenuEvent.SyncData -> syncBroadcaster.runSync()
-      SideMenuEvent.TransferData -> TODO("Transfer data via P2P")
+      AppMainEvent.Logout -> accountAuthenticator.logout()
+      AppMainEvent.SwitchLanguage -> TODO("Change application language")
+      is AppMainEvent.SwitchRegister -> event.navigateToRegister()
+      AppMainEvent.SyncData -> syncBroadcaster.runSync()
+      AppMainEvent.TransferData -> TODO("Transfer data via P2P")
+      is AppMainEvent.UpdateSyncState -> handleSyncState(event.state)
     }
   }
 
-  fun retrieveSideMenuOptions(): List<SideMenuOption> =
-    sideMenuOptionFactory.retrieveSideMenuOptions()
+  private fun handleSyncState(state: State) {
+    updateUiState(state)
+  }
+
+  fun updateUiState(state: State? = null) {
+    appMainUiState =
+      appMainUiState.copy(
+        sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
+        username = secureSharedPreference.retrieveSessionUsername() ?: ""
+      )
+  }
 }

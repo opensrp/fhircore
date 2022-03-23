@@ -19,23 +19,34 @@ package org.smartregister.fhircore.engine.data.local.patient.register.dataprovid
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.appfeature.AppFeature
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterRow
 import org.smartregister.fhircore.engine.domain.repository.RegisterDataProvider
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.countActivePatients
 
 @Singleton
-class EirRegisterDataProvider @Inject constructor(val fhirEngine: FhirEngine) :
+class EirRegisterDataProvider
+@Inject
+constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatcherProvider) :
   RegisterDataProvider {
 
-  override suspend fun provideRegisterData(appFeature: AppFeature?): List<RegisterRow> {
+  override suspend fun provideRegisterData(
+    currentPage: Int,
+    loadAll: Boolean,
+    appFeatureName: String?
+  ): List<RegisterRow> {
     return emptyList()
   }
 
   override suspend fun provideProfileData(
-    appFeature: AppFeature?,
+    appFeatureName: String?,
     patientId: String
   ): PatientProfileData? {
     return null
   }
+
+  override suspend fun provideRegisterDataCount(appFeatureName: String?): Long =
+    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 }

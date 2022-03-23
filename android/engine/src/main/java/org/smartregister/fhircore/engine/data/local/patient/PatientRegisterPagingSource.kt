@@ -18,33 +18,25 @@ package org.smartregister.fhircore.engine.data.local.patient
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.data.local.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.engine.domain.model.RegisterRow
 
 /**
- * @property _currentPage Set the current page to load data for (database table offset)
- * @property _loadAll Indicate whether to load all data incrementally in the background
+ * @property _patientPagingSourceState as state containing the properties used in the
+ * [PatientRepository] function for loading data to the paging source.
  */
 class PatientRegisterPagingSource(private val patientRepository: PatientRepository) :
   PagingSource<Int, RegisterRow>() {
 
-  private var _healthModule: HealthModule? = null
-
-  private var _appFeature: AppFeature? = null
-
-  private var _currentPage: Int = 0
-
-  private var _loadAll: Boolean = false
+  private var _patientPagingSourceState = PatientPagingSourceState()
 
   /**
-   * To load data for the [_currentPage], nextKey and prevKey for [params] are both set to null to
+   * To load data for the current page, nextKey and prevKey for [params] are both set to null to
    * prevent automatic loading of by the [PagingSource]. This is done in order to explicitly allow
    * loading of data by manually clicking navigation previous or next buttons.
    *
-   * To load all data (by automatically paginating the results in the background), [_loadAll] has to
-   * be set to true (Checking if data is not empty prevents querying for more results when there is
-   * none):
+   * To load all data (by automatically paginating the results in the background), set loadAll to
+   * true (Checking if data is not empty prevents querying for more results when there is none):
    *
    * prevKey = if (pageNumber == 0) null else pageNumber - 1
    *
@@ -52,32 +44,33 @@ class PatientRegisterPagingSource(private val patientRepository: PatientReposito
    */
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterRow> {
     return try {
-      val pageNumber = params.key ?: _currentPage
+      val currentPage = params.key ?: _patientPagingSourceState.currentPage
       val data =
-        patientRepository.loadRegisterData(appFeature = _appFeature, healthModule = _healthModule)
+        patientRepository.loadRegisterData(
+          currentPage = currentPage,
+          appFeatureName = _patientPagingSourceState.appFeatureName,
+          healthModule = _patientPagingSourceState.healthModule,
+          loadAll = _patientPagingSourceState.loadAll
+        )
       val prevKey =
         when {
-          _loadAll -> if (pageNumber == 0) null else pageNumber - 1
+          _patientPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
+          else -> null
+        }
+      val nextKey =
+        when {
+          _patientPagingSourceState.loadAll -> if (data.isNotEmpty()) currentPage + 1 else null
           else -> null
         }
 
-      LoadResult.Page(data = data, prevKey = prevKey, nextKey = null)
+      LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
     } catch (exception: Exception) {
       LoadResult.Error(exception)
     }
   }
 
-  fun updateCurrentPage(currentPage: Int) {
-    this._currentPage = currentPage
-  }
-
-  fun updateHealthModule(appFeature: AppFeature?, healthModule: HealthModule?) {
-    this._appFeature = appFeature
-    this._healthModule = healthModule
-  }
-
-  fun setLoadAll(loadAll: Boolean) {
-    this._loadAll = loadAll
+  fun setPatientPagingSourceState(patientPagingSourceState: PatientPagingSourceState) {
+    this._patientPagingSourceState = patientPagingSourceState
   }
 
   override fun getRefreshKey(state: PagingState<Int, RegisterRow>): Int? {

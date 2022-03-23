@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.repository
+package org.smartregister.fhircore.engine.ui.main
 
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+import com.google.android.fhir.sync.State
 
-interface RegisterDataProvider {
-
-  suspend fun provideRegisterData(
-    currentPage: Int,
-    loadAll: Boolean = false,
-    appFeatureName: String?
-  ): List<RegisterRow>
-
-  suspend fun provideRegisterDataCount(appFeatureName: String?): Long
-
-  suspend fun provideProfileData(appFeatureName: String?, patientId: String): PatientProfileData? =
-    null
+sealed class AppMainEvent {
+  data class SwitchRegister(val navigateToRegister: () -> Unit) : AppMainEvent()
+  object SwitchLanguage : AppMainEvent()
+  object TransferData : AppMainEvent()
+  object Logout : AppMainEvent()
+  object SyncData : AppMainEvent()
+  data class UpdateSyncState(val state: State) : AppMainEvent()
 }

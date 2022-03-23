@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.repository
+package org.smartregister.fhircore.engine.data.local.patient.model
 
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 
-interface RegisterDataProvider {
-
-  suspend fun provideRegisterData(
-    currentPage: Int,
-    loadAll: Boolean = false,
-    appFeatureName: String?
-  ): List<RegisterRow>
-
-  suspend fun provideRegisterDataCount(appFeatureName: String?): Long
-
-  suspend fun provideProfileData(appFeatureName: String?, patientId: String): PatientProfileData? =
-    null
-}
+data class PatientPagingSourceState(
+  val healthModule: HealthModule? = null,
+  val appFeatureName: String? = null,
+  val currentPage: Int = 0,
+  val loadAll: Boolean = false
+)

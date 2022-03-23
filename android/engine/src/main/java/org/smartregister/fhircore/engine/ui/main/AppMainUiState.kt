@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.repository
+package org.smartregister.fhircore.engine.ui.main
 
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 
-interface RegisterDataProvider {
-
-  suspend fun provideRegisterData(
-    currentPage: Int,
-    loadAll: Boolean = false,
-    appFeatureName: String?
-  ): List<RegisterRow>
-
-  suspend fun provideRegisterDataCount(appFeatureName: String?): Long
-
-  suspend fun provideProfileData(appFeatureName: String?, patientId: String): PatientProfileData? =
-    null
-}
+data class AppMainUiState(
+  val appTitle: String = "FHIR App",
+  val username: String = "",
+  val lastSyncTime: String = "",
+  val sideMenuOptions: List<SideMenuOption> = emptyList()
+)

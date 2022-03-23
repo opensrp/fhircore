@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.engine.ui.patient.register
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -30,7 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.emptyFlow
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.components.register.RegisterList
@@ -39,39 +43,83 @@ import org.smartregister.fhircore.engine.ui.main.component.TopScreenSection
 @Composable
 fun PatientRegisterScreen(
   modifier: Modifier = Modifier,
-  openDrawer: () -> Job,
+  appFeatureName: String?,
+  healthModule: HealthModule?,
+  screenTitle: String,
+  openDrawer: (Boolean) -> Unit,
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val searchText by remember { patientRegisterViewModel.searchText }
+  LaunchedEffect(Unit) {
+    patientRegisterViewModel.run {
+      setTotalRecordsCount(appFeatureName, healthModule)
+      paginateRegisterData(appFeatureName, healthModule)
+    }
+  }
   val pagingItems =
     patientRegisterViewModel
-      .paginateData(currentPage = 0, loadAll = false)
-      .collectAsState()
+      .paginatedRegisterData
+      .collectAsState(emptyFlow())
       .value
       .collectAsLazyPagingItems()
-  Column {
-    TopScreenSection(
-      title = "AllFamilies",
-      searchText = searchText,
-      onSearchTextChanged = { searchText ->
-        patientRegisterViewModel.onEvent(PatientRegisterEvent.SearchRegister(searchText))
+
+  Scaffold(
+    topBar = {
+      // Top section has toolbar and a results counts view
+      Column {
+        TopScreenSection(
+          title = screenTitle,
+          searchText = searchText,
+          onSearchTextChanged = { searchText ->
+            patientRegisterViewModel.onEvent(
+              PatientRegisterEvent.SearchRegister(
+                searchText = searchText,
+                appFeatureName = appFeatureName,
+                healthModule = healthModule
+              )
+            )
+          }
+        ) { openDrawer(true) }
+        // Only show counter during search
+        if (searchText.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
-    ) { openDrawer() }
-    RegisterHeader(resultCount = 0)
-    RegisterList(pagingItems = pagingItems)
-    RegisterFooter(
-      resultCount = pagingItems.itemCount,
-      currentPage = patientRegisterViewModel.currentPage.observeAsState(initial = 0).value,
-      pagesCount = patientRegisterViewModel.countPages(),
-      previousButtonClickListener = {
-        patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToPreviousPage)
-      },
-      nextButtonClickListener = {
-        patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToNextPage)
+    },
+    bottomBar = {
+      // Bottom section has a pagination footer and button with client registration action
+      // Only show when filtering data is not active
+      Column {
+        if (searchText.isEmpty()) {
+          RegisterFooter(
+            resultCount = pagingItems.itemCount,
+            currentPage =
+              patientRegisterViewModel.currentPage.observeAsState(initial = 0).value.plus(1),
+            pagesCount = patientRegisterViewModel.countPages(),
+            previousButtonClickListener = {
+              patientRegisterViewModel.onEvent(
+                PatientRegisterEvent.MoveToPreviousPage(
+                  appFeatureName = appFeatureName,
+                  healthModule = healthModule
+                )
+              )
+            },
+            nextButtonClickListener = {
+              patientRegisterViewModel.onEvent(
+                PatientRegisterEvent.MoveToNextPage(
+                  appFeatureName = appFeatureName,
+                  healthModule = healthModule
+                )
+              )
+            }
+          )
+
+          Button(
+            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            onClick = { /*TODO Launch register client questionnaire*/}
+          ) { Text(text = "Register Client", modifier = modifier.padding(8.dp)) }
+        }
       }
-    )
-    Button(modifier = modifier.fillMaxWidth(), onClick = { /*TODO Register client*/}) {
-      Text(text = "Register Client", modifier = modifier.padding(8.dp))
     }
+  ) { innerPadding ->
+    Box(modifier = modifier.padding(innerPadding)) { RegisterList(pagingItems = pagingItems) }
   }
 }

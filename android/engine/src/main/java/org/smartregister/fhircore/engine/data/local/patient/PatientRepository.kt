@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.data.local.patient
 
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.patient.register.PatientRegisterDataProviderFactory
@@ -38,51 +37,91 @@ constructor(
   DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
 
   override suspend fun loadRegisterData(
-    appFeature: AppFeature?,
+    currentPage: Int,
+    loadAll: Boolean,
+    appFeatureName: String?,
     healthModule: HealthModule?
   ): List<RegisterRow> =
     when (healthModule) {
-      null -> emptyList()
+      null ->
+        registerDataProviderFactory.defaultRegisterDataProvider.provideRegisterData(
+          currentPage = currentPage,
+          appFeatureName = appFeatureName
+        )
       HealthModule.ANC ->
-        registerDataProviderFactory.ancRegisterDataProvider.provideRegisterData(appFeature)
+        registerDataProviderFactory.ancRegisterDataProvider.provideRegisterData(
+          currentPage = currentPage,
+          appFeatureName = appFeatureName
+        )
       HealthModule.RDT, HealthModule.PNC, HealthModule.FAMILY_PLANNING ->
-        registerDataProviderFactory.defaultRegisterDataProvider.provideRegisterData(appFeature)
+        registerDataProviderFactory.defaultRegisterDataProvider.provideRegisterData(
+          currentPage = currentPage,
+          appFeatureName = appFeatureName
+        )
       HealthModule.FAMILY ->
-        registerDataProviderFactory.familyRegisterDataProvider.provideRegisterData(appFeature)
+        registerDataProviderFactory.familyRegisterDataProvider.provideRegisterData(
+          currentPage = currentPage,
+          appFeatureName = appFeatureName
+        )
       HealthModule.CHILD ->
-        registerDataProviderFactory.eirRegisterDataProvider.provideRegisterData(appFeature)
+        registerDataProviderFactory.eirRegisterDataProvider.provideRegisterData(
+          currentPage = currentPage,
+          appFeatureName = appFeatureName
+        )
     }
 
   override suspend fun countRegisterData(
-    appFeature: AppFeature?,
+    appFeatureName: String?,
     healthModule: HealthModule?
-  ): Long = 0
+  ): Long =
+    when (healthModule) {
+      null ->
+        registerDataProviderFactory.defaultRegisterDataProvider.provideRegisterDataCount(
+          appFeatureName
+        )
+      HealthModule.ANC ->
+        registerDataProviderFactory.ancRegisterDataProvider.provideRegisterDataCount(appFeatureName)
+      HealthModule.RDT, HealthModule.PNC, HealthModule.FAMILY_PLANNING ->
+        registerDataProviderFactory.defaultRegisterDataProvider.provideRegisterDataCount(
+          appFeatureName
+        )
+      HealthModule.FAMILY ->
+        registerDataProviderFactory.familyRegisterDataProvider.provideRegisterDataCount(
+          appFeatureName
+        )
+      HealthModule.CHILD ->
+        registerDataProviderFactory.eirRegisterDataProvider.provideRegisterDataCount(appFeatureName)
+    }
 
   override suspend fun loadPatientProfileData(
-    appFeature: AppFeature?,
+    appFeatureName: String?,
     healthModule: HealthModule?,
     patientId: String
   ): PatientProfileData? =
     when (healthModule) {
-      null -> null
+      null ->
+        registerDataProviderFactory.defaultRegisterDataProvider.provideProfileData(
+          appFeatureName = appFeatureName,
+          patientId = patientId
+        )
       HealthModule.ANC ->
         registerDataProviderFactory.ancRegisterDataProvider.provideProfileData(
-          appFeature = appFeature,
+          appFeatureName = appFeatureName,
           patientId = patientId
         )
       HealthModule.RDT, HealthModule.PNC, HealthModule.FAMILY_PLANNING ->
         registerDataProviderFactory.defaultRegisterDataProvider.provideProfileData(
-          appFeature = appFeature,
+          appFeatureName = appFeatureName,
           patientId = patientId
         )
       HealthModule.FAMILY ->
         registerDataProviderFactory.familyRegisterDataProvider.provideProfileData(
-          appFeature = appFeature,
+          appFeatureName = appFeatureName,
           patientId = patientId
         )
       HealthModule.CHILD ->
         registerDataProviderFactory.eirRegisterDataProvider.provideProfileData(
-          appFeature = appFeature,
+          appFeatureName = appFeatureName,
           patientId = patientId
         )
     }

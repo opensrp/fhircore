@@ -22,6 +22,7 @@ import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.patient.PatientRepository
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 
@@ -31,27 +32,43 @@ class SideMenuOptionFactory
 constructor(val appFeatureManager: AppFeatureManager, val patientRepository: PatientRepository) {
   val defaultSideMenu =
     SideMenuOption(
-      feature = AppFeature.PatientManagement.name,
+      appFeatureName = AppFeature.PatientManagement.name,
       healthModule = null,
       iconResource = R.drawable.ic_baby_mother,
-      titleResource = R.string.clients,
+      titleResource = R.string.all_clients,
       showCount = true,
       count =
-        runBlocking { patientRepository.countRegisterData(AppFeature.PatientManagement, null) }
+        runBlocking {
+          patientRepository.countRegisterData(
+            appFeatureName = AppFeature.PatientManagement.name,
+            healthModule = null
+          )
+        }
     )
 
   fun retrieveSideMenuOptions(): List<SideMenuOption> {
     val sideMenuOptions =
       appFeatureManager.activeRegisterFeatures().map {
         SideMenuOption(
-          feature = it.feature,
+          appFeatureName = it.feature,
           healthModule = it.healthModule,
           iconResource = R.drawable.ic_baby_mother,
-          titleResource = R.string.clients,
+          titleResource =
+            when (it.healthModule) {
+              HealthModule.ANC -> R.string.anc_clients
+              HealthModule.RDT -> R.string.all_clients
+              HealthModule.PNC -> R.string.pnc_clients
+              HealthModule.FAMILY -> R.string.families
+              HealthModule.CHILD -> R.string.children
+              HealthModule.FAMILY_PLANNING -> R.string.family_planning_clients
+            },
           showCount = true,
           count =
             runBlocking {
-              patientRepository.countRegisterData(AppFeature.PatientManagement, it.healthModule)
+              patientRepository.countRegisterData(
+                appFeatureName = AppFeature.PatientManagement.name,
+                healthModule = it.healthModule
+              )
             }
         )
       }

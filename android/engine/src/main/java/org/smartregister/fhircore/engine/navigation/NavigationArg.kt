@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.main
+package org.smartregister.fhircore.engine.navigation
 
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-
-sealed class SideMenuEvent {
-  data class SwitchRegister(val feature: String, val healthModule: HealthModule? = null) :
-    SideMenuEvent()
-  object SwitchLanguage : SideMenuEvent()
-  object TransferData : SideMenuEvent()
-  object Logout : SideMenuEvent()
-  object SyncData : SideMenuEvent()
+object NavigationArg {
+  const val FEATURE = "feature"
+  const val HEALTH_MODULE = "healthModule"
+  const val SCREEN_TITLE = "screenTitle"
+  const val HOME_ROUTE_PATH =
+    "?feature={$FEATURE}&healthModule={$HEALTH_MODULE}&screenTitle={$SCREEN_TITLE}"
 }

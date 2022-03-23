@@ -113,4 +113,10 @@
     <string name="logging_out">Please wait.... Logging out</string>
     <string name="session_expired">Session has been expired and must login again</string>
     <string name="transfer_data">Transfer Data</string>
+    <string name="anc_clients">ANC Clients</string>
+    <string name="all_clients">All Clients</string>
+    <string name="pnc_clients">PNC Clients</string>
+    <string name="family_planning_clients">Family Planning Clients</string>
+    <string name="families">Families</string>
+    <string name="children">Children</string>
 </resources>

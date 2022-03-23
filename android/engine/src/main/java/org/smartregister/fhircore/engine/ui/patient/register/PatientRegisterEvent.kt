@@ -16,8 +16,16 @@
 
 package org.smartregister.fhircore.engine.ui.patient.register
 
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+
 sealed class PatientRegisterEvent {
-  data class SearchRegister(val searchText: String = "") : PatientRegisterEvent()
-  object MoveToNextPage : PatientRegisterEvent()
-  object MoveToPreviousPage : PatientRegisterEvent()
+  data class SearchRegister(
+    val searchText: String = "",
+    val appFeatureName: String?,
+    val healthModule: HealthModule?
+  ) : PatientRegisterEvent()
+  data class MoveToNextPage(val appFeatureName: String?, val healthModule: HealthModule?) :
+    PatientRegisterEvent()
+  data class MoveToPreviousPage(val appFeatureName: String?, val healthModule: HealthModule?) :
+    PatientRegisterEvent()
 }
