@@ -192,7 +192,7 @@ fun LoginPage(
           modifier = modifier.padding(vertical = 8.dp)
         )
         OutlinedTextField(
-          colors = TextFieldDefaults.textFieldColors(textColor = contentColor),
+          colors = TextFieldDefaults.outlinedTextFieldColors(textColor = contentColor),
           value = username,
           onValueChange = onUsernameChanged,
           maxLines = 1,
@@ -228,7 +228,7 @@ fun LoginPage(
         }
         OutlinedTextField(
           value = password,
-          colors = TextFieldDefaults.textFieldColors(textColor = contentColor),
+          colors = TextFieldDefaults.outlinedTextFieldColors(textColor = contentColor),
           onValueChange = onPasswordChanged,
           maxLines = 1,
           singleLine = true,

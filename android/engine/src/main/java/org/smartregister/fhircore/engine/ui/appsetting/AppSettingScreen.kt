@@ -16,17 +16,14 @@
 
 package org.smartregister.fhircore.engine.ui.appsetting
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -90,18 +87,6 @@ fun AppSettingScreen(
       fontSize = 12.sp,
       modifier = modifier.padding(vertical = 8.dp)
     )
-    Row(modifier = modifier.padding(vertical = 20.dp)) {
-      Checkbox(
-        checked = rememberApp,
-        onCheckedChange = onRememberAppChecked,
-        modifier = modifier.testTag(REMEMBER_APP_CHECKBOX_TAG)
-      )
-      Text(
-        text = stringResource(R.string.remember_app),
-        fontSize = 14.sp,
-        modifier = modifier.padding(start = 8.dp).clickable { onRememberAppChecked(!rememberApp) }
-      )
-    }
     Spacer(modifier = modifier.height(20.dp))
     Button(
       onClick = { onLoadConfigurations(true) },

@@ -84,7 +84,7 @@ class AppSettingActivity : AppCompatActivity() {
       if (it.isNotBlank()) showToast(getString(R.string.error_loading_config, it))
     }
 
-    /* will require in future enhancement
+    /* Todo: Enhancement remember appId by explicitly opting to via a checkbox
     appSettingViewModel.rememberApp.observe(
       this,
       { doRememberApp ->

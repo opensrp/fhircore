@@ -124,7 +124,7 @@ class PatientRegisterViewModel @Inject constructor(val patientRepository: Patien
       getPager(event.appFeatureName, event.healthModule, true).flow.map {
         pagingData: PagingData<RegisterRow> ->
         pagingData.filter {
-          it.name.contains(event.searchText) ||
+          it.name.contains(event.searchText, ignoreCase = true) ||
             it.identifier.contentEquals(event.searchText, ignoreCase = true) ||
             it.logicalId.contentEquals(event.searchText, ignoreCase = true)
         }

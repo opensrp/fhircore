@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -30,9 +31,11 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,6 +45,8 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 
 const val DRAWER_MENU = "Drawer Menu"
+const val SEARCH = "Search"
+const val CLEAR = "Clear"
 
 @Composable
 fun TopScreenSection(
@@ -62,7 +67,7 @@ fun TopScreenSection(
       Text(text = title, fontSize = 20.sp, color = Color.White)
     }
     OutlinedTextField(
-      colors = TextFieldDefaults.textFieldColors(textColor = GreyTextColor),
+      colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
       value = searchText,
       onValueChange = { onSearchTextChanged(it) },
       maxLines = 1,
@@ -77,11 +82,14 @@ fun TopScreenSection(
         modifier
           .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
           .fillMaxWidth()
-          .background(color = Color.White),
+          .clip(RoundedCornerShape(size = 10.dp))
+          .background(Color.White),
+      leadingIcon = { Icon(imageVector = Icons.Filled.Search, SEARCH) },
       trailingIcon = {
-        IconButton(onClick = { onSearchTextChanged("") }) {
-          Icon(imageVector = Icons.Filled.Clear, "", tint = Color.Gray)
-        }
+        if (searchText.isNotEmpty())
+          IconButton(onClick = { onSearchTextChanged("") }) {
+            Icon(imageVector = Icons.Filled.Clear, CLEAR, tint = Color.Gray)
+          }
       }
     )
   }
