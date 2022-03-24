@@ -82,5 +82,17 @@
     "form": "remove-family-member",
     "title": "Remove Family Member",
     "identifier": "101643"
+  },
+  {
+    "appId": "ecbis",
+    "form": "remove-family",
+    "title": "Remove Family",
+    "identifier": "101644"
+  },
+  {
+    "appId": "anc",
+    "form": "remove-family",
+    "title": "Remove Family",
+    "identifier": "101644"
   }
 ]
