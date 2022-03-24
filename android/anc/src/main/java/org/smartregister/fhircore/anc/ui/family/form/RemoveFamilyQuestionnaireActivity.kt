@@ -8,7 +8,6 @@ import android.widget.Button
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.util.othersEligibleForHead
 import org.smartregister.fhircore.engine.R
@@ -44,7 +43,7 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
     }
 
     private fun didFamilyMemberRemoved() {
-        questionnaireViewModel.isFamilyMemberRemoved.observe(this@RemoveFamilyQuestionnaireActivity) { deletePatient ->
+        questionnaireViewModel.shouldRemoveFamilyMember.observe(this@RemoveFamilyQuestionnaireActivity) { deletePatient ->
             if (deletePatient) {
                 switchToPatientScreen(familyId)
             }
@@ -59,12 +58,12 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
                 showToast(getString(org.smartregister.fhircore.anc.R.string.no_eligible_family_head))
             } else {
                 AlertDialogue.showConfirmAlert(
-                context = this@RemoveFamilyQuestionnaireActivity,
-                message = org.smartregister.fhircore.anc.R.string.change_head_confirm_message,
-                title = org.smartregister.fhircore.anc.R.string.change_head_confirm_title,
-                confirmButtonListener = this@RemoveFamilyQuestionnaireActivity::onFamilyHeadChangeRequested,
-                confirmButtonText = org.smartregister.fhircore.anc.R.string.change_head_button_title,
-                options = eligibleMembers.map { AlertDialogListItem(it.id, it.name) }
+                    context = this@RemoveFamilyQuestionnaireActivity,
+                    message = org.smartregister.fhircore.anc.R.string.change_head_confirm_message,
+                    title = org.smartregister.fhircore.anc.R.string.change_head_confirm_title,
+                    confirmButtonListener = this@RemoveFamilyQuestionnaireActivity::onFamilyHeadChangeRequested,
+                    confirmButtonText = org.smartregister.fhircore.anc.R.string.change_head_button_title,
+                    options = eligibleMembers.map { AlertDialogListItem(it.id, it.name) }
                 )
             }
         }
@@ -74,19 +73,15 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
         val selection = getSelectedKey(dialog)
         if (selection?.isNotBlank() == true) {
             questionnaireViewModel
-            .changeFamilyHead(familyId, selection)
-            .observe(
-            this@RemoveFamilyQuestionnaireActivity
-            ) { changeHead ->
-                if (changeHead) {
-                    questionnaireViewModel.deleteFamilyMember(familyId).observe(this@RemoveFamilyQuestionnaireActivity) { deletePatient ->
-                        if (deletePatient) {
-                            dialog.dismiss()
-                            switchToPatientScreen(selection)
-                        }
+                .changeFamilyHead(familyId, selection)
+                .observe(
+                    this@RemoveFamilyQuestionnaireActivity
+                ) { changeHead ->
+                    if (changeHead) {
+                        dialog.dismiss()
+                        questionnaireViewModel.deleteFamilyMember(familyId)
                     }
                 }
-            }
         } else this.showToast(getString(org.smartregister.fhircore.anc.R.string.invalid_selection))
     }
 
@@ -95,17 +90,20 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
     }
 
     override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+        questionnaireViewModel.extractionProgress.postValue(true)
+    }
+
+    override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
         //remove the family member data from resourceEntity
         questionnaireViewModel.process(
-        intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
-        questionnaire,
-        questionnaireResponse
+            intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
+            questionnaire,
+            questionnaireResponse
         )
-
     }
 
 
-    private fun switchToPatientScreen(uniqueIdentifier:String) {
+    private fun switchToPatientScreen(uniqueIdentifier: String) {
         val intent = Intent(this, FamilyDetailsActivity::class.java).apply {
             putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
         }
@@ -115,11 +113,11 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
 
     override fun showFormSubmissionConfirmAlert() {
         AlertDialogue.showConfirmAlert(
-        context = this,
-        message = R.string.questionnaire_alert_submit_message,
-        title = R.string.questionnaire_alert_submit_title,
-        confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_remove_family_member_alert_submit_button_title
+            context = this,
+            message = R.string.questionnaire_alert_submit_message,
+            title = R.string.questionnaire_alert_submit_title,
+            confirmButtonListener = { handleQuestionnaireSubmit() },
+            confirmButtonText = R.string.questionnaire_remove_family_member_alert_submit_button_title
         )
     }
 

@@ -49,34 +49,57 @@ constructor(
         libraryEvaluator
     ) {
 
-    private lateinit var reasonRemove : String
-    val shouldOpenHeadDialog = MutableLiveData<Boolean>()
-    val isFamilyMemberRemoved = MutableLiveData<Boolean>()
+    private lateinit var reasonRemove: String
+
+    private val _shouldOpenHeadDialog = MutableLiveData<Boolean>()
+    private val _shouldRemoveFamilyMember = MutableLiveData<Boolean>()
+
+    val shouldOpenHeadDialog: LiveData<Boolean>
+        get() = _shouldOpenHeadDialog
+
+    val shouldRemoveFamilyMember: LiveData<Boolean>
+        get() = _shouldRemoveFamilyMember
+
 
     val familyMembers = MutableLiveData<List<FamilyMemberItem>>()
 
-    private suspend fun saveResponse(questionnaire: Questionnaire, questionnaireResponse: QuestionnaireResponse, patientId: String) {
-        reasonRemove = (questionnaireResponse.item?.first()?.answer?.first()?.value as Coding).display
-        handleQuestionnaireResponseReference(resourceId = patientId, questionnaire = questionnaire, questionnaireResponse = questionnaireResponse)
+    private suspend fun saveResponse(
+        questionnaire: Questionnaire,
+        questionnaireResponse: QuestionnaireResponse,
+        patientId: String
+    ) {
+        reasonRemove =
+            (questionnaireResponse.item?.first()?.answer?.first()?.value as Coding).display
+        handleQuestionnaireResponseReference(
+            resourceId = patientId,
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse
+        )
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
     private fun handleQuestionnaireResponseReference(
-    resourceId: String?,
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+        resourceId: String?,
+        questionnaire: Questionnaire,
+        questionnaireResponse: QuestionnaireResponse
     ) {
         val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
         questionnaireResponse.subject =
-        when (subjectType) {
-            ResourceType.Patient.name ->
-                resourceId?.asReference(ResourceType.Patient)
-            else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
-        }
+            when (subjectType) {
+                ResourceType.Patient.name ->
+                    resourceId?.asReference(ResourceType.Patient)
+                else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
+            }
     }
 
     fun fetchFamilyMembers(familyId: String) {
-        viewModelScope.launch { familyMembers.postValue(familyDetailRepository.fetchFamilyMembers(familyId)) }
+        viewModelScope.launch {
+            familyMembers.postValue(
+                familyDetailRepository.fetchFamilyMembers(
+                    familyId
+                )
+            )
+        }
     }
 
     fun changeFamilyHead(currentHead: String, newHead: String): LiveData<Boolean> {
@@ -88,13 +111,11 @@ constructor(
         return changed
     }
 
-    fun deleteFamilyMember(patientId: String): LiveData<Boolean>  {
-        val deletion = MutableLiveData(false)
+    fun deleteFamilyMember(patientId: String) {
         viewModelScope.launch {
             patientRepository.deletePatient(patientId, getReasonRemove())
-            deletion.postValue(true)
+            _shouldRemoveFamilyMember.value = true
         }
-        return deletion
     }
 
     private fun getReasonRemove(): DeletionReason {
@@ -115,16 +136,14 @@ constructor(
             patientId?.let {
                 saveResponse(questionnaire, questionnaireResponse, it)
                 val patient = loadPatient(it)
-                if (patient?.isFamilyHead() == true)  {
-                    shouldOpenHeadDialog.value = true
+                if (patient?.isFamilyHead() == true) {
+                    _shouldOpenHeadDialog.value = true
                 } else {
-                    isFamilyMemberRemoved.value = deleteFamilyMember(it).value
+                    deleteFamilyMember(it)
                 }
             }
         }
     }
-
-
 
 
 }
