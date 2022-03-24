@@ -29,7 +29,7 @@
         <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinLoginActivity" />
         <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinSetupActivity" />
         <activity
-            android:name=".ui.family.form.RemoveFamilyQuestionnaireActivity"
+            android:name=".ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireActivity"
             android:theme="@style/AppTheme"/>
         <activity android:name=".ui.family.register.FamilyRegisterActivity" />
         <activity android:name=".ui.report.ReportHomeActivity" />
