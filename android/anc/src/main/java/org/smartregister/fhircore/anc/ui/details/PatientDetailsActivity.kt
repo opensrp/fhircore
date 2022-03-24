@@ -49,7 +49,6 @@ import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.form.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
-import org.smartregister.fhircore.engine.ui.base.AlertDialogListItem
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedKey
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -107,9 +106,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       }
       menu.findItem(R.id.pregnancy_outcome).run { this.isVisible = it.eligibleWoman() == true }
 
-      menu.findItem(R.id.remove_this_person).run {
-        highlightItem(this)
-      }
+      menu.findItem(R.id.remove_this_person).run { highlightItem(this) }
       menu.findItem(R.id.log_death).run { highlightItem(this) }
     }
 
@@ -207,7 +204,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
                 formName = FormConfig.REMOVE_FAMILY_FORM
-
               )
             )
         )
