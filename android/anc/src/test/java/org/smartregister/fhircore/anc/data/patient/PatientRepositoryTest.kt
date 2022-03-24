@@ -619,7 +619,7 @@ class PatientRepositoryTest : RobolectricTest() {
     coEvery { repository.revokeActiveStatusData(any()) } answers {}
     coEvery { fhirEngine.save(any()) } just runs
 
-    runBlocking { repository.deletePatient("99", DeletionReason.OTHER) }
+    runBlocking { repository.deletePatient("99", DeletionReason.DIED) }
 
     val saveSlot = slot<Patient>()
 

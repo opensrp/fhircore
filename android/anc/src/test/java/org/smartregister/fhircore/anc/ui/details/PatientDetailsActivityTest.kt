@@ -63,6 +63,7 @@ import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivit
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.plusYears
@@ -235,34 +236,18 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnClickedRemovePersonShouldShowDialog() {
-    mockkObject(AlertDialogue)
-    every {
-      AlertDialogue.showConfirmAlert(
-        any(),
-        R.string.remove_this_person_confirm_message,
-        R.string.remove_this_person_confirm_title,
-        any(),
-        R.string.remove_this_person_button_title,
-        any()
-      )
-    } returns mockk()
-
+  fun testOnClickedRemovePersonShouldStartRemoveQuestionnaire() {
     val menuItem = RoboMenuItem(R.id.remove_this_person)
     patientDetailsActivity.onOptionsItemSelected(menuItem)
 
-    verify {
-      AlertDialogue.showConfirmAlert(
-        any(),
-        R.string.remove_this_person_confirm_message,
-        R.string.remove_this_person_confirm_title,
-        any(),
-        R.string.remove_this_person_button_title,
-        any()
-      )
-    }
+    val expectedIntent = Intent(patientDetailsActivity, RemoveFamilyQuestionnaireActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
 
-    unmockkObject(AlertDialogue)
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+
   }
 
   @Test
