@@ -240,14 +240,14 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     val menuItem = RoboMenuItem(R.id.remove_this_person)
     patientDetailsActivity.onOptionsItemSelected(menuItem)
 
-    val expectedIntent = Intent(patientDetailsActivity, RemoveFamilyQuestionnaireActivity::class.java)
+    val expectedIntent =
+      Intent(patientDetailsActivity, RemoveFamilyQuestionnaireActivity::class.java)
     val actualIntent =
       Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
         .nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
-
   }
 
   @Test
