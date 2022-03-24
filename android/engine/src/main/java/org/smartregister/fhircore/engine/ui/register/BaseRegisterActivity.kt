@@ -710,7 +710,12 @@ abstract class BaseRegisterActivity :
       showToast(getString(R.string.session_expired))
       accountAuthenticator.logout()
     } else {
-      showToast(getString(R.string.sync_failed))
+      if (exceptions.map { it.exception.message }.firstOrNull()?.contains("Unable to resolve host") ==
+        true
+      ) {
+        showToast(getString(R.string.sync_failed))
+      }
+      Timber.e(exceptions.map { it.exception.message}.joinToString(", "))
       registerActivityBinding.updateSyncStatus(state)
       sideMenuOptions().forEach { updateCount(it) }
       manipulateDrawer(open = false)
