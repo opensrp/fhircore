@@ -91,6 +91,6 @@ class NetworkModule {
       .create(FhirResourceService::class.java)
 
   companion object {
-    const val TIMEOUT_DURATION =600L
+    const val TIMEOUT_DURATION = 180L
   }
 }

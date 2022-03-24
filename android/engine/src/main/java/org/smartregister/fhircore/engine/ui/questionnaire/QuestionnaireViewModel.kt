@@ -35,7 +35,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
@@ -134,7 +133,7 @@ constructor(
     }
   }
 
- /* fun appendPractitionerInfo(resource: Resource) {
+  /* fun appendPractitionerInfo(resource: Resource) {
     authenticatedUserInfo?.keyclockuuid?.let { uuid ->
       val practitionerRef = Reference().apply { reference = "Practitioner/$uuid" }
 
@@ -169,7 +168,7 @@ constructor(
             if (resourceId == null) questionnaireResponse.subject = bun.resource.asReference()
           }
 
-          //appendPractitionerInfo(bun.resource)
+          // appendPractitionerInfo(bun.resource)
 
           // response MUST have subject by far otherwise flow has issues
           if (!questionnaire.experimental) questionnaireResponse.assertSubject()
