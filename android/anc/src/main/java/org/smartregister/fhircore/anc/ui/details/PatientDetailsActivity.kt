@@ -211,14 +211,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
               )
             )
         )
-//        AlertDialogue.showConfirmAlert(
-//          this,
-//          R.string.remove_this_person_confirm_message,
-//          R.string.remove_this_person_confirm_title,
-//          this::onDeleteFamilyMemberRequested,
-//          R.string.remove_this_person_button_title,
-//          DeletionReason.values().map { AlertDialogListItem(it.name, getString(it.label)) }
-//        )
         return true
       }
       else -> return super.onOptionsItemSelected(item)
