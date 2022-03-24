@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.form
+package org.smartregister.fhircore.anc.ui.family.removefamilymember
 
 import android.app.AlertDialog
 import android.content.DialogInterface
@@ -34,7 +34,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
-class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
+class RemoveFamilyMemberQuestionnaireActivity : QuestionnaireActivity() {
   private lateinit var saveBtn: Button
   private lateinit var familyId: String
 
@@ -60,7 +60,7 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   private fun didFamilyMemberRemoved() {
     questionnaireViewModel.shouldRemoveFamilyMember.observe(
-      this@RemoveFamilyQuestionnaireActivity
+      this@RemoveFamilyMemberQuestionnaireActivity
     ) { deletePatient ->
       if (deletePatient) {
         switchToPatientScreen(familyId)
@@ -69,18 +69,18 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   private fun showFamilyHeadDialog() {
-    questionnaireViewModel.shouldOpenHeadDialog.observe(this@RemoveFamilyQuestionnaireActivity) {
+    questionnaireViewModel.shouldOpenHeadDialog.observe(this@RemoveFamilyMemberQuestionnaireActivity) {
       val eligibleMembers = questionnaireViewModel.familyMembers.othersEligibleForHead()
 
       if (eligibleMembers.isNullOrEmpty()) {
         showToast(getString(org.smartregister.fhircore.anc.R.string.no_eligible_family_head))
       } else {
         AlertDialogue.showConfirmAlert(
-          context = this@RemoveFamilyQuestionnaireActivity,
+          context = this@RemoveFamilyMemberQuestionnaireActivity,
           message = org.smartregister.fhircore.anc.R.string.change_head_confirm_message,
           title = org.smartregister.fhircore.anc.R.string.change_head_confirm_title,
           confirmButtonListener =
-            this@RemoveFamilyQuestionnaireActivity::onFamilyHeadChangeRequested,
+            this@RemoveFamilyMemberQuestionnaireActivity::onFamilyHeadChangeRequested,
           confirmButtonText = org.smartregister.fhircore.anc.R.string.change_head_button_title,
           options = eligibleMembers.map { AlertDialogListItem(it.id, it.name) }
         )
@@ -92,7 +92,7 @@ class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
     val selection = getSelectedKey(dialog)
     if (selection?.isNotBlank() == true) {
       questionnaireViewModel.changeFamilyHead(familyId, selection).observe(
-          this@RemoveFamilyQuestionnaireActivity
+          this@RemoveFamilyMemberQuestionnaireActivity
         ) { changeHead ->
         if (changeHead) {
           dialog.dismiss()

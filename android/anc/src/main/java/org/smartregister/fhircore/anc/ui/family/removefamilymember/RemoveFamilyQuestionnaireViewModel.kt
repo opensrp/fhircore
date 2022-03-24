@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.form
+package org.smartregister.fhircore.anc.ui.family.removefamilymember
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

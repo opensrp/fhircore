@@ -47,7 +47,7 @@ import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_REGISTER_FORM
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.family.form.RemoveFamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedKey
@@ -199,7 +199,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       }
       R.id.remove_this_person -> {
         startActivity(
-          Intent(this, RemoveFamilyQuestionnaireActivity::class.java)
+          Intent(this, RemoveFamilyMemberQuestionnaireActivity::class.java)
             .putExtras(
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,

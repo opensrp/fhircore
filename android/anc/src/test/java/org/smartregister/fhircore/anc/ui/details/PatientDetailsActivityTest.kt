@@ -63,7 +63,7 @@ import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivit
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.family.form.RemoveFamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.plusYears
@@ -241,7 +241,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     patientDetailsActivity.onOptionsItemSelected(menuItem)
 
     val expectedIntent =
-      Intent(patientDetailsActivity, RemoveFamilyQuestionnaireActivity::class.java)
+      Intent(patientDetailsActivity, RemoveFamilyMemberQuestionnaireActivity::class.java)
     val actualIntent =
       Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
         .nextStartedActivity
