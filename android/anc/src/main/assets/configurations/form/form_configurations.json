@@ -19,7 +19,7 @@
   },
   {
     "appId": "anc",
-    "form": "non-anc-patient-vital-signs_standard",
+    "form": "non-anc-patient-vital-signs_standa
     "title": "Add Vital Signs ",
     "identifier": "2007"
   },
@@ -63,7 +63,7 @@
     "appId": "ecbis",
     "form": "family-registration",
     "title": "Add Family",
-    "identifier": "82952"
+    "identifier": "103347"
   },
   {
     "appId": "ecbis",
