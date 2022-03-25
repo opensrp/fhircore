@@ -70,7 +70,7 @@ constructor(
   private val _shouldOpenHeadDialog = MutableLiveData<Boolean>()
   private val _shouldRemoveFamilyMember = MutableLiveData<Boolean>()
 
-  val shouldOpenHeadDialog: LiveData<Boolean>
+  val shouldOpenHeadDialog: MutableLiveData<Boolean>
     get() = _shouldOpenHeadDialog
 
   val shouldRemoveFamilyMember: LiveData<Boolean>
