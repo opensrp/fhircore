@@ -1,0 +1,8 @@
+{
+  "appId": "mw-core",
+  "classification": "pin",
+  "applicationName": "QuestDefault",
+  "appLogoIconResourceFile": "ic_malawi",
+  "enablePin": true,
+  "showLogo": true
+}

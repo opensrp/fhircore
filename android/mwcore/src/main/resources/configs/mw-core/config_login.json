@@ -1,0 +1,9 @@
+{
+  "appId": "mw-core",
+  "classification": "login",
+  "applicationName": "Tingathe",
+  "applicationVersion": "0.0.3",
+  "darkMode": false,
+  "showLogo": true,
+  "enablePin": false
+}
