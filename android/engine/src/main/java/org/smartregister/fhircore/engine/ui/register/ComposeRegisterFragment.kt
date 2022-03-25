@@ -31,8 +31,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.ui.components.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.PaginatedRegister
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 abstract class ComposeRegisterFragment<I : Any, O : Any> :

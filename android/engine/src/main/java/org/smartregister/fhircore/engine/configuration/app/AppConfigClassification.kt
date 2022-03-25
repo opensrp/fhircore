@@ -22,7 +22,8 @@ enum class AppConfigClassification : ConfigClassification {
   APPLICATION,
   LOGIN,
   PIN,
-  SYNC;
+  SYNC,
+  PATIENT_REGISTER;
 
   override val classification: String = name.lowercase()
 }

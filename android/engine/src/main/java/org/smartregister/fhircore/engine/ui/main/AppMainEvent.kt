@@ -16,11 +16,12 @@
 
 package org.smartregister.fhircore.engine.ui.main
 
+import android.content.Context
 import org.smartregister.fhircore.engine.ui.main.model.Language
 
 sealed class AppMainEvent {
   data class SwitchRegister(val navigateToRegister: () -> Unit) : AppMainEvent()
-  data class SwitchLanguage(val language: Language) : AppMainEvent()
+  data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
   object TransferData : AppMainEvent()
   object Logout : AppMainEvent()
   object SyncData : AppMainEvent()

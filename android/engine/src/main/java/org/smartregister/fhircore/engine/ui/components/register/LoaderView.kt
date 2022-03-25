@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.components
+package org.smartregister.fhircore.engine.ui.components.register
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

@@ -111,7 +111,6 @@ fun PatientRegisterScreen(
               )
             }
           )
-
           Button(
             modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             onClick = { /*TODO Launch register client questionnaire*/}

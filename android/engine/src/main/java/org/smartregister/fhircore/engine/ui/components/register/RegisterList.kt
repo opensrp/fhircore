@@ -42,7 +42,8 @@ fun RegisterList(modifier: Modifier = Modifier, pagingItems: LazyPagingItems<Reg
       when {
         loadState.refresh is LoadState.Loading ->
           item { CircularProgressBar(modifier = modifier.wrapContentSize(Alignment.Center)) }
-        loadState.append is LoadState.Loading -> item { CircularProgressBar() }
+        loadState.append is LoadState.Loading ->
+          item { CircularProgressBar(modifier = modifier.wrapContentSize(Alignment.Center)) }
         loadState.refresh is LoadState.Error -> {
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error
           item {

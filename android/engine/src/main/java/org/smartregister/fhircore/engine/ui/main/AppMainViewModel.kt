@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.main
 
+import android.app.Activity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -28,11 +29,15 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.navigation.SideMenuOptionFactory
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.refresh
+import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 @HiltViewModel
 class AppMainViewModel
@@ -42,7 +47,8 @@ constructor(
   val syncBroadcaster: SyncBroadcaster,
   val sideMenuOptionFactory: SideMenuOptionFactory,
   val secureSharedPreference: SecureSharedPreference,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry
 ) : ViewModel() {
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
@@ -53,18 +59,11 @@ constructor(
   init {
     appMainUiState =
       appMainUiStateOf(
-        language =
-          Locale.forLanguageTag(
-              sharedPreferencesHelper.read(
-                SharedPreferencesHelper.LANG,
-                Locale.ENGLISH.toLanguageTag()
-              )
-                ?: Locale.ENGLISH.toLanguageTag()
-            )
-            .displayName,
+        currentLanguage = loadCurrentLanguage(),
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
         sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
-        lastSyncTime = retrieveLastSyncTimestamp() ?: ""
+        lastSyncTime = retrieveLastSyncTimestamp() ?: "",
+        languages = configurationRegistry.fetchLanguages()
       )
   }
 
@@ -73,6 +72,10 @@ constructor(
       AppMainEvent.Logout -> accountAuthenticator.logout()
       is AppMainEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, event.language.tag)
+        event.context.run {
+          setAppLocale(event.language.tag)
+          (this as Activity).refresh()
+        }
       }
       is AppMainEvent.SwitchRegister -> event.navigateToRegister()
       AppMainEvent.SyncData -> {
@@ -86,6 +89,13 @@ constructor(
       }
     }
   }
+
+  private fun loadCurrentLanguage() =
+    Locale.forLanguageTag(
+        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+          ?: Locale.ENGLISH.toLanguageTag()
+      )
+      .displayName
 
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
 

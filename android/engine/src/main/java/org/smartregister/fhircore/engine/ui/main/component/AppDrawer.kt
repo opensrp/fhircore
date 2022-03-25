@@ -26,13 +26,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,6 +52,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.navigation.NavigationScreen
 import org.smartregister.fhircore.engine.ui.main.AppMainEvent
+import org.smartregister.fhircore.engine.ui.main.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
@@ -58,12 +67,16 @@ fun AppDrawer(
   appTitle: String,
   username: String,
   lastSyncTime: String,
-  language: String,
+  currentLanguage: String,
+  languages: List<Language>,
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
   onSideMenuClick: (AppMainEvent) -> Unit
 ) {
+  val context = LocalContext.current
+  var expandLanguageDropdown by remember { mutableStateOf(false) }
+
   Column(
     verticalArrangement = Arrangement.SpaceBetween,
     modifier = modifier.fillMaxHeight().background(SideMenuDarkColor)
@@ -106,14 +119,36 @@ fun AppDrawer(
         showEndText = false,
         onSideMenuClick = { onSideMenuClick(AppMainEvent.TransferData) }
       )
-      SideMenuItem(
-        iconResource = R.drawable.ic_outline_language_white,
-        title = stringResource(R.string.language),
-        showEndText = true,
-        endText = language,
-        //        onSideMenuClick = { onSideMenuClick(AppMainEvent.SwitchLanguage()) }
-        onSideMenuClick = {}
-      )
+      Box {
+        SideMenuItem(
+          iconResource = R.drawable.ic_outline_language_white,
+          title = stringResource(R.string.language),
+          showEndText = true,
+          endText = currentLanguage,
+          onSideMenuClick = { expandLanguageDropdown = true }
+        )
+        DropdownMenu(
+          expanded = expandLanguageDropdown,
+          onDismissRequest = { expandLanguageDropdown = false },
+          modifier = modifier.wrapContentWidth(Alignment.End)
+        ) {
+          for (language in languages) {
+            DropdownMenuItem(
+              onClick = {
+                onSideMenuClick(AppMainEvent.SwitchLanguage(language, context))
+                expandLanguageDropdown = false
+              }
+            ) {
+              Text(
+                modifier = modifier.fillMaxWidth(),
+                text = language.displayName,
+                fontSize = 18.sp
+              )
+            }
+          }
+        }
+      }
+
       SideMenuItem(
         iconResource = R.drawable.ic_logout_white,
         title = stringResource(R.string.logout_user, username),
@@ -182,7 +217,9 @@ fun AppDrawerPreview() {
     appTitle = "MOH VTS",
     username = "Demo",
     lastSyncTime = "05:30 PM, Mar 3",
-    language = "English",
+    currentLanguage = "English",
+    navController = rememberNavController(),
+    openDrawer = {},
     sideMenuOptions =
       listOf(
         SideMenuOption(
@@ -206,8 +243,7 @@ fun AppDrawerPreview() {
           showCount = false
         )
       ),
-    openDrawer = {},
     onSideMenuClick = {},
-    navController = rememberNavController()
+    languages = listOf(Language("en", "English"), Language("sw", "Swahili"))
   )
 }

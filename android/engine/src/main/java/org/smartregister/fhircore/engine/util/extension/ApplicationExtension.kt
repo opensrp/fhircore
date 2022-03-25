@@ -30,6 +30,7 @@ import com.google.android.fhir.sync.ResourceSyncParams
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
 import com.google.gson.Gson
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
@@ -38,9 +39,13 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.ui.main.model.Language
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -156,3 +161,8 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
   } catch (exception: Exception) {
     Timber.e(exception)
   }
+
+fun ConfigurationRegistry.fetchLanguages() =
+  this.retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
+    .run { this.languages }
+    .map { Language(it, Locale.forLanguageTag(it).displayName) }
