@@ -23,9 +23,3 @@ captures/
 # IntelliJ
 *.iml
 .idea
-
-#Caches
-caches/
-native/
-wrapper/
-daemon

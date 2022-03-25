@@ -122,5 +122,7 @@ constructor(
     const val ORGANIZATION = "organization"
     const val PUBLISHER = "publisher"
     const val ID = "_id"
+    const val COUNT = "count"
+    const val DEFAULT_COUNT = "100"
   }
 }

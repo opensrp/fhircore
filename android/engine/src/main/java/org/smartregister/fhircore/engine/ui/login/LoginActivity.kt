@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 
 @AndroidEntryPoint
 class LoginActivity :
@@ -52,12 +53,18 @@ class LoginActivity :
       navigateToHome.observe(this@LoginActivity) {
         if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
           val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
-          if (lastPinExist) {
-            loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
-            syncBroadcaster.runSync()
-            loginService.navigateToHome()
-          } else {
-            loginService.navigateToPinLogin(goForSetup = true)
+          val forceLoginViaUsernamePinSetup =
+            loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
+          when {
+            lastPinExist -> {
+              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME, false)
+            }
+            forceLoginViaUsernamePinSetup -> {
+              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
+            }
+            else -> {
+              loginService.navigateToPinLogin(goForSetup = true)
+            }
           }
         } else {
           syncBroadcaster.runSync()
@@ -83,6 +90,12 @@ class LoginActivity :
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+  }
+
+  private fun goToHomeScreen(sharedPreferencesKey: String, sharedPreferencesValue: Boolean) {
+    loginViewModel.sharedPreferences.write(sharedPreferencesKey, sharedPreferencesValue)
+    syncBroadcaster.runSync()
+    loginService.navigateToHome()
   }
 
   fun getApplicationConfiguration(): ApplicationConfiguration {

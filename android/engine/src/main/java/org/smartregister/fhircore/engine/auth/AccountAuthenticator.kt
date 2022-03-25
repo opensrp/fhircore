@@ -33,17 +33,21 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
@@ -57,7 +61,8 @@ constructor(
   val configService: ConfigService,
   val secureSharedPreference: SecureSharedPreference,
   val tokenManagerService: TokenManagerService,
-  val sharedPreference: SharedPreferencesHelper
+  val sharedPreference: SharedPreferencesHelper,
+  val dispatcherProvider: DispatcherProvider
 ) : AbstractAccountAuthenticator(context) {
 
   override fun addAccount(
@@ -274,30 +279,32 @@ constructor(
   }
 
   fun logout() {
-    val account = tokenManagerService.getActiveAccount()
-
-    val refreshToken = getRefreshToken()
-    if (refreshToken != null) {
-      oAuthService
-        .logout(clientId(), clientSecret(), refreshToken)
-        .enqueue(
-          object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-              accountManager.clearPassword(account)
-              secureSharedPreference.deleteCredentials()
-              launchScreen(AppSettingActivity::class.java)
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-              secureSharedPreference.deleteCredentials()
-              launchScreen(AppSettingActivity::class.java)
+    getRefreshToken()?.run {
+      val logoutService = oAuthService.logout(clientId(), clientSecret(), this)
+      kotlin
+        .runCatching {
+          CoroutineScope(dispatcherProvider.io() + coroutineExceptionHandler).launch {
+            logoutService.execute().run {
+              if (!this.isSuccessful) {
+                Timber.w(this.errorBody()?.toString())
+                context.showToast(
+                  context.getString(R.string.error_contacting_server, this.code().toString())
+                )
+              }
             }
           }
-        )
-    } else {
-      secureSharedPreference.deleteCredentials()
-      launchScreen(AppSettingActivity::class.java)
+        }
+        .onFailure {
+          Timber.w(it)
+          context.showToast(context.getString(R.string.error_contacting_server, it.message ?: ""))
+        }
     }
+
+    launchLoginScreen()
+  }
+
+  val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+    throwable.printStackTrace()
   }
 
   fun launchLoginScreen() {

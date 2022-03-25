@@ -67,6 +67,8 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
+const val DEFAULT_MAX_HEIGHT = 1f
+
 @Composable
 fun ReportSelectPatientScreen(
   viewModel: ReportViewModel,
@@ -76,6 +78,8 @@ fun ReportSelectPatientScreen(
   val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
   val pagingItems = registerData.value.collectAsLazyPagingItems()
   val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
+  val showHeader by registerDataViewModel.showHeader.observeAsState(false)
+  val showFooter by registerDataViewModel.showFooter.observeAsState(false)
 
   Column(modifier = Modifier.fillMaxHeight().fillMaxWidth().testTag(REPORT_SELECT_PATIENT_LIST)) {
     SearchView(state = viewModel.searchTextState, viewModel)
@@ -92,11 +96,14 @@ fun ReportSelectPatientScreen(
       loadState = pagingItems.loadState.refresh,
       showResultsCount = showResultsCount,
       resultCount = pagingItems.itemCount,
+      showHeader = showHeader,
       body = { ConstructPatientSelectList(pagingItems, viewModel) },
+      showFooter = showFooter,
       currentPage = registerDataViewModel.currentPage(),
       pagesCount = registerDataViewModel.countPages(),
       previousButtonClickListener = { registerDataViewModel.previousPage() },
-      nextButtonClickListener = { registerDataViewModel.nextPage() }
+      nextButtonClickListener = { registerDataViewModel.nextPage() },
+      maxHeight = DEFAULT_MAX_HEIGHT
     )
   }
 }
