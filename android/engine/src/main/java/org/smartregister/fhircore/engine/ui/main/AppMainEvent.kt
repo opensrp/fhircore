@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.engine.ui.main
 
-import com.google.android.fhir.sync.State
+import org.smartregister.fhircore.engine.ui.main.model.Language
 
 sealed class AppMainEvent {
   data class SwitchRegister(val navigateToRegister: () -> Unit) : AppMainEvent()
-  object SwitchLanguage : AppMainEvent()
+  data class SwitchLanguage(val language: Language) : AppMainEvent()
   object TransferData : AppMainEvent()
   object Logout : AppMainEvent()
   object SyncData : AppMainEvent()
-  data class UpdateSyncState(val state: State) : AppMainEvent()
+  data class UpdateSyncState(val lastSyncTime: String?) : AppMainEvent()
 }

@@ -49,18 +49,44 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     when (state) {
       is State.Started -> {
         showToast(getString(R.string.syncing))
-        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state))
-      }
-      is State.Failed, is State.Glitch -> {
-        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state))
-      }
-      is State.Finished -> {
-        showToast(getString(R.string.sync_completed))
-        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state))
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(getString(R.string.syncing_initiated))
+        )
       }
       is State.InProgress -> {
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
-        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state))
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(getString(R.string.syncing_in_progress))
+        )
+      }
+      is State.Glitch -> {
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(appMainViewModel.retrieveLastSyncTimestamp())
+        )
+        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
+      }
+      is State.Failed -> {
+        showToast(getString(R.string.sync_failed))
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(
+            appMainViewModel.retrieveLastSyncTimestamp() ?: getString(R.string.syncing_failed)
+          )
+        )
+        Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
+      }
+      is State.Finished -> {
+        showToast(getString(R.string.sync_completed))
+        appMainViewModel.run {
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              getString(
+                R.string.last_sync_timestamp,
+                formatLastSyncTimestamp(state.result.timestamp)
+              )
+            )
+          )
+          updateLastSyncTimestamp(state.result.timestamp)
+        }
       }
     }
   }

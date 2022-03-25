@@ -58,6 +58,7 @@ fun AppDrawer(
   appTitle: String,
   username: String,
   lastSyncTime: String,
+  language: String,
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
@@ -108,8 +109,10 @@ fun AppDrawer(
       SideMenuItem(
         iconResource = R.drawable.ic_outline_language_white,
         title = stringResource(R.string.language),
-        showEndText = false,
-        onSideMenuClick = { onSideMenuClick(AppMainEvent.SwitchLanguage) }
+        showEndText = true,
+        endText = language,
+        //        onSideMenuClick = { onSideMenuClick(AppMainEvent.SwitchLanguage()) }
+        onSideMenuClick = {}
       )
       SideMenuItem(
         iconResource = R.drawable.ic_logout_white,
@@ -127,7 +130,7 @@ fun AppDrawer(
       SideMenuItem(
         iconResource = R.drawable.ic_sync,
         title = stringResource(R.string.sync),
-        endText = stringResource(R.string.last_sync_timestamp, lastSyncTime),
+        endText = lastSyncTime,
         showEndText = true,
         endTextColor = SubtitleTextColor,
         onSideMenuClick = { onSideMenuClick(AppMainEvent.SyncData) }
@@ -179,6 +182,7 @@ fun AppDrawerPreview() {
     appTitle = "MOH VTS",
     username = "Demo",
     lastSyncTime = "05:30 PM, Mar 3",
+    language = "English",
     sideMenuOptions =
       listOf(
         SideMenuOption(

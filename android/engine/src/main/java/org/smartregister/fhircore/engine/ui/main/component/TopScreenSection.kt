@@ -56,7 +56,7 @@ fun TopScreenSection(
   onSearchTextChanged: (String) -> Unit,
   onTitleIconClick: () -> Unit
 ) {
-  Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primaryVariant)) {
+  Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
       modifier = modifier.padding(vertical = 8.dp)

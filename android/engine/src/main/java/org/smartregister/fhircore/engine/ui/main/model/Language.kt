@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.register.model
+package org.smartregister.fhircore.engine.ui.main.model
 
 data class Language(val tag: String, val displayName: String) {
   override fun toString() = displayName

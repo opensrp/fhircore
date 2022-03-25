@@ -20,13 +20,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.navigation.SideMenuOptionFactory
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltViewModel
 class AppMainViewModel
@@ -35,36 +41,71 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val syncBroadcaster: SyncBroadcaster,
   val sideMenuOptionFactory: SideMenuOptionFactory,
-  val secureSharedPreference: SecureSharedPreference
+  val secureSharedPreference: SecureSharedPreference,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
-  var appMainUiState by mutableStateOf(AppMainUiState())
+  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+
+  var appMainUiState by mutableStateOf(appMainUiStateOf())
     private set
 
   init {
-    updateUiState()
+    appMainUiState =
+      appMainUiStateOf(
+        language =
+          Locale.forLanguageTag(
+              sharedPreferencesHelper.read(
+                SharedPreferencesHelper.LANG,
+                Locale.ENGLISH.toLanguageTag()
+              )
+                ?: Locale.ENGLISH.toLanguageTag()
+            )
+            .displayName,
+        username = secureSharedPreference.retrieveSessionUsername() ?: "",
+        sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
+        lastSyncTime = retrieveLastSyncTimestamp() ?: ""
+      )
   }
 
   fun onEvent(event: AppMainEvent) {
     when (event) {
       AppMainEvent.Logout -> accountAuthenticator.logout()
-      AppMainEvent.SwitchLanguage -> TODO("Change application language")
+      is AppMainEvent.SwitchLanguage -> {
+        sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, event.language.tag)
+      }
       is AppMainEvent.SwitchRegister -> event.navigateToRegister()
-      AppMainEvent.SyncData -> syncBroadcaster.runSync()
-      AppMainEvent.TransferData -> TODO("Transfer data via P2P")
-      is AppMainEvent.UpdateSyncState -> handleSyncState(event.state)
+      AppMainEvent.SyncData -> {
+        syncBroadcaster.runSync()
+        appMainUiState =
+          appMainUiState.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
+      }
+      AppMainEvent.TransferData -> {} // TODO Transfer data via P2P
+      is AppMainEvent.UpdateSyncState -> {
+        appMainUiState = appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
+      }
     }
   }
 
-  private fun handleSyncState(state: State) {
-    updateUiState(state)
+  fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
+
+    val syncTimestampFormatter =
+      SimpleDateFormat(SYNC_TIMESTAMP_INPUT_FORMAT, Locale.getDefault()).apply {
+        timeZone = TimeZone.getTimeZone(UTC)
+      }
+    val parse: Date? = syncTimestampFormatter.parse(timestamp.toString())
+    return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
-  fun updateUiState(state: State? = null) {
-    appMainUiState =
-      appMainUiState.copy(
-        sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
-        username = secureSharedPreference.retrieveSessionUsername() ?: ""
-      )
+  fun retrieveLastSyncTimestamp(): String? = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+
+  fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
+    sharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, formatLastSyncTimestamp(timestamp))
+  }
+
+  companion object {
+    const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
+    const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "hh:mm aa, MMM d"
+    const val UTC = "UTC"
   }
 }

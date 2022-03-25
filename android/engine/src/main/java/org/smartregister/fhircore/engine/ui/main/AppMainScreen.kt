@@ -65,6 +65,7 @@ fun MainScreen(
         appTitle = uiState.appTitle,
         username = uiState.username,
         lastSyncTime = uiState.lastSyncTime,
+        language = uiState.language,
         openDrawer = openDrawer,
         sideMenuOptions = uiState.sideMenuOptions,
         onSideMenuClick = appMainViewModel::onEvent,

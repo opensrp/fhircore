@@ -16,11 +16,29 @@
 
 package org.smartregister.fhircore.engine.ui.main
 
+import java.util.Locale
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 
 data class AppMainUiState(
-  val appTitle: String = "FHIR App",
-  val username: String = "",
-  val lastSyncTime: String = "",
-  val sideMenuOptions: List<SideMenuOption> = emptyList()
+  val appTitle: String,
+  val username: String,
+  val lastSyncTime: String,
+  val language: String,
+  val sideMenuOptions: List<SideMenuOption>
 )
+
+fun appMainUiStateOf(
+  appTitle: String = "FHIR App",
+  username: String = "",
+  lastSyncTime: String = "",
+  language: String = Locale.ENGLISH.displayName,
+  sideMenuOptions: List<SideMenuOption> = emptyList()
+): AppMainUiState {
+  return AppMainUiState(
+    appTitle = appTitle,
+    username = username,
+    lastSyncTime = lastSyncTime,
+    language = language,
+    sideMenuOptions = sideMenuOptions
+  )
+}
