@@ -1,6 +1,6 @@
 {
   "resourceType": "Patient",
-  "id": "#UID",
+  "id": "TEST_PATIENT",
   "extension": [
     {
       "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",

@@ -16,41 +16,59 @@
 
 package org.smartregister.fhircore.quest.data
 
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.MedicationRequest
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
-import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
-import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
+import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.FontWeight
+import org.smartregister.fhircore.quest.configuration.view.Properties
+import org.smartregister.fhircore.quest.configuration.view.dataDetailsListViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.patient.details.filterOf
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.loadAdditionalData
 
@@ -60,8 +78,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -70,7 +87,9 @@ class PatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+
+    every { configurationRegistry.appId } returns "quest"
+
     repository =
       PatientRepository(
         fhirEngine,
@@ -162,14 +181,12 @@ class PatientRepositoryTest : RobolectricTest() {
           }
         )
 
-      val parser = QuestDetailConfigParser(fhirEngine)
-
       val results =
         repository.fetchTestResults(
           "1",
+          ResourceType.Patient,
           listOf(QuestionnaireConfig("quest", "form", "title", "1")),
-          patientDetailsViewConfigurationOf(),
-          parser
+          dataDetailsListViewConfigurationOf()
         )
 
       Assert.assertEquals("First Questionnaire", results[0].data[0][0].value)
@@ -295,4 +312,300 @@ class PatientRepositoryTest : RobolectricTest() {
         Assert.assertEquals("Form name", title)
       }
     }
+
+  fun createTestConfigurationsData(): List<DataDetailsListViewConfiguration> =
+    "configs/sample_patient_details_view_configurations.json".readFile().decodeJson()
+
+  @Test
+  fun testGetResultItemDynamicRowsEmptyShouldReturnCorrectData() {
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+
+    val questionnaire =
+      Questionnaire().apply {
+        this.id = "1"
+        this.name = "Questionnaire Name"
+        this.title = "Questionnaire Title"
+      }
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        this.id = "1"
+        this.questionnaire = "Questionnaire/1"
+        this.authored = today
+        this.contained = listOf(Encounter().apply { this.id = "1" })
+      }
+
+    val quest = createTestConfigurationsData()[0]
+    val patientDetailsViewConfiguration =
+      dataDetailsListViewConfigurationOf(
+        appId = quest.appId,
+        classification = quest.classification,
+        contentTitle = quest.contentTitle,
+        dynamicRows = quest.dynamicRows
+      )
+
+    val data = runBlocking {
+      repository.getResultItem(
+        questionnaire,
+        questionnaireResponse,
+        patientDetailsViewConfiguration
+      )
+    }
+    with(data.data[0]) {
+      Assert.assertEquals("Questionnaire Title", this[0].value)
+      Assert.assertEquals(" (${today.asDdMmmYyyy()})", this[1].value)
+    }
+
+    with(data.source) {
+      Assert.assertEquals("1", first.logicalId)
+      Assert.assertEquals("1", first.encounterId)
+      Assert.assertEquals(today, first.authored)
+
+      Assert.assertEquals("1", second.logicalId)
+      Assert.assertEquals("Questionnaire Name", second.name)
+      Assert.assertEquals("Questionnaire Title", second.title)
+    }
+  }
+
+  @Test
+  fun testGetResultItemDynamicRowsNonEmptyShouldReturnCorrectData() {
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+
+    coEvery {
+      fhirEngine.search<Condition> {
+        filter(Condition.ENCOUNTER, { value = "Encounter/1" })
+        filter(
+          TokenClientParam("category"),
+          {
+            value =
+              of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "9024005", null)))
+          }
+        )
+      }
+    } returns getConditions()
+
+    coEvery {
+      fhirEngine.search<Observation> {
+        filter(Observation.ENCOUNTER, { value = "Encounter/1" })
+        filter(
+          TokenClientParam("code"),
+          {
+            value =
+              of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "259695003", null)))
+          }
+        )
+      }
+    } returns getObservations()
+
+    coEvery { fhirEngine.load(Encounter::class.java, any()) } returns getEncounter()
+
+    val questionnaire =
+      Questionnaire().apply {
+        this.id = "1"
+        this.name = "Questionnaire Name"
+        this.title = "Questionnaire Title"
+      }
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        this.id = "1"
+        this.questionnaire = "Questionnaire/1"
+        this.authored = today
+        this.contained = listOf(Encounter().apply { id = "1" })
+      }
+
+    val g6pd = createTestConfigurationsData()[1]
+
+    val patientDetailsViewConfiguration =
+      dataDetailsListViewConfigurationOf(
+        appId = g6pd.appId,
+        classification = g6pd.classification,
+        contentTitle = g6pd.contentTitle,
+        valuePrefix = g6pd.valuePrefix,
+        dynamicRows = g6pd.dynamicRows
+      )
+
+    val data = runBlocking {
+      repository.getResultItem(
+        questionnaire,
+        questionnaireResponse,
+        patientDetailsViewConfiguration
+      )
+    }
+
+    Assert.assertEquals(2, data.data.size)
+
+    with(data.data[0]) {
+      Assert.assertEquals("Intermediate", this[0].value)
+      Assert.assertEquals("${today.asDdMmmYyyy()}", this[1].value)
+    }
+
+    with(data.data[1]) {
+      Assert.assertEquals("G6PD: ", this[0].label)
+      Assert.assertEquals("#74787A", this[0].properties?.label?.color)
+      Assert.assertEquals(16, this[0].properties?.label?.textSize)
+      Assert.assertEquals(FontWeight.NORMAL, this[0].properties?.label?.fontWeight)
+
+      Assert.assertEquals(" - Hb: ", this[1].label)
+      Assert.assertEquals("#74787A", this[1].properties?.label?.color)
+      Assert.assertEquals(16, this[1].properties?.label?.textSize)
+      Assert.assertEquals(FontWeight.NORMAL, this[1].properties?.label?.fontWeight)
+    }
+  }
+  private fun getEncounter() = Encounter().apply { id = "1" }
+
+  private fun getObservations(): List<Observation> {
+    return listOf(
+      Observation().apply {
+        encounter = Reference().apply { reference = "Encounter/1" }
+        code =
+          CodeableConcept().apply {
+            addCoding().apply {
+              system = "http://snomed.info/sct"
+              code = "86859003"
+            }
+          }
+      },
+      Observation().apply {
+        encounter = Reference().apply { reference = "Encounter/1" }
+        code =
+          CodeableConcept().apply {
+            addCoding().apply {
+              system = "http://snomed.info/sct"
+              code = "259695003"
+            }
+          }
+      }
+    )
+  }
+
+  private fun getConditions(): List<Condition> {
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+    return listOf(
+      Condition().apply {
+        recordedDate = today
+        category =
+          listOf(
+            CodeableConcept().apply {
+              addCoding().apply {
+                system = "http://snomed.info/sct"
+                code = "9024005"
+              }
+            }
+          )
+        code =
+          CodeableConcept().apply {
+            addCoding().apply {
+              system = "http://snomed.info/sct"
+              code = "11896004"
+              display = "Intermediate"
+            }
+          }
+      }
+    )
+  }
+
+  @Test
+  fun testGetConditionShouldReturnValidCondition() = runBlockingTest {
+    coEvery { fhirEngine.search<Condition>(any()) } returns listOf(Condition().apply { id = "c1" })
+
+    val result =
+      repository.getCondition(
+        Encounter().apply { id = "123" },
+        filterOf("code", "Code", Properties())
+      )
+
+    coVerify { fhirEngine.search<Condition>(any()) }
+
+    Assert.assertEquals("c1", result!!.first().logicalId)
+  }
+
+  @Test
+  fun testGetObservationShouldReturnValidObservation() = runBlockingTest {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(Observation().apply { id = "o1" })
+
+    val result =
+      repository.getObservation(
+        Encounter().apply { id = "123" },
+        filterOf("code", "Code", Properties())
+      )
+
+    coVerify { fhirEngine.search<Observation>(any()) }
+
+    Assert.assertEquals("o1", result.first().logicalId)
+  }
+
+  @Test
+  fun testGetMedicationRequestShouldReturnValidMedicationRequest() = runBlockingTest {
+    coEvery { fhirEngine.search<MedicationRequest>(any()) } returns
+      listOf(MedicationRequest().apply { id = "mr1" })
+
+    val result =
+      repository.getMedicationRequest(
+        Encounter().apply { id = "123" },
+        filterOf("code", "Code", Properties())
+      )
+
+    coVerify { fhirEngine.search<MedicationRequest>(any()) }
+
+    Assert.assertEquals("mr1", result.first().logicalId)
+  }
+
+  @Test
+  fun fetchResultItemLabelShouldReturnLocalizedQuestionnaireTitle() {
+    val questionnaire =
+      Questionnaire().apply {
+        titleElement =
+          StringType("Registration").apply {
+            addExtension(
+              Extension().apply {
+                url = "http://hl7.org/fhir/StructureDefinition/translation"
+                addExtension("lang", StringType("sw"))
+                addExtension("content", StringType("Sajili"))
+              }
+            )
+          }
+
+        nameElement =
+          StringType("Registration2").apply {
+            addExtension(
+              Extension().apply {
+                url = "http://hl7.org/fhir/StructureDefinition/translation"
+                addExtension("lang", StringType("sw"))
+                addExtension("content", StringType("Sajili2"))
+              }
+            )
+          }
+      }
+
+    Locale.setDefault(Locale.forLanguageTag("en"))
+    Assert.assertEquals("Registration", repository.fetchResultItemLabel(questionnaire))
+
+    Locale.setDefault(Locale.forLanguageTag("sw"))
+    Assert.assertEquals("Sajili", repository.fetchResultItemLabel(questionnaire))
+  }
+
+  @Test
+  fun fetchResultItemLabelShouldReturnLocalizedQuestionnaireNameWhenTitleIsAbsent() {
+    val questionnaire =
+      Questionnaire().apply {
+        nameElement =
+          StringType("Registration").apply {
+            addExtension(
+              Extension().apply {
+                url = "http://hl7.org/fhir/StructureDefinition/translation"
+                addExtension("lang", StringType("sw"))
+                addExtension("content", StringType("Sajili"))
+              }
+            )
+          }
+      }
+
+    Locale.setDefault(Locale.forLanguageTag("en"))
+    Assert.assertEquals("Registration", repository.fetchResultItemLabel(questionnaire))
+
+    Locale.setDefault(Locale.forLanguageTag("sw"))
+    Assert.assertEquals("Sajili", repository.fetchResultItemLabel(questionnaire))
+  }
 }

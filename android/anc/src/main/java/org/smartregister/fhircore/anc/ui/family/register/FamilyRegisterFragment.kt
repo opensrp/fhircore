@@ -62,6 +62,19 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
     }
   }
 
+  /**
+   * Filters the given data if there is a matching condition.
+   *
+   * SEARCH_FILTER will filters data based on name OR id OR identifier.
+   *
+   * OVERDUE_FILTER will filters data based on services overdue.
+   *
+   * @param registerFilterType the filter type
+   * @param data the data that will be filtered
+   * @param value the query
+   *
+   * @return true if the data should be filtered
+   */
   // todo maybe we need to do a db call
   override fun performFilter(
     registerFilterType: RegisterFilterType,
@@ -83,17 +96,14 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
     }
   }
 
-  @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Family, FamilyItem> {
-    return ViewModelProvider(
-      viewModelStore,
+    val registerDataViewModel =
       RegisterDataViewModel(
-          application = requireActivity().application,
-          registerRepository = familyRepository
-        )
-        .createFactory()
-    )[RegisterDataViewModel::class.java] as
-      RegisterDataViewModel<Family, FamilyItem>
+        application = requireActivity().application,
+        registerRepository = familyRepository
+      )
+    return ViewModelProvider(viewModelStore, registerDataViewModel.createFactory())[
+      registerDataViewModel::class.java]
   }
 
   companion object {

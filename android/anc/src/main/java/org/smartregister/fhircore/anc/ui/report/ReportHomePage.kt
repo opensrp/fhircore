@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemsIndexed
+import androidx.paging.compose.items
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.anc.R
@@ -89,7 +89,7 @@ fun ReportHomeListBox(
   LazyColumn(
     modifier = Modifier.background(Color.White).fillMaxSize().testTag(REPORT_MEASURE_LIST)
   ) {
-    itemsIndexed(lazyReportItems) { _, item ->
+    items(items = lazyReportItems, key = { it.id }) { item ->
       ReportRow(item!!, Modifier.clickable(onClick = { onReportMeasureItemClick(item) }))
       Divider(color = DividerColor, thickness = 1.dp)
     }

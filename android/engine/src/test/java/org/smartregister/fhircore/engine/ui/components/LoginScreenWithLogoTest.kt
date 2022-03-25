@@ -55,6 +55,7 @@ class LoginScreenWithLogoTest : RobolectricTest() {
         every { password } returns this@LoginScreenWithLogoTest.password
         every { loginError } returns this@LoginScreenWithLogoTest.loginError
         every { showProgressBar } returns this@LoginScreenWithLogoTest.showProgressBar
+        every { appLogoResourceFile } returns "ic_launcher"
         every { onUsernameUpdated(any()) } answers
           {
             this@LoginScreenWithLogoTest.username.value = firstArg()

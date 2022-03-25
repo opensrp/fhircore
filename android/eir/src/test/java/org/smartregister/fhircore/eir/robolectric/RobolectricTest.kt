@@ -21,6 +21,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
+import java.io.File
+import java.io.FileReader
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.AfterClass
@@ -55,6 +57,16 @@ abstract class RobolectricTest {
   }
 
   companion object {
+    val ASSET_BASE_PATH =
+      listOf(System.getProperty("user.dir"), "src", "test", "resources")
+        .joinToString(File.separator)
+
+    fun String.readFile(): String {
+      val file = File("$ASSET_BASE_PATH/$this")
+      val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
+      return String(charArray)
+    }
+
     @AfterClass
     fun tearDown() {
       clearAllMocks()

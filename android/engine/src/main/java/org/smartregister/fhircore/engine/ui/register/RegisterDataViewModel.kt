@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
@@ -43,6 +44,18 @@ class RegisterDataViewModel<I : Any, O : Any>(
   val registerRepository: RegisterRepository<I, O>,
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
+
+  private val _registerViewConfiguration = MutableLiveData(RegisterViewConfiguration())
+  val registerViewConfiguration
+    get() = _registerViewConfiguration
+
+  private val _showHeader = MutableLiveData(true)
+  val showHeader
+    get() = _showHeader
+
+  private val _showFooter = MutableLiveData(true)
+  val showFooter
+    get() = _showFooter
 
   private val _showLoader = MutableLiveData(false)
   val showLoader
@@ -107,6 +120,12 @@ class RegisterDataViewModel<I : Any, O : Any>(
         }
       )
       .flow
+
+  fun updateViewConfigurations(viewConfiguration: RegisterViewConfiguration) {
+    this._registerViewConfiguration.postValue(viewConfiguration)
+    this._showHeader.postValue(viewConfiguration.showHeader)
+    this._showFooter.postValue(viewConfiguration.showFooter)
+  }
 
   fun previousPage() {
     this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }

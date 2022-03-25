@@ -17,11 +17,17 @@
 package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.content.Intent
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertAll
+import androidx.compose.ui.test.isEnabled
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import javax.inject.Inject
+import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -29,34 +35,50 @@ import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.quest.QuestApplication
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
+import org.smartregister.fhircore.quest.ui.patient.register.components.PATIENT_BIO
+import org.smartregister.fhircore.quest.ui.patient.register.components.dummyPatientPagingList
 
 @HiltAndroidTest
 class PatientRegisterFragmentTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @get:Rule val composeRule = createComposeRule()
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("g6pd", mockk())
 
   private lateinit var registerFragment: PatientRegisterFragment
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
     registerFragment = PatientRegisterFragment()
     val registerActivity =
       Robolectric.buildActivity(PatientRegisterActivity::class.java).create().resume().get()
     registerActivity.supportFragmentManager.commitNow { add(registerFragment, "") }
+  }
+
+  @Test
+  fun testConstructRegisterListShouldEnabled() {
+    composeRule.setContent {
+      registerFragment.ConstructRegisterList(
+        pagingItems = dummyPatientPagingList(),
+        modifier = Modifier
+      )
+    }
+
+    composeRule.onAllNodesWithTag(PATIENT_BIO).assertAll(isEnabled())
   }
 
   @Test

@@ -23,7 +23,6 @@ import java.lang.UnsupportedOperationException
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.getTheme
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
@@ -35,7 +34,11 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     val themePref =
       sharedPreferencesHelper.read(key = SharedPreferencesHelper.THEME, defaultValue = "")!!
-    theme.applyStyle(getTheme(themePref), true)
+
+    if (themePref.isNotEmpty()) {
+      val resourceId = this.resources.getIdentifier(themePref, "style", packageName)
+      if (resourceId != 0) theme.applyStyle(resourceId, true)
+    }
   }
 
   override fun attachBaseContext(baseContext: Context) {

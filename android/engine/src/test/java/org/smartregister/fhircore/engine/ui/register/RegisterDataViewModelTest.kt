@@ -28,6 +28,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -56,6 +57,26 @@ class RegisterDataViewModelTest : RobolectricTest() {
         objToCopy =
           RegisterDataViewModel(application = application, registerRepository = registerRepository)
       )
+  }
+
+  @Test
+  fun testUpdateViewConfiguration() {
+    registerDataViewModel.updateViewConfigurations(
+      RegisterViewConfiguration("appId", "classification")
+    )
+    Assert.assertEquals("appId", registerDataViewModel.registerViewConfiguration.value?.appId)
+    Assert.assertEquals(
+      "classification",
+      registerDataViewModel.registerViewConfiguration.value?.classification
+    )
+    registerDataViewModel.updateViewConfigurations(
+      RegisterViewConfiguration("newAppId", "newClassification")
+    )
+    Assert.assertEquals("newAppId", registerDataViewModel.registerViewConfiguration.value?.appId)
+    Assert.assertEquals(
+      "newClassification",
+      registerDataViewModel.registerViewConfiguration.value?.classification
+    )
   }
 
   @Test

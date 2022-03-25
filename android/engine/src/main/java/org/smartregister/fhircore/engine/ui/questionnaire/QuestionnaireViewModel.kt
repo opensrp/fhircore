@@ -31,11 +31,11 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
@@ -64,6 +64,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -93,15 +94,14 @@ constructor(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(
-    id: String,
-    readOnly: Boolean = false,
-    editMode: Boolean = false
-  ): Questionnaire? =
+  suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (readOnly || editMode) {
-        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", readOnly)
+      if (type.isReadOnly() || type.isEditMode()) {
+        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", type.isReadOnly())
       }
+
+      // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
+      this.url = this.url ?: this.referenceValue()
     }
 
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
@@ -134,12 +134,25 @@ constructor(
     }
   }
 
+  fun appendPractitionerInfo(resource: Resource) {
+    authenticatedUserInfo?.keyclockuuid?.let { uuid ->
+      val practitionerRef = Reference().apply { reference = "Practitioner/$uuid" }
+
+      if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
+      else if (resource is Encounter)
+        resource.participant =
+          arrayListOf(
+            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
+          )
+    }
+  }
+
   fun extractAndSaveResources(
     context: Context,
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
-    editMode: Boolean = false
+    questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT
   ) {
     viewModelScope.launch {
       // important to set response subject so that structure map can handle subject for all entities
@@ -152,10 +165,11 @@ constructor(
           // add organization to entities representing individuals in registration questionnaire
           if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
             appendOrganizationInfo(bun.resource)
-
             // if it is new registration set response subject
             if (resourceId == null) questionnaireResponse.subject = bun.resource.asReference()
           }
+
+          appendPractitionerInfo(bun.resource)
 
           // response MUST have subject by far otherwise flow has issues
           if (!questionnaire.experimental) questionnaireResponse.assertSubject()
@@ -163,7 +177,7 @@ constructor(
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
           // Ideally ResourceMapper should allow this internally via structure-map
-          if (editMode) {
+          if (questionnaireType.isEditMode()) {
             if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
               bun.resource.id = questionnaireResponse.subject.extractId()
             else {
@@ -181,7 +195,7 @@ constructor(
           )
         } else saveBundleResources(bundle)
 
-        if (editMode && editQuestionnaireResponse != null) {
+        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
         }
 
@@ -190,50 +204,58 @@ constructor(
         // TODO https://github.com/opensrp/fhircore/issues/900
         // reassess following i.e. deleting/updating older resources because one resource
         // might have generated other flow in subsequent followups
-        if (editMode && editQuestionnaireResponse != null) {
+        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
 
-        questionnaire
-          .cqfLibraryIds()
-          .map {
-            val patient =
-              if (questionnaireResponse.hasSubject())
-                loadPatient(questionnaireResponse.subject.extractId())
-              else null
-            async(Dispatchers.Default) {
-              libraryEvaluator.runCqlLibrary(it, patient, bundle, defaultRepository)
-            }
-          }
-          .map { jobOutput ->
-            jobOutput.join()
-            jobOutput
-          }
-          .forEach { output ->
-            if (output.await().isNotEmpty())
-              extractionProgressMessage.postValue(output.await().joinToString("\n"))
-          }
+        extractCqlOutput(questionnaire, questionnaireResponse, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        extractCqlOutput(questionnaire, questionnaireResponse, null)
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
+  suspend fun extractCqlOutput(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    bundle: Bundle?
+  ) {
+    withContext(Dispatchers.Default) {
+      val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
+      questionnaire
+        .cqfLibraryIds()
+        .map {
+          val patient =
+            if (questionnaireResponse.hasSubject())
+              loadPatient(questionnaireResponse.subject.extractId())
+            else null
+          libraryEvaluator.runCqlLibrary(it, patient, data, defaultRepository)
+        }
+        .forEach { output ->
+          if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
+        }
+    }
+  }
+
   /**
    * Sets questionnaireResponse subject with proper subject-type defined in questionnaire with an
-   * existing resourceId or if null generate a new one
+   * existing resourceId or organization or null
    */
-  private fun handleQuestionnaireResponseSubject(
+  fun handleQuestionnaireResponseSubject(
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
-    if (resourceId?.isNotBlank() == true) {
-      val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
-      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
-    }
+    val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
+    questionnaireResponse.subject =
+      when (subjectType) {
+        ResourceType.Organization.name ->
+          authenticatedUserInfo!!.organization!!.asReference(ResourceType.Organization)
+        else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
+      }
   }
 
   suspend fun saveQuestionnaireResponse(

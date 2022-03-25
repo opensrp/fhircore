@@ -25,7 +25,6 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.LocaleList
 import android.widget.Toast
-import androidx.annotation.StyleRes
 import androidx.core.content.ContextCompat
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
@@ -57,6 +56,11 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   } catch (e: Exception) {
     Timber.e(e)
   }
+
+  if (Build.VERSION.SDK_INT <= 23) {
+    Locale.setDefault(Locale(languageTag))
+  }
+
   return configuration
 }
 
@@ -64,13 +68,6 @@ fun Context.getDrawable(name: String): Drawable {
   var resourceId = this.resources.getIdentifier(name, "drawable", packageName)
   if (resourceId == 0) resourceId = R.drawable.ic_default_logo
   return ContextCompat.getDrawable(this, resourceId)!!
-}
-
-@StyleRes
-fun Context.getTheme(name: String): Int {
-  var resourceId = this.resources.getIdentifier(name, "style", packageName)
-  if (resourceId == 0) resourceId = R.style.AppTheme_NoActionBar
-  return resourceId
 }
 
 fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
