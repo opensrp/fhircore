@@ -22,11 +22,17 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 
 class LaunchActivityTest {
+  @get:Rule val composeTestAppScreen = createAndroidComposeRule(AppSettingActivity::class.java)
   @get:Rule val composeTestRule = createAndroidComposeRule(LoginActivity::class.java)
-
+  @Test
+  fun applicationId() {
+    composeTestAppScreen.onNodeWithText("Enter Application ID").performTextInput("demo")
+    composeTestAppScreen.onNodeWithText("LOAD CONFIGURATIONS").performClick()
+  }
   @Test
   fun successfulLogin() {
     composeTestRule.onNodeWithText("Enter username").performTextInput("demo")

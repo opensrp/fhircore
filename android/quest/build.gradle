@@ -161,6 +161,8 @@ dependencies {
     def composeVersion = "1.0.5"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+// Needed for createComposeRule, but not createAndroidComposeRule:
 //     debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 }
