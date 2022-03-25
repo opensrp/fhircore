@@ -32,6 +32,14 @@ import io.mockk.verify
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.ui.components.register.NoResults
+import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
+import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
+import org.smartregister.fhircore.engine.ui.components.register.SEARCH_FOOTER_NEXT_BUTTON_TAG
+import org.smartregister.fhircore.engine.ui.components.register.SEARCH_FOOTER_PAGINATION_TAG
+import org.smartregister.fhircore.engine.ui.components.register.SEARCH_FOOTER_PREVIOUS_BUTTON_TAG
+import org.smartregister.fhircore.engine.ui.components.register.SEARCH_FOOTER_TAG
+import org.smartregister.fhircore.engine.ui.components.register.SEARCH_HEADER_TEXT_TAG
 
 class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
@@ -53,7 +61,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testSearchHeaderComponent() {
-    composeRule.setContent { SearchHeader(resultCount = 20) }
+    composeRule.setContent { RegisterHeader(resultCount = 20) }
     composeRule.onNodeWithTag(SEARCH_HEADER_TEXT_TAG).assertExists()
     composeRule.onNodeWithTag(SEARCH_HEADER_TEXT_TAG).assertIsDisplayed()
     composeRule.onNodeWithTag(SEARCH_HEADER_TEXT_TAG).assertTextEquals("20 RESULT(S)")
@@ -62,10 +70,10 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
   @Test
   fun testSearchFooterWithZeroAsResultCount() {
     composeRule.setContent {
-      SearchFooter(
+      RegisterFooter(
         resultCount = 0,
         currentPage = 1,
-        pageNumbers = 1,
+        pagesCount = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
       )
@@ -76,10 +84,10 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
   @Test
   fun testSearchFooterWithTenAsResultCount() {
     composeRule.setContent {
-      SearchFooter(
+      RegisterFooter(
         resultCount = 50,
         currentPage = 1,
-        pageNumbers = 3,
+        pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
       )
@@ -106,10 +114,10 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
   @Test
   fun testSearchFooterWithTenAsResultsSplitInThreePages() {
     composeRule.setContent {
-      SearchFooter(
+      RegisterFooter(
         resultCount = 50,
         currentPage = 3,
-        pageNumbers = 3,
+        pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
       )
@@ -136,10 +144,10 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
   @Test
   fun testSearchFooterWithResultsFittingOnePage() {
     composeRule.setContent {
-      SearchFooter(
+      RegisterFooter(
         resultCount = 20,
         currentPage = 1,
-        pageNumbers = 1,
+        pagesCount = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
       )
