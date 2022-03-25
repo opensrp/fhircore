@@ -22,6 +22,7 @@ import android.widget.Button
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.annotation.NonNull
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -30,7 +31,7 @@ import org.smartregister.fhircore.anc.R
 class BottomSheetListDialog(
   @NonNull context: Context,
   private val bottomSheetHolder: BottomSheetHolder,
-  private val selectedItem: (item: BottomSheetDataModel) -> Unit
+  private val onBottomSheetListener: OnClickedListItems
 ) : BottomSheetDialog(context), OnClickListener {
   private lateinit var adapter: BottomSheetChoiceAdapter
   private lateinit var recyclerView: RecyclerView
@@ -40,7 +41,7 @@ class BottomSheetListDialog(
   private lateinit var tvWarningTitle: TextView
   private lateinit var tvListLabel: TextView
 
-  private val drawablePadding = 28 // default value
+  private var selectedItem: BottomSheetDataModel? = null
 
   init {
     initialize()
@@ -66,9 +67,16 @@ class BottomSheetListDialog(
     tvListLabel.text = bottomSheetHolder.subTitle
     tvWarningTitle.text = bottomSheetHolder.tvWarningTitle
 
-    saveButton.setOnClickListener {}
+    setupClickListener()
+  }
 
-    cancelButton.setOnClickListener { dismiss() }
+  private fun setupClickListener() {
+    saveButton.setOnClickListener {
+      dismiss()
+      selectedItem?.let { onBottomSheetListener.onSave(it) }
+    }
+
+    cancelButton.setOnClickListener { onBottomSheetListener.onCancel() }
   }
 
   private fun setupList() {
@@ -80,23 +88,22 @@ class BottomSheetListDialog(
     adapter.setDataSource(bottomSheetHolder.list)
   }
 
-  private fun onItemClicked(onClickListItems: OnClickedListItems, position: Int) {
-    dismiss()
-    onClickListItems.onClickedItem(position)
-  }
-
   interface OnClickedListItems {
-    fun onClickedItem(position: Int)
-
-    fun onBottomSheetBehavior(type: Int)
-
-    fun onSlide(bottomSheet: View, slideOffset: Float)
+    fun onSave(bottomSheetDataModel: BottomSheetDataModel)
+    fun onCancel()
   }
 
   override fun onClick(rb: RadioButton, position: Int) {
+    // refresh the list
     bottomSheetHolder.list.forEach { it.selected = false }
     bottomSheetHolder.list[position].selected = true
-    adapter.notifyDataSetChanged()
+    // hold the selected item
+    selectedItem = bottomSheetHolder.list[position]
+    // enable the save button
+    saveButton.isEnabled = true
+    saveButton.backgroundTintList = ContextCompat.getColorStateList(context, R.color.colorPrimary)
+    // notify adapter
+    adapter.notifyItemChanged(position)
   }
 }
 

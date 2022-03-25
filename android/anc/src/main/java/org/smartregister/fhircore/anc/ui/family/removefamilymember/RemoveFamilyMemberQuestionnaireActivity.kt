@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.ui.family.removefamilymember
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -31,14 +30,13 @@ import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetDataModel
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetHolder
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetListDialog
 import org.smartregister.fhircore.anc.util.othersEligibleForHead
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedKey
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @AndroidEntryPoint
-class RemoveFamilyMemberQuestionnaireActivity : QuestionnaireActivity() {
+class RemoveFamilyMemberQuestionnaireActivity :
+  QuestionnaireActivity(), BottomSheetListDialog.OnClickedListItems {
   private lateinit var saveBtn: Button
   private lateinit var familyId: String
 
@@ -106,28 +104,17 @@ class RemoveFamilyMemberQuestionnaireActivity : QuestionnaireActivity() {
     val title = getString(R.string.label_assign_new_family_head)
     val listTitle = getString(R.string.label_select_new_head)
     val warning = getString(R.string.label_remove_family_warning)
-    BottomSheetListDialog(this, BottomSheetHolder(title, listTitle, warning, options)) {
-        questionnaireViewModel.shouldOpenHeadDialog.value = false
-      }
-      .show()
+    BottomSheetListDialog(this, BottomSheetHolder(title, listTitle, warning, options), this).show()
   }
 
-  private fun onFamilyHeadChangeRequested(dialog: DialogInterface) {
-    val selection = getSelectedKey(dialog)
-    if (selection?.isNotBlank() == true) {
-      questionnaireViewModel.changeFamilyHead(familyId, selection).observe(
-          this@RemoveFamilyMemberQuestionnaireActivity
-        ) { changeHead ->
-        if (changeHead) {
-          dialog.dismiss()
-          questionnaireViewModel.deleteFamilyMember(familyId)
-        }
+  private fun onFamilyHeadChangeRequested(newFamilyHeadId: String) {
+    questionnaireViewModel.changeFamilyHead(familyId, newFamilyHeadId).observe(
+        this@RemoveFamilyMemberQuestionnaireActivity
+      ) { changeHead ->
+      if (changeHead) {
+        questionnaireViewModel.deleteFamilyMember(familyId)
       }
-    } else this.showToast(getString(org.smartregister.fhircore.anc.R.string.invalid_selection))
-  }
-
-  private fun getSelectedKey(dialog: DialogInterface): String? {
-    return (dialog as AlertDialog).getSingleChoiceSelectedKey()
+    }
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
@@ -153,12 +140,42 @@ class RemoveFamilyMemberQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   override fun showFormSubmissionConfirmAlert() {
-    AlertDialogue.showConfirmAlert(
-      context = this,
-      message = R.string.questionnaire_alert_submit_message,
-      title = R.string.questionnaire_alert_submit_title,
-      confirmButtonListener = { handleQuestionnaireSubmit() },
-      confirmButtonText = R.string.questionnaire_remove_family_member_alert_submit_button_title
-    )
+    val alertDialog =
+      androidx.appcompat.app.AlertDialog.Builder(this, R.style.AlertDialogTheme)
+        .setTitle(R.string.confirm_remove_family_alert_title)
+        .setMessage(R.string.remove_family_member_warning)
+        .setCancelable(false)
+        .setNegativeButton(R.string.cancel) { dialogInterface, _ -> dialogInterface.dismiss() }
+        .setPositiveButton(R.string.questionnaire_remove_family_member_alert_submit_button_title) {
+          dialogInterface,
+          _ ->
+          dialogInterface.dismiss()
+          handleQuestionnaireSubmit()
+        }
+        .create()
+    alertDialog.show()
+    alertDialog
+      .getButton(AlertDialog.BUTTON_NEGATIVE)
+      .setTextColor(resources.getColor(R.color.transparent_blue))
+    alertDialog
+      .getButton(AlertDialog.BUTTON_POSITIVE)
+      .setTextColor(resources.getColor(R.color.status_red))
+  }
+
+  override fun onSave(bottomSheetDataModel: BottomSheetDataModel) {
+    onFamilyHeadChangeRequested(bottomSheetDataModel.id)
+  }
+
+  override fun onCancel() {
+    androidx.appcompat.app.AlertDialog.Builder(this, R.style.AlertDialogTheme)
+      .setTitle(R.string.alert_title_abort)
+      .setMessage(R.string.alert_message_abort_operation)
+      .setCancelable(false)
+      .setNegativeButton(R.string.no) { dialogInterface, _ -> dialogInterface.dismiss() }
+      .setPositiveButton(R.string.yes) { dialogInterface, _ ->
+        dialogInterface.dismiss()
+        finish()
+      }
+      .show()
   }
 }
