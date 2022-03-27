@@ -21,6 +21,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
@@ -78,18 +79,8 @@ class RemoveFamilyMemberQuestionnaireActivity :
         val eligibleMembers = questionnaireViewModel.familyMembers.othersEligibleForHead()
 
         if (eligibleMembers.isNullOrEmpty()) {
-          showToast(getString(org.smartregister.fhircore.anc.R.string.no_eligible_family_head))
+          showToast(getString(R.string.no_eligible_family_head))
         } else {
-          //        AlertDialogue.showConfirmAlert(
-          //          context = this@RemoveFamilyMemberQuestionnaireActivity,
-          //          message = org.smartregister.fhircore.anc.R.string.change_head_confirm_message,
-          //          title = org.smartregister.fhircore.anc.R.string.change_head_confirm_title,
-          //          confirmButtonListener =
-          //            this@RemoveFamilyMemberQuestionnaireActivity::onFamilyHeadChangeRequested,
-          //          confirmButtonText =
-          // org.smartregister.fhircore.anc.R.string.change_head_button_title,
-          //          options = eligibleMembers.map { AlertDialogListItem(it.id, it.name) }
-          //        )
           openBottomSheetDialog(eligibleMembers)
         }
       }
@@ -156,10 +147,10 @@ class RemoveFamilyMemberQuestionnaireActivity :
     alertDialog.show()
     alertDialog
       .getButton(AlertDialog.BUTTON_NEGATIVE)
-      .setTextColor(resources.getColor(R.color.transparent_blue))
+      .setTextColor(ContextCompat.getColor(this, R.color.transparent_blue))
     alertDialog
       .getButton(AlertDialog.BUTTON_POSITIVE)
-      .setTextColor(resources.getColor(R.color.status_red))
+      .setTextColor(ContextCompat.getColor(this, R.color.status_red))
   }
 
   override fun onSave(bottomSheetDataModel: BottomSheetDataModel) {
