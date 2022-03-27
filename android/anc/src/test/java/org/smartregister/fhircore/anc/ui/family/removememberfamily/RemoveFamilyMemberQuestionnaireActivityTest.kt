@@ -1,14 +1,29 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.anc.ui.family.removememberfamily
 
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.*
+import io.mockk.mockk
+import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.Questionnaire
 import org.junit.Assert
@@ -25,7 +40,6 @@ import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig.REMOVE_FAMILY_FORM
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -36,117 +50,117 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 @HiltAndroidTest
 internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectricTest() {
 
-    @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-    @get:Rule
-    var coroutinesTestRule = CoroutineTestRule()
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
-    @BindValue
-    val questionnaireViewModel: QuestionnaireViewModel =
-        spyk(QuestionnaireViewModel(mockk(), mockk(), mockk(), mockk(), mockk(), mockk(), mockk()))
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
-    @BindValue
-    val configurationRegistry: ConfigurationRegistry =
-        spyk(ConfigurationRegistry(mockk(), mockk(), mockk()))
+  @BindValue
+  val questionnaireViewModel: QuestionnaireViewModel =
+    spyk(QuestionnaireViewModel(mockk(), mockk(), mockk(), mockk(), mockk(), mockk(), mockk()))
 
-    private lateinit var activity: RemoveFamilyMemberQuestionnaireActivity
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry =
+    spyk(ConfigurationRegistry(mockk(), mockk(), mockk()))
 
-    @Before
-    fun setUp() {
-        hiltRule.inject()
-        coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
-    }
+  private lateinit var activity: RemoveFamilyMemberQuestionnaireActivity
 
-    @Test
-    fun testActivityShouldNotNull() {
-        buildActivityFor(REMOVE_FAMILY_FORM, false)
-        Assert.assertNotNull(activity)
-    }
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
+  }
 
-    @Test
-    fun testOnBackPressedShouldCallConfirmationDialogue() {
-        buildActivityFor(REMOVE_FAMILY_FORM, false)
-        activity.onBackPressed()
+  @Test
+  fun testActivityShouldNotNull() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+    Assert.assertNotNull(activity)
+  }
 
-        val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())
-        val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+  @Test
+  fun testOnBackPressedShouldCallConfirmationDialogue() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+    activity.onBackPressed()
 
-        Assert.assertNotNull(alertDialog)
-        Assert.assertEquals("", alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).text)
-        Assert.assertEquals(
-            getString(R.string.questionnaire_alert_back_pressed_button_title),
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertNotNull(alertDialog)
+    Assert.assertEquals("", alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).text)
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_back_pressed_button_title),
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+    )
+  }
+
+  @Test
+  fun testOnRemoveFamilyShouldCallExpectedDialog() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+
+    ReflectionHelpers.callInstanceMethod<Void>(
+      activity,
+      "removeFamilyMember",
+      ReflectionHelpers.ClassParameter.from(String::class.java, "1234"),
+      ReflectionHelpers.ClassParameter.from(String::class.java, "Test FamilyName")
+    )
+
+    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertNotNull(alertDialog)
+    Assert.assertEquals("", alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).text)
+    Assert.assertEquals(
+      getString(R.string.family_register_ok_title),
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+    )
+  }
+
+  //    @Test
+  //    fun testRemovingFamilyMoveToHomeAndFinishActivity() {
+  //        buildActivityFor(REMOVE_FAMILY_FORM, false)
+  //        activity.moveToHomePage()
+  //        val expectedIntent =
+  //            Intent(activity, FamilyRegisterActivity::class.java)
+  //        val actualIntent =
+  //            Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+  //                .nextStartedActivity
+  //        Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  //        Assert.assertTrue(activity.isFinishing)
+  //    }
+  //
+  //    @Test
+  //    fun testDiscardRemovingFinishActivity() {
+  //        buildActivityFor(REMOVE_FAMILY_FORM, false)
+  //        activity.discardRemovingAncBackToFamilyDetailPage()
+  //        Assert.assertTrue(activity.isFinishing)
+  //    }
+
+  override fun getActivity(): Activity {
+    return activity
+  }
+
+  private fun buildActivityFor(form: String, editForm: Boolean, headId: String? = null) {
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
+      Questionnaire().apply {
+        name = form
+        title = form
+        if (form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
+          addItem().linkId = FamilyQuestionnaireActivity.HEAD_RECORD_ID_KEY
+      }
+    every { configurationRegistry.appId } returns "anc"
+
+    val intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, form)
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE,
+          if (editForm) QuestionnaireType.EDIT.name else QuestionnaireType.DEFAULT.name
         )
-    }
+        putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, headId)
+      }
 
-    @Test
-    fun testOnRemoveFamilyShouldCallExpectedDialog() {
-        buildActivityFor(REMOVE_FAMILY_FORM, false)
-
-        ReflectionHelpers.callInstanceMethod<Void>(
-            activity,
-            "removeFamilyMember",
-            ReflectionHelpers.ClassParameter.from(String::class.java, "1234"),
-            ReflectionHelpers.ClassParameter.from(String::class.java, "Test FamilyName")
-        )
-
-        val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())
-        val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
-
-        Assert.assertNotNull(alertDialog)
-        Assert.assertEquals("", alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).text)
-        Assert.assertEquals(
-            getString(R.string.family_register_ok_title),
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
-        )
-    }
-
-//    @Test
-//    fun testRemovingFamilyMoveToHomeAndFinishActivity() {
-//        buildActivityFor(REMOVE_FAMILY_FORM, false)
-//        activity.moveToHomePage()
-//        val expectedIntent =
-//            Intent(activity, FamilyRegisterActivity::class.java)
-//        val actualIntent =
-//            Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
-//                .nextStartedActivity
-//        Assert.assertEquals(expectedIntent.component, actualIntent.component)
-//        Assert.assertTrue(activity.isFinishing)
-//    }
-//
-//    @Test
-//    fun testDiscardRemovingFinishActivity() {
-//        buildActivityFor(REMOVE_FAMILY_FORM, false)
-//        activity.discardRemovingAncBackToFamilyDetailPage()
-//        Assert.assertTrue(activity.isFinishing)
-//    }
-
-    override fun getActivity(): Activity {
-        return activity
-    }
-
-    private fun buildActivityFor(form: String, editForm: Boolean, headId: String? = null) {
-        coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
-                Questionnaire().apply {
-                    name = form
-                    title = form
-                    if (form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
-                        addItem().linkId = FamilyQuestionnaireActivity.HEAD_RECORD_ID_KEY
-                }
-        every { configurationRegistry.appId } returns "anc"
-
-        val intent =
-            Intent().apply {
-                putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, form)
-                putExtra(
-                    QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE,
-                    if (editForm) QuestionnaireType.EDIT.name else QuestionnaireType.DEFAULT.name
-                )
-                putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, headId)
-            }
-
-        activity =
-            Robolectric.buildActivity(RemoveFamilyMemberQuestionnaireActivity::class.java, intent)
-                .create()
-                .get()
-    }
+    activity =
+      Robolectric.buildActivity(RemoveFamilyMemberQuestionnaireActivity::class.java, intent)
+        .create()
+        .get()
+  }
 }

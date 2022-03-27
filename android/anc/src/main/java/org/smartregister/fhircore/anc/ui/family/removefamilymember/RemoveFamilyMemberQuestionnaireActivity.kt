@@ -41,7 +41,7 @@ class RemoveFamilyMemberQuestionnaireActivity :
   private lateinit var saveBtn: Button
   private lateinit var familyId: String
 
-  override val questionnaireViewModel by viewModels<RemoveFamilyQuestionnaireViewModel>()
+  override val questionnaireViewModel by viewModels<RemoveFamilyMemberQuestionnaireViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

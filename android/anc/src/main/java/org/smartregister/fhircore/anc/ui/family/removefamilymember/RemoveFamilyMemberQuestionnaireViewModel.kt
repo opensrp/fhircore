@@ -42,7 +42,7 @@ import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltViewModel
-class RemoveFamilyQuestionnaireViewModel
+class RemoveFamilyMemberQuestionnaireViewModel
 @Inject
 constructor(
   fhirEngine: FhirEngine,
