@@ -30,7 +30,6 @@ import androidx.compose.material.Text
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.ResourceSyncException
@@ -46,6 +45,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import java.io.InterruptedIOException
+import java.net.UnknownHostException
 import java.time.OffsetDateTime
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -474,6 +475,49 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
     handleSyncFailed(failedState)
     verify(exactly = 1, inverse = true) { accountAuthenticator.logout() }
+
+    val glitchStateInterruptedIOException =
+      State.Glitch(
+        listOf(
+          mockk {
+            every { exception } returns
+              mockk<InterruptedIOException> {
+                every { message } returns "java.io.InterruptedIOException: timeout"
+              }
+          }
+        )
+      )
+
+    handleSyncFailed(glitchStateInterruptedIOException)
+    Assert.assertEquals(
+      View.GONE,
+      testRegisterActivity.registerActivityBinding.progressSync.visibility
+    )
+    Assert.assertNotNull(
+      testRegisterActivity.registerActivityBinding.containerProgressSync.background
+    )
+
+    val glitchStateUnknownHostException =
+      State.Glitch(
+        listOf(
+          mockk {
+            every { exception } returns
+              mockk<UnknownHostException> {
+                every { message } returns
+                  "java.net.UnknownHostException: Unable to resolve host fhir.labs.smartregister.org: No address associated with hostname"
+              }
+          }
+        )
+      )
+
+    handleSyncFailed(glitchStateUnknownHostException)
+    Assert.assertEquals(
+      View.GONE,
+      testRegisterActivity.registerActivityBinding.progressSync.visibility
+    )
+    Assert.assertNotNull(
+      testRegisterActivity.registerActivityBinding.containerProgressSync.background
+    )
 
     handleSyncFailed(State.Glitch(listOf()))
     Assert.assertFalse(
