@@ -158,4 +158,9 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
   override fun getActivity(): Activity {
     return familyDetailsActivity
   }
+
+  @Test
+  fun testShouldTestNewIntent() {
+    familyDetailsActivity.intent
+  }
 }

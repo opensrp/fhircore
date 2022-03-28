@@ -17,10 +17,16 @@
 package org.smartregister.fhircore.anc.ui.family.removememberfamily
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
@@ -28,14 +34,24 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.patient.DeletionReason
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireViewModel
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@ExperimentalCoroutinesApi
 @HiltAndroidTest
 class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
+
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -43,25 +59,38 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
 
-  private val familyDetailRepository: FamilyDetailRepository = mockk(relaxed = true)
+  private val fhirEngine: FhirEngine = mockk()
 
   private lateinit var viewModel: RemoveFamilyMemberQuestionnaireViewModel
+
+  private lateinit var defaultRepo: DefaultRepository
+  private var patientRepository: PatientRepository = mockk(relaxed = true)
+  private var familyDetailRepository: FamilyDetailRepository = mockk(relaxed = true)
+  private val libraryEvaluator: LibraryEvaluator = mockk()
 
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    val configurationRegistry = mockk<ConfigurationRegistry>()
+    every { configurationRegistry.appId } returns "appId"
     viewModel =
-      RemoveFamilyMemberQuestionnaireViewModel(
-        mockk(),
-        mockk(),
-        mockk(),
-        mockk(),
-        mockk(),
-        mockk(),
-        mockk(),
-        mockk(),
-        mockk()
+      spyk(
+        RemoveFamilyMemberQuestionnaireViewModel(
+          fhirEngine = fhirEngine,
+          defaultRepository = defaultRepo,
+          configurationRegistry = configurationRegistry,
+          transformSupportServices = mockk(),
+          patientRepository = patientRepository,
+          familyDetailRepository = familyDetailRepository,
+          dispatcherProvider = defaultRepo.dispatcherProvider,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          libraryEvaluator = libraryEvaluator
+        )
       )
+
+    ReflectionHelpers.setField(viewModel, "defaultRepository", defaultRepo)
 
     coEvery { familyDetailRepository.fetchDemographics("111") } returns getPatient()
   }
@@ -80,6 +109,58 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
       }
     return patient
   }
+
+  @Test
+  fun testSaveQuestionnaireResponseShouldAddIdAndAuthoredWhenQuestionnaireResponseDoesNotHaveId() {
+
+    val questionnaire = Questionnaire().apply { id = "qId" }
+    val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
+    coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
+
+    Assert.assertNull(questionnaireResponse.id)
+    Assert.assertNull(questionnaireResponse.authored)
+
+    runBlocking { viewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse) }
+
+    Assert.assertNotNull(questionnaireResponse.id)
+    Assert.assertNotNull(questionnaireResponse.authored)
+  }
+
+  @Test
+  fun testChangeFamilyHeadShouldCallRepositoryMethod() {
+    coEvery { familyDetailRepository.familyRepository.changeFamilyHead(any(), any()) } answers {}
+    viewModel.changeFamilyHead("111", "222")
+    coVerify { familyDetailRepository.familyRepository.changeFamilyHead(any(), any()) }
+  }
+
+  fun testHandlePatientSubjectShouldReturnSetCorrectReference() {
+    val questionnaire = Questionnaire().apply { addSubjectType("Patient") }
+    val questionnaireResponse = QuestionnaireResponse()
+
+    Assert.assertFalse(questionnaireResponse.hasSubject())
+
+    viewModel.handleQuestionnaireResponseSubject("123", questionnaire, questionnaireResponse)
+
+    Assert.assertEquals("Patient/123", questionnaireResponse.subject.reference)
+  }
+
+  //    @Test
+  //    fun testDeletePatientShouldCallPatientRepository() = runBlockingTest {
+  //        coEvery { patientRepository.deletePatient(any(), any()) } answers {}
+  //        coEvery { viewModel.getReasonRemove(any()) } answers { DeletionReason.DIED }
+  //        viewModel.deleteFamilyMember("111")
+  //
+  //        coVerify { patientRepository.deletePatient(any(), any()) }
+  //    }
+
+  //  @Test
+  //  fun testDeletePatient() {
+  //    coEvery { viewModel.getReasonRemove(any()) } returns DeletionReason.OTHER
+  //    coEvery { patientRepository.deletePatient(any(), any()) } just runs
+  //    viewModel.deleteFamilyMember("111")
+  //    verify { runBlockingTest { patientRepository.deletePatient(any(), any()) } }
+  //    Assert.assertEquals(true, viewModel.shouldRemoveFamilyMember.value)
+  //  }
 
   @Test
   fun testGetReasonRemove() {
