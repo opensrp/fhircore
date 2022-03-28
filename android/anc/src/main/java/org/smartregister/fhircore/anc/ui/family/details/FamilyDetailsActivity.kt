@@ -174,4 +174,12 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
       }
     )
   }
+
+  override fun onNewIntent(intent: Intent?) {
+    super.onNewIntent(intent)
+    intent?.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
+      familyId = it
+      setIntent(intent)
+    }
+  }
 }

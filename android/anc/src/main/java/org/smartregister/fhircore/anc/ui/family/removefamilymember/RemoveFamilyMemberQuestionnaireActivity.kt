@@ -40,6 +40,7 @@ class RemoveFamilyMemberQuestionnaireActivity :
   QuestionnaireActivity(), BottomSheetListDialog.OnClickedListItems {
   private lateinit var saveBtn: Button
   private lateinit var familyId: String
+  private var newFamilyHeadId: String? = null
 
   override val questionnaireViewModel by viewModels<RemoveFamilyMemberQuestionnaireViewModel>()
 
@@ -66,7 +67,7 @@ class RemoveFamilyMemberQuestionnaireActivity :
       this@RemoveFamilyMemberQuestionnaireActivity
     ) { deletePatient ->
       if (deletePatient) {
-        switchToPatientScreen(familyId)
+        switchToPatientScreen()
       }
     }
   }
@@ -103,6 +104,7 @@ class RemoveFamilyMemberQuestionnaireActivity :
         this@RemoveFamilyMemberQuestionnaireActivity
       ) { changeHead ->
       if (changeHead) {
+        this.newFamilyHeadId = newFamilyHeadId
         questionnaireViewModel.deleteFamilyMember(familyId)
       }
     }
@@ -121,10 +123,10 @@ class RemoveFamilyMemberQuestionnaireActivity :
     )
   }
 
-  private fun switchToPatientScreen(uniqueIdentifier: String) {
+  private fun switchToPatientScreen() {
     val intent =
       Intent(this, FamilyDetailsActivity::class.java).apply {
-        putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
+        newFamilyHeadId?.let { putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, it) }
       }
     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
     startActivity(intent)
