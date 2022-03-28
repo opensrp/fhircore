@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.family.removefamilymember
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -122,12 +123,13 @@ constructor(
 
   fun deleteFamilyMember(patientId: String) {
     viewModelScope.launch {
-      patientRepository.deletePatient(patientId, getReasonRemove())
+      patientRepository.deletePatient(patientId, getReasonRemove(reasonRemove))
       _shouldRemoveFamilyMember.value = true
     }
   }
 
-  private fun getReasonRemove(): DeletionReason {
+  @VisibleForTesting
+  fun getReasonRemove(reasonRemove: String): DeletionReason {
     return when (reasonRemove) {
       "Moved away" -> DeletionReason.MOVED_AWAY
       "Died" -> DeletionReason.DIED

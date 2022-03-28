@@ -22,7 +22,11 @@ import android.content.Intent
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.Questionnaire
@@ -91,48 +95,6 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
       alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
     )
   }
-
-  @Test
-  fun testOnRemoveFamilyShouldCallExpectedDialog() {
-    buildActivityFor(REMOVE_FAMILY_FORM, false)
-
-    ReflectionHelpers.callInstanceMethod<Void>(
-      activity,
-      "removeFamilyMember",
-      ReflectionHelpers.ClassParameter.from(String::class.java, "1234"),
-      ReflectionHelpers.ClassParameter.from(String::class.java, "Test FamilyName")
-    )
-
-    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())
-    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
-
-    Assert.assertNotNull(alertDialog)
-    Assert.assertEquals("", alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).text)
-    Assert.assertEquals(
-      getString(R.string.family_register_ok_title),
-      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
-    )
-  }
-
-  //    @Test
-  //    fun testRemovingFamilyMoveToHomeAndFinishActivity() {
-  //        buildActivityFor(REMOVE_FAMILY_FORM, false)
-  //        activity.moveToHomePage()
-  //        val expectedIntent =
-  //            Intent(activity, FamilyRegisterActivity::class.java)
-  //        val actualIntent =
-  //            Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
-  //                .nextStartedActivity
-  //        Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  //        Assert.assertTrue(activity.isFinishing)
-  //    }
-  //
-  //    @Test
-  //    fun testDiscardRemovingFinishActivity() {
-  //        buildActivityFor(REMOVE_FAMILY_FORM, false)
-  //        activity.discardRemovingAncBackToFamilyDetailPage()
-  //        Assert.assertTrue(activity.isFinishing)
-  //    }
 
   override fun getActivity(): Activity {
     return activity

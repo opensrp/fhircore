@@ -18,18 +18,23 @@ package org.smartregister.fhircore.anc.ui.family.removememberfamily
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
+import org.smartregister.fhircore.anc.data.patient.DeletionReason
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireViewModel
 
+@HiltAndroidTest
 class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -45,7 +50,18 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    viewModel = RemoveFamilyMemberQuestionnaireViewModel(familyDetailRepository)
+    viewModel =
+      RemoveFamilyMemberQuestionnaireViewModel(
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk()
+      )
 
     coEvery { familyDetailRepository.fetchDemographics("111") } returns getPatient()
   }
@@ -65,27 +81,15 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
     return patient
   }
 
-  //    @Test
-  //    fun testDiscardRemoveFamily() {
-  //        removeFamilyViewModel.discardRemovingFamily()
-  //        Assert.assertEquals(true, removeFamilyViewModel.discardRemoving.value)
-  //    }
-  //
-  //    @Test
-  //    fun testRemoveFamilyShouldCallRepositoryMethod() {
-  //        removeFamilyViewModel.removeFamily("111")
-  //        Assert.assertEquals(true, removeFamilyViewModel.isRemoveFamily.value)
-  //    }
-  //
-  //    @Test
-  //    fun testRemoveFamilyShouldCallRepositoryMethodWithError() {
-  //        removeFamilyViewModel.removeFamily("111")
-  //        Assert.assertEquals(false, removeFamilyViewModel.discardRemoving.value)
-  //    }
-  //
-  //    @Test
-  //    fun testFetchFamilyName() {
-  //        removeFamilyViewModel.fetchFamilyName("1234")
-  //        Assert.assertNotNull(removeFamilyViewModel.demographics.value)
-  //    }
+  @Test
+  fun testGetReasonRemove() {
+    val deletionReason = viewModel.getReasonRemove("Moved away")
+    Assert.assertEquals(deletionReason, DeletionReason.MOVED_AWAY)
+    val deletionReasonTwo = viewModel.getReasonRemove("Other")
+    Assert.assertEquals(deletionReasonTwo, DeletionReason.OTHER)
+    val deletionReasonThree = viewModel.getReasonRemove("Died")
+    Assert.assertEquals(deletionReasonThree, DeletionReason.DIED)
+    val deletionReasonEmpty = viewModel.getReasonRemove("")
+    Assert.assertEquals(deletionReasonEmpty, DeletionReason.OTHER)
+  }
 }
