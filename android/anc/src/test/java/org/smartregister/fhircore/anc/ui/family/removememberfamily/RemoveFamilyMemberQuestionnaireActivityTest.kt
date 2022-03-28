@@ -30,6 +30,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -108,6 +109,19 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
     val bottomSheetHolder = BottomSheetHolder("", "", "", listOf(BottomSheetDataModel("", "", "")))
     Assert.assertNotNull(bottomSheetHolder)
   }
+
+  @Test
+  fun testHandleQuestionResponse() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+    activity.handleQuestionnaireResponse(QuestionnaireResponse())
+  }
+
+  //  @Test
+  //  fun testSwitchBackToPatientDetail(){
+  //    buildActivityFor(REMOVE_FAMILY_FORM, false)
+  //    ReflectionHelpers.callInstanceMethod<Any>(activity, "switchToPatientScreen")
+  //    verify(exactly = 1) { activity.finish() }
+  //  }
 
   private fun buildActivityFor(form: String, editForm: Boolean, headId: String? = null) {
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
