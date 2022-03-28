@@ -650,6 +650,27 @@ class PatientRepositoryTest : RobolectricTest() {
     Assert.assertEquals(0, saveSlot.captured.link.size)
   }
 
+  @Test
+  fun testDeletePatientWithOtherShouldRemovePatientLink() {
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns
+      Patient().apply {
+        active = true
+        addLink().other.reference = "ref"
+      }
+    coEvery { repository.revokeCarePlans(any(), any()) } answers {}
+    coEvery { repository.revokeActiveStatusData(any()) } answers {}
+    coEvery { fhirEngine.save(any()) } just runs
+
+    runBlocking { repository.deletePatient("99", DeletionReason.OTHER) }
+
+    val saveSlot = slot<Patient>()
+
+    coVerify { fhirEngine.save(capture(saveSlot)) }
+
+    Assert.assertTrue(saveSlot.captured.active)
+    Assert.assertEquals(0, saveSlot.captured.link.size)
+  }
+
   @Test(expected = IllegalStateException::class)
   fun testDeletePatientWithFamilyHeadShouldThrowException() {
     coEvery { fhirEngine.load(Patient::class.java, any()) } returns
