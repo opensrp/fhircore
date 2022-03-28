@@ -45,6 +45,8 @@ import org.smartregister.fhircore.anc.ui.details.form.FormConfig.REMOVE_FAMILY_F
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireActivity
+import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetDataModel
+import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetHolder
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -98,6 +100,13 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
 
   override fun getActivity(): Activity {
     return activity
+  }
+
+  @Test
+  fun testBottomSheetList() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+    val bottomSheetHolder = BottomSheetHolder("", "", "", listOf(BottomSheetDataModel("", "", "")))
+    Assert.assertNotNull(bottomSheetHolder)
   }
 
   private fun buildActivityFor(form: String, editForm: Boolean, headId: String? = null) {
