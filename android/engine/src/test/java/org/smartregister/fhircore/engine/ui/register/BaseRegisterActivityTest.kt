@@ -83,493 +83,473 @@ import retrofit2.HttpException
 @HiltAndroidTest
 class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
-    @get:Rule(order = 0)
-    val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-    @get:Rule(order = 1)
-    val coroutineTestRule = CoroutineTestRule()
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
-    @BindValue
-    var tokenManagerService: TokenManagerService = mockk()
+  @BindValue var tokenManagerService: TokenManagerService = mockk()
 
-    @BindValue
-    val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
-    @BindValue
-    val secureSharedPreference: SecureSharedPreference = mockk()
-    @BindValue
-    val accountAuthenticator = mockk<AccountAuthenticator>()
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+  @BindValue val accountAuthenticator = mockk<AccountAuthenticator>()
 
-    val defaultRepository: DefaultRepository = mockk()
-    @BindValue
-    var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  val defaultRepository: DefaultRepository = mockk()
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
 
-    private lateinit var testRegisterActivityController: ActivityController<TestRegisterActivity>
+  private lateinit var testRegisterActivityController: ActivityController<TestRegisterActivity>
 
-    private lateinit var testRegisterActivity: TestRegisterActivity
+  private lateinit var testRegisterActivity: TestRegisterActivity
 
-    @Before
-    fun setUp() {
-        hiltRule.inject()
+  @Before
+  fun setUp() {
+    hiltRule.inject()
 
-        every { sharedPreferencesHelper.read(any(), any<String>()) } returns ""
-        every { sharedPreferencesHelper.write(any(), any<String>()) } returns Unit
-        every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-        every { secureSharedPreference.retrieveCredentials() } returns FakeModel.authCredentials
-        every { secureSharedPreference.deleteCredentials() } returns Unit
+    every { sharedPreferencesHelper.read(any(), any<String>()) } returns ""
+    every { sharedPreferencesHelper.write(any(), any<String>()) } returns Unit
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    every { secureSharedPreference.retrieveCredentials() } returns FakeModel.authCredentials
+    every { secureSharedPreference.deleteCredentials() } returns Unit
 
-        ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 
-        testRegisterActivityController = Robolectric.buildActivity(TestRegisterActivity::class.java)
-        testRegisterActivity = testRegisterActivityController.get()
-        testRegisterActivityController.create().resume()
-    }
+    testRegisterActivityController = Robolectric.buildActivity(TestRegisterActivity::class.java)
+    testRegisterActivity = testRegisterActivityController.get()
+    testRegisterActivityController.create().resume()
+  }
 
-    override fun tearDown() {
-        // Reset syncBroadcaster
-        super.tearDown()
-    }
+  override fun tearDown() {
+    // Reset syncBroadcaster
+    super.tearDown()
+  }
 
-    override fun getActivity(): Activity = testRegisterActivity
+  override fun getActivity(): Activity = testRegisterActivity
 
-    @Test
-    fun testViewSetup() {
+  @Test
+  fun testViewSetup() {
 
-        // Main Fragment is displayed
-        Assert.assertTrue(testRegisterActivity.supportFragmentManager.fragments.isNotEmpty())
-        val findFragmentByTag: Fragment? =
-            testRegisterActivity.supportFragmentManager.findFragmentByTag(TestFragment.TAG + 1)
-        Assert.assertNotNull(findFragmentByTag)
+    // Main Fragment is displayed
+    Assert.assertTrue(testRegisterActivity.supportFragmentManager.fragments.isNotEmpty())
+    val findFragmentByTag: Fragment? =
+      testRegisterActivity.supportFragmentManager.findFragmentByTag(TestFragment.TAG + 1)
+    Assert.assertNotNull(findFragmentByTag)
 
-        // ViewBindings correctly setup
-        Assert.assertNotNull(testRegisterActivity.drawerMenuHeaderBinding)
-        Assert.assertNotNull(testRegisterActivity.registerActivityBinding)
+    // ViewBindings correctly setup
+    Assert.assertNotNull(testRegisterActivity.drawerMenuHeaderBinding)
+    Assert.assertNotNull(testRegisterActivity.registerActivityBinding)
 
-        // Side Menu has 1 item
-        Assert.assertEquals(1, testRegisterActivity.sideMenuOptions().size)
+    // Side Menu has 1 item
+    Assert.assertEquals(1, testRegisterActivity.sideMenuOptions().size)
 
-        // Register list contains 1 item
-        Assert.assertTrue(testRegisterActivity.registersList().isNotEmpty())
+    // Register list contains 1 item
+    Assert.assertTrue(testRegisterActivity.registersList().isNotEmpty())
 
-        // Support fragment contains 2 fragments
-        val supportedFragments = testRegisterActivity.supportedFragments()
-        Assert.assertEquals(2, supportedFragments.size)
-        Assert.assertTrue(supportedFragments.containsKey(TestFragment.TAG + 1))
-        Assert.assertTrue(supportedFragments.containsKey(TestFragment.TAG + 2))
+    // Support fragment contains 2 fragments
+    val supportedFragments = testRegisterActivity.supportedFragments()
+    Assert.assertEquals(2, supportedFragments.size)
+    Assert.assertTrue(supportedFragments.containsKey(TestFragment.TAG + 1))
+    Assert.assertTrue(supportedFragments.containsKey(TestFragment.TAG + 2))
 
-        val config = testRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+    val config = testRegisterActivity.registerViewModel.registerViewConfiguration.value!!
 
-        // Bottom navigation should not contains any menu option
-        Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions(config).isEmpty())
+    // Bottom navigation should not contains any menu option
+    Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions(config).isEmpty())
 
-        config.bottomNavigationOptions =
-            listOf(
-                NavigationOption(
-                    id = "profile",
-                    title = getString(R.string.profile),
-                    icon = "ic_user",
-                    mockk()
-                )
-            )
-
-        // Bottom navigation contains one menu option
-        Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions(config).isNotEmpty())
-    }
-
-    @Test
-    fun testConfigureViewWithSideMenu() {
-        val registerViewConfiguration =
-            testRegisterActivity.registerViewConfigurationOf(
-                appId = "appId",
-                classification = "patient_register",
-                appTitle = "Covax",
-                filterText = "Show overdue",
-                searchBarHint = "Search name or ID",
-                newClientButtonText = "Register new client",
-                newClientButtonStyle = "",
-                showSearchBar = true,
-                showFilter = true,
-                showScanQRCode = true,
-                showNewClientButton = true,
-                showSideMenu = true,
-                showBottomMenu = false,
-                registrationForm = "patient-registration"
-            )
-        testRegisterActivity.configureViews(registerViewConfiguration)
-        Assert.assertEquals(
-            registerViewConfiguration.appTitle,
-            testRegisterActivity.drawerMenuHeaderBinding.tvNavHeader.text.toString()
+    config.bottomNavigationOptions =
+      listOf(
+        NavigationOption(
+          id = "profile",
+          title = getString(R.string.profile),
+          icon = "ic_user",
+          mockk()
         )
+      )
 
-        val registerActivityBinding = testRegisterActivity.registerActivityBinding
+    // Bottom navigation contains one menu option
+    Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions(config).isNotEmpty())
+  }
 
-        // SideMenu or DrawerLayout is visible
-        val drawerLayout = registerActivityBinding.drawerLayout
-        Assert.assertEquals(View.VISIBLE, drawerLayout.visibility)
+  @Test
+  fun testConfigureViewWithSideMenu() {
+    val registerViewConfiguration =
+      testRegisterActivity.registerViewConfigurationOf(
+        appId = "appId",
+        classification = "patient_register",
+        appTitle = "Covax",
+        filterText = "Show overdue",
+        searchBarHint = "Search name or ID",
+        newClientButtonText = "Register new client",
+        newClientButtonStyle = "",
+        showSearchBar = true,
+        showFilter = true,
+        showScanQRCode = true,
+        showNewClientButton = true,
+        showSideMenu = true,
+        showBottomMenu = false,
+        registrationForm = "patient-registration"
+      )
+    testRegisterActivity.configureViews(registerViewConfiguration)
+    Assert.assertEquals(
+      registerViewConfiguration.appTitle,
+      testRegisterActivity.drawerMenuHeaderBinding.tvNavHeader.text.toString()
+    )
 
-        // New button visible, text also updated
-        Assert.assertEquals(
-            registerViewConfiguration.newClientButtonText,
-            registerActivityBinding.btnRegisterNewClient.text
-        )
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
 
-        // Search bar is displayed
-        Assert.assertEquals(
-            View.VISIBLE,
-            registerActivityBinding.toolbarLayout.editTextSearch.visibility
-        )
+    // SideMenu or DrawerLayout is visible
+    val drawerLayout = registerActivityBinding.drawerLayout
+    Assert.assertEquals(View.VISIBLE, drawerLayout.visibility)
 
-        // Due button is visible
-        Assert.assertEquals(
-            View.VISIBLE,
-            registerActivityBinding.toolbarLayout.btnShowOverdue.visibility
-        )
+    // New button visible, text also updated
+    Assert.assertEquals(
+      registerViewConfiguration.newClientButtonText,
+      registerActivityBinding.btnRegisterNewClient.text
+    )
 
-        // Scan QR Code button is visible
-        Assert.assertEquals(
-            View.VISIBLE,
-            registerActivityBinding.toolbarLayout.btnScanBarcode.visibility
-        )
+    // Search bar is displayed
+    Assert.assertEquals(
+      View.VISIBLE,
+      registerActivityBinding.toolbarLayout.editTextSearch.visibility
+    )
 
-        // BottomNavigation Not visible
-        Assert.assertEquals(View.GONE, registerActivityBinding.bottomNavView.visibility)
-    }
+    // Due button is visible
+    Assert.assertEquals(
+      View.VISIBLE,
+      registerActivityBinding.toolbarLayout.btnShowOverdue.visibility
+    )
 
-    @Test
-    fun testOnSyncWithSyncStatusStarted() {
-        // Status Sync Started
-        testRegisterActivity.onSync(State.Started)
-        val registerActivityBinding = testRegisterActivity.registerActivityBinding
-        Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
-        Assert.assertEquals(
-            testRegisterActivity.getString(R.string.syncing_in_progress),
-            registerActivityBinding.tvLastSyncTimestamp.text.toString()
-        )
-        Assert.assertNull(registerActivityBinding.containerProgressSync.background)
-        Assert.assertFalse(registerActivityBinding.containerProgressSync.hasOnClickListeners())
-    }
+    // Scan QR Code button is visible
+    Assert.assertEquals(
+      View.VISIBLE,
+      registerActivityBinding.toolbarLayout.btnScanBarcode.visibility
+    )
 
-    @Test
-    fun testOnSyncWithSyncStatusInProgress() {
-        // Status Sync InProgress
-        testRegisterActivity.onSync(State.InProgress(ResourceType.Patient))
-        val registerActivityBinding = testRegisterActivity.registerActivityBinding
-        Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
-        Assert.assertEquals(
-            testRegisterActivity.getString(R.string.syncing_in_progress),
-            registerActivityBinding.tvLastSyncTimestamp.text.toString()
-        )
-        Assert.assertNull(registerActivityBinding.containerProgressSync.background)
-        Assert.assertFalse(registerActivityBinding.containerProgressSync.hasOnClickListeners())
-    }
+    // BottomNavigation Not visible
+    Assert.assertEquals(View.GONE, registerActivityBinding.bottomNavView.visibility)
+  }
 
-    @Test
-    fun testOnSyncStatusFinished() {
-        // Status Sync Finished
-        val registerActivityBinding = testRegisterActivity.registerActivityBinding
-        val result = spyk(Result.Success)
-        val currentDateTime = OffsetDateTime.now()
-        every { result.timestamp } returns currentDateTime
-        every { sharedPreferencesHelper.read(any(), any<String>()) } answers
-                {
-                    if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
-                        currentDateTime.asString()
-                    } else {
-                        ""
-                    }
-                }
+  @Test
+  fun testOnSyncWithSyncStatusStarted() {
+    // Status Sync Started
+    testRegisterActivity.onSync(State.Started)
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
+    Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
+    Assert.assertEquals(
+      testRegisterActivity.getString(R.string.syncing_in_progress),
+      registerActivityBinding.tvLastSyncTimestamp.text.toString()
+    )
+    Assert.assertNull(registerActivityBinding.containerProgressSync.background)
+    Assert.assertFalse(registerActivityBinding.containerProgressSync.hasOnClickListeners())
+  }
 
-        testRegisterActivity.onSync(State.Finished(result))
-        Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
-        Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
-        Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
-        // Shared preference saved with last sync timestamp
-        Assert.assertEquals(
-            currentDateTime.asString(),
-            testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
-                LAST_SYNC_TIMESTAMP,
-                null
-            )
-        )
-    }
+  @Test
+  fun testOnSyncWithSyncStatusInProgress() {
+    // Status Sync InProgress
+    testRegisterActivity.onSync(State.InProgress(ResourceType.Patient))
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
+    Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
+    Assert.assertEquals(
+      testRegisterActivity.getString(R.string.syncing_in_progress),
+      registerActivityBinding.tvLastSyncTimestamp.text.toString()
+    )
+    Assert.assertNull(registerActivityBinding.containerProgressSync.background)
+    Assert.assertFalse(registerActivityBinding.containerProgressSync.hasOnClickListeners())
+  }
 
-    @Test
-    fun testOnSyncStatusFailed() {
-        // Status Sync Failed
-        val registerActivityBinding = testRegisterActivity.registerActivityBinding
-        val result =
-            spyk(
-                Result.Error(
-                    listOf(
-                        ResourceSyncException(
-                            ResourceType.Patient,
-                            Exception("I am a bad exception")
-                        )
-                    )
-                )
-            )
-        val lastDateTimestamp = OffsetDateTime.now()
-        every { result.timestamp } returns lastDateTimestamp
-        every { sharedPreferencesHelper.read(any(), any<String>()) } answers
-                {
-                    if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
-                        lastDateTimestamp.asString()
-                    } else {
-                        ""
-                    }
-                }
-        testRegisterActivity.onSync(State.Failed(result))
-        Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
-        Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
-        Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
-        Assert.assertEquals(
-            lastDateTimestamp.asString(),
-            testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
-                LAST_SYNC_TIMESTAMP,
-                null
-            )
-        )
-    }
-
-    @Test
-    fun testOnSyncStatusGlitch() {
-        val registerActivityBinding = testRegisterActivity.registerActivityBinding
-        testRegisterActivity.onSync(
-            State.Glitch(
-                listOf(
-                    ResourceSyncException(
-                        ResourceType.Patient,
-                        Exception("I am a bad exception")
-                    )
-                )
-            )
-        )
-        Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
-        val syncStatus =
-            testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
-                LAST_SYNC_TIMESTAMP,
-                testRegisterActivity.getString(R.string.syncing_retry)
-            )
-        Assert.assertEquals(syncStatus, registerActivityBinding.tvLastSyncTimestamp.text.toString())
-        Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
-        Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
-    }
-
-    @Test
-    fun testOnNavigationSelectLanguageItemClickedShouldShowDialog() {
-        val languageMenuItem = RoboMenuItem(R.id.menu_item_language)
-        testRegisterActivity.onNavigationItemSelected(languageMenuItem)
-        val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-        dialog.clickOnItem(0)
-
-        verify(exactly = 1) { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "en") }
-
-        Assert.assertEquals(
-            testRegisterActivity.getString(R.string.select_language),
-            dialog.title,
-        )
-        Assert.assertEquals(R.drawable.ic_outline_language_black, dialog.iconId)
-    }
-
-    @Test
-    fun testOnNavigationLogoutItemClickedShouldFinishActivity() {
-        every { tokenManagerService.getActiveAccount() } returns Account("abc", "type")
-        every { tokenManagerService.isTokenActive(any()) } returns false
-        every { accountAuthenticator.logout() } just runs
-
-        val logoutMenuItem = RoboMenuItem(R.id.menu_item_logout)
-        testRegisterActivity.onNavigationItemSelected(logoutMenuItem)
-        Assert.assertFalse(
-            testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
-        )
-        verify(exactly = 1) { accountAuthenticator.logout() }
-    }
-
-    @Test
-    fun testOnNavigationItemClickedShouldCloseDrawer() {
-        val clientsMenuItem = RoboMenuItem(R.id.menu_item_clients)
-        testRegisterActivity.onNavigationItemSelected(clientsMenuItem)
-        Assert.assertFalse(
-            testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
-        )
-    }
-
-    @Test
-    fun testDestroyActivity() {
-        testRegisterActivityController.pause().stop().destroy()
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun testThatWrongDateThrowsAnException() {
-        testRegisterActivity.registerViewModel.lastSyncTimestamp.value = "2021-12-15"
-        Assert.assertTrue(
-            testRegisterActivity.registerActivityBinding.tvLastSyncTimestamp.text.isEmpty()
-        )
-    }
-
-    @Test
-    fun testRegisterClientShouldLaunchQuestionnaireActivity() {
-        testRegisterActivity.registerClient(null)
-        val startedIntent: Intent = Shadows.shadowOf(testRegisterActivity).nextStartedActivity
-        val shadowIntent: ShadowIntent = Shadows.shadowOf(startedIntent)
-        Assert.assertEquals(QuestionnaireActivity::class.java, shadowIntent.intentClass)
-    }
-
-    @Test
-    fun testSwitchNonRegisterFragment() {
-        testRegisterActivity.switchFragment(
-            tag = TestFragment.TAG + 2,
-            isRegisterFragment = false,
-            isFilterVisible = false,
-            toolbarTitle = null
-        )
-        val registerActivityBinding = testRegisterActivity.registerActivityBinding
-
-        Assert.assertFalse(
-            registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners()
-        )
-
-        Assert.assertEquals(
-            testRegisterActivity.getString(R.string.clients),
-            registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString()
-        )
-    }
-
-    @Test
-    fun testSwitchNonRegisterFragmentWithNewTitle() {
-        val toolbarTitle = "New Title"
-        testRegisterActivity.switchFragment(
-            tag = TestFragment.TAG + 2,
-            isRegisterFragment = false,
-            isFilterVisible = false,
-            toolbarTitle = toolbarTitle
-        )
-        val registerActivityBinding = testRegisterActivity.registerActivityBinding
-
-        Assert.assertFalse(
-            registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners()
-        )
-
-        Assert.assertEquals(
-            toolbarTitle,
-            registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString()
-        )
-    }
-
-    @Test
-    @Ignore("Figure out how to set permission")
-    fun testBarcodeScanButtonClickWithPermission() {
-        val testRegisterActivitySpy = spyk(testRegisterActivity)
-        every {
-            testRegisterActivitySpy.checkPermission(Manifest.permission.CAMERA, any(), any())
-        } returns PackageManager.PERMISSION_GRANTED
-        testRegisterActivitySpy.registerActivityBinding.toolbarLayout.btnScanBarcode.performClick()
-        Assert.assertTrue(testRegisterActivitySpy.liveBarcodeScanningFragment.isVisible)
-        testRegisterActivitySpy.finish()
-    }
-
-    @Test
-    fun testHandleSyncFailedShouldVerifyAllInternalState() {
-
-        every { accountAuthenticator.logout() } returns Unit
-
-        val glitchState =
-            State.Glitch(
-                listOf(
-                    mockk {
-                        every { exception } returns mockk<HttpException> { every { code() } returns 401 }
-                    }
-                )
-            )
-
-        handleSyncFailed(glitchState)
-        verify(exactly = 1) { accountAuthenticator.logout() }
-
-
-        val failedState =
-            State.Failed(
-                Result.Error(
-                    listOf(
-                        mockk {
-                            every { exception } returns mockk<HttpException> { every { code() } returns 401 }
-                        }
-                    )
-                )
-            )
-
-        handleSyncFailed(failedState)
-        verify(exactly = 1, inverse = true) { accountAuthenticator.logout() }
-
-        handleSyncFailed(State.Glitch(listOf()))
-        Assert.assertFalse(
-            testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
-        )
-        Assert.assertEquals(
-            View.GONE,
-            testRegisterActivity.registerActivityBinding.progressSync.visibility
-        )
-        Assert.assertNotNull(testRegisterActivity.registerActivityBinding.containerProgressSync.background)
-        Assert.assertTrue(testRegisterActivity.registerActivityBinding.containerProgressSync.hasOnClickListeners())
-    }
-
-    private fun handleSyncFailed(state: State) {
-        ReflectionHelpers.callInstanceMethod<Any>(
-            testRegisterActivity,
-            "handleSyncFailed",
-            ReflectionHelpers.ClassParameter(State::class.java, state)
-        )
-    }
-
-    @AndroidEntryPoint
-    class TestRegisterActivity : BaseRegisterActivity() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            val registerViewConfiguration = registerViewConfigurationOf("appId")
-            configureViews(registerViewConfiguration)
+  @Test
+  fun testOnSyncStatusFinished() {
+    // Status Sync Finished
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
+    val result = spyk(Result.Success)
+    val currentDateTime = OffsetDateTime.now()
+    every { result.timestamp } returns currentDateTime
+    every { sharedPreferencesHelper.read(any(), any<String>()) } answers
+      {
+        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
+          currentDateTime.asString()
+        } else {
+          ""
         }
+      }
 
-        override fun mainFragmentTag() = TestFragment.TAG + 1
+    testRegisterActivity.onSync(State.Finished(result))
+    Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
+    Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
+    Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
+    // Shared preference saved with last sync timestamp
+    Assert.assertEquals(
+      currentDateTime.asString(),
+      testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+    )
+  }
 
-        override fun sideMenuOptions() =
-            listOf(
-                SideMenuOption(
-                    itemId = R.id.menu_item_clients,
-                    titleResource = R.string.clients,
-                    iconResource = ContextCompat.getDrawable(this, R.drawable.ic_menu)!!,
-                    count = 10,
-                    countMethod = { 10L }
-                )
-            )
-
-        override fun supportedFragments() =
-            mapOf(
-                Pair(TestFragment.TAG + 1, TestFragment(1)),
-                Pair(TestFragment.TAG + 2, TestFragment(2))
-            )
-
-        override fun registersList() =
-            listOf(RegisterItem(TestFragment.TAG + 1, "TestFragment", isSelected = true))
-    }
-
-    @AndroidEntryPoint
-    class TestFragment(private val number: Int) : Fragment() {
-        override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-        ): View {
-            val composeView = ComposeView(requireContext())
-            composeView.setContent { Text(text = "Hello Fragment: $number") }
-            return composeView
+  @Test
+  fun testOnSyncStatusFailed() {
+    // Status Sync Failed
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
+    val result =
+      spyk(
+        Result.Error(
+          listOf(ResourceSyncException(ResourceType.Patient, Exception("I am a bad exception")))
+        )
+      )
+    val lastDateTimestamp = OffsetDateTime.now()
+    every { result.timestamp } returns lastDateTimestamp
+    every { sharedPreferencesHelper.read(any(), any<String>()) } answers
+      {
+        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
+          lastDateTimestamp.asString()
+        } else {
+          ""
         }
+      }
+    testRegisterActivity.onSync(State.Failed(result))
+    Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
+    Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
+    Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
+    Assert.assertEquals(
+      lastDateTimestamp.asString(),
+      testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+    )
+  }
 
-        companion object {
-            const val TAG = "TestFragment"
-        }
+  @Test
+  fun testOnSyncStatusGlitch() {
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
+    testRegisterActivity.onSync(
+      State.Glitch(
+        listOf(ResourceSyncException(ResourceType.Patient, Exception("I am a bad exception")))
+      )
+    )
+    Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
+    val syncStatus =
+      testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
+        LAST_SYNC_TIMESTAMP,
+        testRegisterActivity.getString(R.string.syncing_retry)
+      )
+    Assert.assertEquals(syncStatus, registerActivityBinding.tvLastSyncTimestamp.text.toString())
+    Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
+    Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
+  }
+
+  @Test
+  fun testOnNavigationSelectLanguageItemClickedShouldShowDialog() {
+    val languageMenuItem = RoboMenuItem(R.id.menu_item_language)
+    testRegisterActivity.onNavigationItemSelected(languageMenuItem)
+    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    dialog.clickOnItem(0)
+
+    verify(exactly = 1) { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "en") }
+
+    Assert.assertEquals(
+      testRegisterActivity.getString(R.string.select_language),
+      dialog.title,
+    )
+    Assert.assertEquals(R.drawable.ic_outline_language_black, dialog.iconId)
+  }
+
+  @Test
+  fun testOnNavigationLogoutItemClickedShouldFinishActivity() {
+    every { tokenManagerService.getActiveAccount() } returns Account("abc", "type")
+    every { tokenManagerService.isTokenActive(any()) } returns false
+    every { accountAuthenticator.logout() } just runs
+
+    val logoutMenuItem = RoboMenuItem(R.id.menu_item_logout)
+    testRegisterActivity.onNavigationItemSelected(logoutMenuItem)
+    Assert.assertFalse(
+      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
+    )
+    verify(exactly = 1) { accountAuthenticator.logout() }
+  }
+
+  @Test
+  fun testOnNavigationItemClickedShouldCloseDrawer() {
+    val clientsMenuItem = RoboMenuItem(R.id.menu_item_clients)
+    testRegisterActivity.onNavigationItemSelected(clientsMenuItem)
+    Assert.assertFalse(
+      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
+    )
+  }
+
+  @Test
+  fun testDestroyActivity() {
+    testRegisterActivityController.pause().stop().destroy()
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun testThatWrongDateThrowsAnException() {
+    testRegisterActivity.registerViewModel.lastSyncTimestamp.value = "2021-12-15"
+    Assert.assertTrue(
+      testRegisterActivity.registerActivityBinding.tvLastSyncTimestamp.text.isEmpty()
+    )
+  }
+
+  @Test
+  fun testRegisterClientShouldLaunchQuestionnaireActivity() {
+    testRegisterActivity.registerClient(null)
+    val startedIntent: Intent = Shadows.shadowOf(testRegisterActivity).nextStartedActivity
+    val shadowIntent: ShadowIntent = Shadows.shadowOf(startedIntent)
+    Assert.assertEquals(QuestionnaireActivity::class.java, shadowIntent.intentClass)
+  }
+
+  @Test
+  fun testSwitchNonRegisterFragment() {
+    testRegisterActivity.switchFragment(
+      tag = TestFragment.TAG + 2,
+      isRegisterFragment = false,
+      isFilterVisible = false,
+      toolbarTitle = null
+    )
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
+
+    Assert.assertFalse(
+      registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners()
+    )
+
+    Assert.assertEquals(
+      testRegisterActivity.getString(R.string.clients),
+      registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString()
+    )
+  }
+
+  @Test
+  fun testSwitchNonRegisterFragmentWithNewTitle() {
+    val toolbarTitle = "New Title"
+    testRegisterActivity.switchFragment(
+      tag = TestFragment.TAG + 2,
+      isRegisterFragment = false,
+      isFilterVisible = false,
+      toolbarTitle = toolbarTitle
+    )
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
+
+    Assert.assertFalse(
+      registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners()
+    )
+
+    Assert.assertEquals(
+      toolbarTitle,
+      registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString()
+    )
+  }
+
+  @Test
+  @Ignore("Figure out how to set permission")
+  fun testBarcodeScanButtonClickWithPermission() {
+    val testRegisterActivitySpy = spyk(testRegisterActivity)
+    every {
+      testRegisterActivitySpy.checkPermission(Manifest.permission.CAMERA, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
+    testRegisterActivitySpy.registerActivityBinding.toolbarLayout.btnScanBarcode.performClick()
+    Assert.assertTrue(testRegisterActivitySpy.liveBarcodeScanningFragment.isVisible)
+    testRegisterActivitySpy.finish()
+  }
+
+  @Test
+  fun testHandleSyncFailedShouldVerifyAllInternalState() {
+
+    every { accountAuthenticator.logout() } returns Unit
+
+    val glitchState =
+      State.Glitch(
+        listOf(
+          mockk {
+            every { exception } returns mockk<HttpException> { every { code() } returns 401 }
+          }
+        )
+      )
+
+    handleSyncFailed(glitchState)
+    verify(exactly = 1) { accountAuthenticator.logout() }
+
+    val failedState =
+      State.Failed(
+        Result.Error(
+          listOf(
+            mockk {
+              every { exception } returns mockk<HttpException> { every { code() } returns 401 }
+            }
+          )
+        )
+      )
+
+    handleSyncFailed(failedState)
+    verify(exactly = 1, inverse = true) { accountAuthenticator.logout() }
+
+    handleSyncFailed(State.Glitch(listOf()))
+    Assert.assertFalse(
+      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
+    )
+    Assert.assertEquals(
+      View.GONE,
+      testRegisterActivity.registerActivityBinding.progressSync.visibility
+    )
+    Assert.assertNotNull(
+      testRegisterActivity.registerActivityBinding.containerProgressSync.background
+    )
+    Assert.assertTrue(
+      testRegisterActivity.registerActivityBinding.containerProgressSync.hasOnClickListeners()
+    )
+  }
+
+  private fun handleSyncFailed(state: State) {
+    ReflectionHelpers.callInstanceMethod<Any>(
+      testRegisterActivity,
+      "handleSyncFailed",
+      ReflectionHelpers.ClassParameter(State::class.java, state)
+    )
+  }
+
+  @AndroidEntryPoint
+  class TestRegisterActivity : BaseRegisterActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+      super.onCreate(savedInstanceState)
+      val registerViewConfiguration = registerViewConfigurationOf("appId")
+      configureViews(registerViewConfiguration)
     }
 
-    enum class TestConfigClassification : ConfigClassification {
-        PATIENT_REGISTER;
+    override fun mainFragmentTag() = TestFragment.TAG + 1
 
-        override val classification: String = name.lowercase()
+    override fun sideMenuOptions() =
+      listOf(
+        SideMenuOption(
+          itemId = R.id.menu_item_clients,
+          titleResource = R.string.clients,
+          iconResource = ContextCompat.getDrawable(this, R.drawable.ic_menu)!!,
+          count = 10,
+          countMethod = { 10L }
+        )
+      )
+
+    override fun supportedFragments() =
+      mapOf(
+        Pair(TestFragment.TAG + 1, TestFragment(1)),
+        Pair(TestFragment.TAG + 2, TestFragment(2))
+      )
+
+    override fun registersList() =
+      listOf(RegisterItem(TestFragment.TAG + 1, "TestFragment", isSelected = true))
+  }
+
+  @AndroidEntryPoint
+  class TestFragment(private val number: Int) : Fragment() {
+    override fun onCreateView(
+      inflater: LayoutInflater,
+      container: ViewGroup?,
+      savedInstanceState: Bundle?
+    ): View {
+      val composeView = ComposeView(requireContext())
+      composeView.setContent { Text(text = "Hello Fragment: $number") }
+      return composeView
     }
+
+    companion object {
+      const val TAG = "TestFragment"
+    }
+  }
+
+  enum class TestConfigClassification : ConfigClassification {
+    PATIENT_REGISTER;
+
+    override val classification: String = name.lowercase()
+  }
 }

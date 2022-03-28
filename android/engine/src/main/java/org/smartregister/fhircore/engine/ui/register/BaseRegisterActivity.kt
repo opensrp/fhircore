@@ -47,6 +47,8 @@ import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBa
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
+import java.io.InterruptedIOException
+import java.net.UnknownHostException
 import java.text.ParseException
 import java.util.Date
 import java.util.Locale
@@ -84,8 +86,6 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
 import retrofit2.HttpException
 import timber.log.Timber
-import java.io.InterruptedIOException
-import java.net.UnknownHostException
 
 abstract class BaseRegisterActivity :
   BaseMultiLanguageActivity(),
@@ -712,10 +712,12 @@ abstract class BaseRegisterActivity :
       showToast(getString(R.string.session_expired))
       accountAuthenticator.logout()
     } else {
-      if (exceptions.map { it.exception }.filterIsInstance<UnknownHostException>().isNotEmpty() || exceptions.map { it.exception }.filterIsInstance<InterruptedIOException>().isNotEmpty()){
+      if (exceptions.map { it.exception }.filterIsInstance<UnknownHostException>().isNotEmpty() ||
+          exceptions.map { it.exception }.filterIsInstance<InterruptedIOException>().isNotEmpty()
+      ) {
         showToast(getString(R.string.sync_failed))
       }
-      Timber.e(exceptions.map { it.exception.message}.joinToString(", "))
+      Timber.e(exceptions.map { it.exception.message }.joinToString(", "))
       registerActivityBinding.updateSyncStatus(state)
       sideMenuOptions().forEach { updateCount(it) }
       manipulateDrawer(open = false)
