@@ -84,6 +84,8 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
 import retrofit2.HttpException
 import timber.log.Timber
+import java.io.InterruptedIOException
+import java.net.UnknownHostException
 
 abstract class BaseRegisterActivity :
   BaseMultiLanguageActivity(),
@@ -710,9 +712,7 @@ abstract class BaseRegisterActivity :
       showToast(getString(R.string.session_expired))
       accountAuthenticator.logout()
     } else {
-      if (exceptions.map { it.exception.message }.firstOrNull()?.contains("Unable to resolve host") ==
-        true
-      ) {
+      if (exceptions.map { it.exception }.filterIsInstance<UnknownHostException>().isNotEmpty() || exceptions.map { it.exception }.filterIsInstance<InterruptedIOException>().isNotEmpty()){
         showToast(getString(R.string.sync_failed))
       }
       Timber.e(exceptions.map { it.exception.message}.joinToString(", "))
