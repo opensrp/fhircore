@@ -28,6 +28,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -148,33 +149,43 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("Patient/123", questionnaireResponse.subject.reference)
   }
 
-  //    @Test
-  //    fun testDeletePatientShouldCallPatientRepository() = runBlockingTest {
-  //        coEvery { patientRepository.deletePatient(any(), any()) } answers {}
-  //        coEvery { viewModel.getReasonRemove(any()) } answers { DeletionReason.DIED }
-  //        viewModel.deleteFamilyMember("111")
-  //
-  //        coVerify { patientRepository.deletePatient(any(), any()) }
-  //    }
+  @Test
+  fun testDeletePatientWithOtherReasonShouldCallPatientRepository() = runBlockingTest {
+    coEvery { viewModel.reasonRemove } returns "Other"
+    coEvery { patientRepository.deletePatient(any(), any()) } answers {}
+    viewModel.deleteFamilyMember("111", DeletionReason.OTHER)
+    coVerify { patientRepository.deletePatient(any(), any()) }
+  }
 
-  //  @Test
-  //  fun testDeletePatient() {
-  //    coEvery { viewModel.getReasonRemove(any()) } returns DeletionReason.OTHER
-  //    coEvery { patientRepository.deletePatient(any(), any()) } just runs
-  //    viewModel.deleteFamilyMember("111")
-  //    verify { runBlockingTest { patientRepository.deletePatient(any(), any()) } }
-  //    Assert.assertEquals(true, viewModel.shouldRemoveFamilyMember.value)
-  //  }
+  @Test
+  fun testDeletePatientWithMovedAwayReasonShouldCallPatientRepository() = runBlockingTest {
+    coEvery { viewModel.reasonRemove } returns "Moved away"
+    coEvery { patientRepository.deletePatient(any(), any()) } answers {}
+    viewModel.deleteFamilyMember("111", DeletionReason.MOVED_AWAY)
+    coVerify { patientRepository.deletePatient(any(), any()) }
+  }
+
+  @Test
+  fun testDeletePatientWithDiedReasonShouldCallPatientRepository() = runBlockingTest {
+    coEvery { viewModel.reasonRemove } returns "Died"
+    coEvery { patientRepository.deletePatient(any(), any()) } answers {}
+    viewModel.deleteFamilyMember("111", DeletionReason.DIED)
+    coVerify { patientRepository.deletePatient(any(), any()) }
+  }
 
   @Test
   fun testGetReasonRemove() {
-    val deletionReason = viewModel.getReasonRemove("Moved away")
+    coEvery { viewModel.reasonRemove } returns "Moved away"
+    val deletionReason = viewModel.getReasonRemove()
     Assert.assertEquals(deletionReason, DeletionReason.MOVED_AWAY)
-    val deletionReasonTwo = viewModel.getReasonRemove("Other")
+    coEvery { viewModel.reasonRemove } returns "Other"
+    val deletionReasonTwo = viewModel.getReasonRemove()
     Assert.assertEquals(deletionReasonTwo, DeletionReason.OTHER)
-    val deletionReasonThree = viewModel.getReasonRemove("Died")
+    coEvery { viewModel.reasonRemove } returns "Died"
+    val deletionReasonThree = viewModel.getReasonRemove()
     Assert.assertEquals(deletionReasonThree, DeletionReason.DIED)
-    val deletionReasonEmpty = viewModel.getReasonRemove("")
+    coEvery { viewModel.reasonRemove } returns ""
+    val deletionReasonEmpty = viewModel.getReasonRemove()
     Assert.assertEquals(deletionReasonEmpty, DeletionReason.OTHER)
   }
 }

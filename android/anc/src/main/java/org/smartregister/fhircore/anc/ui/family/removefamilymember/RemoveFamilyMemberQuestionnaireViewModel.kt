@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.family.removefamilymember
 
-import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -66,7 +65,7 @@ constructor(
     libraryEvaluator
   ) {
 
-  private lateinit var reasonRemove: String
+  lateinit var reasonRemove: String
 
   private val _shouldOpenHeadDialog = MutableLiveData<Boolean>()
   private val _shouldRemoveFamilyMember = MutableLiveData<Boolean>()
@@ -121,15 +120,14 @@ constructor(
     return changed
   }
 
-  fun deleteFamilyMember(patientId: String) {
+  fun deleteFamilyMember(patientId: String, reasonRemove: DeletionReason) {
     viewModelScope.launch {
-      patientRepository.deletePatient(patientId, getReasonRemove(reasonRemove))
+      patientRepository.deletePatient(patientId, reasonRemove)
       _shouldRemoveFamilyMember.value = true
     }
   }
 
-  @VisibleForTesting
-  fun getReasonRemove(reasonRemove: String): DeletionReason {
+  fun getReasonRemove(): DeletionReason {
     return when (reasonRemove) {
       "Moved away" -> DeletionReason.MOVED_AWAY
       "Died" -> DeletionReason.DIED
@@ -150,7 +148,7 @@ constructor(
         if (patient?.isFamilyHead() == true) {
           _shouldOpenHeadDialog.value = true
         } else {
-          deleteFamilyMember(it)
+          deleteFamilyMember(it, getReasonRemove())
         }
       }
     }

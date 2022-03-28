@@ -105,7 +105,10 @@ class RemoveFamilyMemberQuestionnaireActivity :
       ) { changeHead ->
       if (changeHead) {
         this.newFamilyHeadId = newFamilyHeadId
-        questionnaireViewModel.deleteFamilyMember(familyId)
+        questionnaireViewModel.deleteFamilyMember(
+          familyId,
+          questionnaireViewModel.getReasonRemove()
+        )
       }
     }
   }
