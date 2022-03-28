@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Implement vital signs observation extraction from questionnaires
 - ANC | Login Add Pin Setup and Login for eCBIS config only
 - ANC | Remove Family with Questionnaire Form
+- ANC | Remove Family Member with Questionnaire Form
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
