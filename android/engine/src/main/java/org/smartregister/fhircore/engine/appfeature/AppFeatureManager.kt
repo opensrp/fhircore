@@ -27,6 +27,7 @@ class AppFeatureManager @Inject constructor() {
 
   private var _appFeatureConfig: AppFeatureConfig? = null
 
+  // TODO read from saved binary resource
   fun loadAndActivateFeatures() {
     _appFeatureConfig =
       """{"appId":"quest","appFeatures":[{"feature":"PatientManagement","active":true,"settings":{},"target":"CHW","healthModule":"PNC","useCases":["PATIENT_REGISTRATION","PNC_VISITS","CLOSE_PNC_RECORD"]},{"feature":"PatientManagement","active":true,"settings":{},"target":"CHW","healthModule":"ANC","useCases":["PATIENT_REGISTRATION","ANC_VISITS","PREGNANCY_OUTCOME"]},{"feature":"PatientManagement","active":true,"settings":{},"target":"CHW","healthModule":"FAMILY_PLANNING","useCases":["PATIENT_REGISTRATION","FAMILY_PLANNING_VISITS","CLOSE_FAMILY_PLANNING_RECORD"]},{"feature":"PatientManagement","active":true,"settings":{},"target":"HF","healthModule":"CHILD","useCases":["PATIENT_REGISTRATION","CHILD_IMMUNIZATION"]},{"feature":"HouseHoldManagement","active":true,"settings":{},"target":"CHW","healthModule":"FAMILY","useCases":["HOUSEHOLD_REGISTRATION","REMOVE_HOUSEHOLD","HOUSEHOLD_VISITS","REMOVE_HOUSEHOLD_MEMBER"]}]}"""

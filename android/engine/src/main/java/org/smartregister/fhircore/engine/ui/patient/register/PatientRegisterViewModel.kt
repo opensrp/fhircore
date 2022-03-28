@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.patient.register
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
@@ -41,8 +43,12 @@ import org.smartregister.fhircore.engine.data.local.patient.model.PatientPagingS
 import org.smartregister.fhircore.engine.domain.model.RegisterRow
 
 @HiltViewModel
-class PatientRegisterViewModel @Inject constructor(val patientRepository: PatientRepository) :
-  ViewModel() {
+class PatientRegisterViewModel
+@Inject
+constructor(
+  val patientRepository: PatientRepository,
+  val configurationRegistry: ConfigurationRegistry
+) : ViewModel() {
 
   private val _currentPage = MutableLiveData(0)
   val currentPage
@@ -56,6 +62,14 @@ class PatientRegisterViewModel @Inject constructor(val patientRepository: Patien
 
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterRow>>> =
     MutableStateFlow(emptyFlow())
+
+  /* var registerViewConfiguration: RegisterViewConfiguration
+    private set
+
+  init {
+    registerViewConfiguration =
+      configurationRegistry.retrieveConfiguration(AppConfigClassification.PATIENT_REGISTER)
+  }*/
 
   fun paginateRegisterData(
     appFeatureName: String?,
@@ -116,6 +130,7 @@ class PatientRegisterViewModel @Inject constructor(val patientRepository: Patien
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
         paginateRegisterData(event.appFeatureName, event.healthModule)
       }
+      is PatientRegisterEvent.RegisterNewClient -> launchRegistrationForm(event.context)
     }
   }
 
@@ -129,5 +144,18 @@ class PatientRegisterViewModel @Inject constructor(val patientRepository: Patien
             it.logicalId.contentEquals(event.searchText, ignoreCase = true)
         }
       }
+  }
+
+  private fun launchRegistrationForm(context: Context) {
+    // TODO activate once view configurations have been refactored
+    //    context.startActivity(
+    //      Intent(context, QuestionnaireActivity::class.java)
+    //        .putExtras(
+    //          QuestionnaireActivity.intentArgs(
+    //            clientIdentifier = null,
+    //            formName = registerViewConfiguration.registrationForm
+    //          )
+    //        )
+    //    )
   }
 }

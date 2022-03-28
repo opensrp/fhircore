@@ -30,6 +30,8 @@ import java.util.TimeZone
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.navigation.SideMenuOptionFactory
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
@@ -56,9 +58,15 @@ constructor(
   var appMainUiState by mutableStateOf(appMainUiStateOf())
     private set
 
+  var applicationConfiguration: ApplicationConfiguration
+    private set
+
   init {
+    applicationConfiguration =
+      configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
     appMainUiState =
       appMainUiStateOf(
+        appTitle = applicationConfiguration.applicationName,
         currentLanguage = loadCurrentLanguage(),
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
         sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.patient.register
 
+import android.content.Context
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 
 sealed class PatientRegisterEvent {
@@ -28,4 +29,6 @@ sealed class PatientRegisterEvent {
     PatientRegisterEvent()
   data class MoveToPreviousPage(val appFeatureName: String?, val healthModule: HealthModule?) :
     PatientRegisterEvent()
+
+  data class RegisterNewClient(val context: Context) : PatientRegisterEvent()
 }

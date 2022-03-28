@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -50,6 +51,9 @@ fun PatientRegisterScreen(
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val searchText by remember { patientRegisterViewModel.searchText }
+  // TODO activate after view configurations refactor
+  //  val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
+  val context = LocalContext.current
   LaunchedEffect(Unit) {
     patientRegisterViewModel.run {
       setTotalRecordsCount(appFeatureName, healthModule)
@@ -113,7 +117,7 @@ fun PatientRegisterScreen(
           )
           Button(
             modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            onClick = { /*TODO Launch register client questionnaire*/}
+            onClick = { PatientRegisterEvent.RegisterNewClient(context) }
           ) { Text(text = "Register Client", modifier = modifier.padding(8.dp)) }
         }
       }

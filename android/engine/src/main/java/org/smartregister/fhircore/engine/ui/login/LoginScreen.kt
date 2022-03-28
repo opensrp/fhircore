@@ -387,11 +387,7 @@ fun LoginScreenPreview() {
 @Composable
 fun LoginScreenPreviewDarkMode() {
   LoginPage(
-    viewConfiguration =
-      loginViewConfigurationOf().apply {
-        darkMode = true
-        showLogo = true
-      },
+    viewConfiguration = loginViewConfigurationOf(darkMode = true, showLogo = true),
     username = "",
     onUsernameChanged = {},
     password = "",

@@ -25,25 +25,25 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
-  override var appId: String = "",
+  override val appId: String = "",
   override val classification: String = "",
-  var appTitle: String = "",
-  var filterText: String = "",
-  var searchBarHint: String = "",
-  var newClientButtonText: String = "",
-  var newClientButtonStyle: String = "",
-  var showSearchBar: Boolean = true,
-  var showFilter: Boolean = true,
-  var showScanQRCode: Boolean = true,
-  var showNewClientButton: Boolean = true,
-  var registrationForm: String = "patient-registration",
-  var showSideMenu: Boolean = true,
-  var showBottomMenu: Boolean = false,
-  var useLabel: Boolean = true,
-  var showHeader: Boolean = true,
-  var showFooter: Boolean = true,
-  var primaryFilter: SearchFilter? = null,
-  var bottomNavigationOptions: List<NavigationOption>? = null
+  val appTitle: String = "",
+  val filterText: String = "",
+  val searchBarHint: String = "",
+  val newClientButtonText: String = "",
+  val newClientButtonStyle: String = "",
+  val showSearchBar: Boolean = true,
+  val showFilter: Boolean = true,
+  val showScanQRCode: Boolean = true,
+  val showNewClientButton: Boolean = true,
+  val registrationForm: String = "patient-registration",
+  val showSideMenu: Boolean = true,
+  val showBottomMenu: Boolean = false,
+  val useLabel: Boolean = true,
+  val showHeader: Boolean = true,
+  val showFooter: Boolean = true,
+  val primaryFilter: SearchFilter? = null,
+  val bottomNavigationOptions: List<NavigationOption>? = null
 ) : Configuration
 
 @Serializable
