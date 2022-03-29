@@ -39,7 +39,8 @@ import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 @AndroidEntryPoint
 class RemoveFamilyMemberQuestionnaireActivity :
   QuestionnaireActivity(), BottomSheetListDialog.OnClickedListItems {
-  private lateinit var saveBtn: Button
+
+  @VisibleForTesting lateinit var saveBtn: Button
   private lateinit var familyId: String
   private var newFamilyHeadId: String? = null
 
@@ -56,7 +57,8 @@ class RemoveFamilyMemberQuestionnaireActivity :
     questionnaireViewModel.fetchFamilyMembers(familyId)
   }
 
-  private fun setupUI() {
+  @VisibleForTesting
+  fun setupUI() {
     saveBtn = findViewById(R.id.btn_save_client_info)
     saveBtn.text = getString(R.string.questionnaire_remove_family_member_btn_save_client_info)
     showFamilyHeadDialog()
@@ -89,7 +91,7 @@ class RemoveFamilyMemberQuestionnaireActivity :
     }
   }
 
-  private fun openBottomSheetDialog(eligibleMembers: List<FamilyMemberItem>) {
+  fun openBottomSheetDialog(eligibleMembers: List<FamilyMemberItem>) {
     val options =
       eligibleMembers.map {
         BottomSheetDataModel(it.name + "," + it.birthdate.toAgeDisplay(), it.gender, it.id)

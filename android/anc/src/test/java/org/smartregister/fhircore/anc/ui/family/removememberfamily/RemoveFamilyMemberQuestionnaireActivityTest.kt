@@ -49,8 +49,10 @@ import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireViewModel
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetDataModel
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetHolder
+import org.smartregister.fhircore.anc.util.othersEligibleForHead
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -67,6 +69,22 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
     spyk(QuestionnaireViewModel(mockk(), mockk(), mockk(), mockk(), mockk(), mockk(), mockk()))
+
+  @BindValue
+  val viewModel: RemoveFamilyMemberQuestionnaireViewModel =
+    spyk(
+      RemoveFamilyMemberQuestionnaireViewModel(
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk(),
+        mockk()
+      )
+    )
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry =
@@ -141,6 +159,23 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
       Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
         .nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnShowFamilyHeadDialog() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+    viewModel.shouldOpenHeadDialog.value = true
+    coEvery { viewModel.familyMembers.othersEligibleForHead() } returns arrayListOf()
+  }
+
+  @Test
+  fun testSetUI() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+    activity.setupUI()
+    Assert.assertEquals(
+      getString(R.string.questionnaire_remove_family_member_btn_save_client_info),
+      activity.saveBtn.text.toString()
+    )
   }
 
   private fun buildActivityFor(form: String, editForm: Boolean, headId: String? = null) {
