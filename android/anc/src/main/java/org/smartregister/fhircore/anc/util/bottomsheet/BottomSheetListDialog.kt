@@ -32,7 +32,7 @@ class BottomSheetListDialog(
   private val onBottomSheetListener: OnClickedListItems
 ) : BottomSheetDialog(context), OnClickListener {
   lateinit var binding: LayoutBottomSheetBinding
-  private lateinit var adapter: BottomSheetChoiceAdapter
+  private lateinit var bottomSheetChoiceAdapter: BottomSheetChoiceAdapter
   private var selectedItem: BottomSheetDataModel? = null
 
   init {
@@ -66,12 +66,12 @@ class BottomSheetListDialog(
   }
 
   private fun setupList() {
-    adapter = BottomSheetChoiceAdapter(this)
+    bottomSheetChoiceAdapter = BottomSheetChoiceAdapter(this)
     binding.recyclerView.apply {
-      adapter = adapter
+      adapter = bottomSheetChoiceAdapter
       layoutManager = LinearLayoutManager(context)
     }
-    adapter.submitList(bottomSheetHolder.list)
+    bottomSheetChoiceAdapter.submitList(bottomSheetHolder.list)
   }
 
   interface OnClickedListItems {
@@ -90,7 +90,7 @@ class BottomSheetListDialog(
     binding.buttonSave.backgroundTintList =
       ContextCompat.getColorStateList(context, R.color.colorPrimary)
     // notify adapter
-    adapter.notifyItemChanged(position)
+    bottomSheetChoiceAdapter.notifyItemChanged(position)
   }
 }
 
