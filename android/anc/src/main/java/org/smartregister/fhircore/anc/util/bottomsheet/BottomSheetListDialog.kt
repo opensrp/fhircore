@@ -17,30 +17,22 @@
 package org.smartregister.fhircore.anc.util.bottomsheet
 
 import android.content.Context
-import android.view.View
-import android.widget.Button
 import android.widget.RadioButton
-import android.widget.TextView
 import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.databinding.LayoutBottomSheetBinding
 
 class BottomSheetListDialog(
   @NonNull context: Context,
   private val bottomSheetHolder: BottomSheetHolder,
   private val onBottomSheetListener: OnClickedListItems
 ) : BottomSheetDialog(context), OnClickListener {
+  lateinit var binding: LayoutBottomSheetBinding
   private lateinit var adapter: BottomSheetChoiceAdapter
-  private lateinit var recyclerView: RecyclerView
-  private lateinit var saveButton: Button
-  private lateinit var cancelButton: Button
-  private lateinit var tvTitle: TextView
-  private lateinit var tvWarningTitle: TextView
-  private lateinit var tvListLabel: TextView
-
   private var selectedItem: BottomSheetDataModel? = null
 
   init {
@@ -50,40 +42,34 @@ class BottomSheetListDialog(
   }
 
   private fun initialize() {
-    val contentView = View.inflate(context, R.layout.layout_bottom_sheet, null)
-    setContentView(contentView)
-    setupViews(contentView)
+    binding = DataBindingUtil.inflate(layoutInflater, R.layout.layout_bottom_sheet, null, false)
+    setContentView(binding.root)
+    setupViews()
   }
 
-  private fun setupViews(contentView: View) {
-    recyclerView = contentView.findViewById(R.id.recyclerView)
-    saveButton = contentView.findViewById(R.id.buttonSave)
-    cancelButton = contentView.findViewById(R.id.buttonCancel)
-    tvTitle = contentView.findViewById(R.id.tvTitle)
-    tvWarningTitle = contentView.findViewById(R.id.tvWarningTitle)
-    tvListLabel = contentView.findViewById(R.id.tvListLabel)
-
-    tvTitle.text = bottomSheetHolder.title
-    tvListLabel.text = bottomSheetHolder.subTitle
-    tvWarningTitle.text = bottomSheetHolder.tvWarningTitle
-
+  private fun setupViews() {
+    binding.apply {
+      tvTitle.text = bottomSheetHolder.title
+      tvListLabel.text = bottomSheetHolder.subTitle
+      layoutWarning.tvWarningTitle.text = bottomSheetHolder.tvWarningTitle
+    }
     setupClickListener()
   }
 
   private fun setupClickListener() {
-    saveButton.setOnClickListener {
+    binding.buttonSave.setOnClickListener {
       dismiss()
       selectedItem?.let { onBottomSheetListener.onSave(it) }
     }
 
-    cancelButton.setOnClickListener { onBottomSheetListener.onCancel() }
+    binding.buttonCancel.setOnClickListener { onBottomSheetListener.onCancel() }
   }
 
   private fun setupList() {
     adapter = BottomSheetChoiceAdapter(this)
-    recyclerView.run {
-      adapter = this@BottomSheetListDialog.adapter
-      layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+    binding.recyclerView.apply {
+      adapter = adapter
+      layoutManager = LinearLayoutManager(context)
     }
     adapter.submitList(bottomSheetHolder.list)
   }
@@ -100,8 +86,9 @@ class BottomSheetListDialog(
     // hold the selected item
     selectedItem = bottomSheetHolder.list[position]
     // enable the save button
-    saveButton.isEnabled = true
-    saveButton.backgroundTintList = ContextCompat.getColorStateList(context, R.color.colorPrimary)
+    binding.buttonSave.isEnabled = true
+    binding.buttonSave.backgroundTintList =
+      ContextCompat.getColorStateList(context, R.color.colorPrimary)
     // notify adapter
     adapter.notifyItemChanged(position)
   }
