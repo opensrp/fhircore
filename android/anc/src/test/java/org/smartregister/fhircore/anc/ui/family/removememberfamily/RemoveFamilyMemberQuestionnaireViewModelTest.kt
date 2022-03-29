@@ -96,7 +96,7 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
       )
 
     ReflectionHelpers.setField(viewModel, "defaultRepository", defaultRepo)
-    every { viewModel.reasonRemove } returns "Other"
+    viewModel.reasonRemove = "Other"
     coEvery { familyDetailRepository.fetchDemographics("111") } returns getPatient()
   }
 

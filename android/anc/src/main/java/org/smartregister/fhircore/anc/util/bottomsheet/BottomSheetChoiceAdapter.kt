@@ -16,56 +16,51 @@
 
 package org.smartregister.fhircore.anc.util.bottomsheet
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
-import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import org.smartregister.fhircore.anc.R
+import dagger.hilt.android.scopes.FragmentScoped
+import javax.inject.Inject
+import org.smartregister.fhircore.anc.databinding.ItemRowBinding
 
-class BottomSheetChoiceAdapter(private val onClickListener: OnClickListener) :
-  RecyclerView.Adapter<BottomSheetChoiceAdapter.TestViewHolder>() {
+@FragmentScoped
+class BottomSheetChoiceAdapter @Inject constructor(val onClickListener: OnClickListener) :
+  ListAdapter<BottomSheetDataModel, BottomSheetChoiceAdapter.TestViewHolder>(
+    BottomSheetDataModelItemDiffCallback
+  ) {
 
-  private var dataSource: List<BottomSheetDataModel> = ArrayList()
+  inner class TestViewHolder(private val containerView: ItemRowBinding) :
+    RecyclerView.ViewHolder(containerView.root) {
 
-  @SuppressLint("NotifyDataSetChanged")
-  fun setDataSource(listItem: List<BottomSheetDataModel>) {
-    this.dataSource = listItem
-    notifyDataSetChanged()
-  }
-
-  inner class TestViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-    private var userSelectionRadioButton: RadioButton? = null
-    private var textViewDetail: TextView? = null
-
-    init {
-      userSelectionRadioButton = itemView.findViewById(R.id.userSelectionRadioButton)
-      textViewDetail = itemView.findViewById(R.id.textViewDetail)
-    }
-
-    fun bind(model: BottomSheetDataModel) {
-      userSelectionRadioButton?.text = model.itemName
-      textViewDetail?.text = model.itemDetail
-      userSelectionRadioButton?.setOnClickListener {
+    fun bindTo(model: BottomSheetDataModel) {
+      containerView.userSelectionRadioButton.text = model.itemName
+      containerView.textViewDetail.text = model.itemDetail
+      containerView.userSelectionRadioButton.setOnClickListener {
         onClickListener.onClick(it as RadioButton, layoutPosition)
       }
-      userSelectionRadioButton?.isChecked = model.selected
+      containerView.userSelectionRadioButton.isChecked = model.selected
     }
   }
 
-  override fun getItemCount(): Int = dataSource.size
-
   override fun onBindViewHolder(holder: TestViewHolder, position: Int) {
-    val user = dataSource[position]
-    holder.bind(user)
+    holder.bindTo(getItem(position))
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TestViewHolder {
-    val view = LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false)
-    return TestViewHolder(view)
+    val inflater = LayoutInflater.from(parent.context)
+    val binding = ItemRowBinding.inflate(inflater)
+    return TestViewHolder(binding)
+  }
+
+  object BottomSheetDataModelItemDiffCallback : DiffUtil.ItemCallback<BottomSheetDataModel>() {
+    override fun areItemsTheSame(oldItem: BottomSheetDataModel, newItem: BottomSheetDataModel) =
+      oldItem.id == newItem.id
+
+    override fun areContentsTheSame(oldItem: BottomSheetDataModel, newItem: BottomSheetDataModel) =
+      oldItem == newItem
   }
 }
 

@@ -85,7 +85,7 @@ class BottomSheetListDialog(
       adapter = this@BottomSheetListDialog.adapter
       layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
     }
-    adapter.setDataSource(bottomSheetHolder.list)
+    adapter.submitList(bottomSheetHolder.list)
   }
 
   interface OnClickedListItems {
