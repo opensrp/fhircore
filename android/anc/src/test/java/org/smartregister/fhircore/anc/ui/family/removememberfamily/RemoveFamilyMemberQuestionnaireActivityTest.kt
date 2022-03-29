@@ -19,7 +19,6 @@ package org.smartregister.fhircore.anc.ui.family.removememberfamily
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.widget.RadioButton
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -44,6 +43,7 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig.REMOVE_FAMILY_FORM
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
@@ -51,10 +51,8 @@ import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireViewModel
-import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetChoiceAdapter
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetDataModel
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetHolder
-import org.smartregister.fhircore.anc.util.bottomsheet.OnClickListener
 import org.smartregister.fhircore.anc.util.othersEligibleForHead
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -96,7 +94,7 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
   private lateinit var activity: RemoveFamilyMemberQuestionnaireActivity
 
   private lateinit var familyDetailsActivity: FamilyDetailsActivity
-
+  private var familyDetailRepository: FamilyDetailRepository = mockk(relaxed = true)
   @Before
   fun setUp() {
     hiltRule.inject()
