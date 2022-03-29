@@ -96,7 +96,7 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
       )
 
     ReflectionHelpers.setField(viewModel, "defaultRepository", defaultRepo)
-    viewModel.reasonRemove = "Other"
+    coEvery { viewModel.reasonRemove } returns "Other"
     coEvery { familyDetailRepository.fetchDemographics("111") } returns getPatient()
   }
 
@@ -151,7 +151,6 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testDeletePatientWithOtherReasonShouldCallPatientRepository() = runBlockingTest {
-    coEvery { viewModel.reasonRemove } returns "Other"
     coEvery { patientRepository.deletePatient(any(), any()) } answers {}
     viewModel.deleteFamilyMember("111", DeletionReason.OTHER)
     coVerify { patientRepository.deletePatient(any(), any()) }
@@ -159,7 +158,6 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testDeletePatientWithMovedAwayReasonShouldCallPatientRepository() = runBlockingTest {
-    coEvery { viewModel.reasonRemove } returns "Moved away"
     coEvery { patientRepository.deletePatient(any(), any()) } answers {}
     viewModel.deleteFamilyMember("111", DeletionReason.MOVED_AWAY)
     coVerify { patientRepository.deletePatient(any(), any()) }
@@ -167,25 +165,20 @@ class RemoveFamilyMemberQuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testDeletePatientWithDiedReasonShouldCallPatientRepository() = runBlockingTest {
-    coEvery { viewModel.reasonRemove } returns "Died"
     coEvery { patientRepository.deletePatient(any(), any()) } answers {}
     viewModel.deleteFamilyMember("111", DeletionReason.DIED)
     coVerify { patientRepository.deletePatient(any(), any()) }
   }
 
   @Test
-  fun testGetReasonRemove() {
-    coEvery { viewModel.reasonRemove } returns "Moved away"
-    val deletionReason = viewModel.getReasonRemove()
-    Assert.assertEquals(deletionReason, DeletionReason.MOVED_AWAY)
-    coEvery { viewModel.reasonRemove } returns "Other"
-    val deletionReasonTwo = viewModel.getReasonRemove()
-    Assert.assertEquals(deletionReasonTwo, DeletionReason.OTHER)
-    coEvery { viewModel.reasonRemove } returns "Died"
-    val deletionReasonThree = viewModel.getReasonRemove()
-    Assert.assertEquals(deletionReasonThree, DeletionReason.DIED)
-    coEvery { viewModel.reasonRemove } returns ""
+  fun testGetReasonRemoveEmpty() {
     val deletionReasonEmpty = viewModel.getReasonRemove()
     Assert.assertEquals(deletionReasonEmpty, DeletionReason.OTHER)
+  }
+
+  @Test
+  fun testGetReasonRemoveOther() {
+    val deletionReasonTwo = viewModel.getReasonRemove()
+    Assert.assertEquals(deletionReasonTwo, DeletionReason.OTHER)
   }
 }
