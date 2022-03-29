@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.family.removememberfamily
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.widget.RadioButton
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -50,8 +51,10 @@ import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireViewModel
+import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetChoiceAdapter
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetDataModel
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetHolder
+import org.smartregister.fhircore.anc.util.bottomsheet.OnClickListener
 import org.smartregister.fhircore.anc.util.othersEligibleForHead
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -166,6 +169,13 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
     buildActivityFor(REMOVE_FAMILY_FORM, false)
     viewModel.shouldOpenHeadDialog.value = true
     coEvery { viewModel.familyMembers.othersEligibleForHead() } returns arrayListOf()
+  }
+
+  @Test
+  fun testOnOpenBottomSheetDialog() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+    coEvery { viewModel.familyMembers.othersEligibleForHead() } returns arrayListOf()
+    activity.openBottomSheetDialog(arrayListOf())
   }
 
   @Test
