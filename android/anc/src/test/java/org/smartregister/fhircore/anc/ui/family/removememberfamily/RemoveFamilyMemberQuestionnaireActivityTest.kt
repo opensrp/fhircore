@@ -19,9 +19,11 @@ package org.smartregister.fhircore.anc.ui.family.removememberfamily
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -43,6 +45,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig.REMOVE_FAMILY_FORM
+import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.removefamilymember.RemoveFamilyMemberQuestionnaireActivity
@@ -71,10 +74,16 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
 
   private lateinit var activity: RemoveFamilyMemberQuestionnaireActivity
 
+  private lateinit var familyDetailsActivity: FamilyDetailsActivity
+
   @Before
   fun setUp() {
     hiltRule.inject()
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
+
+    familyDetailsActivity =
+      Robolectric.buildActivity(FamilyDetailsActivity::class.java).create().resume().get()
+    familyDetailsActivity.familyName = "Test Family"
   }
 
   @Test
@@ -122,6 +131,17 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
   //    ReflectionHelpers.callInstanceMethod<Any>(activity, "switchToPatientScreen")
   //    verify(exactly = 1) { activity.finish() }
   //  }
+
+  @Test
+  fun testShouldGoToPatientDetailScreen() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+    activity.switchToPatientScreen()
+    val expectedIntent = Intent(activity, FamilyDetailsActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+        .nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
 
   private fun buildActivityFor(form: String, editForm: Boolean, headId: String? = null) {
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns

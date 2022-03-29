@@ -21,6 +21,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -126,7 +127,8 @@ class RemoveFamilyMemberQuestionnaireActivity :
     )
   }
 
-  private fun switchToPatientScreen() {
+  @VisibleForTesting
+  fun switchToPatientScreen() {
     val intent =
       Intent(this, FamilyDetailsActivity::class.java).apply {
         newFamilyHeadId?.let { putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, it) }
