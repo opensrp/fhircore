@@ -712,8 +712,10 @@ abstract class BaseRegisterActivity :
       showToast(getString(R.string.session_expired))
       accountAuthenticator.logout()
     } else {
-      if (exceptions.map { it.exception }.filterIsInstance<UnknownHostException>().isNotEmpty() ||
-          exceptions.map { it.exception }.filterIsInstance<InterruptedIOException>().isNotEmpty()
+      if (containsAnyInstances(
+          exceptions.map { it.exception },
+          listOf(UnknownHostException::class, InterruptedIOException::class)
+        )
       ) {
         showToast(getString(R.string.sync_failed))
       }
@@ -723,6 +725,17 @@ abstract class BaseRegisterActivity :
       manipulateDrawer(open = false)
       this.registerViewModel.setRefreshRegisterData(true)
     }
+  }
+
+  fun <T> containsAnyInstances(objectList: Collection<T>, classTypes: List<T>): Boolean {
+    for (obj in objectList) {
+      for (classType in classTypes) {
+        if (obj!!::class == classType) {
+          return true
+        }
+      }
+    }
+    return false
   }
 
   companion object {

@@ -543,6 +543,22 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     )
   }
 
+  @Test
+  fun testContainsAnyInstances() {
+    val exceptionList = listOf<Any>(mockk<InterruptedIOException>(), "String", 5)
+    Assert.assertTrue(
+      testRegisterActivity.containsAnyInstances(
+        exceptionList,
+        listOf(InterruptedIOException::class)
+      )
+    )
+    Assert.assertFalse(
+      testRegisterActivity.containsAnyInstances(exceptionList, listOf(UnknownHostException::class))
+    )
+    Assert.assertFalse(testRegisterActivity.containsAnyInstances(listOf(), listOf(String::class)))
+    Assert.assertFalse(testRegisterActivity.containsAnyInstances(exceptionList, listOf()))
+  }
+
   @AndroidEntryPoint
   class TestRegisterActivity : BaseRegisterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
