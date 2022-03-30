@@ -33,7 +33,10 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
+import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -66,7 +69,16 @@ class EngineModule {
       fhirResourceDataSource = fhirResourceDataSource
     )
 
-  @Singleton @Provides fun provideWorkerContextProvider() = SimpleWorkerContext()
+  @Singleton
+  @Provides
+  fun provideWorkerContextProvider(): SimpleWorkerContext {
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+
+    return SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1")).apply {
+      setExpansionProfile(Parameters())
+      isCanRunWithoutTerminology = true
+    }
+  }
 
   @Singleton
   @Provides

@@ -178,7 +178,7 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() = runBlockingTest {
-    val languages = userProfileViewModel.fetchLanguages()
+    val languages = userProfileViewModel.languages
     Assert.assertEquals("English", languages[0].displayName)
     Assert.assertEquals("en", languages[0].tag)
     Assert.assertEquals("Swahili", languages[1].displayName)
