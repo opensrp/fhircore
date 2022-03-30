@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.family.removememberfamily
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import androidx.test.InstrumentationRegistry
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -144,12 +145,14 @@ internal class RemoveFamilyMemberQuestionnaireActivityTest : ActivityRobolectric
     activity.handleQuestionnaireResponse(QuestionnaireResponse())
   }
 
-  //  @Test
-  //  fun testSwitchBackToPatientDetail(){
-  //    buildActivityFor(REMOVE_FAMILY_FORM, false)
-  //    ReflectionHelpers.callInstanceMethod<Any>(activity, "switchToPatientScreen")
-  //    verify(exactly = 1) { activity.finish() }
-  //  }
+  @Test
+  fun testOnReceivingIntentFromRemoveFamilyMember() {
+    buildActivityFor(REMOVE_FAMILY_FORM, false)
+    val intent = Intent(activity, FamilyDetailsActivity::class.java)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "asui32unfd")
+    InstrumentationRegistry.getTargetContext().startActivity(intent)
+  }
 
   @Test
   fun testShouldGoToPatientDetailScreen() {
