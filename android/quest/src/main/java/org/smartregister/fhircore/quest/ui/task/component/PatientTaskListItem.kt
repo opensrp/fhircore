@@ -40,7 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.engine.ui.components.Dot
+import org.smartregister.fhircore.engine.ui.components.Separator
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DueLightColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
@@ -101,7 +101,7 @@ fun PatientTaskRow(
             fontSize = 14.sp,
             modifier = modifier.testTag(TEXT_SUBTITLE_ADDRESS).wrapContentWidth()
           )
-          Dot(modifier = modifier, showDot = patientItem.id.isNotEmpty())
+          Separator(modifier = modifier, showSeparator = patientItem.id.isNotEmpty())
           if (patientItem.id.isNotEmpty()) {
             Text(
               color = SubtitleTextColor,
@@ -122,7 +122,7 @@ fun PatientTaskRow(
             fontSize = 14.sp,
             modifier = modifier.testTag(TEXT_SUBTITLE_DISTANCE).wrapContentWidth()
           )
-          Dot(modifier = modifier, showDot = patientItem.description.isNotEmpty())
+          Separator(modifier = modifier, showSeparator = patientItem.description.isNotEmpty())
           Text(
             color = SubtitleTextColor,
             text = patientItem.description,

@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.repository
+package org.smartregister.fhircore.engine.domain.model
 
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRowData
+import androidx.compose.ui.graphics.Color
 
-interface RegisterDataProvider {
-
-  suspend fun provideRegisterData(
-    currentPage: Int,
-    loadAll: Boolean = false,
-    appFeatureName: String?
-  ): List<RegisterRowData>
-
-  suspend fun provideRegisterDataCount(appFeatureName: String?): Long
-
-  suspend fun provideProfileData(appFeatureName: String?, patientId: String): PatientProfileData? =
-    null
-}
+data class PatientProfileRowItem(
+  val startIcon: Int? = null,
+  val startIconBackgroundColor: Color? = null,
+  val title: String,
+  val titleIcon: Int? = null,
+  val subtitle: String,
+  val subtitleStatus: String? = null,
+  val subtitleStatusColor: Color? = null,
+  val profileSection: PatientProfileSection,
+  val actionButtonColor: Color? = null,
+  val actionButtonText: String? = null,
+  val showAngleRightIcon: Boolean = false,
+  val showDot: Boolean = false
+)

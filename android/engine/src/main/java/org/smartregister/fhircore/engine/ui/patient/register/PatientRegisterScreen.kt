@@ -123,6 +123,10 @@ fun PatientRegisterScreen(
       }
     }
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) { RegisterList(pagingItems = pagingItems) }
+    Box(modifier = modifier.padding(innerPadding)) {
+      RegisterList(
+        pagingItems = pagingItems,
+      )
+    }
   }
 }

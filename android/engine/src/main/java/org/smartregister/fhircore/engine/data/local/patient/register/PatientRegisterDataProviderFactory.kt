@@ -20,7 +20,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.data.local.patient.register.dataprovider.AncRegisterDataProvider
 import org.smartregister.fhircore.engine.data.local.patient.register.dataprovider.DefaultRegisterDataProvider
-import org.smartregister.fhircore.engine.data.local.patient.register.dataprovider.EirRegisterDataProvider
 import org.smartregister.fhircore.engine.data.local.patient.register.dataprovider.FamilyRegisterDataProvider
 
 @Singleton
@@ -29,6 +28,5 @@ data class PatientRegisterDataProviderFactory
 constructor(
   val ancRegisterDataProvider: AncRegisterDataProvider,
   val defaultRegisterDataProvider: DefaultRegisterDataProvider,
-  val eirRegisterDataProvider: EirRegisterDataProvider,
   val familyRegisterDataProvider: FamilyRegisterDataProvider
 )

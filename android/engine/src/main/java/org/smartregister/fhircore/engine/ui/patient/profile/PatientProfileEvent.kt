@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.repository
+package org.smartregister.fhircore.engine.ui.patient.profile
 
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRowData
+import android.content.Context
+import org.smartregister.fhircore.engine.domain.model.PatientProfileSection
 
-interface RegisterDataProvider {
-
-  suspend fun provideRegisterData(
-    currentPage: Int,
-    loadAll: Boolean = false,
-    appFeatureName: String?
-  ): List<RegisterRowData>
-
-  suspend fun provideRegisterDataCount(appFeatureName: String?): Long
-
-  suspend fun provideProfileData(appFeatureName: String?, patientId: String): PatientProfileData? =
-    null
+sealed class PatientProfileEvent {
+  data class SeeAll(val patientProfileSection: PatientProfileSection) : PatientProfileEvent()
+  data class LoadQuestionnaire(val questionnaireId: String, val context: Context) :
+    PatientProfileEvent()
 }

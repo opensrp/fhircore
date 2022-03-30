@@ -21,18 +21,23 @@ import org.smartregister.fhircore.engine.R
 sealed class NavigationScreen(
   val titleResource: Int,
   val iconResource: Int? = null,
-  val route: String
+  val route: String,
+  val showInBottomNav: Boolean = false
 ) {
-  object Home : NavigationScreen(R.string.clients, R.drawable.ic_home, HOME_ROUTE)
-  object Tasks : NavigationScreen(R.string.tasks, R.drawable.ic_tasks, TASKS_ROUTE)
-  object Reports : NavigationScreen(R.string.reports, R.drawable.ic_reports, REPORTS_ROUTE)
-  object Settings : NavigationScreen(R.string.settings, R.drawable.ic_settings, SETTINGS_ROUTE)
+  object Home : NavigationScreen(R.string.clients, R.drawable.ic_home, HOME_ROUTE, true)
+  object Tasks : NavigationScreen(R.string.tasks, R.drawable.ic_tasks, TASKS_ROUTE, true)
+  object Reports : NavigationScreen(R.string.reports, R.drawable.ic_reports, REPORTS_ROUTE, true)
+  object Settings :
+    NavigationScreen(R.string.settings, R.drawable.ic_settings, SETTINGS_ROUTE, true)
+  object PatientProfile :
+    NavigationScreen(titleResource = R.string.profile, route = PATIENT_PROFILE_ROUTE)
 
   companion object {
     const val HOME_ROUTE = "homeRoute"
     const val TASKS_ROUTE = "tasksRoute"
     const val REPORTS_ROUTE = "reportsRoute"
     const val SETTINGS_ROUTE = "settingsRoute"
+    const val PATIENT_PROFILE_ROUTE = "patientProfileRoute"
 
     val appScreens = listOf(Home, Tasks, Reports, Settings)
   }

@@ -117,6 +117,15 @@
     <string name="all_clients">All Clients</string>
     <string name="pnc_clients">PNC Clients</string>
     <string name="family_planning_clients">Family Planning Clients</string>
-    <string name="families">Families</string>
+    <string name="households">Households</string>
     <string name="children">Children</string>
+    <string name="sex">Sex</string>
+    <string name="age">Age</string>
+    <string name="dob">DOB</string>
+    <string name="id">ID: %1$s</string>
+    <string name="see_all">SEE ALL</string>
+    <string name="forms">FORMS</string>
+    <string name="medical_history">MEDICAL HISTORY</string>
+    <string name="upcoming_services">UPCOMING SERVICES</string>
+    <string name="service_card">SERVICE CARD</string>
 </resources>

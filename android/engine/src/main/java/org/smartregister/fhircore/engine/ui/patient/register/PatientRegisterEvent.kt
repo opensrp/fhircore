@@ -31,4 +31,7 @@ sealed class PatientRegisterEvent {
     PatientRegisterEvent()
 
   data class RegisterNewClient(val context: Context) : PatientRegisterEvent()
+
+  data class OpenProfile(val appFeatureName: String?, val healthModule: HealthModule?) :
+    PatientRegisterEvent()
 }

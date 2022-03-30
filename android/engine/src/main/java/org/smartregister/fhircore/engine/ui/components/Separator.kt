@@ -29,20 +29,20 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
-const val DOT_TAG = "dotTag"
+const val SEPARATOR_TAG = "separatorTag"
 
 @Composable
-fun Dot(modifier: Modifier = Modifier, showDot: Boolean = true) {
-  if (showDot) {
-    Spacer(modifier = modifier.width(8.dp))
+fun Separator(modifier: Modifier = Modifier, showSeparator: Boolean = true) {
+  if (showSeparator) {
+    Spacer(modifier = modifier.width(4.dp))
     Box(
       modifier =
         modifier
-          .testTag(DOT_TAG)
+          .testTag(SEPARATOR_TAG)
           .clip(CircleShape)
           .size(2.6.dp)
           .background(color = SubtitleTextColor)
     )
-    Spacer(modifier = modifier.width(8.dp))
+    Spacer(modifier = modifier.width(4.dp))
   }
 }

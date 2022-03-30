@@ -52,13 +52,18 @@ constructor(val appFeatureManager: AppFeatureManager, val patientRepository: Pat
         SideMenuOption(
           appFeatureName = it.feature,
           healthModule = it.healthModule,
-          iconResource = R.drawable.ic_baby_mother,
+          iconResource =
+            when (it.healthModule) {
+              HealthModule.FAMILY -> R.drawable.ic_households
+              HealthModule.ANC -> R.drawable.ic_baby_mother
+              else -> R.drawable.ic_user
+            },
           titleResource =
             when (it.healthModule) {
               HealthModule.ANC -> R.string.anc_clients
               HealthModule.RDT -> R.string.all_clients
               HealthModule.PNC -> R.string.pnc_clients
-              HealthModule.FAMILY -> R.string.families
+              HealthModule.FAMILY -> R.string.households
               HealthModule.CHILD -> R.string.children
               HealthModule.FAMILY_PLANNING -> R.string.family_planning_clients
             },
@@ -66,7 +71,7 @@ constructor(val appFeatureManager: AppFeatureManager, val patientRepository: Pat
           count =
             runBlocking {
               patientRepository.countRegisterData(
-                appFeatureName = AppFeature.PatientManagement.name,
+                appFeatureName = it.feature,
                 healthModule = it.healthModule
               )
             }

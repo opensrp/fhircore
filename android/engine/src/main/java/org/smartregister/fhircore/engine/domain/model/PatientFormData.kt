@@ -16,13 +16,4 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-import androidx.compose.runtime.Stable
-
-@Stable
-data class RegisterRow(
-  val identifier: String,
-  val logicalId: String,
-  val name: String,
-  val gender: String,
-  val address: String
-)
+data class PatientFormData(val questionnaire: String, val questionnaireId: String)

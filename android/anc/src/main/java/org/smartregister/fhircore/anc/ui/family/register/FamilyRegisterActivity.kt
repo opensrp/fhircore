@@ -155,7 +155,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     listOf(
       RegisterItem(
         uniqueTag = FamilyRegisterFragment.TAG,
-        title = getString(R.string.families),
+        title = getString(R.string.households),
         isSelected = true
       ),
       RegisterItem(

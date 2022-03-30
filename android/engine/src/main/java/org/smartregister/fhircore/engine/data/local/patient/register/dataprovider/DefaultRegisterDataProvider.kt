@@ -26,11 +26,11 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+import org.smartregister.fhircore.engine.domain.model.RegisterRowData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDataProvider
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
-import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
 
 @Singleton
@@ -43,7 +43,7 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatche
     currentPage: Int,
     loadAll: Boolean,
     appFeatureName: String?
-  ): List<RegisterRow> {
+  ): List<RegisterRowData> {
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
@@ -55,12 +55,10 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatche
         }
 
       patients.map {
-        RegisterRow(
-          identifier = it.logicalId,
-          logicalId = it.logicalId,
-          name = it.extractName(),
-          gender = "Male",
-          address = it.extractAddress()
+        RegisterRowData(
+          id = it.logicalId,
+          title = "${it.extractName()}, ${it.extractAge()}",
+          subtitle = "Male"
         )
       }
     }

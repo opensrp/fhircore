@@ -40,7 +40,7 @@ import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagin
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.engine.data.local.patient.PatientRepository
 import org.smartregister.fhircore.engine.data.local.patient.model.PatientPagingSourceState
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+import org.smartregister.fhircore.engine.domain.model.RegisterRowData
 
 @HiltViewModel
 class PatientRegisterViewModel
@@ -60,7 +60,7 @@ constructor(
 
   private val _totalRecordsCount = MutableLiveData(1L)
 
-  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterRow>>> =
+  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterRowData>>> =
     MutableStateFlow(emptyFlow())
 
   /* var registerViewConfiguration: RegisterViewConfiguration
@@ -131,31 +131,23 @@ constructor(
         paginateRegisterData(event.appFeatureName, event.healthModule)
       }
       is PatientRegisterEvent.RegisterNewClient -> launchRegistrationForm(event.context)
+      is PatientRegisterEvent.OpenProfile -> TODO()
     }
   }
 
   private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
     paginatedRegisterData.value =
       getPager(event.appFeatureName, event.healthModule, true).flow.map {
-        pagingData: PagingData<RegisterRow> ->
+        pagingData: PagingData<RegisterRowData> ->
         pagingData.filter {
-          it.name.contains(event.searchText, ignoreCase = true) ||
-            it.identifier.contentEquals(event.searchText, ignoreCase = true) ||
-            it.logicalId.contentEquals(event.searchText, ignoreCase = true)
+          it.title.contains(event.searchText, ignoreCase = true) ||
+            it.id.contentEquals(event.searchText, ignoreCase = true)
         }
       }
   }
 
   private fun launchRegistrationForm(context: Context) {
     // TODO activate once view configurations have been refactored
-    //    context.startActivity(
-    //      Intent(context, QuestionnaireActivity::class.java)
-    //        .putExtras(
-    //          QuestionnaireActivity.intentArgs(
-    //            clientIdentifier = null,
-    //            formName = registerViewConfiguration.registrationForm
-    //          )
-    //        )
-    //    )
+    //        context.launchQuestionnaireActivity(registerViewConfiguration.registrationForm)
   }
 }

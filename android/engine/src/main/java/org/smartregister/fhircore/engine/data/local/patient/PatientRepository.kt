@@ -22,7 +22,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.patient.register.PatientRegisterDataProviderFactory
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+import org.smartregister.fhircore.engine.domain.model.RegisterRowData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
@@ -41,7 +41,7 @@ constructor(
     loadAll: Boolean,
     appFeatureName: String?,
     healthModule: HealthModule?
-  ): List<RegisterRow> =
+  ): List<RegisterRowData> =
     when (healthModule) {
       null ->
         registerDataProviderFactory.defaultRegisterDataProvider.provideRegisterData(
@@ -53,21 +53,13 @@ constructor(
           currentPage = currentPage,
           appFeatureName = appFeatureName
         )
-      HealthModule.RDT, HealthModule.PNC, HealthModule.FAMILY_PLANNING ->
-        registerDataProviderFactory.defaultRegisterDataProvider.provideRegisterData(
-          currentPage = currentPage,
-          appFeatureName = appFeatureName
-        )
       HealthModule.FAMILY ->
         registerDataProviderFactory.familyRegisterDataProvider.provideRegisterData(
           currentPage = currentPage,
           appFeatureName = appFeatureName
         )
-      HealthModule.CHILD ->
-        registerDataProviderFactory.eirRegisterDataProvider.provideRegisterData(
-          currentPage = currentPage,
-          appFeatureName = appFeatureName
-        )
+      HealthModule.CHILD, HealthModule.RDT, HealthModule.PNC, HealthModule.FAMILY_PLANNING ->
+        emptyList()
     }
 
   override suspend fun countRegisterData(
@@ -81,16 +73,11 @@ constructor(
         )
       HealthModule.ANC ->
         registerDataProviderFactory.ancRegisterDataProvider.provideRegisterDataCount(appFeatureName)
-      HealthModule.RDT, HealthModule.PNC, HealthModule.FAMILY_PLANNING ->
-        registerDataProviderFactory.defaultRegisterDataProvider.provideRegisterDataCount(
-          appFeatureName
-        )
       HealthModule.FAMILY ->
         registerDataProviderFactory.familyRegisterDataProvider.provideRegisterDataCount(
           appFeatureName
         )
-      HealthModule.CHILD ->
-        registerDataProviderFactory.eirRegisterDataProvider.provideRegisterDataCount(appFeatureName)
+      HealthModule.RDT, HealthModule.PNC, HealthModule.FAMILY_PLANNING, HealthModule.CHILD -> 0
     }
 
   override suspend fun loadPatientProfileData(
@@ -109,20 +96,11 @@ constructor(
           appFeatureName = appFeatureName,
           patientId = patientId
         )
-      HealthModule.RDT, HealthModule.PNC, HealthModule.FAMILY_PLANNING ->
-        registerDataProviderFactory.defaultRegisterDataProvider.provideProfileData(
-          appFeatureName = appFeatureName,
-          patientId = patientId
-        )
       HealthModule.FAMILY ->
         registerDataProviderFactory.familyRegisterDataProvider.provideProfileData(
           appFeatureName = appFeatureName,
           patientId = patientId
         )
-      HealthModule.CHILD ->
-        registerDataProviderFactory.eirRegisterDataProvider.provideProfileData(
-          appFeatureName = appFeatureName,
-          patientId = patientId
-        )
+      HealthModule.CHILD, HealthModule.RDT, HealthModule.PNC, HealthModule.FAMILY_PLANNING -> null
     }
 }

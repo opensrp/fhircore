@@ -201,7 +201,7 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
     with(listRegisterItem[0]) {
       assertEquals(FamilyRegisterFragment.TAG, uniqueTag)
-      assertEquals(familyRegisterActivity.getString(R.string.families), title)
+      assertEquals(familyRegisterActivity.getString(R.string.households), title)
       assertTrue(isSelected)
     }
 

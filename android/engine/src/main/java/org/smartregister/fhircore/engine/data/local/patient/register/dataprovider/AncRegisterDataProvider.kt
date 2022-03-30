@@ -20,7 +20,7 @@ import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+import org.smartregister.fhircore.engine.domain.model.RegisterRowData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDataProvider
 
 @Singleton
@@ -31,7 +31,7 @@ class AncRegisterDataProvider @Inject constructor(val fhirEngine: FhirEngine) :
     currentPage: Int,
     loadAll: Boolean,
     appFeatureName: String?
-  ): List<RegisterRow> {
+  ): List<RegisterRowData> {
     return emptyList()
   }
 
