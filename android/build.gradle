@@ -27,26 +27,26 @@ allprojects {
             url 'https://oss.sonatype.org/content/repositories/snapshots'
         }
     }
+ }
 
-    subprojects {
-        apply plugin: 'com.diffplug.spotless'
-        apply plugin: 'kotlin-kapt'
+subprojects {
+    apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'kotlin-kapt'
 
-        spotless {
-            kotlin {
-                target '**/*.kt'
-                ktlint(versions.ktlint).userData(['indent_size': '2', 'continuation_indent_size': '2'])
-                ktfmt().googleStyle()
-                licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
-            }
+    spotless {
+        kotlin {
+            target '**/*.kt'
+            ktlint(versions.ktlint).userData(['indent_size': '2', 'continuation_indent_size': '2'])
+            ktfmt().googleStyle()
+            licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
         }
+    }
 
-        configurations.all {
-            resolutionStrategy {
-                eachDependency { details ->
-                    if ('org.jacoco' == details.requested.group) {
-                        details.useVersion versions.jacoco_tool
-                    }
+    configurations.all {
+        resolutionStrategy {
+            eachDependency { details ->
+                if ('org.jacoco' == details.requested.group) {
+                    details.useVersion versions.jacoco_tool
                 }
             }
         }

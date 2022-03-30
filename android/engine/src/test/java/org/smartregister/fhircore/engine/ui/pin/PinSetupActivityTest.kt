@@ -42,7 +42,9 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -103,6 +105,14 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     pinSetupActivity.pinViewModel.onPinConfirmed()
     Assert.assertEquals("1234", testPin.value.toString())
     Assert.assertEquals(false, pinSetupActivity.pinViewModel.showError.value)
+  }
+
+  @Test
+  fun testNavigateToLoginShouldVerifyExpectedIntent() {
+    pinSetupActivity.pinViewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
+    val expectedIntent = Intent(pinSetupActivity, LoginActivity::class.java)
+    val actualIntent = Shadows.shadowOf(application).nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test

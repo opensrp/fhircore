@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 
@@ -76,6 +77,7 @@ fun PinSetupScreen(viewModel: PinViewModel) {
     setPinEnabled = enableSetPin ?: false,
     onPinConfirmed = viewModel::onPinConfirmed,
     onMenuSettingClicked = { viewModel.onMenuSettingClicked() },
+    onMenuLoginClicked = { viewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP) },
     appLogoResFile = viewModel.appLogoResFile
   )
 }
@@ -89,6 +91,7 @@ fun PinSetupPage(
   setPinEnabled: Boolean = false,
   onPinConfirmed: () -> Unit,
   onMenuSettingClicked: () -> Unit,
+  onMenuLoginClicked: () -> Unit,
   appLogoResFile: String
 ) {
 
@@ -123,6 +126,13 @@ fun PinSetupPage(
             },
             modifier = Modifier.testTag(PIN_TOOLBAR_MENU_SETTINGS)
           ) { Text(text = stringResource(id = R.string.settings)) }
+          DropdownMenuItem(
+            onClick = {
+              showMenu = false
+              onMenuLoginClicked()
+            },
+            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN)
+          ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
         }
       }
     )
@@ -192,6 +202,7 @@ fun PinSetupPreview() {
     inputPin = "",
     setPinEnabled = false,
     onMenuSettingClicked = {},
+    onMenuLoginClicked = {},
     appLogoResFile = "ic_launcher"
   )
 }
@@ -206,6 +217,7 @@ fun PinSetupFilledPreview() {
     inputPin = "1234",
     setPinEnabled = true,
     onMenuSettingClicked = {},
+    onMenuLoginClicked = {},
     appLogoResFile = "ic_launcher"
   )
 }
