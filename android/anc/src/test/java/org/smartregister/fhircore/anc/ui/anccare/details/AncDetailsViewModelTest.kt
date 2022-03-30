@@ -191,7 +191,7 @@ internal class AncDetailsViewModelTest : RobolectricTest() {
   fun testDeletePatientShouldCallPatientRepository() = runBlockingTest {
     coEvery { patientRepository.deletePatient("111", any()) } answers {}
 
-    ancDetailsViewModel.deletePatient("111", DeletionReason.MOVED_OUT)
+    ancDetailsViewModel.deletePatient("111", DeletionReason.MOVED_AWAY)
 
     coVerify { patientRepository.deletePatient("111", any()) }
   }

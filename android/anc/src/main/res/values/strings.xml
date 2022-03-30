@@ -46,8 +46,9 @@
     <string name="remove_this_person_confirm_title">Reason for removal</string>
     <string name="remove_this_person_confirm_message">Confirm you want to remove person from family</string>
     <string name="remove_this_person_reason_death">Death</string>
-    <string name="remove_this_person_reason_error_entry">Entry in error</string>
-    <string name="remove_this_person_reason_moved_out">Moved out</string>
+    <string name="remove_this_person_reason_other">Other</string>
+    <string name="remove_this_person_reason_moved_away">Moved away</string>
+    <string name="remove_this_person_reason_died">Died</string>
     <string name="change_head_button_title">Change</string>
     <string name="change_head_confirm_title">Select New Family Head</string>
     <string name="change_head_confirm_message"></string>
@@ -134,7 +135,13 @@
     <string name="percentage">%</string>
     <string name="please_wait">Please wait…</string>
     <string name="so_and_so_family">%1$s Family</string>
-
+    <string name="confirm_remove_family_alert_title">Are you sure?</string>
     <string name="remove_family_warning">Removing %1$s will remove their entire health record from your device. This action can’t be undone.</string>
+    <string name="remove_family_member_warning">Removing this will remove their entire health record from your device. This action can’t be undone.</string>
     <string name="family_resource_not_found">"Family resource for that ID NOT Found"</string>
+    <string name="label_remove_family_warning">Please assign a new family head, family nolonger has a family head.</string>
+    <string name="label_select_new_head">Select a new head</string>
+    <string name="label_assign_new_family_head">Assign new family head</string>
+    <string name="alert_message_abort_operation">Are you sure you want to abort this operation?</string>
+    <string name="alert_title_abort">Abort</string>
 </resources>

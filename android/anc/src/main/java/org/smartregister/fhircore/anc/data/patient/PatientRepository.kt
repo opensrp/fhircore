@@ -75,8 +75,9 @@ import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.overdue
 
 enum class DeletionReason(@StringRes val label: Int) {
-  ENTRY_IN_ERROR(R.string.remove_this_person_reason_error_entry),
-  MOVED_OUT(R.string.remove_this_person_reason_moved_out)
+  OTHER(R.string.remove_this_person_reason_other),
+  MOVED_AWAY(R.string.remove_this_person_reason_moved_away),
+  DIED(R.string.remove_this_person_reason_moved_away)
 }
 
 class PatientRepository
@@ -356,10 +357,10 @@ constructor(
         throw IllegalStateException("A patient representing family can not be deleted")
 
       when (reason) {
-        DeletionReason.MOVED_OUT -> {
+        DeletionReason.MOVED_AWAY, DeletionReason.OTHER -> {
           patient.link.clear()
         }
-        DeletionReason.ENTRY_IN_ERROR -> {
+        DeletionReason.DIED -> {
           patient.active = false
           patient.link.clear()
           revokeCarePlans(patientId)

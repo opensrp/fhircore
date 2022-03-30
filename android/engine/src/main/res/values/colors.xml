@@ -24,4 +24,5 @@
     <color name="darkGrayText">#6F7274</color>
     <color name="backgroundGray">#f2f5f6</color>
     <color name="status_gray">#9e9b9b</color>
+    <color name="background_warning">#FFECD6</color>
 </resources>
