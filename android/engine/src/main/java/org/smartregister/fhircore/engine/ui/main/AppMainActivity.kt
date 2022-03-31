@@ -42,6 +42,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     super.onCreate(savedInstanceState)
     setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
+
+    with(appMainViewModel.configService) {
+      if (appMainViewModel.applicationConfiguration.scheduleDefaultPlanWorker)
+        this.schedulePlan(this@AppMainActivity)
+      else this.unschedulePlan(this@AppMainActivity)
+    }
   }
 
   override fun onSync(state: State) {

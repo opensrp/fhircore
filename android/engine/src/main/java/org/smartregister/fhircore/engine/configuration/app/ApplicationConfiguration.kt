@@ -27,6 +27,7 @@ data class ApplicationConfiguration(
   var theme: String = "",
   var languages: List<String> = listOf("en"),
   var syncInterval: Long = 30,
+  var scheduleDefaultPlanWorker: Boolean = true,
   var applicationName: String = "",
   var appLogoIconResourceFile: String = "ic_default_logo",
   var count: String = ConfigurationRegistry.DEFAULT_COUNT
@@ -49,6 +50,7 @@ fun applicationConfigurationOf(
   theme: String = "",
   languages: List<String> = listOf("en"),
   syncInterval: Long = 30,
+  scheduleDefaultPlanWorker: Boolean = true,
   applicationName: String = "",
   appLogoIconResourceFile: String = "",
   count: String = ConfigurationRegistry.DEFAULT_COUNT
@@ -59,6 +61,7 @@ fun applicationConfigurationOf(
     theme = theme,
     languages = languages,
     syncInterval = syncInterval,
+    scheduleDefaultPlanWorker = scheduleDefaultPlanWorker,
     applicationName = applicationName,
     appLogoIconResourceFile = appLogoIconResourceFile,
     count = count
