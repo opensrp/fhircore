@@ -33,8 +33,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -109,8 +109,8 @@ class RegisterDataViewModel<I : Any, O : Any>(
     Pager(
         config =
           PagingConfig(
-            pageSize = PaginationUtil.DEFAULT_PAGE_SIZE,
-            initialLoadSize = PaginationUtil.DEFAULT_INITIAL_LOAD_SIZE,
+            pageSize = PaginationConstant.DEFAULT_PAGE_SIZE,
+            initialLoadSize = PaginationConstant.DEFAULT_INITIAL_LOAD_SIZE,
           ),
         pagingSourceFactory = {
           PaginatedDataSource(registerRepository).apply {
@@ -138,7 +138,7 @@ class RegisterDataViewModel<I : Any, O : Any>(
   fun currentPage() = this.currentPage.value?.plus(1) ?: 1
 
   fun countPages() =
-    _totalRecordsCount.value?.toDouble()?.div(PaginationUtil.DEFAULT_PAGE_SIZE.toLong())?.let {
+    _totalRecordsCount.value?.toDouble()?.div(PaginationConstant.DEFAULT_PAGE_SIZE.toLong())?.let {
       ceil(it).toInt()
     }
       ?: 1

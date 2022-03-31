@@ -38,8 +38,8 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
@@ -97,8 +97,8 @@ constructor(
             )
           }
           sort(Patient.NAME, Order.ASCENDING)
-          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+          count = if (loadAll) countAll().toInt() else PaginationConstant.DEFAULT_PAGE_SIZE
+          from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
         }
 
       patients.map {

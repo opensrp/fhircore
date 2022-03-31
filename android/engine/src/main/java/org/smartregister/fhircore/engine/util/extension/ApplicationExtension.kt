@@ -43,9 +43,9 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.ui.main.model.Language
+import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -95,8 +95,8 @@ suspend fun FhirEngine.searchActivePatients(
     sort(Patient.NAME, Order.ASCENDING)
     count =
       if (loadAll) this@searchActivePatients.countActivePatients().toInt()
-      else PaginationUtil.DEFAULT_PAGE_SIZE
-    from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+      else PaginationConstant.DEFAULT_PAGE_SIZE
+    from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
   }
 
 suspend fun FhirEngine.countActivePatients(): Long =

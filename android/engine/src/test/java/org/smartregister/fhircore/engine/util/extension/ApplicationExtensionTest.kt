@@ -51,8 +51,8 @@ import org.junit.Assert
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -209,7 +209,7 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Patient>(any()) }
     val search = captureSlot.captured
-    Assert.assertEquals(PaginationUtil.DEFAULT_PAGE_SIZE, search.count)
+    Assert.assertEquals(PaginationConstant.DEFAULT_PAGE_SIZE, search.count)
     Assert.assertEquals(0, search.from)
   }
 
@@ -224,8 +224,8 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Patient>(any()) }
     val search = captureSlot.captured
-    Assert.assertEquals(PaginationUtil.DEFAULT_PAGE_SIZE, search.count)
-    Assert.assertEquals(PaginationUtil.DEFAULT_PAGE_SIZE * 3, search.from)
+    Assert.assertEquals(PaginationConstant.DEFAULT_PAGE_SIZE, search.count)
+    Assert.assertEquals(PaginationConstant.DEFAULT_PAGE_SIZE * 3, search.from)
   }
 
   @Test
