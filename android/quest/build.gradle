@@ -109,7 +109,7 @@ android {
     }
 
     testOptions {
-        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        //execution 'ANDROIDX_TEST_ORCHESTRATOR'
         animationsDisabled true
 
         unitTests {
@@ -170,6 +170,8 @@ dependencies {
 // Needed for createComposeRule, but not createAndroidComposeRule:
 //     debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
 
     testImplementation 'info.cqframework:cql-to-elm:1.5.0'
 }
