@@ -85,7 +85,7 @@ fun MainScreen(
     Box(modifier = modifier.padding(innerPadding)) {
       AppMainNavigationGraph(
         navController = navController,
-        navigationScreens = NavigationScreen.appScreens.filter { it.showInBottomNav },
+        navigationScreens = NavigationScreen.appScreens,
         openDrawer = openDrawer,
         sideMenuOptions = uiState.sideMenuOptions
       )

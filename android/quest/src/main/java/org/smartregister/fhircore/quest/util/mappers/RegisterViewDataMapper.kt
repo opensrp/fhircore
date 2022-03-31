@@ -28,7 +28,10 @@ class RegisterViewDataMapper @Inject constructor() : DataMapper<RegisterData, Re
         RegisterViewData(
           id = inputModel.id,
           title = listOf(inputModel.name, inputModel.age).joinToString(", "),
-          subtitle = inputModel.gender.name // TODO make transalatable
+          subtitle =
+            inputModel.gender.name.lowercase().replaceFirstChar {
+              it.uppercase()
+            } // TODO make transalatable
         )
     }
   }

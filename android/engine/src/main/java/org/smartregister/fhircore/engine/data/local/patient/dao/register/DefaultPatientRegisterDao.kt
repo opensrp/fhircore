@@ -62,7 +62,7 @@ constructor(
           id = it.logicalId,
           name = it.extractName(),
           gender = it.gender,
-          age = it.extractAge().toInt()
+          age = it.extractAge()
         )
       }
     }

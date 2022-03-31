@@ -41,7 +41,7 @@ fun BottomScreenSection(
   BottomNavigation(backgroundColor = Color.White, contentColor = Color.Black) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    navigationScreens.forEach { navigationScreen ->
+    navigationScreens.filter { it.showInBottomNav }.forEach { navigationScreen ->
       BottomNavigationItem(
         icon = {
           navigationScreen.iconResource?.let {

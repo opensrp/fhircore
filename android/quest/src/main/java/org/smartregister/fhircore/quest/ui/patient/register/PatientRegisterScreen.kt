@@ -24,15 +24,19 @@ import androidx.compose.material.Button
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -54,15 +58,37 @@ fun PatientRegisterScreen(
   navController: NavHostController,
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
+  val context = LocalContext.current
+  val lifecycleOwner = LocalLifecycleOwner.current
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
-  val context = LocalContext.current
-  LaunchedEffect(Unit) {
-    patientRegisterViewModel.run {
-      setTotalRecordsCount(appFeatureName, healthModule)
-      paginateRegisterData(appFeatureName, healthModule)
+  // Safely update the current lambdas when a new one is provided
+  val currentSetTotalRecordCount by rememberUpdatedState(
+    patientRegisterViewModel::setTotalRecordsCount
+  )
+  val currentPaginateRegisterData by rememberUpdatedState(
+    patientRegisterViewModel::paginateRegisterData
+  )
+
+  DisposableEffect(lifecycleOwner) {
+    // Create an observer that triggers our remembered functions for setting register total count
+    // and paginating the data. This will be triggered whenever the activity resumes to refresh data
+    val observer = LifecycleEventObserver { _, event ->
+      if (event == Lifecycle.Event.ON_RESUME) {
+        currentSetTotalRecordCount(appFeatureName, healthModule)
+        currentPaginateRegisterData(appFeatureName, healthModule, false)
+      }
+    }
+
+    lifecycleOwner.lifecycle.run {
+      // Register observer to lifecycle
+      addObserver(observer)
+
+      // Remove observer when effect leaves the lifecycle
+      onDispose { removeObserver(observer) }
     }
   }
+
   val pagingItems: LazyPagingItems<RegisterViewData> =
     patientRegisterViewModel
       .paginatedRegisterData
