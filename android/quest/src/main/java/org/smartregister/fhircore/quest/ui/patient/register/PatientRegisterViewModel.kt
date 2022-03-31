@@ -42,6 +42,7 @@ import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
+import org.smartregister.fhircore.quest.navigation.NavigationScreen
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
@@ -136,7 +137,11 @@ constructor(
       }
       is PatientRegisterEvent.RegisterNewClient ->
         event.context.launchQuestionnaireActivity(registerViewConfiguration.registrationForm)
-      is PatientRegisterEvent.OpenProfile -> TODO()
+      is PatientRegisterEvent.OpenProfile ->
+        event.navController.navigate(
+          route =
+            "${NavigationScreen.PatientProfile.route}?feature=${event.appFeatureName}&healthModule=${event.healthModule.name}&patientId=${event.patientId}"
+        )
     }
   }
 

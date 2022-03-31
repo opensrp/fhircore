@@ -32,10 +32,14 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
 
 @Composable
-fun RegisterList(modifier: Modifier = Modifier, pagingItems: LazyPagingItems<RegisterViewData>) {
+fun RegisterList(
+  modifier: Modifier = Modifier,
+  pagingItems: LazyPagingItems<RegisterViewData>,
+  onOpenProfileClick: (String) -> Unit
+) {
   LazyColumn {
     items(pagingItems, key = { it.id }) {
-      RegisterListRow(registerViewData = it!!)
+      RegisterListRow(registerViewData = it!!, onOpenProfileClick = onOpenProfileClick)
       Divider(color = DividerColor, thickness = 1.dp)
     }
     pagingItems.apply {

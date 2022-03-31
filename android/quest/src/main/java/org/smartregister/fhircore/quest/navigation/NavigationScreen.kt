@@ -39,6 +39,6 @@ sealed class NavigationScreen(
     const val SETTINGS_ROUTE = "settingsRoute"
     const val PATIENT_PROFILE_ROUTE = "patientProfileRoute"
 
-    val appScreens = listOf(Home, Tasks, Reports, Settings)
+    val appScreens = listOf(Home, Tasks, Reports, Settings, PatientProfile)
   }
 }

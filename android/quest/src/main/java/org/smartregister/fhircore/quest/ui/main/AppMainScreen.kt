@@ -134,6 +134,7 @@ private fun AppMainNavigationGraph(
               stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
                 ?: stringResource(R.string.all_clients)
             PatientRegisterScreen(
+              navController = navController,
               openDrawer = openDrawer,
               appFeatureName = appFeatureName,
               healthModule = healthModule,
@@ -159,6 +160,7 @@ private fun AppMainNavigationGraph(
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
             PatientProfileScreen(
+              navController = navController,
               appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
               healthModule = stackEntry.retrieveHealthModuleArg(),
               patientId = patientId

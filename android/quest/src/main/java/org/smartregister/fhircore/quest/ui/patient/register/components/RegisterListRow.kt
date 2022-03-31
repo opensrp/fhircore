@@ -59,13 +59,20 @@ import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
 
 @Composable
-fun RegisterListRow(modifier: Modifier = Modifier, registerViewData: RegisterViewData) {
+fun RegisterListRow(
+  modifier: Modifier = Modifier,
+  registerViewData: RegisterViewData,
+  onOpenProfileClick: (String) -> Unit
+) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
     modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min)
   ) {
-    Column(modifier = modifier.weight(0.7f).padding(16.dp)) {
+    Column(
+      modifier =
+        modifier.clickable { onOpenProfileClick(registerViewData.id) }.weight(0.7f).padding(16.dp)
+    ) {
       if (registerViewData.serviceAsButton) {
         Row(
           horizontalArrangement = Arrangement.SpaceBetween,
@@ -234,7 +241,8 @@ fun RegisterListRowForFamilyRegisterPreview() {
         serviceMemberIcons =
           listOf(R.drawable.ic_pregnant, R.drawable.ic_pregnant, R.drawable.ic_pregnant),
         serviceAsButton = false
-      )
+      ),
+    onOpenProfileClick = {}
   )
 }
 
@@ -242,7 +250,8 @@ fun RegisterListRowForFamilyRegisterPreview() {
 @Preview(showBackground = true)
 fun RegisterListRowForQuestRegisterPreview() {
   RegisterListRow(
-    registerViewData = RegisterViewData(id = "1234", title = "John Doe, 40y", subtitle = "Male")
+    registerViewData = RegisterViewData(id = "1234", title = "John Doe, 40y", subtitle = "Male"),
+    onOpenProfileClick = {}
   )
 }
 
@@ -256,7 +265,8 @@ fun RegisterListRowForRdtRegisterPreview() {
         title = "Jackie Johnson, Female, 40y",
         status = "Last test",
         otherStatus = "04 Feb 2022"
-      )
+      ),
+    onOpenProfileClick = {}
   )
 }
 
@@ -273,7 +283,8 @@ fun RegisterListRowForAncRegisterPreview() {
         serviceAsButton = true,
         serviceText = "ANC visit",
         serviceForegroundColor = InfoColor
-      )
+      ),
+    onOpenProfileClick = {}
   )
 }
 
@@ -290,6 +301,7 @@ fun RegisterListRowForEirRegisterPreview() {
         serviceText = "Overdue",
         serviceForegroundColor = Color.White,
         serviceBackgroundColor = OverdueColor
-      )
+      ),
+    onOpenProfileClick = {}
   )
 }

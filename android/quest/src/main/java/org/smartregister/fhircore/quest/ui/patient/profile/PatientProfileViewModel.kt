@@ -59,6 +59,8 @@ constructor(
     when (event) {
       is PatientProfileEvent.LoadQuestionnaire ->
         event.context.launchQuestionnaireActivity(event.questionnaireId)
-      is PatientProfileEvent.SeeAll -> TODO()
+      is PatientProfileEvent.SeeAll -> {
+        /* TODO(View all records in this category e.g. all medical history, tasks etc) */
+      }
     }
 }

@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
@@ -50,6 +51,7 @@ fun PatientRegisterScreen(
   healthModule: HealthModule,
   screenTitle: String,
   openDrawer: (Boolean) -> Unit,
+  navController: NavHostController,
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val searchText by remember { patientRegisterViewModel.searchText }
@@ -126,6 +128,15 @@ fun PatientRegisterScreen(
       }
     }
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) { RegisterList(pagingItems = pagingItems) }
+    Box(modifier = modifier.padding(innerPadding)) {
+      RegisterList(
+        pagingItems = pagingItems,
+        onOpenProfileClick = { patientId: String ->
+          patientRegisterViewModel.onEvent(
+            PatientRegisterEvent.OpenProfile(appFeatureName, healthModule, patientId, navController)
+          )
+        }
+      )
+    }
   }
 }

@@ -73,7 +73,7 @@ fun AppDrawer(
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
-  onSideMenuClick: (org.smartregister.fhircore.quest.ui.main.AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit
 ) {
   val context = LocalContext.current
   var expandLanguageDropdown by remember { mutableStateOf(false) }
@@ -105,7 +105,7 @@ fun AppDrawer(
                     openDrawer(false)
                     navController.navigate(
                       route =
-                        "${NavigationScreen.Home.route}?feature=${sideMenuOption.appFeatureName}&healthModule=${sideMenuOption.healthModule?.name}&screenTitle=$title"
+                        "${NavigationScreen.Home.route}?feature=${sideMenuOption.appFeatureName}&healthModule=${sideMenuOption.healthModule.name}&screenTitle=$title"
                     )
                   }
                 )
@@ -136,12 +136,7 @@ fun AppDrawer(
           for (language in languages) {
             DropdownMenuItem(
               onClick = {
-                onSideMenuClick(
-                  org.smartregister.fhircore.quest.ui.main.AppMainEvent.SwitchLanguage(
-                    language,
-                    context
-                  )
-                )
+                onSideMenuClick(AppMainEvent.SwitchLanguage(language, context))
                 expandLanguageDropdown = false
               }
             ) {
