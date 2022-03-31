@@ -16,12 +16,13 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.hl7.fhir.r4.model.Enumerations
 
-data class RegisterData(
-  val healthModule: HealthModule,
-  val appFeature: AppFeature,
-  val id: String,
-  val name: String
-)
+sealed class RegisterData(open val id: String, open val name: String) {
+  data class DefaultRegisterData(
+    override val id: String,
+    override val name: String,
+    val gender: Enumerations.AdministrativeGender,
+    val age: Int
+  ) : RegisterData(id = id, name = name)
+}

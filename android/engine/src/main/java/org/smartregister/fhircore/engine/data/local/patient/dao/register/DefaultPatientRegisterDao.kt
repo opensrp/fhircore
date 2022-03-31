@@ -24,21 +24,24 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
+import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @Singleton
 class DefaultPatientRegisterDao
 @Inject
-constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatcherProvider) :
-  RegisterDao {
+constructor(
+  val fhirEngine: FhirEngine,
+  val dispatcherProvider: DefaultDispatcherProvider,
+  val fhirPathDataExtractor: FhirPathDataExtractor
+) : RegisterDao {
 
   override suspend fun loadRegisterData(
     currentPage: Int,
@@ -55,11 +58,11 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatche
         }
 
       patients.map {
-        RegisterData(
-          healthModule = HealthModule.DEFAULT,
-          appFeature = AppFeature.PatientManagement,
+        RegisterData.DefaultRegisterData(
           id = it.logicalId,
-          name = it.extractName()
+          name = it.extractName(),
+          gender = it.gender,
+          age = it.extractAge().toInt()
         )
       }
     }

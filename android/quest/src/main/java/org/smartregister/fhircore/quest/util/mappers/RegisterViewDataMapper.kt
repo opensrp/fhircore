@@ -23,6 +23,13 @@ import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewDa
 
 class RegisterViewDataMapper @Inject constructor() : DataMapper<RegisterData, RegisterViewData> {
   override fun transformInputToOutputModel(inputModel: RegisterData): RegisterViewData {
-    return RegisterViewData(id = inputModel.id, title = inputModel.name)
+    return when (inputModel) {
+      is RegisterData.DefaultRegisterData ->
+        RegisterViewData(
+          id = inputModel.id,
+          title = listOf(inputModel.name, inputModel.age).joinToString(", "),
+          subtitle = inputModel.gender.name // TODO make transalatable
+        )
+    }
   }
 }
