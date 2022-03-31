@@ -57,8 +57,8 @@ import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -105,8 +105,8 @@ constructor(
             filterBy(registerConfig.primaryFilter!!)
             registerConfig.secondaryFilter?.let { filterBy(it) }
 
-            count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-            from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+            count = if (loadAll) countAll().toInt() else PaginationConstant.DEFAULT_PAGE_SIZE
+            from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
           }
           .distinctBy { it.subject.extractId() }
 

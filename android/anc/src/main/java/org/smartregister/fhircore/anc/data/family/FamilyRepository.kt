@@ -39,8 +39,8 @@ import org.smartregister.fhircore.anc.util.asCodeableConcept
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatientName
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractFamilyTag
@@ -71,8 +71,8 @@ constructor(
           filterByPatientName(query)
 
           sort(Patient.NAME, Order.ASCENDING)
-          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+          count = if (loadAll) countAll().toInt() else PaginationConstant.DEFAULT_PAGE_SIZE
+          from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
         }
 
       patients.map { p ->
