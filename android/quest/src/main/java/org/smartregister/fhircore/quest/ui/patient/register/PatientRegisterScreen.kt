@@ -53,8 +53,7 @@ fun PatientRegisterScreen(
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val searchText by remember { patientRegisterViewModel.searchText }
-  // TODO activate after view configurations refactor
-  //  val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
+  val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
   val context = LocalContext.current
   LaunchedEffect(Unit) {
     patientRegisterViewModel.run {
@@ -119,8 +118,10 @@ fun PatientRegisterScreen(
           )
           Button(
             modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            onClick = { PatientRegisterEvent.RegisterNewClient(context) }
-          ) { Text(text = "Register Client", modifier = modifier.padding(8.dp)) }
+            onClick = {
+              patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
+            }
+          ) { Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp)) }
         }
       }
     }
