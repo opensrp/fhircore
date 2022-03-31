@@ -20,19 +20,18 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.appfeature.model.AppFeatureConfig
 import org.smartregister.fhircore.engine.appfeature.model.FeatureConfig
-import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 
 @Singleton
-class AppFeatureManager @Inject constructor() {
+class AppFeatureManager @Inject constructor(val configurationRegistry: ConfigurationRegistry) {
 
   private var _appFeatureConfig: AppFeatureConfig? = null
 
-  // TODO read from saved binary resource
   fun loadAndActivateFeatures() {
+    // TODO do we want to handle missing this config for any app
     _appFeatureConfig =
-      """{"appId":"ecbis","appFeatures":[{"feature":"HouseholdManagement","active":true,"settings":{},"target":"CHW","healthModule":"FAMILY","useCases":["HOUSEHOLD_REGISTRATION","REMOVE_HOUSEHOLD","HOUSEHOLD_VISITS","REMOVE_HOUSEHOLD_MEMBER"]},{"feature":"PatientManagement","active":true,"settings":{},"target":"CHW","healthModule":"ANC","useCases":["PATIENT_REGISTRATION","ANC_VISITS","PREGNANCY_OUTCOME"]},{"feature":"PatientManagement","active":true,"settings":{},"target":"HF","healthModule":"CHILD","useCases":["PATIENT_REGISTRATION","CHILD_IMMUNIZATION"]}]}"""
-        .trimIndent()
-        .decodeJson()
+      configurationRegistry.retrieveConfiguration(AppConfigClassification.APP_FEATURE)
   }
 
   fun activatedFeatures(): List<FeatureConfig> =

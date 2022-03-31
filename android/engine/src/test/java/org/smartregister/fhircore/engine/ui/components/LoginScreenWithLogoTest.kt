@@ -43,11 +43,10 @@ class LoginScreenWithLogoTest : RobolectricTest() {
   private val password = MutableLiveData("")
   private val loginError = MutableLiveData("")
   private val showProgressBar = MutableLiveData(false)
-  private val loginConfig = loginViewConfigurationOf()
+  private val loginConfig = loginViewConfigurationOf(showLogo = true)
 
   @Before
   fun setUp() {
-    loginConfig.showLogo = true
     loginViewModelWithLogo =
       mockk {
         every { loginViewConfiguration } returns MutableLiveData(loginConfig)

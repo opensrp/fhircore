@@ -33,6 +33,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -66,7 +67,13 @@ class EngineModule {
       fhirResourceDataSource = fhirResourceDataSource
     )
 
-  @Singleton @Provides fun provideWorkerContextProvider() = SimpleWorkerContext()
+  @Singleton
+  @Provides
+  fun provideWorkerContextProvider(): SimpleWorkerContext =
+    SimpleWorkerContext().apply {
+      setExpansionProfile(Parameters())
+      isCanRunWithoutTerminology = true
+    }
 
   @Singleton
   @Provides

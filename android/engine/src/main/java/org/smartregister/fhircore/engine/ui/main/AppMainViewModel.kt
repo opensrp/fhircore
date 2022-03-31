@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.navigation.SideMenuOptionFactory
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
@@ -50,7 +51,8 @@ constructor(
   val sideMenuOptionFactory: SideMenuOptionFactory,
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
+  val configService: ConfigService
 ) : ViewModel() {
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())

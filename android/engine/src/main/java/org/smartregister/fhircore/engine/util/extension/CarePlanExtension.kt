@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import com.google.android.fhir.logicalId
 import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Task
 
 /** If no period.start specified plan is always available unless status suggests so */
 fun CarePlan.started() = period?.start?.before(Date()) ?: true
@@ -56,3 +59,8 @@ fun CarePlan.CarePlanActivityComponent.overdue() =
       CarePlan.CarePlanActivityStatus.SCHEDULED,
       CarePlan.CarePlanActivityStatus.NOTSTARTED
     ) && detail.ended()
+
+fun CarePlan.CarePlanStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
+
+fun CarePlan.isLastTask(task: Task) =
+  this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId

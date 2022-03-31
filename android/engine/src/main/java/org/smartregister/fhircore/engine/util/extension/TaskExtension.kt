@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.appfeature.model
+package org.smartregister.fhircore.engine.util.extension
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.Configuration
+import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.util.DateUtils
+import org.smartregister.fhircore.engine.util.DateUtils.isToday
+import org.smartregister.fhircore.engine.util.DateUtils.today
 
-@Serializable
-data class AppFeatureConfig(
-  override val appId: String = "",
-  override val classification: String,
-  val appFeatures: List<FeatureConfig>
-) : Configuration
+fun Task.hasPastEnd() =
+  this.hasExecutionPeriod() &&
+    this.executionPeriod.hasEnd() &&
+    this.executionPeriod.end.before(DateUtils.yesterday())
+
+fun Task.hasStarted() =
+  this.hasExecutionPeriod() &&
+    this.executionPeriod.hasStart() &&
+    with(this.executionPeriod.start) { this.before(today()) || this.isToday() }

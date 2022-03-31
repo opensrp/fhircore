@@ -20,12 +20,17 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -35,6 +40,7 @@ import timber.log.Timber
 open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
+  @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
@@ -86,8 +92,35 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             )
           )
           updateLastSyncTimestamp(state.result.timestamp)
+
+          tempMethodToUpdatePeriodPlanWorkerAndFhirGen()
         }
       }
+    }
+  }
+
+  // TODO move to where required.. Elly
+  fun tempMethodToUpdatePeriodPlanWorkerAndFhirGen() {
+    Timber.e("Registering plan and task scheduler")
+    with(appMainViewModel.configService) {
+      if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
+        this.schedulePlan(this@AppMainActivity)
+      else this.unschedulePlan(this@AppMainActivity)
+    }
+
+    runBlocking {
+      fhirTaskGenerator.generateCarePlan(
+        "105121",
+        Patient().apply {
+          birthDate = Date()
+          id =
+            fhirTaskGenerator
+              .fhirEngine
+              .search<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
+              .last()
+              .id
+        }
+      )
     }
   }
 }

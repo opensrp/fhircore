@@ -17,50 +17,37 @@
 package org.smartregister.fhircore.engine.task
 
 import com.google.android.fhir.FhirEngine
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import timber.log.Timber
 
-class FhirTaskGenerator(val patient: Patient) {
-
-  @Inject lateinit var fhirEngine: FhirEngine
-
-  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-
-  private val simpleDataFormatter = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
-
-  private val placeholdersValuesMap: MutableMap<String, String> = mutableMapOf()
-
-  init {
-    initializePlaceholders()
+@Singleton
+class FhirTaskGenerator
+@Inject
+constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformSupportServices) {
+  val structureMapUtilities by lazy {
+    StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
   }
 
-  private fun initializePlaceholders() {
-    placeHolderValues("patient_id", "Patient.id", true)
-    placeHolderValues("auto_generated_uuid", UUID.randomUUID().toString(), true)
-    val today = Date()
-    placeHolderValues("date_patient_is_registered", simpleDataFormatter.format(today), true)
-    val patientBirthDate: Date? =
-      simpleDataFormatter.parse(
-        fhirPathDataExtractor.extractData(patient, "Patient.birthDate").first().primitiveValue()
-      )
-    if (patientBirthDate != null) {
-      placeHolderValues("date_patient_is_older_than_five", simpleDataFormatter.format(today), true)
-    }
-  }
+  suspend fun generateCarePlan(structureMapId: String, patient: Patient): Bundle {
+    val structureMap = fhirEngine.load(StructureMap::class.java, structureMapId)
 
-  fun generateTasks(baseCarePlan: String, baseTask: String) {}
-
-  private fun placeHolderValues(placeHolder: String, value: String, isExpression: Boolean = false) {
-    placeholdersValuesMap[placeHolder] =
-      if (isExpression) fhirPathDataExtractor.extractData(patient, value).first().primitiveValue()
-      else value
-  }
-  companion object {
-    private const val DATE_FORMAT = "yyyy-MM-dd"
+    return Bundle()
+      .apply {
+        structureMapUtilities.transform(
+          transformSupportServices.simpleWorkerContext,
+          patient,
+          structureMap,
+          this
+        )
+      }
+      .also { it.entry.forEach { fhirEngine.save(it.resource) } }
+      .also { Timber.i(it.encodeResourceToString()) }
   }
 }
