@@ -45,7 +45,7 @@ import org.smartregister.fhircore.engine.ui.main.component.TopScreenSection
 fun PatientRegisterScreen(
   modifier: Modifier = Modifier,
   appFeatureName: String?,
-  healthModule: HealthModule?,
+  healthModule: HealthModule,
   screenTitle: String,
   openDrawer: (Boolean) -> Unit,
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()

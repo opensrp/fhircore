@@ -84,7 +84,7 @@ class PatientRepository
 constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: AncItemMapper,
+  override val dataMapper: AncItemMapper,
   val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Anc, PatientItem> {
 
@@ -126,7 +126,7 @@ constructor(
 
         val carePlans = searchCarePlan(it.logicalId)
         val conditions = searchCondition(it.logicalId)
-        domainMapper.mapToDomainModel(Anc(it, head, conditions, carePlans))
+        dataMapper.transformInputToOutputModel(Anc(it, head, conditions, carePlans))
       }
     }
   }
@@ -263,7 +263,9 @@ constructor(
   }
 
   fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> =
-    carePlan.filter { it.due() || it.overdue() }.map { CarePlanItemMapper.mapToDomainModel(it) }
+    carePlan.filter { it.due() || it.overdue() }.map {
+      CarePlanItemMapper.transformInputToOutputModel(it)
+    }
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
@@ -412,7 +414,7 @@ constructor(
     val listCarePlan = arrayListOf<EncounterItem>()
     if (encounters.isNotEmpty()) {
       for (i in encounters.indices) {
-        listCarePlan.add(EncounterItemMapper.mapToDomainModel(encounters[i]))
+        listCarePlan.add(EncounterItemMapper.transformInputToOutputModel(encounters[i]))
       }
     }
     return listCarePlan
@@ -542,7 +544,7 @@ constructor(
   }
 
   fun setAncItemMapperType(ancItemMapperType: AncItemMapper.AncItemMapperType) {
-    domainMapper.setAncItemMapperType(ancItemMapperType)
+    dataMapper.setAncItemMapperType(ancItemMapperType)
   }
 
   companion object {

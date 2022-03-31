@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
-import org.smartregister.fhircore.engine.data.local.patient.PatientRepository
+import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
 import org.smartregister.fhircore.engine.data.local.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.engine.domain.model.RegisterRowData
 
@@ -46,7 +46,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterRowData
 class PatientRegisterViewModel
 @Inject
 constructor(
-  val patientRepository: PatientRepository,
+  val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry
 ) : ViewModel() {
 
@@ -73,7 +73,7 @@ constructor(
 
   fun paginateRegisterData(
     appFeatureName: String?,
-    healthModule: HealthModule?,
+    healthModule: HealthModule,
     loadAll: Boolean = false
   ) {
     paginatedRegisterData.value = getPager(appFeatureName, healthModule, loadAll).flow
@@ -81,14 +81,14 @@ constructor(
 
   private fun getPager(
     appFeatureName: String?,
-    healthModule: HealthModule?,
+    healthModule: HealthModule,
     loadAll: Boolean = false
-  ) =
+  ): Pager<Int, RegisterRowData> =
     Pager(
       config =
         PagingConfig(pageSize = DEFAULT_PAGE_SIZE, initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE),
       pagingSourceFactory = {
-        PatientRegisterPagingSource(patientRepository).apply {
+        PatientRegisterPagingSource(patientRegisterRepository).apply {
           setPatientPagingSourceState(
             PatientPagingSourceState(
               appFeatureName = appFeatureName,
@@ -101,10 +101,10 @@ constructor(
       }
     )
 
-  fun setTotalRecordsCount(appFeatureName: String?, healthModule: HealthModule?) {
+  fun setTotalRecordsCount(appFeatureName: String?, healthModule: HealthModule) {
     viewModelScope.launch {
       _totalRecordsCount.postValue(
-        patientRepository.countRegisterData(appFeatureName, healthModule)
+        patientRegisterRepository.countRegisterData(appFeatureName, healthModule)
       )
     }
   }

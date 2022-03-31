@@ -51,7 +51,7 @@ class FamilyRepository
 constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: FamilyItemMapper,
+  override val dataMapper: FamilyItemMapper,
   val dispatcherProvider: DispatcherProvider,
   val ancPatientRepository: PatientRepository
 ) : RegisterRepository<Family, FamilyItem> {
@@ -79,7 +79,7 @@ constructor(
         val members = searchFamilyMembers(p.logicalId)
 
         val familyServices = ancPatientRepository.searchCarePlan(p.logicalId, p.extractFamilyTag())
-        domainMapper.mapToDomainModel(Family(p, members, familyServices))
+        dataMapper.transformInputToOutputModel(Family(p, members, familyServices))
       }
     }
   }
@@ -98,7 +98,7 @@ constructor(
       .map {
         val services = ancPatientRepository.searchCarePlan(it.logicalId)
         val conditions = ancPatientRepository.searchCondition(it.logicalId)
-        domainMapper.toFamilyMemberItem(it, conditions, services)
+        dataMapper.toFamilyMemberItem(it, conditions, services)
       }
       .sortedBy {
         var weight = 0

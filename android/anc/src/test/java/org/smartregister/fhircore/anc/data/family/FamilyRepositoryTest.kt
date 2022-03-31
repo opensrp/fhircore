@@ -71,7 +71,7 @@ class FamilyRepositoryTest : RobolectricTest() {
       FamilyRepository(
         context = ApplicationProvider.getApplicationContext(),
         fhirEngine = fhirEngine,
-        domainMapper = familyItemMapper,
+        dataMapper = familyItemMapper,
         dispatcherProvider = dispatcherProvider,
         ancPatientRepository = ancPatientRepository
       )

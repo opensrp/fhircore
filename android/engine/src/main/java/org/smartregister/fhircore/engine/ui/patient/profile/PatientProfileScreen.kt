@@ -34,7 +34,7 @@ import org.smartregister.fhircore.engine.ui.patient.profile.component.ProfileAct
 @Composable
 fun PatientProfileScreen(
   appFeatureName: String?,
-  healthModule: HealthModule?,
+  healthModule: HealthModule,
   patientId: String?,
   patientProfileViewModel: PatientProfileViewModel = hiltViewModel()
 ) {

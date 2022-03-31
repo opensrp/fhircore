@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.patient.register.dataprovider
+package org.smartregister.fhircore.engine.data.local.patient.dao.register
 
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterRowData
-import org.smartregister.fhircore.engine.domain.repository.RegisterDataProvider
+import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 
 @Singleton
-class AncRegisterDataProvider @Inject constructor(val fhirEngine: FhirEngine) :
-  RegisterDataProvider {
+class FamilyRegisterDao @Inject constructor(val fhirEngine: FhirEngine) : RegisterDao {
 
-  override suspend fun provideRegisterData(
+  override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
     appFeatureName: String?
@@ -35,15 +34,15 @@ class AncRegisterDataProvider @Inject constructor(val fhirEngine: FhirEngine) :
     return emptyList()
   }
 
-  override suspend fun provideRegisterDataCount(appFeatureName: String?): Long {
-    // TODO("Return count for Anc register clients")
-    return 0
-  }
-
-  override suspend fun provideProfileData(
+  override suspend fun loadProfileData(
     appFeatureName: String?,
     patientId: String
   ): PatientProfileData? {
     return null
+  }
+
+  override suspend fun countRegisterData(appFeatureName: String?): Long {
+    // TODO("Return count for Family register clients")
+    return 0
   }
 }

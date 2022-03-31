@@ -107,7 +107,7 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
     val mapper = FamilyItemMapper(registerFragment.requireContext())
     val members = listOf(mapper.toFamilyMemberItem(head, listOf(), listOf()))
 
-    val familyItem = mapper.mapToDomainModel(Family(head, members, emptyList()))
+    val familyItem = mapper.transformInputToOutputModel(Family(head, members, emptyList()))
 
     val result =
       registerFragment.performFilter(RegisterFilterType.SEARCH_FILTER, familyItem, "1111")
@@ -139,7 +139,7 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
     val members = listOf(mapper.toFamilyMemberItem(head, listOf(), listOf(careplan)))
 
     val familyItem =
-      FamilyItemMapper(mockk()).mapToDomainModel(Family(head, members, listOf(careplan)))
+      FamilyItemMapper(mockk()).transformInputToOutputModel(Family(head, members, listOf(careplan)))
 
     val result =
       registerFragment.performFilter(RegisterFilterType.OVERDUE_FILTER, familyItem, "1111")

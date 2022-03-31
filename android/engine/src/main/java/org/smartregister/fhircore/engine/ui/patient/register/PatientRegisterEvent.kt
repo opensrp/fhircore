@@ -23,15 +23,15 @@ sealed class PatientRegisterEvent {
   data class SearchRegister(
     val searchText: String = "",
     val appFeatureName: String?,
-    val healthModule: HealthModule?
+    val healthModule: HealthModule
   ) : PatientRegisterEvent()
-  data class MoveToNextPage(val appFeatureName: String?, val healthModule: HealthModule?) :
+  data class MoveToNextPage(val appFeatureName: String?, val healthModule: HealthModule) :
     PatientRegisterEvent()
-  data class MoveToPreviousPage(val appFeatureName: String?, val healthModule: HealthModule?) :
+  data class MoveToPreviousPage(val appFeatureName: String?, val healthModule: HealthModule) :
     PatientRegisterEvent()
 
   data class RegisterNewClient(val context: Context) : PatientRegisterEvent()
 
-  data class OpenProfile(val appFeatureName: String?, val healthModule: HealthModule?) :
+  data class OpenProfile(val appFeatureName: String?, val healthModule: HealthModule) :
     PatientRegisterEvent()
 }

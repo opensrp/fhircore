@@ -129,14 +129,14 @@ private fun AppMainNavigationGraph(
               )
           ) { stackEntry ->
             val appFeatureName = stackEntry.retrieveAppFeatureNameArg()
-            val healthModule: String? = stackEntry.retrieveHealthModuleArg()
+            val healthModule = stackEntry.retrieveHealthModuleArg()
             val screenTitle: String =
               stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
                 ?: stringResource(R.string.all_clients)
             PatientRegisterScreen(
               openDrawer = openDrawer,
               appFeatureName = appFeatureName,
-              healthModule = if (healthModule != null) HealthModule.valueOf(healthModule) else null,
+              healthModule = healthModule,
               screenTitle = screenTitle
             )
           }
@@ -157,11 +157,10 @@ private fun AppMainNavigationGraph(
                 }
               )
           ) { stackEntry ->
-            val healthModule: String? = stackEntry.retrieveHealthModuleArg()
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
             PatientProfileScreen(
               appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
-              healthModule = if (healthModule != null) HealthModule.valueOf(healthModule) else null,
+              healthModule = stackEntry.retrieveHealthModuleArg(),
               patientId = patientId
             )
           }
@@ -173,5 +172,5 @@ private fun AppMainNavigationGraph(
 private fun NavBackStackEntry.retrieveAppFeatureNameArg() =
   this.arguments?.getString(NavigationArg.FEATURE)
 
-private fun NavBackStackEntry.retrieveHealthModuleArg() =
-  this.arguments?.getString(NavigationArg.HEALTH_MODULE)
+private fun NavBackStackEntry.retrieveHealthModuleArg(): HealthModule =
+  (this.arguments?.get(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT) as HealthModule

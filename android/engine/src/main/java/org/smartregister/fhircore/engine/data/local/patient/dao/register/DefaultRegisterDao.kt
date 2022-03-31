@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.patient.register.dataprovider
+package org.smartregister.fhircore.engine.data.local.patient.dao.register
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
@@ -27,19 +27,19 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterRowData
-import org.smartregister.fhircore.engine.domain.repository.RegisterDataProvider
+import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
 
 @Singleton
-class DefaultRegisterDataProvider
+class DefaultRegisterDao
 @Inject
 constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatcherProvider) :
-  RegisterDataProvider {
+  RegisterDao {
 
-  override suspend fun provideRegisterData(
+  override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
     appFeatureName: String?
@@ -49,8 +49,7 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatche
         fhirEngine.search<Patient> {
           filter(Patient.ACTIVE, { value = of(true) })
           sort(Patient.NAME, Order.ASCENDING)
-          count =
-            if (loadAll) provideRegisterDataCount(appFeatureName).toInt() else DEFAULT_PAGE_SIZE
+          count = if (loadAll) countRegisterData(appFeatureName).toInt() else DEFAULT_PAGE_SIZE
           from = currentPage * DEFAULT_PAGE_SIZE
         }
 
@@ -64,10 +63,10 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatche
     }
   }
 
-  override suspend fun provideRegisterDataCount(appFeatureName: String?): Long =
+  override suspend fun countRegisterData(appFeatureName: String?): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 
-  override suspend fun provideProfileData(
+  override suspend fun loadProfileData(
     appFeatureName: String?,
     patientId: String
   ): PatientProfileData? {

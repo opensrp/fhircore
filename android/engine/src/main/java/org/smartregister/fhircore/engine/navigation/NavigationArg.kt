@@ -29,7 +29,7 @@ object NavigationArg {
   const val HOME_ROUTE_PATH = "$COMMON_ROUTE_PATH&screenTitle={$SCREEN_TITLE}"
   const val PATIENT_ROUTE_PATH = "$COMMON_ROUTE_PATH&patientId={$PATIENT_ID}"
 
-  fun commonNavArgs(appFeatureName: String, healthModule: HealthModule?) =
+  fun commonNavArgs(appFeatureName: String, healthModule: HealthModule) =
     mutableListOf(
       navArgument(FEATURE) {
         type = NavType.StringType
@@ -37,9 +37,9 @@ object NavigationArg {
         defaultValue = appFeatureName
       },
       navArgument(HEALTH_MODULE) {
-        type = NavType.StringType
-        nullable = true
-        defaultValue = healthModule?.name
+        type = NavType.EnumType(HealthModule::class.java)
+        nullable = false
+        defaultValue = healthModule
       }
     )
 }

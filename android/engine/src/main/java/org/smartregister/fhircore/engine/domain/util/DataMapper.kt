@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.domain.util
+package org.smartregister.fhircore.engine.domain.util
 
 /**
- * Mapper util for transforming model of type [T] to [DomainModel]. An example is transforming FHIR
- * resource to an entity class
+ * Mapper util for transforming model of type [InputModel] to [OutputModel]. An example is
+ * transforming FHIR resource to an entity class
  */
-interface DomainMapper<T, DomainModel> {
+interface DataMapper<InputModel, OutputModel> {
 
-  fun mapToDomainModel(dto: T): DomainModel
+  fun transformInputToOutputModel(inputModel: InputModel): OutputModel
 }

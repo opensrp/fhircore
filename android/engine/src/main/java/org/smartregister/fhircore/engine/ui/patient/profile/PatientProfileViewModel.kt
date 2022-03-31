@@ -24,26 +24,26 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.patient.PatientRepository
+import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
 
 @HiltViewModel
-class PatientProfileViewModel @Inject constructor(val patientRepository: PatientRepository) :
-  ViewModel() {
+class PatientProfileViewModel
+@Inject
+constructor(val patientRegisterRepository: PatientRegisterRepository) : ViewModel() {
 
   val patientProfileData: MutableState<PatientProfileData> = mutableStateOf(PatientProfileData())
 
   fun fetchPatientProfileData(
     appFeatureName: String?,
-    healthModule: HealthModule?,
+    healthModule: HealthModule,
     patientId: String
   ) {
     if (patientId.isNotEmpty())
       viewModelScope.launch {
-        patientRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)?.let {
-          patientProfileData.value = it
-        }
+        patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
+          ?.let { patientProfileData.value = it }
       }
   }
 

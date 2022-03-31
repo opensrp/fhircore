@@ -65,9 +65,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildCarePlan
-import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildPatient
-import org.smartregister.fhircore.anc.app.fakes.FakeModel.getEncounter
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
@@ -101,7 +98,7 @@ class PatientRepositoryTest : RobolectricTest() {
         PatientRepository(
           context = ApplicationProvider.getApplicationContext(),
           fhirEngine = fhirEngine,
-          domainMapper = ancItemMapper,
+          dataMapper = ancItemMapper,
           dispatcherProvider = dispatcherProvider
         )
       )

@@ -23,25 +23,28 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.patient.PatientRepository
+import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 
 @Singleton
 class SideMenuOptionFactory
 @Inject
-constructor(val appFeatureManager: AppFeatureManager, val patientRepository: PatientRepository) {
+constructor(
+  val appFeatureManager: AppFeatureManager,
+  val patientRegisterRepository: PatientRegisterRepository
+) {
   val defaultSideMenu =
     SideMenuOption(
       appFeatureName = AppFeature.PatientManagement.name,
-      healthModule = null,
+      healthModule = HealthModule.DEFAULT,
       iconResource = R.drawable.ic_baby_mother,
       titleResource = R.string.all_clients,
       showCount = true,
       count =
         runBlocking {
-          patientRepository.countRegisterData(
+          patientRegisterRepository.countRegisterData(
             appFeatureName = AppFeature.PatientManagement.name,
-            healthModule = null
+            healthModule = HealthModule.DEFAULT
           )
         }
     )
@@ -60,6 +63,7 @@ constructor(val appFeatureManager: AppFeatureManager, val patientRepository: Pat
             },
           titleResource =
             when (it.healthModule) {
+              HealthModule.DEFAULT -> R.string.all_clients
               HealthModule.ANC -> R.string.anc_clients
               HealthModule.RDT -> R.string.all_clients
               HealthModule.PNC -> R.string.pnc_clients
@@ -70,7 +74,7 @@ constructor(val appFeatureManager: AppFeatureManager, val patientRepository: Pat
           showCount = true,
           count =
             runBlocking {
-              patientRepository.countRegisterData(
+              patientRegisterRepository.countRegisterData(
                 appFeatureName = it.feature,
                 healthModule = it.healthModule
               )

@@ -26,17 +26,17 @@ interface RegisterRepository {
     currentPage: Int,
     loadAll: Boolean = false,
     appFeatureName: String? = null,
-    healthModule: HealthModule? = null
+    healthModule: HealthModule = HealthModule.DEFAULT
   ): List<RegisterRowData>
 
   suspend fun countRegisterData(
     appFeatureName: String? = null,
-    healthModule: HealthModule? = null
+    healthModule: HealthModule = HealthModule.DEFAULT
   ): Long
 
   suspend fun loadPatientProfileData(
     appFeatureName: String? = null,
-    healthModule: HealthModule? = null,
+    healthModule: HealthModule = HealthModule.DEFAULT,
     patientId: String
   ): PatientProfileData?
 }

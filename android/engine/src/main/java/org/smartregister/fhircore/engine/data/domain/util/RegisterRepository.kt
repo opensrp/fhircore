@@ -17,15 +17,16 @@
 package org.smartregister.fhircore.engine.data.domain.util
 
 import com.google.android.fhir.FhirEngine
+import org.smartregister.fhircore.engine.domain.util.DataMapper
 
 /**
  * Implement [RegisterRepository] to query for FHIR resources of type [I]. The result should then be
- * transformed to [O] using the provided [domainMapper]. Queries are submitted through [FhirEngine]
+ * transformed to [O] using the provided [dataMapper]. Queries are submitted through [FhirEngine]
  * search API
  */
 interface RegisterRepository<I : Any, O> {
 
-  val domainMapper: DomainMapper<I, O>
+  val dataMapper: DataMapper<I, O>
 
   val fhirEngine: FhirEngine
 

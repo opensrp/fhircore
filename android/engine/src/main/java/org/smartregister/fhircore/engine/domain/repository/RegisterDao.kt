@@ -19,16 +19,16 @@ package org.smartregister.fhircore.engine.domain.repository
 import org.smartregister.fhircore.engine.domain.model.PatientProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterRowData
 
-interface RegisterDataProvider {
+interface RegisterDao {
 
-  suspend fun provideRegisterData(
+  suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean = false,
     appFeatureName: String?
   ): List<RegisterRowData>
 
-  suspend fun provideRegisterDataCount(appFeatureName: String?): Long
+  suspend fun countRegisterData(appFeatureName: String?): Long = 0
 
-  suspend fun provideProfileData(appFeatureName: String?, patientId: String): PatientProfileData? =
+  suspend fun loadProfileData(appFeatureName: String?, patientId: String): PatientProfileData? =
     null
 }

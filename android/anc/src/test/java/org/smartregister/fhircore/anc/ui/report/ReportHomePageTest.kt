@@ -70,7 +70,7 @@ class ReportHomePageTest : RobolectricTest() {
         PatientRepository(
           context = app,
           fhirEngine = fhirEngine,
-          domainMapper = AncItemMapper(app),
+          dataMapper = AncItemMapper(app),
           dispatcherProvider = coroutinesTestRule.testDispatcherProvider
         )
       )

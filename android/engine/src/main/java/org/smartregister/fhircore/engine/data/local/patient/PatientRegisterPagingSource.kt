@@ -23,10 +23,11 @@ import org.smartregister.fhircore.engine.domain.model.RegisterRowData
 
 /**
  * @property _patientPagingSourceState as state containing the properties used in the
- * [PatientRepository] function for loading data to the paging source.
+ * [PatientRegisterRepository] function for loading data to the paging source.
  */
-class PatientRegisterPagingSource(private val patientRepository: PatientRepository) :
-  PagingSource<Int, RegisterRowData>() {
+class PatientRegisterPagingSource(
+  private val patientRegisterRepository: PatientRegisterRepository
+) : PagingSource<Int, RegisterRowData>() {
 
   private var _patientPagingSourceState = PatientPagingSourceState()
 
@@ -46,7 +47,7 @@ class PatientRegisterPagingSource(private val patientRepository: PatientReposito
     return try {
       val currentPage = params.key ?: _patientPagingSourceState.currentPage
       val data =
-        patientRepository.loadRegisterData(
+        patientRegisterRepository.loadRegisterData(
           currentPage = currentPage,
           appFeatureName = _patientPagingSourceState.appFeatureName,
           healthModule = _patientPagingSourceState.healthModule,

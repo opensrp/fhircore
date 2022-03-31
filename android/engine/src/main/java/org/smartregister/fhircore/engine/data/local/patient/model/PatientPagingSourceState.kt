@@ -19,7 +19,7 @@ package org.smartregister.fhircore.engine.data.local.patient.model
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 
 data class PatientPagingSourceState(
-  val healthModule: HealthModule? = null,
+  val healthModule: HealthModule = HealthModule.DEFAULT,
   val appFeatureName: String? = null,
   val currentPage: Int = 0,
   val loadAll: Boolean = false
