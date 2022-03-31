@@ -101,7 +101,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   // TODO move to where required.. Elly
   fun tempMethodToUpdatePeriodPlanWorkerAndFhirGen() {
-    Timber.e("I M HEREEEEEEEEEEEEEEEEEEEEEEEEEEE")
+    Timber.e("Registering plan and task scheduler")
     with(appMainViewModel.configService) {
       if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
         this.schedulePlan(this@AppMainActivity)
