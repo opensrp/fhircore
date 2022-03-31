@@ -16,17 +16,31 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
-import androidx.annotation.NonNull
+import kotlinx.coroutines.runBlocking
+import org.json.JSONArray
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.p2p.dao.SenderTransferDao
+import org.smartregister.p2p.search.data.JsonData
+import org.smartregister.p2p.sync.DataType
 import java.util.TreeSet
+import javax.inject.Inject
 
-class P2PSenderTransferDao : BaseP2PTransferDao() {
+class P2PSenderTransferDao
+  @Inject
+  constructor(
+    val defaultRepository: DefaultRepository
+        ) : BaseP2PTransferDao(), SenderTransferDao {
 
-  fun getDataType(): TreeSet<DataType> {
+  override fun getP2PDataTypes(): TreeSet<DataType> {
     return TreeSet<DataType>()
   }
 
-  fun getJsonData(@NonNull dataType: DataType?, lastRecordId: Long, batchSize: Int): JsonData? {
-    // TODO implement retrieval of data
+  override fun getJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int): JsonData? {
+    // TODO complete  retrieval of data implementation
+    // Find a way to make this generic
+    var jsonData:JsonData
+    var jsonArray: JSONArray
+    val records = runBlocking { defaultRepository.loadPatients(lastRecordUpdatedAt = lastUpdated, batchSize = batchSize) }
     return null
   }
 }

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.p2p.dao
 
 import java.util.TreeSet
 import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
+import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao {
 

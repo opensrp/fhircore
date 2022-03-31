@@ -16,18 +16,23 @@
 
 package org.smartregister.fhircore.engine.data.local
 
+import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -38,6 +43,7 @@ import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
+import java.util.Date
 
 @Singleton
 open class DefaultRepository
@@ -103,6 +109,21 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         resource.generateMissingId()
         fhirEngine.save(resource)
       }
+    }
+  }
+
+  suspend fun loadPatients(lastRecordUpdatedAt: Long, batchSize: Int): List<Patient>? {
+    return withContext(dispatcherProvider.io()) {
+      fhirEngine.search<Patient> {
+        filter(Patient.ACTIVE, { value = of(true) })
+        filter(DateClientParam("lastUpdate"), {
+          value = of(DateType(Date(lastRecordUpdatedAt)))
+          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
+
+        sort(Patient.NAME, Order.ASCENDING)
+        count = batchSize
+      }
+
     }
   }
 }
