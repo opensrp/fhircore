@@ -50,7 +50,7 @@ group ExtractActivityDetail(source src : Patient,
 
                 src -> evaluate(src, $this.birthDate) as birthdate,
                        evaluate(careplan, $this.period) as range then
-                       ExtractTasks(birthdate, range, src, careplan, activity, bundle) "r_tasks";
+                       ExtractTasks(birthdate, range, src, careplan, activity, timing, bundle) "r_tasks";
 
                 //TODO use better strategy
                 src -> repeat.count = create('positiveInt') as c, c.value = evaluate(activity, $this.outcomeReference.count().value) "r_task_rep_count";
@@ -67,11 +67,12 @@ group ExtractTasks(
     source src : Patient,
     source careplan: CarePlan,
     target activity : CarePlan_Activity,
+    target timing: Timing,
     target bundle: Bundle){
 
     // skip task creation and move to next until offset/next due month is future
     offset where(offset < today()) -> evaluate(offset, $this + 1 "months") as newoffset then
-                                      ExtractTasks(newoffset, range, src, careplan, activity, bundle) "r_task_repeat";
+                                      ExtractTasks(newoffset, range, src, careplan, activity, timing, bundle) "r_task_repeat";
 
     offset where(offset >= today() and offset < range.end) -> evaluate(offset, $this.value.substring(0,7) + '-01') as startStr,
                                         create('date') as start, start.value = startStr,
@@ -101,8 +102,9 @@ group ExtractTasks(
                ref.reference = 'Questionnaire/105057' "r_task_reason_ref_above1";
 
         src -> activity.outcomeReference = reference(task) "r_cp_task_ref";
+        src -> timing.event = evaluate(period, $this.start) "r_activity_timing";
 
-        src -> evaluate(period, $this.end) as newoffset then ExtractTasks(newoffset, range, src, careplan, activity, bundle) "r_task_repeat";
+        src -> evaluate(period, $this.end) as newoffset then ExtractTasks(newoffset, range, src, careplan, activity, timing, bundle) "r_task_repeat";
     } "r_cp_acti_outcome";
 }
 

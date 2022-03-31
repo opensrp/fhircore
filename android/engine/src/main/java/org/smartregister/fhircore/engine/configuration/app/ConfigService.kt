@@ -77,8 +77,8 @@ interface ConfigService {
     WorkManager.getInstance(context)
       .enqueueUniquePeriodicWork(
         PlanWorker.WORK_ID,
-        ExistingPeriodicWorkPolicy.KEEP,
-        PeriodicWorkRequestBuilder<PlanWorker>(12, TimeUnit.HOURS).build()
+        ExistingPeriodicWorkPolicy.REPLACE,
+        PeriodicWorkRequestBuilder<PlanWorker>(1, TimeUnit.MINUTES).build()
       )
   }
 

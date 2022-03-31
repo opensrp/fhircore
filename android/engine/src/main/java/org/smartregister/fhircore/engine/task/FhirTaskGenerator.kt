@@ -23,7 +23,9 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import timber.log.Timber
 
 @Singleton
 class FhirTaskGenerator
@@ -46,5 +48,6 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
         )
       }
       .also { it.entry.forEach { fhirEngine.save(it.resource) } }
+      .also { Timber.i(it.encodeResourceToString()) }
   }
 }

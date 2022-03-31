@@ -27,11 +27,14 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.hasStarted
 import org.smartregister.fhircore.engine.util.extension.isLastTask
+import timber.log.Timber
 
 class PlanWorker(val appContext: Context, workerParams: WorkerParameters) :
   CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
+    Timber.i("Starting task scheduler")
+
     val fhirEngine = FhirEngineProvider.getInstance(appContext)
 
     // TODO also filter by date range for better performance
@@ -39,11 +42,11 @@ class PlanWorker(val appContext: Context, workerParams: WorkerParameters) :
       .search<Task> {
         filter(
           Task.STATUS,
-          { of(Task.TaskStatus.REQUESTED.toCode()) },
-          { of(Task.TaskStatus.READY.toCode()) },
-          { of(Task.TaskStatus.ACCEPTED.toCode()) },
-          { of(Task.TaskStatus.INPROGRESS.toCode()) },
-          { of(Task.TaskStatus.RECEIVED.toCode()) },
+          { value = of(Task.TaskStatus.REQUESTED.toCode()) },
+          { value = of(Task.TaskStatus.READY.toCode()) },
+          { value = of(Task.TaskStatus.ACCEPTED.toCode()) },
+          { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+          { value = of(Task.TaskStatus.RECEIVED.toCode()) },
         )
       }
       .forEach { tsk ->
@@ -65,6 +68,8 @@ class PlanWorker(val appContext: Context, workerParams: WorkerParameters) :
           fhirEngine.save(tsk)
         }
       }
+
+    Timber.i("Done task scheduling")
 
     return Result.success()
   }
