@@ -19,14 +19,15 @@ package org.smartregister.fhircore.engine.data.local.patient
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.patient.model.PatientPagingSourceState
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+import org.smartregister.fhircore.engine.domain.model.RegisterRowData
 
 /**
  * @property _patientPagingSourceState as state containing the properties used in the
- * [PatientRepository] function for loading data to the paging source.
+ * [PatientRegisterRepository] function for loading data to the paging source.
  */
-class PatientRegisterPagingSource(private val patientRepository: PatientRepository) :
-  PagingSource<Int, RegisterRow>() {
+class PatientRegisterPagingSource(
+  private val patientRegisterRepository: PatientRegisterRepository
+) : PagingSource<Int, RegisterRowData>() {
 
   private var _patientPagingSourceState = PatientPagingSourceState()
 
@@ -42,11 +43,11 @@ class PatientRegisterPagingSource(private val patientRepository: PatientReposito
    *
    * nextKey = if (data.isNotEmpty()) pageNumber + 1 else null
    */
-  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterRow> {
+  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterRowData> {
     return try {
       val currentPage = params.key ?: _patientPagingSourceState.currentPage
       val data =
-        patientRepository.loadRegisterData(
+        patientRegisterRepository.loadRegisterData(
           currentPage = currentPage,
           appFeatureName = _patientPagingSourceState.appFeatureName,
           healthModule = _patientPagingSourceState.healthModule,
@@ -73,7 +74,7 @@ class PatientRegisterPagingSource(private val patientRepository: PatientReposito
     this._patientPagingSourceState = patientPagingSourceState
   }
 
-  override fun getRefreshKey(state: PagingState<Int, RegisterRow>): Int? {
+  override fun getRefreshKey(state: PagingState<Int, RegisterRowData>): Int? {
     return state.anchorPosition
   }
 

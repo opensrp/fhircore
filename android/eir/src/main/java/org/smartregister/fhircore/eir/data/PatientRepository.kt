@@ -39,7 +39,7 @@ class PatientRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val domainMapper: PatientItemMapper,
+  override val dataMapper: PatientItemMapper,
   val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Pair<Patient, List<Immunization>>, PatientItem> {
 
@@ -58,7 +58,7 @@ constructor(
         val immunizations: List<Immunization> = getPatientImmunizations(it.logicalId)
         patientImmunizations.add(Pair(it, immunizations))
       }
-      patientImmunizations.map { domainMapper.mapToDomainModel(it) }
+      patientImmunizations.map { dataMapper.transformInputToOutputModel(it) }
     }
   }
 

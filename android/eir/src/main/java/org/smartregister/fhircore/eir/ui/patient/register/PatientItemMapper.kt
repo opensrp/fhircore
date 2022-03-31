@@ -26,7 +26,7 @@ import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.eir.ui.patient.details.isOverdue
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.atRisk
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -35,10 +35,12 @@ import org.smartregister.fhircore.engine.util.extension.getLastSeen
 import org.smartregister.fhircore.engine.util.extension.toDisplay
 
 class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context) :
-  DomainMapper<Pair<Patient, List<Immunization>>, PatientItem> {
+  DataMapper<Pair<Patient, List<Immunization>>, PatientItem> {
 
-  override fun mapToDomainModel(dto: Pair<Patient, List<Immunization>>): PatientItem {
-    val (patient, immunizations) = dto
+  override fun transformInputToOutputModel(
+    inputModel: Pair<Patient, List<Immunization>>
+  ): PatientItem {
+    val (patient, immunizations) = inputModel
     val name = patient.extractName()
     val gender = patient.extractGender(context)?.first() ?: ""
     val age = patient.extractAge()

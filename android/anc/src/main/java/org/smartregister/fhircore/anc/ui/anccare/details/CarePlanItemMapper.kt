@@ -18,23 +18,24 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 
 import org.hl7.fhir.r4.model.CarePlan
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.overdue
 
-object CarePlanItemMapper : DomainMapper<CarePlan, CarePlanItem> {
+object CarePlanItemMapper : DataMapper<CarePlan, CarePlanItem> {
 
-  override fun mapToDomainModel(dto: CarePlan): CarePlanItem {
+  override fun transformInputToOutputModel(inputModel: CarePlan): CarePlanItem {
     var typeString = ""
-    for (j in dto.activity.indices) {
-      if (dto.activity[j].hasDetail())
-        if (dto.activity[j].detail.hasDescription()) typeString = dto.activity[j].detail.description
+    for (j in inputModel.activity.indices) {
+      if (inputModel.activity[j].hasDetail())
+        if (inputModel.activity[j].detail.hasDescription())
+          typeString = inputModel.activity[j].detail.description
     }
     return CarePlanItem(
-      carePlanIdentifier = dto.id,
+      carePlanIdentifier = inputModel.id,
       title = typeString,
-      due = dto.due(),
-      overdue = dto.overdue()
+      due = inputModel.due(),
+      overdue = inputModel.overdue()
     )
   }
 }

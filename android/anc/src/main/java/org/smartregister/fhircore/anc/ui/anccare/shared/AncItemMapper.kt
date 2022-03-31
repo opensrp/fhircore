@@ -25,7 +25,7 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -43,17 +43,17 @@ data class Anc(
 )
 
 class AncItemMapper @Inject constructor(@ApplicationContext val context: Context) :
-  DomainMapper<Anc, PatientItem> {
+  DataMapper<Anc, PatientItem> {
 
   private var itemMapperType = AncItemMapperType.REGISTER
 
-  override fun mapToDomainModel(dto: Anc): PatientItem {
-    val patient = dto.patient
+  override fun transformInputToOutputModel(inputModel: Anc): PatientItem {
+    val patient = inputModel.patient
 
     var visitStatus = VisitStatus.PLANNED
-    if (dto.carePlans?.any { it.milestonesOverdue().isNotEmpty() } == true)
+    if (inputModel.carePlans?.any { it.milestonesOverdue().isNotEmpty() } == true)
       visitStatus = VisitStatus.OVERDUE
-    else if (dto.carePlans?.any { it.milestonesDue().isNotEmpty() } == true)
+    else if (inputModel.carePlans?.any { it.milestonesDue().isNotEmpty() } == true)
       visitStatus = VisitStatus.DUE
 
     return PatientItem(
@@ -61,8 +61,8 @@ class AncItemMapper @Inject constructor(@ApplicationContext val context: Context
       name = patient.extractName(),
       gender = patient.extractGender(context)?.first()?.toString() ?: "",
       birthDate = patient.birthDate,
-      address = patient.extractAddress().ifEmpty { dto.head?.extractAddress() } ?: "",
-      isPregnant = dto.conditions?.hasActivePregnancy(),
+      address = patient.extractAddress().ifEmpty { inputModel.head?.extractAddress() } ?: "",
+      isPregnant = inputModel.conditions?.hasActivePregnancy(),
       visitStatus = visitStatus,
       familyName = patient.extractFamilyName(),
       headId = if (patient.hasLink()) patient.linkFirstRep.other.extractId() else null

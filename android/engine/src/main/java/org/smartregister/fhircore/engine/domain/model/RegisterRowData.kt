@@ -17,12 +17,22 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Color
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 
 @Stable
-data class RegisterRow(
-  val identifier: String,
-  val logicalId: String,
-  val name: String,
-  val gender: String,
-  val address: String
+data class RegisterRowData(
+  val id: String,
+  val title: String,
+  val subtitle: String? = null,
+  val status: String? = null,
+  val otherStatus: String? = null,
+  val serviceAsButton: Boolean = false,
+  val serviceMemberIcons: List<Int>? = emptyList(),
+  val serviceText: String? = null,
+  val serviceTextIcon: Int? = null,
+  val serviceForegroundColor: Color = DefaultColor,
+  val serviceBackgroundColor: Color = Color.White,
+  val healthModule: HealthModule? = null
 )

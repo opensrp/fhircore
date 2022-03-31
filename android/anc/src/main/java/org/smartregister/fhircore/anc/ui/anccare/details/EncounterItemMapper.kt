@@ -20,19 +20,20 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.data.model.EncounterItem
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.domain.util.DataMapper
 
-object EncounterItemMapper : DomainMapper<Encounter, EncounterItem> {
+object EncounterItemMapper : DataMapper<Encounter, EncounterItem> {
 
-  override fun mapToDomainModel(dto: Encounter): EncounterItem {
+  override fun transformInputToOutputModel(inputModel: Encounter): EncounterItem {
     var type = CodeableConcept()
     var typeCoding = Coding()
     var typeString = ""
-    if (dto.type != null && dto.type.isNotEmpty()) type = dto.type[0] as CodeableConcept
+    if (inputModel.type != null && inputModel.type.isNotEmpty())
+      type = inputModel.type[0] as CodeableConcept
     if (type.hasCoding()) typeCoding = type.coding[0] as Coding
     if (typeCoding.hasDisplayElement()) typeString = typeCoding.display
     else if (type.hasText()) typeString = type.text
     if (type.hasText()) typeString = type.text
-    return EncounterItem(dto.id, dto.status, typeString, dto.period?.start)
+    return EncounterItem(inputModel.id, inputModel.status, typeString, inputModel.period?.start)
   }
 }

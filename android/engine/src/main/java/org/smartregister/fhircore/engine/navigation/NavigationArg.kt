@@ -16,10 +16,30 @@
 
 package org.smartregister.fhircore.engine.navigation
 
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+
 object NavigationArg {
   const val FEATURE = "feature"
   const val HEALTH_MODULE = "healthModule"
   const val SCREEN_TITLE = "screenTitle"
-  const val HOME_ROUTE_PATH =
-    "?feature={$FEATURE}&healthModule={$HEALTH_MODULE}&screenTitle={$SCREEN_TITLE}"
+  const val PATIENT_ID = "patientId"
+  private const val COMMON_ROUTE_PATH = "?feature={$FEATURE}&healthModule={$HEALTH_MODULE}"
+  const val HOME_ROUTE_PATH = "$COMMON_ROUTE_PATH&screenTitle={$SCREEN_TITLE}"
+  const val PATIENT_ROUTE_PATH = "$COMMON_ROUTE_PATH&patientId={$PATIENT_ID}"
+
+  fun commonNavArgs(appFeatureName: String, healthModule: HealthModule) =
+    mutableListOf(
+      navArgument(FEATURE) {
+        type = NavType.StringType
+        nullable = true
+        defaultValue = appFeatureName
+      },
+      navArgument(HEALTH_MODULE) {
+        type = NavType.EnumType(HealthModule::class.java)
+        nullable = false
+        defaultValue = healthModule
+      }
+    )
 }

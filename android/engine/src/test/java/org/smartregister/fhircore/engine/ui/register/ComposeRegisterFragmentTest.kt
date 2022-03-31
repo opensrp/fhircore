@@ -43,9 +43,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
@@ -191,9 +191,9 @@ class ComposeRegisterFragmentTest : RobolectricTest() {
 
     private val numbers = intArrayOf(100).map { it.toString() }
 
-    override val domainMapper: DomainMapper<Int, String> by lazy {
-      object : DomainMapper<Int, String> {
-        override fun mapToDomainModel(dto: Int): String = dto.toString()
+    override val dataMapper: DataMapper<Int, String> by lazy {
+      object : DataMapper<Int, String> {
+        override fun transformInputToOutputModel(dto: Int): String = dto.toString()
       }
     }
 

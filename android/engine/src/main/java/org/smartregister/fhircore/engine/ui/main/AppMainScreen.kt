@@ -25,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -38,7 +39,7 @@ import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.navigation.NavigationArg
 import org.smartregister.fhircore.engine.navigation.NavigationScreen
 import org.smartregister.fhircore.engine.ui.main.component.AppDrawer
-import org.smartregister.fhircore.engine.ui.main.component.BottomScreenSection
+import org.smartregister.fhircore.engine.ui.patient.profile.PatientProfileScreen
 import org.smartregister.fhircore.engine.ui.patient.register.PatientRegisterScreen
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 
@@ -74,16 +75,17 @@ fun MainScreen(
       )
     },
     bottomBar = {
-      BottomScreenSection(
+      // TODO Activate bottom nav via view configuration
+      /* BottomScreenSection(
         navController = navController,
         navigationScreens = NavigationScreen.appScreens
-      )
+      )*/
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       AppMainNavigationGraph(
         navController = navController,
-        navigationScreens = NavigationScreen.appScreens,
+        navigationScreens = NavigationScreen.appScreens.filter { it.showInBottomNav },
         openDrawer = openDrawer,
         sideMenuOptions = uiState.sideMenuOptions
       )
@@ -107,39 +109,34 @@ private fun AppMainNavigationGraph(
     startDestination = NavigationScreen.Home.route + NavigationArg.HOME_ROUTE_PATH
   ) {
     navigationScreens.forEach {
+      val commonNavArgs =
+        NavigationArg.commonNavArgs(
+          firstSideMenuOption.appFeatureName,
+          firstSideMenuOption.healthModule
+        )
+
       when (it) {
         is NavigationScreen.Home -> {
           composable(
             route = "${it.route}${NavigationArg.HOME_ROUTE_PATH}",
             arguments =
-              listOf(
-                navArgument(NavigationArg.FEATURE) {
-                  type = NavType.StringType
-                  nullable = true
-                  defaultValue = firstSideMenuOption.appFeatureName
-                },
-                navArgument(NavigationArg.HEALTH_MODULE) {
-                  type = NavType.StringType
-                  nullable = true
-                  defaultValue = firstSideMenuOption.healthModule?.name
-                },
+              commonNavArgs.plus(
                 navArgument(NavigationArg.SCREEN_TITLE) {
                   type = NavType.StringType
                   nullable = true
                   defaultValue = firstScreenTitle
                 }
               )
-          ) { backStackEntry ->
-            val appFeatureName = backStackEntry.arguments?.getString(NavigationArg.FEATURE)
-            val healthModule: String? =
-              backStackEntry.arguments?.getString(NavigationArg.HEALTH_MODULE)
+          ) { stackEntry ->
+            val appFeatureName = stackEntry.retrieveAppFeatureNameArg()
+            val healthModule = stackEntry.retrieveHealthModuleArg()
             val screenTitle: String =
-              backStackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
+              stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
                 ?: stringResource(R.string.all_clients)
             PatientRegisterScreen(
               openDrawer = openDrawer,
               appFeatureName = appFeatureName,
-              healthModule = if (healthModule != null) HealthModule.valueOf(healthModule) else null,
+              healthModule = healthModule,
               screenTitle = screenTitle
             )
           }
@@ -148,7 +145,32 @@ private fun AppMainNavigationGraph(
         NavigationScreen.Reports -> composable(NavigationScreen.Reports.route) {}
         NavigationScreen.Settings ->
           composable(NavigationScreen.Settings.route) { UserProfileScreen() }
+        NavigationScreen.PatientProfile ->
+          composable(
+            route = "${it.route}${NavigationArg.PATIENT_ROUTE_PATH}",
+            arguments =
+              commonNavArgs.plus(
+                navArgument(NavigationArg.PATIENT_ID) {
+                  type = NavType.StringType
+                  nullable = true
+                  defaultValue = null
+                }
+              )
+          ) { stackEntry ->
+            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
+            PatientProfileScreen(
+              appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
+              healthModule = stackEntry.retrieveHealthModuleArg(),
+              patientId = patientId
+            )
+          }
       }
     }
   }
 }
+
+private fun NavBackStackEntry.retrieveAppFeatureNameArg() =
+  this.arguments?.getString(NavigationArg.FEATURE)
+
+private fun NavBackStackEntry.retrieveHealthModuleArg(): HealthModule =
+  (this.arguments?.get(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT) as HealthModule

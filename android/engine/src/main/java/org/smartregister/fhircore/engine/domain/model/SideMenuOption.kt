@@ -31,7 +31,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 @Stable
 data class SideMenuOption(
   val appFeatureName: String,
-  val healthModule: HealthModule? = null,
+  val healthModule: HealthModule = HealthModule.DEFAULT,
   val iconResource: Int,
   val titleResource: Int,
   val count: Long = 0,

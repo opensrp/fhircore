@@ -22,5 +22,6 @@ enum class HealthModule {
   PNC,
   FAMILY,
   CHILD,
-  FAMILY_PLANNING
+  FAMILY_PLANNING,
+  DEFAULT
 }

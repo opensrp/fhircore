@@ -88,8 +88,9 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
 
     every { adverseEventAdapter.submitList(any()) } returns Unit
 
-    every { ancPatientDetailItem.mapToDomainModel(Pair(getPatient(), getImmunizations())) } returns
-      PatientItem("samplePatientId", "Mandela Nelson", "M", "0")
+    every {
+      ancPatientDetailItem.transformInputToOutputModel(Pair(getPatient(), getImmunizations()))
+    } returns PatientItem("samplePatientId", "Mandela Nelson", "M", "0")
 
     ReflectionHelpers.setField(adverseEventActivity, "adverseEventAdapter", adverseEventAdapter)
   }

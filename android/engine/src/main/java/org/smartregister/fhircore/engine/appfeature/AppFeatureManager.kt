@@ -39,7 +39,7 @@ class AppFeatureManager @Inject constructor(val configurationRegistry: Configura
 
   fun activeRegisterFeatures() =
     activatedFeatures().filter {
-      it.feature == AppFeature.PatientManagement.name ||
-        it.feature == AppFeature.HouseholdManagement.name
+      it.feature.equals(AppFeature.PatientManagement.name, true) ||
+        it.feature.equals(AppFeature.HouseholdManagement.name, true)
     }
 }

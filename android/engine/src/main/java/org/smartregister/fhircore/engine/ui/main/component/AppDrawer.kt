@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.ui.main.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,11 +25,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -187,13 +188,14 @@ fun SideMenuItem(
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier = modifier.fillMaxWidth().clickable { onSideMenuClick() },
-    verticalAlignment = Alignment.CenterVertically
+    verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(modifier = modifier.padding(vertical = 16.dp)) {
-      Image(
-        modifier = modifier.padding(end = 10.dp),
+      Icon(
+        modifier = modifier.padding(end = 10.dp).size(24.dp),
         painter = painterResource(id = iconResource),
-        contentDescription = SIDE_MENU_ICON
+        contentDescription = SIDE_MENU_ICON,
+        tint = Color.White
       )
       SideMenuItemText(title = title, textColor = Color.White)
     }

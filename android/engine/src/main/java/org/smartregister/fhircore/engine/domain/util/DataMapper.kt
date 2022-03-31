@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.repository
+package org.smartregister.fhircore.engine.domain.util
 
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRow
+/**
+ * Mapper util for transforming model of type [InputModel] to [OutputModel]. An example is
+ * transforming FHIR resource to an entity class
+ */
+interface DataMapper<InputModel, OutputModel> {
 
-interface RegisterDataProvider {
-
-  suspend fun provideRegisterData(
-    currentPage: Int,
-    loadAll: Boolean = false,
-    appFeatureName: String?
-  ): List<RegisterRow>
-
-  suspend fun provideRegisterDataCount(appFeatureName: String?): Long
-
-  suspend fun provideProfileData(appFeatureName: String?, patientId: String): PatientProfileData? =
-    null
+  fun transformInputToOutputModel(inputModel: InputModel): OutputModel
 }

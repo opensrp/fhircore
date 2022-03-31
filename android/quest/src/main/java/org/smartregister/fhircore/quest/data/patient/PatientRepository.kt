@@ -73,7 +73,7 @@ class PatientRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val domainMapper: PatientItemMapper,
+  override val dataMapper: PatientItemMapper,
   private val dispatcherProvider: DispatcherProvider,
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterRepository<Patient, PatientItem> {
@@ -102,7 +102,7 @@ constructor(
         }
 
       patients.map {
-        val patientItem = domainMapper.mapToDomainModel(it)
+        val patientItem = dataMapper.transformInputToOutputModel(it)
         patientItem.additionalData =
           loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
         patientItem
@@ -350,7 +350,7 @@ constructor(
 
   suspend fun fetchDemographicsWithAdditionalData(patientId: String): PatientItem {
     return withContext(dispatcherProvider.io()) {
-      val patientItem = domainMapper.mapToDomainModel(fetchDemographics(patientId))
+      val patientItem = dataMapper.transformInputToOutputModel(fetchDemographics(patientId))
       patientItem.additionalData =
         loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
       patientItem

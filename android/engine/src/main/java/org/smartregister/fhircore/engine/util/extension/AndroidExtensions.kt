@@ -28,6 +28,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import timber.log.Timber
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
@@ -72,4 +73,11 @@ fun Context.getDrawable(name: String): Drawable {
 
 fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
   return values.any { this == it }
+}
+
+fun Context.launchQuestionnaireActivity(questionnaireId: String, clientIdentifier: String? = null) {
+  this.startActivity(
+    Intent(this, QuestionnaireActivity::class.java)
+      .putExtras(QuestionnaireActivity.intentArgs(clientIdentifier, formName = questionnaireId))
+  )
 }

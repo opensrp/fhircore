@@ -23,7 +23,7 @@ import androidx.paging.PagingState
  * Subclass of [PagingSource] that is used to paginate data on the register. Requires
  * [RegisterRepository] to load data to the [PagingSource]. Value type [I] represents the Data
  * Transfer Object (DTO) like a FHIR Patient Resource. [O] represents the output type of
- * [RegisterRepository] data. [I] is transformed into [O] using a [DomainMapper]
+ * [RegisterRepository] data. [I] is transformed into [O] using a [DataMapper]
  *
  * @property currentPage Set the current page to load data for (database table offset)
  * @property query Current database query, default empty

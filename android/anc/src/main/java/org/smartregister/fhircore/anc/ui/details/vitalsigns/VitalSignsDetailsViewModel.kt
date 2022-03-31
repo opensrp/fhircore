@@ -44,7 +44,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     viewModelScope.launch(dispatcher.io()) {
       val listEncounters =
         patientRepository.fetchEncounters(patientId = patientId).map {
-          EncounterItemMapper.mapToDomainModel(it)
+          EncounterItemMapper.transformInputToOutputModel(it)
         }
       patientEncounters.postValue(listEncounters)
     }
