@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire
+package org.smartregister.fhircore.engine.configuration.view
 
+import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 
-/**
- * Data class to represent a form configuration. Questionnaires are synced from the server
- * @property appId Application id for the questionnaire
- * @property form A unique name for the form as declared in the `form_configurations.json file`
- * @property title The title of the form
- * @property identifier Represents the identifier as synced from the server
- */
+@Stable
 @Serializable
-data class QuestionnaireConfig(val form: String, val title: String, val identifier: String)
+class FormConfiguration(
+  override val appId: String = "",
+  override val classification: String = "",
+  val forms: List<QuestionnaireConfig> = listOf()
+) : Configuration
+
+@Stable
+fun formConfigurationOf(
+  appId: String = "loginId",
+  classification: String = "login",
+  forms: List<QuestionnaireConfig> = listOf()
+) = FormConfiguration(appId = appId, classification = classification, forms = forms)

@@ -21,6 +21,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigClassification
 enum class AppConfigClassification : ConfigClassification {
   APPLICATION,
   APP_FEATURE,
+  FORMS,
   LOGIN,
   PIN,
   SYNC,

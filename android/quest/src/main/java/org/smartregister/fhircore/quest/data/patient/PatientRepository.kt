@@ -339,7 +339,6 @@ constructor(
 
       result.map {
         QuestionnaireConfig(
-          appId = configurationRegistry.appId,
           form = it.nameElement.getLocalizedText() ?: it.logicalId,
           title = it.titleElement.getLocalizedText()
               ?: it.nameElement.getLocalizedText() ?: it.logicalId,
