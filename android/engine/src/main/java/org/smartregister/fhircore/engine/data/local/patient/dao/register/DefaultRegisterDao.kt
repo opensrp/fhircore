@@ -25,8 +25,8 @@ import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRowData
+import org.smartregister.fhircore.engine.domain.model.PatientProfileViewData
+import org.smartregister.fhircore.engine.domain.model.RegisterViewData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
@@ -43,7 +43,7 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatche
     currentPage: Int,
     loadAll: Boolean,
     appFeatureName: String?
-  ): List<RegisterRowData> {
+  ): List<RegisterViewData> {
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
@@ -54,7 +54,7 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatche
         }
 
       patients.map {
-        RegisterRowData(
+        RegisterViewData(
           id = it.logicalId,
           title = "${it.extractName()}, ${it.extractAge()}",
           subtitle = "Male"
@@ -69,7 +69,7 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DefaultDispatche
   override suspend fun loadProfileData(
     appFeatureName: String?,
     patientId: String
-  ): PatientProfileData? {
+  ): PatientProfileViewData? {
     return null
   }
 }

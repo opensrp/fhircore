@@ -17,10 +17,11 @@
 package org.smartregister.fhircore.engine.ui.patient.profile
 
 import android.content.Context
-import org.smartregister.fhircore.engine.domain.model.PatientProfileSection
+import org.smartregister.fhircore.engine.domain.model.PatientProfileViewSection
 
 sealed class PatientProfileEvent {
-  data class SeeAll(val patientProfileSection: PatientProfileSection) : PatientProfileEvent()
+  data class SeeAll(val patientProfileViewSection: PatientProfileViewSection) :
+    PatientProfileEvent()
   data class LoadQuestionnaire(val questionnaireId: String, val context: Context) :
     PatientProfileEvent()
 }

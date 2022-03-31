@@ -32,17 +32,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.smartregister.fhircore.engine.domain.model.PatientFormData
+import org.smartregister.fhircore.engine.domain.model.PatientFormViewData
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 
 @Composable
 fun PatientForm(
-  patientProfileData: PatientFormData,
+  patientProfileViewData: PatientFormViewData,
   onFormClick: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
   OutlinedButton(
-    onClick = { onFormClick(patientProfileData.questionnaireId) },
+    onClick = { onFormClick(patientProfileViewData.questionnaireId) },
     colors =
       ButtonDefaults.buttonColors(
         backgroundColor = InfoColor.copy(alpha = 0.2f),
@@ -52,7 +52,7 @@ fun PatientForm(
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Icon(imageVector = Icons.Filled.Add, contentDescription = null)
-      Text(text = patientProfileData.questionnaire, fontWeight = FontWeight.Light)
+      Text(text = patientProfileViewData.questionnaire, fontWeight = FontWeight.Light)
     }
   }
 }
@@ -62,23 +62,23 @@ fun PatientForm(
 fun PatientFormPreview() {
   Column {
     PatientForm(
-      patientProfileData = PatientFormData("Household survey", "182912"),
+      patientProfileViewData = PatientFormViewData("Household survey", "182912"),
       onFormClick = {}
     )
     PatientForm(
-      patientProfileData = PatientFormData("Bednet distribution", "182212"),
+      patientProfileViewData = PatientFormViewData("Bednet distribution", "182212"),
       onFormClick = {}
     )
     PatientForm(
-      patientProfileData = PatientFormData("Malaria diagnosis", "181212"),
+      patientProfileViewData = PatientFormViewData("Malaria diagnosis", "181212"),
       onFormClick = {}
     )
     PatientForm(
-      patientProfileData = PatientFormData("Medicine treatment", "171212"),
+      patientProfileViewData = PatientFormViewData("Medicine treatment", "171212"),
       onFormClick = {}
     )
     PatientForm(
-      patientProfileData = PatientFormData("G6PD test result", "171219"),
+      patientProfileViewData = PatientFormViewData("G6PD test result", "171219"),
       onFormClick = {}
     )
   }

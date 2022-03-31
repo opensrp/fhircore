@@ -16,16 +16,11 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-data class PatientProfileData(
-  val name: String = "",
-  val status: String = "",
-  val id: String = "",
-  val sex: String = "",
-  val age: String = "",
-  val dob: String = "",
-  val tasks: List<PatientProfileRowItem> = emptyList(),
-  val forms: List<PatientFormData> = emptyList(),
-  val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
-  val upcomingServices: List<PatientProfileRowItem> = emptyList(),
-  val ancCardData: List<PatientProfileRowItem> = emptyList()
-)
+enum class PatientProfileViewSection {
+  TASKS,
+  SERVICE_CARD,
+  UPCOMING_SERVICES,
+  MEDICAL_HISTORY,
+  TEST_RESULTS,
+  FORMS
+}

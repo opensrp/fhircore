@@ -17,8 +17,8 @@
 package org.smartregister.fhircore.engine.domain.repository
 
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRowData
+import org.smartregister.fhircore.engine.domain.model.PatientProfileViewData
+import org.smartregister.fhircore.engine.domain.model.RegisterViewData
 
 /** Common repository for register. */
 interface RegisterRepository {
@@ -27,7 +27,7 @@ interface RegisterRepository {
     loadAll: Boolean = false,
     appFeatureName: String? = null,
     healthModule: HealthModule = HealthModule.DEFAULT
-  ): List<RegisterRowData>
+  ): List<RegisterViewData>
 
   suspend fun countRegisterData(
     appFeatureName: String? = null,
@@ -38,5 +38,5 @@ interface RegisterRepository {
     appFeatureName: String? = null,
     healthModule: HealthModule = HealthModule.DEFAULT,
     patientId: String
-  ): PatientProfileData?
+  ): PatientProfileViewData?
 }

@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.PatientProfileRowItem
-import org.smartregister.fhircore.engine.domain.model.PatientProfileSection
+import org.smartregister.fhircore.engine.domain.model.PatientProfileViewSection
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
@@ -48,8 +48,8 @@ import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 @Composable
 fun PatientProfileCard(
   title: String,
-  profileSection: PatientProfileSection,
-  onActionClick: (PatientProfileSection) -> Unit,
+  profileViewSection: PatientProfileViewSection,
+  onActionClick: (PatientProfileViewSection) -> Unit,
   modifier: Modifier = Modifier,
   body: (@Composable() () -> Unit)
 ) {
@@ -65,7 +65,7 @@ fun PatientProfileCard(
         fontWeight = FontWeight.SemiBold
       )
       Row(verticalAlignment = Alignment.CenterVertically) {
-        TextButton(onClick = { onActionClick(profileSection) }) {
+        TextButton(onClick = { onActionClick(profileViewSection) }) {
           Text(
             text = stringResource(R.string.see_all).uppercase(Locale.getDefault()),
             color = InfoColor
@@ -88,7 +88,7 @@ private fun PatientProfileSectionPreview() {
   PatientProfileCard(
     title = "TASKS",
     onActionClick = {},
-    profileSection = PatientProfileSection.TASKS
+    profileViewSection = PatientProfileViewSection.TASKS
   ) {
     Column {
       ProfileActionableItem(
@@ -96,7 +96,7 @@ private fun PatientProfileSectionPreview() {
           title = "ANC",
           titleIcon = R.drawable.ic_pregnant,
           subtitle = "due date",
-          profileSection = PatientProfileSection.TASKS,
+          profileViewSection = PatientProfileViewSection.TASKS,
           actionButtonColor = InfoColor,
           actionButtonText = "ANC visit"
         )
@@ -107,7 +107,7 @@ private fun PatientProfileSectionPreview() {
           title = "Sick",
           titleIcon = R.drawable.ic_pregnant,
           subtitle = "due date",
-          profileSection = PatientProfileSection.TASKS,
+          profileViewSection = PatientProfileViewSection.TASKS,
           actionButtonColor = OverdueColor,
           actionButtonText = "Malaria medicine"
         )

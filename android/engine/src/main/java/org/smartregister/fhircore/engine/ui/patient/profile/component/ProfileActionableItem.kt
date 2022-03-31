@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.PatientProfileRowItem
-import org.smartregister.fhircore.engine.domain.model.PatientProfileSection
+import org.smartregister.fhircore.engine.domain.model.PatientProfileViewSection
 import org.smartregister.fhircore.engine.ui.components.Separator
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -69,7 +69,7 @@ fun ProfileActionableItem(
     verticalAlignment = Alignment.CenterVertically
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-      if (patientProfileRowItem.profileSection == PatientProfileSection.UPCOMING_SERVICES &&
+      if (patientProfileRowItem.profileViewSection == PatientProfileViewSection.UPCOMING_SERVICES &&
           patientProfileRowItem.startIcon != null
       ) {
         Box(
@@ -107,7 +107,7 @@ fun ProfileActionableItem(
 
 @Composable
 private fun ActionButton(patientProfileRowItem: PatientProfileRowItem, modifier: Modifier) {
-  if (patientProfileRowItem.profileSection == PatientProfileSection.TASKS &&
+  if (patientProfileRowItem.profileViewSection == PatientProfileViewSection.TASKS &&
       patientProfileRowItem.actionButtonColor != null &&
       patientProfileRowItem.actionButtonText != null
   ) {
@@ -183,7 +183,7 @@ fun ProfileActionableItemForTasksPreview() {
         title = "ANC",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "due date",
-        profileSection = PatientProfileSection.TASKS,
+        profileViewSection = PatientProfileViewSection.TASKS,
         actionButtonColor = InfoColor,
         actionButtonText = "ANC visit"
       )
@@ -194,7 +194,7 @@ fun ProfileActionableItemForTasksPreview() {
         title = "Sick",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "due date",
-        profileSection = PatientProfileSection.TASKS,
+        profileViewSection = PatientProfileViewSection.TASKS,
         actionButtonColor = OverdueColor,
         actionButtonText = "Malaria medicine"
       )
@@ -210,7 +210,7 @@ fun ProfileActionableItemForAncCardPreview() {
       PatientProfileRowItem(
         title = "Granuloma Annulare",
         subtitle = "23 weeks (EDD: 20-Jun-2021)",
-        profileSection = PatientProfileSection.SERVICE_CARD
+        profileViewSection = PatientProfileViewSection.SERVICE_CARD
       )
     )
     Divider()
@@ -220,7 +220,7 @@ fun ProfileActionableItemForAncCardPreview() {
         subtitle = "111/80",
         subtitleStatus = "at risk",
         subtitleStatusColor = WarningColor,
-        profileSection = PatientProfileSection.SERVICE_CARD
+        profileViewSection = PatientProfileViewSection.SERVICE_CARD
       )
     )
     Divider()
@@ -230,7 +230,7 @@ fun ProfileActionableItemForAncCardPreview() {
         subtitle = "186",
         subtitleStatus = "danger",
         subtitleStatusColor = DangerColor,
-        profileSection = PatientProfileSection.SERVICE_CARD
+        profileViewSection = PatientProfileViewSection.SERVICE_CARD
       )
     )
     Divider()
@@ -240,7 +240,7 @@ fun ProfileActionableItemForAncCardPreview() {
         subtitle = "+ 6.7kg",
         subtitleStatus = "good",
         subtitleStatusColor = DefaultColor,
-        profileSection = PatientProfileSection.SERVICE_CARD
+        profileViewSection = PatientProfileViewSection.SERVICE_CARD
       )
     )
   }
@@ -254,7 +254,7 @@ fun ProfileActionableItemForMedicalHistoryPreview() {
       PatientProfileRowItem(
         title = "Diarrhoea",
         subtitle = "Stomach ache, with painful running stomach",
-        profileSection = PatientProfileSection.MEDICAL_HISTORY
+        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
       )
     )
     Divider()
@@ -262,7 +262,7 @@ fun ProfileActionableItemForMedicalHistoryPreview() {
       PatientProfileRowItem(
         title = "Malaria",
         subtitle = "High temperatures and loss of appetite, long sleepless nights",
-        profileSection = PatientProfileSection.MEDICAL_HISTORY
+        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
       )
     )
     Divider()
@@ -270,7 +270,7 @@ fun ProfileActionableItemForMedicalHistoryPreview() {
       PatientProfileRowItem(
         title = "Health issue",
         subtitle = "Description of symptoms",
-        profileSection = PatientProfileSection.MEDICAL_HISTORY
+        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
       )
     )
   }
@@ -285,7 +285,7 @@ fun ProfileActionableItemForTestResultsPreview() {
         title = "Deficient (5-Oct-2021)",
         subtitle = "G6PD: 4.4",
         subtitleStatus = "Hb: 2.2",
-        profileSection = PatientProfileSection.TEST_RESULTS,
+        profileViewSection = PatientProfileViewSection.TEST_RESULTS,
         showDot = true,
         showAngleRightIcon = true
       )
@@ -296,7 +296,7 @@ fun ProfileActionableItemForTestResultsPreview() {
         title = "Normal (30-Aug-2020)",
         subtitle = "G6PD: 6.0",
         subtitleStatus = "Hb: 9.0",
-        profileSection = PatientProfileSection.TEST_RESULTS,
+        profileViewSection = PatientProfileViewSection.TEST_RESULTS,
         showDot = true,
         showAngleRightIcon = true
       )
@@ -307,7 +307,7 @@ fun ProfileActionableItemForTestResultsPreview() {
         title = "Deficient (11-Mar-2020)",
         subtitle = "G6PD: 4.3",
         subtitleStatus = "Hb: 2.0",
-        profileSection = PatientProfileSection.TEST_RESULTS,
+        profileViewSection = PatientProfileViewSection.TEST_RESULTS,
         showDot = true,
         showAngleRightIcon = true
       )
@@ -323,7 +323,7 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
       PatientProfileRowItem(
         title = "ANC facility visit",
         subtitle = "22-May-2021",
-        profileSection = PatientProfileSection.UPCOMING_SERVICES,
+        profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
         startIcon = R.drawable.gm_calendar_today_24,
         startIconBackgroundColor = WarningColor.copy(alpha = 0.7f)
       )
@@ -333,7 +333,7 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
       PatientProfileRowItem(
         title = "Sick check in",
         subtitle = "25-Aug-2021",
-        profileSection = PatientProfileSection.UPCOMING_SERVICES,
+        profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
         startIcon = R.drawable.ic_households,
         startIconBackgroundColor = DangerColor.copy(alpha = 0.6f)
       )
@@ -343,7 +343,7 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
       PatientProfileRowItem(
         title = "Vaccination",
         subtitle = "03-Sept-2021",
-        profileSection = PatientProfileSection.UPCOMING_SERVICES,
+        profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
         startIcon = R.drawable.ic_needle,
         startIconBackgroundColor = InfoColor.copy(alpha = 0.5f)
       )

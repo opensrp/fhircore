@@ -25,7 +25,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
+import org.smartregister.fhircore.engine.domain.model.PatientProfileViewData
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
 
 @HiltViewModel
@@ -33,7 +33,8 @@ class PatientProfileViewModel
 @Inject
 constructor(val patientRegisterRepository: PatientRegisterRepository) : ViewModel() {
 
-  val patientProfileData: MutableState<PatientProfileData> = mutableStateOf(PatientProfileData())
+  val patientProfileViewData: MutableState<PatientProfileViewData> =
+    mutableStateOf(PatientProfileViewData())
 
   fun fetchPatientProfileData(
     appFeatureName: String?,
@@ -43,7 +44,7 @@ constructor(val patientRegisterRepository: PatientRegisterRepository) : ViewMode
     if (patientId.isNotEmpty())
       viewModelScope.launch {
         patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
-          ?.let { patientProfileData.value = it }
+          ?.let { patientProfileViewData.value = it }
       }
   }
 

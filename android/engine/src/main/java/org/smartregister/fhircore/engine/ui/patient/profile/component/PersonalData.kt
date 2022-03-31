@@ -34,35 +34,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
+import org.smartregister.fhircore.engine.domain.model.PatientProfileViewData
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 
 @Composable
 fun PersonalData(
-  patientProfileData: PatientProfileData,
+  patientProfileViewData: PatientProfileViewData,
   modifier: Modifier = Modifier,
 ) {
   Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
     Text(
-      text = patientProfileData.name,
+      text = patientProfileViewData.name,
       fontWeight = FontWeight.Bold,
     )
     Text(
-      text = patientProfileData.status,
+      text = patientProfileViewData.status,
       color = StatusTextColor,
       modifier = modifier.padding(vertical = 10.dp)
     )
-    Text(text = stringResource(R.string.id, patientProfileData.id), color = StatusTextColor)
+    Text(text = stringResource(R.string.id, patientProfileViewData.id), color = StatusTextColor)
     Spacer(modifier = modifier.height(16.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
       modifier =
         modifier.clip(RoundedCornerShape(size = 8.dp)).background(PatientProfileBackgroundColor)
     ) {
-      OtherDetailsItem(title = stringResource(R.string.sex), value = patientProfileData.sex)
-      OtherDetailsItem(title = stringResource(R.string.age), value = patientProfileData.age)
-      OtherDetailsItem(title = stringResource(R.string.dob), value = patientProfileData.dob)
+      OtherDetailsItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
+      OtherDetailsItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
+      OtherDetailsItem(title = stringResource(R.string.dob), value = patientProfileViewData.dob)
     }
   }
 }
@@ -79,7 +79,7 @@ private fun OtherDetailsItem(title: String, value: String, modifier: Modifier = 
 @Preview(showBackground = true)
 fun PersonalDataPreview() {
   val patientProfileData =
-    PatientProfileData(
+    PatientProfileViewData(
       name = "Kim Panny",
       status = "Family Head",
       id = "99358357",
@@ -87,5 +87,5 @@ fun PersonalDataPreview() {
       age = "48y",
       dob = "08 Dec"
     )
-  PersonalData(patientProfileData = patientProfileData)
+  PersonalData(patientProfileViewData = patientProfileData)
 }

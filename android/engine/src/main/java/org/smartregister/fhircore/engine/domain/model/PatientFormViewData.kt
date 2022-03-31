@@ -16,4 +16,4 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-data class PatientFormData(val questionnaire: String, val questionnaireId: String)
+data class PatientFormViewData(val questionnaire: String, val questionnaireId: String)

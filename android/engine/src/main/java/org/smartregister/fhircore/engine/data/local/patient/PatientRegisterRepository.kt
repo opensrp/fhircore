@@ -20,8 +20,8 @@ import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterRowData
+import org.smartregister.fhircore.engine.domain.model.PatientProfileViewData
+import org.smartregister.fhircore.engine.domain.model.RegisterViewData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
@@ -40,7 +40,7 @@ constructor(
     loadAll: Boolean,
     appFeatureName: String?,
     healthModule: HealthModule
-  ): List<RegisterRowData> =
+  ): List<RegisterViewData> =
     registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
       currentPage = currentPage,
       appFeatureName = appFeatureName
@@ -56,7 +56,7 @@ constructor(
     appFeatureName: String?,
     healthModule: HealthModule,
     patientId: String
-  ): PatientProfileData? =
+  ): PatientProfileViewData? =
     registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
       appFeatureName = appFeatureName,
       patientId = patientId

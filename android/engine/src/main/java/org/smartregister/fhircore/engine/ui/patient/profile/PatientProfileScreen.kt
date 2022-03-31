@@ -25,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.domain.model.PatientProfileSection
+import org.smartregister.fhircore.engine.domain.model.PatientProfileViewSection
 import org.smartregister.fhircore.engine.ui.patient.profile.component.PatientForm
 import org.smartregister.fhircore.engine.ui.patient.profile.component.PatientProfileCard
 import org.smartregister.fhircore.engine.ui.patient.profile.component.PersonalData
@@ -44,7 +44,7 @@ fun PatientProfileScreen(
   }
 
   val context = LocalContext.current
-  val patientProfileData = patientProfileViewModel.patientProfileData.value
+  val patientProfileData = patientProfileViewModel.patientProfileViewData.value
 
   LazyColumn {
 
@@ -56,7 +56,7 @@ fun PatientProfileScreen(
       PatientProfileCard(
         title = stringResource(R.string.tasks),
         onActionClick = {},
-        profileSection = PatientProfileSection.TASKS
+        profileViewSection = PatientProfileViewSection.TASKS
       ) { ProfileActionableItem(it) }
     }
 
@@ -65,10 +65,10 @@ fun PatientProfileScreen(
       PatientProfileCard(
         title = stringResource(R.string.forms),
         onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-        profileSection = PatientProfileSection.FORMS
+        profileViewSection = PatientProfileViewSection.FORMS
       ) {
         PatientForm(
-          patientProfileData = it,
+          patientProfileViewData = it,
           onFormClick = {
             patientProfileViewModel.onEvent(PatientProfileEvent.LoadQuestionnaire(it, context))
           }
@@ -81,7 +81,7 @@ fun PatientProfileScreen(
       PatientProfileCard(
         title = stringResource(R.string.medical_history),
         onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-        profileSection = PatientProfileSection.MEDICAL_HISTORY
+        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
       ) { ProfileActionableItem(it) }
     }
 
@@ -90,7 +90,7 @@ fun PatientProfileScreen(
       PatientProfileCard(
         title = stringResource(R.string.upcoming_services),
         onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-        profileSection = PatientProfileSection.UPCOMING_SERVICES
+        profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES
       ) { ProfileActionableItem(it) }
     }
 
@@ -99,7 +99,7 @@ fun PatientProfileScreen(
       PatientProfileCard(
         title = stringResource(R.string.service_card),
         onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-        profileSection = PatientProfileSection.SERVICE_CARD
+        profileViewSection = PatientProfileViewSection.SERVICE_CARD
       ) { ProfileActionableItem(it) }
     }
   }

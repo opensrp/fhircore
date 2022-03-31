@@ -22,7 +22,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 
 @Stable
-data class RegisterRowData(
+data class RegisterViewData(
   val id: String,
   val title: String,
   val subtitle: String? = null,

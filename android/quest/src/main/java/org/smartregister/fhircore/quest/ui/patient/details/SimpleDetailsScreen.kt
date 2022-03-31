@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.widget.TextView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

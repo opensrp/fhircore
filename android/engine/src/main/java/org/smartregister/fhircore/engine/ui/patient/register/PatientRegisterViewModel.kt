@@ -40,7 +40,7 @@ import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagin
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
 import org.smartregister.fhircore.engine.data.local.patient.model.PatientPagingSourceState
-import org.smartregister.fhircore.engine.domain.model.RegisterRowData
+import org.smartregister.fhircore.engine.domain.model.RegisterViewData
 
 @HiltViewModel
 class PatientRegisterViewModel
@@ -60,7 +60,7 @@ constructor(
 
   private val _totalRecordsCount = MutableLiveData(1L)
 
-  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterRowData>>> =
+  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
   /* var registerViewConfiguration: RegisterViewConfiguration
@@ -83,7 +83,7 @@ constructor(
     appFeatureName: String?,
     healthModule: HealthModule,
     loadAll: Boolean = false
-  ): Pager<Int, RegisterRowData> =
+  ): Pager<Int, RegisterViewData> =
     Pager(
       config =
         PagingConfig(pageSize = DEFAULT_PAGE_SIZE, initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE),
@@ -138,7 +138,7 @@ constructor(
   private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
     paginatedRegisterData.value =
       getPager(event.appFeatureName, event.healthModule, true).flow.map {
-        pagingData: PagingData<RegisterRowData> ->
+        pagingData: PagingData<RegisterViewData> ->
         pagingData.filter {
           it.title.contains(event.searchText, ignoreCase = true) ||
             it.id.contentEquals(event.searchText, ignoreCase = true)

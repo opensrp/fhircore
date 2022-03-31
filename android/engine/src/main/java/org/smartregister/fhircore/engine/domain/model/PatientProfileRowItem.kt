@@ -26,7 +26,7 @@ data class PatientProfileRowItem(
   val subtitle: String,
   val subtitleStatus: String? = null,
   val subtitleStatusColor: Color? = null,
-  val profileSection: PatientProfileSection,
+  val profileViewSection: PatientProfileViewSection,
   val actionButtonColor: Color? = null,
   val actionButtonText: String? = null,
   val showAngleRightIcon: Boolean = false,

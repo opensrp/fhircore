@@ -19,7 +19,7 @@ package org.smartregister.fhircore.engine.data.local.patient
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.patient.model.PatientPagingSourceState
-import org.smartregister.fhircore.engine.domain.model.RegisterRowData
+import org.smartregister.fhircore.engine.domain.model.RegisterViewData
 
 /**
  * @property _patientPagingSourceState as state containing the properties used in the
@@ -27,7 +27,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterRowData
  */
 class PatientRegisterPagingSource(
   private val patientRegisterRepository: PatientRegisterRepository
-) : PagingSource<Int, RegisterRowData>() {
+) : PagingSource<Int, RegisterViewData>() {
 
   private var _patientPagingSourceState = PatientPagingSourceState()
 
@@ -43,7 +43,7 @@ class PatientRegisterPagingSource(
    *
    * nextKey = if (data.isNotEmpty()) pageNumber + 1 else null
    */
-  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterRowData> {
+  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterViewData> {
     return try {
       val currentPage = params.key ?: _patientPagingSourceState.currentPage
       val data =
@@ -74,7 +74,7 @@ class PatientRegisterPagingSource(
     this._patientPagingSourceState = patientPagingSourceState
   }
 
-  override fun getRefreshKey(state: PagingState<Int, RegisterRowData>): Int? {
+  override fun getRefreshKey(state: PagingState<Int, RegisterViewData>): Int? {
     return state.anchorPosition
   }
 
