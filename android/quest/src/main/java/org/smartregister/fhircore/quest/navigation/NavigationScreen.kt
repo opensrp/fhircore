@@ -19,7 +19,7 @@ package org.smartregister.fhircore.quest.navigation
 import org.smartregister.fhircore.quest.R
 
 sealed class NavigationScreen(
-  val titleResource: Int,
+  val titleResource: Int? = null,
   val iconResource: Int? = null,
   val route: String,
   val showInBottomNav: Boolean = false
@@ -31,6 +31,7 @@ sealed class NavigationScreen(
     NavigationScreen(R.string.settings, R.drawable.ic_settings, SETTINGS_ROUTE, true)
   object PatientProfile :
     NavigationScreen(titleResource = R.string.profile, route = PATIENT_PROFILE_ROUTE)
+  object FamilyProfile : NavigationScreen(route = FAMILY_PROFILE_ROUTE)
 
   companion object {
     const val HOME_ROUTE = "homeRoute"
@@ -38,7 +39,8 @@ sealed class NavigationScreen(
     const val REPORTS_ROUTE = "reportsRoute"
     const val SETTINGS_ROUTE = "settingsRoute"
     const val PATIENT_PROFILE_ROUTE = "patientProfileRoute"
+    const val FAMILY_PROFILE_ROUTE = "familyProfileRoute"
 
-    val appScreens = listOf(Home, Tasks, Reports, Settings, PatientProfile)
+    val appScreens = listOf(Home, Tasks, Reports, Settings, PatientProfile, FamilyProfile)
   }
 }

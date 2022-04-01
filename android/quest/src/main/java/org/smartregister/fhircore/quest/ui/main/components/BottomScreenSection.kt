@@ -42,35 +42,37 @@ fun BottomScreenSection(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     navigationScreens.filter { it.showInBottomNav }.forEach { navigationScreen ->
-      BottomNavigationItem(
-        icon = {
-          navigationScreen.iconResource?.let {
-            Icon(
-              painter = painterResource(id = it),
-              contentDescription = stringResource(navigationScreen.titleResource)
-            )
-          }
-        },
-        label = {
-          Text(
-            text = stringResource(navigationScreen.titleResource),
-            fontSize = 12.sp,
-          )
-        },
-        selectedContentColor = BlueTextColor,
-        unselectedContentColor = Color.Black.copy(0.5f),
-        alwaysShowLabel = true,
-        selected = currentRoute == navigationScreen.route,
-        onClick = {
-          navController.navigate(navigationScreen.route) {
-            navController.graph.startDestinationRoute?.let { screen_route ->
-              popUpTo(screen_route) { saveState = true }
+      if (navigationScreen.titleResource != null) {
+        BottomNavigationItem(
+          icon = {
+            navigationScreen.iconResource?.let {
+              Icon(
+                painter = painterResource(id = it),
+                contentDescription = stringResource(navigationScreen.titleResource)
+              )
             }
-            launchSingleTop = true
-            restoreState = false
+          },
+          label = {
+            Text(
+              text = stringResource(navigationScreen.titleResource),
+              fontSize = 12.sp,
+            )
+          },
+          selectedContentColor = BlueTextColor,
+          unselectedContentColor = Color.Black.copy(0.5f),
+          alwaysShowLabel = true,
+          selected = currentRoute == navigationScreen.route,
+          onClick = {
+            navController.navigate(navigationScreen.route) {
+              navController.graph.startDestinationRoute?.let { screen_route ->
+                popUpTo(screen_route) { saveState = true }
+              }
+              launchSingleTop = true
+              restoreState = false
+            }
           }
-        }
-      )
+        )
+      }
     }
   }
 }
