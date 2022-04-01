@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.details.form
+package org.smartregister.fhircore.anc.util
 
-import kotlinx.serialization.Serializable
+import androidx.lifecycle.MutableLiveData
+import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 
-@Serializable
-object FormConfig {
-  const val ANC_VITAL_SIGNS_METRIC = "non-anc-patient-vital-signs_metric"
-  const val ANC_VITAL_SIGNS_STANDARD = "non-anc-patient-vital-signs_standard"
-  const val FAMILY_PATIENT_BMI_FORM = "family-patient_bmi_compute"
-  const val REMOVE_FAMILY_FORM = "remove-family-member"
-}
+fun MutableLiveData<List<FamilyMemberItem>>.othersEligibleForHead() =
+  this.value?.filter { it.deathDate == null && !it.houseHoldHead }

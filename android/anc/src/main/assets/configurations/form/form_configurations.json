@@ -36,6 +36,12 @@
     "identifier": "1999"
   },
   {
+    "appId": "anc",
+    "form": "remove-family-member",
+    "title": "Remove Family Member",
+    "identifier": "101643"
+  },
+  {
     "appId": "ecbis",
     "form": "anc-patient-registration",
     "title": "Enroll as ANC Patient",
@@ -70,6 +76,12 @@
     "form": "family-patient_bmi_compute",
     "title": "Compute BMI",
     "identifier": "1999"
+  },
+  {
+    "appId": "ecbis",
+    "form": "remove-family-member",
+    "title": "Remove Family Member",
+    "identifier": "101643"
   },
   {
     "appId": "ecbis",
