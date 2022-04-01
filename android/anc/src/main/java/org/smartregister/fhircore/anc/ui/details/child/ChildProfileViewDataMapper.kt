@@ -23,10 +23,10 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.ui.details.child.components.InfoColor
 import org.smartregister.fhircore.anc.ui.details.child.model.ChildProfileRowItem
 import org.smartregister.fhircore.anc.ui.details.child.model.ChildProfileViewData
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -46,22 +46,24 @@ constructor(
     val child = dto.child
     val tasks = dto.tasks
 
+    val name = child.extractName()
     return ChildProfileViewData(
       id = child.logicalId,
       identifier = child.identifierFirstRep.value ?: child.logicalId,
-      name = child.extractName(),
+      name = name,
       sex = child.extractGender(context) ?: "",
-      status = "STATUSS", // TODO??????
+      status = "",
       age = child.extractAge(),
       dob = child.birthDate.makeItReadable(),
       tasks =
         tasks.map {
           ChildProfileRowItem(
             id = it.id,
-            title = ">>>>>>>>",
-            subtitle = it.description,
+            title = context.getString(R.string.child_routine_visit),
+            subtitle =
+              context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
             actionButtonText = context.getString(R.string.child_visit_button_title),
-            actionButtonColor = if (!it.hasPastEnd()) InfoColor else OverdueColor,
+            actionButtonColor = if (!it.hasPastEnd()) BlueTextColor else OverdueColor,
           )
         }
     )
