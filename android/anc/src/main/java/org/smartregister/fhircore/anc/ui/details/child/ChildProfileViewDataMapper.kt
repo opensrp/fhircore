@@ -67,7 +67,7 @@ constructor(
               context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
             actionButtonText = context.getString(R.string.child_visit_button_title),
             actionButtonColor =
-              if (it.status == Task.TaskStatus.READY &&
+              if (it.status.isIn(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED) &&
                   it.hasStarted() &&
                   it.executionPeriod.start.isToday()
               )

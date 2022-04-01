@@ -19,7 +19,7 @@
         "name": "organization",
         "code": "subject.organization",
         "base": [
-          "Encounter","Observation","Condition","CarePlan","QuestionnaireResponse"
+          "Encounter","Observation","Condition","CarePlan","QuestionnaireResponse","Task"
         ],
         "type": "token",
         "expression": "#organization"
@@ -50,26 +50,6 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
-        "base": [
-          "Binary"
-        ]
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
-        "base": [
-          "Task"
-        ]
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
         "name": "count",
         "code": "_count",
         "base": [
@@ -81,7 +61,6 @@
           "QuestionnaireResponse",
           "Questionnaire",
           "StructureMap",
-          "Binary",
           "Task"
         ],
         "type": "token",
