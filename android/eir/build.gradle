@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'de.mannodermaus.android-junit5'
-    id 'kotlin-android-extensions'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
@@ -20,7 +19,9 @@ android {
     lintOptions {
         abortOnError false
     }
-
+    buildFeatures {
+        viewBinding true
+    }
     dataBinding {
         enabled true
     }

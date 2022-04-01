@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data.task
 
 import android.content.Context
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext

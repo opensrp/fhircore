@@ -28,11 +28,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.DownloadWorkManagerImpl
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class, CqlModule::class])
@@ -67,8 +66,5 @@ class EngineModule {
   fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
     AccountManager.get(context)
 
-  @Singleton
-  @Provides
-  fun downloadManager(@ApplicationContext context: Context): FhirEngine =
-    FhirEngineProvider.getInstance(context)
+  @Singleton @Provides fun downloadManager(): DownloadWorkManager = DownloadWorkManagerImpl()
 }
