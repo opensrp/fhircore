@@ -46,6 +46,10 @@ constructor(
 
   val rememberApp: MutableLiveData<Boolean?> = MutableLiveData(null)
 
+  private val _showProgressBar = MutableLiveData(false)
+  val showProgressBar
+    get() = _showProgressBar
+
   fun onApplicationIdChanged(appId: String) {
     _appId.value = appId
   }
@@ -69,6 +73,7 @@ constructor(
   suspend fun fetchConfigurations(appId: String, context: Context) {
     kotlin
       .runCatching {
+        this._showProgressBar.postValue(true)
         val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
         val data =
           fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
@@ -83,17 +88,20 @@ constructor(
         defaultRepository.save(composition)
 
         composition.section.groupBy { it.focus.reference.split("/")[0] }.entries.forEach {
-          val ids = it.value.map { it.focus.extractId() }.joinToString(",")
-          val rPath = it.key + "?${Composition.SP_RES_ID}=$ids"
+          entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+          val ids = entry.value.joinToString(",") { it.focus.extractId() }
+          val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
           fhirResourceDataSource.loadData(rPath).entry.forEach {
             defaultRepository.save(it.resource)
           }
         }
 
         loadConfigurations(true)
+        _showProgressBar.postValue(false)
       }
       .onFailure {
         Timber.w(it)
+        _showProgressBar.postValue(false)
         error.postValue("${it.message}")
       }
   }

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.appsetting
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val REMEMBER_APP_CHECKBOX_TAG = "rememberAppCheckboxTag"
@@ -50,7 +52,8 @@ fun AppSettingScreen(
   rememberApp: Boolean,
   onAppIdChanged: (String) -> Unit,
   onRememberAppChecked: (Boolean) -> Unit,
-  onLoadConfigurations: (Boolean) -> Unit
+  onLoadConfigurations: (Boolean) -> Unit,
+  showProgressBar: Boolean = false
 ) {
 
   Column(
@@ -88,16 +91,21 @@ fun AppSettingScreen(
       modifier = modifier.padding(vertical = 8.dp)
     )
     Spacer(modifier = modifier.height(20.dp))
-    Button(
-      onClick = { onLoadConfigurations(true) },
-      enabled = appId.isNotEmpty(),
-      modifier = modifier.fillMaxWidth()
-    ) {
-      Text(
-        color = Color.White,
-        text = stringResource(id = R.string.load_configurations),
-        modifier = modifier.padding(8.dp)
-      )
+    Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
+      Button(
+        onClick = { onLoadConfigurations(true) },
+        enabled = !showProgressBar && appId.isNotEmpty(),
+        modifier = modifier.fillMaxWidth()
+      ) {
+        Text(
+          color = Color.White,
+          text = stringResource(id = R.string.load_configurations),
+          modifier = modifier.padding(8.dp)
+        )
+      }
+      if (showProgressBar) {
+        CircularProgressBar(modifier = modifier.matchParentSize().padding(4.dp))
+      }
     }
   }
 }

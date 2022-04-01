@@ -112,12 +112,14 @@ class AppSettingActivity : AppCompatActivity() {
           AppTheme {
             val appId by appSettingViewModel.appId.observeAsState("")
             val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
+            val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
             AppSettingScreen(
               appId = appId,
               rememberApp = rememberApp ?: false,
               onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
               onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
-              onLoadConfigurations = appSettingViewModel::fetchConfigurations
+              onLoadConfigurations = appSettingViewModel::fetchConfigurations,
+              showProgressBar = showProgressBar
             )
           }
         }
