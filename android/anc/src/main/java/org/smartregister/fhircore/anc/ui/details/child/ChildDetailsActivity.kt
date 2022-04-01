@@ -23,11 +23,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import dagger.hilt.android.AndroidEntryPoint
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BACK_REFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.hasStarted
 import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
@@ -56,7 +58,9 @@ class ChildDetailsActivity : BaseMultiLanguageActivity() {
   fun onTaskRowClick(id: String) {
     childDetailsViewModel.retrieveTask(id).observe(this) {
       it?.let {
-        if (true /*it.hasStarted()*/)
+        if (it.status == Task.TaskStatus.COMPLETED)
+          this.showToast(getString(R.string.task_already_completed))
+        else if (it.hasStarted())
           this.startActivityForResult(
             Intent(this, QuestionnaireActivity::class.java).apply {
               QuestionnaireActivity.intentArgs(

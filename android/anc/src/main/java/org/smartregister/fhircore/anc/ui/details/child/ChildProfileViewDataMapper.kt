@@ -27,11 +27,15 @@ import org.smartregister.fhircore.anc.ui.details.child.model.ChildProfileRowItem
 import org.smartregister.fhircore.anc.ui.details.child.model.ChildProfileViewData
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
+import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.DateUtils.isToday
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.extension.hasPastEnd
+import org.smartregister.fhircore.engine.util.extension.hasStarted
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 data class Child(val child: Patient, val tasks: List<Task>)
@@ -62,7 +66,16 @@ constructor(
             subtitle =
               context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
             actionButtonText = context.getString(R.string.child_visit_button_title),
-            actionButtonColor = if (!it.hasPastEnd()) BlueTextColor else OverdueColor,
+            actionButtonColor =
+              if (it.status == Task.TaskStatus.READY &&
+                  it.hasStarted() &&
+                  it.executionPeriod.start.isToday()
+              )
+                BlueTextColor
+              else if (it.status.isIn(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED))
+                GreyTextColor
+              else if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
+              else if (it.status == Task.TaskStatus.FAILED) OverdueColor else GreyTextColor
           )
         }
     )

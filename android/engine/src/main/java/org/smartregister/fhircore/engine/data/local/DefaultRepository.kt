@@ -98,7 +98,8 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     subjectId: String,
     subjectType: ResourceType,
     // TODO not tested for multiple values
-    status: List<Task.TaskStatus> = listOf(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED),
+    status: List<Task.TaskStatus> =
+      listOf(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED, Task.TaskStatus.COMPLETED),
     limit: Int = DEFAULT_MAX_PAGE_COUNT
   ): List<Task> =
     withContext(dispatcherProvider.io()) {
