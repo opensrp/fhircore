@@ -16,6 +16,10 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
+import android.content.Context
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
@@ -34,6 +38,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.FhirConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.PlanWorker
 import timber.log.Timber
 
 /**
@@ -67,6 +72,20 @@ interface ConfigService {
         PeriodicSyncConfiguration(repeat = RepeatInterval(syncInterval, TimeUnit.MINUTES)),
       clazz = FhirSyncWorker::class.java
     )
+  }
+
+  fun schedulePlan(context: Context) {
+    WorkManager.getInstance(context)
+      .enqueueUniquePeriodicWork(
+        PlanWorker.WORK_ID,
+        ExistingPeriodicWorkPolicy.REPLACE,
+        PeriodicWorkRequestBuilder<PlanWorker>(1, TimeUnit.MINUTES)
+          .build() // TODO change to 12 hours
+      )
+  }
+
+  fun unschedulePlan(context: Context) {
+    WorkManager.getInstance(context).cancelUniqueWork(PlanWorker.WORK_ID)
   }
 
   fun loadRegistrySyncParams(
