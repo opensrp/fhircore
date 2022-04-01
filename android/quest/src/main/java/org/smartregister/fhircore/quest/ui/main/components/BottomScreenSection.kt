@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.main.component
+package org.smartregister.fhircore.quest.ui.main.components
 
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem

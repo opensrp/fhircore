@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
-import org.smartregister.fhircore.quest.ui.main.component.TopScreenSection
+import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
 

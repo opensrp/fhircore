@@ -39,7 +39,7 @@ import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.NavigationScreen
-import org.smartregister.fhircore.quest.ui.main.component.AppDrawer
+import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
 
