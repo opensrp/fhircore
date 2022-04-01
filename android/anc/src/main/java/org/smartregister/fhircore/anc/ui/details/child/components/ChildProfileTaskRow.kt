@@ -45,10 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.ui.details.child.model.ChildProfileRowItem
+import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 
 val StatusTextColor = Color.Gray.copy(alpha = 0.9f)
-val InfoColor = Color.Blue.copy(alpha = 0.5f)
 
 @Composable
 fun ChildProfileTaskRow(
@@ -96,7 +96,8 @@ private fun TitleRow(childProfileRowItem: ChildProfileRowItem, modifier: Modifie
     Text(
       text = childProfileRowItem.title,
       fontWeight = FontWeight.SemiBold,
-      modifier = modifier.padding(end = 8.dp)
+      modifier = modifier.padding(end = 8.dp),
+      fontSize = 16.sp
     )
     if (childProfileRowItem.titleIcon != null)
       Image(painter = painterResource(childProfileRowItem.titleIcon), contentDescription = null)
@@ -109,7 +110,7 @@ private fun SubtitleRow(childProfileRowItem: ChildProfileRowItem, modifier: Modi
     Text(
       text = childProfileRowItem.subtitle,
       color = StatusTextColor,
-      fontSize = 12.sp,
+      fontSize = 14.sp,
       modifier = modifier.padding(end = 8.dp)
     )
     if (childProfileRowItem.subtitleStatus != null)
@@ -140,7 +141,7 @@ fun ProfileActionableItemForTasksPreview() {
         title = "Child Routine visit task",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "12-02-2022",
-        actionButtonColor = InfoColor,
+        actionButtonColor = BlueTextColor,
         actionButtonText = "Child visit"
       ),
       {}
