@@ -20,7 +20,6 @@ import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,6 +40,7 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.components.DEFAULT_MAX_PAGE_COUNT
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
@@ -97,17 +97,17 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
   suspend fun loadTasks(
     subjectId: String,
     subjectType: ResourceType,
+    // TODO not tested for multiple values
     status: List<Task.TaskStatus> = listOf(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED),
     limit: Int = DEFAULT_MAX_PAGE_COUNT
   ): List<Task> =
     withContext(dispatcherProvider.io()) {
-      val statuses: List<TokenParamFilterCriterion.() -> Unit> =
-        status.map { { value = of(it.toCode()) } }
-      fhirEngine.search {
-        filter(Task.SUBJECT, { value = "${subjectType.name}/$subjectId" })
-        //  filter(Task.STATUS, *statuses.toTypedArray())
-        count = limit
-      }
+      // TODO use proper database filter for multiple statuses after checking with SDK
+      fhirEngine
+        .search<Task> { filter(Task.SUBJECT, { value = "${subjectType.name}/$subjectId" }) }
+        .filter { it.status.isIn(*status.toTypedArray()) }
+        .sortedBy { it.executionPeriod?.start }
+        .take(limit)
     }
 
   suspend fun getBinary(id: String): Binary = fhirEngine.load(Binary::class.java, id)

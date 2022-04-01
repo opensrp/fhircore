@@ -57,7 +57,7 @@ constructor(
       tasks =
         tasks.map {
           ChildProfileRowItem(
-            id = it.id,
+            id = it.logicalId,
             title = ">>>>>>>>",
             subtitle = it.description,
             actionButtonText = context.getString(R.string.child_visit_button_title),

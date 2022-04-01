@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.DateUtils.isToday
@@ -30,3 +31,5 @@ fun Task.hasStarted() =
   this.hasExecutionPeriod() &&
     this.executionPeriod.hasStart() &&
     with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
+
+fun Task.TaskStatus.toCoding() = Coding(this.system, this.toCode(), this.display)

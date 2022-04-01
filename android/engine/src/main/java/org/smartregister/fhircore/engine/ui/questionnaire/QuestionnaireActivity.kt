@@ -324,6 +324,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       Intent().apply {
         putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(parcelResponse))
         putExtra(QUESTIONNAIRE_ARG_FORM, questionnaire.logicalId)
+        putExtra(
+          QUESTIONNAIRE_BACK_REFERENCE_KEY,
+          intent.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)
+        )
       }
     )
     finish()
@@ -389,6 +393,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
+    const val QUESTIONNAIRE_BACK_REFERENCE_KEY = "questionnaire-back-reference"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY = "adverse_event_immunization_item_id"
@@ -410,6 +415,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
       immunizationId: String? = null,
+      backReference: String? = null,
       populationResources: ArrayList<Resource> = ArrayList()
     ) =
       bundleOf(
@@ -417,6 +423,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         Pair(QUESTIONNAIRE_ARG_FORM, formName),
         Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
         Pair(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, immunizationId),
+        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)
       )
         .apply {
           questionnaireResponse?.let {

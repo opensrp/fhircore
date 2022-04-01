@@ -18,13 +18,17 @@ package org.smartregister.fhircore.anc.ui.details.child
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.ui.details.child.model.ChildProfileViewData
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
@@ -44,6 +48,23 @@ constructor(val defaultRepository: DefaultRepository, val mapper: ChildProfileVi
       val tasks = defaultRepository.loadTasks(patientId, ResourceType.Patient)
 
       childProfileViewData.value = mapper.mapToDomainModel(Child(patient, tasks))
+    }
+  }
+
+  fun completeTask(id: String) {
+    viewModelScope.launch {
+      defaultRepository.loadResource<Task>(id)!!.apply {
+        this.status = Task.TaskStatus.COMPLETED
+        this.lastModified = Date()
+
+        defaultRepository.save(this)
+      }
+    }
+  }
+
+  fun retrieveTask(id: String): LiveData<Task> {
+    return MutableLiveData<Task>().apply {
+      viewModelScope.launch { postValue(defaultRepository.loadResource(id)) }
     }
   }
 }
