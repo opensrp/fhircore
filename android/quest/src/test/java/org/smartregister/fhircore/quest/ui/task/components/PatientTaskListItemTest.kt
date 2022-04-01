@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.task.component
+package org.smartregister.fhircore.quest.ui.task.components
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed

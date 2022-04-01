@@ -45,8 +45,8 @@ import org.smartregister.fhircore.quest.data.task.PatientTaskRepository
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
-import org.smartregister.fhircore.quest.ui.task.component.ROW_PATIENT_TASK
-import org.smartregister.fhircore.quest.ui.task.component.dummyPatientTaskPagingList
+import org.smartregister.fhircore.quest.ui.task.components.ROW_PATIENT_TASK
+import org.smartregister.fhircore.quest.ui.task.components.dummyPatientTaskPagingList
 
 @HiltAndroidTest
 class PatientTaskFragmentTest : RobolectricTest() {
