@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
+import timber.log.Timber
 
 @AndroidEntryPoint
 class PinSetupActivity : BaseMultiLanguageActivity() {
@@ -66,6 +67,10 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
   private fun moveToHome() {
     sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false)
     syncBroadcaster.runSync()
+
+    Timber.i("Registering plan and task scheduler")
+    syncBroadcaster.configService.schedulePlan(this@PinSetupActivity)
+
     loginService.navigateToHome()
   }
 

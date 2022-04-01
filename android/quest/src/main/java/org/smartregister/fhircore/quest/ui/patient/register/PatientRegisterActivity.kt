@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 import javax.inject.Inject
@@ -41,7 +42,6 @@ import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDeta
 import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
-import timber.log.Timber
 
 @AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
@@ -59,6 +59,13 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         questJsonSpecificationProvider.getJson()
       )
     configureViews(registerViewConfiguration)
+  }
+
+  // TODO Elle -> Remove this method when task gen is move to corresponding place
+  override fun onSync(state: State) {
+    super.onSync(state)
+
+    if (state is State.Finished) tempMethodToUpdatePeriodPlanWorkerAndFhirGen()
   }
 
   override fun onBottomNavigationOptionItemSelected(
@@ -109,13 +116,6 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   // TODO move to where required.. Elly
   fun tempMethodToUpdatePeriodPlanWorkerAndFhirGen() {
-    Timber.e("Registering plan and task scheduler")
-    with(registerViewModel.configService) {
-      if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
-        this.schedulePlan(this@PatientRegisterActivity)
-      else this.unschedulePlan(this@PatientRegisterActivity)
-    }
-
     runBlocking {
       fhirTaskGenerator.generateCarePlan(
         "105121",
