@@ -30,7 +30,6 @@ import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
-import org.smartregister.fhircore.engine.util.DateUtils.isToday
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -68,8 +67,7 @@ constructor(
             actionButtonText = context.getString(R.string.child_visit_button_title),
             actionButtonColor =
               if (it.status.isIn(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED) &&
-                  it.hasStarted() &&
-                  it.executionPeriod.start.isToday()
+                  it.hasStarted()
               )
                 BlueTextColor
               else if (it.status.isIn(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED))

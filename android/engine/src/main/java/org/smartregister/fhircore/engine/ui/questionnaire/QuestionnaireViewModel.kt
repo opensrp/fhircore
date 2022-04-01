@@ -169,7 +169,7 @@ constructor(
             if (resourceId == null) questionnaireResponse.subject = bun.resource.asReference()
           }
 
-          appendPractitionerInfo(bun.resource)
+          // appendPractitionerInfo(bun.resource)
 
           // response MUST have subject by far otherwise flow has issues
           if (!questionnaire.experimental) questionnaireResponse.assertSubject()
