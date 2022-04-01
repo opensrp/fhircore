@@ -16,11 +16,8 @@
 
 package org.smartregister.fhircore.quest.tests
 
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import org.junit.After
@@ -28,7 +25,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 
 class LaunchActivityTest {
   @get:Rule
@@ -40,28 +36,23 @@ class LaunchActivityTest {
   fun setup() {
     scenario = ActivityScenario.launch(AppSettingActivity::class.java)
     scenario.moveToState(Lifecycle.State.RESUMED)
-   // Thread.sleep(15000)
+    Thread.sleep(5000)
     composeTestRule.onNodeWithText("Enter Application ID").performTextInput("quest")
     composeTestRule.onNodeWithText("LOAD CONFIGURATIONS").performClick()
-//        composeTestRule.onNodeWithText("Enter username").performTextInput("demo")
-//        composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
-//        composeTestRule.onNodeWithText("LOGIN").performClick()
-    Thread.sleep(15000)
+    Thread.sleep(10000)
+    //composeTestRule.waitForIdle()
   }
   @After
   fun tearDown() {
     scenario.close()
   }
 
-  //  @Test
-//  fun applicationId() {
-//    composeTestAppScreen.onNodeWithText("Enter Application ID").performTextInput("demo")
-//    composeTestAppScreen.onNodeWithText("LOAD CONFIGURATIONS").performClick()
-//  }
   @Test
   fun successfulLogin() {
     composeTestRule.onNodeWithText("Enter username").performTextInput("demo")
     composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
     composeTestRule.onNodeWithText("LOGIN").performClick()
+    Thread.sleep(35000)
+    composeTestRule.onNodeWithText("Search for ID or client name").assertExists()
   }
 }
