@@ -23,21 +23,25 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.util.startAncEnrollment
+import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 
 @AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   @Inject lateinit var familyRepository: FamilyRepository
+  @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
 
   lateinit var saveBtn: Button
   private var isEditFamily: Boolean = false
@@ -83,8 +87,13 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       val patientId = questionnaireResponse.subject.extractId()
+      val patient = familyRepository.fhirEngine.load(Patient::class.java, patientId)
 
       if (questionnaireConfig.form == FamilyFormConstants.ANC_ENROLLMENT_FORM) {
+        finish()
+      } else if (patient.birthDate.yearsPassed() < 5) {
+        // TODO use a dynamic value instead of CHILD_CAREPLAN_ID
+        fhirTaskGenerator.generateCarePlan(CHILD_CAREPLAN_ID, patient)
         finish()
       } else {
         handlePregnancy(patientId, questionnaireResponse)
@@ -126,5 +135,6 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     const val QUESTIONNAIRE_CALLING_ACTIVITY = "questionnaire-calling-activity"
     const val IS_PREGNANT_KEY = "is_pregnant"
     const val HEAD_RECORD_ID_KEY = "head_record_id"
+    const val CHILD_CAREPLAN_ID = "105121" // TODO use a dynamic value instead
   }
 }

@@ -19,9 +19,12 @@ package org.smartregister.fhircore.anc.ui.details.child
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
+@AndroidEntryPoint
 class ChildDetailsActivity : BaseMultiLanguageActivity() {
 
   lateinit var patientId: String
@@ -31,14 +34,21 @@ class ChildDetailsActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val childProfileViewData = childDetailsViewModel.childProfileViewData.value
+    val childProfileViewData by childDetailsViewModel.childProfileViewData
 
     setContent {
       ChildDetailsScreen(
+        childProfileViewData = childProfileViewData,
+        onTaskRowClick = { id -> onTaskRowClick(id) },
         onBackPress = { onBackPressed() },
-        childProfileViewData = childProfileViewData
       )
     }
+
+    childDetailsViewModel.retrieveChildProfileViewData(patientId)
+  }
+
+  fun onTaskRowClick(id: String) {
+    TODO("Not yet implemented")
   }
 
   override fun onResume() {

@@ -41,8 +41,9 @@ import org.smartregister.fhircore.engine.R
 
 @Composable
 fun ChildDetailsScreen(
-  onBackPress: () -> Unit,
   childProfileViewData: ChildProfileViewData,
+  onTaskRowClick: (String) -> Unit,
+  onBackPress: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
 
@@ -68,7 +69,7 @@ fun ChildDetailsScreen(
             elevation = 3.dp,
             shape = RoundedCornerShape(6.dp),
             modifier = modifier.fillMaxWidth()
-          ) { ChildProfileTaskRow(it) }
+          ) { ChildProfileTaskRow(it, onTaskRowClick) }
         }
       }
     }

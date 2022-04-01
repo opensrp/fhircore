@@ -35,6 +35,9 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.ui.components.DEFAULT_MAX_PAGE_COUNT
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
@@ -89,6 +92,18 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
       }
       .firstOrNull()
+
+  suspend fun loadTasks(
+    subjectId: String,
+    subjectType: ResourceType,
+    limit: Int = DEFAULT_MAX_PAGE_COUNT
+  ): List<Task> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filter(Task.SUBJECT, { value = "${subjectType.name}/$subjectId" })
+        count = limit
+      }
+    }
 
   suspend fun getBinary(id: String): Binary = fhirEngine.load(Binary::class.java, id)
 

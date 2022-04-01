@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.details.child.model
 import androidx.compose.ui.graphics.Color
 
 data class ChildProfileRowItem(
+  val id: String,
   val title: String,
   val titleIcon: Int? = null,
   val subtitle: String,

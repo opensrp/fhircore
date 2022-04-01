@@ -51,7 +51,11 @@ private val StatusTextColor = Color.Gray.copy(alpha = 0.9f)
 private val InfoColor = Color.Blue.copy(alpha = 0.5f)
 
 @Composable
-fun ChildProfileTaskRow(childProfileRowItem: ChildProfileRowItem, modifier: Modifier = Modifier) {
+fun ChildProfileTaskRow(
+  childProfileRowItem: ChildProfileRowItem,
+  onRowClick: (String) -> Unit,
+  modifier: Modifier = Modifier
+) {
   Row(
     modifier = modifier.fillMaxWidth().padding(16.dp),
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -62,16 +66,16 @@ fun ChildProfileTaskRow(childProfileRowItem: ChildProfileRowItem, modifier: Modi
       Spacer(modifier = modifier.height(8.dp))
       SubtitleRow(childProfileRowItem = childProfileRowItem, modifier = modifier)
     }
-    ActionButton(childProfileRowItem)
+    ActionButton(childProfileRowItem, onRowClick)
   }
 }
 
 @Composable
-private fun ActionButton(childProfileRowItem: ChildProfileRowItem) {
+private fun ActionButton(childProfileRowItem: ChildProfileRowItem, onRowClick: (String) -> Unit) {
   if (childProfileRowItem.actionButtonColor != null && childProfileRowItem.actionButtonText != null
   ) {
     OutlinedButton(
-      onClick = { /*TODO perform click action */},
+      onClick = { onRowClick.invoke(childProfileRowItem.id) },
       colors =
         ButtonDefaults.buttonColors(
           backgroundColor = childProfileRowItem.actionButtonColor.copy(alpha = 0.2f),
@@ -132,22 +136,26 @@ fun ProfileActionableItemForTasksPreview() {
   Column {
     ChildProfileTaskRow(
       ChildProfileRowItem(
+        id = "test-id-1",
         title = "Child Routine visit task",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "12-02-2022",
         actionButtonColor = InfoColor,
         actionButtonText = "Child visit"
-      )
+      ),
+      {}
     )
     Divider()
     ChildProfileTaskRow(
       ChildProfileRowItem(
+        id = "test-id-2",
         title = "Child Routine visit task",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "12-8-2020",
         actionButtonColor = OverdueColor,
         actionButtonText = "Child visit"
-      )
+      ),
+      {}
     )
   }
 }

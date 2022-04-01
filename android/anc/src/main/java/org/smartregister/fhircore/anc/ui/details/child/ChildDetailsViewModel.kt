@@ -20,19 +20,30 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.anc.ui.details.child.model.ChildProfileViewData
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
 @HiltViewModel
-class ChildDetailsViewModel @Inject constructor(val fhirEngine: FhirEngine) : ViewModel() {
+class ChildDetailsViewModel
+@Inject
+constructor(val defaultRepository: DefaultRepository, val mapper: ChildProfileViewDataMapper) :
+  ViewModel() {
 
   val childProfileViewData: MutableState<ChildProfileViewData> =
     mutableStateOf(ChildProfileViewData())
+
   fun retrieveChildProfileViewData(patientId: String) {
     // TODO retrieve patient details and tasks. Can write a custom mapper to handle this
-    viewModelScope.launch {}
+    viewModelScope.launch {
+      val patient = defaultRepository.loadResource<Patient>(patientId)!!
+      val tasks = defaultRepository.loadTasks(patientId, ResourceType.Patient)
+
+      childProfileViewData.value = mapper.mapToDomainModel(Child(patient, tasks))
+    }
   }
 }
