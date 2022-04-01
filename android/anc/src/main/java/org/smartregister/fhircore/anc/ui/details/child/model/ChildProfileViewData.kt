@@ -20,6 +20,7 @@ data class ChildProfileViewData(
   val name: String = "",
   val status: String = "",
   val id: String = "",
+  val identifier: String = "",
   val sex: String = "",
   val age: String = "",
   val dob: String = "",

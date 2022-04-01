@@ -20,6 +20,7 @@ import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -96,11 +97,15 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
   suspend fun loadTasks(
     subjectId: String,
     subjectType: ResourceType,
+    status: List<Task.TaskStatus> = listOf(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED),
     limit: Int = DEFAULT_MAX_PAGE_COUNT
   ): List<Task> =
     withContext(dispatcherProvider.io()) {
+      val statuses: List<TokenParamFilterCriterion.() -> Unit> =
+        status.map { { value = of(it.toCode()) } }
       fhirEngine.search {
         filter(Task.SUBJECT, { value = "${subjectType.name}/$subjectId" })
+        //  filter(Task.STATUS, *statuses.toTypedArray())
         count = limit
       }
     }

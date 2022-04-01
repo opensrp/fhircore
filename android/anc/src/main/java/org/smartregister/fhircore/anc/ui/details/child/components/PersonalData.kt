@@ -56,7 +56,10 @@ fun PersonalData(
         modifier = modifier.padding(vertical = 10.dp)
       )
     }
-    Text(text = stringResource(R.string.id, childProfileViewData.id), color = statusTextColor)
+    Text(
+      text = stringResource(R.string.id, childProfileViewData.identifier),
+      color = statusTextColor
+    )
     Spacer(modifier = modifier.height(16.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,

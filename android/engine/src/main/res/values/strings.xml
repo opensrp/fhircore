@@ -112,4 +112,5 @@
     <string name="percentage">%</string>
     <string name="logging_out">Please wait.... Logging out</string>
     <string name="session_expired">Session has been expired and must login again</string>
+    <string name="child_visit_button_title">Child Visit</string>
 </resources>

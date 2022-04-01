@@ -47,8 +47,8 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.ui.details.child.model.ChildProfileRowItem
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 
-private val StatusTextColor = Color.Gray.copy(alpha = 0.9f)
-private val InfoColor = Color.Blue.copy(alpha = 0.5f)
+val StatusTextColor = Color.Gray.copy(alpha = 0.9f)
+val InfoColor = Color.Blue.copy(alpha = 0.5f)
 
 @Composable
 fun ChildProfileTaskRow(
