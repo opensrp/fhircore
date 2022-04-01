@@ -16,13 +16,14 @@
 
 package org.smartregister.fhircore.anc.ui.details.child
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -32,8 +33,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.ui.details.child.components.ChildProfileTaskRow
 import org.smartregister.fhircore.anc.ui.details.child.components.PersonalData
 import org.smartregister.fhircore.anc.ui.details.child.model.ChildProfileViewData
@@ -53,25 +59,55 @@ fun ChildDetailsScreen(
         title = { Text(text = "") },
         navigationIcon = {
           IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
-        }
+        },
+        backgroundColor = colorResource(id = R.color.colorPrimary),
+        contentColor = Color.White
       )
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      LazyColumn {
+      Column(
+        modifier = modifier.background(Color(0xFFF2F4F7)).verticalScroll(rememberScrollState())
+      ) {
         // Personal Data: e.g. sex, age, dob
-        item { PersonalData(childProfileViewData) }
+        PersonalData(childProfileViewData)
 
-        item { Text(stringResource(R.string.tasks).uppercase(), modifier.padding(8.dp)) }
+        Text(
+          stringResource(R.string.tasks).uppercase(),
+          modifier = modifier.padding(top = 32.dp, start = 32.dp, bottom = 16.dp),
+          fontWeight = FontWeight.Bold,
+          color = Color.Gray,
+          fontSize = 18.sp
+        )
+
         // Patient tasks: List of tasks for the patients
-        items(items = childProfileViewData.tasks) {
-          Card(
-            elevation = 3.dp,
-            shape = RoundedCornerShape(6.dp),
-            modifier = modifier.fillMaxWidth()
-          ) { ChildProfileTaskRow(it, onTaskRowClick) }
+        Card(modifier = modifier.padding(16.dp), elevation = 3.dp) {
+          Column {
+            childProfileViewData.tasks.forEach {
+              ChildProfileTaskRow(childProfileRowItem = it, onRowClick = onTaskRowClick)
+              Divider()
+            }
+          }
         }
       }
     }
   }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun ChildDetailsScreenPreview() {
+  ChildDetailsScreen(
+    childProfileViewData =
+      ChildProfileViewData(
+        "Jane Eod",
+        status = "01-02-2022",
+        sex = "Female",
+        age = "4",
+        dob = "23 Aug",
+        id = "12334"
+      ),
+    onTaskRowClick = {},
+    onBackPress = { /*TODO*/}
+  )
 }
