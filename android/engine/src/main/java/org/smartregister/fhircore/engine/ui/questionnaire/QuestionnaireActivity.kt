@@ -31,6 +31,7 @@ import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.datacapture.validation.ValidationResult
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -350,8 +351,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  // TODO change this when SDK bug for validation is fixed
-  // https://github.com/google/android-fhir/issues/912
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
     // clone questionnaire and response for processing and changing structure
     val q = parser.parseResource(parser.encodeResourceToString(questionnaire)) as Questionnaire
@@ -359,21 +358,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       parser.parseResource(parser.encodeResourceToString(questionnaireResponse)) as
         QuestionnaireResponse
 
-    // flatten and pair all responses temporarily to fix index mapping issue for questionnaire and
-    // questionnaire response
-    val qItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
-    val qrItems = mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
-
-    deepFlat(q.item, qr, qItems, qrItems)
-
-    return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(
-        qItems,
-        qrItems,
-        this
-      )
-      .values
-      .flatten()
-      .all { it.isValid }
+    //TODO debug fix
+    val a = QuestionnaireResponseValidator.validateQuestionnaireResponse(q,qr, this)
+    return (a[""]?.get(0))?.isValid ?: false
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {

@@ -68,7 +68,7 @@ constructor(
     }
 
   suspend fun fetchDemographics(patientId: String): Patient =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
+    withContext(dispatcherProvider.io()) { fhirEngine.get<Patient>(patientId) }
 
   override suspend fun countAll(): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }

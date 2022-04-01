@@ -107,7 +107,7 @@ class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { fhirEngine.search<Immunization>(any()) } returns listOf()
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
     coEvery { fhirEngine.load(Immunization::class.java, any()) } returns Immunization()
-    coEvery { fhirEngine.save(any()) } answers {}
+    coEvery { fhirEngine.create(any()) } answers {}
 
     val intent =
       Intent().apply {

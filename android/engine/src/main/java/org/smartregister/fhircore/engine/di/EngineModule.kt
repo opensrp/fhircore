@@ -20,6 +20,7 @@ import android.accounts.AccountManager
 import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
 import dagger.Module
@@ -49,16 +50,14 @@ class EngineModule {
   @Singleton
   @Provides
   fun provideSyncBroadcaster(
-    fhirResourceDataSource: FhirResourceDataSource,
-    configService: ConfigService,
+    downloadWorkManager: DownloadWorkManager,
     syncJob: SyncJob,
     fhirEngine: FhirEngine
   ) =
     SyncBroadcaster(
+      downloadWorkManager = downloadWorkManager,
       fhirEngine = fhirEngine,
-      syncJob = syncJob,
-      configService = configService,
-      fhirResourceDataSource = fhirResourceDataSource
+      syncJob = syncJob
     )
 
   @Singleton @Provides fun provideWorkerContextProvider() = SimpleWorkerContext()
@@ -67,4 +66,9 @@ class EngineModule {
   @Provides
   fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
     AccountManager.get(context)
+
+  @Singleton
+  @Provides
+  fun downloadManager(@ApplicationContext context: Context): FhirEngine =
+    FhirEngineProvider.getInstance(context)
 }

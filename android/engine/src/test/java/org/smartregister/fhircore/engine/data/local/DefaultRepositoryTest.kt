@@ -164,7 +164,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.load(Patient::class.java, any()) } throws
       ResourceNotFoundException("Exce", "Exce")
-    coEvery { fhirEngine.save(any()) } just runs
+    coEvery { fhirEngine.create(any()) } just runs
     val defaultRepository =
       DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 

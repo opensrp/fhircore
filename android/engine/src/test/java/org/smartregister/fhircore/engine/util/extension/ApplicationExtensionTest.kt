@@ -26,20 +26,15 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.StringParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
-import com.google.android.fhir.sync.ResourceSyncParams
-import com.google.android.fhir.sync.State
-import com.google.android.fhir.sync.SyncJobImpl
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
-import io.mockk.spyk
 import io.mockk.unmockkStatic
 import java.util.Calendar
 import java.util.UUID
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
@@ -257,30 +252,6 @@ class ApplicationExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun `FhirEngine#runOneTimeSync() should call syncJob#run() with params`() {
-    val fhirEngine = mockk<FhirEngine>()
-    val syncJob = spyk(SyncJobImpl(mockk()))
-    val sharedSyncStatus = mockk<MutableSharedFlow<State>>()
-    val resourceSyncParams = spyk<ResourceSyncParams>()
-    val fhirResourceDataSource = spyk(FhirResourceDataSource(mockk()))
-
-    coEvery { syncJob.run(any(), any(), any(), any()) } returns mockk()
-
-    runBlocking {
-      fhirEngine.runOneTimeSync(
-        sharedSyncStatus,
-        syncJob,
-        resourceSyncParams,
-        fhirResourceDataSource
-      )
-    }
-
-    coVerify {
-      syncJob.run(fhirEngine, fhirResourceDataSource, resourceSyncParams, sharedSyncStatus)
-    }
-  }
-
-  @Test
   fun `Context#loadResourceTemplate()`() {
     val context = ApplicationProvider.getApplicationContext<Application>()
     val dateOnset = DateType(Calendar.getInstance().time).format()
@@ -343,7 +314,7 @@ class ApplicationExtensionTest : RobolectricTest() {
     every { sharedPreferencesHelper.read(prefsDataKey, any<String>()) } returns ""
     every { sharedPreferencesHelper.write(prefsDataKey, any<String>()) } returns Unit
     coEvery { fhirOperatorDecorator.loadLib(any()) } returns Unit
-    coEvery { fhirEngine.save(any()) } returns Unit
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking {
       fhirEngine.loadCqlLibraryBundle(

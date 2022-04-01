@@ -20,6 +20,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.api.BundleInclusionRule
 import ca.uhn.fhir.model.valueset.BundleTypeEnum
 import ca.uhn.fhir.rest.api.BundleLinks
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import javax.inject.Inject
@@ -223,14 +224,13 @@ class LibraryEvaluator @Inject constructor() {
   ): List<String> {
     initialize()
 
-    val library = repository.fhirEngine.load(org.hl7.fhir.r4.model.Library::class.java, libraryId)
+    val library = repository.fhirEngine.get<org.hl7.fhir.r4.model.Library>(libraryId)
 
     val helpers =
       library.relatedArtifact
         .filter { it.hasResource() && it.resource.startsWith("Library/") }
         .mapNotNull {
-          repository.fhirEngine.load(
-            org.hl7.fhir.r4.model.Library::class.java,
+          repository.fhirEngine.get<org.hl7.fhir.r4.model.Library>(
             it.resource.replace("Library/", "")
           )
         }

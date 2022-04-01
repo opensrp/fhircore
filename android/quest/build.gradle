@@ -14,8 +14,8 @@ apply from: '../jacoco.gradle'
 apply from: '../properties.gradle'
 
 android {
-    compileSdkVersion 30
-    compileSdk 30
+    compileSdkVersion 31
+    compileSdk 31
 
     dataBinding {
         enabled true
@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId "org.smartregister.fhircore.quest"
         minSdk 21
-        targetSdk 30
+        targetSdk 31
         versionCode 3
         versionName "0.0.3"
         multiDexEnabled true
@@ -38,7 +38,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
     }
     
     signingConfigs {
@@ -123,7 +123,7 @@ android {
         }
     }
 
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     lintOptions {
         abortOnError false

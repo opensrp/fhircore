@@ -59,7 +59,7 @@ constructor(
 
       tasks.map { task ->
         val patientId = task.`for`.reference.replace("Patient/", "")
-        val patient = fhirEngine.load(Patient::class.java, patientId)
+        val patient = fhirEngine.get<Patient>(patientId)
 
         domainMapper.mapToDomainModel(PatientTask(patient, task))
       }

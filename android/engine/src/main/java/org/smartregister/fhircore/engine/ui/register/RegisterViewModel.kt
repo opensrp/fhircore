@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
 import com.google.android.fhir.sync.SyncJob
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
@@ -122,7 +123,7 @@ constructor(
     val result = MutableLiveData<Result<Boolean>>()
     viewModelScope.launch(dispatcher.io()) {
       try {
-        fhirEngine.load(Patient::class.java, barcode)
+        fhirEngine.get<Patient>(barcode)
         result.postValue(Result.success(true))
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         result.postValue(Result.failure(resourceNotFoundException))

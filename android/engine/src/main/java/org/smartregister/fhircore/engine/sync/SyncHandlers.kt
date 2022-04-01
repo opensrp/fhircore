@@ -18,20 +18,19 @@ package org.smartregister.fhircore.engine.sync
 
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
 
 /**
- * An interface the exposes a callback method [onSync] which accepts an application level FHIR Sync
+ * An interface that exposes a callback method [onSync] which accepts an application level FHIR Sync
  * [State].
  */
 interface OnSyncListener {
@@ -45,8 +44,7 @@ interface OnSyncListener {
  * invoking [broadcastSync] method
  */
 class SyncBroadcaster(
-  val fhirResourceDataSource: FhirResourceDataSource,
-  val configService: ConfigService,
+  val downloadWorkManager: DownloadWorkManager,
   val syncJob: SyncJob,
   val fhirEngine: FhirEngine,
   val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow(),
@@ -57,8 +55,7 @@ class SyncBroadcaster(
       try {
         syncJob.run(
           fhirEngine = fhirEngine,
-          dataSource = fhirResourceDataSource,
-          resourceSyncParams = configService.resourceSyncParams,
+          downloadManager = downloadWorkManager,
           subscribeTo = sharedSyncStatus
         )
       } catch (exception: Exception) {
