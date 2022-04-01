@@ -68,6 +68,8 @@
     <string name="last_seen">Last Seen</string>
     <string name="no_care_plan">No care plan</string>
     <string name="no_services_scheduled">No services scheduled</string>
+    <string name="task_not_due_yet">Task not due yet</string>
+    <string name="task_already_completed">Task already completed</string>
     <string name="family_register_title">Family</string>
     <string name="mark_as_anc_client">Mark as ANC client</string>
     <string name="add_vitals">Add Vitals</string>
@@ -144,4 +146,10 @@
     <string name="label_assign_new_family_head">Assign new family head</string>
     <string name="alert_message_abort_operation">Are you sure you want to abort this operation?</string>
     <string name="alert_title_abort">Abort</string>
+    <string name="id">ID: %1$s</string>
+    <string name="sex">Sex</string>
+    <string name="age">Age</string>
+    <string name="dob">DOB</string>
+    <string name="child_routine_visit">Child Routine visit</string>
+    <string name="due_on">Due on %1$s</string>
 </resources>

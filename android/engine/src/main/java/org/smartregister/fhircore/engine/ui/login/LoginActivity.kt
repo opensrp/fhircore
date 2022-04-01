@@ -33,6 +33,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
+import timber.log.Timber
 
 @AndroidEntryPoint
 class LoginActivity :
@@ -68,6 +69,10 @@ class LoginActivity :
           }
         } else {
           syncBroadcaster.runSync()
+
+          Timber.i("Registering plan and task scheduler")
+          syncBroadcaster.configService.schedulePlan(this@LoginActivity)
+
           loginService.navigateToHome()
         }
       }

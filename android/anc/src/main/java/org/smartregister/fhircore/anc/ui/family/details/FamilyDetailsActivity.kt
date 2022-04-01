@@ -26,6 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
+import org.smartregister.fhircore.anc.ui.details.child.ChildDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.removefamily.RemoveFamilyQuestionnaireActivity
@@ -40,6 +41,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 
 @AndroidEntryPoint
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
@@ -137,27 +139,30 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   private fun onFamilyHeadChangeRequested(dialog: DialogInterface) {
     val selection = getSelectedKey(dialog)
     if (selection?.isNotBlank() == true) {
-      familyDetailViewModel
-        .changeFamilyHead(familyId, selection)
-        .observe(
-          this@FamilyDetailsActivity,
-          {
-            if (it) {
-              dialog.dismiss()
-              finish()
-            }
-          }
-        )
+      familyDetailViewModel.changeFamilyHead(familyId, selection).observe(
+          this@FamilyDetailsActivity
+        ) {
+        if (it) {
+          dialog.dismiss()
+          finish()
+        }
+      }
     } else this.showToast(getString(R.string.invalid_selection))
   }
 
   private fun onFamilyMemberItemClicked(familyMemberItem: FamilyMemberItem?) {
-    if (familyMemberItem != null)
+    if (familyMemberItem != null) {
+      // Extract age from birth and load different activity for children aged below 5 years
+      val age = familyMemberItem.birthdate!!.yearsPassed()
+
       startActivity(
-        Intent(this, PatientDetailsActivity::class.java).apply {
-          putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, familyMemberItem.id)
-        }
+        Intent(
+            this,
+            if (age <= 5) ChildDetailsActivity::class.java else PatientDetailsActivity::class.java
+          )
+          .apply { putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, familyMemberItem.id) }
       )
+    }
   }
 
   private fun removeFamilyMenuItemClicked(familyId: String) {
