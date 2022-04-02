@@ -39,11 +39,6 @@ class EngineModule {
 
   @Singleton
   @Provides
-  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine =
-    FhirEngineProvider.getInstance(context)
-
-  @Singleton
-  @Provides
   fun provideSyncJob(@ApplicationContext context: Context) = Sync.basicSyncJob(context)
 
   @Singleton
