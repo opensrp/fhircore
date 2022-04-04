@@ -77,6 +77,7 @@ class BottomSheetListDialog(
   interface OnClickedListItems {
     fun onSave(bottomSheetDataModel: BottomSheetDataModel)
     fun onCancel()
+    fun onItemClicked(id: String)
   }
 
   override fun onClick(rb: RadioButton, position: Int) {

@@ -1,27 +1,31 @@
 package org.smartregister.fhircore.anc.util.bottomsheet
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.NonNull
 import androidx.compose.ui.platform.ComposeView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class NewBottomSheetListDialog(private val onBottomSheetListener: BottomSheetListDialog.OnClickedListItems) : BottomSheetDialogFragment()  {
+class NewBottomSheetListDialog(
+    @NonNull context: Context,
+    private val bottomSheetHolder: BottomSheetHolder,
+    private val onBottomSheetListener: BottomSheetListDialog.OnClickedListItems
+) : BottomSheetDialog(context) {
 
-    lateinit var dataHolder: BottomSheetHolder
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
+    init {
+        ComposeView(context).apply {
             setContent {
-                AppTheme { BottomSheetListView(bottomSheetHolder = dataHolder, itemListener = onBottomSheetListener) }
+                BottomSheetListView(
+                    bottomSheetHolder = bottomSheetHolder,
+                    onBottomSheetListener = onBottomSheetListener
+                )
             }
         }
+        setCancelable(false)
     }
 }

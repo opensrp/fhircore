@@ -147,7 +147,8 @@ fun BottomSheetListView(
                     )
                 }
                 TextButton(
-                    onClick = { onBottomSheetListener.onSave()},
+                    enabled = bottomSheetHolder.list.find { it.selected }?.selected!!,
+                    onClick = {  },
                     modifier = modifier
                         .fillMaxWidth()
                 ) {
@@ -172,7 +173,7 @@ fun BottomListItem(
         modifier =
         modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable { onBottomSheetListener.onItemClicked(model.id) }
             .padding(14.dp)
     ) {
         Box(modifier = modifier.wrapContentWidth()) {
@@ -189,16 +190,6 @@ fun BottomListItem(
         }
         Text(text = model.itemName, modifier = modifier.padding(horizontal = 12.dp))
     }
-}
-
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-@Composable
-fun BottomListItemPreview() {
-    BottomListItem(
-        model = BottomSheetDataModel("TestFragmentTag", "All Clients", "1241"),
-        onBottomSheetListener = {}
-    )
 }
 
 
@@ -225,7 +216,6 @@ fun SimpleRadioButtonComponent() {
                         .padding(horizontal = 16.dp)
                 ) {
                     RadioButton(
-
                         selected = (text == selectedOption),modifier = Modifier.padding(all = Dp(value = 8F)),
                         onClick = {
                             onOptionSelected(text)
@@ -246,7 +236,6 @@ fun SimpleRadioButtonComponent() {
 @Composable
 fun RegisterBottomSheetPreview() {
     BottomSheetListView(
-        itemListener = {},
         bottomSheetHolder = BottomSheetHolder(
             stringResource(id = R.string.label_assign_new_family_head),
             stringResource(id = R.string.label_select_new_head),
@@ -256,7 +245,21 @@ fun RegisterBottomSheetPreview() {
                 BottomSheetDataModel("TestFragmentTag", "All Clients", "1241")
             )
 
-        )
+        ),
+        onBottomSheetListener = object : BottomSheetListDialog.OnClickedListItems {
+            override fun onSave(bottomSheetDataModel: BottomSheetDataModel) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onCancel() {
+                TODO("Not yet implemented")
+            }
+
+            override fun onItemClicked(id: String) {
+                TODO("Not yet implemented")
+            }
+
+        }
     )
 }
 
