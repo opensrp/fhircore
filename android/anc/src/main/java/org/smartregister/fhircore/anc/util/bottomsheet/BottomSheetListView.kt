@@ -147,7 +147,7 @@ fun BottomSheetListView(
                     )
                 }
                 TextButton(
-                    enabled = bottomSheetHolder.list.find { it.selected }?.selected!!,
+                    enabled = bottomSheetHolder.list.find { it.selected }?.selected ?: false,
                     onClick = {  },
                     modifier = modifier
                         .fillMaxWidth()
