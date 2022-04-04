@@ -98,5 +98,6 @@ data class BottomSheetHolder(
   val title: String,
   val subTitle: String,
   val tvWarningTitle: String,
-  val list: List<BottomSheetDataModel>
+  val list: List<BottomSheetDataModel>,
+  var reselect: Boolean = false
 )

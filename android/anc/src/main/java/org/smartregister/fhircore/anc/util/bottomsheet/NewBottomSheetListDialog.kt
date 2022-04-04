@@ -6,12 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class NewBottomSheetListDialog(private val itemListener: (String) -> Unit) : BottomSheetDialogFragment()  {
+class NewBottomSheetListDialog(
+    private val bottomSheetHolder: BottomSheetHolder,
+    private val onBottomSheetListener: BottomSheetListDialog.OnClickedListItems
+) : BottomSheetDialogFragment() {
 
-    lateinit var dataHolder: BottomSheetHolder
+    init {
+        isCancelable = false
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -20,7 +24,12 @@ class NewBottomSheetListDialog(private val itemListener: (String) -> Unit) : Bot
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                AppTheme { BottomSheetListView(bottomSheetHolder = dataHolder, itemListener = itemListener) }
+                AppTheme {
+                    BottomSheetListView(
+                        bottomSheetHolder = bottomSheetHolder,
+                        onBottomSheetListener = onBottomSheetListener
+                    )
+                }
             }
         }
     }

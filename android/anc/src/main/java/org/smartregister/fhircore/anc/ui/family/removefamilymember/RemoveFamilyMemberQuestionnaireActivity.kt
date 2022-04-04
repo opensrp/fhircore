@@ -31,6 +31,7 @@ import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetDataModel
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetHolder
 import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetListDialog
+import org.smartregister.fhircore.anc.util.bottomsheet.NewBottomSheetListDialog
 import org.smartregister.fhircore.anc.util.othersEligibleForHead
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -99,7 +100,8 @@ class RemoveFamilyMemberQuestionnaireActivity :
     val title = getString(R.string.label_assign_new_family_head)
     val listTitle = getString(R.string.label_select_new_head)
     val warning = getString(R.string.label_remove_family_warning)
-    BottomSheetListDialog(this, BottomSheetHolder(title, listTitle, warning, options), this).show()
+    //BottomSheetListDialog(this, BottomSheetHolder(title, listTitle, warning, options), this).show()
+    NewBottomSheetListDialog(BottomSheetHolder(title, listTitle, warning, options), this).show(supportFragmentManager, "")
   }
 
   private fun onFamilyHeadChangeRequested(newFamilyHeadId: String) {
@@ -178,4 +180,5 @@ class RemoveFamilyMemberQuestionnaireActivity :
       }
       .show()
   }
+
 }

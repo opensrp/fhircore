@@ -21,24 +21,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.runtime.Composable
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.DarkGray
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
@@ -48,9 +44,11 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 @Composable
 fun BottomSheetListView(
     bottomSheetHolder: BottomSheetHolder,
-    itemListener: (String) -> Unit,
+    onBottomSheetListener: BottomSheetListDialog.OnClickedListItems,
     modifier: Modifier = Modifier
 ) {
+    var source by remember { mutableStateOf(bottomSheetHolder) }
+    var isEnabled by remember { mutableStateOf(false) }
     Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
         Column(
             modifier = modifier
@@ -118,12 +116,18 @@ fun BottomSheetListView(
                 contentPadding = PaddingValues(vertical = 8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(
-                    items = bottomSheetHolder.list,
-                    itemContent = {
-                        BottomListItem(it, itemListener)
+                itemsIndexed(
+                    items = source.list.toMutableStateList(),
+                    itemContent = { index, item ->
+                        BottomListItem(item) {
+                            isEnabled = true
+                            source.list.forEach { it.selected = false }
+                            source.list[index].selected = true
+                            source = source.copy(reselect = source.reselect.not())
+                        }
                         Divider(color = DividerColor, thickness = 1.dp)
                     }
+
                 )
             }
             Row(
@@ -135,38 +139,11 @@ fun BottomSheetListView(
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
                 TextButton(
-                    onClick = { },
-                    modifier = modifier,
-
-
-                ) {
-                    Text(
-                        fontSize = 14.sp,
-                        color = colorResource(id = R.color.black),
-                        text = stringResource(id = R.string.cancel),
-                    )
-                }
-                TextButton(
-                    onClick = { },
+                    onClick = { onBottomSheetListener.onCancel() },
                     modifier = modifier
                         .fillMaxWidth()
+                        .weight(1F),
                 ) {
-                    Text(
-                        fontSize = 14.sp,
-                        color = colorResource(id = R.color.colorPrimary),
-                        text = stringResource(id = R.string.cancel),
-                    )
-                }
-            }
-            BoxWithConstraints(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
-                    .padding(horizontal = 16.dp, vertical = 16.dp)) {
-                TextButton(
-                    onClick = { },
-                    modifier = modifier.width(maxWidth/2),
-                    ) {
                     Text(
                         fontSize = 14.sp,
                         color = colorResource(id = R.color.black),
@@ -174,13 +151,19 @@ fun BottomSheetListView(
                     )
                 }
                 TextButton(
-                    onClick = { },
-                    modifier = modifier.width(maxWidth/2)
+                    enabled = isEnabled,
+                    onClick = { onBottomSheetListener.onSave(source.list.first { it.selected }) },
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .weight(1F),
+                    colors = ButtonDefaults.textButtonColors(
+                        backgroundColor = colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white)
+                    )
                 ) {
                     Text(
                         fontSize = 14.sp,
-                        color = colorResource(id = R.color.colorPrimary),
-                        text = stringResource(id = R.string.cancel),
+                        color = colorResource(id = if (isEnabled) R.color.white else R.color.colorPrimary),
+                        text = stringResource(id = R.string.str_save).capitalize(),
                     )
                 }
             }
@@ -191,40 +174,62 @@ fun BottomSheetListView(
 @Composable
 fun BottomListItem(
     model: BottomSheetDataModel,
-    itemListener: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (BottomSheetDataModel) -> Unit
 ) {
     Row(
-        modifier =
-        modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clickable { itemListener(model.id) }
             .padding(14.dp)
-    ) {
-        Box(modifier = modifier.wrapContentWidth()) {
-            if (model.selected) {
-                Image(
-                    painter = painterResource(R.drawable.ic_green_tick),
-                    contentDescription = stringResource(id = R.string.tick),
-                    colorFilter = ColorFilter.tint(color = Color.Gray),
-                    modifier = modifier.size(22.dp)
-                )
-            } else {
-                Spacer(modifier = modifier.width(20.dp))
+            .clickable { onClick(model) }) {
+        RadioButton(
+            selected = model.selected, modifier = modifier,
+            onClick = {
+                onClick(model)
             }
-        }
+        )
         Text(text = model.itemName, modifier = modifier.padding(horizontal = 12.dp))
     }
 }
 
+
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 @Composable
-fun BottomListItemPreview() {
-    BottomListItem(
-        model = BottomSheetDataModel("TestFragmentTag", "All Clients", "1241"),
-        itemListener = {}
-    )
+fun SimpleRadioButtonComponent() {
+    val radioOptions = listOf("DSA", "Java", "C++")
+    val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[2]) }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Column {
+            radioOptions.forEach { text ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = (text == selectedOption),
+                            onClick = { onOptionSelected(text) }
+                        )
+                        .padding(horizontal = 16.dp)
+                ) {
+                    RadioButton(
+                        selected = (text == selectedOption),
+                        modifier = Modifier.padding(all = Dp(value = 8F)),
+                        onClick = {
+                            onOptionSelected(text)
+                        }
+                    )
+                    Text(
+                        text = text,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)
@@ -232,17 +237,30 @@ fun BottomListItemPreview() {
 @Composable
 fun RegisterBottomSheetPreview() {
     BottomSheetListView(
-        itemListener = {},
         bottomSheetHolder = BottomSheetHolder(
             stringResource(id = R.string.label_assign_new_family_head),
             stringResource(id = R.string.label_select_new_head),
             stringResource(id = R.string.label_remove_family_warning),
             listOf(
-                BottomSheetDataModel("TestFragmentTag", "All Clients", "1241"),
+                BottomSheetDataModel("TestFragmentTag", "All Clients", "1241", true),
                 BottomSheetDataModel("TestFragmentTag", "All Clients", "1241")
             )
 
-        )
+        ),
+        onBottomSheetListener = object : BottomSheetListDialog.OnClickedListItems {
+            override fun onSave(bottomSheetDataModel: BottomSheetDataModel) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onCancel() {
+                TODO("Not yet implemented")
+            }
+
+            override fun onItemClicked(id: BottomSheetDataModel, list: List<BottomSheetDataModel>) {
+                TODO("Not yet implemented")
+            }
+
+        }
     )
 }
 
