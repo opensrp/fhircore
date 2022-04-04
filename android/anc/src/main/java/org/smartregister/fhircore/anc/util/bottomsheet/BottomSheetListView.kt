@@ -192,46 +192,6 @@ fun BottomListItem(
     }
 }
 
-
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-@Composable
-fun SimpleRadioButtonComponent() {
-    val radioOptions = listOf("DSA", "Java", "C++")
-    val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[2]) }
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Column {
-            radioOptions.forEach { text ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = (text == selectedOption),
-                            onClick = { onOptionSelected(text) }
-                        )
-                        .padding(horizontal = 16.dp)
-                ) {
-                    RadioButton(
-                        selected = (text == selectedOption),
-                        modifier = Modifier.padding(all = Dp(value = 8F)),
-                        onClick = {
-                            onOptionSelected(text)
-                        }
-                    )
-                    Text(
-                        text = text,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 @Composable
@@ -255,11 +215,6 @@ fun RegisterBottomSheetPreview() {
             override fun onCancel() {
                 TODO("Not yet implemented")
             }
-
-            override fun onItemClicked(id: BottomSheetDataModel, list: List<BottomSheetDataModel>) {
-                TODO("Not yet implemented")
-            }
-
         }
     )
 }
