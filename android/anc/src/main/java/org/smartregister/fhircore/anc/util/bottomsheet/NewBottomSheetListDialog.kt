@@ -9,7 +9,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class NewBottomSheetListDialog(private val itemListener: (String) -> Unit) : BottomSheetDialogFragment()  {
+class NewBottomSheetListDialog(private val onBottomSheetListener: BottomSheetListDialog.OnClickedListItems) : BottomSheetDialogFragment()  {
 
     lateinit var dataHolder: BottomSheetHolder
 
@@ -20,7 +20,7 @@ class NewBottomSheetListDialog(private val itemListener: (String) -> Unit) : Bot
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                AppTheme { BottomSheetListView(bottomSheetHolder = dataHolder, itemListener = itemListener) }
+                AppTheme { BottomSheetListView(bottomSheetHolder = dataHolder, itemListener = onBottomSheetListener) }
             }
         }
     }
