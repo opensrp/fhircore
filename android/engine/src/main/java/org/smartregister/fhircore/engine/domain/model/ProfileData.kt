@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util.mappers
-
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.util.DataMapper
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewData
-
-class PatientProfileViewDataMapper @Inject constructor() :
-  DataMapper<ProfileData, PatientProfileViewData> {
-  override fun transformInputToOutputModel(inputModel: ProfileData): PatientProfileViewData {
-    return PatientProfileViewData(name = inputModel.name)
-  }
+package org.smartregister.fhircore.engine.domain.model
+// TODO convert to a sealed class to capture data for different health modules
+sealed class ProfileData(val name: String) {
+  data class FamilyProfileData(
+    val familyName: String = "",
+    val houseNumber: String = "",
+    val villageTown: String = ""
+  ) : ProfileData(familyName)
 }

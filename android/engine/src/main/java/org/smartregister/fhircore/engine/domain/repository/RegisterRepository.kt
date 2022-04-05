@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.domain.repository
 
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
+import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 
 /** Common repository for register. */
@@ -38,5 +38,5 @@ interface RegisterRepository {
     appFeatureName: String? = null,
     healthModule: HealthModule = HealthModule.DEFAULT,
     patientId: String
-  ): PatientProfileData?
+  ): ProfileData?
 }

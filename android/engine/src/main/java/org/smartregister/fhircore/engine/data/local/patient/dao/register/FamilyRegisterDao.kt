@@ -24,7 +24,7 @@ import com.google.android.fhir.search.search
 import org.hl7.fhir.r4.model.Patient
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
+import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
@@ -60,11 +60,9 @@ class FamilyRegisterDao @Inject constructor(val fhirEngine: FhirEngine) : Regist
 
   }
 
-  override suspend fun loadProfileData(
-    appFeatureName: String?,
-    patientId: String
-  ): PatientProfileData? {
-    return null
+  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? {
+    // TODO Load profile data for family
+    return ProfileData.FamilyProfileData()
   }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {

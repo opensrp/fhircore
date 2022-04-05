@@ -46,7 +46,7 @@ import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileR
 import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewSection
 
 @Composable
-fun PatientProfileCard(
+fun ProfileCard(
   title: String,
   profileViewSection: PatientProfileViewSection,
   onActionClick: (PatientProfileViewSection) -> Unit,
@@ -85,7 +85,7 @@ fun PatientProfileCard(
 @Composable
 @Preview(showBackground = true)
 private fun PatientProfileSectionPreview() {
-  PatientProfileCard(
+  ProfileCard(
     title = "TASKS",
     onActionClick = {},
     profileViewSection = PatientProfileViewSection.TASKS

@@ -24,7 +24,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
+import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant.DEFAULT_PAGE_SIZE
@@ -71,10 +71,7 @@ constructor(
   override suspend fun countRegisterData(appFeatureName: String?): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 
-  override suspend fun loadProfileData(
-    appFeatureName: String?,
-    patientId: String
-  ): PatientProfileData? {
+  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? {
     return null
   }
 }
