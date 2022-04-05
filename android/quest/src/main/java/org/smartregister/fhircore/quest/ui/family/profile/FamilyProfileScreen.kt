@@ -24,6 +24,7 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,10 +44,13 @@ import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfi
 
 @Composable
 fun FamilyProfileScreen(
+  patientId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
   familyProfileViewModel: FamilyProfileViewModel = hiltViewModel()
 ) {
+
+  LaunchedEffect(Unit) { familyProfileViewModel.fetchFamilyProfileData(patientId) }
 
   val viewState = familyProfileViewModel.familyProfileViewState.value
 
@@ -55,6 +60,7 @@ fun FamilyProfileScreen(
     topBar = {
       TopAppBar(
         title = { FamilyProfileTopBar(viewState, modifier) },
+        backgroundColor = MaterialTheme.colors.primary,
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.Filled.ArrowBack, contentDescription = null)

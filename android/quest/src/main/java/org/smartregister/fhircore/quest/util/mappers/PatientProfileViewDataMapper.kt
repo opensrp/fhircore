@@ -17,13 +17,13 @@
 package org.smartregister.fhircore.quest.util.mappers
 
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
+import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewData
 
 class PatientProfileViewDataMapper @Inject constructor() :
-  DataMapper<PatientProfileData, PatientProfileViewData> {
-  override fun transformInputToOutputModel(inputModel: PatientProfileData): PatientProfileViewData {
+  DataMapper<ProfileData, PatientProfileViewData> {
+  override fun transformInputToOutputModel(inputModel: ProfileData): PatientProfileViewData {
     return PatientProfileViewData(name = inputModel.name)
   }
 }

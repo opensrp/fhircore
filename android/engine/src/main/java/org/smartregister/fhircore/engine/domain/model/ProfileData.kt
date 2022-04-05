@@ -16,4 +16,10 @@
 
 package org.smartregister.fhircore.engine.domain.model
 // TODO convert to a sealed class to capture data for different health modules
-data class PatientProfileData(val name: String)
+sealed class ProfileData(val name: String) {
+  data class FamilyProfileData(
+    val familyName: String = "",
+    val houseNumber: String = "",
+    val villageTown: String = ""
+  ) : ProfileData(familyName)
+}

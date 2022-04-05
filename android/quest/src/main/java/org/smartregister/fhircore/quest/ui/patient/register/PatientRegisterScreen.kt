@@ -83,7 +83,6 @@ fun PatientRegisterScreen(
     lifecycleOwner.lifecycle.run {
       // Register observer to lifecycle
       addObserver(observer)
-
       // Remove observer when effect leaves the lifecycle
       onDispose { removeObserver(observer) }
     }

@@ -19,16 +19,45 @@ package org.smartregister.fhircore.quest.ui.family.profile
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.appfeature.AppFeature
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
 import org.smartregister.fhircore.engine.navigation.OverflowMenuFactory
+import org.smartregister.fhircore.engine.navigation.OverflowMenuHost
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 @HiltViewModel
-class FamilyProfileViewModel @Inject constructor(val overflowMenuFactory: OverflowMenuFactory) :
-  ViewModel() {
+class FamilyProfileViewModel
+@Inject
+constructor(
+  val overflowMenuFactory: OverflowMenuFactory,
+  val patientRegisterRepository: PatientRegisterRepository,
+  val dispatcherProvider: DefaultDispatcherProvider
+) : ViewModel() {
 
   val familyProfileViewState: MutableState<FamilyProfileViewState> =
-    mutableStateOf(FamilyProfileViewState())
+    mutableStateOf(
+      FamilyProfileViewState(
+        overflowMenuItems =
+          overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.FAMILY_PROFILE)
+      )
+    )
 
   fun onEvent(event: FamilyProfileEvent) {}
+
+  fun fetchFamilyProfileData(patientId: String?) {
+    viewModelScope.launch(dispatcherProvider.io()) {
+      if (!patientId.isNullOrEmpty()) {
+        patientRegisterRepository.loadPatientProfileData(
+          AppFeature.HouseholdManagement.name,
+          HealthModule.FAMILY,
+          patientId
+        )
+      }
+    }
+  }
 }

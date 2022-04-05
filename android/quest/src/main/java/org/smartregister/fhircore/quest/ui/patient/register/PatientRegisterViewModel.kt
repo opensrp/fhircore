@@ -137,11 +137,13 @@ constructor(
       }
       is PatientRegisterEvent.RegisterNewClient ->
         event.context.launchQuestionnaireActivity(registerViewConfiguration.registrationForm)
-      is PatientRegisterEvent.OpenProfile ->
-        event.navController.navigate(
-          route =
-            "${NavigationScreen.PatientProfile.route}?feature=${event.appFeatureName}&healthModule=${event.healthModule.name}&patientId=${event.patientId}"
-        )
+      is PatientRegisterEvent.OpenProfile -> {
+        val urlParams =
+          "?feature=${event.appFeatureName}&healthModule=${event.healthModule.name}&patientId=${event.patientId}"
+        if (event.healthModule == HealthModule.FAMILY)
+          event.navController.navigate(route = NavigationScreen.FamilyProfile.route + urlParams)
+        else event.navController.navigate(route = NavigationScreen.PatientProfile.route + urlParams)
+      }
     }
   }
 

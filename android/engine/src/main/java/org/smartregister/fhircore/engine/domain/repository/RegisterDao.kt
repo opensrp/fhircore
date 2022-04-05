@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
-import org.smartregister.fhircore.engine.domain.model.PatientProfileData
+import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 
 interface RegisterDao {
@@ -29,6 +29,5 @@ interface RegisterDao {
 
   suspend fun countRegisterData(appFeatureName: String?): Long = 0
 
-  suspend fun loadProfileData(appFeatureName: String?, patientId: String): PatientProfileData? =
-    null
+  suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? = null
 }
