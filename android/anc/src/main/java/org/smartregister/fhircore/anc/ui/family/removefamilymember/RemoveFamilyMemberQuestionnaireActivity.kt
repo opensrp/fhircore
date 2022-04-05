@@ -38,8 +38,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @AndroidEntryPoint
-class RemoveFamilyMemberQuestionnaireActivity :
-  QuestionnaireActivity(), OnClickedListItems {
+class RemoveFamilyMemberQuestionnaireActivity : QuestionnaireActivity(), OnClickedListItems {
 
   @VisibleForTesting lateinit var saveBtn: Button
   private lateinit var familyId: String
