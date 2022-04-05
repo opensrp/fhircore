@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.profile
+package org.smartregister.fhircore.quest.ui.family.profile.model
 
-sealed class FamilyProfileEvent {
+import androidx.compose.ui.graphics.Color
+import org.smartregister.fhircore.engine.domain.model.TaskStatus
 
-  object RoutineVisit : FamilyProfileEvent()
-
-  data class MemberClick(val patientId: String) : FamilyProfileEvent()
-
-  data class OpenTaskForm(val taskFormId: String) : FamilyProfileEvent()
-
-  data class ClickOverflowMenu(val menuId: String) : FamilyProfileEvent()
-}
+data class FamilyMemberTask(
+  val taskFormId: String? = null,
+  val task: String,
+  val taskStatus: TaskStatus,
+  val colorCode: Color,
+)

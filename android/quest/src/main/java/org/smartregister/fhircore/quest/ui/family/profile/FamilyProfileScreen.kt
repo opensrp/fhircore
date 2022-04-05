@@ -18,28 +18,39 @@ package org.smartregister.fhircore.quest.ui.family.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileRow
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileTopBar
 
 @Composable
@@ -52,7 +63,7 @@ fun FamilyProfileScreen(
 
   LaunchedEffect(Unit) { familyProfileViewModel.fetchFamilyProfileData(patientId) }
 
-  val viewState = familyProfileViewModel.familyProfileViewState.value
+  val viewState = familyProfileViewModel.familyProfileUiState.value
 
   var showOverflowMenu = remember { false }
 
@@ -98,5 +109,49 @@ fun FamilyProfileScreen(
         }
       )
     }
-  ) { innerPadding -> Box(modifier = modifier.padding(innerPadding)) {} }
+  ) { innerPadding ->
+    Box(modifier = modifier.padding(innerPadding)) {
+      Column(modifier = modifier.padding(horizontal = 16.dp)) {
+        // Household visit section
+        Row(
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically,
+          modifier = modifier.padding(vertical = 16.dp)
+        ) {
+          Text(text = stringResource(R.string.household))
+          OutlinedButton(
+            onClick = { familyProfileViewModel.onEvent(FamilyProfileEvent.RoutineVisit) },
+            colors =
+              ButtonDefaults.buttonColors(
+                backgroundColor = InfoColor.copy(alpha = 0.2f),
+                contentColor = InfoColor,
+              )
+          ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+              Text(text = stringResource(R.string.routine_visit))
+            }
+          }
+        }
+
+        Divider()
+
+        // Family members section
+        viewState.familyMemberViewStates.forEach { memberViewState ->
+          FamilyProfileRow(
+            familyMemberViewState = memberViewState,
+            onFamilyMemberClick = {
+              familyProfileViewModel.onEvent(
+                FamilyProfileEvent.MemberClick(memberViewState.patientId)
+              )
+            },
+            onTaskClick = { taskFormId ->
+              familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(taskFormId))
+            }
+          )
+          Divider()
+        }
+      }
+    }
+  }
 }

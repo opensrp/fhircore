@@ -19,5 +19,7 @@
     <string name="sample_distance">2.4 km</string>
     <string name="hash_sign">#</string>
     <string name="menu_tasks">Tasks</string>
+    <string name="household">Household</string>
+    <string name="routine_visit">Routine visit</string>
 
 </resources>

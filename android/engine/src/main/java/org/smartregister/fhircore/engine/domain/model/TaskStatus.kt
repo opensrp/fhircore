@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.profile
+package org.smartregister.fhircore.engine.domain.model
 
-sealed class FamilyProfileEvent {
-
-  object RoutineVisit : FamilyProfileEvent()
-
-  data class MemberClick(val patientId: String) : FamilyProfileEvent()
-
-  data class OpenTaskForm(val taskFormId: String) : FamilyProfileEvent()
-
-  data class ClickOverflowMenu(val menuId: String) : FamilyProfileEvent()
+enum class TaskStatus {
+  DEFAULT,
+  DUE,
+  OVERDUE,
+  FAILED,
+  COMPLETED
 }

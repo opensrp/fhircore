@@ -39,9 +39,9 @@ constructor(
   val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
 
-  val familyProfileViewState: MutableState<FamilyProfileViewState> =
+  val familyProfileUiState: MutableState<FamilyProfileUiState> =
     mutableStateOf(
-      FamilyProfileViewState(
+      FamilyProfileUiState(
         overflowMenuItems =
           overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.FAMILY_PROFILE)
       )

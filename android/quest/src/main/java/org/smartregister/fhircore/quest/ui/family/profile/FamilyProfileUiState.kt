@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile
 
-sealed class FamilyProfileEvent {
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
+import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
-  object RoutineVisit : FamilyProfileEvent()
-
-  data class MemberClick(val patientId: String) : FamilyProfileEvent()
-
-  data class OpenTaskForm(val taskFormId: String) : FamilyProfileEvent()
-
-  data class ClickOverflowMenu(val menuId: String) : FamilyProfileEvent()
-}
+data class FamilyProfileUiState(
+  val familyName: String = "",
+  val houseNumber: String = "",
+  val villageTown: String = "",
+  val overflowMenuItems: List<OverflowMenuItem> = emptyList(),
+  val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
+)

@@ -25,14 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileViewState
+import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileUiState
 
 @Composable
-fun FamilyProfileTopBar(viewState: FamilyProfileViewState, modifier: Modifier) {
+fun FamilyProfileTopBar(uiState: FamilyProfileUiState, modifier: Modifier) {
   Column(modifier = modifier.fillMaxWidth()) {
-    Text(text = viewState.familyName, color = Color.White, modifier = modifier.padding(top = 4.dp))
+    Text(text = uiState.familyName, color = Color.White, modifier = modifier.padding(top = 4.dp))
     Text(
-      text = "${viewState.houseNumber} ${viewState.villageTown}",
+      text = "${uiState.houseNumber} ${uiState.villageTown}",
       color = Color.LightGray.copy(alpha = 0.4f),
       modifier = modifier.padding(top = 4.dp)
     )
@@ -43,8 +43,8 @@ fun FamilyProfileTopBar(viewState: FamilyProfileViewState, modifier: Modifier) {
 @Preview(showBackground = true)
 fun FamilyProfileTopBarPreview() {
   FamilyProfileTopBar(
-    viewState =
-      FamilyProfileViewState()
+    uiState =
+      FamilyProfileUiState()
         .copy(familyName = "William Odinga", houseNumber = "#4", villageTown = "Sugoi, Bondo"),
     modifier = Modifier
   )
