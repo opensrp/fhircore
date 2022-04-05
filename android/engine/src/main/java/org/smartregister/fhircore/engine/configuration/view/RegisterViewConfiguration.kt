@@ -21,34 +21,31 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.util.extension.SearchFilter
 
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
-  override val appId: String = "",
-  override val classification: String = "",
-  val appTitle: String = "",
-  val filterText: String = "",
-  val searchBarHint: String = "",
-  val newClientButtonText: String = "",
-  val newClientButtonStyle: String = "",
-  val showSearchBar: Boolean = true,
-  val showFilter: Boolean = true,
-  val showScanQRCode: Boolean = true,
-  val showNewClientButton: Boolean = true,
-  val registrationForm: String = "patient-registration",
-  val showSideMenu: Boolean = true,
-  val showBottomMenu: Boolean = false,
-  val useLabel: Boolean = true,
-  val showHeader: Boolean = true,
-  val showFooter: Boolean = true,
-  val primaryFilter: SearchFilter? = null,
-  val bottomNavigationOptions: List<NavigationOption>? = null
+        override val appId: String = "",
+        override val classification: String = "",
+        val appTitle: String = "",
+        val filterText: String = "",
+        val searchBarHint: String = "",
+        val newClientButtonText: String = "",
+        val newClientButtonStyle: String = "",
+        val showSearchBar: Boolean = true,
+        val showFilter: Boolean = true,
+        val showScanQRCode: Boolean = true,
+        val showNewClientButton: Boolean = true,
+        val registrationForm: String = "patient-registration",
+        val showSideMenu: Boolean = true,
+        val showBottomMenu: Boolean = false,
+        val useLabel: Boolean = true,
+        val showHeader: Boolean = true,
+        val showFooter: Boolean = true,
+        val primaryFilter: SearchFilter? = null,
+        val bottomNavigationOptions: List<NavigationOption>? = null
 ) : Configuration
-
-@Serializable
-@Stable
-data class SearchFilter(val key: String, val code: String, val system: String)
 
 /**
  * A function providing a DSL for configuring [RegisterViewConfiguration]. The configurations

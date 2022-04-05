@@ -18,20 +18,48 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Enumerations
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 
 @Stable
 @Serializable
-class FormConfiguration(
+class DataFiltersConfiguration(
   override val appId: String = "",
   override val classification: String = "",
-  val forms: List<QuestionnaireConfig> = listOf()
+  val filters: List<SearchFilter> = listOf()
 ) : Configuration
 
+
 @Stable
-fun formConfigurationOf(
+@Serializable
+/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
+data class SearchFilter(
+        val id: String = "",
+        val key: String,
+        val filterType: Enumerations.SearchParamType,
+        val valueType: Enumerations.DataType,
+        val valueCoding: Code? = null,
+        val valueString: String? = null
+)
+
+@Stable
+@Serializable
+data class Code(val system: String? = null, val code: String? = null, val display: String? = null)
+
+fun Code.asCoding() = Coding(this.system, this.code, this.display)
+
+fun Code.asCodeableConcept() =
+        CodeableConcept().apply {
+            addCoding(this@asCodeableConcept.asCoding())
+            text = this@asCodeableConcept.display
+        }
+
+@Stable
+fun dataFilterConfigurationOf(
   appId: String = "",
   classification: String = "form",
-  forms: List<QuestionnaireConfig> = listOf()
-) = FormConfiguration(appId = appId, classification = classification, forms = forms)
+  filters: List<SearchFilter> = listOf()
+) = DataFiltersConfiguration(appId = appId, classification = classification, filters = filters)
