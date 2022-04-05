@@ -24,5 +24,5 @@ sealed class FamilyProfileEvent {
 
   data class OpenTaskForm(val taskFormId: String) : FamilyProfileEvent()
 
-  data class ClickOverflowMenu(val menuId: String) : FamilyProfileEvent()
+  data class OverflowMenuClick(val menuId: String) : FamilyProfileEvent()
 }

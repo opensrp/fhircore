@@ -100,7 +100,7 @@ fun FamilyProfileScreen(
                           else Color.Transparent
                       )
                       .clickable {
-                        familyProfileViewModel.onEvent(FamilyProfileEvent.ClickOverflowMenu(it.id))
+                        familyProfileViewModel.onEvent(FamilyProfileEvent.OverflowMenuClick(it.id))
                       }
                 )
               }
