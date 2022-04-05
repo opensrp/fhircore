@@ -59,7 +59,7 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 @Composable
 fun BottomSheetListView(
   bottomSheetHolder: BottomSheetHolder,
-  onBottomSheetListener: BottomSheetListDialog.OnClickedListItems,
+  onBottomSheetListener: OnClickedListItems,
   modifier: Modifier = Modifier
 ) {
   var source by remember { mutableStateOf(bottomSheetHolder) }
@@ -78,8 +78,8 @@ fun BottomSheetListView(
         Text(
           text = bottomSheetHolder.title,
           textAlign = TextAlign.Start,
-          fontWeight = FontWeight.Medium,
-          fontSize = 22.sp,
+          fontWeight = FontWeight.Light,
+          fontSize = 20.sp,
         )
         val iconId = R.drawable.ic_close
         Image(
@@ -115,16 +115,16 @@ fun BottomSheetListView(
         Text(
           text = bottomSheetHolder.tvWarningTitle,
           textAlign = TextAlign.Start,
-          fontWeight = FontWeight.Light,
-          fontSize = 14.sp,
+          fontWeight = FontWeight.Medium,
+          fontSize = 16.sp,
           modifier = modifier.padding(vertical = 12.dp)
         )
       }
       Text(
-        text = bottomSheetHolder.subTitle,
+        text = bottomSheetHolder.subTitle.uppercase(),
         modifier = modifier.padding(horizontal = 12.dp),
         textAlign = TextAlign.Start,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Light,
         fontSize = 18.sp,
       )
       LazyColumn(
@@ -176,7 +176,7 @@ fun BottomSheetListView(
           Text(
             fontSize = 14.sp,
             color = colorResource(id = if (isEnabled) R.color.white else R.color.colorPrimary),
-            text = stringResource(id = R.string.str_save).capitalize(),
+            text = stringResource(id = R.string.str_save).uppercase(),
           )
         }
       }
@@ -212,7 +212,7 @@ fun RegisterBottomSheetPreview() {
         )
       ),
     onBottomSheetListener =
-      object : BottomSheetListDialog.OnClickedListItems {
+      object : OnClickedListItems {
         override fun onSave(bottomSheetDataModel: BottomSheetDataModel) {
           TODO("Not yet implemented")
         }

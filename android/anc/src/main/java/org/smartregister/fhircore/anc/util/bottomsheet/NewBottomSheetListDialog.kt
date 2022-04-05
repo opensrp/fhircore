@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 class NewBottomSheetListDialog(
   private val bottomSheetHolder: BottomSheetHolder,
-  private val onBottomSheetListener: BottomSheetListDialog.OnClickedListItems
+  private val onBottomSheetListener: OnClickedListItems
 ) : BottomSheetDialogFragment() {
 
   init {
@@ -49,4 +49,24 @@ class NewBottomSheetListDialog(
       }
     }
   }
+}
+
+data class BottomSheetHolder(
+  val title: String,
+  val subTitle: String,
+  val tvWarningTitle: String,
+  val list: List<BottomSheetDataModel>,
+  var reselect: Boolean = false
+)
+
+data class BottomSheetDataModel(
+  val itemName: String,
+  val itemDetail: String,
+  val id: String,
+  var selected: Boolean = false
+)
+
+interface OnClickedListItems {
+  fun onSave(bottomSheetDataModel: BottomSheetDataModel)
+  fun onCancel()
 }
