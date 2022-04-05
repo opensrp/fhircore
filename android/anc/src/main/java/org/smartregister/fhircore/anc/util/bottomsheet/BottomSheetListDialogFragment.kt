@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.ComposeView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class NewBottomSheetListDialog(
+class BottomSheetListDialogFragment(
   private val bottomSheetHolder: BottomSheetHolder,
   private val onBottomSheetListener: OnClickedListItems
 ) : BottomSheetDialogFragment() {
