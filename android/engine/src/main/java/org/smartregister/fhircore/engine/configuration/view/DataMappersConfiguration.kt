@@ -18,47 +18,20 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Enumerations
 import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Stable
 @Serializable
-class DataFiltersConfiguration(
+class DataMappersConfiguration(
   override val appId: String = "",
   override val classification: String = "",
-  val filters: List<SearchFilter> = listOf()
+  val mappers: List<Mapper> = listOf()
 ) : Configuration
 
-@Stable
-@Serializable
-/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
-data class SearchFilter(
-  val id: String = "",
-  val key: String,
-  val filterType: Enumerations.SearchParamType,
-  val valueType: Enumerations.DataType,
-  val valueCoding: Code? = null,
-  val valueString: String? = null
-)
+@Stable @Serializable data class Mapper(val id: String = "", val expressions: Map<String, String>)
 
 @Stable
-@Serializable
-data class Code(val system: String? = null, val code: String? = null, val display: String? = null)
-
-fun Code.asCoding() = Coding(this.system, this.code, this.display)
-
-fun Coding.asCode() = Code(this.system, this.code, this.display)
-
-fun Code.asCodeableConcept() =
-  CodeableConcept().apply {
-    addCoding(this@asCodeableConcept.asCoding())
-    text = this@asCodeableConcept.display
-  }
-
-@Stable
-fun dataFilterConfigurationOf(
+fun dataMappersConfigurationOf(
   appId: String = "",
   classification: String = "form",
   filters: List<SearchFilter> = listOf()

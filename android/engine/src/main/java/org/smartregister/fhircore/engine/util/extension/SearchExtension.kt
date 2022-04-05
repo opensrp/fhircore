@@ -16,14 +16,11 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import androidx.compose.runtime.Stable
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
-import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
@@ -39,15 +36,14 @@ fun Search.filterByResourceTypeId(
   filter(reference, { value = "${resourceType.name}/$resourceId" })
 }
 
-
 fun Search.filterByPatientName(name: String?) {
   if (name?.isNotBlank() == true) {
     filter(
-            Patient.NAME,
-            {
-              modifier = StringFilterModifier.CONTAINS
-              value = name.trim()
-            }
+      Patient.NAME,
+      {
+        modifier = StringFilterModifier.CONTAINS
+        value = name.trim()
+      }
     )
   }
 }
@@ -57,11 +53,11 @@ fun Search.filterBy(filter: SearchFilter) {
     Enumerations.SearchParamType.TOKEN -> filterToken(filter)
     Enumerations.SearchParamType.STRING ->
       filter(
-              StringClientParam(filter.key),
-              {
-                this.modifier = StringFilterModifier.MATCHES_EXACTLY
-                this.value = filter.valueString!!
-              }
+        StringClientParam(filter.key),
+        {
+          this.modifier = StringFilterModifier.MATCHES_EXACTLY
+          this.value = filter.valueString!!
+        }
       )
     else ->
       throw UnsupportedOperationException("Can not apply ${filter.filterType} as search filter")
@@ -74,10 +70,7 @@ fun Search.filterToken(filter: SearchFilter) {
     Enumerations.DataType.CODING ->
       filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
     Enumerations.DataType.CODEABLECONCEPT ->
-      filter(
-              TokenClientParam(filter.key),
-              { value = of(filter.valueCoding!!.asCodeableConcept()) }
-      )
+      filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCodeableConcept()) })
     else ->
       throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
   }

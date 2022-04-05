@@ -33,6 +33,14 @@ class RegisterViewDataMapper @Inject constructor() : DataMapper<RegisterData, Re
               it.uppercase()
             } // TODO make transalatable
         )
+      is RegisterData.FamilyRegisterData ->
+        RegisterViewData(
+          id = inputModel.id,
+          title = listOf(inputModel.name, inputModel.address).joinToString(),
+          subtitle =
+            listOf(inputModel.servicesDue, inputModel.servicesOverdue).joinToString() // TODO
+        )
+      else -> throw UnsupportedOperationException()
     }
   }
 }

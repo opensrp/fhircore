@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import java.util.Date
 import org.hl7.fhir.r4.model.Enumerations
 
 sealed class RegisterData(open val id: String, open val name: String) {
@@ -24,5 +25,29 @@ sealed class RegisterData(open val id: String, open val name: String) {
     override val name: String,
     val gender: Enumerations.AdministrativeGender,
     val age: String
+  ) : RegisterData(id = id, name = name)
+
+  data class FamilyRegisterData(
+    override val id: String,
+    override val name: String,
+    val identifier: String? = null,
+    val address: String,
+    val head: FamilyMemberRegisterData,
+    val members: List<FamilyMemberRegisterData>,
+    val servicesDue: Int? = null,
+    val servicesOverdue: Int? = null
+  ) : RegisterData(id = id, name = name)
+
+  data class FamilyMemberRegisterData(
+    override val id: String,
+    override val name: String,
+    val identifier: String? = null,
+    val birthdate: Datee?,
+    val gender: String,
+    val isHead: Boolean,
+    val pregnant: Boolean? = null,
+    val deathDate: Date? = null,
+    val servicesDue: Int? = null,
+    val servicesOverdue: Int? = null
   ) : RegisterData(id = id, name = name)
 }

@@ -64,10 +64,10 @@ fun Base?.valueToString(): String {
 }
 
 fun Coding.asCodeableConcept() =
-        CodeableConcept().apply {
-          addCoding(this@asCodeableConcept)
-          text = this@asCodeableConcept.display
-        }
+  CodeableConcept().apply {
+    addCoding(this@asCodeableConcept)
+    text = this@asCodeableConcept.display
+  }
 
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
