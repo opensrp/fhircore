@@ -39,7 +39,7 @@ class LaunchActivityTest {
     Thread.sleep(5000)
     composeTestRule.onNodeWithText("Enter Application ID").performTextInput("quest")
     composeTestRule.onNodeWithText("LOAD CONFIGURATIONS").performClick()
-    Thread.sleep(10000)
+    Thread.sleep(15000)
     //composeTestRule.waitForIdle()
   }
   @After
@@ -53,6 +53,5 @@ class LaunchActivityTest {
     composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
     composeTestRule.onNodeWithText("LOGIN").performClick()
     Thread.sleep(35000)
-    composeTestRule.onNodeWithText("Search for ID or client name").assertExists()
   }
 }

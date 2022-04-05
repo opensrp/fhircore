@@ -4,10 +4,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import org.junit.After
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
+import org.junit.*
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 
 class RegisterClientTest {
@@ -16,9 +13,11 @@ class RegisterClientTest {
 
     @Before
     fun successfulLogin() {
+        Thread.sleep(5000)
         composeTestRule.onNodeWithText("Enter username").performTextInput("demo")
         composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
         composeTestRule.onNodeWithText("LOGIN").performClick()
+        Thread.sleep(10000)
     }
 
     @Test
@@ -30,7 +29,12 @@ class RegisterClientTest {
             .performTextInput("89764532")
         composeTestRule.onNodeWithText("Male").performClick()
         composeTestRule.onNodeWithText("Age").performClick()
-        composeTestRule.onNodeWithText("SAVE").performClick()
+        composeTestRule.onNodeWithText("Age (years) *").performTextInput("30")
+        composeTestRule.onNodeWithText("Phone Number")
+            .performTextInput("0723456789")
+        composeTestRule.onNodeWithText("City").performTextInput("Bulawayo")
+        composeTestRule.onNodeWithText("Country").performTextInput("Congo")
+        composeTestRule.onNodeWithText("Yes").performClick()
         composeTestRule.onNodeWithText("SAVE").performClick()
     }
     @Test
