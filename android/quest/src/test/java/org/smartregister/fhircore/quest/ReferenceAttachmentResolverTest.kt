@@ -33,6 +33,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.Call
 import retrofit2.Response

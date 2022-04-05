@@ -17,37 +17,27 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
-import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport
-import com.google.android.fhir.*
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import com.google.android.fhir.sync.Authenticator
-import dagger.Provides
 import dagger.hilt.android.HiltAndroidApp
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.smartregister.fhircore.engine.auth.TokenManagerService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
 import timber.log.Timber
-import javax.inject.Singleton
+import javax.inject.Inject
 
 @HiltAndroidApp
 class QuestApplication : Application(), DataCaptureConfig.Provider {
 
     @Inject
-    lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
-    @Inject
-    lateinit var configService: QuestConfigService
-    @Inject
-    lateinit var tokenManagerService: TokenManagerService
+   lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+
     private var configuration: DataCaptureConfig? = null
-    private lateinit var fhirEngine: FhirEngine
 
     override fun onCreate() {
         super.onCreate()
@@ -56,33 +46,12 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
         }
 
         configureSingletonDefaultValidationSupport()
-
-        FhirEngineProvider.init(
-            FhirEngineConfiguration(
-                enableEncryptionIfSupported = true,
-                DatabaseErrorStrategy.UNSPECIFIED,
-                ServerConfiguration(
-                    configService.provideAuthConfiguration().fhirServerBaseUrl,
-                    getAuthenticator()
-                )
-            )
-        )
-     fhirEngine =   FhirEngineProvider.getInstance(this)
-    }
-
-    companion object {
-        fun fhirEngine() =
-            (this as QuestApplication).fhirEngine
     }
 
     override fun getDataCaptureConfig(): DataCaptureConfig {
         configuration =
             configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
         return configuration as DataCaptureConfig
-    }
-
-    private fun getAuthenticator(): Authenticator = object : Authenticator {
-        override fun getAccessToken() = tokenManagerService.getBlockingActiveAuthToken() as String
     }
 
     // TODO https://github.com/google/android-fhir/issues/1173

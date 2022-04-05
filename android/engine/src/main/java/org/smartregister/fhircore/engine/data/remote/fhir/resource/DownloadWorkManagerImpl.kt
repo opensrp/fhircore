@@ -3,9 +3,15 @@ package org.smartregister.fhircore.engine.data.remote.fhir.resource
 import com.google.android.fhir.SyncDownloadContext
 import com.google.android.fhir.sync.DownloadWorkManager
 import org.hl7.fhir.exceptions.FHIRException
-import org.hl7.fhir.r4.model.*
-import java.util.*
 import javax.inject.Inject
+
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.OperationOutcome
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import java.util.LinkedList
 
 /**
  * Created by ndegwamartin on 01/04/2022.

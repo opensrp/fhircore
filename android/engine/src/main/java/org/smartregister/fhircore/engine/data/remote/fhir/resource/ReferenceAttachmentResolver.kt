@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest
+package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -23,7 +23,6 @@ import com.google.android.fhir.datacapture.AttachmentResolver
 import com.google.android.fhir.get
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Binary
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 
 class ReferenceAttachmentResolver
 @Inject
