@@ -42,7 +42,7 @@ sealed class RegisterData(open val id: String, open val name: String) {
     override val id: String,
     override val name: String,
     val identifier: String? = null,
-    val birthdate: Datee?,
+    val birthdate: Date?,
     val gender: String,
     val isHead: Boolean,
     val pregnant: Boolean? = null,
