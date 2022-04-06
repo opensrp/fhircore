@@ -15,11 +15,38 @@
  */
 
 package org.smartregister.fhircore.engine.domain.model
+
+import java.util.Date
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Task
+
 // TODO convert to a sealed class to capture data for different health modules
-sealed class ProfileData(val name: String) {
+sealed class ProfileData(open val id: String, open val name: String) {
   data class FamilyProfileData(
-    val familyName: String = "",
-    val houseNumber: String = "",
-    val villageTown: String = ""
-  ) : ProfileData(familyName)
+    override val id: String,
+    override val name: String,
+    val identifier: String? = null,
+    val address: String,
+    val head: FamilyMemberProfileData,
+    val members: List<FamilyMemberProfileData>,
+    val services: List<CarePlan> = listOf(),
+    val tasks: List<Task> = listOf()
+  ) : ProfileData(id = id, name = name)
+
+  data class FamilyMemberProfileData(
+    override val id: String,
+    override val name: String,
+    val identifier: String? = null,
+    val birthdate: Date?,
+    val gender: String,
+    val isHead: Boolean,
+    val pregnant: Boolean? = null,
+    val deathDate: Date? = null,
+    val conditions: List<Condition> = listOf(),
+    val flags: List<Flag> = listOf(),
+    val services: List<CarePlan> = listOf(),
+    val tasks: List<Task> = listOf()
+  ) : ProfileData(id = id, name = name)
 }
