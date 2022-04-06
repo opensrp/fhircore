@@ -90,7 +90,7 @@ fun BottomSheetListView(
         Image(
           painter = painterResource(id = iconId),
           contentDescription = null,
-          modifier = modifier
+          modifier = modifier.clickable { onBottomSheetListener.onCancel() },
         )
       }
       Divider()
