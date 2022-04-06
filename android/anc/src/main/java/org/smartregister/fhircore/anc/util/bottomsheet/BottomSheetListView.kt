@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -55,6 +56,10 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+
+const val TAG_SAVE = "save"
+const val TAG_SELECTION = "selection"
+const val TAG_CANCEL = "cancel"
 
 @Composable
 fun BottomSheetListView(
@@ -155,7 +160,7 @@ fun BottomSheetListView(
       ) {
         TextButton(
           onClick = { onBottomSheetListener.onCancel() },
-          modifier = modifier.fillMaxWidth().weight(1F),
+          modifier = modifier.fillMaxWidth().weight(1F).testTag(TAG_CANCEL),
         ) {
           Text(
             fontSize = 14.sp,
@@ -166,7 +171,7 @@ fun BottomSheetListView(
         TextButton(
           enabled = isEnabled,
           onClick = { onBottomSheetListener.onSave(source.list.first { it.selected }) },
-          modifier = modifier.fillMaxWidth().weight(1F),
+          modifier = modifier.fillMaxWidth().weight(1F).testTag(TAG_SAVE),
           colors =
             ButtonDefaults.textButtonColors(
               backgroundColor =
@@ -191,7 +196,8 @@ fun BottomListItem(
   onClick: (BottomSheetDataModel) -> Unit
 ) {
   Row(modifier = modifier.fillMaxWidth().padding(14.dp).clickable { onClick(model) }) {
-    RadioButton(selected = model.selected, modifier = modifier, onClick = { onClick(model) })
+    RadioButton(selected = model.selected, modifier = modifier.testTag(
+      model.id), onClick = { onClick(model) })
     Text(text = model.itemName, modifier = modifier.padding(horizontal = 12.dp))
   }
 }

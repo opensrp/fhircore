@@ -19,17 +19,20 @@ package org.smartregister.fhircore.anc.util
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.spyk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetDataModel
-import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetHolder
-import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetListView
-import org.smartregister.fhircore.anc.util.bottomsheet.OnClickedListItems
+import org.smartregister.fhircore.anc.util.bottomsheet.*
+import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 
 class BottomSheetListViewTest : RobolectricTest() {
 
@@ -54,7 +57,7 @@ class BottomSheetListViewTest : RobolectricTest() {
         activity.getString(R.string.label_remove_family_warning),
         listOf(
           BottomSheetDataModel("TestFragmentTag", "All Clients", "1241", true),
-          BottomSheetDataModel("TestFragmentTag", "All Clients", "1241")
+          BottomSheetDataModel("TestFragmentTag", "All Clients", "1245")
         )
       )
     composeRule.setContent {
@@ -63,5 +66,22 @@ class BottomSheetListViewTest : RobolectricTest() {
         onBottomSheetListener = onClickedListItems
       )
     }
+  }
+
+  @Test
+  fun testThatCancelClickCallsTheListener() {
+    val buttonCancel = composeRule.onNodeWithTag(TAG_CANCEL).assertExists()
+    buttonCancel.performClick()
+    verify { onClickedListItems.onCancel() }
+  }
+
+  @Test
+  fun testThatSaveClickCallsTheListener() {
+    val onSelection = composeRule.onNodeWithTag("1241").assertExists()
+    onSelection.performClick()
+
+    val buttonSave = composeRule.onNodeWithTag(TAG_SAVE).assertExists()
+    buttonSave.performClick()
+    verify { onClickedListItems.onSave(any()) }
   }
 }
