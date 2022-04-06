@@ -35,10 +35,8 @@ import dagger.hilt.components.SingletonComponent
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.DownloadWorkManagerImpl
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.EngineDownloadWorkManager
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import javax.inject.Inject
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -87,5 +85,5 @@ class EngineModule {
   fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
     AccountManager.get(context)
 
-  @Singleton @Provides fun downloadManager(): DownloadWorkManager = DownloadWorkManagerImpl()
+  @Singleton @Provides fun downloadManager(): DownloadWorkManager = EngineDownloadWorkManager()
 }

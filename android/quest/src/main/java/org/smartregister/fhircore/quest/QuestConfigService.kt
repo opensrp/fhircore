@@ -33,16 +33,8 @@ import org.smartregister.fhircore.engine.util.extension.decodeJson
 class QuestConfigService
 @Inject
 constructor(
-  @ApplicationContext val context: Context,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry
+  @ApplicationContext val context: Context
 ) : ConfigService {
-  private val authenticatedUserInfo by lazy {
-    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
-  }
-  override val resourceSyncParams: Map<ResourceType, Map<String, String>> by lazy {
-    loadRegistrySyncParams(configurationRegistry, authenticatedUserInfo)
-  }
 
   override fun provideAuthConfiguration() =
     AuthConfiguration(

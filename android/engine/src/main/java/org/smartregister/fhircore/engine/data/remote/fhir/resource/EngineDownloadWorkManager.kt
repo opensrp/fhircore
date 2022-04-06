@@ -17,7 +17,8 @@ import java.util.LinkedList
  * Created by ndegwamartin on 01/04/2022.
  */
 
-class DownloadWorkManagerImpl @Inject constructor(): DownloadWorkManager  { private val resourceTypeList = ResourceType.values().map { it.name }
+class EngineDownloadWorkManager @Inject constructor() : DownloadWorkManager {
+    private val resourceTypeList = ResourceType.values().map { it.name }
     private val urls = LinkedList(listOf("Patient?address-city=NAIROBI"))
 
     override suspend fun getNextRequestUrl(context: SyncDownloadContext): String? {
@@ -55,7 +56,8 @@ class DownloadWorkManagerImpl @Inject constructor(): DownloadWorkManager  { priv
         // If the resource returned is a Bundle, check to see if there is a "next" relation referenced
         // in the Bundle.link component, if so, append the URL referenced to list of URLs to download.
         if (response is Bundle) {
-            val nextUrl = response.link.firstOrNull { component -> component.relation == "next" }?.url
+            val nextUrl =
+                response.link.firstOrNull { component -> component.relation == "next" }?.url
             if (nextUrl != null) {
                 urls.add(nextUrl)
             }

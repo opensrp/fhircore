@@ -23,10 +23,10 @@ import com.google.android.fhir.datacapture.AttachmentResolver
 import com.google.android.fhir.get
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Binary
+import javax.inject.Singleton
 
-class ReferenceAttachmentResolver
-@Inject
-constructor(val fhirEngine: FhirEngine, val fhirResourceService: FhirResourceService) :
+@Singleton
+class ReferenceAttachmentResolver @Inject constructor(val fhirEngine: FhirEngine, val fhirResourceService: FhirResourceService) :
   AttachmentResolver {
 
   override suspend fun resolveBinaryResource(uri: String): Binary {

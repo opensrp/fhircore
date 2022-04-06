@@ -80,14 +80,14 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
         ResourceMapper::class
             .java
             .getDeclaredField("fhirPathEngine")
-            .also { it.isAccessible = true }
+            .also { fhirPathEngineProperty -> fhirPathEngineProperty.isAccessible = true }
             .get(null)
-            .let {
-                ((it as FHIRPathEngine).worker as HapiWorkerContext).let {
-                    it.javaClass
+            .let { fhirPathEngine ->
+                ((fhirPathEngine as FHIRPathEngine).worker as HapiWorkerContext).let { hapiWorkerContext ->
+                    hapiWorkerContext.javaClass
                         .getDeclaredField("myValidationSupport")
-                        .also { it.isAccessible = true }
-                        .get(it) as
+                        .also { myValidationSupportProperty -> myValidationSupportProperty.isAccessible = true }
+                        .get(hapiWorkerContext) as
                             DefaultProfileValidationSupport
                 }
             }
