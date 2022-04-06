@@ -36,7 +36,7 @@ group ExtractActivityDetail(source src : Patient,
                    det.performer = evaluate(src, $this.generalPractitioner.first()),
                    det.code = create('CodeableConcept') as concept then ExtractTimingCode(src, concept) "r_act_det_data";
 
-            src -> det.scheduled = create('Timing') as timing,
+            src where(src.birthDate > (today() - 60 'month')) -> det.scheduled = create('Timing') as timing,
                    timing.repeat = create('Timing_Repeat') as repeat then {
                 src -> repeat.countMax = create('positiveInt') as cm, cm.value = "60" ,
                        repeat.duration = create('decimal') as d, d.value = "2",
@@ -71,7 +71,7 @@ group ExtractTasks(
     target bundle: Bundle){
 
     // skip task creation and move to next until offset/next due month is future
-    offset where(offset < today()) -> evaluate(offset, $this + 1 "months") as newoffset then
+    offset where(offset < today()) -> evaluate(offset, $this + 1 'month') as newoffset then
                                       ExtractTasks(newoffset, range, src, careplan, activity, timing, bundle) "r_task_repeat";
 
     offset where(offset >= today() and offset < range.end) -> evaluate(offset, $this.value.substring(0,7) + '-01') as startStr,
@@ -95,10 +95,10 @@ group ExtractTasks(
                task.owner = evaluate(src, $this.generalPractitioner.first()) "r_task_data";
 
         // use different forms for 1 year and under 1 year
-        src where(offset <= (src.birthDate + 1 "years")) -> task.reasonReference = create('Reference') as ref,
+        src where(offset <= (src.birthDate + 12 'month')) -> task.reasonReference = create('Reference') as ref,
                ref.reference = 'Questionnaire/105056' "r_task_reason_ref_under1";
 
-        src where(offset > (src.birthDate + 1 "years")) -> task.reasonReference = create('Reference') as ref,
+        src where(offset > (src.birthDate + 12 'month')) -> task.reasonReference = create('Reference') as ref,
                ref.reference = 'Questionnaire/105057' "r_task_reason_ref_above1";
 
         src -> activity.outcomeReference = reference(task) "r_cp_task_ref";
@@ -117,13 +117,13 @@ group ExtractTimingCode(source src : Patient, target concept: CodeableConcept){
 
 group ExtractPeriod_now_5y(source birthdate : DateType, target period: Period){
     birthdate -> evaluate(birthdate, now()) as start,
-                 evaluate(birthdate, $this + 5 "years") as end then
+                 evaluate(birthdate, $this + 60 'month') as end then
                  ExtractPeriod(start, end, period) "r_period";
 }
 
 group ExtractPeriod_1m(source offset : DateType, target period: Period){
     offset -> offset as start,
-              evaluate(offset, $this + 1 "months") as end then
+              evaluate(offset, $this + 1 'month') as end then
               ExtractPeriod(start, end, period) "r_period";
 }
 

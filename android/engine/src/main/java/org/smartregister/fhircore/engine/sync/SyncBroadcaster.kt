@@ -51,7 +51,8 @@ class SyncBroadcaster(
           subscribeTo = sharedSyncStatus
         )
       } catch (exception: Exception) {
-        Timber.e("Error syncing data", exception.stackTraceToString())
+        Timber.e("Error syncing data")
+        Timber.e(exception)
       }
     }
   }

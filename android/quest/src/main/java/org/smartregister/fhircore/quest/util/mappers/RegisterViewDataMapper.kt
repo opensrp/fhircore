@@ -54,6 +54,20 @@ class RegisterViewDataMapper @Inject constructor() : DataMapper<RegisterData, Re
           serviceMemberIcons = listOf(), // tODO
           serviceText = inputModel.members.count { it.pregnant == true }.toString()
         )
+      is RegisterData.AncRegisterData ->
+        RegisterViewData(
+          id = inputModel.id,
+          title = listOf(inputModel.name, inputModel.age).joinToString(),
+          subtitle = inputModel.address,
+          status = inputModel.visitStatus.name,
+          otherStatus = "", // TODO
+          serviceAsButton = true,
+          serviceBackgroundColor =
+            if (inputModel.servicesOverdue == 0) DueLightColor else OverdueLightColor,
+          serviceForegroundColor =
+            if (inputModel.servicesOverdue == 0) BlueTextColor else OverdueDarkRedColor,
+          healthModule = HealthModule.ANC
+        )
       else -> throw UnsupportedOperationException()
     }
   }
