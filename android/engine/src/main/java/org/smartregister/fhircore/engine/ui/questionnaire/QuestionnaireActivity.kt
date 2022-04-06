@@ -31,7 +31,6 @@ import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
-import com.google.android.fhir.datacapture.validation.ValidationResult
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -358,8 +357,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       parser.parseResource(parser.encodeResourceToString(questionnaireResponse)) as
         QuestionnaireResponse
 
-    //TODO debug fix
-    val a = QuestionnaireResponseValidator.validateQuestionnaireResponse(q,qr, this)
+    // TODO debug fix
+    val a = QuestionnaireResponseValidator.validateQuestionnaireResponse(q, qr, this)
     return (a[""]?.get(0))?.isValid ?: false
   }
 

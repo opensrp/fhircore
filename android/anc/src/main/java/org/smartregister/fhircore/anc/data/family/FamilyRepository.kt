@@ -95,7 +95,7 @@ constructor(
   suspend fun searchFamilyMembers(familyHeadId: String): List<FamilyMemberItem> {
     return ancPatientRepository
       .searchPatientByLink(familyHeadId)
-      .plus(fhirEngine.get<Patient>( familyHeadId))
+      .plus(fhirEngine.get<Patient>(familyHeadId))
       .map {
         val services = ancPatientRepository.searchCarePlan(it.logicalId)
         val conditions = ancPatientRepository.searchCondition(it.logicalId)

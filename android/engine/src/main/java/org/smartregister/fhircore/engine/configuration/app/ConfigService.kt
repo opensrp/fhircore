@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
@@ -26,19 +25,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Parameters
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.SearchParameter
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.FhirConfiguration
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import timber.log.Timber
 
-/**
- * An interface that provides the application configurations.
- */
+/** An interface that provides the application configurations. */
 interface ConfigService {
 
   /** Provide [AuthConfiguration] for the Application */

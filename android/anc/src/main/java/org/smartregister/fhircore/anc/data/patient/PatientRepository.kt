@@ -120,9 +120,7 @@ constructor(
       patients.map {
         val head =
           kotlin
-            .runCatching {
-              fhirEngine.get<Patient>(it.link[0].id.replace("Patient/", ""))
-            }
+            .runCatching { fhirEngine.get<Patient>(it.link[0].id.replace("Patient/", "")) }
             .getOrNull()
 
         val carePlans = searchCarePlan(it.logicalId)
@@ -223,9 +221,7 @@ constructor(
         var ancPatientItemHead = PatientItem()
         if (patient.link.isNotEmpty()) {
           val patientHead =
-            fhirEngine.get<Patient>(
-              patient.linkFirstRep.other.reference.replace("Patient/", "")
-            )
+            fhirEngine.get<Patient>(patient.linkFirstRep.other.reference.replace("Patient/", ""))
 
           ancPatientItemHead =
             PatientItem(

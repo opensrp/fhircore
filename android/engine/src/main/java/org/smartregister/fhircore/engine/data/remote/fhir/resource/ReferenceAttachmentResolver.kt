@@ -22,17 +22,17 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.AttachmentResolver
 import com.google.android.fhir.get
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.Binary
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Binary
 
 @Singleton
-class ReferenceAttachmentResolver @Inject constructor(val fhirEngine: FhirEngine, val fhirResourceService: FhirResourceService) :
+class ReferenceAttachmentResolver
+@Inject
+constructor(val fhirEngine: FhirEngine, val fhirResourceService: FhirResourceService) :
   AttachmentResolver {
 
   override suspend fun resolveBinaryResource(uri: String): Binary {
-    return uri.substringAfter("Binary/").substringBefore("/").run {
-      fhirEngine.get(this)
-    }
+    return uri.substringAfter("Binary/").substringBefore("/").run { fhirEngine.get(this) }
   }
 
   override suspend fun resolveImageUrl(uri: String): Bitmap? {

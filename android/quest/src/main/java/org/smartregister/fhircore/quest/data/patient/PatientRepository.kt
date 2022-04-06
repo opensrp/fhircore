@@ -292,9 +292,7 @@ constructor(
   }
 
   private suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.get(questionnaireId)
-    }
+    withContext(dispatcherProvider.io()) { fhirEngine.get(questionnaireId) }
 
   suspend fun loadEncounter(id: String): Encounter =
     withContext(dispatcherProvider.io()) { fhirEngine.get(id) }

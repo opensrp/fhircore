@@ -19,10 +19,10 @@ package org.smartregister.fhircore.engine.di
 import android.accounts.AccountManager
 import android.content.Context
 import com.google.android.fhir.DatabaseErrorStrategy
-import com.google.android.fhir.ServerConfiguration
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineConfiguration
 import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.ServerConfiguration
 import com.google.android.fhir.sync.Authenticator
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.Sync
@@ -32,12 +32,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.EngineDownloadWorkManager
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class, CqlModule::class])
@@ -45,21 +45,29 @@ class EngineModule {
 
   @Singleton
   @Provides
-  fun provideFhirEngine(@ApplicationContext context: Context, tokenManagerService: TokenManagerService, configService:ConfigService): FhirEngine {
+  fun provideFhirEngine(
+    @ApplicationContext context: Context,
+    tokenManagerService: TokenManagerService,
+    configService: ConfigService
+  ): FhirEngine {
 
-    FhirEngineProvider.init(FhirEngineConfiguration(
-      enableEncryptionIfSupported = true,
-      DatabaseErrorStrategy.UNSPECIFIED,
-      ServerConfiguration(
-       baseUrl  = configService.provideAuthConfiguration().fhirServerBaseUrl,
-       authenticator  =  object : Authenticator {
-          override fun getAccessToken() = tokenManagerService.getBlockingActiveAuthToken() as String
-        }
+    FhirEngineProvider.init(
+      FhirEngineConfiguration(
+        enableEncryptionIfSupported = true,
+        DatabaseErrorStrategy.UNSPECIFIED,
+        ServerConfiguration(
+          baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
+          authenticator =
+            object : Authenticator {
+              override fun getAccessToken() =
+                tokenManagerService.getBlockingActiveAuthToken() as String
+            }
+        )
       )
-    ))
+    )
 
-   return FhirEngineProvider.getInstance(context)
-}
+    return FhirEngineProvider.getInstance(context)
+  }
 
   @Singleton
   @Provides

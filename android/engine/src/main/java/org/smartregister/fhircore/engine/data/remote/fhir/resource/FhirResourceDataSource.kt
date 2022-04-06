@@ -26,11 +26,11 @@ import org.hl7.fhir.r4.model.Resource
 /** Implementation of the [DataSource] that communicates with hapi fhir. */
 class FhirResourceDataSource @Inject constructor(private val resourceService: FhirResourceService) {
 
-   suspend fun loadData(path: String): Bundle {
+  suspend fun loadData(path: String): Bundle {
     return resourceService.getResource(path)
   }
 
-    suspend fun insert(resourceType: String, resourceId: String, payload: String): Resource {
+  suspend fun insert(resourceType: String, resourceId: String, payload: String): Resource {
     return resourceService.insertResource(
       resourceType,
       resourceId,
@@ -38,11 +38,7 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
     )
   }
 
-  suspend fun update(
-    resourceType: String,
-    resourceId: String,
-    payload: String
-  ): OperationOutcome {
+  suspend fun update(resourceType: String, resourceId: String, payload: String): OperationOutcome {
     return resourceService.updateResource(
       resourceType,
       resourceId,
@@ -50,7 +46,7 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
     )
   }
 
-    suspend fun delete(resourceType: String, resourceId: String): OperationOutcome {
+  suspend fun delete(resourceType: String, resourceId: String): OperationOutcome {
     return resourceService.deleteResource(resourceType, resourceId)
   }
 }

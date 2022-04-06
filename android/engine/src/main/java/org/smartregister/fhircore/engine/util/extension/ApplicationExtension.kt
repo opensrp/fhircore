@@ -41,97 +41,97 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
-    var json = assets.open(id).bufferedReader().use { it.readText() }
+  var json = assets.open(id).bufferedReader().use { it.readText() }
 
-    data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
+  data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
 
-    return if (Resource::class.java.isAssignableFrom(clazz))
-        FhirContext.forR4Cached().newJsonParser().parseResource(json) as T
-    else Gson().fromJson(json, clazz)
+  return if (Resource::class.java.isAssignableFrom(clazz))
+    FhirContext.forR4Cached().newJsonParser().parseResource(json) as T
+  else Gson().fromJson(json, clazz)
 }
 
 suspend fun FhirEngine.searchActivePatients(
-    query: String,
-    pageNumber: Int,
-    loadAll: Boolean = false
+  query: String,
+  pageNumber: Int,
+  loadAll: Boolean = false
 ) =
-    this.search<Patient> {
-        filter(Patient.ACTIVE, { value = of(true) })
-        if (query.isNotBlank()) {
-            filter(
-                stringParameter = Patient.NAME,
-                {
-                    modifier = StringFilterModifier.CONTAINS
-                    value = query.trim()
-                }
-            )
+  this.search<Patient> {
+    filter(Patient.ACTIVE, { value = of(true) })
+    if (query.isNotBlank()) {
+      filter(
+        stringParameter = Patient.NAME,
+        {
+          modifier = StringFilterModifier.CONTAINS
+          value = query.trim()
         }
-        sort(Patient.NAME, Order.ASCENDING)
-        count =
-            if (loadAll) this@searchActivePatients.countActivePatients().toInt()
-            else PaginationUtil.DEFAULT_PAGE_SIZE
-        from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+      )
     }
+    sort(Patient.NAME, Order.ASCENDING)
+    count =
+      if (loadAll) this@searchActivePatients.countActivePatients().toInt()
+      else PaginationUtil.DEFAULT_PAGE_SIZE
+    from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+  }
 
 suspend fun FhirEngine.countActivePatients(): Long =
-    this.count<Patient> { apply { filter(Patient.ACTIVE, { value = of(true) }) }.getQuery(true) }
+  this.count<Patient> { apply { filter(Patient.ACTIVE, { value = of(true) }) }.getQuery(true) }
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
-    return try {
-        this@loadResource.get(resourceId)
-    } catch (resourceNotFoundException: ResourceNotFoundException) {
-        null
-    }
+  return try {
+    this@loadResource.get(resourceId)
+  } catch (resourceNotFoundException: ResourceNotFoundException) {
+    null
+  }
 }
 
 suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson>? {
-    return try {
-        this@loadRelatedPersons.search {
-            apply { filter(RelatedPerson.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
-        }
-    } catch (resourceNotFoundException: ResourceNotFoundException) {
-        null
+  return try {
+    this@loadRelatedPersons.search {
+      apply { filter(RelatedPerson.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
     }
+  } catch (resourceNotFoundException: ResourceNotFoundException) {
+    null
+  }
 }
 
 suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immunization>? {
-    return try {
-        this@loadPatientImmunizations.search {
-            filter(Immunization.PATIENT, { value = "Patient/$patientId" })
-            apply { filter(Immunization.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
-        }
-    } catch (resourceNotFoundException: ResourceNotFoundException) {
-        null
+  return try {
+    this@loadPatientImmunizations.search {
+      filter(Immunization.PATIENT, { value = "Patient/$patientId" })
+      apply { filter(Immunization.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
     }
+  } catch (resourceNotFoundException: ResourceNotFoundException) {
+    null
+  }
 }
 
 suspend fun FhirEngine.loadCqlLibraryBundle(
-    context: Context,
-    sharedPreferencesHelper: SharedPreferencesHelper,
-    fhirOperator: FhirOperatorDecorator,
-    resourcesBundlePath: String
+  context: Context,
+  sharedPreferencesHelper: SharedPreferencesHelper,
+  fhirOperator: FhirOperatorDecorator,
+  resourcesBundlePath: String
 ) =
-    try {
-        val jsonParser = FhirContext.forR4().newJsonParser()
-        val savedResources =
-            sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
+  try {
+    val jsonParser = FhirContext.forR4().newJsonParser()
+    val savedResources =
+      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
 
-        context.assets.open(resourcesBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
-            val bundle = jsonParser.parseResource(it) as Bundle
-            bundle.entry.forEach { entry ->
-                if (entry.resource.resourceType == ResourceType.Library) {
-                    fhirOperator.loadLib(entry.resource as Library)
-                } else {
-                    if (!savedResources!!.contains(resourcesBundlePath)) {
-                        create(entry.resource)
-                        sharedPreferencesHelper.write(
-                            SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,
-                            savedResources.plus(",").plus(resourcesBundlePath)
-                        )
-                    }
-                }
-            }
+    context.assets.open(resourcesBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
+      val bundle = jsonParser.parseResource(it) as Bundle
+      bundle.entry.forEach { entry ->
+        if (entry.resource.resourceType == ResourceType.Library) {
+          fhirOperator.loadLib(entry.resource as Library)
+        } else {
+          if (!savedResources!!.contains(resourcesBundlePath)) {
+            create(entry.resource)
+            sharedPreferencesHelper.write(
+              SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,
+              savedResources.plus(",").plus(resourcesBundlePath)
+            )
+          }
         }
-    } catch (exception: Exception) {
-        Timber.e(exception)
+      }
     }
+  } catch (exception: Exception) {
+    Timber.e(exception)
+  }
