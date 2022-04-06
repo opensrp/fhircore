@@ -17,28 +17,25 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import java.util.Date
-import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Task
 
-sealed class RegisterData(open val id: String, open val name: String) {
-  data class DefaultRegisterData(
-    override val id: String,
-    override val name: String,
-    val gender: Enumerations.AdministrativeGender,
-    val age: String
-  ) : RegisterData(id = id, name = name)
-
-  data class FamilyRegisterData(
+// TODO convert to a sealed class to capture data for different health modules
+sealed class ProfileData(open val id: String, open val name: String) {
+  data class FamilyProfileData(
     override val id: String,
     override val name: String,
     val identifier: String? = null,
     val address: String,
-    val head: FamilyMemberRegisterData,
-    val members: List<FamilyMemberRegisterData>,
-    val servicesDue: Int? = null,
-    val servicesOverdue: Int? = null
-  ) : RegisterData(id = id, name = name)
+    val head: FamilyMemberProfileData,
+    val members: List<FamilyMemberProfileData>,
+    val services: List<CarePlan> = listOf(),
+    val tasks: List<Task> = listOf()
+  ) : ProfileData(id = id, name = name)
 
-  data class FamilyMemberRegisterData(
+  data class FamilyMemberProfileData(
     override val id: String,
     override val name: String,
     val identifier: String? = null,
@@ -47,7 +44,9 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val isHead: Boolean,
     val pregnant: Boolean? = null,
     val deathDate: Date? = null,
-    val servicesDue: Int? = null,
-    val servicesOverdue: Int? = null
-  ) : RegisterData(id = id, name = name)
+    val conditions: List<Condition> = listOf(),
+    val flags: List<Flag> = listOf(),
+    val services: List<CarePlan> = listOf(),
+    val tasks: List<Task> = listOf()
+  ) : ProfileData(id = id, name = name)
 }

@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
@@ -43,26 +45,30 @@ fun PersonalData(
   patientProfileViewData: PatientProfileViewData,
   modifier: Modifier = Modifier,
 ) {
-  Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
-    Text(
-      text = patientProfileViewData.name,
-      fontWeight = FontWeight.Bold,
-    )
-    Text(
-      text = patientProfileViewData.status,
-      color = StatusTextColor,
-      modifier = modifier.padding(vertical = 10.dp)
-    )
-    Text(text = stringResource(R.string.id, patientProfileViewData.id), color = StatusTextColor)
-    Spacer(modifier = modifier.height(16.dp))
-    Row(
-      horizontalArrangement = Arrangement.SpaceBetween,
-      modifier =
-        modifier.clip(RoundedCornerShape(size = 8.dp)).background(PatientProfileBackgroundColor)
-    ) {
-      OtherDetailsItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
-      OtherDetailsItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
-      OtherDetailsItem(title = stringResource(R.string.dob), value = patientProfileViewData.dob)
+  Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.padding(16.dp)) {
+      Text(text = patientProfileViewData.name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+      Text(
+        text = patientProfileViewData.status,
+        color = StatusTextColor,
+        fontSize = 18.sp,
+        modifier = modifier.padding(vertical = 10.dp)
+      )
+      Text(
+        text = stringResource(R.string.id, patientProfileViewData.id),
+        color = StatusTextColor,
+        fontSize = 18.sp
+      )
+      Spacer(modifier = modifier.height(16.dp))
+      Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier =
+          modifier.clip(RoundedCornerShape(size = 8.dp)).background(PatientProfileBackgroundColor)
+      ) {
+        OtherDetailsItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
+        OtherDetailsItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
+        OtherDetailsItem(title = stringResource(R.string.dob), value = patientProfileViewData.dob)
+      }
     }
   }
 }
@@ -70,8 +76,8 @@ fun PersonalData(
 @Composable
 private fun OtherDetailsItem(title: String, value: String, modifier: Modifier = Modifier) {
   Column(modifier = modifier.padding(16.dp)) {
-    Text(text = title, modifier.padding(bottom = 4.dp), color = StatusTextColor)
-    Text(text = value)
+    Text(text = title, modifier.padding(bottom = 4.dp), color = StatusTextColor, fontSize = 18.sp)
+    Text(text = value, fontSize = 18.sp)
   }
 }
 

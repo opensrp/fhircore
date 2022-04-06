@@ -17,9 +17,10 @@
 package org.smartregister.fhircore.quest.ui.patient.profile
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -37,9 +38,9 @@ import androidx.navigation.NavHostController
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PatientForm
-import org.smartregister.fhircore.quest.ui.patient.profile.components.PatientProfileCard
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
+import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
 import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewSection
 
 @Composable
@@ -72,26 +73,24 @@ fun PatientProfileScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      LazyColumn {
+      Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         // Personal Data: e.g. sex, age, dob
-        item { PersonalData(patientProfileData) }
+        PersonalData(patientProfileData)
 
         // Patient tasks: List of tasks for the patients
-        items(items = patientProfileData.tasks) {
-          PatientProfileCard(
-            title = stringResource(R.string.tasks),
-            onActionClick = {},
-            profileViewSection = PatientProfileViewSection.TASKS
-          ) { ProfileActionableItem(it) }
-        }
+        ProfileCard(
+          title = stringResource(R.string.tasks),
+          onActionClick = {},
+          profileViewSection = PatientProfileViewSection.TASKS
+        ) { patientProfileData.tasks.forEach { ProfileActionableItem(it) } }
 
         // Forms: Loaded for quest app
-        items(items = patientProfileData.forms) {
-          PatientProfileCard(
-            title = stringResource(R.string.forms),
-            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.FORMS
-          ) {
+        ProfileCard(
+          title = stringResource(R.string.forms),
+          onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+          profileViewSection = PatientProfileViewSection.FORMS
+        ) {
+          patientProfileData.forms.forEach {
             PatientForm(
               patientProfileViewData = it,
               onFormClick = {
@@ -102,31 +101,25 @@ fun PatientProfileScreen(
         }
 
         // Medical History: Show medication history for the patient
-        items(items = patientProfileData.medicalHistoryData) {
-          PatientProfileCard(
-            title = stringResource(R.string.medical_history),
-            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
-          ) { ProfileActionableItem(it) }
-        }
+        ProfileCard(
+          title = stringResource(R.string.medical_history),
+          onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+          profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
+        ) { patientProfileData.medicalHistoryData.forEach { ProfileActionableItem(it) } }
 
         // Upcoming Services: Display upcoming services (or tasks) for the patient
-        items(items = patientProfileData.upcomingServices) {
-          PatientProfileCard(
-            title = stringResource(R.string.upcoming_services),
-            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES
-          ) { ProfileActionableItem(it) }
-        }
+        ProfileCard(
+          title = stringResource(R.string.upcoming_services),
+          onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+          profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES
+        ) { patientProfileData.upcomingServices.forEach { ProfileActionableItem(it) } }
 
         // Service Card: Display other vital information for ANC/PNC
-        items(items = patientProfileData.ancCardData) {
-          PatientProfileCard(
-            title = stringResource(R.string.service_card),
-            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.SERVICE_CARD
-          ) { ProfileActionableItem(it) }
-        }
+        ProfileCard(
+          title = stringResource(R.string.service_card),
+          onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+          profileViewSection = PatientProfileViewSection.SERVICE_CARD
+        ) { patientProfileData.ancCardData.forEach { ProfileActionableItem(it) } }
       }
     }
   }

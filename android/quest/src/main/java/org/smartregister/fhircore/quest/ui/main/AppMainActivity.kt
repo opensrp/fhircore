@@ -33,6 +33,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -112,7 +113,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       fhirTaskGenerator.generateCarePlan(
         "105121",
         Patient().apply {
-          birthDate = Date()
+          birthDate = Date().plusYears(-5)
           id =
             fhirTaskGenerator
               .fhirEngine

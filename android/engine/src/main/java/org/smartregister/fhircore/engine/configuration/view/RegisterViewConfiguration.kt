@@ -22,6 +22,8 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
 
+// TODO remove primaryFilter and other unused properties
+
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
@@ -45,10 +47,6 @@ data class RegisterViewConfiguration(
   val primaryFilter: SearchFilter? = null,
   val bottomNavigationOptions: List<NavigationOption>? = null
 ) : Configuration
-
-@Serializable
-@Stable
-data class SearchFilter(val key: String, val code: String, val system: String)
 
 /**
  * A function providing a DSL for configuring [RegisterViewConfiguration]. The configurations

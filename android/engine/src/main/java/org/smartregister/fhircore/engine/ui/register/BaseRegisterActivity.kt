@@ -47,6 +47,8 @@ import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBa
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
+import java.io.InterruptedIOException
+import java.net.UnknownHostException
 import java.text.ParseException
 import java.util.Date
 import java.util.Locale
@@ -704,7 +706,13 @@ abstract class BaseRegisterActivity :
       showToast(getString(R.string.session_expired))
       accountAuthenticator.logout()
     } else {
-      showToast(getString(R.string.sync_failed))
+      if (exceptions.map { it.exception }.any {
+          it is InterruptedIOException || it is UnknownHostException
+        }
+      ) {
+        showToast(getString(R.string.sync_failed))
+      }
+      Timber.e(exceptions.map { it.exception.message }.joinToString(", "))
       registerActivityBinding.updateSyncStatus(state)
       sideMenuOptions().forEach { updateCount(it) }
       manipulateDrawer(open = false)

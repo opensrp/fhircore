@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.NavigationScreen
+import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
@@ -149,14 +150,7 @@ private fun AppMainNavigationGraph(
         NavigationScreen.PatientProfile ->
           composable(
             route = "${it.route}${NavigationArg.PATIENT_ROUTE_PATH}",
-            arguments =
-              commonNavArgs.plus(
-                navArgument(NavigationArg.PATIENT_ID) {
-                  type = NavType.StringType
-                  nullable = true
-                  defaultValue = null
-                }
-              )
+            arguments = commonNavArgs.plus(patientIdNavArgument())
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
             PatientProfileScreen(
@@ -165,6 +159,14 @@ private fun AppMainNavigationGraph(
               healthModule = stackEntry.retrieveHealthModuleArg(),
               patientId = patientId
             )
+          }
+        NavigationScreen.FamilyProfile ->
+          composable(
+            route = "${it.route}${NavigationArg.PATIENT_ROUTE_PATH}",
+            arguments = commonNavArgs.plus(patientIdNavArgument())
+          ) { stackEntry ->
+            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
+            FamilyProfileScreen(patientId, navController)
           }
       }
     }
@@ -176,3 +178,10 @@ private fun NavBackStackEntry.retrieveAppFeatureNameArg() =
 
 private fun NavBackStackEntry.retrieveHealthModuleArg(): HealthModule =
   (this.arguments?.get(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT) as HealthModule
+
+private fun patientIdNavArgument() =
+  navArgument(NavigationArg.PATIENT_ID) {
+    type = NavType.StringType
+    nullable = true
+    defaultValue = null
+  }

@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
+import org.smartregister.fhircore.engine.configuration.view.asCoding
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -323,17 +324,7 @@ constructor(
         fhirEngine.search<Questionnaire> {
           filter(
             Questionnaire.CONTEXT,
-            {
-              value =
-                of(
-                  CodeableConcept().apply {
-                    addCoding().apply {
-                      this.code = filter.code
-                      this.system = filter.system
-                    }
-                  }
-                )
-            }
+            { value = of(CodeableConcept().apply { addCoding(filter.valueCoding!!.asCoding()) }) }
           )
         }
 

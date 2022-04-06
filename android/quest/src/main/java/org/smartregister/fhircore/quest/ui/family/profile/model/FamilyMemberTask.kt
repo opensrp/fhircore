@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util.mappers
+package org.smartregister.fhircore.quest.ui.family.profile.model
 
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.util.DataMapper
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewData
+import androidx.compose.ui.graphics.Color
+import org.smartregister.fhircore.engine.domain.model.TaskStatus
 
-class PatientProfileViewDataMapper @Inject constructor() :
-  DataMapper<ProfileData, PatientProfileViewData> {
-  override fun transformInputToOutputModel(inputModel: ProfileData): PatientProfileViewData {
-    return PatientProfileViewData(name = inputModel.name)
-  }
-}
+data class FamilyMemberTask(
+  val taskFormId: String? = null,
+  val task: String,
+  val taskStatus: TaskStatus,
+  val colorCode: Color,
+)

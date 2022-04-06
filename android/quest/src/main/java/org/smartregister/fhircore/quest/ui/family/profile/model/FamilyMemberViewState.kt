@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.profile
+package org.smartregister.fhircore.quest.ui.family.profile.model
 
-import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
-
-data class FamilyProfileViewState(
-  val familyName: String = "",
-  val houseNumber: String = "",
-  val villageTown: String = "",
-  val overflowMenuItems: List<OverflowMenuItem> = emptyList()
+data class FamilyMemberViewState(
+  val patientId: String,
+  val name: String,
+  val gender: String,
+  val age: String,
+  val statuses: List<String> = emptyList(),
+  val memberIcon: Int? = null,
+  val memberTasks: List<FamilyMemberTask> = emptyList()
 )

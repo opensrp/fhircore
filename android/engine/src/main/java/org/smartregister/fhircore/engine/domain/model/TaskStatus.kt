@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util.mappers
+package org.smartregister.fhircore.engine.domain.model
 
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.util.DataMapper
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewData
-
-class PatientProfileViewDataMapper @Inject constructor() :
-  DataMapper<ProfileData, PatientProfileViewData> {
-  override fun transformInputToOutputModel(inputModel: ProfileData): PatientProfileViewData {
-    return PatientProfileViewData(name = inputModel.name)
-  }
+enum class TaskStatus {
+  DEFAULT,
+  DUE,
+  OVERDUE,
+  FAILED,
+  COMPLETED
 }

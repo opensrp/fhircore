@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.model
-// TODO convert to a sealed class to capture data for different health modules
-data class PatientProfileData(val name: String)
+package org.smartregister.fhircore.quest.ui.family.profile
+
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
+import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
+
+data class FamilyProfileUiState(
+  val familyName: String = "",
+  val houseNumber: String = "",
+  val villageTown: String = "",
+  val overflowMenuItems: List<OverflowMenuItem> = emptyList(),
+  val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
+)

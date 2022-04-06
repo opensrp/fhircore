@@ -18,5 +18,11 @@ package org.smartregister.fhircore.quest.ui.family.profile
 
 sealed class FamilyProfileEvent {
 
-  data class ClickOverflowMenu(val menuId: String) : FamilyProfileEvent()
+  object RoutineVisit : FamilyProfileEvent()
+
+  data class MemberClick(val patientId: String) : FamilyProfileEvent()
+
+  data class OpenTaskForm(val taskFormId: String) : FamilyProfileEvent()
+
+  data class OverflowMenuClick(val menuId: String) : FamilyProfileEvent()
 }
