@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.spyk
@@ -31,8 +30,12 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.util.bottomsheet.*
-import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
+import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetDataModel
+import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetHolder
+import org.smartregister.fhircore.anc.util.bottomsheet.BottomSheetListView
+import org.smartregister.fhircore.anc.util.bottomsheet.OnClickedListItems
+import org.smartregister.fhircore.anc.util.bottomsheet.TAG_CANCEL
+import org.smartregister.fhircore.anc.util.bottomsheet.TAG_SAVE
 
 class BottomSheetListViewTest : RobolectricTest() {
 

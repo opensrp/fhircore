@@ -196,8 +196,11 @@ fun BottomListItem(
   onClick: (BottomSheetDataModel) -> Unit
 ) {
   Row(modifier = modifier.fillMaxWidth().padding(14.dp).clickable { onClick(model) }) {
-    RadioButton(selected = model.selected, modifier = modifier.testTag(
-      model.id), onClick = { onClick(model) })
+    RadioButton(
+      selected = model.selected,
+      modifier = modifier.testTag(model.id),
+      onClick = { onClick(model) }
+    )
     Text(text = model.itemName, modifier = modifier.padding(horizontal = 12.dp))
   }
 }
