@@ -22,6 +22,8 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
 
+// TODO remove primaryFilter and other unused properties
+
 @Serializable
 @Stable
 data class RegisterViewConfiguration(

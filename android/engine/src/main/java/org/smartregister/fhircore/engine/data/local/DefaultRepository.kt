@@ -30,7 +30,6 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
@@ -40,8 +39,6 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
-import org.smartregister.fhircore.engine.data.local.patient.dao.register.FamilyMember
-import org.smartregister.fhircore.engine.data.local.patient.dao.register.FamilyMemberDetail
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
@@ -49,7 +46,6 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
-import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 
 @Singleton
@@ -78,38 +74,6 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       fhirEngine.search<QuestionnaireResponse> {
         filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" })
         filter(QuestionnaireResponse.QUESTIONNAIRE, { value = "Questionnaire/${questionnaire.id}" })
-      }
-    }
-
-  suspend fun loadFamilyMembers(familyId: String) =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine
-        .search<Patient> { filter(Patient.LINK, { value = familyId }) }
-        // also include head
-        .plus(fhirEngine.load(Patient::class.java, familyId))
-        .map {
-          val conditions =
-            fhirEngine.search<Condition> {
-              filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, it.logicalId)
-            }
-          val careplans =
-            fhirEngine.search<CarePlan> {
-              filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, it.logicalId)
-              filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
-            }
-          FamilyMember(it, conditions, careplans)
-        }
-    }
-
-  suspend fun loadFamilyMembersDetails(familyId: String) =
-    withContext(dispatcherProvider.io()) {
-      loadFamilyMembers(familyId).map {
-        val flags =
-          fhirEngine.search<Flag> {
-            filterByResourceTypeId(Flag.SUBJECT, ResourceType.Patient, it.patient.id)
-          }
-
-        FamilyMemberDetail(it.patient, it.conditions, flags, it.servicesDue)
       }
     }
 

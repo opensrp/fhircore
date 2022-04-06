@@ -17,8 +17,13 @@
 package org.smartregister.fhircore.quest.util.mappers
 
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
+import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
+import org.smartregister.fhircore.engine.ui.theme.DueLightColor
+import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
+import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
 
 class RegisterViewDataMapper @Inject constructor() : DataMapper<RegisterData, RegisterViewData> {
@@ -37,8 +42,17 @@ class RegisterViewDataMapper @Inject constructor() : DataMapper<RegisterData, Re
         RegisterViewData(
           id = inputModel.id,
           title = listOf(inputModel.name, inputModel.address).joinToString(),
-          subtitle =
-            listOf(inputModel.servicesDue, inputModel.servicesOverdue).joinToString() // TODO
+          subtitle = inputModel.address,
+          healthModule = HealthModule.FAMILY,
+          status = "", // tODO
+          otherStatus = "", // TODO
+          serviceAsButton = true,
+          serviceBackgroundColor =
+            if (inputModel.servicesOverdue == 0) DueLightColor else OverdueLightColor,
+          serviceForegroundColor =
+            if (inputModel.servicesOverdue == 0) BlueTextColor else OverdueDarkRedColor,
+          serviceMemberIcons = listOf(), // tODO
+          serviceText = inputModel.members.count { it.pregnant == true }.toString()
         )
       else -> throw UnsupportedOperationException()
     }
