@@ -21,10 +21,17 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.RegistrySyncParamConfigService
 import org.smartregister.fhircore.quest.QuestConfigService
+import org.smartregister.fhircore.quest.QuestRegistrySyncParamConfigService
 
 @InstallIn(SingletonComponent::class)
 @Module
 abstract class ConfigServiceModule {
   @Binds abstract fun provideConfigService(questConfigService: QuestConfigService): ConfigService
+
+  @Binds
+  abstract fun provideRegistrySyncParamConfigService(
+    questRegistryConfigService: QuestRegistrySyncParamConfigService
+  ): RegistrySyncParamConfigService
 }

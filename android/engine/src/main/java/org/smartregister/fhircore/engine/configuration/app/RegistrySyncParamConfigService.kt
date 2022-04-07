@@ -17,15 +17,6 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
-import com.google.android.fhir.sync.SyncJob
-import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
@@ -33,7 +24,6 @@ import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.FhirConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import timber.log.Timber
 
 /**
@@ -41,33 +31,9 @@ import timber.log.Timber
  * @property resourceSyncParams Set [FhirEngine] resource sync params needed for syncing data from
  * the server
  */
-interface ConfigServiceLegacy {
+interface RegistrySyncParamConfigService {
 
   val resourceSyncParams: Map<ResourceType, String>
-
-  /** Provide [AuthConfiguration] for the Application */
-  fun provideAuthConfiguration(): AuthConfiguration
-
-  /**
-   * Schedule periodic sync periodically as defined in the [configurationRegistry] application
-   * config interval. The [syncBroadcaster] will broadcast the sync status to its listeners
-   */
-  fun schedulePeriodicSync(
-    syncJob: SyncJob,
-    configurationRegistry: ConfigurationRegistry,
-    syncBroadcaster: SyncBroadcaster,
-    syncInterval: Long = 30
-  ) {
-    CoroutineScope(Dispatchers.Main).launch {
-      syncBroadcaster.sharedSyncStatus.emitAll(syncJob.stateFlow())
-    }
-
-    syncJob.poll(
-      periodicSyncConfiguration =
-        PeriodicSyncConfiguration(repeat = RepeatInterval(syncInterval, TimeUnit.MINUTES)),
-      clazz = FhirSyncWorker::class.java
-    )
-  }
 
   fun loadRegistrySyncParams(
     configurationRegistry: ConfigurationRegistry,
