@@ -20,6 +20,7 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import javax.inject.Inject
@@ -39,6 +40,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
@@ -88,6 +90,20 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         filterByResourceTypeId(subjectParam, subjectType, subjectId)
 
         filters.forEach { filterBy(it) }
+      }
+    }
+
+  suspend fun searchQuestionnaireConfig(
+    filters: List<SearchFilter> = listOf()
+  ): List<QuestionnaireConfig> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search<Questionnaire> { filters.forEach { filterBy(it) } }.map {
+        QuestionnaireConfig(
+          form = it.nameElement.getLocalizedText() ?: it.logicalId,
+          title = it.titleElement.getLocalizedText()
+              ?: it.nameElement.getLocalizedText() ?: it.logicalId,
+          identifier = it.logicalId
+        )
       }
     }
 

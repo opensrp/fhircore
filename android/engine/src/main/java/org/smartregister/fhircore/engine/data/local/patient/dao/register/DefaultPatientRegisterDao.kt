@@ -28,7 +28,9 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -46,6 +48,7 @@ class DefaultPatientRegisterDao
 constructor(
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
+  val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DefaultDispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor
 ) : RegisterDao {
@@ -80,7 +83,8 @@ constructor(
 
   override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? {
     return withContext(dispatcherProvider.io()) {
-      val patient = fhirEngine.load(Patient::class.java, patientId)!!
+      val patient = fhirEngine.load(Patient::class.java, patientId)
+      val formsFilter = configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY)
 
       ProfileData.DefaultProfileData(
         id = patient.logicalId,
@@ -112,8 +116,18 @@ constructor(
           defaultRepository.searchResourceFor(
             subjectId = patientId,
             subjectParam = CarePlan.SUBJECT
+          ),
+        forms = defaultRepository.searchQuestionnaireConfig(formsFilter),
+        responses =
+          defaultRepository.searchResourceFor(
+            subjectId = patientId,
+            subjectParam = QuestionnaireResponse.SUBJECT
           )
       )
     }
+  }
+
+  companion object {
+    const val FORMS_LIST_FILTER_KEY = "forms_list"
   }
 }
