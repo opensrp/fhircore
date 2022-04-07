@@ -1,7 +1,7 @@
 <resources>
     <string name="back_to_clients">Retour à la liste des clients</string>
     <string name="test_results">Résultat du test</string>
-  
+
     <string name="edit_patient_info">Modifier info</string>
 
     <string name="menu_clients">Clients</string>
