@@ -23,6 +23,7 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
@@ -70,15 +71,22 @@ constructor(
         }
 
       patients.map {
-        val carePlans = defaultRepository.loadCarePlans(it.logicalId)
-        val conditions = defaultRepository.loadConditions(it.logicalId)
+        val carePlans =
+          defaultRepository.searchResourceFor<CarePlan>(
+            subjectId = it.logicalId,
+            subjectParam = CarePlan.SUBJECT
+          )
+        val conditions =
+          defaultRepository.searchResourceFor<Condition>(
+            subjectId = it.logicalId,
+            subjectParam = Condition.SUBJECT
+          )
 
         AncMapper.transformInputToOutputModel(Anc(it, conditions, carePlans))
       }
     }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
-    // TODO "Return count for Anc register clients"
     return withContext(dispatcherProvider.io()) {
       fhirEngine.count<Condition> { getRegisterDataFilters().forEach { filterBy(it) } }
     }
@@ -86,8 +94,16 @@ constructor(
 
   override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? {
     val patient = defaultRepository.loadResource<Patient>(patientId)!!
-    val carePlans = defaultRepository.loadCarePlans(patient.logicalId)
-    val conditions = defaultRepository.loadConditions(patient.logicalId)
+    val carePlans =
+      defaultRepository.searchResourceFor<CarePlan>(
+        subjectId = patient.logicalId,
+        subjectParam = CarePlan.SUBJECT
+      )
+    val conditions =
+      defaultRepository.searchResourceFor<Condition>(
+        subjectId = patient.logicalId,
+        subjectParam = Condition.SUBJECT
+      )
 
     return AncProfileMapper.transformInputToOutputModel(AncProfile(patient, conditions, carePlans))
   }

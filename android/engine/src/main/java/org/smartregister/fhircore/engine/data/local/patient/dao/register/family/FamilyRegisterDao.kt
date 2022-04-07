@@ -67,7 +67,12 @@ constructor(
 
     return patients.map { p ->
       val members = loadFamilyMembers(p.logicalId)
-      val familyServices = defaultRepository.loadCarePlans(p.logicalId, getRegisterDataFilters())
+      val familyServices =
+        defaultRepository.searchResourceFor<CarePlan>(
+          subjectId = p.logicalId,
+          subjectParam = CarePlan.SUBJECT,
+          filters = getRegisterDataFilters()
+        )
 
       FamilyMapper.transformInputToOutputModel(Family(p, members, familyServices))
     }
@@ -76,7 +81,12 @@ constructor(
   override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData {
     val family = fhirEngine.load(Patient::class.java, patientId)
     val members = loadFamilyMembersDetails(family.logicalId)
-    val familyServices = defaultRepository.loadCarePlans(family.logicalId, getRegisterDataFilters())
+    val familyServices =
+      defaultRepository.searchResourceFor<CarePlan>(
+        subjectId = family.logicalId,
+        subjectParam = CarePlan.SUBJECT,
+        filters = getRegisterDataFilters()
+      )
 
     return FamilyProfileMapper.transformInputToOutputModel(
       FamilyDetail(family, members, familyServices)

@@ -16,16 +16,17 @@
 
 package org.smartregister.fhircore.engine.data.local
 
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
@@ -39,6 +40,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
@@ -77,15 +79,31 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
     }
 
-  suspend fun loadCarePlans(
-    patientId: String,
+  suspend inline fun <reified T : Resource> searchResourceFor(
+    subjectId: String,
+    subjectType: ResourceType = ResourceType.Patient,
+    subjectParam: ReferenceClientParam,
     filters: List<SearchFilter> = listOf()
-  ): List<CarePlan> =
+  ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
-        filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
+        filterByResourceTypeId(subjectParam, subjectType, subjectId)
 
         filters.forEach { filterBy(it) }
+      }
+    }
+
+  suspend fun searchQuestionnaireConfig(
+    filters: List<SearchFilter> = listOf()
+  ): List<QuestionnaireConfig> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search<Questionnaire> { filters.forEach { filterBy(it) } }.map {
+        QuestionnaireConfig(
+          form = it.nameElement.getLocalizedText() ?: it.logicalId,
+          title = it.titleElement.getLocalizedText()
+              ?: it.nameElement.getLocalizedText() ?: it.logicalId,
+          identifier = it.logicalId
+        )
       }
     }
 
