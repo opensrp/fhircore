@@ -51,7 +51,6 @@ constructor(
     loadAll: Boolean,
     appFeatureName: String?
   ): List<RegisterData> =
-    // TODO Refactor to load correct ANC content
     withContext(dispatcherProvider.io()) {
       val pregnancies =
         fhirEngine
