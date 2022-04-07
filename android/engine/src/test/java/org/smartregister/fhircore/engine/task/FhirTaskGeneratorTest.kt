@@ -96,7 +96,9 @@ class FhirTaskGeneratorTest : RobolectricTest() {
 
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "ChildRoutineCarePlan").also {
-        println(it.encodeResourceToString())
+        // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
+        //  so use only months and that would have the unit replaced with 'months'
+        println(it.encodeResourceToString().replace("''", "'month'"))
       }
 
     coEvery { fhirEngine.save(any()) } just runs

@@ -73,6 +73,8 @@ constructor(
   suspend fun fetchConfigurations(appId: String, context: Context) {
     kotlin
       .runCatching {
+        Timber.i("Fetching configs for app $appId")
+
         this._showProgressBar.postValue(true)
         val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
         val data =

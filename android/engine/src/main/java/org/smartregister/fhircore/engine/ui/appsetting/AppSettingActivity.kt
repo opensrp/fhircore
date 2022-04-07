@@ -82,6 +82,11 @@ class AppSettingActivity : AppCompatActivity() {
 
     appSettingViewModel.error.observe(this) {
       if (it.isNotBlank()) showToast(getString(R.string.error_loading_config, it))
+
+      // load configs despite error from local db incase its not first time setup
+      sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.let {
+        appSettingViewModel.loadConfigurations(true)
+      }
     }
 
     /* Todo: Enhancement remember appId by explicitly opting to via a checkbox
@@ -105,7 +110,6 @@ class AppSettingActivity : AppCompatActivity() {
     lastAppId?.let {
       appSettingViewModel.onApplicationIdChanged(it)
       appSettingViewModel.fetchConfigurations(true)
-      appSettingViewModel.loadConfigurations(true)
     }
       ?: run {
         setContent {

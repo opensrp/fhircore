@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Task
 
@@ -48,5 +49,19 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val flags: List<Flag> = listOf(),
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf()
+  ) : ProfileData(id = id, name = name)
+
+  data class AncProfileData(
+    override val id: String,
+    override val name: String,
+    val identifier: String? = null,
+    val age: String,
+    val address: String,
+    val visitStatus: VisitStatus,
+    val conditions: List<Condition> = listOf(),
+    val flags: List<Flag> = listOf(),
+    val services: List<CarePlan> = listOf(),
+    val tasks: List<Task> = listOf(),
+    val visits: List<Encounter> = listOf()
   ) : ProfileData(id = id, name = name)
 }

@@ -50,4 +50,15 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null
   ) : RegisterData(id = id, name = name)
+
+  data class AncRegisterData(
+    override val id: String,
+    override val name: String,
+    val identifier: String? = null,
+    val age: String,
+    val address: String,
+    val visitStatus: VisitStatus,
+    val servicesDue: Int? = null,
+    val servicesOverdue: Int? = null
+  ) : RegisterData(id = id, name = name)
 }
