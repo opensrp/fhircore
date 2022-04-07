@@ -25,30 +25,50 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity" android:exported="false" />
-        <activity android:name=".ui.patient.register.PatientRegisterActivity"  android:exported="false"/>
-        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinLoginActivity" android:exported="false"/>
-        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinSetupActivity" android:exported="false"/>
-        <activity android:name=".ui.patient.details.QuestPatientDetailActivity" android:exported="false"/>
-        <activity android:name=".ui.patient.details.QuestionnaireDataDetailActivity" android:exported="false"/>
-        <activity android:name=".ui.patient.details.SimpleDetailsActivity" android:exported="false"/>
+        <activity
+            android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.patient.register.PatientRegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.ui.pin.PinLoginActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.ui.pin.PinSetupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.patient.details.QuestPatientDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.patient.details.QuestionnaireDataDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.patient.details.SimpleDetailsActivity"
+            android:exported="false" />
         <activity
             android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity"
-            android:theme="@style/AppTheme" android:exported="false"/>
+            android:exported="false"
+            android:theme="@style/AppTheme" />
 
-        <activity android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"
+        <activity
+            android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"
             android:exported="false"
             tools:node="merge" />
 
-        <activity android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity"
+        <activity
+            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity"
             android:exported="false"
             tools:node="merge" />
 
-        <activity android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyFloatingActivity"
+        <activity
+            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyFloatingActivity"
             android:exported="false"
             tools:node="merge" />
 
-        <service android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService" android:exported="false">
+        <service
+            android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>

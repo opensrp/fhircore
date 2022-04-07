@@ -22,16 +22,17 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.RegistrySyncParamConfigService
 
 class AppConfigService @Inject constructor(@ApplicationContext val context: Context) :
-  ConfigService {
+  ConfigService, RegistrySyncParamConfigService {
 
-  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
+  override val resourceSyncParams: Map<ResourceType, String>
     get() =
       mapOf(
-        ResourceType.Patient to emptyMap(),
-        ResourceType.Binary to emptyMap(),
-        ResourceType.Questionnaire to emptyMap(),
+        ResourceType.Patient to "",
+        ResourceType.Binary to "",
+        ResourceType.Questionnaire to "",
       )
 
   override fun provideAuthConfiguration() =
