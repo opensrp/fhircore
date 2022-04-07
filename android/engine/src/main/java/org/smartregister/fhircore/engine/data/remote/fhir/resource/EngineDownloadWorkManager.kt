@@ -27,11 +27,15 @@ import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.app.ConfigServiceLegacy
 
 /** Created by ndegwamartin on 01/04/2022. */
-class EngineDownloadWorkManager @Inject constructor() : DownloadWorkManager {
-  private val resourceTypeList = ResourceType.values().map { it.name }
-  private val urls = LinkedList(listOf("Patient?address-city=NAIROBI"))
+class EngineDownloadWorkManager @Inject constructor(configService: ConfigServiceLegacy) :
+  DownloadWorkManager {
+  private val syncParamURLs = configService.resourceSyncParams.values
+  private val urls = LinkedList(syncParamURLs)
+  private val resourceTypeList =
+    configService.resourceSyncParams.keys.map { resourceType -> resourceType.name }
 
   override suspend fun getNextRequestUrl(context: SyncDownloadContext): String? {
     var url = urls.poll() ?: return null

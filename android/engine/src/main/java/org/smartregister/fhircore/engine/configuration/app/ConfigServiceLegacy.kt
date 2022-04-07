@@ -43,7 +43,7 @@ import timber.log.Timber
  */
 interface ConfigServiceLegacy {
 
-  val resourceSyncParams: Map<ResourceType, Map<String, String>>
+  val resourceSyncParams: Map<ResourceType, String>
 
   /** Provide [AuthConfiguration] for the Application */
   fun provideAuthConfiguration(): AuthConfiguration
@@ -72,7 +72,7 @@ interface ConfigServiceLegacy {
   fun loadRegistrySyncParams(
     configurationRegistry: ConfigurationRegistry,
     authenticatedUserInfo: UserInfo?
-  ): Map<ResourceType, Map<String, String>> {
+  ): Map<ResourceType, String> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
     val syncConfig =
@@ -131,6 +131,22 @@ interface ConfigServiceLegacy {
 
     Timber.i("SYNC CONFIG $pairs")
 
-    return mapOf(*pairs.toTypedArray())
+    return convertResult(mapOf(*pairs.toTypedArray()))
+  }
+
+  fun convertResult(
+    resourceSyncParams: Map<ResourceType, Map<String, String>>
+  ): Map<ResourceType, String> {
+    val syncParams = mutableMapOf<ResourceType, String>()
+
+    resourceSyncParams.forEach {
+      syncParams[it.key] =
+        "${it.key.name}?" +
+          it.value
+            .map { queryFilterParams -> "${queryFilterParams.key}=${queryFilterParams.value}" }
+            .joinToString("&")
+    }
+
+    return syncParams
   }
 }

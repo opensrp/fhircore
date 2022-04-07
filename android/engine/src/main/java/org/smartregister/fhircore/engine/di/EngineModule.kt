@@ -36,6 +36,7 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.ConfigServiceLegacy
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.EngineDownloadWorkManager
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 
@@ -93,5 +94,8 @@ class EngineModule {
   fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
     AccountManager.get(context)
 
-  @Singleton @Provides fun downloadManager(): DownloadWorkManager = EngineDownloadWorkManager()
+  @Singleton
+  @Provides
+  fun downloadManager(configService: ConfigServiceLegacy): DownloadWorkManager =
+    EngineDownloadWorkManager(configService = configService)
 }
