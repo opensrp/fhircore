@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
+import timber.log.Timber
 
 @Composable
 fun RegisterList(
@@ -52,7 +53,7 @@ fun RegisterList(
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error
           item {
             ErrorMessage(
-              message = loadStateError.error.localizedMessage!!,
+              message = loadStateError.error.also { Timber.e(it) }.localizedMessage!!,
               onClickRetry = { retry() }
             )
           }

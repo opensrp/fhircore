@@ -23,7 +23,13 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
@@ -39,6 +45,7 @@ class DefaultPatientRegisterDao
 @Inject
 constructor(
   val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
   val dispatcherProvider: DefaultDispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor
 ) : RegisterDao {
@@ -72,6 +79,41 @@ constructor(
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 
   override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? {
-    return null
+    return withContext(dispatcherProvider.io()) {
+      val patient = fhirEngine.load(Patient::class.java, patientId)!!
+
+      ProfileData.DefaultProfileData(
+        id = patient.logicalId,
+        name = patient.extractName(),
+        identifier = patient.identifierFirstRep.value,
+        address = patient.extractAge(),
+        gender = patient.gender.toCode(),
+        birthdate = patient.birthDate,
+        deathDate =
+          if (patient.hasDeceasedDateTimeType()) patient.deceasedDateTimeType.value else null,
+        deceased =
+          if (patient.hasDeceasedBooleanType()) patient.deceasedBooleanType.booleanValue()
+          else null,
+        visits =
+          defaultRepository.searchResourceFor(
+            subjectId = patientId,
+            subjectParam = Encounter.SUBJECT
+          ),
+        flags =
+          defaultRepository.searchResourceFor(subjectId = patientId, subjectParam = Flag.SUBJECT),
+        conditions =
+          defaultRepository.searchResourceFor(
+            subjectId = patientId,
+            subjectParam = Condition.SUBJECT
+          ),
+        tasks =
+          defaultRepository.searchResourceFor(subjectId = patientId, subjectParam = Task.SUBJECT),
+        services =
+          defaultRepository.searchResourceFor(
+            subjectId = patientId,
+            subjectParam = CarePlan.SUBJECT
+          )
+      )
+    }
   }
 }

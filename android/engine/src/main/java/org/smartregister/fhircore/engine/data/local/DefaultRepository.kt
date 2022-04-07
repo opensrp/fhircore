@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.local
 
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -25,7 +26,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
@@ -77,25 +77,15 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
     }
 
-  suspend fun loadCarePlans(
-    patientId: String,
+  suspend inline fun <reified T : Resource> searchResourceFor(
+    subjectId: String,
+    subjectType: ResourceType = ResourceType.Patient,
+    subjectParam: ReferenceClientParam,
     filters: List<SearchFilter> = listOf()
-  ): List<CarePlan> =
+  ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
-        filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
-
-        filters.forEach { filterBy(it) }
-      }
-    }
-
-  suspend fun loadConditions(
-    patientId: String,
-    filters: List<SearchFilter> = listOf()
-  ): List<Condition> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
+        filterByResourceTypeId(subjectParam, subjectType, subjectId)
 
         filters.forEach { filterBy(it) }
       }
