@@ -91,6 +91,18 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
     }
 
+  suspend fun loadConditions(
+    patientId: String,
+    filters: List<SearchFilter> = listOf()
+  ): List<Condition> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
+
+        filters.forEach { filterBy(it) }
+      }
+    }
+
   suspend fun search(dataRequirement: DataRequirement) =
     when (dataRequirement.type) {
       Enumerations.ResourceType.CONDITION.toCode() ->

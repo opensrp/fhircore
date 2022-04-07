@@ -32,12 +32,11 @@ constructor(
   val familyRegisterDao: FamilyRegisterDao
 ) {
 
-  var registerDaoMap = mutableMapOf<HealthModule, RegisterDao>()
-    private set
-
-  init {
-    registerDaoMap[HealthModule.ANC] = ancPatientRegisterDao
-    registerDaoMap[HealthModule.FAMILY] = familyRegisterDao
-    registerDaoMap[HealthModule.DEFAULT] = defaultPatientRegisterDao
+  val registerDaoMap: MutableMap<HealthModule, RegisterDao> by lazy {
+    mutableMapOf(
+      Pair(HealthModule.ANC, ancPatientRegisterDao),
+      Pair(HealthModule.FAMILY, familyRegisterDao),
+      Pair(HealthModule.DEFAULT, defaultPatientRegisterDao)
+    )
   }
 }

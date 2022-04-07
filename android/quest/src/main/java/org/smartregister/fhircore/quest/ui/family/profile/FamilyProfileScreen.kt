@@ -111,12 +111,12 @@ fun FamilyProfileScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      Column(modifier = modifier.padding(horizontal = 16.dp)) {
+      Column {
         // Household visit section
         Row(
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically,
-          modifier = modifier.padding(vertical = 16.dp)
+          modifier = modifier.padding(16.dp)
         ) {
           Text(text = stringResource(R.string.household))
           OutlinedButton(
