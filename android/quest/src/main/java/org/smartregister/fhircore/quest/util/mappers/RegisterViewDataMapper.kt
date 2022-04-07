@@ -46,7 +46,7 @@ class RegisterViewDataMapper @Inject constructor() : DataMapper<RegisterData, Re
           healthModule = HealthModule.FAMILY,
           status = "", // tODO
           otherStatus = "", // TODO
-          serviceAsButton = true,
+          serviceAsButton = false,
           serviceBackgroundColor =
             if (inputModel.servicesOverdue == 0) DueLightColor else OverdueLightColor,
           serviceForegroundColor =
