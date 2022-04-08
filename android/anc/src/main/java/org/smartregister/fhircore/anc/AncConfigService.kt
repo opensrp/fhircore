@@ -23,6 +23,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.RegistrySyncParamConfigService
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -34,7 +35,7 @@ constructor(
   @ApplicationContext val context: Context,
   configurationRegistry: ConfigurationRegistry,
   sharedPreferences: SharedPreferencesHelper
-) : ConfigService {
+) : ConfigService, RegistrySyncParamConfigService {
 
   private val authenticatedUserInfo by lazy {
     sharedPreferences.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()

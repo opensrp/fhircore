@@ -50,7 +50,7 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  private lateinit var configService: QuestConfigService
+  private lateinit var configService: QuestRegistrySyncParamConfigService
 
   @Before
   fun setUp() {
@@ -81,7 +81,7 @@ class QuestConfigServiceTest : RobolectricTest() {
     runBlocking { configurationRegistry.loadConfigurations("quest", {}) }
 
     configService =
-      QuestConfigService(
+      QuestRegistrySyncParamConfigService(
         context = ApplicationProvider.getApplicationContext(),
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry

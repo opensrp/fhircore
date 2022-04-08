@@ -21,6 +21,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.AppConfigClassification
@@ -42,7 +43,7 @@ class LoginActivity :
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   private val loginViewModel by viewModels<LoginViewModel>()
 
@@ -67,7 +68,7 @@ class LoginActivity :
             }
           }
         } else {
-          syncBroadcaster.runSync()
+          syncBroadcaster.get().runSync()
           loginService.navigateToHome()
         }
       }
@@ -94,7 +95,7 @@ class LoginActivity :
 
   private fun goToHomeScreen(sharedPreferencesKey: String, sharedPreferencesValue: Boolean) {
     loginViewModel.sharedPreferences.write(sharedPreferencesKey, sharedPreferencesValue)
-    syncBroadcaster.runSync()
+    syncBroadcaster.get().runSync()
     loginService.navigateToHome()
   }
 

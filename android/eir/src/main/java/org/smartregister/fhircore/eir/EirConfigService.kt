@@ -22,9 +22,10 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.RegistrySyncParamConfigService
 
 class EirConfigService @Inject constructor(@ApplicationContext val context: Context) :
-  ConfigService {
+  ConfigService, RegistrySyncParamConfigService {
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() =

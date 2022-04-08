@@ -27,6 +27,7 @@ import com.google.android.fhir.sync.Authenticator
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
+import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,7 +38,6 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.app.RegistrySyncParamConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.EngineDownloadWorkManager
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 
 @InstallIn(SingletonComponent::class)
@@ -99,5 +99,7 @@ class EngineModule {
   fun downloadManager(
     registrySyncParamConfigService: RegistrySyncParamConfigService
   ): DownloadWorkManager =
-    EngineDownloadWorkManager(registrySyncParamConfigService = registrySyncParamConfigService)
+    ResourceParamsBasedDownloadWorkManager(
+      syncParams = registrySyncParamConfigService.resourceSyncParams
+    )
 }

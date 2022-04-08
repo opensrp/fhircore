@@ -33,12 +33,12 @@ import timber.log.Timber
  */
 interface RegistrySyncParamConfigService {
 
-  val resourceSyncParams: Map<ResourceType, String>
+  val resourceSyncParams: Map<ResourceType, Map<String, String>>
 
   fun loadRegistrySyncParams(
     configurationRegistry: ConfigurationRegistry,
     authenticatedUserInfo: UserInfo?
-  ): Map<ResourceType, String> {
+  ): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
     val syncConfig =
@@ -97,22 +97,6 @@ interface RegistrySyncParamConfigService {
 
     Timber.i("SYNC CONFIG $pairs")
 
-    return convertResult(mapOf(*pairs.toTypedArray()))
-  }
-
-  fun convertResult(
-    resourceSyncParams: Map<ResourceType, Map<String, String>>
-  ): Map<ResourceType, String> {
-    val syncParams = mutableMapOf<ResourceType, String>()
-
-    resourceSyncParams.forEach {
-      syncParams[it.key] =
-        "${it.key.name}?" +
-          it.value
-            .map { queryFilterParams -> "${queryFilterParams.key}=${queryFilterParams.value}" }
-            .joinToString("&")
-    }
-
-    return syncParams
+    return mapOf(*pairs.toTypedArray())
   }
 }

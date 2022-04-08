@@ -58,17 +58,17 @@ class ConfigServiceTest : RobolectricTest() {
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
     syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.contains("_count"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
 
     syncParam.keys.filter { it.isIn(ResourceType.Library) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.contains("_id"))
-      Assert.assertTrue(syncParam[it]!!.contains("_count"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_id"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
 
     syncParam.keys.filter { it.isIn(ResourceType.Patient) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.contains("organization"))
-      Assert.assertTrue(syncParam[it]!!.contains("_count"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
 
     syncParam.keys
@@ -81,20 +81,20 @@ class ConfigServiceTest : RobolectricTest() {
         )
       }
       .forEach {
-        Assert.assertTrue(syncParam[it]!!.contains("subject.organization"))
-        Assert.assertTrue(syncParam[it]!!.contains("_count"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("subject.organization"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
       }
 
     syncParam.keys
       .filter { it.isIn(ResourceType.Observation, ResourceType.QuestionnaireResponse) }
       .forEach {
-        Assert.assertTrue(syncParam[it]!!.contains("_filter"))
-        Assert.assertTrue(syncParam[it]!!.contains("_count"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_filter"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
       }
 
     syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.contains("publisher"))
-      Assert.assertTrue(syncParam[it]!!.contains("_count"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("publisher"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
   }
 }
