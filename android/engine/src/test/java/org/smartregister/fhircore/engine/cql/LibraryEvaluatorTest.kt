@@ -22,9 +22,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import io.mockk.coEvery
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -104,7 +102,8 @@ class LibraryEvaluatorTest {
   @Test
   fun testGetStringValueWithResourceShouldReturnCorrectStringRepresentation() {
     val resource = Patient().apply { id = "123" }
-    val resourceStr = FhirContext.forR4Cached().newJsonParser().encodeResourceToString(resource)
+    val resourceStr =
+      FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(resource)
 
     val result = evaluator!!.getStringRepresentation(resource)
 
@@ -161,10 +160,10 @@ class LibraryEvaluatorTest {
     val fhirEngine = mockk<FhirEngine>()
     val defaultRepository = DefaultRepository(fhirEngine, DefaultDispatcherProvider())
 
-    coEvery { fhirEngine.load(Library::class.java, cqlLibrary.logicalId) } returns cqlLibrary
-    coEvery { fhirEngine.load(Library::class.java, fhirHelpersLibrary.logicalId) } returns
+    coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
-    coEvery { fhirEngine.save(any()) } just runs
+    coEvery { fhirEngine.create(any()) } answers { listOf() }
 
     val result = runBlocking {
       evaluator!!.runCqlLibrary(

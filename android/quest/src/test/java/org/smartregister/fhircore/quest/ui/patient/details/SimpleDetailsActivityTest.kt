@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Intent
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -100,7 +101,7 @@ class SimpleDetailsActivityTest : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(g6pdStructureMap, "PatientRegistration")
 
-    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)
@@ -129,13 +130,12 @@ class SimpleDetailsActivityTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(g6pdStructureMap, "TestResults")
 
-    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)

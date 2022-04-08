@@ -21,6 +21,7 @@ import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
@@ -60,6 +61,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
@@ -123,7 +125,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           libraryEvaluator = libraryEvaluator
         )
       )
-    coEvery { fhirEngine.save(any()) } answers {}
+    coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.update(any()) } answers {}
 
     coEvery { defaultRepo.save(any()) } returns Unit
@@ -134,7 +136,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Setup sample resources
 
-    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val qJson =
       context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
 
@@ -143,14 +145,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testLoadQuestionnaireShouldCallDefaultRepoLoadResource() {
-    coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns
       Questionnaire().apply { id = "12345" }
 
     val result = runBlocking {
       questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.DEFAULT)
     }
 
-    coVerify { fhirEngine.load(Questionnaire::class.java, "12345") }
+    coVerify { fhirEngine.get(ResourceType.Questionnaire, "12345") }
     Assert.assertEquals("12345", result!!.logicalId)
   }
 
@@ -182,7 +184,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             }
           )
       }
-    coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
 
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
 
@@ -245,7 +247,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
       }
 
-    coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
 
     val result = runBlocking {
       questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.READ_ONLY)
@@ -310,7 +312,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
       }
 
-    coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, "12345") } returns questionnaire
 
     val result = runBlocking {
       questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT)
@@ -343,9 +345,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     mockkObject(ResourceMapper)
     val patient = Patient().apply { id = "123456" }
 
-    coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
-    coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
-    coEvery { ResourceMapper.extract(any(), any(), any(), any(), any()) } returns
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns Patient()
+    coEvery { fhirEngine.get(ResourceType.StructureMap, any()) } returns StructureMap()
+    coEvery { ResourceMapper.extract(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { this.resource = patient } }
 
     val questionnaire =
@@ -372,7 +374,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       coVerify { defaultRepo.addOrUpdate(patient) }
       coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
-      coVerify(timeout = 10000) { ResourceMapper.extract(any(), any(), any(), any(), any()) }
+      coVerify(timeout = 10000) { ResourceMapper.extract(any(), any(), any()) }
     }
     unmockkObject(ResourceMapper)
   }
@@ -413,7 +415,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testExtractAndSaveResourcesWithResourceIdShouldSaveQuestionnaireResponse() {
-    coEvery { fhirEngine.load(Patient::class.java, "12345") } returns Patient()
+    coEvery { fhirEngine.get(ResourceType.Patient, "12345") } returns Patient()
 
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
     val questionnaire =
@@ -444,10 +446,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testExtractAndSaveResourcesWithEditModeShouldSaveQuestionnaireResponse() {
     mockkObject(ResourceMapper)
 
-    coEvery { ResourceMapper.extract(any(), any(), any(), any(), any()) } returns
+    coEvery { ResourceMapper.extract(any(), any(), any()) } returns
       Bundle().apply { addEntry().resource = Patient().apply { id = "12345" } }
 
-    coEvery { fhirEngine.load(Patient::class.java, "12345") } returns Patient()
+    coEvery { fhirEngine.get(ResourceType.Patient, "12345") } returns Patient()
     coEvery { defaultRepo.addOrUpdate(any()) } just runs
 
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
@@ -496,7 +498,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
       }
 
-    coEvery { fhirEngine.load(Patient::class.java, "1") } returns patient
+    coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns patient
 
     runBlocking {
       val loadedPatient = questionnaireViewModel.loadPatient("1")
@@ -596,7 +598,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testExtractAndSaveResourcesWithExperimentalQuestionnaireShouldNotSave() {
     mockkObject(ResourceMapper)
 
-    coEvery { ResourceMapper.extract(any(), any(), any(), any(), any()) } returns
+    coEvery { ResourceMapper.extract(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = Patient() } }
 
     val questionnaire =
@@ -615,7 +617,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     }
 
-    coVerify { ResourceMapper.extract(any(), any(), any(), any(), any()) }
+    coVerify { ResourceMapper.extract(any(), any(), any()) }
     coVerify(inverse = true) { defaultRepo.addOrUpdate(questionnaireResponse) }
 
     unmockkObject(ResourceMapper)
@@ -673,9 +675,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         this.birthDate = questionnaireViewModel.calculateDobFromAge(25)
       }
 
-    coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
-    coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
-    coEvery { ResourceMapper.extract(any(), any(), any(), any(), any()) } returns
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns Patient()
+    coEvery { fhirEngine.get(ResourceType.StructureMap, any()) } returns StructureMap()
+    coEvery { ResourceMapper.extract(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { this.resource = patient } }
 
     val questionnaire =
@@ -813,22 +815,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val structureMap = StructureMap()
     val structureMapIdSlot = slot<String>()
 
-    coEvery { fhirEngine.load(any<Class<StructureMap>>(), any()) } returns structureMap
+    coEvery { fhirEngine.get(ResourceType.StructureMap, any()) } returns structureMap
 
     runBlocking {
       questionnaireViewModel.fetchStructureMap("https://someorg.org/StructureMap/678934")
     }
 
-    coVerify(exactly = 1) {
-      fhirEngine.load(any<Class<StructureMap>>(), capture(structureMapIdSlot))
-    }
+    coVerify(exactly = 1) { fhirEngine.get(ResourceType.StructureMap, capture(structureMapIdSlot)) }
 
     Assert.assertEquals("678934", structureMapIdSlot.captured)
   }
 
   @Test
   fun `extractAndSaveResources() should call saveBundleResources when Questionnaire uses Definition-based extraction`() {
-    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, any()) } returns
       samplePatientRegisterQuestionnaire
 
     val questionnaire = Questionnaire()
@@ -865,7 +865,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun `extractAndSaveResources() should call runCqlFor when Questionnaire uses cqf-library extenion`() {
-    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, any()) } returns
       samplePatientRegisterQuestionnaire
 
     val questionnaire = Questionnaire()

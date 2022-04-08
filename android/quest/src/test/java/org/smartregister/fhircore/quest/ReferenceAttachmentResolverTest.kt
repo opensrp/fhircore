@@ -29,6 +29,7 @@ import okhttp3.MediaType
 import okhttp3.ResponseBody
 import okio.BufferedSource
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -61,7 +62,7 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   fun testResolveBinaryResourceShouldReturnBinary() {
     coroutineTestRule.runBlockingTest {
       val binary = Binary().apply { id = "bId" }
-      coEvery { fhirEngine.load(Binary::class.java, any()) } returns binary
+      coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns binary
       Assert.assertEquals(
         binary,
         referenceAttachmentResolver.resolveBinaryResource(

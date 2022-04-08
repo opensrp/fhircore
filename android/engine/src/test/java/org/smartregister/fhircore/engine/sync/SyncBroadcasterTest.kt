@@ -20,11 +20,11 @@ import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
-import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.Before
 import org.mockito.Mock
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
@@ -34,25 +34,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 @ExperimentalCoroutinesApi
 internal class SyncBroadcasterTest {
 
-  private val syncListenerSpy =
-    spyk<OnSyncListener>(
-      object : OnSyncListener {
-        override fun onSync(state: State) {
-          // onSync that does nothing
-        }
-      }
-    )
-
-  private val syncInitiatorSpy =
-    spyk<OnSyncListener>(
-      object : OnSyncListener {
-
-        override fun onSync(state: State) {
-          TODO("Not yet implemented")
-        }
-      }
-    )
-
   @Mock private lateinit var fhirResourceService: FhirResourceService
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   @Mock private lateinit var configService: ConfigService
@@ -60,6 +41,7 @@ internal class SyncBroadcasterTest {
   @Mock private lateinit var syncJob: SyncJob
   @Mock private lateinit var fhirEngine: FhirEngine
   @Mock private lateinit var dispatcherProvider: DispatcherProvider
+  @Mock private lateinit var configurationRegistry: ConfigurationRegistry
   private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
@@ -71,7 +53,8 @@ internal class SyncBroadcasterTest {
     sharedPreferencesHelper = SharedPreferencesHelper(context)
     syncBroadcaster =
       SyncBroadcaster(
-        fhirResourceDataSource,
+        configurationRegistry,
+        sharedPreferencesHelper,
         configService,
         syncJob,
         fhirEngine,

@@ -102,7 +102,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testFetchDemographicsShouldReturnTestPatient() =
     coroutineTestRule.runBlockingTest {
-      coEvery { fhirEngine.load(Patient::class.java, "1") } returns
+      coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns
         buildPatient("1", "doe", "john", 0)
 
       val patient = repository.fetchDemographics("1")
@@ -116,7 +116,7 @@ class PatientRepositoryTest : RobolectricTest() {
       mockkStatic(::loadAdditionalData)
       coEvery { loadAdditionalData(any(), any(), any()) } returns
         listOf(AdditionalData("label", "value", "valuePrefix", null))
-      coEvery { fhirEngine.load(Patient::class.java, "1") } returns
+      coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns
         buildPatient("1", "doe", "john", 0)
 
       val patientItem = repository.fetchDemographicsWithAdditionalData("1")
@@ -158,10 +158,10 @@ class PatientRepositoryTest : RobolectricTest() {
       val yesterday =
         Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
 
-      coEvery { fhirEngine.load(Questionnaire::class.java, "1") } returns
+      coEvery { fhirEngine.get(ResourceType.Questionnaire, "1") } returns
         Questionnaire().apply { name = "First Questionnaire" }
 
-      coEvery { fhirEngine.load(Questionnaire::class.java, "2") } returns
+      coEvery { fhirEngine.get(ResourceType.Questionnaire, "2") } returns
         Questionnaire().apply { name = "Second Questionnaire" }
 
       coEvery {
@@ -199,7 +199,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testGetQuestionnaireOfQuestionnaireResponseShouldReturnNonEmptyQuestionnaire() {
     coroutineTestRule.runBlockingTest {
-      coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
+      coEvery { fhirEngine.get(ResourceType.Questionnaire, any()) } returns
         Questionnaire().apply {
           id = "1"
           name = "Sample Questionnaire name"
@@ -219,7 +219,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testLoadEncounterShouldReturnNonEmptyEncounter() = runBlockingTest {
-    coEvery { fhirEngine.load(Encounter::class.java, any()) } returns
+    coEvery { fhirEngine.get(ResourceType.Encounter, any()) } returns
       Encounter().apply {
         id = "1"
         status = Encounter.EncounterStatus.INPROGRESS
@@ -234,7 +234,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testGetQuestionnaireOfQuestionnaireResponseShouldReturnEmptyQuestionnaire() {
     coroutineTestRule.runBlockingTest {
-      coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
+      coEvery { fhirEngine.get(ResourceType.Questionnaire, any()) } returns Questionnaire()
 
       val questionnaire = repository.getQuestionnaire(QuestionnaireResponse())
 
@@ -397,7 +397,7 @@ class PatientRepositoryTest : RobolectricTest() {
       }
     } returns getObservations()
 
-    coEvery { fhirEngine.load(Encounter::class.java, any()) } returns getEncounter()
+    coEvery { fhirEngine.get(ResourceType.Encounter, any()) } returns getEncounter()
 
     val questionnaire =
       Questionnaire().apply {

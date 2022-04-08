@@ -45,7 +45,7 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 class CqlContentTest : RobolectricTest() {
-  val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+  val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
   val parser = fhirContext.newJsonParser()!!
   val evaluator = LibraryEvaluator().apply { initialize() }
 
@@ -85,8 +85,8 @@ class CqlContentTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
 
-    coEvery { fhirEngine.load(Library::class.java, cqlLibrary.logicalId) } returns cqlLibrary
-    coEvery { fhirEngine.load(Library::class.java, fhirHelpersLibrary.logicalId) } returns
+    coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.save(any()) } just runs
     coEvery { defaultRepository.search(any()) } returns listOf()
@@ -143,8 +143,8 @@ class CqlContentTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
 
-    coEvery { fhirEngine.load(Library::class.java, cqlLibrary.logicalId) } returns cqlLibrary
-    coEvery { fhirEngine.load(Library::class.java, fhirHelpersLibrary.logicalId) } returns
+    coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.save(any()) } just runs
     coEvery { defaultRepository.search(any()) } returns listOf()
@@ -205,8 +205,8 @@ class CqlContentTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
 
-    coEvery { fhirEngine.load(Library::class.java, cqlLibrary.logicalId) } returns cqlLibrary
-    coEvery { fhirEngine.load(Library::class.java, fhirHelpersLibrary.logicalId) } returns
+    coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.save(any()) } just runs
 

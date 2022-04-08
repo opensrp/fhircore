@@ -68,7 +68,7 @@ class RegisterViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     val fhirEngine = spyk<FhirEngine>()
-    coEvery { fhirEngine.load(Patient::class.java, "barcodeId") } returns Patient()
+    coEvery { fhirEngine.get(ResourceType.Patient, "barcodeId") } returns Patient()
 
     viewModel =
       RegisterViewModel(

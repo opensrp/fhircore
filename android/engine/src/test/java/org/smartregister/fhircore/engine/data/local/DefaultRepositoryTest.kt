@@ -42,6 +42,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
@@ -84,7 +85,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val savedPatientSlot = slot<Patient>()
 
     val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.load(Patient::class.java, patient.idElement.idPart) } returns patient
+    coEvery { fhirEngine.get(ResourceType.Patient, patient.idElement.idPart) } returns patient
     coEvery { fhirEngine.update(any()) } just runs
 
     val defaultRepository =
@@ -93,7 +94,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     // Call the function under test
     runBlocking { defaultRepository.addOrUpdate(patient) }
 
-    coVerify { fhirEngine.load(Patient::class.java, patientId) }
+    coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     coVerify { fhirEngine.update(capture(savedPatientSlot)) }
 
     savedPatientSlot.captured.run {
@@ -108,11 +109,11 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
     // verify exception scenario
-    coEvery { fhirEngine.load(Patient::class.java, any()) } throws
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
       mockk<ResourceNotFoundException>()
-    coEvery { fhirEngine.save(any()) } returns Unit
+    coEvery { fhirEngine.create(any()) } returns listOf()
     runBlocking { defaultRepository.addOrUpdate(Patient()) }
-    coVerify(exactly = 1) { fhirEngine.save(any()) }
+    coVerify(exactly = 1) { fhirEngine.create(any()) }
   }
 
   @Test
@@ -162,9 +163,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     val resource = spyk(Patient())
 
     val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.load(Patient::class.java, any()) } throws
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
       ResourceNotFoundException("Exce", "Exce")
-    coEvery { fhirEngine.create(any()) } just runs
+    coEvery { fhirEngine.create(any()) } returns listOf()
     val defaultRepository =
       DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
@@ -181,9 +182,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     val resource = Patient()
 
     val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.load(Patient::class.java, any()) } throws
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
       ResourceNotFoundException("Exce", "Exce")
-    coEvery { fhirEngine.save(any()) } just runs
+    coEvery { fhirEngine.create(any()) } returns listOf()
     val defaultRepository =
       DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
@@ -213,14 +214,14 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun testGetBinaryResource() = runBlockingTest {
     val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.load(Binary::class.java, any()) } returns Binary().apply { id = "111" }
+    coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns Binary().apply { id = "111" }
 
     val defaultRepository =
       DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     val result = defaultRepository.getBinary("111")
 
-    coVerify { fhirEngine.load(Binary::class.java, any()) }
+    coVerify { fhirEngine.get(ResourceType.Binary, any()) }
 
     Assert.assertEquals("111", result.logicalId)
   }

@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
@@ -89,8 +90,8 @@ class FamilyRepositoryTest : RobolectricTest() {
     coEvery { ancPatientRepository.searchCarePlan(any(), any()) } returns emptyList()
     coEvery { ancPatientRepository.searchCondition(any()) } returns emptyList()
     coEvery { ancPatientRepository.searchPatientByLink(any()) } returns patients
-    coEvery { fhirEngine.load(Patient::class.java, "1111") } returns patients[0]
-    coEvery { fhirEngine.load(Patient::class.java, "2222") } returns patients[1]
+    coEvery { fhirEngine.get(ResourceType.Patient, "1111") } returns patients[0]
+    coEvery { fhirEngine.get(ResourceType.Patient, "2222") } returns patients[1]
     coEvery { fhirEngine.count(any()) } returns 10
 
     runBlocking {
@@ -128,9 +129,9 @@ class FamilyRepositoryTest : RobolectricTest() {
       }
     val currentFlag = Flag()
 
-    coEvery { fhirEngine.load(Patient::class.java, "current") } returns current
-    coEvery { fhirEngine.load(Patient::class.java, "next") } returns next
-    coEvery { fhirEngine.load(Patient::class.java, "member") } returns member
+    coEvery { fhirEngine.get(ResourceType.Patient, "current") } returns current
+    coEvery { fhirEngine.get(ResourceType.Patient, "next") } returns next
+    coEvery { fhirEngine.get(ResourceType.Patient, "member") } returns member
     coEvery { repository.ancPatientRepository.searchPatientByLink("current") } returns
       listOf(member)
     coEvery { repository.ancPatientRepository.searchCarePlan("current", familyTag) } returns
@@ -142,9 +143,9 @@ class FamilyRepositoryTest : RobolectricTest() {
 
     runBlocking { repository.changeFamilyHead("current", "next") }
 
-    coVerify { fhirEngine.save(current) }
-    coVerify { fhirEngine.save(next) }
-    coVerify { fhirEngine.save(currentFlag) }
+    coVerify { fhirEngine.create(current) }
+    coVerify { fhirEngine.create(next) }
+    coVerify { fhirEngine.create(currentFlag) }
     coVerify { repository.ancPatientRepository.searchPatientByLink("current") }
     coVerify { repository.ancPatientRepository.searchCarePlan("current", familyTag) }
     coVerify { repository.ancPatientRepository.fetchActiveFlag("current", familyTag) }

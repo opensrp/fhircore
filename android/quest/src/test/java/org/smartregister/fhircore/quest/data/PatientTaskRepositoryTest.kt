@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
@@ -91,7 +92,7 @@ class PatientTaskRepositoryTest : RobolectricTest() {
       }
 
     coEvery { fhirEngine.search<Task>(any()) } returns tasks
-    coEvery { fhirEngine.load(Patient::class.java, any()) } returns patient
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns patient
 
     runBlocking {
       val patientTasks = repository.loadData("", 0, true)

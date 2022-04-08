@@ -92,12 +92,12 @@ class ApplicationExtensionTest : RobolectricTest() {
     val patientId = "patient-john-doe"
     val patient2 = Patient().apply { id = patientId }
 
-    coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient2
+    coEvery { fhirEngine.get<Patient>(patientId) } returns patient2
 
     val patient: Patient?
     runBlocking { patient = fhirEngine.loadResource(patientId) }
 
-    coVerify { fhirEngine.load(Patient::class.java, patientId) }
+    coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     Assert.assertEquals(patient2, patient)
     Assert.assertEquals(patient2.id, patient!!.id)
   }
@@ -106,13 +106,13 @@ class ApplicationExtensionTest : RobolectricTest() {
   fun `FhirEngine#loadResource() should return null when resource not found and ResourceNotFoundException is thrown`() {
     val fhirEngine = mockk<FhirEngine>()
     val patientId = "patient-john-doe"
-    coEvery { fhirEngine.load(Patient::class.java, patientId) } throws
+    coEvery { fhirEngine.get(ResourceType.Patient, patientId) } throws
       ResourceNotFoundException("Patient not found", "Patient with id $patientId was not found")
 
     val patient: Patient?
     runBlocking { patient = fhirEngine.loadResource(patientId) }
 
-    coVerify { fhirEngine.load(Patient::class.java, patientId) }
+    coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     Assert.assertNull(patient)
   }
 

@@ -108,7 +108,7 @@ internal class ReportViewModelEmptySelectedPatientTest : RobolectricTest() {
   @Test
   fun testEvaluateMeasureForPopulation() {
     coEvery { fhirOperatorDecorator.loadLib(any()) } just runs
-    coEvery { fhirEngine.save(any()) } returns Unit
+    coEvery { fhirEngine.create(any()) } returns Unit
 
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),

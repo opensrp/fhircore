@@ -109,13 +109,13 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
 
     // coEvery { recordVaccineViewModel.loadPatient(patientId) } returns patient
-    coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
+    coEvery { fhirEngine.get(ResourceType.Patient, patientId) } returns patient
     coEvery { recordVaccineViewModel.loadPatientImmunization(patientId) } returns immunization
 
     val resources: Array<Resource>
     runBlocking { resources = recordVaccineViewModel.getPopulationResources(intent) }
 
-    coVerify { fhirEngine.load(Patient::class.java, patientId) }
+    coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     coVerify { recordVaccineViewModel.loadPatientImmunization(patientId) }
     Assert.assertEquals(patient, resources[0])
     Assert.assertEquals(immunization, resources[1])

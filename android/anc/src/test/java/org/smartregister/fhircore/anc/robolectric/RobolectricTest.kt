@@ -20,6 +20,7 @@ import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
@@ -90,10 +91,10 @@ abstract class RobolectricTest {
       .let {
         it.replace("#TODAY", Date().asYyyyMmDd()).replace("#NOW", DateTimeType.now().valueAsString)
       }
-      .let { FhirContext.forR4Cached().newJsonParser().parseResource(it) }
+      .let { FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().parseResource(it) }
 
   fun Resource.convertToString(trimTime: Boolean) =
-    FhirContext.forR4Cached().newJsonParser().encodeResourceToString(this).let {
+    FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(this).let {
       // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
       // replace time part 11:11:11 with xx:xx:xx
       if (trimTime)
@@ -110,7 +111,7 @@ abstract class RobolectricTest {
   ): Bundle {
     val map = scu.parse(structureMapText, sourceGroup)
 
-    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
     println(iParser.encodeResourceToString(map))
 

@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverter
 class FhirResourceConverterTest {
   @Test
   fun testFhirConverterShouldConvertResourceCorrectly() {
-    val parser = FhirContext.forR4Cached().newJsonParser()
+    val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val input = parser.encodeResourceToString(buildPatient()).toByteArray().toResponseBody()
 
     val result = FhirConverter(parser).convert(input) as Patient
