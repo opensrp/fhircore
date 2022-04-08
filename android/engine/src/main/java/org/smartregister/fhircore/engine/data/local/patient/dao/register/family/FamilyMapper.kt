@@ -17,9 +17,6 @@
 package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
 import com.google.android.fhir.logicalId
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
@@ -32,18 +29,6 @@ import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.engine.util.extension.lastSeenFormat
 import org.smartregister.fhircore.engine.util.extension.overdue
-
-data class Family(
-  val family: Patient,
-  val members: List<FamilyMember>,
-  val servicesDue: List<CarePlan> = listOf()
-)
-
-data class FamilyMember(
-  val patient: Patient,
-  val conditions: List<Condition> = listOf(),
-  val servicesDue: List<CarePlan> = listOf()
-)
 
 object FamilyMapper : DataMapper<Family, RegisterData.FamilyRegisterData> {
 

@@ -17,12 +17,6 @@
 package org.smartregister.fhircore.engine.data.local.patient.dao.register.anc
 
 import com.google.android.fhir.logicalId
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Flag
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.VisitStatus
 import org.smartregister.fhircore.engine.domain.util.DataMapper
@@ -31,15 +25,6 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.milestonesDue
 import org.smartregister.fhircore.engine.util.extension.milestonesOverdue
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
-
-data class AncProfile(
-  val patient: Patient,
-  val conditions: List<Condition> = listOf(),
-  val carePlans: List<CarePlan> = listOf(),
-  val tasks: List<Task> = listOf(),
-  val flags: List<Flag> = listOf(),
-  val encounters: List<Encounter> = listOf()
-)
 
 object AncProfileMapper : DataMapper<AncProfile, ProfileData.AncProfileData> {
 

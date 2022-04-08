@@ -38,11 +38,11 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewData
+import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 
 @Composable
 fun PersonalData(
-  patientProfileViewData: PatientProfileViewData,
+  patientProfileViewData: ProfileViewData.PatientProfileViewData,
   modifier: Modifier = Modifier,
 ) {
   Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
@@ -85,7 +85,7 @@ private fun OtherDetailsItem(title: String, value: String, modifier: Modifier = 
 @Preview(showBackground = true)
 fun PersonalDataPreview() {
   val patientProfileData =
-    PatientProfileViewData(
+    ProfileViewData.PatientProfileViewData(
       name = "Kim Panny",
       status = "Family Head",
       id = "99358357",

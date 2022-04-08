@@ -15,17 +15,23 @@
  */
 
 package org.smartregister.fhircore.quest.ui.patient.profile.model
+sealed class ProfileViewData(open val id: String = "", open val name: String) {
+  data class PatientProfileViewData(
+    override val id: String = "",
+    override val name: String = "",
+    val status: String = "",
+    val sex: String = "",
+    val age: String = "",
+    val dob: String = "",
+    val tasks: List<PatientProfileRowItem> = emptyList(),
+    val forms: List<PatientFormViewData> = emptyList(),
+    val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
+    val upcomingServices: List<PatientProfileRowItem> = emptyList(),
+    val ancCardData: List<PatientProfileRowItem> = emptyList()
+  ) : ProfileViewData(name = name, id = id)
 
-data class PatientProfileViewData(
-  val name: String = "",
-  val status: String = "",
-  val id: String = "",
-  val sex: String = "",
-  val age: String = "",
-  val dob: String = "",
-  val tasks: List<PatientProfileRowItem> = emptyList(),
-  val forms: List<PatientFormViewData> = emptyList(),
-  val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
-  val upcomingServices: List<PatientProfileRowItem> = emptyList(),
-  val ancCardData: List<PatientProfileRowItem> = emptyList()
-)
+  data class FamilyProfileViewData(
+    override val id: String = "",
+    override val name: String = "",
+  ) : ProfileViewData(id = id, name = name)
+}

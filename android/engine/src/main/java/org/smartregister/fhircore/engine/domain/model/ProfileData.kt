@@ -26,6 +26,21 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
+data class FamilyMemberProfileData(
+  val id: String,
+  val name: String,
+  val identifier: String? = null,
+  val birthdate: Date?,
+  val gender: String,
+  val isHead: Boolean,
+  val pregnant: Boolean? = null,
+  val deathDate: Date? = null,
+  val conditions: List<Condition> = listOf(),
+  val flags: List<Flag> = listOf(),
+  val services: List<CarePlan> = listOf(),
+  val tasks: List<Task> = listOf()
+)
+
 // TODO convert to a sealed class to capture data for different health modules
 sealed class ProfileData(open val id: String, open val name: String) {
   data class DefaultProfileData(
@@ -54,21 +69,6 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val address: String,
     val head: FamilyMemberProfileData,
     val members: List<FamilyMemberProfileData>,
-    val services: List<CarePlan> = listOf(),
-    val tasks: List<Task> = listOf()
-  ) : ProfileData(id = id, name = name)
-
-  data class FamilyMemberProfileData(
-    override val id: String,
-    override val name: String,
-    val identifier: String? = null,
-    val birthdate: Date?,
-    val gender: String,
-    val isHead: Boolean,
-    val pregnant: Boolean? = null,
-    val deathDate: Date? = null,
-    val conditions: List<Condition> = listOf(),
-    val flags: List<Flag> = listOf(),
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf()
   ) : ProfileData(id = id, name = name)

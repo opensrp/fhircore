@@ -26,19 +26,19 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewData
-import org.smartregister.fhircore.quest.util.mappers.PatientProfileViewDataMapper
+import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
+import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
 @HiltViewModel
 class PatientProfileViewModel
 @Inject
 constructor(
   val patientRegisterRepository: PatientRegisterRepository,
-  val patientProfileViewDataMapper: PatientProfileViewDataMapper
+  val profileViewDataMapper: ProfileViewDataMapper
 ) : ViewModel() {
 
-  val patientProfileViewData: MutableState<PatientProfileViewData> =
-    mutableStateOf(PatientProfileViewData())
+  val patientProfileViewData: MutableState<ProfileViewData.PatientProfileViewData> =
+    mutableStateOf(ProfileViewData.PatientProfileViewData())
 
   fun fetchPatientProfileData(
     appFeatureName: String?,
@@ -50,7 +50,8 @@ constructor(
         patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
           ?.let {
             patientProfileViewData.value =
-              patientProfileViewDataMapper.transformInputToOutputModel(it)
+              profileViewDataMapper.transformInputToOutputModel(it) as
+                ProfileViewData.PatientProfileViewData
           }
       }
   }

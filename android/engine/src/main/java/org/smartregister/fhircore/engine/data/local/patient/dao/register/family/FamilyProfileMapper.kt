@@ -17,11 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
 import com.google.android.fhir.logicalId
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Flag
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.domain.model.FamilyMemberProfileData
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -29,21 +25,6 @@ import org.smartregister.fhircore.engine.util.extension.extractDeathDate
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
-
-data class FamilyDetail(
-  val family: Patient,
-  val members: List<FamilyMemberDetail>,
-  val servicesDue: List<CarePlan> = listOf(),
-  val tasks: List<Task> = listOf()
-)
-
-data class FamilyMemberDetail(
-  val patient: Patient,
-  val conditions: List<Condition> = listOf(),
-  val flags: List<Flag> = listOf(),
-  val servicesDue: List<CarePlan> = listOf(),
-  val tasks: List<Task> = listOf()
-)
 
 object FamilyProfileMapper : DataMapper<FamilyDetail, ProfileData.FamilyProfileData> {
 
@@ -65,8 +46,8 @@ object FamilyProfileMapper : DataMapper<FamilyDetail, ProfileData.FamilyProfileD
     )
   }
 
-  fun FamilyMemberDetail.familyMemberProfileData(): ProfileData.FamilyMemberProfileData {
-    return ProfileData.FamilyMemberProfileData(
+  fun FamilyMemberDetail.familyMemberProfileData(): FamilyMemberProfileData {
+    return FamilyMemberProfileData(
       id = patient.logicalId,
       name = patient.extractName(),
       birthdate = patient.birthDate,
