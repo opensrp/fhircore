@@ -35,13 +35,15 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val head: FamilyMemberRegisterData,
     val members: List<FamilyMemberRegisterData>,
     val servicesDue: Int? = null,
-    val servicesOverdue: Int? = null
+    val servicesOverdue: Int? = null,
+    val lastSeen: String? = null
   ) : RegisterData(id = id, name = name)
 
   data class FamilyMemberRegisterData(
     override val id: String,
     override val name: String,
     val identifier: String? = null,
+    val age: String,
     val birthdate: Date?,
     val gender: String,
     val isHead: Boolean,

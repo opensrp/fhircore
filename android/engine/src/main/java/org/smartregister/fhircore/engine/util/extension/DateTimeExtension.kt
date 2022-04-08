@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -53,7 +52,7 @@ fun Date?.makeItReadable(): String {
 }
 
 fun Date.daysPassed() =
-  TimeUnit.DAYS.convert(Instant.now().toEpochMilli() - this.time, TimeUnit.MILLISECONDS)
+  TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)
 
 fun Date.yearsPassed() = this.daysPassed().div(365).toInt()
 

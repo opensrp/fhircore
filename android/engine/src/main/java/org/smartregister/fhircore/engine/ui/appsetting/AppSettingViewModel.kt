@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.appsetting
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -59,7 +60,7 @@ constructor(
   }
 
   private val _error = MutableLiveData("")
-  val error
+  val error: LiveData<String>
     get() = _error
 
   fun loadConfigurations(loadConfigs: Boolean) {
@@ -80,8 +81,9 @@ constructor(
         val data =
           fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
             if (!it.hasResource()) {
-              Timber.w("Empty data on path $cPath")
-              error.postValue(context.getString(R.string.application_not_supported, appId))
+              Timber.w("No response for composition resource on path $cPath")
+              _showProgressBar.postValue(false)
+              _error.postValue(context.getString(R.string.application_not_supported, appId))
               return
             }
           }
@@ -104,7 +106,7 @@ constructor(
       .onFailure {
         Timber.w(it)
         _showProgressBar.postValue(false)
-        error.postValue("${it.message}")
+        _error.postValue("${it.message}")
       }
   }
 }

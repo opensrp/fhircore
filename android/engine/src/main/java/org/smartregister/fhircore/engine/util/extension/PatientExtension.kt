@@ -114,7 +114,7 @@ fun Patient.getLastSeen(immunizations: List<Immunization>): String {
     ?: this.meta?.lastUpdated.lastSeenFormat()
 }
 
-private fun Date?.lastSeenFormat(): String {
+fun Date?.lastSeenFormat(): String {
   return if (this != null) {
     SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH).run { format(this@lastSeenFormat) }
   } else ""
@@ -149,11 +149,11 @@ fun Patient.extractFamilyTag() =
 fun Patient.isFamilyHead() = this.extractFamilyTag() != null
 
 fun List<Condition>.hasActivePregnancy() =
-  this.any {
+  this.any { condition ->
     // is active and any of the display / text into code is pregnant
-    val active = it.clinicalStatus.coding.any { it.code == "active" }
+    val active = condition.clinicalStatus.coding.any { it.code == "active" }
     val pregnancy =
-      it.code.coding.map { it.display }.plus(it.code.text).any {
+      condition.code.coding.map { it.display }.plus(condition.code.text).any {
         it.contentEquals("pregnant", true)
       }
 

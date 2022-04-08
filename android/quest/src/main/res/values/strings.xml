@@ -21,5 +21,6 @@
     <string name="menu_tasks">Tasks</string>
     <string name="household">Household</string>
     <string name="routine_visit">Routine visit</string>
+    <string name="anc_visit">ANC visit</string>
 
 </resources>

@@ -18,8 +18,8 @@ package org.smartregister.fhircore.quest.ui.patient.register.model
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
 
 @Stable
 data class RegisterViewData(
@@ -28,11 +28,14 @@ data class RegisterViewData(
   val subtitle: String? = null,
   val status: String? = null,
   val otherStatus: String? = null,
-  val serviceAsButton: Boolean = false,
+  val serviceActionable: Boolean = false,
   val serviceMemberIcons: List<Int>? = emptyList(),
   val serviceText: String? = null,
   val serviceTextIcon: Int? = null,
-  val serviceForegroundColor: Color = DefaultColor,
-  val serviceBackgroundColor: Color = Color.White,
-  val healthModule: HealthModule? = null
+  val serviceButtonForegroundColor: Color = DefaultColor,
+  val serviceButtonBackgroundColor: Color = Color.White,
+  val serviceButtonBorderColor: Color = InfoColor,
+  val borderedServiceButton: Boolean = false,
+  val showDivider: Boolean = false,
+  val showServiceButton: Boolean = true
 )

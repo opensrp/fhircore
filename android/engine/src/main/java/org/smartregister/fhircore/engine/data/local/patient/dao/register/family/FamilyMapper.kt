@@ -22,12 +22,15 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
+import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
+import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractDeathDate
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
+import org.smartregister.fhircore.engine.util.extension.lastSeenFormat
 import org.smartregister.fhircore.engine.util.extension.overdue
 
 data class Family(
@@ -56,7 +59,8 @@ object FamilyMapper : DataMapper<Family, RegisterData.FamilyRegisterData> {
       head = members.first { it.id == family.logicalId },
       members = members,
       servicesDue = members.sumOf { it.servicesDue ?: 0 },
-      servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 }
+      servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 },
+      lastSeen = family.meta?.lastUpdated.lastSeenFormat()
     )
   }
 
@@ -64,6 +68,7 @@ object FamilyMapper : DataMapper<Family, RegisterData.FamilyRegisterData> {
     return RegisterData.FamilyMemberRegisterData(
       id = patient.logicalId,
       name = patient.extractName(),
+      age = (patient.birthDate.daysPassed() / DAYS_IN_YEAR).toString(),
       birthdate = patient.birthDate,
       gender = patient.gender.display.first().toString(),
       pregnant = conditions.hasActivePregnancy(),
