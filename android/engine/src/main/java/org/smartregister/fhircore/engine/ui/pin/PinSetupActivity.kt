@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -38,7 +39,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   val pinViewModel by viewModels<PinViewModel>()
 
@@ -65,7 +66,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
 
   private fun moveToHome() {
     sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false)
-    syncBroadcaster.runSync()
+    syncBroadcaster.get().runSync()
     loginService.navigateToHome()
   }
 
