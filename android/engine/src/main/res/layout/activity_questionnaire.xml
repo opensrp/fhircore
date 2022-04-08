@@ -49,7 +49,7 @@
         android:visibility="gone"
         android:layout_gravity="bottom|start"
         app:layout_constraintBottom_toTopOf="@id/btn_save_client_info" />
- 
+
     <Button
         android:id="@+id/btn_save_client_info"
         android:layout_width="match_parent"
