@@ -19,22 +19,11 @@ package org.smartregister.fhircore.engine.app
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.configuration.app.RegistrySyncParamConfigService
 
 class AppConfigService @Inject constructor(@ApplicationContext val context: Context) :
-  ConfigService, RegistrySyncParamConfigService {
-
-  override val resourceSyncParams: Map<ResourceType, String>
-    get() =
-      mapOf(
-        ResourceType.Patient to "",
-        ResourceType.Binary to "",
-        ResourceType.Questionnaire to "",
-      )
-
+  ConfigService {
   override fun provideAuthConfiguration() =
     AuthConfiguration(
       fhirServerBaseUrl = "http://fake.base.url.com",

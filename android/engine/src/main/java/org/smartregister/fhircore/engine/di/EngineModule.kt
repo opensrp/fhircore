@@ -24,10 +24,8 @@ import com.google.android.fhir.FhirEngineConfiguration
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.ServerConfiguration
 import com.google.android.fhir.sync.Authenticator
-import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
-import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,9 +34,10 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.auth.TokenManagerService
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.configuration.app.RegistrySyncParamConfigService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class, CqlModule::class])
@@ -74,15 +73,18 @@ class EngineModule {
   @Provides
   fun provideSyncJob(@ApplicationContext context: Context) = Sync.basicSyncJob(context)
 
-  @Singleton
   @Provides
   fun provideSyncBroadcaster(
-    downloadWorkManager: DownloadWorkManager,
+    configurationRegistry: ConfigurationRegistry,
+    sharedPreferencesHelper: SharedPreferencesHelper,
+    configService: ConfigService,
     syncJob: SyncJob,
     fhirEngine: FhirEngine
   ) =
     SyncBroadcaster(
-      downloadWorkManager = downloadWorkManager,
+      configurationRegistry = configurationRegistry,
+      sharedPreferencesHelper = sharedPreferencesHelper,
+      configService = configService,
       fhirEngine = fhirEngine,
       syncJob = syncJob
     )
@@ -93,13 +95,4 @@ class EngineModule {
   @Provides
   fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
     AccountManager.get(context)
-
-  @Singleton
-  @Provides
-  fun downloadManager(
-    registrySyncParamConfigService: RegistrySyncParamConfigService
-  ): DownloadWorkManager =
-    ResourceParamsBasedDownloadWorkManager(
-      syncParams = registrySyncParamConfigService.resourceSyncParams
-    )
 }
