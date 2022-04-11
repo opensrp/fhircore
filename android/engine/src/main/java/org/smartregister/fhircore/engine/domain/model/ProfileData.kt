@@ -20,28 +20,13 @@ import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-data class FamilyMemberProfileData(
-  val id: String,
-  val name: String,
-  val identifier: String? = null,
-  val birthdate: Date?,
-  val gender: String,
-  val isHead: Boolean,
-  val pregnant: Boolean? = null,
-  val deathDate: Date? = null,
-  val conditions: List<Condition> = listOf(),
-  val flags: List<Flag> = listOf(),
-  val services: List<CarePlan> = listOf(),
-  val tasks: List<Task> = listOf()
-)
-
-// TODO convert to a sealed class to capture data for different health modules
 sealed class ProfileData(open val id: String, open val name: String) {
   data class DefaultProfileData(
     override val id: String,
@@ -50,7 +35,7 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val birthdate: Date,
     val age: String = birthdate.toAgeDisplay(),
     val address: String,
-    val gender: String,
+    val gender: Enumerations.AdministrativeGender,
     val deathDate: Date? = null,
     val deceased: Boolean? = deathDate?.let { true },
     val conditions: List<Condition> = listOf(),
@@ -78,6 +63,7 @@ sealed class ProfileData(open val id: String, open val name: String) {
     override val name: String,
     val identifier: String? = null,
     val age: String,
+    val gender: Enumerations.AdministrativeGender,
     val address: String,
     val visitStatus: VisitStatus,
     val conditions: List<Condition> = listOf(),

@@ -110,15 +110,12 @@ constructor(
           fhirEngine.search<Condition> {
             filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, it.logicalId)
           }
-        val careplans =
+        val carePlans =
           fhirEngine.search<CarePlan> {
             filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, it.logicalId)
-            filter(
-              CarePlan.STATUS,
-              { value = of(org.hl7.fhir.r4.model.CarePlan.CarePlanStatus.ACTIVE.toCoding()) }
-            )
+            filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
           }
-        FamilyMember(it, conditions, careplans)
+        FamilyMember(it, conditions, carePlans)
       }
 
   suspend fun loadFamilyMembersDetails(familyId: String) =

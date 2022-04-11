@@ -41,6 +41,7 @@ object AncProfileMapper : DataMapper<AncProfile, ProfileData.AncProfileData> {
       id = patient.logicalId,
       name = patient.extractName(),
       identifier = patient.identifierFirstRep.value,
+      gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
       visitStatus = visitStatus,

@@ -68,13 +68,13 @@ fun FamilyProfileRow(
                 familyMemberViewState.age
               )
               .joinToString(", "),
-          fontSize = 16.sp,
+          fontSize = 18.sp,
           modifier = modifier.padding(bottom = 4.dp),
           color = Color.Black.copy(alpha = 0.7f)
         )
         Text(
           text = familyMemberViewState.statuses.joinToString(", "),
-          fontSize = 14.sp,
+          fontSize = 16.sp,
           modifier = modifier.padding(bottom = 4.dp),
           color = Color.DarkGray.copy(alpha = 0.7f)
         )

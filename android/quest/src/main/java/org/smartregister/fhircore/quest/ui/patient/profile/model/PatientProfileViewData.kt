@@ -15,11 +15,14 @@
  */
 
 package org.smartregister.fhircore.quest.ui.patient.profile.model
-sealed class ProfileViewData(open val id: String = "", open val name: String) {
+
+import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
+
+sealed class ProfileViewData(open val id: String = "", open val name: String = "") {
   data class PatientProfileViewData(
     override val id: String = "",
     override val name: String = "",
-    val status: String = "",
+    val status: String? = null,
     val sex: String = "",
     val age: String = "",
     val dob: String = "",
@@ -33,5 +36,7 @@ sealed class ProfileViewData(open val id: String = "", open val name: String) {
   data class FamilyProfileViewData(
     override val id: String = "",
     override val name: String = "",
+    val address: String = "",
+    val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
   ) : ProfileViewData(id = id, name = name)
 }

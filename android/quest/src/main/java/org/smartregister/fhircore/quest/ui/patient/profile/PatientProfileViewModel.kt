@@ -45,7 +45,7 @@ constructor(
     healthModule: HealthModule,
     patientId: String
   ) {
-    if (patientId.isNotEmpty())
+    if (patientId.isNotEmpty()) {
       viewModelScope.launch {
         patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
           ?.let {
@@ -54,6 +54,7 @@ constructor(
                 ProfileViewData.PatientProfileViewData
           }
       }
+    }
   }
 
   fun onEvent(event: PatientProfileEvent) =

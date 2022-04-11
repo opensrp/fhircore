@@ -20,6 +20,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -49,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
@@ -68,26 +70,33 @@ fun FamilyProfileScreen(
 
   val viewState = familyProfileViewModel.familyProfileUiState.value
 
+  val profileViewData = familyProfileViewModel.familyMemberProfileData.value
+
   var showOverflowMenu by remember { mutableStateOf(false) }
 
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { FamilyProfileTopBar(viewState, modifier) },
+        title = {},
         backgroundColor = MaterialTheme.colors.primary,
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.Filled.ArrowBack, contentDescription = null)
           }
         },
-        elevation = 3.dp,
+        elevation = 0.dp, // No elevation to remove drop shadow
         actions = {
           IconButton(onClick = { showOverflowMenu = !showOverflowMenu }) {
-            Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
+            Icon(
+              imageVector = Icons.Outlined.MoreVert,
+              contentDescription = null,
+              tint = Color.White
+            )
           }
           DropdownMenu(
             expanded = showOverflowMenu,
             onDismissRequest = { showOverflowMenu = false },
+            modifier = modifier.padding(0.dp)
           ) {
             viewState.overflowMenuItems.forEach {
               DropdownMenuItem(
@@ -95,15 +104,15 @@ fun FamilyProfileScreen(
                   showOverflowMenu = false
                   familyProfileViewModel.onEvent(FamilyProfileEvent.OverflowMenuClick(it.id))
                 },
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier =
                   modifier
                     .fillMaxWidth()
                     .background(
                       color =
-                        if (it.confirmAction) it.titleColor.copy(alpha = 0.2f)
+                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
                         else Color.Transparent
                     )
-                    .padding(top = 4.dp, start = 8.dp, end = 8.dp)
               ) { Text(text = stringResource(it.titleResource), color = it.titleColor) }
             }
           }
@@ -113,18 +122,21 @@ fun FamilyProfileScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       Column {
+        // Appbar section
+        FamilyProfileTopBar(profileViewData, modifier)
+
         // Household visit section
         Row(
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically,
-          modifier = modifier.fillMaxWidth().padding(16.dp)
+          modifier = modifier.fillMaxWidth().padding(vertical = 20.dp, horizontal = 16.dp)
         ) {
-          Text(text = stringResource(R.string.household))
+          Text(text = stringResource(R.string.household), fontSize = 18.sp)
           OutlinedButton(
             onClick = { familyProfileViewModel.onEvent(FamilyProfileEvent.RoutineVisit) },
             colors =
               ButtonDefaults.buttonColors(
-                backgroundColor = InfoColor.copy(alpha = 0.2f),
+                backgroundColor = InfoColor.copy(alpha = 0.1f),
                 contentColor = InfoColor,
               )
           ) {
@@ -138,7 +150,7 @@ fun FamilyProfileScreen(
         Divider()
 
         // Family members section
-        viewState.familyMemberViewStates.forEach { memberViewState ->
+        profileViewData.familyMemberViewStates.forEach { memberViewState ->
           FamilyProfileRow(
             familyMemberViewState = memberViewState,
             onFamilyMemberClick = {

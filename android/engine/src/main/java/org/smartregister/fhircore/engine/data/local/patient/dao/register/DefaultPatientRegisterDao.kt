@@ -57,8 +57,8 @@ constructor(
     currentPage: Int,
     loadAll: Boolean,
     appFeatureName: String?
-  ): List<RegisterData> {
-    return withContext(dispatcherProvider.io()) {
+  ): List<RegisterData> =
+    withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
           filter(Patient.ACTIVE, { value = of(true) })
@@ -76,13 +76,12 @@ constructor(
         )
       }
     }
-  }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 
-  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? {
-    return withContext(dispatcherProvider.io()) {
+  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData =
+    withContext(dispatcherProvider.io()) {
       val patient = fhirEngine.load(Patient::class.java, patientId)
       val formsFilter = configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY)
 
@@ -91,7 +90,7 @@ constructor(
         name = patient.extractName(),
         identifier = patient.identifierFirstRep.value,
         address = patient.extractAge(),
-        gender = patient.gender.toCode(),
+        gender = patient.gender,
         birthdate = patient.birthDate,
         deathDate =
           if (patient.hasDeceasedDateTimeType()) patient.deceasedDateTimeType.value else null,
@@ -125,7 +124,6 @@ constructor(
           )
       )
     }
-  }
 
   companion object {
     const val FORMS_LIST_FILTER_KEY = "forms_list"

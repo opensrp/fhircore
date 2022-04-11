@@ -29,6 +29,8 @@ import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepos
 import org.smartregister.fhircore.engine.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.engine.navigation.OverflowMenuHost
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
+import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
 @HiltViewModel
 class FamilyProfileViewModel
@@ -36,6 +38,7 @@ class FamilyProfileViewModel
 constructor(
   val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
+  val profileViewDataMapper: ProfileViewDataMapper,
   val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
 
@@ -47,16 +50,24 @@ constructor(
       )
     )
 
+  val familyMemberProfileData: MutableState<ProfileViewData.FamilyProfileViewData> =
+    mutableStateOf(ProfileViewData.FamilyProfileViewData())
+
   fun onEvent(event: FamilyProfileEvent) {}
 
   fun fetchFamilyProfileData(patientId: String?) {
     viewModelScope.launch(dispatcherProvider.io()) {
       if (!patientId.isNullOrEmpty()) {
         patientRegisterRepository.loadPatientProfileData(
-          AppFeature.HouseholdManagement.name,
-          HealthModule.FAMILY,
-          patientId
-        )
+            AppFeature.HouseholdManagement.name,
+            HealthModule.FAMILY,
+            patientId
+          )
+          ?.let {
+            familyMemberProfileData.value =
+              profileViewDataMapper.transformInputToOutputModel(it) as
+                ProfileViewData.FamilyProfileViewData
+          }
       }
     }
   }

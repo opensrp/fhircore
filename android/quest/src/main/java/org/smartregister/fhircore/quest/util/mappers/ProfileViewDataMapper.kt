@@ -16,17 +16,40 @@
 
 package org.smartregister.fhircore.quest.util.mappers
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Enumerations
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 
-class ProfileViewDataMapper @Inject constructor() : DataMapper<ProfileData, ProfileViewData> {
+class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
+  DataMapper<ProfileData, ProfileViewData> {
   override fun transformInputToOutputModel(inputModel: ProfileData): ProfileViewData {
     return when (inputModel) {
-      is ProfileData.AncProfileData -> TODO()
-      is ProfileData.DefaultProfileData -> TODO()
-      is ProfileData.FamilyProfileData -> TODO()
+      is ProfileData.AncProfileData ->
+        ProfileViewData.PatientProfileViewData(
+          name = inputModel.name,
+          age = inputModel.age,
+          sex = retrieveGender(inputModel.gender)
+        )
+      is ProfileData.DefaultProfileData ->
+        ProfileViewData.PatientProfileViewData(
+          name = inputModel.name,
+          age = inputModel.age,
+          sex = retrieveGender(inputModel.gender)
+        )
+      is ProfileData.FamilyProfileData ->
+        ProfileViewData.FamilyProfileViewData(name = inputModel.name, address = inputModel.address)
     }
   }
+
+  private fun retrieveGender(gender: Enumerations.AdministrativeGender) =
+    when (gender) {
+      Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
+      Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
+      else -> context.getString(R.string.unknown)
+    }
 }

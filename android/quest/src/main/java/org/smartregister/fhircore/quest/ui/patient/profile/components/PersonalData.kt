@@ -48,12 +48,14 @@ fun PersonalData(
   Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
     Column(modifier = modifier.padding(16.dp)) {
       Text(text = patientProfileViewData.name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-      Text(
-        text = patientProfileViewData.status,
-        color = StatusTextColor,
-        fontSize = 18.sp,
-        modifier = modifier.padding(vertical = 10.dp)
-      )
+      if (patientProfileViewData.status != null) {
+        Text(
+          text = patientProfileViewData.status,
+          color = StatusTextColor,
+          fontSize = 18.sp,
+          modifier = modifier.padding(vertical = 10.dp)
+        )
+      }
       Text(
         text = stringResource(R.string.id, patientProfileViewData.id),
         color = StatusTextColor,
