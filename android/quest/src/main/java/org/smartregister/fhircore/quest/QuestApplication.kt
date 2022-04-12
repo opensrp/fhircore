@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.p2p.P2PLibrary
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -56,7 +57,15 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
 
         Timber.i("Loading ResourceMapper on application init")
       }
+
     }
+
+    // Init P2PLibrary
+    val p2POptions = P2PLibrary.Options(context = this,
+      dbPassphrase = "demo",
+      username = "demo"
+    )
+    P2PLibrary().init(p2POptions)
   }
 
   // TODO https://github.com/google/android-fhir/issues/1173

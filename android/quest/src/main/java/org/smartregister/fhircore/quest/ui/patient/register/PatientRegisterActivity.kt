@@ -21,10 +21,8 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
@@ -36,7 +34,9 @@ import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDeta
 import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
-import org.smartregister.p2p.MainActivity
+import org.smartregister.p2p.utils.startP2PScreen
+import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
@@ -102,8 +102,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     )
 
   override fun registerClient(clientIdentifier: String?) {
-    startActivity(
-      Intent(this, MainActivity::class.java)
+    startP2PScreen(this
     )
   }
 }
