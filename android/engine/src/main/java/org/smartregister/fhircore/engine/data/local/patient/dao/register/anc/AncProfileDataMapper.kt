@@ -39,6 +39,7 @@ object AncProfileDataMapper : DataMapper<AncProfile, ProfileData.AncProfileData>
 
     return ProfileData.AncProfileData(
       id = patient.logicalId,
+      birthdate = patient.birthDate,
       name = patient.extractName(),
       identifier = patient.identifierFirstRep.value,
       gender = patient.gender,

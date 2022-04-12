@@ -62,6 +62,7 @@ sealed class ProfileData(open val id: String, open val name: String) {
     override val id: String,
     override val name: String,
     val identifier: String? = null,
+    val birthdate: Date,
     val age: String,
     val gender: Enumerations.AdministrativeGender,
     val address: String,

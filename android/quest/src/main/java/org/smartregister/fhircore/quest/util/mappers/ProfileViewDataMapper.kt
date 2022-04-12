@@ -19,34 +19,44 @@ package org.smartregister.fhircore.quest.util.mappers
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.Enumerations
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.TaskStatus
 import org.smartregister.fhircore.engine.domain.util.DataMapper
-import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberTask
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<ProfileData, ProfileViewData> {
+
+  private val simpleDateFormat = SimpleDateFormat("dd MMM", Locale.getDefault())
+
   override fun transformInputToOutputModel(inputModel: ProfileData): ProfileViewData {
     return when (inputModel) {
       is ProfileData.AncProfileData ->
         ProfileViewData.PatientProfileViewData(
+          id = inputModel.id,
           name = inputModel.name,
           age = inputModel.age,
-          sex = retrieveGender(inputModel.gender)
+          sex = inputModel.gender.translateGender(context),
+          dob = inputModel.birthdate.formatDob()
         )
       is ProfileData.DefaultProfileData ->
         ProfileViewData.PatientProfileViewData(
+          id = inputModel.id,
           name = inputModel.name,
           age = inputModel.age,
-          sex = retrieveGender(inputModel.gender)
+          sex = inputModel.gender.translateGender(context),
+          dob = inputModel.birthdate.formatDob()
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(
+          id = inputModel.id,
           name = inputModel.name,
           address = inputModel.address,
           familyMemberViewStates =
@@ -54,7 +64,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
               FamilyMemberViewState(
                 patientId = memberProfileData.id,
                 age = memberProfileData.age,
-                gender = retrieveGender(memberProfileData.gender),
+                gender = memberProfileData.gender.translateGender(context),
                 name = memberProfileData.name,
                 memberTasks =
                   memberProfileData.tasks.map {
@@ -70,10 +80,5 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
     }
   }
 
-  private fun retrieveGender(gender: Enumerations.AdministrativeGender) =
-    when (gender) {
-      Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
-      Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
-      else -> context.getString(R.string.unknown)
-    }
+  private fun Date.formatDob(): String = simpleDateFormat.format(this)
 }

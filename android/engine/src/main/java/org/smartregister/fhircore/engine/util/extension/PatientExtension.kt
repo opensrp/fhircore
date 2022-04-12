@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
@@ -172,3 +173,10 @@ fun List<Condition>.pregnancyCondition(): Condition {
 
   return pregnancyCondition
 }
+
+fun Enumerations.AdministrativeGender.translateGender(context: Context) =
+  when (this) {
+    Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
+    Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
+    else -> context.getString(R.string.unknown)
+  }

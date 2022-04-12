@@ -161,7 +161,7 @@ private fun ServiceButton(registerViewData: RegisterViewData, modifier: Modifier
       imageVector = Icons.Filled.Add,
       contentDescription = null,
       tint = contentColor,
-      modifier = modifier.size(16.dp)
+      modifier = modifier.size(16.dp).padding(horizontal = 1.dp)
     )
     Text(
       text = registerViewData.serviceText ?: "",

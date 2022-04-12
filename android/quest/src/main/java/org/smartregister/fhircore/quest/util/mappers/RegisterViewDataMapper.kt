@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DueLightColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
+import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
 import org.smartregister.fhircore.quest.ui.patient.register.model.ServiceMember
@@ -38,10 +39,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
         RegisterViewData(
           id = inputModel.id,
           title = listOf(inputModel.name, inputModel.age).joinToString(", "),
-          subtitle =
-            inputModel.gender.name.lowercase().replaceFirstChar {
-              it.uppercase()
-            } // TODO make transalatable
+          subtitle = inputModel.gender.translateGender(context).replaceFirstChar { it.uppercase() }
         )
       is RegisterData.FamilyRegisterData -> {
         val serviceText =
