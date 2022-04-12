@@ -83,8 +83,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
         RegisterViewData(
           id = inputModel.id,
           title = listOf(inputModel.name, inputModel.age).joinToString(),
-          subtitle = inputModel.address,
-          status = context.getString(R.string.date_last_visited, inputModel.visitStatus.name),
+          status = inputModel.address,
           serviceButtonActionable = true,
           serviceButtonBackgroundColor =
             if (inputModel.servicesOverdue == 0) DueLightColor else OverdueLightColor,

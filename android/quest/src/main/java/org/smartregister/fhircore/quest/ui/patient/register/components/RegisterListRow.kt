@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,7 +73,10 @@ fun RegisterListRow(
   ) {
     Column(
       modifier =
-        modifier.clickable { onOpenProfileClick(registerViewData.id) }.weight(0.75f).padding(16.dp)
+        modifier
+          .clickable { onOpenProfileClick(registerViewData.id) }
+          .weight(0.75f)
+          .padding(horizontal = 16.dp, vertical = 28.dp)
     ) {
       if (registerViewData.serviceButtonActionable) {
         Row(
@@ -153,13 +157,20 @@ private fun ServiceButton(registerViewData: RegisterViewData, modifier: Modifier
         .background(color = registerViewData.serviceButtonForegroundColor.copy(alpha = 0.1f)),
     verticalAlignment = Alignment.CenterVertically
   ) {
-    Icon(imageVector = Icons.Filled.Add, contentDescription = null, tint = contentColor)
+    Icon(
+      imageVector = Icons.Filled.Add,
+      contentDescription = null,
+      tint = contentColor,
+      modifier = modifier.size(16.dp)
+    )
     Text(
       text = registerViewData.serviceText ?: "",
       color = contentColor,
-      fontSize = 16.sp,
+      fontSize = 12.sp,
       fontWeight = FontWeight.Bold,
-      modifier = modifier.padding(4.dp)
+      modifier = modifier.padding(4.dp).wrapContentHeight(Alignment.CenterVertically),
+      overflow = TextOverflow.Visible,
+      maxLines = 1
     )
   }
 }
