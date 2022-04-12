@@ -12,13 +12,13 @@ apply from: '../jacoco.gradle'
 
 android {
 
-    compileSdkVersion 31
+    compileSdkVersion  sdk_versions.compile_sdk
     dataBinding {
         enabled true
     }
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 31
+        minSdkVersion  sdk_versions.min_sdk
+        targetSdkVersion  sdk_versions.target_sdk
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
