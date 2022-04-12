@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepos
 import org.smartregister.fhircore.engine.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.engine.navigation.OverflowMenuHost
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -53,7 +54,13 @@ constructor(
   val familyMemberProfileData: MutableState<ProfileViewData.FamilyProfileViewData> =
     mutableStateOf(ProfileViewData.FamilyProfileViewData())
 
-  fun onEvent(event: FamilyProfileEvent) {}
+  fun onEvent(event: FamilyProfileEvent) {
+    when (event) {
+      is FamilyProfileEvent.AddMember -> {
+        event.context.launchQuestionnaireActivity(questionnaireId = FAMILY_MEMBER_REGISTER_FORM)
+      }
+    }
+  }
 
   fun fetchFamilyProfileData(patientId: String?) {
     viewModelScope.launch(dispatcherProvider.io()) {
@@ -70,5 +77,9 @@ constructor(
           }
       }
     }
+  }
+
+  companion object {
+    const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
   }
 }

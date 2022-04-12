@@ -16,9 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile
 
+import android.content.Context
+
 sealed class FamilyProfileEvent {
 
   object RoutineVisit : FamilyProfileEvent()
+
+  data class AddMember(val context: Context, val familyHeadId: String?) : FamilyProfileEvent()
 
   data class MemberClick(val patientId: String) : FamilyProfileEvent()
 

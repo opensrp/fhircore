@@ -22,5 +22,8 @@
     <string name="household">Household</string>
     <string name="routine_visit">Routine visit</string>
     <string name="anc_visit">ANC visit</string>
+    <string name="at_risk">At risk</string>
+    <string name="no_tasks">No tasks</string>
+    <string name="add_memeber">ADD MEMBER</string>
 
 </resources>

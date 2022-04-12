@@ -25,8 +25,9 @@ import org.smartregister.fhircore.engine.util.extension.extractDeathDate
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-object FamilyProfileMapper : DataMapper<FamilyDetail, ProfileData.FamilyProfileData> {
+object FamilyProfileDataMapper : DataMapper<FamilyDetail, ProfileData.FamilyProfileData> {
 
   override fun transformInputToOutputModel(
     inputModel: FamilyDetail
@@ -50,8 +51,9 @@ object FamilyProfileMapper : DataMapper<FamilyDetail, ProfileData.FamilyProfileD
     return FamilyMemberProfileData(
       id = patient.logicalId,
       name = patient.extractName(),
+      age = patient.birthDate.toAgeDisplay(),
       birthdate = patient.birthDate,
-      gender = patient.gender.display.first().toString(),
+      gender = patient.gender,
       pregnant = conditions.hasActivePregnancy(),
       isHead = patient.isFamilyHead(),
       deathDate = patient.extractDeathDate(),

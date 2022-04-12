@@ -57,7 +57,6 @@ constructor(
       fhirEngine.search<Patient> {
         getRegisterDataFilters().forEach { filterBy(it) }
         filter(Patient.ACTIVE, { value = of(true) })
-
         sort(Patient.NAME, Order.ASCENDING)
         count =
           if (loadAll) countRegisterData(appFeatureName).toInt()
@@ -65,22 +64,24 @@ constructor(
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return patients.map { p ->
-      val members = loadFamilyMembers(p.logicalId)
+    return patients.map { patient ->
+      val members = loadFamilyMembers(patient.logicalId)
       val familyServices =
         defaultRepository.searchResourceFor<CarePlan>(
-          subjectId = p.logicalId,
+          subjectId = patient.logicalId,
           subjectParam = CarePlan.SUBJECT,
           filters = getRegisterDataFilters()
         )
 
-      FamilyMapper.transformInputToOutputModel(Family(p, members, familyServices))
+      FamilyRegisterDataMapper.transformInputToOutputModel(
+        FamilyDetail(patient, members, familyServices)
+      )
     }
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData {
     val family = fhirEngine.load(Patient::class.java, patientId)
-    val members = loadFamilyMembersDetails(family.logicalId)
+    val members = loadFamilyMembersDetails(patientId)
     val familyServices =
       defaultRepository.searchResourceFor<CarePlan>(
         subjectId = family.logicalId,
@@ -88,7 +89,7 @@ constructor(
         filters = getRegisterDataFilters()
       )
 
-    return FamilyProfileMapper.transformInputToOutputModel(
+    return FamilyProfileDataMapper.transformInputToOutputModel(
       FamilyDetail(family, members, familyServices)
     )
   }
@@ -102,7 +103,10 @@ constructor(
 
   suspend fun loadFamilyMembers(familyId: String) =
     fhirEngine
-      .search<Patient> { filter(Patient.LINK, { value = familyId }) }
+      .search<Patient> {
+        filterByResourceTypeId(Patient.LINK, ResourceType.Patient, familyId)
+        filter(Patient.ACTIVE, { value = of(true) })
+      }
       // also include head
       .plus(fhirEngine.load(Patient::class.java, familyId))
       .map {
@@ -115,7 +119,7 @@ constructor(
             filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, it.logicalId)
             filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
           }
-        FamilyMember(it, conditions, carePlans)
+        FamilyMemberDetail(patient = it, conditions = conditions, servicesDue = carePlans)
       }
 
   suspend fun loadFamilyMembersDetails(familyId: String) =
@@ -125,7 +129,12 @@ constructor(
           filterByResourceTypeId(Flag.SUBJECT, ResourceType.Patient, it.patient.id)
         }
 
-      FamilyMemberDetail(it.patient, it.conditions, flags, it.servicesDue)
+      FamilyMemberDetail(
+        patient = it.patient,
+        conditions = it.conditions,
+        flags = flags,
+        servicesDue = it.servicesDue
+      )
     }
 
   private fun getRegisterDataFilters() =

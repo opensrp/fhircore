@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.util.extension.milestonesDue
 import org.smartregister.fhircore.engine.util.extension.milestonesOverdue
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-object AncProfileMapper : DataMapper<AncProfile, ProfileData.AncProfileData> {
+object AncProfileDataMapper : DataMapper<AncProfile, ProfileData.AncProfileData> {
 
   override fun transformInputToOutputModel(inputModel: AncProfile): ProfileData.AncProfileData {
     val patient = inputModel.patient

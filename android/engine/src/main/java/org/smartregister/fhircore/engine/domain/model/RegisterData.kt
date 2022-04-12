@@ -47,7 +47,7 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val birthdate: Date?,
     val gender: String,
     val isHead: Boolean,
-    val pregnant: Boolean? = null,
+    val pregnant: Boolean = false,
     val deathDate: Date? = null,
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null

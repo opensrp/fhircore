@@ -50,13 +50,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.Separator
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
+import org.smartregister.fhircore.quest.ui.patient.register.model.ServiceMember
 
 @Composable
 fun RegisterListRow(
@@ -73,7 +74,7 @@ fun RegisterListRow(
       modifier =
         modifier.clickable { onOpenProfileClick(registerViewData.id) }.weight(0.75f).padding(16.dp)
     ) {
-      if (registerViewData.serviceActionable) {
+      if (registerViewData.serviceButtonActionable) {
         Row(
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically,
@@ -120,7 +121,7 @@ fun RegisterListRow(
     }
     Box(modifier = modifier.weight(0.25f), contentAlignment = Alignment.Center) {
       if (registerViewData.showServiceButton) {
-        if (registerViewData.serviceActionable) {
+        if (registerViewData.serviceButtonActionable) {
           ServiceButton(
             registerViewData = registerViewData,
             modifier =
@@ -147,9 +148,9 @@ private fun ServiceButton(registerViewData: RegisterViewData, modifier: Modifier
     modifier =
       modifier
         .padding(horizontal = 8.dp)
+        .clip(RoundedCornerShape(8.dp))
         .clickable { /*TODO Provide the given service*/}
-        .background(color = registerViewData.serviceButtonForegroundColor.copy(alpha = 0.2f))
-        .clip(RoundedCornerShape(4.dp)),
+        .background(color = registerViewData.serviceButtonForegroundColor.copy(alpha = 0.1f)),
     verticalAlignment = Alignment.CenterVertically
   ) {
     Icon(imageVector = Icons.Filled.Add, contentDescription = null, tint = contentColor)
@@ -189,7 +190,7 @@ private fun RegisterListStatus(registerViewData: RegisterViewData, modifier: Mod
 
 @Composable
 private fun ServiceActionSection(registerViewData: RegisterViewData, modifier: Modifier) {
-  if (registerViewData.serviceText != null && !registerViewData.serviceActionable) {
+  if (registerViewData.serviceText != null && !registerViewData.serviceButtonActionable) {
     if (registerViewData.borderedServiceButton) {
       Box(modifier = modifier.background(registerViewData.serviceButtonBorderColor))
     }
@@ -219,21 +220,29 @@ private fun ServiceActionSection(registerViewData: RegisterViewData, modifier: M
 @Composable
 private fun ServiceMemberIcons(registerViewData: RegisterViewData, modifier: Modifier) {
   // Count member icons only show and display counter of the rest
-  if (!registerViewData.serviceMemberIcons.isNullOrEmpty() && !registerViewData.serviceActionable) {
+  val twoMemberIcons = remember { registerViewData.serviceMembers.take(2) }
+  if (!registerViewData.serviceButtonActionable) {
     Row(modifier.padding(start = 4.dp)) {
-      registerViewData.serviceMemberIcons.take(2).forEach {
-        Icon(
-          painter = painterResource(id = it),
-          contentDescription = null,
-          modifier = modifier.size(20.dp),
-          tint = Color.Unspecified
-        )
+      twoMemberIcons.forEach {
+        if (it.icon != null)
+          Icon(
+            painter = painterResource(id = it.icon),
+            contentDescription = null,
+            modifier = modifier.size(20.dp).padding(0.dp),
+            tint = Color.Unspecified
+          )
       }
-      if (registerViewData.serviceMemberIcons.size > 2) {
+      if (twoMemberIcons.size == 2 && registerViewData.serviceMembers.size > 2) {
         Box(
           contentAlignment = Alignment.Center,
-          modifier = modifier.clip(CircleShape).size(20.dp).background(DefaultColor.copy(0.1f))
-        ) { Text(text = "+${registerViewData.serviceMemberIcons.size - 2}", fontSize = 10.sp) }
+          modifier = modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
+        ) {
+          Text(
+            text = "+${registerViewData.serviceMembers.size - 2}",
+            fontSize = 12.sp,
+            color = Color.DarkGray
+          )
+        }
       }
     }
   }
@@ -252,10 +261,15 @@ fun RegisterListRowForFamilyRegisterOverduePreview() {
         serviceText = "2",
         serviceButtonBackgroundColor = OverdueColor,
         serviceButtonForegroundColor = Color.White,
-        serviceMemberIcons =
-          listOf(R.drawable.ic_pregnant, R.drawable.ic_pregnant, R.drawable.ic_pregnant),
-        serviceActionable = false,
-        showDivider = true
+        serviceButtonActionable = false,
+        showDivider = true,
+        serviceMembers =
+          listOf(
+            ServiceMember(R.drawable.ic_pregnant, "1920192"),
+            ServiceMember(R.drawable.ic_pregnant, "1920190"),
+            ServiceMember(R.drawable.ic_pregnant, "1920191"),
+            ServiceMember(R.drawable.ic_pregnant, "1920194")
+          )
       ),
     onOpenProfileClick = {}
   )
@@ -272,12 +286,11 @@ fun RegisterListRowForFamilyRegisterDuePreview() {
         subtitle = "#90129",
         status = "Last visited on 03-03-2022",
         serviceText = "1",
-        serviceMemberIcons = listOf(R.drawable.ic_pregnant),
-        serviceActionable = false,
+        serviceButtonActionable = false,
         borderedServiceButton = true,
         serviceButtonForegroundColor = InfoColor,
         serviceButtonBorderColor = InfoColor,
-        showDivider = true
+        showDivider = true,
       ),
     onOpenProfileClick = {}
   )
@@ -317,7 +330,7 @@ fun RegisterListRowForAncRegisterPreview() {
         title = "Alberta Tuft, Female, 26Y",
         status = "ID Number: 1929102",
         otherStatus = "Kimulu village",
-        serviceActionable = true,
+        serviceButtonActionable = true,
         serviceText = "ANC visit",
         serviceButtonForegroundColor = InfoColor
       ),

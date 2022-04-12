@@ -78,6 +78,11 @@ fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
 fun Context.launchQuestionnaireActivity(questionnaireId: String, clientIdentifier: String? = null) {
   this.startActivity(
     Intent(this, QuestionnaireActivity::class.java)
-      .putExtras(QuestionnaireActivity.intentArgs(clientIdentifier, formName = questionnaireId))
+      .putExtras(
+        QuestionnaireActivity.intentArgs(
+          clientIdentifier = clientIdentifier,
+          formName = questionnaireId
+        )
+      )
   )
 }

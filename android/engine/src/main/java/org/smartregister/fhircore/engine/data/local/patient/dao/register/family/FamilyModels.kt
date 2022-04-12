@@ -22,18 +22,6 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Task
 
-data class Family(
-  val family: Patient,
-  val members: List<FamilyMember>,
-  val servicesDue: List<CarePlan> = listOf()
-)
-
-data class FamilyMember(
-  val patient: Patient,
-  val conditions: List<Condition> = listOf(),
-  val servicesDue: List<CarePlan> = listOf()
-)
-
 data class FamilyDetail(
   val family: Patient,
   val members: List<FamilyMemberDetail>,

@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
+import org.smartregister.fhircore.quest.ui.patient.register.model.ServiceMember
 
 class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<RegisterData, RegisterViewData> {
@@ -54,17 +55,23 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           title = inputModel.name,
           subtitle = inputModel.address,
           status = context.getString(R.string.date_last_visited, inputModel.lastSeen),
-          serviceActionable = false,
+          serviceButtonActionable = false,
           serviceButtonBackgroundColor =
             if (inputModel.servicesOverdue != 0) OverdueDarkRedColor else Color.White,
           serviceButtonForegroundColor =
             if (inputModel.servicesOverdue != 0) Color.White else BlueTextColor,
-          serviceMemberIcons =
-            inputModel
-              .members
-              .filter { it.pregnant != null && it.pregnant!! }
-              .map { R.drawable.ic_pregnant }
-              .plus(inputModel.members.filter { it.age.toInt() <= 5 }.map { R.drawable.ic_kids }),
+          serviceMembers =
+            inputModel.members.map {
+              ServiceMember(
+                icon =
+                  when {
+                    it.pregnant -> R.drawable.ic_pregnant
+                    it.age.toInt() <= 5 -> R.drawable.ic_kids
+                    else -> R.drawable.ic_users
+                  },
+                id = it.id
+              )
+            },
           serviceText = serviceText,
           borderedServiceButton = inputModel.servicesDue != 0 && inputModel.servicesOverdue == 0,
           serviceButtonBorderColor = BlueTextColor,
@@ -78,7 +85,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           title = listOf(inputModel.name, inputModel.age).joinToString(),
           subtitle = inputModel.address,
           status = context.getString(R.string.date_last_visited, inputModel.visitStatus.name),
-          serviceActionable = true,
+          serviceButtonActionable = true,
           serviceButtonBackgroundColor =
             if (inputModel.servicesOverdue == 0) DueLightColor else OverdueLightColor,
           serviceButtonForegroundColor =

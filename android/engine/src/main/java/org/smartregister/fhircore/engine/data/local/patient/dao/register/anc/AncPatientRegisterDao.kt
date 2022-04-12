@@ -82,7 +82,7 @@ constructor(
             subjectParam = Condition.SUBJECT
           )
 
-        AncMapper.transformInputToOutputModel(Anc(it, conditions, carePlans))
+        AncRegisterDataMapper.transformInputToOutputModel(Anc(it, conditions, carePlans))
       }
     }
 
@@ -105,7 +105,9 @@ constructor(
         subjectParam = Condition.SUBJECT
       )
 
-    return AncProfileMapper.transformInputToOutputModel(AncProfile(patient, conditions, carePlans))
+    return AncProfileDataMapper.transformInputToOutputModel(
+      AncProfile(patient, conditions, carePlans)
+    )
   }
 
   private fun getRegisterDataFilters() =

@@ -17,12 +17,16 @@
 package org.smartregister.fhircore.quest.util.mappers
 
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Enumerations
 import org.smartregister.fhircore.engine.domain.model.ProfileData
+import org.smartregister.fhircore.engine.domain.model.TaskStatus
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberTask
+import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
@@ -42,7 +46,27 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           sex = retrieveGender(inputModel.gender)
         )
       is ProfileData.FamilyProfileData ->
-        ProfileViewData.FamilyProfileViewData(name = inputModel.name, address = inputModel.address)
+        ProfileViewData.FamilyProfileViewData(
+          name = inputModel.name,
+          address = inputModel.address,
+          familyMemberViewStates =
+            inputModel.members.map { memberProfileData ->
+              FamilyMemberViewState(
+                patientId = memberProfileData.id,
+                age = memberProfileData.age,
+                gender = retrieveGender(memberProfileData.gender),
+                name = memberProfileData.name,
+                memberTasks =
+                  memberProfileData.tasks.map {
+                    FamilyMemberTask(
+                      task = it.description,
+                      taskStatus = TaskStatus.DUE,
+                      colorCode = Color.Unspecified
+                    )
+                  }
+              )
+            }
+        )
     }
   }
 

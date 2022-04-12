@@ -30,9 +30,11 @@ import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.engine.util.extension.lastSeenFormat
 import org.smartregister.fhircore.engine.util.extension.overdue
 
-object FamilyMapper : DataMapper<Family, RegisterData.FamilyRegisterData> {
+object FamilyRegisterDataMapper : DataMapper<FamilyDetail, RegisterData.FamilyRegisterData> {
 
-  override fun transformInputToOutputModel(inputModel: Family): RegisterData.FamilyRegisterData {
+  override fun transformInputToOutputModel(
+    inputModel: FamilyDetail
+  ): RegisterData.FamilyRegisterData {
     val family = inputModel.family
     val members = inputModel.members.map { it.familyMemberRegisterData() }
 
@@ -49,7 +51,7 @@ object FamilyMapper : DataMapper<Family, RegisterData.FamilyRegisterData> {
     )
   }
 
-  fun FamilyMember.familyMemberRegisterData(): RegisterData.FamilyMemberRegisterData {
+  fun FamilyMemberDetail.familyMemberRegisterData(): RegisterData.FamilyMemberRegisterData {
     return RegisterData.FamilyMemberRegisterData(
       id = patient.logicalId,
       name = patient.extractName(),

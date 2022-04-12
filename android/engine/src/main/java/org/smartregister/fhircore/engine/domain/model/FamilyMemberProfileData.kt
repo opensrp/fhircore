@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Task
 
@@ -27,7 +28,8 @@ data class FamilyMemberProfileData(
   val name: String,
   val identifier: String? = null,
   val birthdate: Date?,
-  val gender: String,
+  val age: String,
+  val gender: Enumerations.AdministrativeGender,
   val isHead: Boolean,
   val pregnant: Boolean? = null,
   val deathDate: Date? = null,

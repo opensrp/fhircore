@@ -28,10 +28,10 @@ data class RegisterViewData(
   val subtitle: String? = null,
   val status: String? = null,
   val otherStatus: String? = null,
-  val serviceActionable: Boolean = false,
-  val serviceMemberIcons: List<Int>? = emptyList(),
+  val serviceMembers: List<ServiceMember> = emptyList(),
   val serviceText: String? = null,
   val serviceTextIcon: Int? = null,
+  val serviceButtonActionable: Boolean = false,
   val serviceButtonForegroundColor: Color = DefaultColor,
   val serviceButtonBackgroundColor: Color = Color.White,
   val serviceButtonBorderColor: Color = InfoColor,
@@ -39,3 +39,5 @@ data class RegisterViewData(
   val showDivider: Boolean = false,
   val showServiceButton: Boolean = true
 )
+
+data class ServiceMember(val icon: Int? = null, val id: String)
