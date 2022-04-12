@@ -42,6 +42,7 @@ import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
@@ -92,7 +93,7 @@ class ApplicationExtensionTest : RobolectricTest() {
     val patientId = "patient-john-doe"
     val patient2 = Patient().apply { id = patientId }
 
-    coEvery { fhirEngine.get<Patient>(patientId) } returns patient2
+    coEvery { fhirEngine.get(ResourceType.Patient, patientId) } returns patient2
 
     val patient: Patient?
     runBlocking { patient = fhirEngine.loadResource(patientId) }

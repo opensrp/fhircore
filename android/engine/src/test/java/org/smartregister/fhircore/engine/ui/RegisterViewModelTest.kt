@@ -28,6 +28,7 @@ import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule

@@ -29,7 +29,6 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Address
@@ -44,6 +43,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -63,7 +63,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       Patient().apply {
         id = patientId
         active = true
-        birthDate = Date(1996, 8, 17)
+        birthDate = LocalDate.parse("1996-08-17").toDate()
         gender = Enumerations.AdministrativeGender.MALE
         address =
           listOf(

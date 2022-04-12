@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.remote.shared
 
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.logicalId
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.hl7.fhir.r4.model.Patient

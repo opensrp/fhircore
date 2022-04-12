@@ -35,7 +35,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mock
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
@@ -59,22 +58,20 @@ class UserProfileViewModelTest : RobolectricTest() {
   lateinit var userProfileViewModel: UserProfileViewModel
   lateinit var accountAuthenticator: AccountAuthenticator
   lateinit var secureSharedPreference: SecureSharedPreference
-  lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
-  @Mock private lateinit var fhirResourceService: FhirResourceService
+  var sharedPreferencesHelper: SharedPreferencesHelper
 
   val defaultRepository: DefaultRepository = mockk()
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
 
-  private lateinit var configService: ConfigService
+  private var configService: ConfigService
 
   private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
-  private lateinit var syncBroadcaster: SyncBroadcaster
+  private var syncBroadcaster: SyncBroadcaster
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   private val resourceService: FhirResourceService = mockk()
 
-  private lateinit var fhirResourceDataSource: FhirResourceDataSource
+  private var fhirResourceDataSource: FhirResourceDataSource
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context)
@@ -82,7 +79,8 @@ class UserProfileViewModelTest : RobolectricTest() {
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
     syncBroadcaster =
       SyncBroadcaster(
-        fhirResourceDataSource,
+        configurationRegistry,
+        sharedPreferencesHelper,
         configService,
         syncJob = mockk(),
         fhirEngine = mockk(),
