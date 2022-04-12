@@ -133,6 +133,9 @@ dependencies {
     api 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
     api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
 
+    // P2P dependency
+    implementation project(":p2p-lib")
+
     //Configure Jetpack Compose
     def composeVersion = "1.0.5"
     api("androidx.compose.ui:ui:$composeVersion")
