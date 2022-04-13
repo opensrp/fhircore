@@ -21,8 +21,11 @@ import java.util.TreeSet
 import org.json.JSONArray
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.sync.DataType
+import javax.inject.Inject
 
-open class P2PReceiverTransferDao : BaseP2PTransferDao(), ReceiverTransferDao {
+open class P2PReceiverTransferDao
+@Inject
+constructor()  : BaseP2PTransferDao(), ReceiverTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> {
     return dataTypes!!.clone() as TreeSet<DataType>
