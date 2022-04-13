@@ -28,6 +28,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
+import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.p2p.P2PLibrary
 import timber.log.Timber
 
@@ -35,6 +37,8 @@ import timber.log.Timber
 class QuestApplication : Application(), DataCaptureConfig.Provider {
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+  @Inject lateinit var pSenderTransferDao: P2PSenderTransferDao
+  @Inject lateinit var p2PReceiverTransferDao: P2PReceiverTransferDao
   private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {
@@ -63,7 +67,9 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
     // Init P2PLibrary
     val p2POptions = P2PLibrary.Options(context = this,
       dbPassphrase = "demo",
-      username = "demo"
+      username = "demo",
+      senderTransferDao = pSenderTransferDao,
+      receiverTransferDao = p2PReceiverTransferDao
     )
     P2PLibrary().init(p2POptions)
   }
