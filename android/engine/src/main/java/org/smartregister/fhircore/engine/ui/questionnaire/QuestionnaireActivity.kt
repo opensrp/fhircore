@@ -329,38 +329,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     finish()
   }
 
-  fun deepFlat(
-    qItems: List<Questionnaire.QuestionnaireItemComponent>,
-    questionnaireResponse: QuestionnaireResponse,
-    targetQ: MutableList<Questionnaire.QuestionnaireItemComponent>,
-    targetQR: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
-  ) {
-    qItems.forEach { qit ->
-      // process each inner item list
-      deepFlat(qit.item, questionnaireResponse, targetQ, targetQR)
-
-      // remove nested structure to prevent validation recursion; it is already processed above
-      qit.item.clear()
-
-      // add questionnaire and response pair for each linkid on same index
-      questionnaireResponse.find(qit.linkId)?.let { qrit ->
-        targetQ.add(qit)
-        targetQR.add(qrit)
-      }
-    }
-  }
-
-  fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
-    // clone questionnaire and response for processing and changing structure
-    val q = parser.parseResource(parser.encodeResourceToString(questionnaire)) as Questionnaire
-    val qr =
-      parser.parseResource(parser.encodeResourceToString(questionnaireResponse)) as
-        QuestionnaireResponse
-
-    // TODO debug fix
-    val a = QuestionnaireResponseValidator.validateQuestionnaireResponse(q, qr, this)
-    return (a[""]?.get(0))?.isValid ?: false
-  }
+  fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
+    QuestionnaireResponseValidator.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        this
+      )
+      .values
+      .flatten()
+      .all { it.isValid }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     questionnaireViewModel.extractAndSaveResources(

@@ -49,7 +49,6 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -65,7 +64,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
 @HiltAndroidTest
-@Ignore
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private lateinit var questionnaireActivity: QuestionnaireActivity
