@@ -25,5 +25,11 @@
     <string name="at_risk">At risk</string>
     <string name="no_tasks">No tasks</string>
     <string name="add_memeber">ADD MEMBER</string>
+    <string name="label_remove_family_warning">Please assign a new family head, family nolonger has a family head.</string>
+    <string name="label_select_new_head">Select a new family head</string>
+    <string name="label_assign_new_family_head">Assign new family head</string>
+    <string name="alert_message_abort_operation">Are you sure you want to abort this operation?</string>
+    <string name="alert_title_abort">Abort</string>
+    <string name="no_eligible_family_head">No eligible family members</string>
 
 </resources>
