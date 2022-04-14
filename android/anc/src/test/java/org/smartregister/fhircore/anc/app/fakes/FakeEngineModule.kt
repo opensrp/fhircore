@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.app.fakes
+package org.smartregister.fhircore.anc.app.fakes
 
 import android.accounts.AccountManager
 import android.content.Context
