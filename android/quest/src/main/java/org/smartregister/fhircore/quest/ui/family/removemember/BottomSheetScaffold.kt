@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.profile.removefamilymember
+package org.smartregister.fhircore.quest.ui.family.removemember
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.ComposeView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class BottomSheetListDialogFragment(
+class BottomSheetScaffold(
   private val bottomSheetHolder: BottomSheetHolder,
   private val onBottomSheetListener: OnClickedListItems
 ) : BottomSheetDialogFragment() {

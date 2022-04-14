@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.profile.removefamilymember
+package org.smartregister.fhircore.quest.ui.family.removemember
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
