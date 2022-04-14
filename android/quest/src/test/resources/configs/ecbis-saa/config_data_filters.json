@@ -33,6 +33,13 @@
       }
     },
     {
+      "id": "family",
+      "filterType": "TOKEN",
+      "key": "type",
+      "valueType": "STRING",
+      "valueString": "person"
+    },
+    {
       "id": "forms_list",
       "filterType": "TOKEN",
       "key": "context",

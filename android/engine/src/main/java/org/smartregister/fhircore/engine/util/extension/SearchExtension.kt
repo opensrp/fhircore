@@ -65,12 +65,14 @@ fun Search.filterBy(filter: SearchFilter) {
 }
 
 fun Search.filterToken(filter: SearchFilter) {
-  // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
+  // TODO TokenFilter currently only supports Coding, CodeableConcept and String
   when (filter.valueType) {
     Enumerations.DataType.CODING ->
       filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
     Enumerations.DataType.CODEABLECONCEPT ->
       filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCodeableConcept()) })
+    Enumerations.DataType.STRING ->
+      filter(TokenClientParam(filter.key), { value = of(filter.valueString!!) })
     else ->
       throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
   }
