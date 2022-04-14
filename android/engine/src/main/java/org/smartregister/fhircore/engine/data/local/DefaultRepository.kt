@@ -39,7 +39,11 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
+import org.smartregister.fhircore.engine.configuration.view.asCode
+import org.smartregister.fhircore.engine.configuration.view.initiatingPersonExtension
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -53,7 +57,11 @@ import org.smartregister.fhircore.engine.util.extension.updateFrom
 @Singleton
 open class DefaultRepository
 @Inject
-constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
+constructor(
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider,
+  val fhirPathEngine: FHIRPathEngine
+) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
@@ -76,6 +84,71 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       fhirEngine.search<QuestionnaireResponse> {
         filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" })
         filter(QuestionnaireResponse.QUESTIONNAIRE, { value = "Questionnaire/${questionnaire.id}" })
+      }
+    }
+
+  // TODO handle date-filter, value-set, multi-value code-filter
+  fun DataRequirement.asSearchFilter(contextData: Map<String, Any> = mapOf()) =
+    codeFilter.map {
+      // by definition path or searchParam are mutually exclusive
+      SearchFilter(key = it.path ?: it.searchParam).apply {
+        if (!it.hasCode() && it.extension.initiatingPersonExtension() == null)
+          throw UnsupportedOperationException(
+            "Either code or value expression for extension cqf-initiatingPerson should be specified"
+          )
+
+        if (it.hasCode()) valueCoding = it.codeFirstRep.asCode()
+        else
+          it.extension.initiatingPersonExtension()!!.run {
+            valueReference =
+              fhirPathEngine
+                .evaluate(
+                  contextData,
+                  null,
+                  null,
+                  null,
+                  this.castToExpression(this.value).expression
+                )
+                .firstOrNull()
+                .toString()
+          }
+      }
+    }
+
+  suspend inline fun searchResource(
+    resourceType: ResourceType,
+    dataRequirement: DataRequirement,
+    contextData: Map<String, Any> = mapOf(),
+    currentPage: Int = 0,
+    limit: Int = PaginationConstant.DEFAULT_QUERY_LOAD_SIZE
+  ): List<Resource> =
+    searchResource(resourceType, dataRequirement.asSearchFilter(contextData), currentPage, limit)
+
+  suspend inline fun searchResource(
+    resourceType: ResourceType,
+    filters: List<SearchFilter> = listOf(),
+    currentPage: Int = 0,
+    limit: Int = PaginationConstant.DEFAULT_QUERY_LOAD_SIZE
+  ): List<Resource> =
+    when (resourceType) {
+      ResourceType.Patient -> searchResource<Patient>(filters, currentPage, limit)
+      else ->
+        throw UnsupportedOperationException(
+          "${resourceType.name} as register data filters is not supported yet"
+        )
+    }
+
+  suspend inline fun <reified T : Resource> searchResource(
+    filters: List<SearchFilter> = listOf(),
+    currentPage: Int = 0,
+    limit: Int = PaginationConstant.DEFAULT_QUERY_LOAD_SIZE
+  ): List<T> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filters.forEach { filterBy(it) }
+
+        count = limit
+        from = currentPage * limit
       }
     }
 

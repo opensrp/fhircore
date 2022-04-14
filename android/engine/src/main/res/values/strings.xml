@@ -134,4 +134,7 @@
     <string name="family_activity">Family activity</string>
     <string name="view_past_encounters">View past encounters</string>
     <string name="remove_family">Remove family</string>
+
+    <string name="health_module_filters_not_configured">%1$s module data filters not configured</string>
+
 </resources>

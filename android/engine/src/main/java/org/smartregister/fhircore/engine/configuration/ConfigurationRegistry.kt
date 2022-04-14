@@ -22,8 +22,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Parameters
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.view.DataFiltersConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
@@ -83,9 +83,10 @@ constructor(
     }
 
   fun retrieveDataFilterConfiguration(id: String) =
-    retrieveConfiguration<DataFiltersConfiguration>(AppConfigClassification.DATA_FILTERS)
-      .filters
-      .filter { it.id.contentEquals(id, ignoreCase = true) }
+    retrieveConfiguration<FhirConfiguration<Parameters>>(AppConfigClassification.DATA_FILTERS)
+      .resource
+      .parameter
+      .firstOrNull { it.name.contentEquals(id, ignoreCase = true) }
 
   suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     this.appId = appId

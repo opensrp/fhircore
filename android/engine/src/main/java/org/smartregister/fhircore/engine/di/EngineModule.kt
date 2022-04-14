@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathHostServices
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class])
@@ -92,5 +93,5 @@ class EngineModule {
   @Singleton
   @Provides
   fun provideFhirPathEngine(hapiWorkerContext: HapiWorkerContext) =
-    FHIRPathEngine(hapiWorkerContext)
+    FHIRPathEngine(hapiWorkerContext).apply { hostServices = FhirPathHostServices() }
 }

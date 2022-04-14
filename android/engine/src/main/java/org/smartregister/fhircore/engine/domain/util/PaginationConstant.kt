@@ -20,4 +20,5 @@ package org.smartregister.fhircore.engine.domain.util
 object PaginationConstant {
   const val DEFAULT_PAGE_SIZE = 20
   const val DEFAULT_INITIAL_LOAD_SIZE = 20
+  const val DEFAULT_QUERY_LOAD_SIZE = 100
 }

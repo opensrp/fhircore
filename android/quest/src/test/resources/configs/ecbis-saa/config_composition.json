@@ -63,7 +63,7 @@
       "title": "Patient Register configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/108218",
+        "reference": "Binary/108666",
         "identifier": { "value": "data_filters" }
       }
     },

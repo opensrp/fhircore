@@ -20,8 +20,17 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.DataRequirement
+import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.Configuration
+
+const val INIT_PERSION_EXPRESSION_EXTENSION_URL =
+  "http://hl7.org/fhir/StructureDefinition/cqf-initiatingPerson"
+const val CQF_EXPRESSION_EXTENSION_URL = "http://hl7.org/fhir/StructureDefinition/cqf-expression"
+
+fun List<Extension>.initiatingPersonExtension() =
+  this.find { it.url!!.contentEquals(INIT_PERSION_EXPRESSION_EXTENSION_URL) }
 
 @Stable
 @Serializable
@@ -33,15 +42,38 @@ class DataFiltersConfiguration(
 
 @Stable
 @Serializable
-/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
+/** Only TokenClientParam supported as Register Primary Filter. */
 data class SearchFilter(
   val id: String = "",
   val key: String,
-  val filterType: Enumerations.SearchParamType,
-  val valueType: Enumerations.DataType,
-  val valueCoding: Code? = null,
-  val valueString: String? = null
+  var valueCoding: Code? = null,
+  var valueReference: String? = null
 )
+
+// TODO handle date-filter, value-set, multi-value code-filter
+fun DataRequirement.asSearchFilter(
+  fhirPathEngine: FHIRPathEngine,
+  contextData: Map<String, Any> = mapOf()
+) =
+  codeFilter.map {
+    // by definition path or searchParam are mutually exclusive
+    SearchFilter(key = it.path ?: it.searchParam).apply {
+      if (!it.hasCode() && it.extension.initiatingPersonExtension() == null)
+        throw UnsupportedOperationException(
+          "Either code or value expression for extension cqf-initiatingPerson should be specified"
+        )
+
+      if (it.hasCode()) valueCoding = it.codeFirstRep.asCode()
+      else
+        it.extension.initiatingPersonExtension()!!.run {
+          valueReference =
+            fhirPathEngine
+              .evaluate(contextData, null, null, null, this.castToExpression(this.value).expression)
+              .firstOrNull()
+              .toString()
+        }
+    }
+  }
 
 @Stable
 @Serializable

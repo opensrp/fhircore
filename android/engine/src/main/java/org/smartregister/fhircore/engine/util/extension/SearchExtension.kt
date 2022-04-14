@@ -17,15 +17,12 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
-import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
-import org.smartregister.fhircore.engine.configuration.view.asCodeableConcept
 import org.smartregister.fhircore.engine.configuration.view.asCoding
 
 fun Search.filterByResourceTypeId(
@@ -49,29 +46,15 @@ fun Search.filterByPatientName(name: String?) {
 }
 
 fun Search.filterBy(filter: SearchFilter) {
-  when (filter.filterType) {
-    Enumerations.SearchParamType.TOKEN -> filterToken(filter)
-    Enumerations.SearchParamType.STRING ->
-      filter(
-        StringClientParam(filter.key),
-        {
-          this.modifier = StringFilterModifier.MATCHES_EXACTLY
-          this.value = filter.valueString!!
-        }
-      )
-    else ->
-      throw UnsupportedOperationException("Can not apply ${filter.filterType} as search filter")
-  }
+  if (filter.valueCoding != null) filterToken(filter)
+  else if (filter.valueReference != null) filterReference(filter)
 }
 
 fun Search.filterToken(filter: SearchFilter) {
   // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
-  when (filter.valueType) {
-    Enumerations.DataType.CODING ->
-      filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
-    Enumerations.DataType.CODEABLECONCEPT ->
-      filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCodeableConcept()) })
-    else ->
-      throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
-  }
+  filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
+}
+
+fun Search.filterReference(filter: SearchFilter) {
+  filter(ReferenceClientParam(filter.key), { value = filter.valueReference!! })
 }

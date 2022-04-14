@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
@@ -27,7 +26,10 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -37,7 +39,9 @@ import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toCoding
+import timber.log.Timber
 
 @Singleton
 class FamilyRegisterDao
@@ -45,7 +49,8 @@ class FamilyRegisterDao
 constructor(
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
+  val fhirPathEngine: FHIRPathEngine
 ) : RegisterDao {
 
   override suspend fun loadRegisterData(
@@ -53,17 +58,44 @@ constructor(
     loadAll: Boolean,
     appFeatureName: String?
   ): List<RegisterData> {
-    val patients =
-      fhirEngine.search<Patient> {
-        getRegisterDataFilters().forEach { filterBy(it) }
-        filter(Patient.ACTIVE, { value = of(true) })
+    val dataMap = mutableMapOf<String, Any>()
+    getRegisterDataFilters()?.let { param ->
+      // main data param for the register. this is the filter that defines the data like family,
+      // anc, pnc, child etc
+      val main = // todo ???
+        with(param.castToDataRequirement(param.value)) {
+          defaultRepository.searchResource(
+            resourceType = ResourceType.fromCode(this.type),
+            dataRequirement = this,
+            currentPage = currentPage,
+            limit = limit(loadAll, appFeatureName)
+          )
+        }
 
-        sort(Patient.NAME, Order.ASCENDING)
-        count =
-          if (loadAll) countRegisterData(appFeatureName).toInt()
-          else PaginationConstant.DEFAULT_PAGE_SIZE
-        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+      if (param.part.any { it.part.isNotEmpty() })
+        throw UnsupportedOperationException(
+          "${param.name} part field -> Only up to 1 level of nesting is supported"
+        )
+
+      val parts = mutableMapOf<String, List<Resource>>()
+
+      // the parts defines further details for the each item in data. i.e careplans, tasks,
+      // encounters etc
+      param.part.forEach { partParam ->
+        partParam.name // todo ???
+
+        with(partParam.castToDataRequirement(partParam.value)) {
+          main.map { d ->
+            defaultRepository.searchResource(
+                resourceType = ResourceType.fromCode(this.type),
+                dataRequirement = this,
+                contextData = mapOf(param.name to d)
+              )
+              .apply { parts[partParam.name] = this }
+          }
+        }
       }
+    }
 
     return patients.map { p ->
       val members = loadFamilyMembers(p.logicalId)
@@ -100,6 +132,11 @@ constructor(
     }
   }
 
+  suspend fun limit(loadAll: Boolean, appFeatureName: String?): Int {
+    return if (loadAll) countRegisterData(appFeatureName).toInt()
+    else PaginationConstant.DEFAULT_PAGE_SIZE
+  }
+
   suspend fun loadFamilyMembers(familyId: String) =
     fhirEngine
       .search<Patient> { filter(Patient.LINK, { value = familyId }) }
@@ -113,10 +150,7 @@ constructor(
         val careplans =
           fhirEngine.search<CarePlan> {
             filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, it.logicalId)
-            filter(
-              CarePlan.STATUS,
-              { value = of(org.hl7.fhir.r4.model.CarePlan.CarePlanStatus.ACTIVE.toCoding()) }
-            )
+            filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
           }
         FamilyMember(it, conditions, careplans)
       }
@@ -132,5 +166,14 @@ constructor(
     }
 
   private fun getRegisterDataFilters() =
-    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.FAMILY.name)
+    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.FAMILY.name).also {
+      if (it == null) {
+        with(
+          configurationRegistry.context.getString(R.string.health_module_filters_not_configured)
+        ) {
+          Timber.e(this)
+          configurationRegistry.context.showToast(this)
+        }
+      }
+    }
 }
