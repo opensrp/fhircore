@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local
 
 import ca.uhn.fhir.rest.gclient.DateClientParam
+import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
@@ -113,6 +114,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
   }
 
   suspend fun loadPatients(lastRecordUpdatedAt: Long, batchSize: Int): List<Patient>? {
+    // TODO remove harcoded strings
     return withContext(dispatcherProvider.io()) {
       fhirEngine.search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
@@ -120,7 +122,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
           value = of(DateTimeType(Date(lastRecordUpdatedAt)))
           prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
 
-        sort(Patient.NAME, Order.ASCENDING)
+        sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
         count = batchSize
       }
 

@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Patient
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.p2p.dao.SenderTransferDao
@@ -38,9 +41,16 @@ class P2PSenderTransferDao
   override fun getJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int): JsonData? {
     // TODO complete  retrieval of data implementation
     // Find a way to make this generic
-    var jsonData:JsonData
-    var jsonArray: JSONArray
     val records = runBlocking { defaultRepository.loadPatients(lastRecordUpdatedAt = lastUpdated, batchSize = batchSize) }
-    return null
+    val highestRecordId = records?.get(records.size - 1)?.meta?.lastUpdated?.time
+    val gson = Gson()
+
+    val listString: String = gson.toJson(
+      records,
+      object : TypeToken<ArrayList<Patient?>?>() {}.getType()
+    )
+
+    val jsonArray = JSONArray(listString)
+    return highestRecordId?.let { JsonData(jsonArray, it) }
   }
 }
