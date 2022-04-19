@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
 import com.google.android.fhir.logicalId
+import org.smartregister.fhircore.engine.data.local.patient.dao.register.family.FamilyProfileDataMapper.familyMemberProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
@@ -37,13 +38,14 @@ object FamilyRegisterDataMapper : DataMapper<FamilyDetail, RegisterData.FamilyRe
   ): RegisterData.FamilyRegisterData {
     val family = inputModel.family
     val members = inputModel.members.map { it.familyMemberRegisterData() }
+    val familyHeadDetails = inputModel.members.first {it.patient.isFamilyHead()}
 
     return RegisterData.FamilyRegisterData(
       id = family.logicalId,
-      name = family.extractName(),
+      name = family.name,
       identifier = family.identifierFirstRep.value,
-      address = family.extractAddress(),
-      head = members.first { it.id == family.logicalId },
+      address = familyHeadDetails.patient.extractAddress(),
+      head = familyHeadDetails.familyMemberRegisterData(),
       members = members,
       servicesDue = members.sumOf { it.servicesDue ?: 0 },
       servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 },
