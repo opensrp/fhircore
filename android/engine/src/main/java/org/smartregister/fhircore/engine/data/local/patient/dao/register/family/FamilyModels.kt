@@ -16,14 +16,10 @@
 
 package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Flag
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.*
 
 data class FamilyDetail(
-  val family: Patient,
+  val family: Group,
   val members: List<FamilyMemberDetail>,
   val servicesDue: List<CarePlan> = listOf(),
   val tasks: List<Task> = listOf()
