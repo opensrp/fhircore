@@ -28,7 +28,7 @@ open class P2PReceiverTransferDao
 constructor()  : BaseP2PTransferDao(), ReceiverTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> {
-    return dataTypes!!.clone() as TreeSet<DataType>
+    return getTypes()!!.clone() as TreeSet<DataType>
   }
 
   override fun receiveJson(@NonNull type: DataType, @NonNull jsonArray: JSONArray): Long {

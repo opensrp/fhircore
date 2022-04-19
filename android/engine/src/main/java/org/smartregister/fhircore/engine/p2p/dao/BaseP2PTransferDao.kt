@@ -30,14 +30,14 @@ open class BaseP2PTransferDao {
   val observation =
     DataType(name = P2PConstants.P2PDataTypes.OBSERVATION, DataType.Filetype.JSON, 3)
   val encounter = DataType(name = P2PConstants.P2PDataTypes.ENCOUNTER, DataType.Filetype.JSON, 4)
-  var dataTypes: TreeSet<DataType>? = null
 
-  fun BaseP2PTransferDao() {
-    dataTypes = TreeSet<DataType>()
+  fun getTypes(): TreeSet<DataType> {
+    val  dataTypes = TreeSet<DataType>()
     dataTypes!!.add(patient)
     dataTypes!!.add(questionnaire)
     dataTypes!!.add(questionnaireResponse)
     dataTypes!!.add(observation)
     dataTypes!!.add(encounter)
+    return dataTypes
   }
 }

@@ -32,7 +32,7 @@ class P2PSenderTransferDao
         ) : BaseP2PTransferDao(), SenderTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> {
-    return TreeSet<DataType>()
+    return getTypes()
   }
 
   override fun getJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int): JsonData? {

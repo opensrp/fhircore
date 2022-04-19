@@ -28,7 +28,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Immunization
@@ -116,8 +116,8 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     return withContext(dispatcherProvider.io()) {
       fhirEngine.search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
-        filter(DateClientParam("lastUpdate"), {
-          value = of(DateType(Date(lastRecordUpdatedAt)))
+        filter(DateClientParam("_lastUpdated"), {
+          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
           prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
 
         sort(Patient.NAME, Order.ASCENDING)
