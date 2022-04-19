@@ -34,9 +34,7 @@ object FamilyProfileDataMapper : DataMapper<FamilyDetail, ProfileData.FamilyProf
   ): ProfileData.FamilyProfileData {
     val family = inputModel.family
     val members = inputModel.members.map { it.familyMemberProfileData() }
-    val familyHeadDetails = inputModel.members.first {it.patient.isFamilyHead()}
-
-
+    val familyHeadDetails = inputModel.members.first { it.patient.isFamilyHead() }
 
     return ProfileData.FamilyProfileData(
       id = family.logicalId,
