@@ -106,7 +106,9 @@ fun FamilyProfileScreen(
         bottomSheetScaffoldState = bottomSheetScaffoldState,
         title = bottomSheetTitle,
         formButtonData = formButtonData,
-        onFormClick = {},
+        onFormClick = { taskFormId ->
+          familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
+        },
         onViewProfile = {
           familyProfileViewModel.onEvent(
             FamilyProfileEvent.OpenMemberProfile(currentMemberPatientId, navController)
@@ -115,7 +117,8 @@ fun FamilyProfileScreen(
       )
     },
     scaffoldState = bottomSheetScaffoldState,
-    sheetPeekHeight = 0.dp
+    sheetPeekHeight = 0.dp,
+    sheetGesturesEnabled = true
   ) {
     Scaffold(
       topBar = {
@@ -239,7 +242,7 @@ fun FamilyProfileScreen(
                 }
               },
               onTaskClick = { taskFormId ->
-                familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(taskFormId))
+                familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
               }
             )
             Divider()

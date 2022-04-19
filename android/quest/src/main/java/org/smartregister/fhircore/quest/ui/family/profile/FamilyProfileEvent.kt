@@ -25,7 +25,7 @@ sealed class FamilyProfileEvent {
 
   data class AddMember(val context: Context, val familyHeadId: String?) : FamilyProfileEvent()
 
-  data class OpenTaskForm(val taskFormId: String) : FamilyProfileEvent()
+  data class OpenTaskForm(val context: Context, val taskFormId: String) : FamilyProfileEvent()
 
   data class OpenMemberProfile(val patientId: String, val navController: NavHostController) :
     FamilyProfileEvent()

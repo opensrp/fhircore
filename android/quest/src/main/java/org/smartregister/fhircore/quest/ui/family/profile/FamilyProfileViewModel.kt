@@ -65,6 +65,8 @@ constructor(
           "?feature=${AppFeature.PatientManagement.name}&healthModule=${HealthModule.DEFAULT.name}&patientId=${event.patientId}"
         event.navController.navigate(route = NavigationScreen.PatientProfile.route + urlParams)
       }
+      is FamilyProfileEvent.OpenTaskForm ->
+        event.context.launchQuestionnaireActivity(event.taskFormId)
     }
   }
 
