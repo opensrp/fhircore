@@ -37,7 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.ui.theme.PatientProfileBackgroundColor
+import org.smartregister.fhircore.engine.ui.theme.LighterGrayBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 
@@ -74,7 +74,7 @@ fun PersonalData(
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier =
-          modifier.clip(RoundedCornerShape(size = 8.dp)).background(PatientProfileBackgroundColor)
+          modifier.clip(RoundedCornerShape(size = 8.dp)).background(LighterGrayBackgroundColor)
       ) {
         OtherDetailsItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
         OtherDetailsItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
