@@ -34,13 +34,16 @@ object FamilyProfileDataMapper : DataMapper<FamilyDetail, ProfileData.FamilyProf
   ): ProfileData.FamilyProfileData {
     val family = inputModel.family
     val members = inputModel.members.map { it.familyMemberProfileData() }
+    val familyHeadDetails = inputModel.members.first {it.patient.isFamilyHead()}
+
+
 
     return ProfileData.FamilyProfileData(
       id = family.logicalId,
-      name = family.extractName(),
+      name = family.name,
       identifier = family.identifierFirstRep.value,
-      address = family.extractAddress(),
-      head = members.first { it.id == family.logicalId },
+      address = familyHeadDetails.patient.extractAddress(),
+      head = familyHeadDetails.familyMemberProfileData(),
       members = members,
       services = inputModel.servicesDue,
       tasks = inputModel.tasks
