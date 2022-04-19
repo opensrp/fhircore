@@ -37,7 +37,7 @@ fun Patient.extractName(): String {
   val humanName = this.name.firstOrNull()
   return if (humanName != null) {
     (humanName.given + humanName.family).filterNotNull().joinToString(" ") {
-      it.toString().trim().toTitleCase()
+      it.toString().trim().capitalizeFirstLetter()
     }
   } else ""
 }
@@ -46,11 +46,11 @@ fun Patient.extractFamilyName(): String {
   if (!hasName()) return ""
   val humanName = this.name.firstOrNull()
   return if (humanName != null) {
-    humanName.family?.toTitleCase()?.plus(" Family") ?: ""
+    humanName.family?.capitalizeFirstLetter()?.plus(" Family") ?: ""
   } else ""
 }
 
-private fun String.toTitleCase() = replaceFirstChar {
+fun String.capitalizeFirstLetter() = replaceFirstChar {
   if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }
 

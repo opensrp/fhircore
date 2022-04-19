@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile.model
 
+import org.smartregister.fhircore.engine.domain.model.FormButtonData
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
 sealed class ProfileViewData(open val id: String = "", open val name: String = "") {
@@ -27,7 +28,7 @@ sealed class ProfileViewData(open val id: String = "", open val name: String = "
     val age: String = "",
     val dob: String = "",
     val tasks: List<PatientProfileRowItem> = emptyList(),
-    val forms: List<PatientFormViewData> = emptyList(),
+    val forms: List<FormButtonData> = emptyList(),
     val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
     val upcomingServices: List<PatientProfileRowItem> = emptyList(),
     val ancCardData: List<PatientProfileRowItem> = emptyList()
