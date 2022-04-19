@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.profile.components
+package org.smartregister.fhircore.engine.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,27 +32,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.smartregister.fhircore.engine.ui.theme.InfoColor
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientFormViewData
+import org.smartregister.fhircore.engine.domain.model.FormButtonData
 
 @Composable
-fun PatientForm(
-  patientProfileViewData: PatientFormViewData,
-  onFormClick: (String) -> Unit,
-  modifier: Modifier = Modifier
+fun FormButton(
+  formButtonData: FormButtonData,
+  modifier: Modifier = Modifier,
+  onFormClick: (String) -> Unit
 ) {
   OutlinedButton(
-    onClick = { onFormClick(patientProfileViewData.questionnaireId) },
+    onClick = {
+      if (formButtonData.questionnaireId != null) onFormClick(formButtonData.questionnaireId)
+    },
     colors =
       ButtonDefaults.buttonColors(
-        backgroundColor = InfoColor.copy(alpha = 0.2f),
-        contentColor = InfoColor.copy(alpha = 0.8f)
+        backgroundColor = formButtonData.color.copy(alpha = 0.2f),
+        contentColor = formButtonData.color.copy(alpha = 0.6f)
       ),
-    modifier = modifier.fillMaxWidth().padding(top = 16.dp, start = 16.dp, end = 16.dp)
+    modifier = modifier.fillMaxWidth().padding(top = 0.dp, start = 16.dp, end = 16.dp)
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Icon(imageVector = Icons.Filled.Add, contentDescription = null)
-      Text(text = patientProfileViewData.questionnaire, fontWeight = FontWeight.Light)
+      Text(text = formButtonData.questionnaire, fontWeight = FontWeight.Medium)
     }
   }
 }
@@ -61,25 +62,10 @@ fun PatientForm(
 @Preview(showBackground = true)
 fun PatientFormPreview() {
   Column {
-    PatientForm(
-      patientProfileViewData = PatientFormViewData("Household survey", "182912"),
-      onFormClick = {}
-    )
-    PatientForm(
-      patientProfileViewData = PatientFormViewData("Bednet distribution", "182212"),
-      onFormClick = {}
-    )
-    PatientForm(
-      patientProfileViewData = PatientFormViewData("Malaria diagnosis", "181212"),
-      onFormClick = {}
-    )
-    PatientForm(
-      patientProfileViewData = PatientFormViewData("Medicine treatment", "171212"),
-      onFormClick = {}
-    )
-    PatientForm(
-      patientProfileViewData = PatientFormViewData("G6PD test result", "171219"),
-      onFormClick = {}
-    )
+    FormButton(formButtonData = FormButtonData("Household survey", "182912"), onFormClick = {})
+    FormButton(formButtonData = FormButtonData("Bednet distribution", "182212"), onFormClick = {})
+    FormButton(formButtonData = FormButtonData("Malaria diagnosis", "181212"), onFormClick = {})
+    FormButton(formButtonData = FormButtonData("Medicine treatment", "171212"), onFormClick = {})
+    FormButton(formButtonData = FormButtonData("G6PD test result", "171219"), onFormClick = {})
   }
 }

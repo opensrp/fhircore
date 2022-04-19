@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.profile.model
+package org.smartregister.fhircore.engine.domain.model
 
-data class PatientFormViewData(val questionnaire: String, val questionnaireId: String)
+import androidx.compose.ui.graphics.Color
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
+
+data class FormButtonData(
+  val questionnaire: String,
+  val questionnaireId: String?,
+  val color: Color = InfoColor,
+)

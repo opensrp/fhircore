@@ -36,7 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.quest.ui.patient.profile.components.PatientForm
+import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
@@ -94,8 +94,8 @@ fun PatientProfileScreen(
             profileViewSection = PatientProfileViewSection.FORMS
           ) {
             profileViewData.forms.forEach {
-              PatientForm(
-                patientProfileViewData = it,
+              FormButton(
+                formButtonData = it,
                 onFormClick = { questionnaireId ->
                   patientProfileViewModel.onEvent(
                     PatientProfileEvent.LoadQuestionnaire(questionnaireId, context)

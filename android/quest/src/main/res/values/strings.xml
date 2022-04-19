@@ -31,5 +31,7 @@
     <string name="alert_message_abort_operation">Are you sure you want to abort this operation?</string>
     <string name="alert_title_abort">Abort</string>
     <string name="no_eligible_family_head">No eligible family members</string>
+    <string name="what_to_do">What do you want to do?</string>
+    <string name="view_profile">View profile</string>
 
 </resources>
