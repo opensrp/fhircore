@@ -70,6 +70,7 @@ constructor(
               HealthModule.FAMILY -> R.string.households
               HealthModule.CHILD -> R.string.children
               HealthModule.FAMILY_PLANNING -> R.string.family_planning_clients
+              else -> 0
             },
           showCount = true,
           count =

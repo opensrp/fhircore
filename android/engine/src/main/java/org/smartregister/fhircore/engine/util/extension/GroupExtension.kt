@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.appfeature.model
+package org.smartregister.fhircore.engine.util.extension
 
-enum class HealthModule {
-  ANC,
-  RDT,
-  PNC,
-  FAMILY,
-  CHILD,
-  FAMILY_PLANNING,
-  FAMILY_CARE_PLAN,
-  DEFAULT
-}
+import org.hl7.fhir.r4.model.Group
+
+private const val SUFFIX_FAMILY_NAME = " Family"
+
+fun Group.nameWithSuffix() = this.name.plus(SUFFIX_FAMILY_NAME)

@@ -36,6 +36,14 @@ fun Search.filterByResourceTypeId(
   filter(reference, { value = "${resourceType.name}/$resourceId" })
 }
 
+fun Search.filterByResourceTypeId(
+  token: TokenClientParam,
+  resourceType: ResourceType,
+  resourceId: String
+) {
+  filter(token, { value = of("${resourceType.name}/$resourceId") })
+}
+
 fun Search.filterByPatientName(name: String?) {
   if (name?.isNotBlank() == true) {
     filter(
@@ -51,14 +59,7 @@ fun Search.filterByPatientName(name: String?) {
 fun Search.filterBy(filter: SearchFilter) {
   when (filter.filterType) {
     Enumerations.SearchParamType.TOKEN -> filterToken(filter)
-    Enumerations.SearchParamType.STRING ->
-      filter(
-        StringClientParam(filter.key),
-        {
-          this.modifier = StringFilterModifier.MATCHES_EXACTLY
-          this.value = filter.valueString!!
-        }
-      )
+    Enumerations.SearchParamType.STRING -> filterString(filter)
     else ->
       throw UnsupportedOperationException("Can not apply ${filter.filterType} as search filter")
   }
@@ -71,6 +72,30 @@ fun Search.filterToken(filter: SearchFilter) {
       filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
     Enumerations.DataType.CODEABLECONCEPT ->
       filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCodeableConcept()) })
+    else ->
+      throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
+  }
+}
+
+fun Search.filterString(filter: SearchFilter) {
+  // TODO StringFilter in SDK is not fully implemented and ignores all types but String and Boolean
+  when (filter.valueType) {
+    Enumerations.DataType.STRING ->
+      filter(
+        StringClientParam(filter.key),
+        {
+          this.modifier = StringFilterModifier.MATCHES_EXACTLY
+          this.value = filter.valueString!!
+        }
+      )
+    Enumerations.DataType.BOOLEAN ->
+      filter(
+        StringClientParam(filter.key),
+        {
+          this.modifier = StringFilterModifier.MATCHES_EXACTLY
+          this.value = filter.valueBoolean.toString()
+        }
+      )
     else ->
       throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
   }

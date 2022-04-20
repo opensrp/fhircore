@@ -39,6 +39,7 @@ data class SearchFilter(
   val key: String,
   val filterType: Enumerations.SearchParamType,
   val valueType: Enumerations.DataType,
+  val valueBoolean: Boolean? = null,
   val valueCoding: Code? = null,
   val valueString: String? = null
 )

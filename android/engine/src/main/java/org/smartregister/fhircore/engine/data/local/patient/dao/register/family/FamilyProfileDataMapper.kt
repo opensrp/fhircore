@@ -25,6 +25,7 @@ import org.smartregister.fhircore.engine.util.extension.extractDeathDate
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
+import org.smartregister.fhircore.engine.util.extension.nameWithSuffix
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 object FamilyProfileDataMapper : DataMapper<FamilyDetail, ProfileData.FamilyProfileData> {
@@ -33,14 +34,15 @@ object FamilyProfileDataMapper : DataMapper<FamilyDetail, ProfileData.FamilyProf
     inputModel: FamilyDetail
   ): ProfileData.FamilyProfileData {
     val family = inputModel.family
+    val head = inputModel.head
     val members = inputModel.members.map { it.familyMemberProfileData() }
 
     return ProfileData.FamilyProfileData(
       id = family.logicalId,
-      name = family.extractName(),
+      name = family.nameWithSuffix(),
       identifier = family.identifierFirstRep.value,
-      address = family.extractAddress(),
-      head = members.first { it.id == family.logicalId },
+      address = head?.patient?.extractAddress() ?: "",
+      head = head?.familyMemberProfileData(),
       members = members,
       services = inputModel.servicesDue,
       tasks = inputModel.tasks

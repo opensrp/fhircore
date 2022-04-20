@@ -25,6 +25,30 @@
     {
       "id": "family",
       "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "https://www.snomed.org",
+        "code": "35359004"
+      }
+    },
+    {
+      "id": "family",
+      "filterType": "STRING",
+      "key": "active",
+      "valueType": "BOOLEAN",
+      "valueBoolean": true
+    },
+    {
+      "id": "family",
+      "filterType": "STRING",
+      "key": "type",
+      "valueType": "STRING",
+      "valueString": "person"
+    },
+    {
+      "id": "family_care_plan",
+      "filterType": "TOKEN",
       "key": "_tag",
       "valueType": "CODING",
       "valueCoding": {

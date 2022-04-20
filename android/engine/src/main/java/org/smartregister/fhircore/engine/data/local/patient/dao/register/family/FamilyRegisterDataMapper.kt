@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.engine.util.extension.lastSeenFormat
+import org.smartregister.fhircore.engine.util.extension.nameWithSuffix
 import org.smartregister.fhircore.engine.util.extension.overdue
 
 object FamilyRegisterDataMapper : DataMapper<FamilyDetail, RegisterData.FamilyRegisterData> {
@@ -36,14 +37,15 @@ object FamilyRegisterDataMapper : DataMapper<FamilyDetail, RegisterData.FamilyRe
     inputModel: FamilyDetail
   ): RegisterData.FamilyRegisterData {
     val family = inputModel.family
+    val head = inputModel.head
     val members = inputModel.members.map { it.familyMemberRegisterData() }
 
     return RegisterData.FamilyRegisterData(
       id = family.logicalId,
-      name = family.extractName(),
+      name = family.nameWithSuffix(),
       identifier = family.identifierFirstRep.value,
-      address = family.extractAddress(),
-      head = members.first { it.id == family.logicalId },
+      address = head?.patient?.extractAddress() ?: "",
+      head = head?.familyMemberRegisterData(),
       members = members,
       servicesDue = members.sumOf { it.servicesDue ?: 0 },
       servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 },
