@@ -92,8 +92,8 @@ constructor(
     }
   }
 
-  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? {
-    val patient = defaultRepository.loadResource<Patient>(patientId)!!
+  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
+    val patient = defaultRepository.loadResource<Patient>(resourceId)!!
     val carePlans =
       defaultRepository.searchResourceFor<CarePlan>(
         subjectId = patient.logicalId,
