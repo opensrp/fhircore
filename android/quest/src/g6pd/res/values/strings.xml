@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">G6PD</string>
+    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.g6pd</string>
+</resources>

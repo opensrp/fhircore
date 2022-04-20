@@ -173,8 +173,6 @@ constructor(
   val loginViewConfiguration: LiveData<LoginViewConfiguration>
     get() = _loginViewConfiguration
 
-  lateinit var appLogoResourceFile: String
-
   fun loginUser() {
     viewModelScope.launch(dispatcher.io()) {
       if (accountAuthenticator.hasActiveSession()) {
