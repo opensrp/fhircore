@@ -105,7 +105,7 @@ interface ConfigService {
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
     syncConfig.resource.parameter.map { it.resource as SearchParameter }.forEach { sp ->
-      val paramName = sp.name!! // e.g. organization
+      val paramName = sp.name // e.g. organization
       val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
       val paramExpression = sp.expression
       val expressionValue =
