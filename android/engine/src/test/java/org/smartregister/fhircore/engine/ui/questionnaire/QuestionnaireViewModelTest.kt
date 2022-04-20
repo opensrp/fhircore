@@ -108,7 +108,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
       getUserInfo().encodeJson()
 
-    defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider(), mockk()))
     val configurationRegistry = mockk<ConfigurationRegistry>()
     every { configurationRegistry.appId } returns "appId"
     questionnaireViewModel =

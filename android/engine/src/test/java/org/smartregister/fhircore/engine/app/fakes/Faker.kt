@@ -38,9 +38,7 @@ object Faker {
     coEvery { defaultRepository.getBinary(any()) } answers
       {
         val idArg = this.args.first().toString().replace("b_", "")
-        Binary().apply {
-          content = "/configs/${idArg}_configurations.json".readFile().toByteArray()
-        }
+        Binary().apply { content = "/configs/config_$idArg.json".readFile().toByteArray() }
       }
 
     runBlocking { configurationRegistry.loadConfigurations(appId = "appId") {} }

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local.patient
 
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.patient.dao.register.RegisterDaoFactory
@@ -31,10 +32,15 @@ class PatientRegisterRepository
 constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
+  override val fhirPathEngine: FHIRPathEngine,
   val registerDaoFactory: RegisterDaoFactory
 ) :
   RegisterRepository,
-  DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
+  DefaultRepository(
+    fhirEngine = fhirEngine,
+    dispatcherProvider = dispatcherProvider,
+    fhirPathEngine = fhirPathEngine
+  ) {
 
   override suspend fun loadRegisterData(
     currentPage: Int,

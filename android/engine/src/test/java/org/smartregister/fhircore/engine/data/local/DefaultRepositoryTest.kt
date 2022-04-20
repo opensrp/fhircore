@@ -44,6 +44,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -54,6 +55,19 @@ import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 class DefaultRepositoryTest : RobolectricTest() {
 
   private val dispatcherProvider = spyk(DefaultDispatcherProvider())
+
+  lateinit var defaultRepository: DefaultRepository
+  val fhirEngine: FhirEngine = mockk()
+
+  @Before
+  fun setup() {
+    defaultRepository =
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = dispatcherProvider,
+        fhirPathEngine = mockk()
+      )
+  }
 
   @Test
   fun `addOrUpdate() should call fhirEngine#update when resource exists`() {
@@ -83,12 +97,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     val savedPatientSlot = slot<Patient>()
 
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.load(Patient::class.java, patient.idElement.idPart) } returns patient
     coEvery { fhirEngine.update(any()) } just runs
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     // Call the function under test
     runBlocking { defaultRepository.addOrUpdate(patient) }
@@ -118,11 +128,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun `loadRelatedPersons() should call FhirEngine#loadRelatedPersons`() {
     val patientId = "15672-9234"
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.loadRelatedPersons(patientId) } returns listOf()
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.loadRelatedPersons(patientId) }
 
@@ -132,11 +138,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun `loadImmunizations() should call FhirEngine#loadImmunizations`() {
     val patientId = "15672-9234"
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.loadPatientImmunizations(patientId) } returns listOf()
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
 
@@ -145,11 +147,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun `loadQuestionnaireResponse() should call FhirEngine#load`() {
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns listOf()
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.loadQuestionnaireResponses("1234", Questionnaire()) }
 
@@ -161,12 +159,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     mockkStatic(Resource::generateMissingId)
     val resource = spyk(Patient())
 
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.load(Patient::class.java, any()) } throws
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.save(any()) } just runs
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.save(resource) }
 
@@ -180,12 +175,8 @@ class DefaultRepositoryTest : RobolectricTest() {
     mockkStatic(Resource::generateMissingId)
     val resource = Patient()
 
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.load(Patient::class.java, any()) } throws
       ResourceNotFoundException("Exce", "Exce")
-    coEvery { fhirEngine.save(any()) } just runs
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.addOrUpdate(resource) }
 
@@ -196,12 +187,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun testSearchCompositionByIdentifier() = runBlockingTest {
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<Composition>(any()) } returns
       listOf(Composition().apply { id = "123" })
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     val result = defaultRepository.searchCompositionByIdentifier("appId")
 
@@ -212,11 +199,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun testGetBinaryResource() = runBlockingTest {
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.load(Binary::class.java, any()) } returns Binary().apply { id = "111" }
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     val result = defaultRepository.getBinary("111")
 

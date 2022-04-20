@@ -55,7 +55,7 @@
               {
                 "searchParam": "link",
                 "extension": [{
-                  "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                  "url": "http://hl7.org/fhir/StructureDefinition/cqf-initiatingPerson",
                   "valueExpression": {
                     "language": "text/fhirpath",
                     "expression": "%family.id"
@@ -79,7 +79,7 @@
               {
                 "searchParam": "subject",
                 "extension": [{
-                  "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                  "url": "http://hl7.org/fhir/StructureDefinition/cqf-initiatingPerson",
                   "valueExpression": {
                     "language": "text/fhirpath",
                     "expression": "%family.id"

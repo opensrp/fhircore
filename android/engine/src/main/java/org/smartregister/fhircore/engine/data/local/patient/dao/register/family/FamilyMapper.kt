@@ -53,7 +53,6 @@ object FamilyMapper : DataMapper<Family, RegisterData.FamilyRegisterData> {
       name = family.extractName(),
       identifier = family.identifierFirstRep.value,
       address = family.extractAddress(),
-      head = members.first { it.id == family.logicalId },
       members = members,
       servicesDue = members.sumOf { it.servicesDue ?: 0 },
       servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 }

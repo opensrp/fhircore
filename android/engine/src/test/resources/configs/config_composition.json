@@ -50,6 +50,22 @@
       }
     },
     {
+      "title": "Data Filters configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/b_data_filters",
+        "identifier": { "value": "data_filters" }
+      }
+    },
+    {
+      "title": "Data Mappers configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/b_data_mappers",
+        "identifier": { "value": "data_mappers" }
+      }
+    },
+    {
       "title": "Pin View configuration",
       "mode": "working",
       "focus": {

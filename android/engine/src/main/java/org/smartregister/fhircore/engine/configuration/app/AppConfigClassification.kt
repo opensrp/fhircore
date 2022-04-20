@@ -23,6 +23,7 @@ enum class AppConfigClassification : ConfigClassification {
   APP_FEATURE,
   FORMS,
   DATA_FILTERS,
+  DATA_MAPPERS,
   LOGIN,
   PIN,
   SYNC,

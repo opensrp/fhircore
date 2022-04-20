@@ -27,18 +27,24 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Medication
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.configuration.view.asCode
@@ -60,7 +66,7 @@ open class DefaultRepository
 constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
-  val fhirPathEngine: FHIRPathEngine
+  open val fhirPathEngine: FHIRPathEngine
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -115,7 +121,7 @@ constructor(
       }
     }
 
-  suspend inline fun searchResource(
+  suspend fun searchResourceFor(
     resourceType: ResourceType,
     dataRequirement: DataRequirement,
     contextData: Map<String, Any> = mapOf(),
@@ -124,7 +130,7 @@ constructor(
   ): List<Resource> =
     searchResource(resourceType, dataRequirement.asSearchFilter(contextData), currentPage, limit)
 
-  suspend inline fun searchResource(
+  suspend fun searchResource(
     resourceType: ResourceType,
     filters: List<SearchFilter> = listOf(),
     currentPage: Int = 0,
@@ -132,6 +138,13 @@ constructor(
   ): List<Resource> =
     when (resourceType) {
       ResourceType.Patient -> searchResource<Patient>(filters, currentPage, limit)
+      ResourceType.CarePlan -> searchResource<CarePlan>(filters, currentPage, limit)
+      ResourceType.Flag -> searchResource<Flag>(filters, currentPage, limit)
+      ResourceType.Condition -> searchResource<Condition>(filters, currentPage, limit)
+      ResourceType.Encounter -> searchResource<Encounter>(filters, currentPage, limit)
+      ResourceType.Observation -> searchResource<Observation>(filters, currentPage, limit)
+      ResourceType.Medication -> searchResource<Medication>(filters, currentPage, limit)
+      ResourceType.Task -> searchResource<Task>(filters, currentPage, limit)
       else ->
         throw UnsupportedOperationException(
           "${resourceType.name} as register data filters is not supported yet"

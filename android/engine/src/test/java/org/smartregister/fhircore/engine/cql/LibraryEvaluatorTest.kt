@@ -159,7 +159,7 @@ class LibraryEvaluatorTest {
         Patient
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = DefaultRepository(fhirEngine, DefaultDispatcherProvider())
+    val defaultRepository = DefaultRepository(fhirEngine, DefaultDispatcherProvider(), mockk())
 
     coEvery { fhirEngine.load(Library::class.java, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.load(Library::class.java, fhirHelpersLibrary.logicalId) } returns

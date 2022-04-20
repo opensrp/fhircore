@@ -31,7 +31,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.asSearchFilter
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -85,10 +85,11 @@ constructor(
   override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? {
     return withContext(dispatcherProvider.io()) {
       val patient = fhirEngine.load(Patient::class.java, patientId)
-      val formsFilter =
-        configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY).flatMap {
-          it.asSearchFilter()
-        }
+      val formsFilter = listOf<SearchFilter>() // TODO ???????????????????????????????
+      //        configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY).flatMap
+      // {
+      //          it.asSearchFilter()
+      //        }
 
       ProfileData.DefaultProfileData(
         id = patient.logicalId,

@@ -88,6 +88,12 @@ constructor(
       .parameter
       .firstOrNull { it.name.contentEquals(id, ignoreCase = true) }
 
+  fun retrieveDataMapperConfiguration(id: String) =
+    retrieveConfiguration<FhirConfiguration<Parameters>>(AppConfigClassification.DATA_MAPPERS)
+      .resource
+      .parameter
+      .firstOrNull { it.name.contentEquals(id, ignoreCase = true) }
+
   suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     this.appId = appId
 

@@ -18,8 +18,19 @@ package org.smartregister.fhircore.engine.domain.model
 
 import java.util.Date
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 
 sealed class RegisterData(open val id: String, open val name: String) {
+
+  data class RawRegisterData(
+    override val id: String,
+    override val name: String,
+    val healthModule: HealthModule,
+    val main: Resource,
+    val details: Map<String, List<Resource>>
+  ) : RegisterData(id = id, name = name)
+
   data class DefaultRegisterData(
     override val id: String,
     override val name: String,
@@ -31,8 +42,7 @@ sealed class RegisterData(open val id: String, open val name: String) {
     override val id: String,
     override val name: String,
     val identifier: String? = null,
-    val address: String,
-    val head: FamilyMemberRegisterData,
+    val address: String? = null,
     val members: List<FamilyMemberRegisterData>,
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null
@@ -43,8 +53,8 @@ sealed class RegisterData(open val id: String, open val name: String) {
     override val name: String,
     val identifier: String? = null,
     val birthdate: Date?,
-    val gender: String,
-    val isHead: Boolean,
+    val gender: String?,
+    val isHead: Boolean?,
     val pregnant: Boolean? = null,
     val deathDate: Date? = null,
     val servicesDue: Int? = null,

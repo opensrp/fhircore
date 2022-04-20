@@ -22,16 +22,22 @@ import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.reflect.KParameter
+import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.jvm.jvmErasure
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.asSearchFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -58,55 +64,134 @@ constructor(
     loadAll: Boolean,
     appFeatureName: String?
   ): List<RegisterData> {
-    val dataMap = mutableMapOf<String, Any>()
-    getRegisterDataFilters()?.let { param ->
-      // main data param for the register. this is the filter that defines the data like family,
-      // anc, pnc, child etc
-      val main = // todo ???
-        with(param.castToDataRequirement(param.value)) {
-          defaultRepository.searchResource(
-            resourceType = ResourceType.fromCode(this.type),
-            dataRequirement = this,
-            currentPage = currentPage,
-            limit = limit(loadAll, appFeatureName)
-          )
-        }
-
+    getRegisterDataFilters()!!.let { param ->
+      // http://hl7.org/fhir/parameters.html -
+      // Rule - inv-1: A parameter must have one and only one of (value, resource, part)
+      if (arrayOf(param.hasValue(), param.hasResource(), param.hasPart()).count { it } != 1)
+        throw UnsupportedOperationException(
+          "${param.name} -> A parameter must have one and only one of (value, resource, part)"
+        )
+      // Rule - Only one level of nested parameters (part) is allowed
+      // http://hl7.org/fhir/parameters-definitions.html#Parameters.parameter.part
       if (param.part.any { it.part.isNotEmpty() })
         throw UnsupportedOperationException(
           "${param.name} part field -> Only up to 1 level of nesting is supported"
         )
 
-      val parts = mutableMapOf<String, List<Resource>>()
+      return when {
+        param.hasValue() ->
+          loadValueData(param).map {
+            RegisterData.RawRegisterData(
+              id = it.logicalId,
+              name = it.logicalId,
+              healthModule = HealthModule.FAMILY,
+              main = it,
+              details = mapOf()
+            )
+          }
+        param.hasResource() ->
+          throw UnsupportedOperationException("Dont know resource handling") // TODO
+        else -> {
+          // for parts defined the config must define the mapping for main param
+          val main =
+            param.part.single { it.name == param.name }.let { mainParam ->
+              loadValueData(mainParam)
+            }
 
-      // the parts defines further details for the each item in data. i.e careplans, tasks,
-      // encounters etc
-      param.part.forEach { partParam ->
-        partParam.name // todo ???
+          main.map {
+            // add main to context data
+            val contextData = mutableMapOf<String, Any>(param.name to it)
 
-        with(partParam.castToDataRequirement(partParam.value)) {
-          main.map { d ->
-            defaultRepository.searchResource(
-                resourceType = ResourceType.fromCode(this.type),
-                dataRequirement = this,
-                contextData = mapOf(param.name to d)
+            val details = mutableMapOf<String, List<Resource>>()
+            param.part.filter { it.name != param.name }.forEach { partParam ->
+              loadValueData(partParam, contextData).also { details[partParam.name] = it }.also {
+
+                // add subsequent items to context data
+                contextData[partParam.name] = it
+              }
+            }
+
+            val mapper =
+              configurationRegistry.retrieveDataMapperConfiguration(
+                HealthModule.FAMILY.name
+              )!! // TODO handle edges
+            parseMapping(mapper, contextData, it)
+              ?: RegisterData.RawRegisterData(
+                id = it.logicalId,
+                name = it.logicalId,
+                healthModule = HealthModule.FAMILY,
+                main = it,
+                details = details
               )
-              .apply { parts[partParam.name] = this }
           }
         }
       }
     }
+  }
 
-    return patients.map { p ->
-      val members = loadFamilyMembers(p.logicalId)
-      val familyServices =
-        defaultRepository.searchResourceFor<CarePlan>(
-          subjectId = p.logicalId,
-          subjectParam = CarePlan.SUBJECT,
-          filters = getRegisterDataFilters()
-        )
+  fun parseMapping(
+    mapperParam: Parameters.ParametersParameterComponent,
+    contextData: MutableMap<String, Any>,
+    base: Resource
+  ): RegisterData {
+    val className =
+      mapperParam
+        .extension
+        .firstOrNull {
+          it.url == "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name"
+        }
+        ?.value
+        .toString()
+    className.let {
+      Class.forName(it).kotlin.constructors.first().apply {
+        val paramValues = mutableMapOf<KParameter, Any?>()
+        this.parameters.map { clsParam ->
+          mapperParam
+            .part
+            .singleOrNull { it.name == clsParam.name }
+            ?.let { partParam ->
+              if (partParam.hasResource()) {
+                if (clsParam.type.jvmErasure.isSubclassOf(Collection::class))
+                  (contextData[partParam.name] as Collection<*>).map {
+                    parseMapping(
+                      (partParam.resource as Parameters).parameter.first(),
+                      contextData,
+                      it as Resource
+                    ) // TODO handle first plus
+                  }
+                else
+                  parseMapping(
+                    (partParam.resource as Parameters).parameter.first(),
+                    contextData,
+                    contextData[partParam.name] as Resource
+                  ) // TODO handle first plus
+              } else
+                partParam.value
+                  ?.let {
+                    fhirPathEngine
+                      .evaluate(contextData, base, null, null, it.castToExpression(it).expression)
+                      .firstOrNull()
+                  }
+                  ?.let { if (it.isPrimitive) (it as PrimitiveType<*>).value else it }
+            }
+            .also { evalValue -> paramValues[clsParam] = evalValue }
+        }
 
-      FamilyMapper.transformInputToOutputModel(Family(p, members, familyServices))
+        return this.callBy(paramValues) as RegisterData
+      }
+    }
+  }
+
+  suspend fun loadValueData(
+    param: Parameters.ParametersParameterComponent,
+    contextData: MutableMap<String, Any> = mutableMapOf()
+  ): List<Resource> {
+    with(param.castToDataRequirement(param.value!!)) {
+      return defaultRepository.searchResourceFor(
+        resourceType = ResourceType.fromCode(this.type),
+        dataRequirement = this,
+        contextData = contextData
+      )
     }
   }
 
@@ -116,8 +201,7 @@ constructor(
     val familyServices =
       defaultRepository.searchResourceFor<CarePlan>(
         subjectId = family.logicalId,
-        subjectParam = CarePlan.SUBJECT,
-        filters = getRegisterDataFilters()
+        subjectParam = CarePlan.SUBJECT // TODO do we need all CPs or Family CPs
       )
 
     return FamilyProfileMapper.transformInputToOutputModel(
@@ -127,7 +211,10 @@ constructor(
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     return fhirEngine.count<Patient> {
-      getRegisterDataFilters().forEach { filterBy(it) }
+      getRegisterDataFilters()
+        ?.let { it.castToDataRequirement(it.value) }
+        ?.asSearchFilter(fhirPathEngine)
+        ?.forEach { filterBy(it) }
       filter(Patient.ACTIVE, { value = of(true) })
     }
   }

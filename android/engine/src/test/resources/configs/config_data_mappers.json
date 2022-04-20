@@ -1,0 +1,80 @@
+{
+  "resourceType": "Parameters",
+  "parameter": [
+    {
+      "name": "family",
+      "extension": [{
+        "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
+        "valueString": "org.smartregister.fhircore.engine.domain.model.RegisterData$FamilyRegisterData"
+      }],
+      "part": [
+        {
+          "name": "id",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%family.id.value"
+          }
+        },
+        {
+          "name": "name",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%family.name.given + ' ' + %family.name.family"
+          }
+        },
+        {
+          "name": "identifier",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%family.identifier.first().value"
+          }
+        },
+        {
+          "name": "address",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%family.address.first().district + ', ' + %family.address.first().city"
+          }
+        },
+        {
+          "name": "members",
+          "resource": {
+            "resourceType": "Parameters",
+            "parameter": [
+              {
+                "name": "members",
+                "extension": [{
+                  "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
+                  "valueString": "org.smartregister.fhircore.engine.domain.model.RegisterData$FamilyMemberRegisterData"
+                }],
+                "part": [
+                  {
+                    "name": "id",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id.value"
+                    }
+                  },
+                  {
+                    "name": "name",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.name.given + ' ' + %resource.name.family"
+                    }
+                  },
+                  {
+                    "name": "identifier",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.identifier.first().value"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
