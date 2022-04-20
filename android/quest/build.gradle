@@ -140,7 +140,7 @@ android {
         g6pd {
             dimension "apps"
             applicationIdSuffix ".g6pd"
-            versionNameSuffix "-quest"
+            versionNameSuffix "-g6pd"
         }
         mwcore {
             dimension "apps"
