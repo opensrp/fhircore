@@ -4,14 +4,6 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "base": [
-          "Group"
-        ]
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
         "name": "organization",
         "code": "organization",
         "base": [
@@ -70,7 +62,8 @@
           "Questionnaire",
           "StructureMap",
           "Binary",
-          "Task"
+          "Task",
+          "Group"
         ],
         "type": "token",
         "expression": "#count"
