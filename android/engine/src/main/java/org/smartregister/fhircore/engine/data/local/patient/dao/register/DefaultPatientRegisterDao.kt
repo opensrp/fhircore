@@ -18,8 +18,6 @@ package org.smartregister.fhircore.engine.data.local.patient.dao.register
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
@@ -30,18 +28,19 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
-import org.smartregister.fhircore.engine.domain.util.PaginationConstant.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.helper.FhirMapperServices.parseMapping
 
 @Singleton
 class DefaultPatientRegisterDao
@@ -51,7 +50,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DefaultDispatcherProvider,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathEngine: FHIRPathEngine
 ) : RegisterDao {
 
   override suspend fun loadRegisterData(
@@ -60,21 +59,11 @@ constructor(
     appFeatureName: String?
   ): List<RegisterData> {
     return withContext(dispatcherProvider.io()) {
-      val patients =
-        fhirEngine.search<Patient> {
-          filter(Patient.ACTIVE, { value = of(true) })
-          sort(Patient.NAME, Order.ASCENDING)
-          count = if (loadAll) countRegisterData(appFeatureName).toInt() else DEFAULT_PAGE_SIZE
-          from = currentPage * DEFAULT_PAGE_SIZE
+      configurationRegistry.retrieveDataFilterConfiguration(HealthModule.DEFAULT.name)!!.let { param
+        ->
+        defaultRepository.loadDataForParam(param, null).map { data ->
+          parseMapping(param.name, data, configurationRegistry, fhirPathEngine)
         }
-
-      patients.map {
-        RegisterData.DefaultRegisterData(
-          id = it.logicalId,
-          name = it.extractName(),
-          gender = it.gender,
-          age = it.extractAge()
-        )
       }
     }
   }

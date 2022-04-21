@@ -53,6 +53,7 @@ import org.smartregister.fhircore.engine.configuration.view.asCode
 import org.smartregister.fhircore.engine.configuration.view.expressionExtension
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
+import org.smartregister.fhircore.engine.ui.components.register.DEFAULT_MAX_PAGE_COUNT
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -69,7 +70,7 @@ open class DefaultRepository
 constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
-  open val fhirPathEngine: FHIRPathEngine
+  open val fhirPathEngine: FHIRPathEngine,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -184,7 +185,9 @@ constructor(
 
   suspend fun loadDataForParam(
     param: Parameters.ParametersParameterComponent,
-    focusResource: Resource?
+    focusResource: Resource?,
+    currentPage: Int = 0,
+    limit: Int = DEFAULT_MAX_PAGE_COUNT
   ): List<RegisterData.RawRegisterData> {
     param.let { param ->
       // http://hl7.org/fhir/parameters.html -
@@ -202,13 +205,12 @@ constructor(
 
       return when {
         param.hasValue() ->
-          loadValueData(param, focusResource).map {
+          loadValueData(param, focusResource, currentPage, limit).map {
             RegisterData.RawRegisterData(
               id = it.logicalId,
               name = it.logicalId,
               healthModule = HealthModule.FAMILY,
-              main = it,
-              details = mapOf()
+              main = Pair(param.name, it)
             )
           }
         param.hasResource() ->
@@ -228,9 +230,10 @@ constructor(
 
             param.part.filter { it.name != param.name }.forEach { partParam ->
               loadValueData(partParam, it)
-                .also {
-                  if (details[partParam.name] == null) details[partParam.name] = it.toMutableList()
-                  else details[partParam.name]!!.addAll(it)
+                .apply {
+                  if (details[partParam.name] == null)
+                    details[partParam.name] = this.toMutableList()
+                  else details[partParam.name]!!.addAll(this)
                 }
                 .also {
                   // add subsequent items to context data
@@ -242,8 +245,8 @@ constructor(
               id = it.logicalId,
               name = it.logicalId,
               healthModule = HealthModule.FAMILY,
-              main = it,
-              details = details
+              main = Pair(param.name, it),
+              _details = details.toMutableMap()
             )
           }
         }
@@ -253,13 +256,19 @@ constructor(
 
   suspend fun loadValueData(
     param: Parameters.ParametersParameterComponent,
-    focusResource: Resource?
+    focusResource: Resource?,
+    currentPage: Int = 0,
+    limit: Int = DEFAULT_MAX_PAGE_COUNT
   ): List<Resource> {
+    if (param.value.fhirType() == Enumerations.FHIRAllTypes.ID.toCode())
+      return listOf() // TODO????????
     with(param.castToDataRequirement(param.value!!)) {
       return searchResourceFor(
         resourceType = ResourceType.fromCode(this.type),
         dataRequirement = this,
         focusResource = focusResource,
+        currentPage = currentPage,
+        limit = if (this.limit > 0) this.limit else limit // Bug in FHIR where for null it returns 0
       )
     }
   }

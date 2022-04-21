@@ -24,6 +24,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
@@ -55,47 +56,34 @@ constructor(
     currentPage: Int,
     loadAll: Boolean,
     appFeatureName: String?
-  ): List<RegisterData> {
+  ): List<RegisterData> =
     getRegisterDataFilters()!!.let { familyParam ->
       defaultRepository.loadDataForParam(familyParam, null).map { family ->
-        // foreach load members
-
-        val familyMapper =
-          configurationRegistry.retrieveDataMapperConfiguration(
-            HealthModule.FAMILY.name
-          )!! // TODO handle edges
-
-        val familyContextData: MutableMap<String, Any> = family.details.toMutableMap()
-        familyContextData[familyParam.name] = family.main
+        // foreach load members and do mapping
 
         val familyRegisterData =
-          parseMapping(familyMapper, familyContextData, family.main, fhirPathEngine) as
+          parseMapping(HealthModule.FAMILY.name, family, configurationRegistry, fhirPathEngine) as
             RegisterData.FamilyRegisterData
 
-        val memberConfigName = familyParam.name.plus("_members") // TODO load dynamically
-        val members =
-          getMembersDataFilters(memberConfigName)!!.let { memberParam ->
-            defaultRepository.loadDataForParam(memberParam, family.main).map { member ->
-              val memberMapper =
-                configurationRegistry.retrieveDataMapperConfiguration(
-                  memberConfigName
-                )!! // TODO handle edges
+        // handle all referenced params
+        familyParam.part
+          .filter { it.value.fhirType() == Enumerations.FHIRAllTypes.ID.toCode() }
+          .map { idParamRef ->
+            val partParam =
+              configurationRegistry.retrieveDataFilterConfiguration(
+                idParamRef.castToId(idParamRef.value).value
+              )!!
 
-              val memberContextData: MutableMap<String, Any> = member.details.toMutableMap()
-              memberContextData[memberParam.name] = member.main
-
-              parseMapping(memberMapper, memberContextData, member.main, fhirPathEngine) as
-                RegisterData.FamilyMemberRegisterData
+            defaultRepository.loadDataForParam(partParam, family.main.second).apply {
+              this
+                .map { parseMapping(partParam.name, it, configurationRegistry, fhirPathEngine) }
+                .apply { familyRegisterData.addCollectionData(idParamRef.name, this) }
             }
           }
-
-        familyRegisterData.members.let { it ?: mutableListOf() }.apply { addAll(members) }
 
         familyRegisterData
       }
     }
-    return listOf()
-  }
 
   override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData {
     val family = fhirEngine.load(Patient::class.java, patientId)

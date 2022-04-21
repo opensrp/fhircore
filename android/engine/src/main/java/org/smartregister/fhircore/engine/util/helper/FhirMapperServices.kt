@@ -23,15 +23,41 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 
 object FhirMapperServices {
+  fun parseMapping(
+    config: String,
+    registerData: RegisterData.RawRegisterData,
+    configurationRegistry: ConfigurationRegistry,
+    fhirPathEngine: FHIRPathEngine
+  ): RegisterData {
+    return parseMapping(
+      configurationRegistry.retrieveDataMapperConfiguration(config)!!,
+      registerData,
+      fhirPathEngine
+    )
+      ?: registerData
+  }
+
+  fun parseMapping(
+    mapperParam: Parameters.ParametersParameterComponent,
+    registerData: RegisterData.RawRegisterData,
+    fhirPathEngine: FHIRPathEngine
+  ): RegisterData? {
+    val contextData: MutableMap<String, Any> = registerData.details.toMutableMap()
+    contextData[registerData.main.first] = registerData.main.second
+
+    return parseMapping(mapperParam, contextData, registerData.main.second, fhirPathEngine)
+  }
+
   fun parseMapping(
     mapperParam: Parameters.ParametersParameterComponent,
     contextData: MutableMap<String, Any>,
     base: Resource,
     fhirPathEngine: FHIRPathEngine
-  ): RegisterData {
+  ): RegisterData? {
     val className =
       mapperParam
         .extension
@@ -39,11 +65,11 @@ object FhirMapperServices {
           it.url == "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name"
         }
         ?.value
-        .toString()
-    className.let {
-      Class.forName(it).kotlin.constructors.first().apply {
+        ?.toString()
+    return className?.let {
+      Class.forName(it).kotlin.constructors.first().let { construct ->
         val paramValues = mutableMapOf<KParameter, Any?>()
-        this.parameters.map { clsParam ->
+        construct.parameters.map { clsParam ->
           mapperParam
             .part
             .singleOrNull { it.name == clsParam.name }
@@ -74,10 +100,13 @@ object FhirMapperServices {
                   }
                   ?.let { if (it.isPrimitive) (it as PrimitiveType<*>).value else it }
             }
-            .also { evalValue -> paramValues[clsParam] = evalValue }
+            .also { evalValue ->
+              if (!clsParam.type.jvmErasure.isSubclassOf(Collection::class))
+                paramValues[clsParam] = evalValue
+            }
         }
 
-        return this.callBy(paramValues) as RegisterData
+        construct.callBy(paramValues) as RegisterData
       }
     }
   }

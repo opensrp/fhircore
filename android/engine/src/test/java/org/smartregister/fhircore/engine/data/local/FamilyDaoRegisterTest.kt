@@ -24,9 +24,11 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
@@ -35,6 +37,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.patient.dao.register.DefaultPatientRegisterDao
 import org.smartregister.fhircore.engine.data.local.patient.dao.register.family.FamilyRegisterDao
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -66,6 +69,7 @@ class FamilyDaoRegisterTest : RobolectricTest() {
     )
 
   @Inject lateinit var familyRegisterDao: FamilyRegisterDao
+  @Inject lateinit var defaultPatientRegisterDao: DefaultPatientRegisterDao
 
   @Before
   fun setup() {
@@ -73,7 +77,7 @@ class FamilyDaoRegisterTest : RobolectricTest() {
   }
 
   @Test
-  fun loadRegisterData() = runTest {
+  fun loadFamilyRegisterData() = runTest {
     coEvery { defaultRepository.searchResource(ResourceType.Patient, any(), any(), any()) } returns
       listOf(buildPatient(1), buildPatient(2))
 
@@ -87,12 +91,29 @@ class FamilyDaoRegisterTest : RobolectricTest() {
     familyRegisterDao.loadRegisterData(0, true, null).apply { println(this.toString()) }
   }
 
+  @Test
+  fun loadDefaultRegisterData() = runTest {
+    coEvery { defaultRepository.searchResource(ResourceType.Patient, any(), any(), any()) } returns
+      listOf(buildPatient(1), buildPatient(2))
+
+    coEvery { defaultRepository.searchResource(ResourceType.CarePlan, any(), any(), any()) } returns
+      listOf()
+
+    coEvery {
+      defaultRepository.searchResource(ResourceType.Condition, any(), any(), any())
+    } returns listOf()
+
+    defaultPatientRegisterDao.loadRegisterData(0, true, null).apply { println(this.toString()) }
+  }
+
   private fun buildPatient(serial: Int): Patient {
     return Patient().apply {
       id = serial.toString()
       addName().apply {
         addGiven("PGiven$serial")
         family = "PFamily$serial"
+        gender = Enumerations.AdministrativeGender.FEMALE
+        birthDate = Date()
       }
     }
   }

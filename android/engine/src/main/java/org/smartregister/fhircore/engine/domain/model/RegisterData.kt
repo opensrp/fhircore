@@ -17,8 +17,9 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import java.util.Date
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.full.memberProperties
 import org.hl7.fhir.r4.model.BooleanType
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Type
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
@@ -29,15 +30,16 @@ sealed class RegisterData(open val id: String, open val name: String) {
     override val id: String,
     override val name: String,
     val healthModule: HealthModule,
-    val main: Resource,
-    val details: Map<String, List<Resource>>
+    val main: Pair<String, Resource>,
+    internal val _details: MutableMap<String, List<Resource>> = mutableMapOf(),
+    val details: Map<String, List<Resource>> = _details
   ) : RegisterData(id = id, name = name)
 
   data class DefaultRegisterData(
     override val id: String,
     override val name: String,
-    val gender: Enumerations.AdministrativeGender,
-    val age: String
+    val gender: String,
+    val birthDate: Date
   ) : RegisterData(id = id, name = name)
 
   data class FamilyRegisterData(
@@ -45,7 +47,7 @@ sealed class RegisterData(open val id: String, open val name: String) {
     override val name: String,
     val identifier: String? = null,
     val address: String? = null,
-    var members: MutableList<FamilyMemberRegisterData>? = mutableListOf(),
+    var members: MutableList<FamilyMemberRegisterData> = mutableListOf(),
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null
   ) : RegisterData(id = id, name = name)
@@ -76,4 +78,10 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null
   ) : RegisterData(id = id, name = name)
+
+  fun addCollectionData(fieldName: String, data: Collection<Any>) {
+    this::class.memberProperties.find { it.name == fieldName }?.let {
+      (it as KMutableProperty<MutableCollection<Any>>).getter.call(this).addAll(data)
+    }
+  }
 }

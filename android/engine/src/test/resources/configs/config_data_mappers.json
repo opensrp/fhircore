@@ -2,6 +2,43 @@
   "resourceType": "Parameters",
   "parameter": [
     {
+      "name": "default",
+      "extension": [{
+        "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
+        "valueString": "org.smartregister.fhircore.engine.domain.model.RegisterData$DefaultRegisterData"
+      }],
+      "part": [
+        {
+          "name": "id",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.id.value"
+          }
+        },
+        {
+          "name": "name",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.name.given + ' ' + $this.name.family"
+          }
+        },
+        {
+          "name": "gender",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.gender.toString()"
+          }
+        },
+        {
+          "name": "birthDate",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate"
+          }
+        }
+      ]
+    },
+    {
       "name": "family",
       "extension": [{
         "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
@@ -34,13 +71,6 @@
           "valueExpression": {
             "language": "text/fhirpath",
             "expression": "$this.address.first().district + ', ' + $this.address.first().city"
-          }
-        },
-        {
-          "name": "members",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "{}"
           }
         }
       ]
@@ -77,7 +107,7 @@
           "name": "birthDate",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "$this.birthDate.value"
+            "expression": "$this.birthDate"
           }
         },
         {
