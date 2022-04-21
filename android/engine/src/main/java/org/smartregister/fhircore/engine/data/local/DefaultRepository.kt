@@ -113,16 +113,15 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     }
   }
 
-  suspend fun loadPatients(lastRecordUpdatedAt: Long, batchSize: Int): List<Patient>? {
+  suspend fun loadResources(lastRecordUpdatedAt: Long, batchSize: Int): List<Patient>? {
     // TODO remove harcoded strings
     return withContext(dispatcherProvider.io()) {
       fhirEngine.search<Patient> {
-        filter(Patient.ACTIVE, { value = of(true) })
         filter(DateClientParam("_lastUpdated"), {
           value = of(DateTimeType(Date(lastRecordUpdatedAt)))
           prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
 
-        sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
+        //sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
         count = batchSize
       }
 
