@@ -16,8 +16,9 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.content.res.Resources
+import androidx.annotation.StringRes
 import org.hl7.fhir.r4.model.Group
 
-private const val SUFFIX_FAMILY_NAME = " Family"
-
-fun Group.nameWithSuffix() = this.name.plus(SUFFIX_FAMILY_NAME)
+fun Group.nameWithSuffix(@StringRes suffixResourceId: Int) =
+  "${this.name} ${Resources.getSystem().getString(suffixResourceId)}"
