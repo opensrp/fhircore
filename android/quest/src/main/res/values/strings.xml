@@ -25,5 +25,7 @@
     <string name="at_risk">At risk</string>
     <string name="no_tasks">No tasks</string>
     <string name="add_memeber">ADD MEMBER</string>
+    <string name="what_to_do">What do you want to do?</string>
+    <string name="view_profile">View profile</string>
 
 </resources>

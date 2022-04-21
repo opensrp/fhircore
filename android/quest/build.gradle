@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "org.smartregister.fhircore.quest"
+        applicationId "org.smartregister.fhircore"
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
         versionCode 3
@@ -36,7 +36,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-    
+
     signingConfigs {
         release {
 
@@ -121,6 +121,32 @@ android {
 
     lintOptions {
         abortOnError false
+    }
+
+    flavorDimensions "apps"
+
+    productFlavors {
+        quest {
+            dimension "apps"
+            applicationIdSuffix ".quest"
+            versionNameSuffix "-quest"
+            getIsDefault().set(true)
+        }
+        ecbis {
+            dimension "apps"
+            applicationIdSuffix ".ecbis"
+            versionNameSuffix "-ecbis"
+        }
+        g6pd {
+            dimension "apps"
+            applicationIdSuffix ".g6pd"
+            versionNameSuffix "-g6pd"
+        }
+        mwcore {
+            dimension "apps"
+            applicationIdSuffix ".mwcore"
+            versionNameSuffix "-mwcore"
+        }
     }
 }
 

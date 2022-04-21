@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.ExperimentalMaterialApi
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.ui.login.LoginService
@@ -28,6 +29,7 @@ class QuestLoginService @Inject constructor(val appFeatureManager: AppFeatureMan
 
   override lateinit var loginActivity: AppCompatActivity
 
+  @OptIn(ExperimentalMaterialApi::class)
   override fun navigateToHome() {
     val intent =
       Intent(loginActivity, AppMainActivity::class.java).apply {

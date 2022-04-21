@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.main
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.State
@@ -38,6 +39,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
 @AndroidEntryPoint
+@ExperimentalMaterialApi
 open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster

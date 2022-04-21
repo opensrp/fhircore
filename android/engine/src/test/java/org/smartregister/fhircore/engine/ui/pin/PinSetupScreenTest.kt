@@ -88,8 +88,7 @@ class PinSetupScreenTest : RobolectricTest() {
           listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
         },
         setPinEnabled = false,
-        inputPin = "",
-        appLogoResFile = "ic_liberia"
+        inputPin = ""
       )
     }
 
@@ -122,8 +121,7 @@ class PinSetupScreenTest : RobolectricTest() {
           listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
         },
         setPinEnabled = false,
-        inputPin = "",
-        appLogoResFile = "ic_liberia"
+        inputPin = ""
       )
     }
 
@@ -157,8 +155,7 @@ class PinSetupScreenTest : RobolectricTest() {
           listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
         },
         setPinEnabled = true,
-        inputPin = "0000",
-        appLogoResFile = "ic_logo_g6pd"
+        inputPin = "0000"
       )
     }
 

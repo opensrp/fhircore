@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.engine.navigation.OverflowMenuHost
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
+import org.smartregister.fhircore.quest.navigation.NavigationScreen
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -56,13 +57,20 @@ constructor(
 
   fun onEvent(event: FamilyProfileEvent) {
     when (event) {
-      is FamilyProfileEvent.AddMember -> {
+      is FamilyProfileEvent.AddMember ->
         event.context.launchQuestionnaireActivity(questionnaireId = FAMILY_MEMBER_REGISTER_FORM)
+      is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)
+      is FamilyProfileEvent.OpenMemberProfile -> {
+        val urlParams =
+          "?feature=${AppFeature.PatientManagement.name}&healthModule=${HealthModule.DEFAULT.name}&patientId=${event.patientId}"
+        event.navController.navigate(route = NavigationScreen.PatientProfile.route + urlParams)
       }
+      is FamilyProfileEvent.OpenTaskForm ->
+        event.context.launchQuestionnaireActivity(event.taskFormId)
     }
   }
 
-  fun fetchFamilyProfileData(patientId: String?) {
+  private fun fetchFamilyProfileData(patientId: String?) {
     viewModelScope.launch(dispatcherProvider.io()) {
       if (!patientId.isNullOrEmpty()) {
         patientRegisterRepository.loadPatientProfileData(
