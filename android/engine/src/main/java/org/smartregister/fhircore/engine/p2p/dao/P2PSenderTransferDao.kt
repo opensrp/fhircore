@@ -27,7 +27,10 @@ import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 import java.util.TreeSet
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.extension.json
+import timber.log.Timber
 import javax.inject.Inject
 
 class P2PSenderTransferDao
@@ -54,5 +57,28 @@ class P2PSenderTransferDao
     }
 
     return highestRecordId?.let { JsonData(jsonArray, it) }
+  }
+
+  fun genericGetJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int) {
+    val resourceTypes = ResourceType.values()
+
+    val jsonParser = FhirContext.forR4().newJsonParser()
+    resourceTypes.forEach {
+
+      runBlocking {
+        try {
+          val RC = Class.forName("org.hl7.fhir.r4.model.${it}") as Class<out Resource>
+          Timber.e("Fetch data for resource type ----> ${RC.name}")
+          val records2 = defaultRepository.loadResources(lastUpdated, batchSize, RC)
+
+          records2.forEachIndexed { index, resource ->
+            Timber.e("${index + 1}. ${resource.resourceType} -> ${jsonParser.encodeResourceToString(resource)}")
+          }
+        } catch (ex: ClassNotFoundException) {
+          Timber.e(ex)
+        }
+
+      }
+    }
   }
 }
