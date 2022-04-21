@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Medication
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -46,9 +47,11 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.configuration.view.asCode
-import org.smartregister.fhircore.engine.configuration.view.initiatingPersonExtension
+import org.smartregister.fhircore.engine.configuration.view.expressionExtension
+import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -94,23 +97,23 @@ constructor(
     }
 
   // TODO handle date-filter, value-set, multi-value code-filter
-  fun DataRequirement.asSearchFilter(contextData: Map<String, Any> = mapOf()) =
+  fun DataRequirement.asSearchFilter(focusResource: Resource? = null) =
     codeFilter.map {
       // by definition path or searchParam are mutually exclusive
       SearchFilter(key = it.path ?: it.searchParam).apply {
-        if (!it.hasCode() && it.extension.initiatingPersonExtension() == null)
+        if (!it.hasCode() && it.extension.expressionExtension() == null)
           throw UnsupportedOperationException(
             "Either code or value expression for extension cqf-initiatingPerson should be specified"
           )
 
         if (it.hasCode()) valueCoding = it.codeFirstRep.asCode()
         else
-          it.extension.initiatingPersonExtension()!!.run {
+          it.extension.expressionExtension()!!.run {
             valueReference =
               fhirPathEngine
                 .evaluate(
-                  contextData,
                   null,
+                  focusResource,
                   null,
                   null,
                   this.castToExpression(this.value).expression
@@ -124,11 +127,11 @@ constructor(
   suspend fun searchResourceFor(
     resourceType: ResourceType,
     dataRequirement: DataRequirement,
-    contextData: Map<String, Any> = mapOf(),
+    focusResource: Resource? = null,
     currentPage: Int = 0,
     limit: Int = PaginationConstant.DEFAULT_QUERY_LOAD_SIZE
   ): List<Resource> =
-    searchResource(resourceType, dataRequirement.asSearchFilter(contextData), currentPage, limit)
+    searchResource(resourceType, dataRequirement.asSearchFilter(focusResource), currentPage, limit)
 
   suspend fun searchResource(
     resourceType: ResourceType,
@@ -178,6 +181,88 @@ constructor(
         filters.forEach { filterBy(it) }
       }
     }
+
+  suspend fun loadDataForParam(
+    param: Parameters.ParametersParameterComponent,
+    focusResource: Resource?
+  ): List<RegisterData.RawRegisterData> {
+    param.let { param ->
+      // http://hl7.org/fhir/parameters.html -
+      // Rule - inv-1: A parameter must have one and only one of (value, resource, part)
+      if (arrayOf(param.hasValue(), param.hasResource(), param.hasPart()).count { it } != 1)
+        throw UnsupportedOperationException(
+          "${param.name} -> A parameter must have one and only one of (value, resource, part)"
+        )
+      // Rule - Only one level of nested parameters (part) is allowed
+      // http://hl7.org/fhir/parameters-definitions.html#Parameters.parameter.part
+      if (param.part.any { it.part.isNotEmpty() })
+        throw UnsupportedOperationException(
+          "${param.name} part field -> Only up to 1 level of nesting is supported"
+        )
+
+      return when {
+        param.hasValue() ->
+          loadValueData(param, focusResource).map {
+            RegisterData.RawRegisterData(
+              id = it.logicalId,
+              name = it.logicalId,
+              healthModule = HealthModule.FAMILY,
+              main = it,
+              details = mapOf()
+            )
+          }
+        param.hasResource() ->
+          throw UnsupportedOperationException("Dont know resource handling") // TODO
+        else -> {
+          // for parts defined the config must define the mapping for main param
+          val main =
+            param.part.filter { it.name == param.name }.flatMap { mainParam ->
+              loadValueData(mainParam, focusResource)
+            }
+
+          main.map {
+            // add main to context data
+            val contextData = mutableMapOf<String, Any>(param.name to it)
+
+            val details = mutableMapOf<String, MutableList<Resource>>()
+
+            param.part.filter { it.name != param.name }.forEach { partParam ->
+              loadValueData(partParam, it)
+                .also {
+                  if (details[partParam.name] == null) details[partParam.name] = it.toMutableList()
+                  else details[partParam.name]!!.addAll(it)
+                }
+                .also {
+                  // add subsequent items to context data
+                  contextData[partParam.name] = it
+                }
+            }
+
+            RegisterData.RawRegisterData(
+              id = it.logicalId,
+              name = it.logicalId,
+              healthModule = HealthModule.FAMILY,
+              main = it,
+              details = details
+            )
+          }
+        }
+      }
+    }
+  }
+
+  suspend fun loadValueData(
+    param: Parameters.ParametersParameterComponent,
+    focusResource: Resource?
+  ): List<Resource> {
+    with(param.castToDataRequirement(param.value!!)) {
+      return searchResourceFor(
+        resourceType = ResourceType.fromCode(this.type),
+        dataRequirement = this,
+        focusResource = focusResource,
+      )
+    }
+  }
 
   suspend fun searchQuestionnaireConfig(
     filters: List<SearchFilter> = listOf()

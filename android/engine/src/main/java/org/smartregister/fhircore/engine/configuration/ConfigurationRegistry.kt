@@ -23,12 +23,14 @@ import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Parameters
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
 /**
@@ -87,6 +89,13 @@ constructor(
       .resource
       .parameter
       .firstOrNull { it.name.contentEquals(id, ignoreCase = true) }
+      .also {
+        if (it == null)
+          with(context.getString(R.string.health_module_filters_not_configured)) {
+            Timber.e(this)
+            context.showToast(this)
+          }
+      }
 
   fun retrieveDataMapperConfiguration(id: String) =
     retrieveConfiguration<FhirConfiguration<Parameters>>(AppConfigClassification.DATA_MAPPERS)

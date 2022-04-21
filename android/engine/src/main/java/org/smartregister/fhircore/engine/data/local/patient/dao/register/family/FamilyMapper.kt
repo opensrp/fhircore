@@ -53,7 +53,7 @@ object FamilyMapper : DataMapper<Family, RegisterData.FamilyRegisterData> {
       name = family.extractName(),
       identifier = family.identifierFirstRep.value,
       address = family.extractAddress(),
-      members = members,
+      members = members.toMutableList(),
       servicesDue = members.sumOf { it.servicesDue ?: 0 },
       servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 }
     )
@@ -63,7 +63,7 @@ object FamilyMapper : DataMapper<Family, RegisterData.FamilyRegisterData> {
     return RegisterData.FamilyMemberRegisterData(
       id = patient.logicalId,
       name = patient.extractName(),
-      birthdate = patient.birthDate,
+      birthDate = patient.birthDate,
       gender = patient.gender.display.first().toString(),
       pregnant = conditions.hasActivePregnancy(),
       isHead = patient.isFamilyHead(),

@@ -12,66 +12,86 @@
           "name": "id",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%family.id.value"
+            "expression": "$this.id.value"
           }
         },
         {
           "name": "name",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%family.name.given + ' ' + %family.name.family"
+            "expression": "$this.name.given + ' ' + $this.name.family"
           }
         },
         {
           "name": "identifier",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%family.identifier.first().value"
+            "expression": "$this.identifier.first().value"
           }
         },
         {
           "name": "address",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%family.address.first().district + ', ' + %family.address.first().city"
+            "expression": "$this.address.first().district + ', ' + $this.address.first().city"
           }
         },
         {
           "name": "members",
-          "resource": {
-            "resourceType": "Parameters",
-            "parameter": [
-              {
-                "name": "members",
-                "extension": [{
-                  "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
-                  "valueString": "org.smartregister.fhircore.engine.domain.model.RegisterData$FamilyMemberRegisterData"
-                }],
-                "part": [
-                  {
-                    "name": "id",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "%resource.id.value"
-                    }
-                  },
-                  {
-                    "name": "name",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "%resource.name.given + ' ' + %resource.name.family"
-                    }
-                  },
-                  {
-                    "name": "identifier",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "%resource.identifier.first().value"
-                    }
-                  }
-                ]
-              }
-            ]
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "{}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "family_members",
+      "extension": [{
+        "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
+        "valueString": "org.smartregister.fhircore.engine.domain.model.RegisterData$FamilyMemberRegisterData"
+      }],
+      "part": [
+        {
+          "name": "id",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.id.value"
+          }
+        },
+        {
+          "name": "name",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.name.given + ' ' + $this.name.family"
+          }
+        },
+        {
+          "name": "identifier",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.identifier.first().value"
+          }
+        },
+        {
+          "name": "birthDate",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate.value"
+          }
+        },
+        {
+          "name": "gender",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.gender.toString()"
+          }
+        },
+        {
+          "name": "deceased",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.deceased"
           }
         }
       ]

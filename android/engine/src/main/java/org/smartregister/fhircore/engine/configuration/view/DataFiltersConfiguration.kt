@@ -29,8 +29,8 @@ const val INIT_PERSION_EXPRESSION_EXTENSION_URL =
   "http://hl7.org/fhir/StructureDefinition/cqf-initiatingPerson"
 const val CQF_EXPRESSION_EXTENSION_URL = "http://hl7.org/fhir/StructureDefinition/cqf-expression"
 
-fun List<Extension>.initiatingPersonExtension() =
-  this.find { it.url!!.contentEquals(INIT_PERSION_EXPRESSION_EXTENSION_URL) }
+fun List<Extension>.expressionExtension() =
+  this.find { it.url!!.contentEquals(CQF_EXPRESSION_EXTENSION_URL) }
 
 @Stable
 @Serializable
@@ -58,14 +58,14 @@ fun DataRequirement.asSearchFilter(
   codeFilter.map {
     // by definition path or searchParam are mutually exclusive
     SearchFilter(key = it.path ?: it.searchParam).apply {
-      if (!it.hasCode() && it.extension.initiatingPersonExtension() == null)
+      if (!it.hasCode() && it.extension.expressionExtension() == null)
         throw UnsupportedOperationException(
           "Either code or value expression for extension cqf-initiatingPerson should be specified"
         )
 
       if (it.hasCode()) valueCoding = it.codeFirstRep.asCode()
       else
-        it.extension.initiatingPersonExtension()!!.run {
+        it.extension.expressionExtension()!!.run {
           valueReference =
             fhirPathEngine
               .evaluate(contextData, null, null, null, this.castToExpression(this.value).expression)

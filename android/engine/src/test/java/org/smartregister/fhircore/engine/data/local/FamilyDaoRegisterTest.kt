@@ -80,6 +80,10 @@ class FamilyDaoRegisterTest : RobolectricTest() {
     coEvery { defaultRepository.searchResource(ResourceType.CarePlan, any(), any(), any()) } returns
       listOf()
 
+    coEvery {
+      defaultRepository.searchResource(ResourceType.Condition, any(), any(), any())
+    } returns listOf()
+
     familyRegisterDao.loadRegisterData(0, true, null).apply { println(this.toString()) }
   }
 

@@ -48,43 +48,21 @@
           }
         },
         {
-          "name": "members",
-          "valueDataRequirement": {
-            "type": "Patient",
-            "codeFilter": [
-              {
-                "searchParam": "link",
-                "extension": [{
-                  "url": "http://hl7.org/fhir/StructureDefinition/cqf-initiatingPerson",
-                  "valueExpression": {
-                    "language": "text/fhirpath",
-                    "expression": "%family.id"
-                  }
-                }]
-              },
-              {
-                "searchParam": "active",
-                "code": {
-                  "code": "true"
-                }
-              }
-            ]
-          }
-        },
-        {
           "name": "careplans",
           "valueDataRequirement": {
             "type": "CarePlan",
             "codeFilter": [
               {
                 "searchParam": "subject",
-                "extension": [{
-                  "url": "http://hl7.org/fhir/StructureDefinition/cqf-initiatingPerson",
-                  "valueExpression": {
-                    "language": "text/fhirpath",
-                    "expression": "%family.id"
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
                   }
-                }]
+                ]
               },
               {
                 "searchParam": "_tag",
@@ -97,7 +75,119 @@
                 "searchParam": "status",
                 "code": {
                   "system": "http://hl7.org/fhir/request-status",
+                  "code": "active"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "family_members",
+      "part": [
+        {
+          "name": "family_members",
+          "valueDataRequirement": {
+            "type": "Patient",
+            "codeFilter": [
+              {
+                "searchParam": "link",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "active",
+                "code": {
                   "code": "true"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "family_members",
+          "valueDataRequirement": {
+            "type": "Patient",
+            "codeFilter": [
+              {
+                "searchParam": "_id",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "conditions",
+          "valueDataRequirement": {
+            "type": "Condition",
+            "codeFilter": [
+              {
+                "searchParam": "subject",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "code",
+                "code": {
+                  "system": "http://loinc.org",
+                  "code": "LA15173-0"
+                }
+              },
+              {
+                "searchParam": "clinicalStatus",
+                "code": {
+                  "system": "http://hl7.org/fhir/ValueSet/condition-clinical",
+                  "code": "active"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "careplans",
+          "valueDataRequirement": {
+            "type": "CarePlan",
+            "codeFilter": [
+              {
+                "searchParam": "subject",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "status",
+                "code": {
+                  "system": "http://hl7.org/fhir/request-status",
+                  "code": "active"
                 }
               }
             ]
