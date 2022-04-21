@@ -17,18 +17,26 @@
 package org.smartregister.fhircore.engine.data.local
 
 import ca.uhn.fhir.rest.gclient.DateClientParam
-import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DataRequirement
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
@@ -119,60 +127,20 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     }
   }
 
-  suspend fun loadQuestionnaires(lastRecordUpdatedAt: Long, batchSize: Int): List<Questionnaire>? {
+  suspend fun loadResources(lastRecordUpdatedAt: Long, batchSize: Int, classType: Class<out Resource>): List<Resource> {
     // TODO remove harcoded strings
     return withContext(dispatcherProvider.io()) {
-      fhirEngine.search<Questionnaire> {
+
+      val search = Search(type = classType.newInstance().resourceType)
+      search.apply {
         filter(DateClientParam("_lastUpdated"), {
           value = of(DateTimeType(Date(lastRecordUpdatedAt)))
           prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
 
-        sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
+        //sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
         count = batchSize
       }
+      fhirEngine.search(search)
     }
   }
-
-  suspend fun loadQuestionnaireResponses(lastRecordUpdatedAt: Long, batchSize: Int): List<QuestionnaireResponse>? {
-    // TODO remove harcoded strings
-    return withContext(dispatcherProvider.io()) {
-      fhirEngine.search<QuestionnaireResponse> {
-        filter(DateClientParam("_lastUpdated"), {
-          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
-
-        sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
-        count = batchSize
-      }
-    }
-  }
-
-  suspend fun loadObservations(lastRecordUpdatedAt: Long, batchSize: Int): List<Observation>? {
-    // TODO remove harcoded strings
-    return withContext(dispatcherProvider.io()) {
-      fhirEngine.search<Observation> {
-        filter(DateClientParam("_lastUpdated"), {
-          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
-
-        sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
-        count = batchSize
-      }
-    }
-  }
-
-  suspend fun loadEncounters(lastRecordUpdatedAt: Long, batchSize: Int): List<Encounter>? {
-    // TODO remove harcoded strings
-    return withContext(dispatcherProvider.io()) {
-      fhirEngine.search<Encounter> {
-        filter(DateClientParam("_lastUpdated"), {
-          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
-
-        sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
-        count = batchSize
-      }
-    }
-  }
-
 }
