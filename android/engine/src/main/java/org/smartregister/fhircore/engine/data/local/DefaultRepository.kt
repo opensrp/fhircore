@@ -144,4 +144,21 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       fhirEngine.search(search)
     }
   }
+
+  suspend fun loadResources(lastRecordUpdatedAt: Long, batchSize: Int, classType: Class<out Resource>): List<Resource> {
+    // TODO remove harcoded strings
+    return withContext(dispatcherProvider.io()) {
+
+      val search = Search(type = classType.newInstance().resourceType)
+      search.apply {
+        filter(DateClientParam("_lastUpdated"), {
+          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
+          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
+
+        //sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
+        count = batchSize
+      }
+      fhirEngine.search(search)
+    }
+  }
 }

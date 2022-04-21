@@ -27,6 +27,10 @@ import java.util.TreeSet
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import timber.log.Timber
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.util.extension.json
+import timber.log.Timber
 import javax.inject.Inject
 
 class P2PSenderTransferDao
@@ -43,8 +47,9 @@ class P2PSenderTransferDao
     // TODO complete  retrieval of data implementation
     // Find a way to make this generic
     Timber.e("Last updated at value is $lastUpdated")
-    var highestRecordId = 0L
-    val records = runBlocking { defaultRepository.loadResources(lastRecordUpdatedAt = lastUpdated, batchSize = batchSize) }
+
+      val highestRecordId = records?.get(records.size - 1)?.meta?.lastUpdated?.time
+      val records = runBlocking { defaultRepository.loadResources(lastRecordUpdatedAt = lastUpdated, batchSize = batchSize) }
 
     var jsonArray = JSONArray()
     val jsonParser = FhirContext.forR4().newJsonParser()
@@ -53,6 +58,7 @@ class P2PSenderTransferDao
       jsonArray.put(jsonParser.encodeResourceToString(it))
       highestRecordId = if (it.meta?.lastUpdated?.time!! > highestRecordId) it.meta?.lastUpdated?.time!! else highestRecordId
     }
+
     Timber.e("New highest Last updated at value is $highestRecordId")
     return highestRecordId?.let { JsonData(jsonArray, it) }
   }
