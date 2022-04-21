@@ -19,12 +19,12 @@ package org.smartregister.fhircore.engine.p2p.dao.util
 interface P2PConstants {
   interface P2PDataTypes {
     companion object {
-      const val ENCOUNTER = "encounter"
-      const val PATIENT = "patient"
-      const val OBSERVATION = "observation"
-      const val TASK = "task"
-      const val QUESTIONNAIRE = "questionnaire"
-      const val QUESTIONNAIRE_RESPONSE = "questionnaire_response"
+      const val ENCOUNTER = "Encounter"
+      const val PATIENT = "Patient"
+      const val OBSERVATION = "Observation"
+      const val TASK = "Task"
+      const val QUESTIONNAIRE = "Questionnaire"
+      const val QUESTIONNAIRE_RESPONSE = "Questionnaire_response"
     }
   }
 }

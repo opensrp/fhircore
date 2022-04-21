@@ -17,17 +17,13 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Patient
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 import java.util.TreeSet
-import org.smartregister.fhircore.engine.util.extension.json
 import javax.inject.Inject
 
 class P2PSenderTransferDao
