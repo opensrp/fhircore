@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">Quest</string>
-    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.quest</string>
-
     <string name="back_to_clients">Rudi kwa orodha ya wateja</string>
     <string name="test_results">Matokeo</string>
 

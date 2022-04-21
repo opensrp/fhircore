@@ -72,7 +72,6 @@ class LoginActivity :
         }
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
-      appLogoResourceFile = getApplicationConfiguration().appLogoIconResourceFile
     }
 
     if (configurationRegistry.isAppIdInitialized()) {

@@ -67,7 +67,7 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
 
 fun Context.getDrawable(name: String): Drawable {
   var resourceId = this.resources.getIdentifier(name, "drawable", packageName)
-  if (resourceId == 0) resourceId = R.drawable.ic_default_logo
+  if (resourceId == 0) resourceId = R.drawable.ic_app_logo
   return ContextCompat.getDrawable(this, resourceId)!!
 }
 
