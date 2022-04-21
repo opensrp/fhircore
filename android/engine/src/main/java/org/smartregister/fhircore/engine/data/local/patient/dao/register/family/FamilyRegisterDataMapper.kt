@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
 import com.google.android.fhir.logicalId
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.data.local.patient.dao.register.DefaultPatientRegisterDao.Companion.OFFICIAL_IDENTIFIER
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
@@ -30,7 +29,6 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.engine.util.extension.lastSeenFormat
-import org.smartregister.fhircore.engine.util.extension.nameWithSuffix
 import org.smartregister.fhircore.engine.util.extension.overdue
 
 object FamilyRegisterDataMapper : DataMapper<FamilyDetail, RegisterData.FamilyRegisterData> {
@@ -44,7 +42,7 @@ object FamilyRegisterDataMapper : DataMapper<FamilyDetail, RegisterData.FamilyRe
 
     return RegisterData.FamilyRegisterData(
       id = family.logicalId,
-      name = family.nameWithSuffix(R.string.family),
+      name = family.name,
       identifier =
         family.identifier.firstOrNull { it.use.name.contentEquals(OFFICIAL_IDENTIFIER) }?.value,
       address = head?.patient?.extractAddress() ?: "",
