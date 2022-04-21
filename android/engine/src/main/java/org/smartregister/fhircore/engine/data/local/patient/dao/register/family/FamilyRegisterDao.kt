@@ -29,9 +29,7 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY_CARE_PLAN
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
@@ -59,13 +57,13 @@ constructor(
   ): List<RegisterData> {
     val families =
       fhirEngine.search<Group> {
-        getRegisterDataFilters(FAMILY).forEach { filterBy(it) }
+        getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) }
         count =
           if (loadAll) countRegisterData(appFeatureName).toInt()
           else PaginationConstant.DEFAULT_PAGE_SIZE
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
-    return families.map { family ->
+    return families.filter { it.active }.map { family ->
       val members = loadFamilyMembers(family)
       val familyDetail = loadFamilyDetail(family, members)
 
@@ -82,7 +80,7 @@ constructor(
   }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return fhirEngine.count<Group> { getRegisterDataFilters(FAMILY).forEach { filterBy(it) } }
+    return fhirEngine.count<Group> { getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) } }
   }
 
   suspend fun loadFamilyDetail(family: Group, members: List<FamilyMemberDetail>): FamilyDetail {
@@ -174,6 +172,10 @@ constructor(
       )
     }
 
-  private fun getRegisterDataFilters(id: HealthModule) =
-    configurationRegistry.retrieveDataFilterConfiguration(id.name)
+  private fun getRegisterDataFilters(id: String) =
+    configurationRegistry.retrieveDataFilterConfiguration(id)
+
+  companion object {
+    const val FAMILY_CARE_PLAN = "family_care_plan"
+  }
 }

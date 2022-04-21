@@ -23,6 +23,5 @@ enum class HealthModule {
   FAMILY,
   CHILD,
   FAMILY_PLANNING,
-  FAMILY_CARE_PLAN,
   DEFAULT
 }
