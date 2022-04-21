@@ -34,17 +34,13 @@
     },
     {
       "id": "family",
-      "filterType": "STRING",
-      "key": "active",
-      "valueType": "BOOLEAN",
-      "valueBoolean": true
-    },
-    {
-      "id": "family",
-      "filterType": "STRING",
+      "filterType": "TOKEN",
       "key": "type",
-      "valueType": "STRING",
-      "valueString": "person"
+      "valueType": "CODING",
+      "valueCoding": {
+        "system": "http://hl7.org/fhir/group-type",
+        "code": "person"
+      }
     },
     {
       "id": "family_care_plan",
