@@ -17,34 +17,55 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
+import java.util.TreeSet
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
-import java.util.TreeSet
-import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import timber.log.Timber
-import javax.inject.Inject
+import org.smartregister.fhircore.engine.util.extension.json
 
-class P2PSenderTransferDao
-  @Inject
-  constructor(
-    val defaultRepository: DefaultRepository
-        ) : BaseP2PTransferDao(), SenderTransferDao {
+class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRepository) :
+  BaseP2PTransferDao(), SenderTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> {
     return getTypes()
   }
 
   override fun getJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int): JsonData? {
-    // TODO complete  retrieval of data implementation
+    // TODO: complete  retrieval of data implementation
     // Find a way to make this generic
     Timber.e("Last updated at value is $lastUpdated")
-    var highestRecordId = 0L
-    val records = runBlocking { defaultRepository.loadResources(lastRecordUpdatedAt = lastUpdated, batchSize = batchSize) }
+
+    var highestRecordId = lastUpdated
+    var classType: Class<out Resource> = Encounter::class.java
+    when (dataType.name) {
+        P2PConstants.P2PDataTypes.ENCOUNTER -> classType = Encounter::class.java
+        P2PConstants.P2PDataTypes.OBSERVATION -> classType = Observation::class.java
+        P2PConstants.P2PDataTypes.PATIENT -> classType = Patient::class.java
+        P2PConstants.P2PDataTypes.QUESTIONNAIRE -> classType = Questionnaire::class.java
+        P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE -> classType = QuestionnaireResponse::class.java
+    }
+    val records = runBlocking {
+      defaultRepository.loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize, classType)
+    }
+    Timber.e("Fetching resources of type  $dataType.name")
+    highestRecordId = if (records!!.isNotEmpty()) {
+      records?.get(records.size - 1)?.meta?.lastUpdated?.time ?: highestRecordId
+    } else {
+      lastUpdated
+    }
 
     var jsonArray = JSONArray()
     val jsonParser = FhirContext.forR4().newJsonParser()
@@ -53,6 +74,7 @@ class P2PSenderTransferDao
       jsonArray.put(jsonParser.encodeResourceToString(it))
       highestRecordId = if (it.meta?.lastUpdated?.time!! > highestRecordId) it.meta?.lastUpdated?.time!! else highestRecordId
     }
+
     Timber.e("New highest Last updated at value is $highestRecordId")
     return highestRecordId?.let { JsonData(jsonArray, it) }
   }
@@ -62,7 +84,6 @@ class P2PSenderTransferDao
 
     val jsonParser = FhirContext.forR4().newJsonParser()
     resourceTypes.forEach {
-
       runBlocking {
         try {
           val RC = Class.forName("org.hl7.fhir.r4.model.${it}") as Class<out Resource>
@@ -70,12 +91,13 @@ class P2PSenderTransferDao
           val records2 = defaultRepository.loadResources(lastUpdated, batchSize, RC)
 
           records2.forEachIndexed { index, resource ->
-            Timber.e("${index + 1}. ${resource.resourceType} -> ${jsonParser.encodeResourceToString(resource)}")
+            Timber.e(
+              "${index + 1}. ${resource.resourceType} -> ${jsonParser.encodeResourceToString(resource)}"
+            )
           }
         } catch (ex: ClassNotFoundException) {
           Timber.e(ex)
         }
-
       }
     }
   }
