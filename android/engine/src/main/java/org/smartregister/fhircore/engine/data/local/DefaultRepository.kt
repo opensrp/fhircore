@@ -22,6 +22,7 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import javax.inject.Inject
@@ -118,9 +119,9 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       fhirEngine.search<Patient> {
         filter(DateClientParam("_lastUpdated"), {
           value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
+          prefix = ParamPrefixEnum.GREATERTHAN})
 
-        //sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
+        sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
         count = batchSize
       }
 
