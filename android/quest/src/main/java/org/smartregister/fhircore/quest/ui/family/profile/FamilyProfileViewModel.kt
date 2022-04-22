@@ -67,6 +67,7 @@ constructor(
       }
       is FamilyProfileEvent.OpenTaskForm ->
         event.context.launchQuestionnaireActivity(event.taskFormId)
+      is FamilyProfileEvent.OverflowMenuClick -> {}
     }
   }
 

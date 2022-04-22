@@ -35,10 +35,6 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
     listOf(
       OverflowMenuItem(FamilyProfileMenuConstant.FAMILY_DETAILS, R.string.family_details),
       OverflowMenuItem(FamilyProfileMenuConstant.CHANGE_FAMILY_HEAD, R.string.change_family_head),
-      OverflowMenuItem(
-        FamilyProfileMenuConstant.CHANGE_PRIMARY_CAREGIVER,
-        R.string.change_primary_caregiver
-      ),
       OverflowMenuItem(FamilyProfileMenuConstant.FAMILY_ACTIVITY, R.string.family_activity),
       OverflowMenuItem(
         FamilyProfileMenuConstant.VIEW_PAST_ENCOUNTERS,
@@ -57,7 +53,6 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
 object FamilyProfileMenuConstant {
   const val FAMILY_DETAILS = "familyDetails"
   const val CHANGE_FAMILY_HEAD = "changeFamilyHead"
-  const val CHANGE_PRIMARY_CAREGIVER = "changePrimaryCaregiver"
   const val FAMILY_ACTIVITY = "familyActivity"
   const val VIEW_PAST_ENCOUNTERS = "viewPastEncounters"
   const val REMOVE_FAMILY = "removeFamily"
