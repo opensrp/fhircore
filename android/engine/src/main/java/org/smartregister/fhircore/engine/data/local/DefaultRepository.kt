@@ -176,7 +176,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       WHERE a.resourceType = '${classType.newInstance().resourceType}'
       AND a.resourceId IN (
       SELECT resourceId FROM DateTimeIndexEntity
-      WHERE resourceType = 'Patient' AND index_name = '_lastUpdated' AND index_to > ?
+      WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to > ?
       )
       ORDER BY b.index_from ASC
       LIMIT ?

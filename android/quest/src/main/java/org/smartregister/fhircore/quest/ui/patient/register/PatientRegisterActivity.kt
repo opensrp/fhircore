@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
+import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
@@ -63,9 +64,9 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     configureViews(registerViewConfiguration)
 
     // TODO: REmove this test code
-    GlobalScope.launch(Dispatchers.IO) {
-      p2PSenderTransferDao.getJsonData(DataType("randmo", DataType.Filetype.JSON, 1), 0, 20)
-    }
+/*    GlobalScope.launch(Dispatchers.IO) {
+      p2PSenderTransferDao.getJsonData(DataType(P2PConstants.P2PDataTypes.QUESTIONNAIRE, DataType.Filetype.JSON, 1), 0, 20)
+    }*/
   }
 
   override fun onBottomNavigationOptionItemSelected(
@@ -118,8 +119,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       )
     )
 
-  override fun registerClient(clientIdentifier: String?) {
+ /* override fun registerClient(clientIdentifier: String?) {
     startP2PScreen(this
     )
-  }
+  }*/
 }
