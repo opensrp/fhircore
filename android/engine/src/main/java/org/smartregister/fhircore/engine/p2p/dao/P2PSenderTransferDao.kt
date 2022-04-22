@@ -20,10 +20,16 @@ import ca.uhn.fhir.context.FhirContext
 import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
@@ -43,7 +49,18 @@ class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRep
     Timber.e("Last updated at value is $lastUpdated")
 
     var highestRecordId = lastUpdated
-    val records = runBlocking { defaultRepository.loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize) }
+    var classType: Class<out Resource> = Resource::class.java
+    when (dataType.name) {
+        P2PConstants.P2PDataTypes.ENCOUNTER -> classType = Encounter::class.java
+        P2PConstants.P2PDataTypes.OBSERVATION -> classType = Observation::class.java
+        P2PConstants.P2PDataTypes.PATIENT -> classType = Patient::class.java
+        P2PConstants.P2PDataTypes.QUESTIONNAIRE -> classType = Questionnaire::class.java
+        P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE -> classType = QuestionnaireResponse::class.java
+    }
+    val records = runBlocking {
+      defaultRepository.loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize, classType)
+    }
+    Timber.e("Fetching resources of type  $dataType.name")
     highestRecordId = if (records!!.isNotEmpty()) {
       records?.get(records.size - 1)?.meta?.lastUpdated?.time ?: highestRecordId
     } else {
