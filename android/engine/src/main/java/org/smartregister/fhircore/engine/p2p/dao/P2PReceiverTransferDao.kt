@@ -17,11 +17,15 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import androidx.annotation.NonNull
+import ca.uhn.fhir.context.FhirContext
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Patient
 import java.util.TreeSet
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.sync.DataType
+import timber.log.Timber
 import javax.inject.Inject
 
 open class P2PReceiverTransferDao
@@ -35,10 +39,18 @@ constructor(
   }
 
   override fun receiveJson(@NonNull type: DataType, @NonNull jsonArray: JSONArray): Long {
-    // TODO implement saving of data to local db
+    var maxLastUpdated = 0L
     //save resources
-    // defaultRepository.save()
-    val maxTableRowId: Long = 0
-    return maxTableRowId
+    val jsonParser = FhirContext.forR4().newJsonParser()
+    Timber.e("saving resources")
+    (0 until jsonArray.length()).forEach {
+      runBlocking {
+        val resource = jsonParser.parseResource(Patient::class.java, jsonArray.get(it).toString())
+        defaultRepository.addOrUpdate(resource = resource)
+        maxLastUpdated = if (resource.meta.lastUpdated.time > maxLastUpdated) resource.meta.lastUpdated.time else maxLastUpdated
+      }
+    }
+    Timber.e("max last updated is $maxLastUpdated")
+    return maxLastUpdated
   }
 }
