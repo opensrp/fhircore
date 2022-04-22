@@ -55,6 +55,15 @@
           "isFilterVisible": false,
           "toolbarTitle": "Settings"
         }
+      },
+      {
+        "id": "menu_item_p2p",
+        "title": "P2P Sync",
+        "icon" : "ic_tasks",
+        "action": {
+          "type": "p2p-sync",
+          "tag": "P2PDeviceSearchActivity"
+        }
       }
     ]
   },{

@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
+import org.smartregister.fhircore.quest.configuration.view.P2PSyncNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity.Companion.CLASSIFICATION_ARG
@@ -87,6 +88,10 @@ class PatientRegisterActivity : BaseRegisterActivity() {
               Intent(this, QuestionnaireDataDetailActivity::class.java).apply {
                 putExtra(CLASSIFICATION_ARG, action.classification)
               }
+            )
+          }
+          is P2PSyncNavigationAction -> {
+            startP2PScreen(this
             )
           }
         }
