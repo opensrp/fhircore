@@ -173,7 +173,7 @@ constructor(
 
   private suspend fun loadMemberTask(patient: Patient) =
     fhirEngine.search<Task> {
-      filterByResourceTypeId(Task.OWNER, ResourceType.Patient, patient.logicalId)
+      filterByResourceTypeId(Task.SUBJECT, ResourceType.Patient, patient.logicalId)
     }
 
   suspend fun loadFamilyMembersDetails(family: Group) =
