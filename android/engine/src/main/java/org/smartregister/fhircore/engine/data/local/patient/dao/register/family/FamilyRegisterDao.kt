@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -116,11 +117,13 @@ constructor(
                   .first()
               val conditions = loadMemberCondition(patient)
               val carePlans = loadMemberCarePlan(patient)
+              val tasks = loadMemberTask(patient)
 
               FamilyMemberDetail(
                 patient = patient,
                 conditions = conditions,
-                servicesDue = carePlans
+                servicesDue = carePlans,
+                tasks = tasks
               )
             }
         }
@@ -145,8 +148,14 @@ constructor(
       fhirEngine.load(Patient::class.java, member.entity.extractId()).let { patient ->
         val conditions = loadMemberCondition(patient)
         val carePlans = loadMemberCarePlan(patient)
+        val tasks = loadMemberTask(patient)
 
-        FamilyMemberDetail(patient = patient, conditions = conditions, servicesDue = carePlans)
+        FamilyMemberDetail(
+          patient = patient,
+          conditions = conditions,
+          servicesDue = carePlans,
+          tasks = tasks
+        )
       }
     }
       ?: listOf()
@@ -160,6 +169,11 @@ constructor(
     fhirEngine.search<CarePlan> {
       filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patient.logicalId)
       filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
+    }
+
+  private suspend fun loadMemberTask(patient: Patient) =
+    fhirEngine.search<Task> {
+      filterByResourceTypeId(Task.SUBJECT, ResourceType.Patient, patient.logicalId)
     }
 
   suspend fun loadFamilyMembersDetails(family: Group) =
