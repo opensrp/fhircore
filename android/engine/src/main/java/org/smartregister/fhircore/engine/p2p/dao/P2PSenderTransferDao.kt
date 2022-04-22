@@ -17,7 +17,11 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
+import java.util.TreeSet
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.p2p.dao.SenderTransferDao
@@ -31,20 +35,16 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.extension.json
 import timber.log.Timber
-import javax.inject.Inject
 
-class P2PSenderTransferDao
-  @Inject
-  constructor(
-    val defaultRepository: DefaultRepository
-        ) : BaseP2PTransferDao(), SenderTransferDao {
+class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRepository) :
+  BaseP2PTransferDao(), SenderTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> {
     return getTypes()
   }
 
   override fun getJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int): JsonData? {
-    // TODO complete  retrieval of data implementation
+    // TODO: complete  retrieval of data implementation
     // Find a way to make this generic
     Timber.e("Last updated at value is $lastUpdated")
 
@@ -68,7 +68,6 @@ class P2PSenderTransferDao
 
     val jsonParser = FhirContext.forR4().newJsonParser()
     resourceTypes.forEach {
-
       runBlocking {
         try {
           val RC = Class.forName("org.hl7.fhir.r4.model.${it}") as Class<out Resource>
@@ -76,12 +75,13 @@ class P2PSenderTransferDao
           val records2 = defaultRepository.loadResources(lastUpdated, batchSize, RC)
 
           records2.forEachIndexed { index, resource ->
-            Timber.e("${index + 1}. ${resource.resourceType} -> ${jsonParser.encodeResourceToString(resource)}")
+            Timber.e(
+              "${index + 1}. ${resource.resourceType} -> ${jsonParser.encodeResourceToString(resource)}"
+            )
           }
         } catch (ex: ClassNotFoundException) {
           Timber.e(ex)
         }
-
       }
     }
   }

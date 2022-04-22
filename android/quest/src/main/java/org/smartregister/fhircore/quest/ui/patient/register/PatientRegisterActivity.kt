@@ -64,7 +64,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
     // TODO: REmove this test code
     GlobalScope.launch(Dispatchers.IO) {
-      p2PSenderTransferDao.getJsonData(DataType("randmo", DataType.Filetype.JSON, 1), 0, 100)
+      p2PSenderTransferDao.getJsonData(DataType("randmo", DataType.Filetype.JSON, 1), 0, 20)
     }
   }
 

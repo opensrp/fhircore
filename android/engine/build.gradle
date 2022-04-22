@@ -166,7 +166,7 @@ dependencies {
         transitive = true
     }
 
-    api('org.smartregister:engine:0.1.0-alpha06-preview-SNAPSHOT') {
+    api('com.google.android.fhir:engine:0.1.0-alpha06-preview-p2p') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
