@@ -63,7 +63,7 @@ constructor(
           else PaginationConstant.DEFAULT_PAGE_SIZE
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
-    return families.filter { it.active }.map { family ->
+    return families.filter { it.active && !it.name.isNullOrEmpty() }.map { family ->
       val members = loadFamilyMembers(family)
       val familyDetail = loadFamilyDetail(family, members)
 
@@ -80,7 +80,12 @@ constructor(
   }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return fhirEngine.count<Group> { getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) } }
+    // TODO fix this workaround for groups count
+    return fhirEngine
+      .search<Group> { getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) } }
+      .filter { it.active && !it.name.isNullOrEmpty() }
+      .size
+      .toLong()
   }
 
   suspend fun loadFamilyDetail(family: Group, members: List<FamilyMemberDetail>): FamilyDetail {
