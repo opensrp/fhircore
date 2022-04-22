@@ -173,7 +173,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       FROM ResourceEntity a
       LEFT JOIN DateTimeIndexEntity b
       ON a.resourceType = b.resourceType AND a.resourceId = b.resourceId AND b.index_name = '_lastUpdated'
-      WHERE a.resourceType = 'Patient'
+      WHERE a.resourceType = '${classType.newInstance().resourceType}'
       AND a.resourceId IN (
       SELECT resourceId FROM DateTimeIndexEntity
       WHERE resourceType = 'Patient' AND index_name = '_lastUpdated' AND index_to > ?

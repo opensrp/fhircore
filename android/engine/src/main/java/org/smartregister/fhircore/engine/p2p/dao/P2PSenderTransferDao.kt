@@ -49,7 +49,7 @@ class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRep
     Timber.e("Last updated at value is $lastUpdated")
 
     var highestRecordId = lastUpdated
-    var classType: Class<out Resource> = Resource::class.java
+    var classType: Class<out Resource> = Encounter::class.java
     when (dataType.name) {
         P2PConstants.P2PDataTypes.ENCOUNTER -> classType = Encounter::class.java
         P2PConstants.P2PDataTypes.OBSERVATION -> classType = Observation::class.java
