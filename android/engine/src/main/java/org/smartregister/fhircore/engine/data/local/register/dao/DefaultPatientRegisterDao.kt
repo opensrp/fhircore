@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.patient.dao.register
+package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId

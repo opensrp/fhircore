@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.patient
+package org.smartregister.fhircore.engine.data.local.register
 
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.local.patient.dao.register.RegisterDaoFactory
+import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFactory
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository

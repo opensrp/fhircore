@@ -25,7 +25,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.engine.navigation.OverflowMenuHost
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider

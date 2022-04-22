@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.patient.dao.register.anc
+package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
@@ -25,17 +25,26 @@ import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
+import org.smartregister.fhircore.engine.domain.model.VisitStatus
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.filterBy
+import org.smartregister.fhircore.engine.util.extension.milestonesDue
+import org.smartregister.fhircore.engine.util.extension.milestonesOverdue
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @Singleton
 class AncPatientRegisterDao
@@ -70,27 +79,30 @@ constructor(
           it.nameFirstRep.family
         }
 
-      patients.map {
+      patients.map { patient ->
         val carePlans =
           defaultRepository.searchResourceFor<CarePlan>(
-            subjectId = it.logicalId,
+            subjectId = patient.logicalId,
             subjectParam = CarePlan.SUBJECT
           )
-        val conditions =
-          defaultRepository.searchResourceFor<Condition>(
-            subjectId = it.logicalId,
-            subjectParam = Condition.SUBJECT
-          )
 
-        AncRegisterDataMapper.transformInputToOutputModel(Anc(it, conditions, carePlans))
+        RegisterData.AncRegisterData(
+          id = patient.logicalId,
+          name = patient.extractName(),
+          identifier =
+            patient.identifier
+              .firstOrNull {
+                it.use.name.contentEquals(DefaultPatientRegisterDao.OFFICIAL_IDENTIFIER)
+              }
+              ?.value,
+          age = patient.birthDate.toAgeDisplay(),
+          address = patient.extractAddress(),
+          visitStatus = getVisitStatus(carePlans),
+          servicesDue = carePlans.sumOf { it.milestonesDue().size },
+          servicesOverdue = carePlans.sumOf { it.milestonesOverdue().size }
+        )
       }
     }
-
-  override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return withContext(dispatcherProvider.io()) {
-      fhirEngine.count<Condition> { getRegisterDataFilters().forEach { filterBy(it) } }
-    }
-  }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
     val patient = defaultRepository.loadResource<Patient>(resourceId)!!
@@ -99,15 +111,55 @@ constructor(
         subjectId = patient.logicalId,
         subjectParam = CarePlan.SUBJECT
       )
-    val conditions =
-      defaultRepository.searchResourceFor<Condition>(
-        subjectId = patient.logicalId,
-        subjectParam = Condition.SUBJECT
-      )
 
-    return AncProfileDataMapper.transformInputToOutputModel(
-      AncProfile(patient, conditions, carePlans)
+    return ProfileData.AncProfileData(
+      id = patient.logicalId,
+      birthdate = patient.birthDate,
+      name = patient.extractName(),
+      identifier =
+        patient.identifier
+          .firstOrNull { it.use.name.contentEquals(DefaultPatientRegisterDao.OFFICIAL_IDENTIFIER) }
+          ?.value,
+      gender = patient.gender,
+      age = patient.birthDate.toAgeDisplay(),
+      address = patient.extractAddress(),
+      visitStatus = getVisitStatus(carePlans),
+      services = carePlans,
+      tasks =
+        defaultRepository.searchResourceFor(
+          subjectId = patient.logicalId,
+          subjectParam = Task.SUBJECT
+        ),
+      conditions =
+        defaultRepository.searchResourceFor(
+          subjectId = patient.logicalId,
+          subjectParam = Condition.SUBJECT
+        ),
+      flags =
+        defaultRepository.searchResourceFor(
+          subjectId = patient.logicalId,
+          subjectParam = Flag.SUBJECT
+        ),
+      visits =
+        defaultRepository.searchResourceFor(
+          subjectId = patient.logicalId,
+          subjectParam = Encounter.SUBJECT
+        )
     )
+  }
+
+  override suspend fun countRegisterData(appFeatureName: String?): Long {
+    return withContext(dispatcherProvider.io()) {
+      fhirEngine.count<Condition> { getRegisterDataFilters().forEach { filterBy(it) } }
+    }
+  }
+
+  private fun getVisitStatus(carePlans: List<CarePlan>): VisitStatus {
+    var visitStatus = VisitStatus.PLANNED
+    if (carePlans.any { it.milestonesOverdue().isNotEmpty() }) visitStatus = VisitStatus.OVERDUE
+    else if (carePlans.any { it.milestonesDue().isNotEmpty() }) visitStatus = VisitStatus.DUE
+
+    return visitStatus
   }
 
   private fun getRegisterDataFilters() =

@@ -23,7 +23,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 
 @Singleton

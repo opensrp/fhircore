@@ -36,7 +36,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
