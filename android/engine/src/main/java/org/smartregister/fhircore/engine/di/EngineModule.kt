@@ -73,6 +73,7 @@ class EngineModule {
   @Provides
   fun provideSyncJob(@ApplicationContext context: Context) = Sync.basicSyncJob(context)
 
+  @Singleton
   @Provides
   fun provideSyncBroadcaster(
     configurationRegistry: ConfigurationRegistry,
