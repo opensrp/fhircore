@@ -27,14 +27,8 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
-import java.util.TreeSet
-import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import timber.log.Timber
-import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.extension.json
-import timber.log.Timber
 
 class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRepository) :
   BaseP2PTransferDao(), SenderTransferDao {
@@ -48,8 +42,9 @@ class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRep
     // Find a way to make this generic
     Timber.e("Last updated at value is $lastUpdated")
 
-      val highestRecordId = records?.get(records.size - 1)?.meta?.lastUpdated?.time
-      val records = runBlocking { defaultRepository.loadResources(lastRecordUpdatedAt = lastUpdated, batchSize = batchSize) }
+    var highestRecordId = lastUpdated
+    val records = runBlocking { defaultRepository.loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize) }
+    highestRecordId = records?.get(records.size - 1)?.meta?.lastUpdated?.time ?: 0L
 
     var jsonArray = JSONArray()
     val jsonParser = FhirContext.forR4().newJsonParser()
