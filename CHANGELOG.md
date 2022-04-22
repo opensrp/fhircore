@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Fixed login authentication issue.
 - Engine | Implement language switcher on profile page
 - Engine | Add tasking abstraction
+- Engine | Performance improvement when openning questionnaires and saving QRs
 
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected

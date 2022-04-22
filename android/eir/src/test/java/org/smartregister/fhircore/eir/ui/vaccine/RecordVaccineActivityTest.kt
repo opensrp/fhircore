@@ -76,23 +76,24 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   private lateinit var recordVaccineActivity: RecordVaccineActivity
 
-  @BindValue
-  val recordVaccineViewModel =
-    spyk(
-      RecordVaccineViewModel(
-        fhirEngine = fhirEngine,
-        defaultRepository = mockk(),
-        configurationRegistry = mockk(),
-        transformSupportServices = mockk(),
-        patientRepository = mockk(),
-        dispatcherProvider = DefaultDispatcherProvider(),
-        sharedPreferencesHelper = mockk(),
-        libraryEvaluator = mockk()
-      )
-    )
+  @BindValue lateinit var recordVaccineViewModel: RecordVaccineViewModel
 
   @Before
   fun setUp() {
+    recordVaccineViewModel =
+      spyk(
+        RecordVaccineViewModel(
+          fhirEngine = fhirEngine,
+          defaultRepository = mockk(),
+          configurationRegistry = mockk(),
+          transformSupportServices = mockk(),
+          patientRepository = mockk(),
+          dispatcherProvider = DefaultDispatcherProvider(),
+          sharedPreferencesHelper = mockk(),
+          libraryEvaluator = mockk()
+        )
+      )
+
     hiltRule.inject()
 
     coEvery { fhirEngine.get(ResourceType.Patient, "test_patient_id") } returns
