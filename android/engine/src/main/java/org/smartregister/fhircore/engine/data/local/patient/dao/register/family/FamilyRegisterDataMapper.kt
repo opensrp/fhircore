@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
 import com.google.android.fhir.logicalId
+import org.smartregister.fhircore.engine.data.local.patient.dao.register.DefaultPatientRegisterDao.Companion.OFFICIAL_IDENTIFIER
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
@@ -36,14 +37,16 @@ object FamilyRegisterDataMapper : DataMapper<FamilyDetail, RegisterData.FamilyRe
     inputModel: FamilyDetail
   ): RegisterData.FamilyRegisterData {
     val family = inputModel.family
+    val head = inputModel.head
     val members = inputModel.members.map { it.familyMemberRegisterData() }
 
     return RegisterData.FamilyRegisterData(
       id = family.logicalId,
-      name = family.extractName(),
-      identifier = family.identifierFirstRep.value,
-      address = family.extractAddress(),
-      head = members.first { it.id == family.logicalId },
+      name = family.name,
+      identifier =
+        family.identifier.firstOrNull { it.use.name.contentEquals(OFFICIAL_IDENTIFIER) }?.value,
+      address = head?.patient?.extractAddress() ?: "",
+      head = head?.familyMemberRegisterData(),
       members = members,
       servicesDue = members.sumOf { it.servicesDue ?: 0 },
       servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 },
@@ -61,10 +64,8 @@ object FamilyRegisterDataMapper : DataMapper<FamilyDetail, RegisterData.FamilyRe
       pregnant = conditions.hasActivePregnancy(),
       isHead = patient.isFamilyHead(),
       deathDate = patient.extractDeathDate(),
-      servicesDue =
-        servicesDue.filter { it.due() }.flatMap { it.activity }.filter { it.due() }.size,
-      servicesOverdue =
-        servicesDue.filter { it.due() }.flatMap { it.activity }.filter { it.overdue() }.size
+      servicesDue = servicesDue.filter { it.due() }.flatMap { it.activity }.size,
+      servicesOverdue = servicesDue.filter { it.overdue() }.flatMap { it.activity }.size
     )
   }
 }

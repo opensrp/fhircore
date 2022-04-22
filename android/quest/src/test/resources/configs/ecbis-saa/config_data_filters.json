@@ -25,6 +25,26 @@
     {
       "id": "family",
       "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "https://www.snomed.org",
+        "code": "35359004"
+      }
+    },
+    {
+      "id": "family",
+      "filterType": "TOKEN",
+      "key": "type",
+      "valueType": "CODING",
+      "valueCoding": {
+        "system": "http://hl7.org/fhir/group-type",
+        "code": "person"
+      }
+    },
+    {
+      "id": "family_care_plan",
+      "filterType": "TOKEN",
       "key": "_tag",
       "valueType": "CODING",
       "valueCoding": {

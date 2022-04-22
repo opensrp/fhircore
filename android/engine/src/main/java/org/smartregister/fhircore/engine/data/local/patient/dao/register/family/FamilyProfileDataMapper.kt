@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
 import com.google.android.fhir.logicalId
+import org.smartregister.fhircore.engine.data.local.patient.dao.register.DefaultPatientRegisterDao.Companion.OFFICIAL_IDENTIFIER
 import org.smartregister.fhircore.engine.domain.model.FamilyMemberProfileData
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
@@ -33,14 +34,16 @@ object FamilyProfileDataMapper : DataMapper<FamilyDetail, ProfileData.FamilyProf
     inputModel: FamilyDetail
   ): ProfileData.FamilyProfileData {
     val family = inputModel.family
+    val head = inputModel.head
     val members = inputModel.members.map { it.familyMemberProfileData() }
 
     return ProfileData.FamilyProfileData(
       id = family.logicalId,
-      name = family.extractName(),
-      identifier = family.identifierFirstRep.value,
-      address = family.extractAddress(),
-      head = members.first { it.id == family.logicalId },
+      name = family.name,
+      identifier =
+        family.identifier.firstOrNull { it.use.name.contentEquals(OFFICIAL_IDENTIFIER) }?.value,
+      address = head?.patient?.extractAddress() ?: "",
+      head = head?.familyMemberProfileData(),
       members = members,
       services = inputModel.servicesDue,
       tasks = inputModel.tasks

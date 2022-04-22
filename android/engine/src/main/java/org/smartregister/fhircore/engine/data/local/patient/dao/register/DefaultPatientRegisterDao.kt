@@ -80,9 +80,9 @@ constructor(
   override suspend fun countRegisterData(appFeatureName: String?): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 
-  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData =
+  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData =
     withContext(dispatcherProvider.io()) {
-      val patient = fhirEngine.load(Patient::class.java, patientId)
+      val patient = fhirEngine.load(Patient::class.java, resourceId)
       val formsFilter = configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY)
 
       ProfileData.DefaultProfileData(
@@ -99,27 +99,27 @@ constructor(
           else null,
         visits =
           defaultRepository.searchResourceFor(
-            subjectId = patientId,
+            subjectId = resourceId,
             subjectParam = Encounter.SUBJECT
           ),
         flags =
-          defaultRepository.searchResourceFor(subjectId = patientId, subjectParam = Flag.SUBJECT),
+          defaultRepository.searchResourceFor(subjectId = resourceId, subjectParam = Flag.SUBJECT),
         conditions =
           defaultRepository.searchResourceFor(
-            subjectId = patientId,
+            subjectId = resourceId,
             subjectParam = Condition.SUBJECT
           ),
         tasks =
-          defaultRepository.searchResourceFor(subjectId = patientId, subjectParam = Task.SUBJECT),
+          defaultRepository.searchResourceFor(subjectId = resourceId, subjectParam = Task.SUBJECT),
         services =
           defaultRepository.searchResourceFor(
-            subjectId = patientId,
+            subjectId = resourceId,
             subjectParam = CarePlan.SUBJECT
           ),
         forms = defaultRepository.searchQuestionnaireConfig(formsFilter),
         responses =
           defaultRepository.searchResourceFor(
-            subjectId = patientId,
+            subjectId = resourceId,
             subjectParam = QuestionnaireResponse.SUBJECT
           )
       )
@@ -127,5 +127,6 @@ constructor(
 
   companion object {
     const val FORMS_LIST_FILTER_KEY = "forms_list"
+    const val OFFICIAL_IDENTIFIER = "official"
   }
 }

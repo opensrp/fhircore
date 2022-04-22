@@ -51,7 +51,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           }
         RegisterViewData(
           id = inputModel.id,
-          title = inputModel.name,
+          title = context.getString(R.string.family_suffix, inputModel.name),
           subtitle = inputModel.address,
           status = context.getString(R.string.date_last_visited, inputModel.lastSeen),
           serviceButtonActionable = false,
