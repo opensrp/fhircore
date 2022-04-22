@@ -44,7 +44,11 @@ class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRep
 
     var highestRecordId = lastUpdated
     val records = runBlocking { defaultRepository.loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize) }
-    highestRecordId = records?.get(records.size - 1)?.meta?.lastUpdated?.time ?: 0L
+    highestRecordId = if (records!!.isNotEmpty()) {
+      records?.get(records.size - 1)?.meta?.lastUpdated?.time ?: highestRecordId
+    } else {
+      lastUpdated
+    }
 
     var jsonArray = JSONArray()
     val jsonParser = FhirContext.forR4().newJsonParser()
