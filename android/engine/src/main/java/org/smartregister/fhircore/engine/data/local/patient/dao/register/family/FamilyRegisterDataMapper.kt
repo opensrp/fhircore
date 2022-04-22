@@ -64,10 +64,8 @@ object FamilyRegisterDataMapper : DataMapper<FamilyDetail, RegisterData.FamilyRe
       pregnant = conditions.hasActivePregnancy(),
       isHead = patient.isFamilyHead(),
       deathDate = patient.extractDeathDate(),
-      servicesDue =
-        servicesDue.filter { it.due() }.flatMap { it.activity }.filter { it.due() }.size,
-      servicesOverdue =
-        servicesDue.filter { it.due() }.flatMap { it.activity }.filter { it.overdue() }.size
+      servicesDue = servicesDue.filter { it.due() }.flatMap { it.activity }.size,
+      servicesOverdue = servicesDue.filter { it.overdue() }.flatMap { it.activity }.size
     )
   }
 }
