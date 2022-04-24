@@ -27,8 +27,12 @@ data class PatientItem(
   val name: String = "",
   val gender: String = "",
   val age: String = "",
-  val address: String = "",
-  var additionalData: List<AdditionalData>? = null
+  val displayAddress: String = "",
+  var additionalData: List<AdditionalData>? = null,
+  val telecom: String = "",
+  val address: AddressData? = null,
+  val generalPractitionerReference: String = "",
+  val managingOrganizationReference: String = ""
 )
 
 @Stable
@@ -39,6 +43,14 @@ data class AdditionalData(
   var valuePostfix: String? = null,
   var lastDateAdded: String? = null,
   val properties: Properties? = null
+)
+
+@Stable
+data class AddressData(
+  val district: String = "",
+  val state: String = "",
+  val text: String = "",
+  val fullAddress: String = ""
 )
 
 fun PatientItem.genderFull(): String {

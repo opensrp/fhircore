@@ -135,6 +135,36 @@ fun Patient.extractAddress(): String {
   }
 }
 
+fun Patient.extractAddressDistrict(): String {
+  if (!hasAddress()) return ""
+  return with(addressFirstRep) { this.district ?: "" }
+}
+
+fun Patient.extractAddressState(): String {
+  if (!hasAddress()) return ""
+  return with(addressFirstRep) { this.state ?: "" }
+}
+
+fun Patient.extractAddressText(): String {
+  if (!hasAddress()) return ""
+  return with(addressFirstRep) { this.text ?: "" }
+}
+
+fun Patient.extractTelecom(): String {
+  if (!hasTelecom()) return ""
+  return with(telecomFirstRep) { this.value }
+}
+
+fun Patient.extractGeneralPractitionerReference(): String {
+  if (!hasGeneralPractitioner()) return ""
+  return with(generalPractitionerFirstRep) { this.reference }
+}
+
+fun Patient.extractManagingOrganizationReference(): String {
+  if (!hasManagingOrganization()) return ""
+  return with(managingOrganization) { this.reference }
+}
+
 fun Patient.extractDeathDate() =
   if (this.hasDeceasedDateTimeType()) deceasedDateTimeType?.value else null
 

@@ -52,7 +52,14 @@ class PatientMapperTest : RobolectricTest() {
       assertEquals("John Doe", name)
       assertEquals("123456", id)
       assertEquals("123456", identifier)
-      assertEquals("Dist 1 City 1", address)
+      assertEquals("Dist 1 City 1 State 1", displayAddress)
+      assertEquals("+12345678", telecom)
+      assertEquals("practitioner/1234", generalPractitionerReference)
+      assertEquals("reference/5678", managingOrganizationReference)
+      assertEquals("State 1", address!!.state)
+      assertEquals("Dist 1", address!!.district)
+      assertEquals("Location 1", address!!.text)
+      assertEquals("Dist 1 City 1 State 1", address!!.fullAddress)
     }
   }
 
@@ -65,7 +72,14 @@ class PatientMapperTest : RobolectricTest() {
       assertEquals("John Doe", name)
       assertEquals("123456", id)
       assertEquals("", identifier)
-      assertEquals("Dist 1 City 1", address)
+      assertEquals("+12345678", telecom)
+      assertEquals("practitioner/1234", generalPractitionerReference)
+      assertEquals("reference/5678", managingOrganizationReference)
+      assertEquals("Dist 1 City 1 State 1", displayAddress)
+      assertEquals("State 1", address!!.state)
+      assertEquals("Dist 1", address!!.district)
+      assertEquals("Location 1", address!!.text)
+      assertEquals("Dist 1 City 1 State 1", address!!.fullAddress)
     }
   }
 
@@ -88,7 +102,13 @@ class PatientMapperTest : RobolectricTest() {
       this.addAddress().apply {
         district = "Dist 1"
         city = "City 1"
+        state = "State 1"
+        text = "Location 1"
       }
+
+      this.addTelecom().apply { value = "+12345678" }
+      this.generalPractitionerFirstRep.apply { reference = "practitioner/1234" }
+      this.managingOrganization.apply { reference = "reference/5678" }
     }
   }
 }
