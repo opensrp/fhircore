@@ -26,11 +26,11 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
-import org.smartregister.fhircore.engine.navigation.OverflowMenuFactory
-import org.smartregister.fhircore.engine.navigation.OverflowMenuHost
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
 import org.smartregister.fhircore.quest.navigation.NavigationScreen
+import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
+import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -68,6 +68,8 @@ constructor(
       is FamilyProfileEvent.OpenTaskForm ->
         event.context.launchQuestionnaireActivity(event.taskFormId)
       is FamilyProfileEvent.OverflowMenuClick -> {}
+      is FamilyProfileEvent.FetchMemberTasks -> TODO()
+      FamilyProfileEvent.RoutineVisit -> TODO()
     }
   }
 

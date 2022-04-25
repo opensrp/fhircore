@@ -66,7 +66,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
-import org.smartregister.fhircore.engine.navigation.FamilyProfileMenuConstant
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.quest.R
@@ -159,8 +158,7 @@ fun FamilyProfileScreen(
                   onClick = {
                     showOverflowMenu = false
 
-                    if (it.id == FamilyProfileMenuConstant.CHANGE_FAMILY_HEAD
-                    ) { // TODO Use int ids from id.xml
+                    if (it.id == R.id.change_family_head) {
                       familyBottomSheetAction = FamilyBottomSheetAction.CHANGE_FAMILY_HEAD
                       coroutineScope.launch {
                         if (bottomSheetScaffoldState.bottomSheetState.isCollapsed)

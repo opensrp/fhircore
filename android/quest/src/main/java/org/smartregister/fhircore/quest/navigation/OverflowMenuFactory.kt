@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.navigation
+package org.smartregister.fhircore.quest.navigation
 
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.quest.R
 
 class OverflowMenuFactory @Inject constructor() {
   val overflowMenuMap: MutableMap<OverflowMenuHost, List<OverflowMenuItem>> by lazy {
@@ -33,27 +33,16 @@ class OverflowMenuFactory @Inject constructor() {
 enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
   FAMILY_PROFILE(
     listOf(
-      OverflowMenuItem(FamilyProfileMenuConstant.FAMILY_DETAILS, R.string.family_details),
-      OverflowMenuItem(FamilyProfileMenuConstant.CHANGE_FAMILY_HEAD, R.string.change_family_head),
-      OverflowMenuItem(FamilyProfileMenuConstant.FAMILY_ACTIVITY, R.string.family_activity),
+      OverflowMenuItem(R.id.family_details, R.string.family_details),
+      OverflowMenuItem(R.id.change_family_head, R.string.change_family_head),
+      OverflowMenuItem(R.id.family_activity, R.string.family_activity),
+      OverflowMenuItem(R.id.view_past_encounters, R.string.view_past_encounters),
       OverflowMenuItem(
-        FamilyProfileMenuConstant.VIEW_PAST_ENCOUNTERS,
-        R.string.view_past_encounters
-      ),
-      OverflowMenuItem(
-        id = FamilyProfileMenuConstant.REMOVE_FAMILY,
+        id = R.id.remove_family,
         titleResource = R.string.remove_family,
         titleColor = DangerColor,
         confirmAction = true
       )
     )
   )
-}
-
-object FamilyProfileMenuConstant {
-  const val FAMILY_DETAILS = "familyDetails"
-  const val CHANGE_FAMILY_HEAD = "changeFamilyHead"
-  const val FAMILY_ACTIVITY = "familyActivity"
-  const val VIEW_PAST_ENCOUNTERS = "viewPastEncounters"
-  const val REMOVE_FAMILY = "removeFamily"
 }

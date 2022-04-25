@@ -129,11 +129,4 @@
     <string name="medical_history">MEDICAL HISTORY</string>
     <string name="upcoming_services">UPCOMING SERVICES</string>
     <string name="service_card">SERVICE CARD</string>
-    <string name="family_details">Family details</string>
-    <string name="change_family_head">Change family head</string>
-    <string name="change_primary_caregiver">Change primary caregiver</string>
-    <string name="family_activity">Family activity</string>
-    <string name="view_past_encounters">View past encounters</string>
-    <string name="remove_family">Remove family</string>
-    <string name="family_suffix">%1$s Family</string>
 </resources>
