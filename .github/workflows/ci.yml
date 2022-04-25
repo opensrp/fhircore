@@ -45,6 +45,11 @@ jobs:
         run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x :engine:testReleaseUnitTest --stacktrace
         working-directory: android
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: jacoco-test-reports
+          path: /home/runner/work/fhircore/fhircore/android/engine/build/reports/tests/
+
       - name: Upload Engine Test Report to codecov
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
