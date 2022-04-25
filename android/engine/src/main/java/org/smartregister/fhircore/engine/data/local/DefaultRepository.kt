@@ -108,7 +108,9 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
       try {
-        fhirEngine.get<Resource>(resource.logicalId).run { fhirEngine.update(updateFrom(resource)) }
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
+          fhirEngine.update(updateFrom(resource))
+        }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
         fhirEngine.create(resource)

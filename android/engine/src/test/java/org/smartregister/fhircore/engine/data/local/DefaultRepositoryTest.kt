@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -45,7 +46,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.joda.time.LocalDate
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -53,7 +53,6 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 
-@Ignore
 class DefaultRepositoryTest : RobolectricTest() {
 
   private val dispatcherProvider = spyk(DefaultDispatcherProvider())
@@ -61,7 +60,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun `addOrUpdate() should call fhirEngine#update when resource exists`() {
     val patientId = "15672-9234"
-    val patient =
+    val patient: Patient =
       Patient().apply {
         id = patientId
         active = true
@@ -87,7 +86,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val savedPatientSlot = slot<Patient>()
 
     val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.get(ResourceType.Patient, patient.idElement.idPart) } returns patient
+    coEvery { fhirEngine.get(any(), any()) } answers { patient }
     coEvery { fhirEngine.update(any()) } just runs
 
     val defaultRepository =

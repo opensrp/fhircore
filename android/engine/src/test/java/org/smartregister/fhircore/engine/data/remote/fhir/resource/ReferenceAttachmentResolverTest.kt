@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest
+package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
 import android.graphics.Bitmap
 import com.google.android.fhir.FhirEngine
@@ -32,15 +32,15 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceAttachmentResolver
-import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import retrofit2.Call
 import retrofit2.Response
 
 class ReferenceAttachmentResolverTest : RobolectricTest() {
-
+  @get:Rule val coroutineTestRule = CoroutineTestRule()
   private lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
   private val fhirEngine = mockk<FhirEngine>()

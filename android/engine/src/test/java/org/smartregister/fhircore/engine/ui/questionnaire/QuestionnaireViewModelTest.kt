@@ -22,7 +22,6 @@ import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
@@ -139,7 +138,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Setup sample resources
 
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val qJson =
       context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
 
