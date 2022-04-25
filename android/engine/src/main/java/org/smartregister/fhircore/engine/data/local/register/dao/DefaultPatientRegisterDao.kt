@@ -86,7 +86,7 @@ constructor(
       val formsFilter = configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY)
 
       ProfileData.DefaultProfileData(
-        id = patient.logicalId,
+        logicalId = patient.logicalId,
         name = patient.extractName(),
         identifier = patient.identifierFirstRep.value,
         address = patient.extractAge(),

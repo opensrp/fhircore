@@ -41,23 +41,25 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
     return when (inputModel) {
       is ProfileData.AncProfileData ->
         ProfileViewData.PatientProfileViewData(
-          id = inputModel.id,
+          logicalId = inputModel.logicalId,
           name = inputModel.name,
-          age = inputModel.age,
           sex = inputModel.gender.translateGender(context),
-          dob = inputModel.birthdate.formatDob()
+          age = inputModel.age,
+          dob = inputModel.birthdate.formatDob(),
+          identifier = inputModel.identifier
         )
       is ProfileData.DefaultProfileData ->
         ProfileViewData.PatientProfileViewData(
-          id = inputModel.id,
+          logicalId = inputModel.logicalId,
           name = inputModel.name,
+          identifier = inputModel.identifier,
           age = inputModel.age,
           sex = inputModel.gender.translateGender(context),
           dob = inputModel.birthdate.formatDob()
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(
-          id = inputModel.id,
+          logicalId = inputModel.logicalId,
           name = context.getString(R.string.family_suffix, inputModel.name),
           address = inputModel.address,
           familyMemberViewStates =

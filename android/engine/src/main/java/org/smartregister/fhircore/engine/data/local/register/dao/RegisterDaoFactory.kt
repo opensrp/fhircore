@@ -25,16 +25,16 @@ import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 class RegisterDaoFactory
 @Inject
 constructor(
-    val ancPatientRegisterDao: AncPatientRegisterDao,
-    val defaultPatientRegisterDao: DefaultPatientRegisterDao,
-    val familyRegisterDao: FamilyRegisterDao
+  val ancPatientRegisterDao: AncPatientRegisterDao,
+  val defaultPatientRegisterDao: DefaultPatientRegisterDao,
+  val familyRegisterDao: FamilyRegisterDao
 ) {
 
-    val registerDaoMap: MutableMap<HealthModule, RegisterDao> by lazy {
-        mutableMapOf(
-            Pair(HealthModule.ANC, ancPatientRegisterDao),
-            Pair(HealthModule.FAMILY, familyRegisterDao),
-            Pair(HealthModule.DEFAULT, defaultPatientRegisterDao)
-        )
-    }
+  val registerDaoMap: MutableMap<HealthModule, RegisterDao> by lazy {
+    mutableMapOf(
+      Pair(HealthModule.ANC, ancPatientRegisterDao),
+      Pair(HealthModule.FAMILY, familyRegisterDao),
+      Pair(HealthModule.DEFAULT, defaultPatientRegisterDao)
+    )
+  }
 }
