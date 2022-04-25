@@ -17,8 +17,7 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
-import java.util.TreeSet
-import javax.inject.Inject
+import com.google.android.fhir.FhirEngine
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Observation
@@ -28,16 +27,20 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 import timber.log.Timber
-import org.smartregister.fhircore.engine.util.extension.json
+import java.util.TreeSet
+import javax.inject.Inject
 
-class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRepository) :
-  BaseP2PTransferDao(), SenderTransferDao {
+class P2PSenderTransferDao
+@Inject
+constructor(
+  fhirEngine: FhirEngine, dispatcherProvider: DispatcherProvider
+)   : BaseP2PTransferDao(fhirEngine, dispatcherProvider), SenderTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> {
     return getTypes()
@@ -58,9 +61,9 @@ class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRep
         P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE -> classType = QuestionnaireResponse::class.java
     }
     val records = runBlocking {
-      defaultRepository.loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize, classType)
+      loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize, classType)
     }
-    Timber.e("Fetching resources of type  $dataType.name")
+    Timber.e("Fetching resources from base dao of type  $dataType.name")
     highestRecordId = if (records!!.isNotEmpty()) {
       records?.get(records.size - 1)?.meta?.lastUpdated?.time ?: highestRecordId
     } else {
@@ -88,7 +91,7 @@ class P2PSenderTransferDao @Inject constructor(val defaultRepository: DefaultRep
         try {
           val RC = Class.forName("org.hl7.fhir.r4.model.${it}") as Class<out Resource>
           Timber.e("Fetch data for resource type ----> ${RC.name}")
-          val records2 = defaultRepository.loadResources(lastUpdated, batchSize, RC)
+          val records2 = loadResources(lastUpdated, batchSize, RC)
 
           records2.forEachIndexed { index, resource ->
             Timber.e(

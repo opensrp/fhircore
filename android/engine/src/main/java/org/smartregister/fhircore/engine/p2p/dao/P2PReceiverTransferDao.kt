@@ -18,22 +18,23 @@ package org.smartregister.fhircore.engine.p2p.dao
 
 import androidx.annotation.NonNull
 import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.FhirEngine
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.*
-import java.util.TreeSet
 import org.json.JSONArray
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.sync.DataType
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 
 open class P2PReceiverTransferDao
 @Inject
 constructor(
-  val defaultRepository: DefaultRepository
-)   : BaseP2PTransferDao(), ReceiverTransferDao {
+  fhirEngine: FhirEngine, dispatcherProvider: DispatcherProvider
+)   : BaseP2PTransferDao(fhirEngine, dispatcherProvider), ReceiverTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> {
     return getTypes()!!.clone() as TreeSet<DataType>
@@ -51,11 +52,11 @@ constructor(
       P2PConstants.P2PDataTypes.QUESTIONNAIRE -> classType = Questionnaire::class.java
       P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE -> classType = QuestionnaireResponse::class.java
     }
-    Timber.e("saving resources")
+    Timber.e("saving resources from base dai")
     (0 until jsonArray.length()).forEach {
       runBlocking {
         val resource = jsonParser.parseResource(classType, jsonArray.get(it).toString())
-        defaultRepository.addOrUpdate(resource = resource)
+        addOrUpdate(resource = resource)
         maxLastUpdated = if (resource.meta.lastUpdated.time > maxLastUpdated) resource.meta.lastUpdated.time else maxLastUpdated
       }
     }

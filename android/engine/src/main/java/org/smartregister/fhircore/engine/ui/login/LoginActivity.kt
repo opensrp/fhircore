@@ -93,7 +93,4 @@ class LoginActivity :
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
 
-  override fun onResume() {
-    super.onResume()
-  }
 }
