@@ -27,6 +27,7 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
@@ -50,118 +51,124 @@ import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 class AncPatientRegisterDao
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
-  val defaultRepository: DefaultRepository,
-  val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DefaultDispatcherProvider
+    val fhirEngine: FhirEngine,
+    val defaultRepository: DefaultRepository,
+    val configurationRegistry: ConfigurationRegistry,
+    val dispatcherProvider: DefaultDispatcherProvider
 ) : RegisterDao {
 
-  override suspend fun loadRegisterData(
-    currentPage: Int,
-    loadAll: Boolean,
-    appFeatureName: String?
-  ): List<RegisterData> =
-    withContext(dispatcherProvider.io()) {
-      val pregnancies =
-        fhirEngine
-          .search<Condition> {
-            getRegisterDataFilters().forEach { filterBy(it) }
+    override suspend fun loadRegisterData(
+        currentPage: Int,
+        loadAll: Boolean,
+        appFeatureName: String?
+    ): List<RegisterData> {
+        val pregnancies =
+            fhirEngine
+                .search<Condition> {
+                    getRegisterDataFilters().forEach { filterBy(it) }
 
-            count =
-              if (loadAll) countRegisterData(appFeatureName).toInt()
-              else PaginationConstant.DEFAULT_PAGE_SIZE
-            from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
-          }
-          .distinctBy { it.subject.reference }
+                    count =
+                        if (loadAll) countRegisterData(appFeatureName).toInt()
+                        else PaginationConstant.DEFAULT_PAGE_SIZE
+                    from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+                }
+                .distinctBy { it.subject.reference }
 
-      val patients =
-        pregnancies.map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }.sortedBy {
-          it.nameFirstRep.family
+        val patients =
+            pregnancies.map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }
+                .sortedBy {
+                    it.nameFirstRep.family
+                }
+
+        return patients.map { patient ->
+            val carePlans =
+                defaultRepository.searchResourceFor<CarePlan>(
+                    subjectId = patient.logicalId,
+                    subjectParam = CarePlan.SUBJECT
+                )
+
+            RegisterData.AncRegisterData(
+                id = patient.logicalId,
+                name = patient.extractName(),
+                identifier =
+                patient.identifier
+                    .firstOrNull {
+                        it.use.name.contentEquals(Identifier.IdentifierUse.OFFICIAL.toCode(), true)
+                    }
+                    ?.value,
+                age = patient.birthDate.toAgeDisplay(),
+                address = patient.extractAddress(),
+                visitStatus = getVisitStatus(carePlans),
+                servicesDue = carePlans.sumOf { it.milestonesDue().size },
+                servicesOverdue = carePlans.sumOf { it.milestonesOverdue().size }
+            )
         }
+    }
 
-      patients.map { patient ->
+    override suspend fun loadProfileData(
+        appFeatureName: String?,
+        resourceId: String
+    ): ProfileData? {
+        val patient = defaultRepository.loadResource<Patient>(resourceId)!!
         val carePlans =
-          defaultRepository.searchResourceFor<CarePlan>(
-            subjectId = patient.logicalId,
-            subjectParam = CarePlan.SUBJECT
-          )
+            defaultRepository.searchResourceFor<CarePlan>(
+                subjectId = patient.logicalId,
+                subjectParam = CarePlan.SUBJECT
+            )
 
-        RegisterData.AncRegisterData(
-          id = patient.logicalId,
-          name = patient.extractName(),
-          identifier =
+        return ProfileData.AncProfileData(
+            id = patient.logicalId,
+            birthdate = patient.birthDate,
+            name = patient.extractName(),
+            identifier =
             patient.identifier
-              .firstOrNull {
-                it.use.name.contentEquals(DefaultPatientRegisterDao.OFFICIAL_IDENTIFIER)
-              }
-              ?.value,
-          age = patient.birthDate.toAgeDisplay(),
-          address = patient.extractAddress(),
-          visitStatus = getVisitStatus(carePlans),
-          servicesDue = carePlans.sumOf { it.milestonesDue().size },
-          servicesOverdue = carePlans.sumOf { it.milestonesOverdue().size }
+                .firstOrNull {
+                    it.use.name.contentEquals(Identifier.IdentifierUse.OFFICIAL.toCode(), true)
+                }
+                ?.value,
+            gender = patient.gender,
+            age = patient.birthDate.toAgeDisplay(),
+            address = patient.extractAddress(),
+            visitStatus = getVisitStatus(carePlans),
+            services = carePlans,
+            tasks =
+            defaultRepository.searchResourceFor(
+                subjectId = patient.logicalId,
+                subjectParam = Task.SUBJECT
+            ),
+            conditions =
+            defaultRepository.searchResourceFor(
+                subjectId = patient.logicalId,
+                subjectParam = Condition.SUBJECT
+            ),
+            flags =
+            defaultRepository.searchResourceFor(
+                subjectId = patient.logicalId,
+                subjectParam = Flag.SUBJECT
+            ),
+            visits =
+            defaultRepository.searchResourceFor(
+                subjectId = patient.logicalId,
+                subjectParam = Encounter.SUBJECT
+            )
         )
-      }
     }
 
-  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
-    val patient = defaultRepository.loadResource<Patient>(resourceId)!!
-    val carePlans =
-      defaultRepository.searchResourceFor<CarePlan>(
-        subjectId = patient.logicalId,
-        subjectParam = CarePlan.SUBJECT
-      )
+    override suspend fun countRegisterData(appFeatureName: String?) =
+        fhirEngine
+            .count<Condition> {
+                getRegisterDataFilters().forEach { filterBy(it) }
+            }
 
-    return ProfileData.AncProfileData(
-      id = patient.logicalId,
-      birthdate = patient.birthDate,
-      name = patient.extractName(),
-      identifier =
-        patient.identifier
-          .firstOrNull { it.use.name.contentEquals(DefaultPatientRegisterDao.OFFICIAL_IDENTIFIER) }
-          ?.value,
-      gender = patient.gender,
-      age = patient.birthDate.toAgeDisplay(),
-      address = patient.extractAddress(),
-      visitStatus = getVisitStatus(carePlans),
-      services = carePlans,
-      tasks =
-        defaultRepository.searchResourceFor(
-          subjectId = patient.logicalId,
-          subjectParam = Task.SUBJECT
-        ),
-      conditions =
-        defaultRepository.searchResourceFor(
-          subjectId = patient.logicalId,
-          subjectParam = Condition.SUBJECT
-        ),
-      flags =
-        defaultRepository.searchResourceFor(
-          subjectId = patient.logicalId,
-          subjectParam = Flag.SUBJECT
-        ),
-      visits =
-        defaultRepository.searchResourceFor(
-          subjectId = patient.logicalId,
-          subjectParam = Encounter.SUBJECT
-        )
-    )
-  }
 
-  override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return withContext(dispatcherProvider.io()) {
-      fhirEngine.count<Condition> { getRegisterDataFilters().forEach { filterBy(it) } }
+    private fun getVisitStatus(carePlans: List<CarePlan>): VisitStatus {
+        var visitStatus = VisitStatus.PLANNED
+        if (carePlans.any { it.milestonesOverdue().isNotEmpty() }) visitStatus = VisitStatus.OVERDUE
+        else if (carePlans.any { it.milestonesDue().isNotEmpty() }) visitStatus = VisitStatus.DUE
+
+        return visitStatus
     }
-  }
 
-  private fun getVisitStatus(carePlans: List<CarePlan>): VisitStatus {
-    var visitStatus = VisitStatus.PLANNED
-    if (carePlans.any { it.milestonesOverdue().isNotEmpty() }) visitStatus = VisitStatus.OVERDUE
-    else if (carePlans.any { it.milestonesDue().isNotEmpty() }) visitStatus = VisitStatus.DUE
-
-    return visitStatus
-  }
-
-  private fun getRegisterDataFilters() =
-    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.ANC.name)
+    private fun getRegisterDataFilters() =
+        configurationRegistry.retrieveDataFilterConfiguration(HealthModule.ANC.name)
 }

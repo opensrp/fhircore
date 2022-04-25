@@ -127,6 +127,5 @@ constructor(
 
   companion object {
     const val FORMS_LIST_FILTER_KEY = "forms_list"
-    const val OFFICIAL_IDENTIFIER = "official"
   }
 }

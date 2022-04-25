@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.register
 
 import com.google.android.fhir.FhirEngine
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -29,37 +30,44 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 class PatientRegisterRepository
 @Inject
 constructor(
-  override val fhirEngine: FhirEngine,
-  override val dispatcherProvider: DefaultDispatcherProvider,
-  val registerDaoFactory: RegisterDaoFactory
+    override val fhirEngine: FhirEngine,
+    override val dispatcherProvider: DefaultDispatcherProvider,
+    val registerDaoFactory: RegisterDaoFactory
 ) :
-  RegisterRepository,
-  DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
+    RegisterRepository,
+    DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
 
-  override suspend fun loadRegisterData(
-    currentPage: Int,
-    loadAll: Boolean,
-    appFeatureName: String?,
-    healthModule: HealthModule
-  ): List<RegisterData> =
-    registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
-      currentPage = currentPage,
-      appFeatureName = appFeatureName
-    )
-      ?: emptyList()
+    override suspend fun loadRegisterData(
+        currentPage: Int,
+        loadAll: Boolean,
+        appFeatureName: String?,
+        healthModule: HealthModule
+    ): List<RegisterData> =
+        withContext(dispatcherProvider.io()) {
+            registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
+                currentPage = currentPage,
+                appFeatureName = appFeatureName
+            )
+                ?: emptyList()
+        }
 
-  override suspend fun countRegisterData(
-    appFeatureName: String?,
-    healthModule: HealthModule
-  ): Long = registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+    override suspend fun countRegisterData(
+        appFeatureName: String?,
+        healthModule: HealthModule
+    ): Long =
+        withContext(dispatcherProvider.io()) {
+            registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+        }
 
-  override suspend fun loadPatientProfileData(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    patientId: String
-  ): ProfileData? =
-    registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
-      appFeatureName = appFeatureName,
-      resourceId = patientId
-    )
+    override suspend fun loadPatientProfileData(
+        appFeatureName: String?,
+        healthModule: HealthModule,
+        patientId: String
+    ): ProfileData? =
+        withContext(dispatcherProvider.io()) {
+            registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
+                appFeatureName = appFeatureName,
+                resourceId = patientId
+            )
+        }
 }
