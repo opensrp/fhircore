@@ -37,7 +37,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
@@ -136,7 +137,9 @@ constructor(
         paginateRegisterData(event.appFeatureName, event.healthModule)
       }
       is PatientRegisterEvent.RegisterNewClient ->
-        event.context.launchQuestionnaireActivity(registerViewConfiguration.registrationForm)
+        event.context.launchQuestionnaire<QuestionnaireActivity>(
+          registerViewConfiguration.registrationForm
+        )
       is PatientRegisterEvent.OpenProfile -> {
         val urlParams =
           "?feature=${event.appFeatureName}&healthModule=${event.healthModule.name}&patientId=${event.patientId}"

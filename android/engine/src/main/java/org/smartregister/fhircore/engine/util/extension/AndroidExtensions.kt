@@ -75,9 +75,12 @@ fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
   return values.any { this == it }
 }
 
-fun Context.launchQuestionnaireActivity(questionnaireId: String, clientIdentifier: String? = null) {
+inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
+  questionnaireId: String,
+  clientIdentifier: String? = null
+) {
   this.startActivity(
-    Intent(this, QuestionnaireActivity::class.java)
+    Intent(this, Q::class.java)
       .putExtras(
         QuestionnaireActivity.intentArgs(
           clientIdentifier = clientIdentifier,
