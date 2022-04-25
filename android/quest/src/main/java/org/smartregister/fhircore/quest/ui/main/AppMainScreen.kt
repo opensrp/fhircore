@@ -75,7 +75,8 @@ fun MainScreen(
         openDrawer = openDrawer,
         sideMenuOptions = uiState.sideMenuOptions,
         onSideMenuClick = appMainViewModel::onEvent,
-        navController = navController
+        navController = navController,
+        enableDeviceToDeviceSync = uiState.enableDeviceToDeviceSync
       )
     },
     bottomBar = {
