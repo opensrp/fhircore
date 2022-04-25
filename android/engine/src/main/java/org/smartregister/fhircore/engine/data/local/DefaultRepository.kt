@@ -214,8 +214,7 @@ constructor(
               main = Pair(param.name, it)
             )
           }
-        param.hasResource() ->
-          throw UnsupportedOperationException("Dont know resource handling") // TODO
+        param.hasResource() -> throw UnsupportedOperationException("Dont know resource handling")
         else -> {
           // for parts defined the config must define the mapping for main param
           val main =

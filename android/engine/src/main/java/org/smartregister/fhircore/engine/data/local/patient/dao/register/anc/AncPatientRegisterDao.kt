@@ -51,8 +51,7 @@ constructor(
     appFeatureName: String?
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      configurationRegistry.retrieveDataFilterConfiguration(HealthModule.DEFAULT.name)!!.let { param
-        ->
+      getRegisterDataFilters()!!.let { param ->
         defaultRepository.loadDataForParam(param, null).map { data ->
           parseMapping(param.name, data, configurationRegistry, fhirPathEngine)
         }
