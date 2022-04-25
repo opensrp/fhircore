@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.model
+package org.smartregister.fhircore.quest.ui.family.profile.model
 
-import androidx.compose.ui.graphics.Color
-
-data class OverflowMenuItem(
-  val id: Int,
-  val titleResource: Int,
-  val confirmAction: Boolean = false,
-  val titleColor: Color = Color.Black.copy(alpha = 0.7f)
-)
+enum class FamilyBottomSheetAction {
+  CHANGE_FAMILY_HEAD,
+  FAMILY_MEMBER_DETAILS
+}

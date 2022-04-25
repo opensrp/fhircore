@@ -3,4 +3,9 @@
     <item name="menu_item_clients" type="id" />
     <item name="menu_item_tasks" type="id" />
     <item name="menu_item_settings" type="id" />
+    <item name="family_details" type="id" />
+    <item name="change_family_head" type="id" />
+    <item name="family_activity" type="id" />
+    <item name="view_past_encounters" type="id" />
+    <item name="remove_family" type="id" />
 </resources>

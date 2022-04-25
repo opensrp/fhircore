@@ -69,9 +69,11 @@ import org.smartregister.fhircore.engine.domain.model.FormButtonData
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.family.profile.components.ChangeFamilyHeadBottomSheet
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyMemberBottomSheet
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileRow
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileTopBar
+import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyBottomSheetAction
 
 @Composable
 fun FamilyProfileScreen(
@@ -98,23 +100,30 @@ fun FamilyProfileScreen(
   var currentMemberPatientId by remember { mutableStateOf("") }
   var bottomSheetTitle by remember { mutableStateOf("") }
   var formButtonData by remember { mutableStateOf<List<FormButtonData>>(emptyList()) }
+  var familyBottomSheetAction by remember {
+    mutableStateOf(FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS)
+  }
 
   BottomSheetScaffold(
     sheetContent = {
-      FamilyMemberBottomSheet(
-        coroutineScope = coroutineScope,
-        bottomSheetScaffoldState = bottomSheetScaffoldState,
-        title = bottomSheetTitle,
-        formButtonData = formButtonData,
-        onFormClick = { taskFormId ->
-          familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
-        },
-        onViewProfile = {
-          familyProfileViewModel.onEvent(
-            FamilyProfileEvent.OpenMemberProfile(currentMemberPatientId, navController)
+      when (familyBottomSheetAction) {
+        FamilyBottomSheetAction.CHANGE_FAMILY_HEAD -> ChangeFamilyHeadBottomSheet()
+        FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS ->
+          FamilyMemberBottomSheet(
+            coroutineScope = coroutineScope,
+            bottomSheetScaffoldState = bottomSheetScaffoldState,
+            title = bottomSheetTitle,
+            formButtonData = formButtonData,
+            onFormClick = { taskFormId ->
+              familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
+            },
+            onViewProfile = {
+              familyProfileViewModel.onEvent(
+                FamilyProfileEvent.OpenMemberProfile(currentMemberPatientId, navController)
+              )
+            }
           )
-        }
-      )
+      }
     },
     scaffoldState = bottomSheetScaffoldState,
     sheetPeekHeight = 0.dp,
@@ -148,7 +157,16 @@ fun FamilyProfileScreen(
                 DropdownMenuItem(
                   onClick = {
                     showOverflowMenu = false
-                    familyProfileViewModel.onEvent(FamilyProfileEvent.OverflowMenuClick(it.id))
+
+                    if (it.id == R.id.change_family_head) {
+                      familyBottomSheetAction = FamilyBottomSheetAction.CHANGE_FAMILY_HEAD
+                      coroutineScope.launch {
+                        if (bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                          bottomSheetScaffoldState.bottomSheetState.expand()
+                        else bottomSheetScaffoldState.bottomSheetState.collapse()
+                      }
+                    } else
+                      familyProfileViewModel.onEvent(FamilyProfileEvent.OverflowMenuClick(it.id))
                   },
                   contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                   modifier =
@@ -212,6 +230,9 @@ fun FamilyProfileScreen(
             FamilyProfileRow(
               familyMemberViewState = memberViewState,
               onFamilyMemberClick = {
+
+                // Update bottom sheet action
+                familyBottomSheetAction = FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS
 
                 // Update current memberId
                 currentMemberPatientId = memberViewState.patientId

@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.model
+package org.smartregister.fhircore.quest.ui.family.profile.components
 
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 
-data class OverflowMenuItem(
-  val id: Int,
-  val titleResource: Int,
-  val confirmAction: Boolean = false,
-  val titleColor: Color = Color.Black.copy(alpha = 0.7f)
-)
+@Composable fun ChangeFamilyHeadBottomSheet(modifier: Modifier = Modifier) {}
