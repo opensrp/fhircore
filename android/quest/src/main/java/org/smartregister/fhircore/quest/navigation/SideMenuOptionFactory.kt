@@ -54,7 +54,7 @@ constructor(
       appFeatureManager.activeRegisterFeatures().map {
         SideMenuOption(
           appFeatureName = it.feature,
-          healthModule = it.healthModule,
+          healthModule = it.healthModule!!,
           iconResource =
             when (it.healthModule) {
               HealthModule.FAMILY -> R.drawable.ic_households
@@ -77,7 +77,7 @@ constructor(
             runBlocking {
               patientRegisterRepository.countRegisterData(
                 appFeatureName = it.feature,
-                healthModule = it.healthModule
+                healthModule = it.healthModule!!
               )
             }
         )

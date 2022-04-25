@@ -73,7 +73,8 @@ fun AppDrawer(
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
-  onSideMenuClick: (AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  enableDeviceToDeviceSync: Boolean
 ) {
   val context = LocalContext.current
   var expandLanguageDropdown by remember { mutableStateOf(false) }
@@ -90,7 +91,7 @@ fun AppDrawer(
         modifier = modifier.padding(vertical = 16.dp)
       )
       LazyColumn {
-        items(sideMenuOptions, { "${it.appFeatureName}|${it.healthModule?.name}" }) { sideMenuOption
+        items(sideMenuOptions, { "${it.appFeatureName}|${it.healthModule.name}" }) { sideMenuOption
           ->
           val title = stringResource(sideMenuOption.titleResource)
           SideMenuItem(
@@ -114,12 +115,15 @@ fun AppDrawer(
           )
         }
       }
-      SideMenuItem(
-        iconResource = R.drawable.ic_sync,
-        title = stringResource(R.string.transfer_data),
-        showEndText = false,
-        onSideMenuClick = { onSideMenuClick(AppMainEvent.TransferData) }
-      )
+
+      if (enableDeviceToDeviceSync) {
+        SideMenuItem(
+          iconResource = R.drawable.ic_sync,
+          title = stringResource(R.string.device_to_device_sync),
+          showEndText = false,
+          onSideMenuClick = { onSideMenuClick(AppMainEvent.DeviceToDeviceSync(context)) }
+        )
+      }
       Box {
         SideMenuItem(
           iconResource = R.drawable.ic_outline_language_white,
@@ -246,6 +250,7 @@ fun AppDrawerPreview() {
         )
       ),
     onSideMenuClick = {},
-    languages = listOf(Language("en", "English"), Language("sw", "Swahili"))
+    languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+    enableDeviceToDeviceSync = true
   )
 }
