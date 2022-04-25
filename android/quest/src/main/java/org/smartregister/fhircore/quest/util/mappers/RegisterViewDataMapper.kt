@@ -60,7 +60,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           serviceButtonForegroundColor =
             if (inputModel.servicesOverdue != 0) Color.White else BlueTextColor,
           serviceMembers =
-            inputModel.members.map {
+            inputModel.members?.map {
               ServiceMember(
                 icon =
                   when {

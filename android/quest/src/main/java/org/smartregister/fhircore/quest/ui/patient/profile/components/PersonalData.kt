@@ -63,13 +63,15 @@ fun PersonalData(
           modifier = modifier.padding(vertical = 10.dp)
         )
       }
-      Text(
-        text = stringResource(R.string.id, patientProfileViewData.id),
-        color = StatusTextColor,
-        fontSize = 18.sp,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-      )
+      if (patientProfileViewData.identifier != null) {
+        Text(
+          text = stringResource(R.string.id, patientProfileViewData.identifier),
+          color = StatusTextColor,
+          fontSize = 18.sp,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
+        )
+      }
       Spacer(modifier = modifier.height(16.dp))
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -97,12 +99,13 @@ private fun OtherDetailsItem(title: String, value: String, modifier: Modifier = 
 fun PersonalDataPreview() {
   val patientProfileData =
     ProfileViewData.PatientProfileViewData(
+      logicalId = "99358357",
       name = "Kim Panny",
       status = "Family Head",
-      id = "99358357",
       sex = "Female",
       age = "48y",
-      dob = "08 Dec"
+      dob = "08 Dec",
+      identifier = "123455"
     )
   PersonalData(patientProfileViewData = patientProfileData)
 }
