@@ -33,11 +33,9 @@ object FhirMapperServices {
     configurationRegistry: ConfigurationRegistry,
     fhirPathEngine: FHIRPathEngine
   ): RegisterData {
-    return parseMapping(
-      configurationRegistry.retrieveDataMapperConfiguration(config)!!,
-      registerData,
-      fhirPathEngine
-    )
+    return configurationRegistry.retrieveDataMapperConfiguration(config)?.let {
+      parseMapping(it, registerData, fhirPathEngine)
+    }
       ?: registerData
   }
 
@@ -94,16 +92,23 @@ object FhirMapperServices {
               } else
                 partParam.value
                   ?.let {
-                    fhirPathEngine
-                      .evaluate(contextData, null, null, base, it.castToExpression(it).expression)
-                      .firstOrNull()
+                    fhirPathEngine.evaluate(
+                      contextData,
+                      null,
+                      null,
+                      base,
+                      it.castToExpression(it).expression
+                    )
                   }
-                  ?.let { if (it.isPrimitive) (it as PrimitiveType<*>).value else it }
+                  ?.let {
+                    if (clsParam.type.jvmErasure.isSubclassOf(Collection::class)) it
+                    else
+                      it.firstOrNull()?.let {
+                        if (it.isPrimitive) (it as PrimitiveType<*>).value else it
+                      }
+                  }
             }
-            .also { evalValue ->
-              if (!clsParam.type.jvmErasure.isSubclassOf(Collection::class))
-                paramValues[clsParam] = evalValue
-            }
+            ?.also { evalValue -> paramValues[clsParam] = evalValue }
         }
 
         construct.callBy(paramValues) as RegisterData

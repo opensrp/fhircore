@@ -18,10 +18,10 @@ package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
@@ -31,13 +31,12 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.asSearchFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.extension.filterBy
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.helper.FhirMapperServices.parseMapping
@@ -49,6 +48,7 @@ constructor(
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DefaultDispatcherProvider,
   val fhirPathEngine: FHIRPathEngine
 ) : RegisterDao {
 
@@ -62,7 +62,7 @@ constructor(
         // foreach load members and do mapping
 
         val familyRegisterData =
-          parseMapping(HealthModule.FAMILY.name, family, configurationRegistry, fhirPathEngine) as
+          parseMapping(familyParam.name, family, configurationRegistry, fhirPathEngine) as
             RegisterData.FamilyRegisterData
 
         // handle all referenced params
@@ -99,15 +99,10 @@ constructor(
     )
   }
 
-  override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return fhirEngine.count<Patient> {
-      getRegisterDataFilters()
-        ?.let { it.castToDataRequirement(it.value) }
-        ?.asSearchFilter(fhirPathEngine)
-        ?.forEach { filterBy(it) }
-      filter(Patient.ACTIVE, { value = of(true) })
+  override suspend fun countRegisterData(appFeatureName: String?): Long =
+    withContext(dispatcherProvider.default()) {
+      getRegisterDataFilters()?.let { defaultRepository.countDataForParam(it) } ?: 0
     }
-  }
 
   suspend fun limit(loadAll: Boolean, appFeatureName: String?): Int {
     return if (loadAll) countRegisterData(appFeatureName).toInt()
@@ -129,7 +124,7 @@ constructor(
             filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, it.logicalId)
             filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
           }
-        FamilyMember(it, conditions, careplans)
+        FamilyMemberDetail(it, conditions, listOf(), careplans)
       }
 
   suspend fun loadFamilyMembersDetails(familyId: String) =

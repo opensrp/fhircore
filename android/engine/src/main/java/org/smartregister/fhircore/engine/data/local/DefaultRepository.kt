@@ -22,6 +22,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -47,9 +48,9 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.configuration.view.asCode
+import org.smartregister.fhircore.engine.configuration.view.asSearchFilter
 import org.smartregister.fhircore.engine.configuration.view.expressionExtension
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
@@ -209,7 +210,7 @@ constructor(
             RegisterData.RawRegisterData(
               id = it.logicalId,
               name = it.logicalId,
-              healthModule = HealthModule.FAMILY,
+              module = param.name,
               main = Pair(param.name, it)
             )
           }
@@ -244,7 +245,7 @@ constructor(
             RegisterData.RawRegisterData(
               id = it.logicalId,
               name = it.logicalId,
-              healthModule = HealthModule.FAMILY,
+              module = param.name,
               main = Pair(param.name, it),
               _details = details.toMutableMap()
             )
@@ -270,6 +271,18 @@ constructor(
         currentPage = currentPage,
         limit = if (this.limit > 0) this.limit else limit // Bug in FHIR where for null it returns 0
       )
+    }
+  }
+
+  suspend fun countDataForParam(param: Parameters.ParametersParameterComponent): Long {
+    return fhirEngine.count<Patient> {
+      param
+        .let { mainParam ->
+          if (mainParam.hasValue()) listOf(mainParam.value!!)
+          else mainParam.part.filter { it.name == mainParam.name }
+        }
+        .flatMap { it.castToDataRequirement(it).asSearchFilter(fhirPathEngine) }
+        .forEach { filterBy(it) }
     }
   }
 

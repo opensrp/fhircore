@@ -17,17 +17,23 @@
 package org.smartregister.fhircore.engine.util.fhirpath
 
 import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.TypeDetails
 import org.hl7.fhir.r4.model.ValueSet
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 
 class FhirPathHostServices : FHIRPathEngine.IEvaluationContext {
-  override fun resolveConstant(appContext: Any?, name: String?, beforeContext: Boolean): Base {
-    return if (appContext is Map<*, *>) appContext[name] as Base
-    else
-      throw UnsupportedOperationException(
-        "Do not know how to resolve $name in local fhirpath host services"
-      )
+  override fun resolveConstant(appContext: Any?, name: String?, beforeContext: Boolean): Base? {
+    return when {
+      appContext is Map<*, *> && appContext[name] != null ->
+        appContext[name]!!.let { value ->
+          if (value is Collection<*>)
+            ListResource().apply { value.forEach { contained.add(it as Resource) } }
+          else value as Base
+        }
+      else -> null
+    }
   }
 
   override fun resolveConstantType(appContext: Any?, name: String?): TypeDetails {

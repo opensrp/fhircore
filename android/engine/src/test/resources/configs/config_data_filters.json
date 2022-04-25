@@ -29,25 +29,84 @@
     },
     {
       "name": "anc",
-      "valueDataRequirement": {
-        "type": "Condition",
-        "codeFilter": [
-          {
-            "searchParam": "code",
-            "code": {
-              "system": "http://loinc.org",
-              "code": "LA15173-0"
-            }
-          },
-          {
-            "searchParam": "clinical-status",
-            "code": {
-              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-              "code": "active"
-            }
+      "part": [
+        {
+          "name": "anc",
+          "valueDataRequirement": {
+            "type": "Condition",
+            "codeFilter": [
+              {
+                "searchParam": "code",
+                "code": {
+                  "system": "http://loinc.org",
+                  "code": "LA15173-0"
+                }
+              },
+              {
+                "searchParam": "clinical-status",
+                "code": {
+                  "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                  "code": "active"
+                }
+              }
+            ],
+            "limit": 20
           }
-        ]
-      }
+        },
+        {
+          "name": "patients",
+          "valueDataRequirement": {
+            "type": "Patient",
+            "codeFilter": [
+              {
+                "searchParam": "_id",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.subject.reference"
+                    }
+                  }
+                ]
+              }
+            ],
+            "sort": [
+              {
+                "path": "name",
+                "direction": "ascending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "careplans",
+          "valueDataRequirement": {
+            "type": "CarePlan",
+            "codeFilter": [
+              {
+                "searchParam": "subject",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "status",
+                "code": {
+                  "system": "http://hl7.org/fhir/request-status",
+                  "code": "active"
+                }
+              }
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "family",
@@ -70,7 +129,14 @@
                   "code": "true"
                 }
               }
-            ]
+            ],
+            "sort": [
+              {
+                "path": "name",
+                "direction": "ascending"
+              }
+            ],
+            "limit": 20
           }
         },
         {
@@ -122,6 +188,26 @@
             "type": "Patient",
             "codeFilter": [
               {
+                "searchParam": "_id",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "family_members",
+          "valueDataRequirement": {
+            "type": "Patient",
+            "codeFilter": [
+              {
                 "searchParam": "link",
                 "extension": [
                   {
@@ -139,27 +225,14 @@
                   "code": "true"
                 }
               }
-            ]
-          }
-        },
-        {
-          "name": "family_members",
-          "valueDataRequirement": {
-            "type": "Patient",
-            "codeFilter": [
+            ],
+            "sort": [
               {
-                "searchParam": "_id",
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "%resource.id"
-                    }
-                  }
-                ]
+                "path": "name",
+                "direction": "ascending"
               }
-            ]
+            ],
+            "limit": 100
           }
         },
         {

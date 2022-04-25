@@ -28,8 +28,15 @@ import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.junit.Before
@@ -38,9 +45,11 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.patient.dao.register.DefaultPatientRegisterDao
+import org.smartregister.fhircore.engine.data.local.patient.dao.register.anc.AncPatientRegisterDao
 import org.smartregister.fhircore.engine.data.local.patient.dao.register.family.FamilyRegisterDao
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathHostServices
 
 @HiltAndroidTest
@@ -70,6 +79,7 @@ class FamilyDaoRegisterTest : RobolectricTest() {
 
   @Inject lateinit var familyRegisterDao: FamilyRegisterDao
   @Inject lateinit var defaultPatientRegisterDao: DefaultPatientRegisterDao
+  @Inject lateinit var ancPatientRegisterDao: AncPatientRegisterDao
 
   @Before
   fun setup() {
@@ -82,11 +92,20 @@ class FamilyDaoRegisterTest : RobolectricTest() {
       listOf(buildPatient(1), buildPatient(2))
 
     coEvery { defaultRepository.searchResource(ResourceType.CarePlan, any(), any(), any()) } returns
-      listOf()
+      listOf(
+        CarePlan().apply {
+          status = CarePlan.CarePlanStatus.ACTIVE
+          period =
+            Period().apply {
+              start = Date().plusYears(-1)
+              end = Date().plusYears(1)
+            }
+        }
+      )
 
     coEvery {
       defaultRepository.searchResource(ResourceType.Condition, any(), any(), any())
-    } returns listOf()
+    } returns listOf(buildPregnancy(1))
 
     familyRegisterDao.loadRegisterData(0, true, null).apply { println(this.toString()) }
   }
@@ -97,24 +116,84 @@ class FamilyDaoRegisterTest : RobolectricTest() {
       listOf(buildPatient(1), buildPatient(2))
 
     coEvery { defaultRepository.searchResource(ResourceType.CarePlan, any(), any(), any()) } returns
-      listOf()
+      listOf(
+        CarePlan().apply {
+          status = CarePlan.CarePlanStatus.ACTIVE
+          period =
+            Period().apply {
+              start = Date().plusYears(-1)
+              end = Date().plusYears(1)
+            }
+        }
+      )
 
     coEvery {
       defaultRepository.searchResource(ResourceType.Condition, any(), any(), any())
-    } returns listOf()
+    } returns listOf(buildPregnancy(1))
 
     defaultPatientRegisterDao.loadRegisterData(0, true, null).apply { println(this.toString()) }
+  }
+
+  @Test
+  fun loadAncRegisterData() = runTest {
+    coEvery { defaultRepository.searchResource(ResourceType.Patient, any(), any(), any()) } returns
+      listOf(buildPatient(1))
+
+    coEvery { defaultRepository.searchResource(ResourceType.CarePlan, any(), any(), any()) } returns
+      listOf(
+        CarePlan().apply {
+          status = CarePlan.CarePlanStatus.ACTIVE
+          period =
+            Period().apply {
+              start = Date().plusYears(-1)
+              end = Date().plusYears(1)
+            }
+        }
+      )
+
+    coEvery {
+      defaultRepository.searchResource(ResourceType.Condition, any(), any(), any())
+    } returns listOf(buildPregnancy(1), buildPregnancy(2), buildPregnancy(3))
+
+    ancPatientRegisterDao.loadRegisterData(0, true, null).apply { println(this.toString()) }
   }
 
   private fun buildPatient(serial: Int): Patient {
     return Patient().apply {
       id = serial.toString()
+      addIdentifier(Identifier().apply { value = "000$serial" })
+      gender = Enumerations.AdministrativeGender.FEMALE
       addName().apply {
         addGiven("PGiven$serial")
         family = "PFamily$serial"
-        gender = Enumerations.AdministrativeGender.FEMALE
-        birthDate = Date()
       }
+      birthDate = Date()
+      deceased = DateTimeType.now()
+      if (serial % 2 == 0) addLink().apply { this.other = Reference("HEAD") }
+      addAddress().apply {
+        district = "Disteert"
+        city = "Ceeteee"
+      }
+    }
+  }
+
+  private fun buildPregnancy(serial: Int): Condition {
+    return Condition().apply {
+      subject = Reference().apply { reference = "Patient/$serial" }
+      clinicalStatus =
+        CodeableConcept().apply {
+          addCoding().apply {
+            code = "active"
+            system = "http://hl7.org/fhir/ValueSet/condition-clinical"
+          }
+        }
+      code =
+        CodeableConcept().apply {
+          addCoding().apply {
+            code = "LA15173-0"
+            system = "http://loinc.org"
+          }
+        }
     }
   }
 }

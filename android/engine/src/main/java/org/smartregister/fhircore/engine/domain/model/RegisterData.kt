@@ -19,17 +19,15 @@ package org.smartregister.fhircore.engine.domain.model
 import java.util.Date
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.memberProperties
-import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.Type
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 
 sealed class RegisterData(open val id: String, open val name: String) {
 
   data class RawRegisterData(
     override val id: String,
     override val name: String,
-    val healthModule: HealthModule,
+    val module: String,
     val main: Pair<String, Resource>,
     internal val _details: MutableMap<String, List<Resource>> = mutableMapOf(),
     val details: Map<String, List<Resource>> = _details
@@ -48,8 +46,7 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val identifier: String? = null,
     val address: String? = null,
     var members: MutableList<FamilyMemberRegisterData> = mutableListOf(),
-    val servicesDue: Int? = null,
-    val servicesOverdue: Int? = null
+    val services: List<CarePlan> = mutableListOf()
   ) : RegisterData(id = id, name = name)
 
   data class FamilyMemberRegisterData(
@@ -58,25 +55,22 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val identifier: String? = null,
     val birthDate: Date?,
     val gender: String?,
-    val isHead: Boolean?,
+    val head: Boolean?,
     val pregnant: Boolean? = null,
-    val deceased: Type? = null, // deceased can be boolean or datetime as well
-    val isDead: Boolean? = deceased != null,
-    val deathDate: Date? =
-      deceased?.let { if (it is BooleanType) null else it.dateTimeValue().value },
-    val servicesDue: Int? = null,
-    val servicesOverdue: Int? = null
-  ) : RegisterData(id = id, name = name)
+    val deceased: Any? = null, // deceased can be boolean or datetime as well
+    val services: MutableList<CarePlan> = mutableListOf()
+  ) : RegisterData(id = id, name = name) {
+    fun isDead() = deceased != null
+    fun deathDate() = deceased?.let { if (it is Boolean) null else (it as Date) }
+  }
 
   data class AncRegisterData(
     override val id: String,
     override val name: String,
     val identifier: String? = null,
-    val age: String,
-    val address: String,
-    val visitStatus: VisitStatus,
-    val servicesDue: Int? = null,
-    val servicesOverdue: Int? = null
+    val birthDate: Date? = null,
+    val address: String? = null,
+    val services: MutableList<CarePlan> = mutableListOf()
   ) : RegisterData(id = id, name = name)
 
   fun addCollectionData(fieldName: String, data: Collection<Any>) {
