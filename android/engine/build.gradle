@@ -124,7 +124,9 @@ dependencies {
     implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator:1.4.2-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.builder:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.dagger:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.activitydefinition:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.plandefinition:1.4.2-SNAPSHOT'
+    implementation ('org.opencds.cqf.cql:evaluator.dagger:1.4.2-SNAPSHOT'){}
     api('org.smartregister:workflow:0.1.0-alpha01-preview4-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'
