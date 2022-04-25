@@ -26,7 +26,8 @@ data class AppMainUiState(
   val lastSyncTime: String,
   val currentLanguage: String,
   val languages: List<Language>,
-  val sideMenuOptions: List<SideMenuOption>
+  val sideMenuOptions: List<SideMenuOption>,
+  val enableDeviceToDeviceSync: Boolean = false
 )
 
 fun appMainUiStateOf(
@@ -36,6 +37,7 @@ fun appMainUiStateOf(
   currentLanguage: String = Locale.ENGLISH.displayName,
   languages: List<Language> = emptyList(),
   sideMenuOptions: List<SideMenuOption> = emptyList(),
+  enableDeviceToDeviceSync: Boolean = false
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,
@@ -43,6 +45,7 @@ fun appMainUiStateOf(
     lastSyncTime = lastSyncTime,
     currentLanguage = currentLanguage,
     languages = languages,
-    sideMenuOptions = sideMenuOptions
+    sideMenuOptions = sideMenuOptions,
+    enableDeviceToDeviceSync = enableDeviceToDeviceSync
   )
 }

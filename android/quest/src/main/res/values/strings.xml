@@ -38,7 +38,7 @@
     <string name="family_suffix">%1$s Family</string>
 
     <!-- SideMenu option strings-->
-    <string name="transfer_data">Transfer Data</string>
+    <string name="device_to_device_sync">Device to device sync</string>
     <string name="anc_clients">ANC Clients</string>
     <string name="all_clients">All Clients</string>
     <string name="pnc_clients">PNC Clients</string>
