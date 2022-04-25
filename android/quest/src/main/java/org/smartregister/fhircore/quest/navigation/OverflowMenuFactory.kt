@@ -22,10 +22,8 @@ import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.quest.R
 
 class OverflowMenuFactory @Inject constructor() {
-  val overflowMenuMap: MutableMap<OverflowMenuHost, List<OverflowMenuItem>> by lazy {
-    mutableMapOf(
-      Pair(OverflowMenuHost.FAMILY_PROFILE, OverflowMenuHost.FAMILY_PROFILE.overflowMenuItems)
-    )
+  val overflowMenuMap: Map<OverflowMenuHost, List<OverflowMenuItem>> by lazy {
+    OverflowMenuHost.values().associate { Pair(it, it.overflowMenuItems) }
   }
 }
 

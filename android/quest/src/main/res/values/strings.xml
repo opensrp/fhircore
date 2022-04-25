@@ -26,6 +26,8 @@
     <string name="no_tasks">No tasks</string>
     <string name="add_memeber">ADD MEMBER</string>
     <string name="what_to_do">What do you want to do?</string>
+
+    <!--Overflow menu strings -->
     <string name="view_profile">View profile</string>
     <string name="family_details">Family details</string>
     <string name="change_family_head">Change family head</string>
@@ -34,5 +36,14 @@
     <string name="view_past_encounters">View past encounters</string>
     <string name="remove_family">Remove family</string>
     <string name="family_suffix">%1$s Family</string>
+
+    <!-- SideMenu option strings-->
+    <string name="transfer_data">Transfer Data</string>
+    <string name="anc_clients">ANC Clients</string>
+    <string name="all_clients">All Clients</string>
+    <string name="pnc_clients">PNC Clients</string>
+    <string name="family_planning_clients">Family Planning Clients</string>
+    <string name="households">Households</string>
+    <string name="children">Children</string>
 
 </resources>
