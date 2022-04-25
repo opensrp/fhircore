@@ -14,29 +14,27 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.patient.dao.register
+package org.smartregister.fhircore.engine.data.local.register.dao
 
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.patient.dao.register.anc.AncPatientRegisterDao
-import org.smartregister.fhircore.engine.data.local.patient.dao.register.family.FamilyRegisterDao
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 
 @Singleton
 class RegisterDaoFactory
 @Inject
 constructor(
-  val ancPatientRegisterDao: AncPatientRegisterDao,
-  val defaultPatientRegisterDao: DefaultPatientRegisterDao,
-  val familyRegisterDao: FamilyRegisterDao
+    val ancPatientRegisterDao: AncPatientRegisterDao,
+    val defaultPatientRegisterDao: DefaultPatientRegisterDao,
+    val familyRegisterDao: FamilyRegisterDao
 ) {
 
-  val registerDaoMap: MutableMap<HealthModule, RegisterDao> by lazy {
-    mutableMapOf(
-      Pair(HealthModule.ANC, ancPatientRegisterDao),
-      Pair(HealthModule.FAMILY, familyRegisterDao),
-      Pair(HealthModule.DEFAULT, defaultPatientRegisterDao)
-    )
-  }
+    val registerDaoMap: MutableMap<HealthModule, RegisterDao> by lazy {
+        mutableMapOf(
+            Pair(HealthModule.ANC, ancPatientRegisterDao),
+            Pair(HealthModule.FAMILY, familyRegisterDao),
+            Pair(HealthModule.DEFAULT, defaultPatientRegisterDao)
+        )
+    }
 }
