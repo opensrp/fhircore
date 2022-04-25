@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.data.local.patient.dao.register.family
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
@@ -26,15 +25,19 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.toCoding
@@ -53,77 +56,128 @@ constructor(
     loadAll: Boolean,
     appFeatureName: String?
   ): List<RegisterData> {
-    val patients =
-      fhirEngine.search<Patient> {
-        getRegisterDataFilters().forEach { filterBy(it) }
-        filter(Patient.ACTIVE, { value = of(true) })
-        sort(Patient.NAME, Order.ASCENDING)
+    val families =
+      fhirEngine.search<Group> {
+        getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) }
         count =
           if (loadAll) countRegisterData(appFeatureName).toInt()
           else PaginationConstant.DEFAULT_PAGE_SIZE
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
+    return families.filter { it.active && !it.name.isNullOrEmpty() }.map { family ->
+      val members = loadFamilyMembers(family)
+      val familyDetail = loadFamilyDetail(family, members)
 
-    return patients.map { patient ->
-      val members = loadFamilyMembers(patient.logicalId)
-      val familyServices =
-        defaultRepository.searchResourceFor<CarePlan>(
-          subjectId = patient.logicalId,
-          subjectParam = CarePlan.SUBJECT,
-          filters = getRegisterDataFilters()
-        )
-
-      FamilyRegisterDataMapper.transformInputToOutputModel(
-        FamilyDetail(patient, members, familyServices)
-      )
+      FamilyRegisterDataMapper.transformInputToOutputModel(familyDetail)
     }
   }
 
-  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData {
-    val family = fhirEngine.load(Patient::class.java, patientId)
-    val members = loadFamilyMembersDetails(patientId)
+  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
+    val family = fhirEngine.load(Group::class.java, resourceId)
+    val members = loadFamilyMembersDetails(family)
+    val familyDetail = loadFamilyDetail(family, members)
+
+    return FamilyProfileDataMapper.transformInputToOutputModel(familyDetail)
+  }
+
+  override suspend fun countRegisterData(appFeatureName: String?): Long {
+    // TODO fix this workaround for groups count
+    return fhirEngine
+      .search<Group> { getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) } }
+      .filter { it.active && !it.name.isNullOrEmpty() }
+      .size
+      .toLong()
+  }
+
+  suspend fun loadFamilyDetail(family: Group, members: List<FamilyMemberDetail>): FamilyDetail {
+    // In some cases the head could be null
+    var head: FamilyMemberDetail? = null
+    if (family.hasManagingEntity()) {
+      head =
+        family.managingEntity.let { reference ->
+          fhirEngine
+            .search<RelatedPerson> {
+              filterByResourceTypeId(
+                RelatedPerson.RES_ID,
+                ResourceType.RelatedPerson,
+                reference.extractId()
+              )
+            }
+            .firstOrNull()
+            ?.let { relatedPerson ->
+              val patient =
+                fhirEngine
+                  .search<Patient> {
+                    filterByResourceTypeId(
+                      Patient.RES_ID,
+                      ResourceType.Patient,
+                      relatedPerson.patient.extractId()
+                    )
+                  }
+                  .first()
+              val conditions = loadMemberCondition(patient)
+              val carePlans = loadMemberCarePlan(patient)
+              val tasks = loadMemberTask(patient)
+
+              FamilyMemberDetail(
+                patient = patient,
+                conditions = conditions,
+                servicesDue = carePlans,
+                tasks = tasks
+              )
+            }
+        }
+    }
     val familyServices =
       defaultRepository.searchResourceFor<CarePlan>(
         subjectId = family.logicalId,
         subjectParam = CarePlan.SUBJECT,
-        filters = getRegisterDataFilters()
+        filters = getRegisterDataFilters(FAMILY_CARE_PLAN)
       )
 
-    return FamilyProfileDataMapper.transformInputToOutputModel(
-      FamilyDetail(family, members, familyServices)
+    return FamilyDetail(
+      family = family,
+      head = head,
+      members = members,
+      servicesDue = familyServices
     )
   }
 
-  override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return fhirEngine.count<Patient> {
-      getRegisterDataFilters().forEach { filterBy(it) }
-      filter(Patient.ACTIVE, { value = of(true) })
+  suspend fun loadFamilyMembers(family: Group) =
+    family.member?.map { member ->
+      fhirEngine.load(Patient::class.java, member.entity.extractId()).let { patient ->
+        val conditions = loadMemberCondition(patient)
+        val carePlans = loadMemberCarePlan(patient)
+        val tasks = loadMemberTask(patient)
+
+        FamilyMemberDetail(
+          patient = patient,
+          conditions = conditions,
+          servicesDue = carePlans,
+          tasks = tasks
+        )
+      }
     }
-  }
+      ?: listOf()
 
-  suspend fun loadFamilyMembers(familyId: String) =
-    fhirEngine
-      .search<Patient> {
-        filterByResourceTypeId(Patient.LINK, ResourceType.Patient, familyId)
-        filter(Patient.ACTIVE, { value = of(true) })
-      }
-      // also include head
-      .plus(fhirEngine.load(Patient::class.java, familyId))
-      .map {
-        val conditions =
-          fhirEngine.search<Condition> {
-            filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, it.logicalId)
-          }
-        val carePlans =
-          fhirEngine.search<CarePlan> {
-            filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, it.logicalId)
-            filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
-          }
-        FamilyMemberDetail(patient = it, conditions = conditions, servicesDue = carePlans)
-      }
+  private suspend fun loadMemberCondition(patient: Patient) =
+    fhirEngine.search<Condition> {
+      filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patient.logicalId)
+    }
 
-  suspend fun loadFamilyMembersDetails(familyId: String) =
-    loadFamilyMembers(familyId).map {
+  private suspend fun loadMemberCarePlan(patient: Patient) =
+    fhirEngine.search<CarePlan> {
+      filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patient.logicalId)
+      filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
+    }
+
+  private suspend fun loadMemberTask(patient: Patient) =
+    fhirEngine.search<Task> {
+      filterByResourceTypeId(Task.SUBJECT, ResourceType.Patient, patient.logicalId)
+    }
+
+  suspend fun loadFamilyMembersDetails(family: Group) =
+    loadFamilyMembers(family).map {
       val flags =
         fhirEngine.search<Flag> {
           filterByResourceTypeId(Flag.SUBJECT, ResourceType.Patient, it.patient.id)
@@ -137,6 +191,10 @@ constructor(
       )
     }
 
-  private fun getRegisterDataFilters() =
-    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.FAMILY.name)
+  private fun getRegisterDataFilters(id: String) =
+    configurationRegistry.retrieveDataFilterConfiguration(id)
+
+  companion object {
+    const val FAMILY_CARE_PLAN = "family_care_plan"
+  }
 }

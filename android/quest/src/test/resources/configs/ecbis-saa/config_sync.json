@@ -62,7 +62,8 @@
           "Questionnaire",
           "StructureMap",
           "Binary",
-          "Task"
+          "Task",
+          "Group"
         ],
         "type": "token",
         "expression": "#count"

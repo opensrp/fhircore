@@ -52,7 +52,7 @@ sealed class ProfileData(open val id: String, open val name: String) {
     override val name: String,
     val identifier: String? = null,
     val address: String,
-    val head: FamilyMemberProfileData,
+    val head: FamilyMemberProfileData? = null,
     val members: List<FamilyMemberProfileData>,
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf()

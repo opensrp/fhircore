@@ -27,6 +27,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.TaskStatus
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.translateGender
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberTask
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
@@ -57,7 +58,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(
           id = inputModel.id,
-          name = inputModel.name,
+          name = context.getString(R.string.family_suffix, inputModel.name),
           address = inputModel.address,
           familyMemberViewStates =
             inputModel.members.map { memberProfileData ->

@@ -32,7 +32,7 @@ sealed class RegisterData(open val id: String, open val name: String) {
     override val name: String,
     val identifier: String? = null,
     val address: String,
-    val head: FamilyMemberRegisterData,
+    val head: FamilyMemberRegisterData? = null,
     val members: List<FamilyMemberRegisterData>,
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null,

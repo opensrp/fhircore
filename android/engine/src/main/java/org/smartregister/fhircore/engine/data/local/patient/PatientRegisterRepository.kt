@@ -60,6 +60,6 @@ constructor(
   ): ProfileData? =
     registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
       appFeatureName = appFeatureName,
-      patientId = patientId
+      resourceId = patientId
     )
 }

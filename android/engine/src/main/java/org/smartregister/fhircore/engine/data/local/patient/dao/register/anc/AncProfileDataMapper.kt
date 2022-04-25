@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.patient.dao.register.anc
 
 import com.google.android.fhir.logicalId
+import org.smartregister.fhircore.engine.data.local.patient.dao.register.DefaultPatientRegisterDao.Companion.OFFICIAL_IDENTIFIER
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.VisitStatus
 import org.smartregister.fhircore.engine.domain.util.DataMapper
@@ -41,7 +42,8 @@ object AncProfileDataMapper : DataMapper<AncProfile, ProfileData.AncProfileData>
       id = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
-      identifier = patient.identifierFirstRep.value,
+      identifier =
+        patient.identifier.firstOrNull { it.use.name.contentEquals(OFFICIAL_IDENTIFIER) }?.value,
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
