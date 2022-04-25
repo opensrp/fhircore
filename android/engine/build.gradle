@@ -122,9 +122,9 @@ dependencies {
     implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
     implementation 'org.opencds.cqf.cql:engine:1.5.4-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator:1.3.1-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.builder:1.3.1-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.dagger:1.3.1-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.builder:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.dagger:1.4.2-SNAPSHOT'
     api('org.smartregister:workflow:0.1.0-alpha01-preview4-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'

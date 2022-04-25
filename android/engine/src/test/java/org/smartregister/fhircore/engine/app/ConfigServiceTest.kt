@@ -21,7 +21,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -29,7 +28,6 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.isIn
 
 @HiltAndroidTest
-@Ignore("TODO investigate, fails on CI")
 class ConfigServiceTest : RobolectricTest() {
   val configService = AppConfigService(ApplicationProvider.getApplicationContext())
   val configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())

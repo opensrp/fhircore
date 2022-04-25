@@ -34,8 +34,8 @@ class FhirOperatorDecoratorTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    fhirOperator = mockk()
-    fhirOperatorDecorator = FhirOperatorDecorator(mockk(), mockk())
+    fhirOperator = mockk(relaxed = true)
+    fhirOperatorDecorator = FhirOperatorDecorator(mockk(relaxed = true), mockk(relaxed = true))
   }
 
   @Test
