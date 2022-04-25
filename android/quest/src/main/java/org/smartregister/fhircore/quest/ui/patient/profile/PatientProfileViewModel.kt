@@ -24,8 +24,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
+import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -60,7 +61,7 @@ constructor(
   fun onEvent(event: PatientProfileEvent) =
     when (event) {
       is PatientProfileEvent.LoadQuestionnaire ->
-        event.context.launchQuestionnaireActivity(event.questionnaireId)
+        event.context.launchQuestionnaire<QuestionnaireActivity>(event.questionnaireId)
       is PatientProfileEvent.SeeAll -> {
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }

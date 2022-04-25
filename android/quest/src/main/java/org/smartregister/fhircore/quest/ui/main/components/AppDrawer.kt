@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
@@ -57,6 +56,7 @@ import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.NavigationScreen
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 
