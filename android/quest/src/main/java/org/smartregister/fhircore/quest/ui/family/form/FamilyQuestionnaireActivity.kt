@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.form
+package org.smartregister.fhircore.quest.ui.family.form
 
-import android.os.Bundle
+import android.content.Intent
 import android.widget.Button
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -26,40 +25,17 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
-import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
-
+import org.smartregister.fhircore.quest.R
+const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
+const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
 @AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
-  @Inject lateinit var familyRepository: FamilyRepository
-
   lateinit var saveBtn: Button
-  private var isEditFamily: Boolean = false
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-
-    isEditFamily = questionnaireType.isEditMode()
-    saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
-
-    val action =
-      if (isEditFamily) getString(R.string.form_action_edit)
-      else getString(R.string.form_action_save)
-
-    when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
-      FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_anc_client)
-      FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
-        saveBtn.text = getString(R.string.family_member_save_label, action)
-      FamilyFormConstants.FAMILY_REGISTER_FORM ->
-        saveBtn.text = getString(R.string.family_save_label, action)
-    }
-  }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     saveBtn.hide(false)
@@ -74,7 +50,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   override fun populateInitialValues(questionnaire: Questionnaire) {
-    if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+    if (questionnaireConfig.form == FAMILY_MEMBER_REGISTER_FORM) {
       questionnaire.find(HEAD_RECORD_ID_KEY)!!.initialFirstRep.value =
         StringType(intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!)
     }
@@ -84,7 +60,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     lifecycleScope.launch {
       val patientId = questionnaireResponse.subject.extractId()
 
-      if (questionnaireConfig.form == FamilyFormConstants.ANC_ENROLLMENT_FORM) {
+      if (questionnaireConfig.form == ANC_ENROLLMENT_FORM) {
         finish()
       } else {
         handlePregnancy(patientId, questionnaireResponse)
@@ -92,18 +68,8 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     }
   }
 
-  override fun onBackPressed() {
-    AlertDialog.Builder(this, R.style.AlertDialogTheme)
-      .setMessage(R.string.unsaved_changes_message_alert)
-      .setCancelable(false)
-      .setNegativeButton(R.string.unsaved_changes_neg) { dialogInterface, _ ->
-        dialogInterface.dismiss()
-        finish()
-      }
-      .setPositiveButton(R.string.unsaved_changes_pos) { dialogInterface, _ ->
-        dialogInterface.dismiss()
-      }
-      .show()
+  override fun getDismissDialogMessage(): Int {
+    return R.string.unsaved_changes_message_alert
   }
 
   private fun handlePregnancy(patientId: String, questionnaireResponse: QuestionnaireResponse) {
@@ -115,10 +81,17 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
         ?.valueBooleanType
         ?.booleanValue()
     if (pregnancy == true) {
-      this.startAncEnrollment(patientId)
+      startAncEnrollment(patientId)
     } else {
       finish()
     }
+  }
+
+  private fun startAncEnrollment(patientId: String) {
+    startActivity(
+      Intent(this, FamilyQuestionnaireActivity::class.java)
+      .putExtras(intentArgs(clientIdentifier = patientId, formName = ANC_ENROLLMENT_FORM))
+      .putExtra(QUESTIONNAIRE_CALLING_ACTIVITY, intent.getStringExtra(QUESTIONNAIRE_CALLING_ACTIVITY) ?: this::class.java.name))
   }
 
   companion object {

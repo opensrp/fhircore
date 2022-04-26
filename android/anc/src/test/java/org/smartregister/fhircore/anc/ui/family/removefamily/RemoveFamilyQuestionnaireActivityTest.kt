@@ -46,7 +46,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
@@ -151,7 +151,7 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
         name = form
         title = form
         if (form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
-          addItem().linkId = FamilyQuestionnaireActivity.HEAD_RECORD_ID_KEY
+          addItem().linkId = org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity.HEAD_RECORD_ID_KEY
       }
     every { configurationRegistry.appId } returns "anc"
 
@@ -162,7 +162,7 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
           QUESTIONNAIRE_ARG_TYPE,
           if (editForm) QuestionnaireType.EDIT.name else QuestionnaireType.DEFAULT.name
         )
-        putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, headId)
+        putExtra(org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, headId)
       }
 
     removeFamilyQuestionnaireActivity =

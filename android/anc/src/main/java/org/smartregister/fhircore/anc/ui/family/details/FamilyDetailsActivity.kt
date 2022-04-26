@@ -27,7 +27,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.removefamily.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.getCallerActivity
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
@@ -169,7 +169,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
             formName = FamilyFormConstants.REMOVE_FAMILY
           )
         )
-        putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_CALLING_ACTIVITY, getCallerActivity())
+        putExtra(org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity.QUESTIONNAIRE_CALLING_ACTIVITY, getCallerActivity())
         putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, familyId)
       }
     )
