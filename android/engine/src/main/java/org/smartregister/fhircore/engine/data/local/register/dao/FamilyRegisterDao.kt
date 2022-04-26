@@ -38,7 +38,22 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.extension.*
+import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
+import org.smartregister.fhircore.engine.util.extension.daysPassed
+import org.smartregister.fhircore.engine.util.extension.due
+import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractDeathDate
+import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.filterBy
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
+import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
+import org.smartregister.fhircore.engine.util.extension.isFamilyHead
+import org.smartregister.fhircore.engine.util.extension.lastSeenFormat
+import org.smartregister.fhircore.engine.util.extension.overdue
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
+import org.smartregister.fhircore.engine.util.extension.toCoding
 
 @Singleton
 class FamilyRegisterDao
@@ -95,7 +110,7 @@ constructor(
       name = family.name,
       identifier = family.extractOfficialIdentifier(),
       address = familyHead?.extractAddress() ?: "",
-      age = familyHead?.extractAge()?: "",
+      age = familyHead?.extractAge() ?: "",
       head = familyHead?.let { loadFamilyMemberProfileData(familyHead.logicalId) },
       members =
         family.member?.map { member ->

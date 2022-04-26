@@ -27,7 +27,7 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-sealed class ProfileData(open val logicalId: String, open val name: String, open  val age: String) {
+sealed class ProfileData(open val logicalId: String, open val name: String, open val age: String) {
   data class DefaultProfileData(
     override val logicalId: String,
     override val name: String,
