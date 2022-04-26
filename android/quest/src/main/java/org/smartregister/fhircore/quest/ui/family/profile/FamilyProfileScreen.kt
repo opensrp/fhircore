@@ -110,7 +110,7 @@ fun FamilyProfileScreen(
         FamilyBottomSheetAction.CHANGE_FAMILY_HEAD -> ChangeFamilyHeadBottomSheet(
         coroutineScope = coroutineScope,
         bottomSheetScaffoldState = bottomSheetScaffoldState,
-        familyMembers = profileViewData.familyMemberViewStates.filter { if(it.age.contains("y")) (it.age.split(" ")[0].replace("y","").toInt()>15) && !!it.isDeceased else false },
+        familyMembers = profileViewData.familyMemberViewStates.filter { if(it.age.contains("y")) (it.age.split(" ")[0].replace("y","").toInt()>15) && (!!it.isDeceased) else false },
         onSaveClick = { familyMember ->
 
         }
