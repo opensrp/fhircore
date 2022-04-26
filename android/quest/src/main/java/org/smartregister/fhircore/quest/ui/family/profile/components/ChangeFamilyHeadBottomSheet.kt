@@ -16,11 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile.components
 
-import android.icu.text.CaseMap
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,7 +30,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.BottomSheetScaffoldState
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.RadioButton
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
@@ -43,8 +46,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -53,180 +56,171 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
-import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 
 const val TAG_SAVE = "save"
-const val TAG_SELECTION = "selection"
 const val TAG_CANCEL = "cancel"
 
 @OptIn(ExperimentalMaterialApi::class)
-@Composable fun ChangeFamilyHeadBottomSheet(coroutineScope: CoroutineScope,
-                                            bottomSheetScaffoldState: BottomSheetScaffoldState,
-                                            familyMembers: List<FamilyMemberViewState>?,
-                                            onSaveClick: (FamilyMemberViewState) -> Unit,
-                                            modifier: Modifier = Modifier) {
+@Composable
+fun ChangeFamilyHeadBottomSheet(
+  coroutineScope: CoroutineScope,
+  bottomSheetScaffoldState: BottomSheetScaffoldState,
+  familyMembers: List<FamilyMemberViewState>?,
+  onSaveClick: (FamilyMemberViewState) -> Unit,
+  modifier: Modifier = Modifier
+) {
 
-        var source by remember { mutableStateOf(familyMembers) }
-        var isEnabled by remember { mutableStateOf(false) }
-        Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
-            Column(modifier = modifier.fillMaxWidth()) {
-                Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier =
-                modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(horizontal = 16.dp, vertical = 16.dp)
-                ) {
-                    Text(
-                    text = stringResource(id = R.string.label_select_new_head),
-                    textAlign = TextAlign.Start,
-                    fontWeight = FontWeight.Light,
-                    fontSize = 20.sp,
-                    )
-                    Icon(
-                    imageVector = Icons.Filled.Clear,
-                    contentDescription = null,
-                    tint = DefaultColor.copy(0.8f),
-                    modifier =
-                    modifier.clickable {
-                        coroutineScope.launch {
-                            if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
-                                bottomSheetScaffoldState.bottomSheetState.collapse()
-                        }
-                    }
-                    )
-                }
-                Divider()
-                Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier =
-                modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(horizontal = 12.dp, vertical = 18.dp)
-                .background(
-                color = colorResource(id = R.color.background_warning),
-                shape =
-                RoundedCornerShape(
-                topStart = 8.dp,
-                topEnd = 8.dp,
-                bottomStart = 8.dp,
-                bottomEnd = 8.dp
-                )
-                )
-                ) {
-                    Image(
-                    painter = painterResource(id = R.drawable.ic_alert_triangle),
-                    contentDescription = null,
-                    modifier = modifier.padding(horizontal = 12.dp)
-                    )
-                    Text(
-                    text = stringResource(id = R.string.alert_message_abort_operation),
-                    textAlign = TextAlign.Start,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp,
-                    modifier = modifier.padding(vertical = 12.dp)
-                    )
-                }
-                Text(
-                text = stringResource(id = R.string.label_assign_new_family_head),
-                modifier = modifier.padding(horizontal = 12.dp),
-                textAlign = TextAlign.Start,
-                fontWeight = FontWeight.Light,
-                fontSize = 18.sp,
-                )
-                LazyColumn(
-                contentPadding = PaddingValues(vertical = 8.dp),
-                modifier = Modifier.fillMaxWidth()
-                ) {
-                    itemsIndexed(
-                    items = source!!,
-                    itemContent = { index, item ->
-                        BottomListItem(item) {
-                            isEnabled = true
-                            source!!.forEach { it.selected = false }
-                            source!![index].selected = true
-                            source = source!!
-                        }
-                        Divider(color = DividerColor, thickness = 1.dp)
-                    }
-                    )
-                }
-                Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier =
-                modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(horizontal = 16.dp, vertical = 16.dp)
-                ) {
-                    TextButton(
-                    onClick = { coroutineScope.launch {
-                        if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
-                            bottomSheetScaffoldState.bottomSheetState.collapse()
-                    }},
-                    modifier = modifier
-                    .fillMaxWidth()
-                    .weight(1F)
-                    .testTag(TAG_CANCEL)
-                    ) {
-                        Text(
-                        fontSize = 14.sp,
-                        color = colorResource(id = R.color.black),
-                        text = stringResource(id = R.string.cancel),
-                        )
-                    }
-                    TextButton(
-                    enabled = isEnabled,
-                    onClick = {
-                        val item = source!!.first { it.selected}
-                        onSaveClick(item)
-                              },
-                    modifier = modifier
-                    .fillMaxWidth()
-                    .weight(1F)
-                    .testTag(TAG_SAVE),
-                    colors =
-                    ButtonDefaults.textButtonColors(
-                    backgroundColor =
-                    colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white)
-                    )
-                    ) {
-                        Text(
-                        fontSize = 14.sp,
-                        color = colorResource(id = if (isEnabled) R.color.white else R.color.colorPrimary),
-                        text = stringResource(id = R.string.str_save).uppercase(),
-                        )
-                    }
-                }
+  var source by remember { mutableStateOf(familyMembers) }
+  var isEnabled by remember { mutableStateOf(false) }
+  Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
+    Column(modifier = modifier.fillMaxWidth()) {
+      Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+          modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+      ) {
+        Text(
+          text = stringResource(id = R.string.label_select_new_head),
+          textAlign = TextAlign.Start,
+          fontWeight = FontWeight.Light,
+          fontSize = 20.sp,
+        )
+        Icon(
+          imageVector = Icons.Filled.Clear,
+          contentDescription = null,
+          tint = DefaultColor.copy(0.8f),
+          modifier =
+            modifier.clickable {
+              coroutineScope.launch {
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                  bottomSheetScaffoldState.bottomSheetState.collapse()
+              }
             }
-        }
-    }
-
-    @Composable
-    fun BottomListItem(
-    model: FamilyMemberViewState,
-    modifier: Modifier = Modifier,
-    onClick: (FamilyMemberViewState) -> Unit
-    ) {
-        Row(modifier = modifier
-        .fillMaxWidth()
-        .padding(14.dp)
-        .clickable { onClick(model) }) {
-            RadioButton(
-            selected = model.selected,
-            modifier = modifier.testTag(model.patientId),
-            onClick = {
-                onClick(model) }
+        )
+      }
+      Divider()
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+          modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .padding(horizontal = 12.dp, vertical = 18.dp)
+            .background(
+              color = colorResource(id = R.color.background_warning),
+              shape =
+                RoundedCornerShape(
+                  topStart = 8.dp,
+                  topEnd = 8.dp,
+                  bottomStart = 8.dp,
+                  bottomEnd = 8.dp
+                )
             )
-            Text(text = model.name + ", " + model.age +", "+ model.gender)
+      ) {
+        Image(
+          painter = painterResource(id = R.drawable.ic_alert_triangle),
+          contentDescription = null,
+          modifier = modifier.padding(horizontal = 12.dp)
+        )
+        Text(
+          text = stringResource(id = R.string.alert_message_abort_operation),
+          textAlign = TextAlign.Start,
+          fontWeight = FontWeight.Medium,
+          fontSize = 16.sp,
+          modifier = modifier.padding(vertical = 12.dp)
+        )
+      }
+      Text(
+        text = stringResource(id = R.string.label_assign_new_family_head),
+        modifier = modifier.padding(horizontal = 12.dp),
+        textAlign = TextAlign.Start,
+        fontWeight = FontWeight.Light,
+        fontSize = 18.sp,
+      )
+      LazyColumn(
+        contentPadding = PaddingValues(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        itemsIndexed(
+          items = source!!,
+          itemContent = { index, item ->
+            BottomListItem(item) {
+              isEnabled = true
+              source!!.forEach { it.selected = false }
+              source!![index].selected = true
+              source = source!!
+            }
+            Divider(color = DividerColor, thickness = 1.dp)
+          }
+        )
+      }
+      Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+          modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+      ) {
+        TextButton(
+          onClick = {
+            coroutineScope.launch {
+              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                bottomSheetScaffoldState.bottomSheetState.collapse()
+            }
+          },
+          modifier = modifier.fillMaxWidth().weight(1F).testTag(TAG_CANCEL)
+        ) {
+          Text(
+            fontSize = 14.sp,
+            color = colorResource(id = R.color.black),
+            text = stringResource(id = R.string.cancel),
+          )
         }
+        TextButton(
+          enabled = isEnabled,
+          onClick = { onSaveClick(source!!.first { it.selected }) },
+          modifier = modifier.fillMaxWidth().weight(1F).testTag(TAG_SAVE),
+          colors =
+            ButtonDefaults.textButtonColors(
+              backgroundColor =
+                colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white)
+            )
+        ) {
+          Text(
+            fontSize = 14.sp,
+            color = colorResource(id = if (isEnabled) R.color.white else R.color.colorPrimary),
+            text = stringResource(id = R.string.str_save).uppercase(),
+          )
+        }
+      }
     }
+  }
+}
+
+@Composable
+fun BottomListItem(
+  model: FamilyMemberViewState,
+  modifier: Modifier = Modifier,
+  onClick: (FamilyMemberViewState) -> Unit
+) {
+  Row(modifier = modifier.fillMaxWidth().padding(14.dp).clickable { onClick(model) }) {
+    RadioButton(
+      selected = model.selected,
+      modifier = modifier.testTag(model.patientId),
+      onClick = { onClick(model) }
+    )
+    Text(text = model.name + ", " + model.age + ", " + model.gender)
+  }
+}
