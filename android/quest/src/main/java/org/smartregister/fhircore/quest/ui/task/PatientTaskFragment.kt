@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
@@ -32,7 +33,7 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.quest.data.task.PatientTaskRepository
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
-import org.smartregister.fhircore.quest.ui.task.component.PatientTaskList
+import org.smartregister.fhircore.quest.ui.task.components.PatientTaskList
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
@@ -41,6 +42,7 @@ class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem
 
   @Inject lateinit var patientTaskRepository: PatientTaskRepository
   @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   override lateinit var registerViewConfiguration: RegisterViewConfiguration
 

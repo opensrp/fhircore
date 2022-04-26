@@ -18,6 +18,7 @@ package org.smartregister.fhircore.eir.shadow
 
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import java.text.SimpleDateFormat
 import org.hl7.fhir.r4.model.Address
@@ -28,7 +29,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 
 object TestUtils {
-  private val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+  private val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   fun loadQuestionnaire(context: Context, questionnaire: String): Questionnaire {
     val qJson = context.assets.open(questionnaire).bufferedReader().use { it.readText() }

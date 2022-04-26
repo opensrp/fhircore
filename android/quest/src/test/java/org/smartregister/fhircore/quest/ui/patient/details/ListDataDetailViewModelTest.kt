@@ -23,9 +23,12 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -53,7 +56,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
 
   private val patientId = "5583145"
 
-  private lateinit var questPatientDetailViewModel: ListDataDetailViewModel
+  private lateinit var listDataDetailViewModel: ListDataDetailViewModel
   private lateinit var fhirEngine: FhirEngine
 
   @Before
@@ -61,7 +64,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
     hiltRule.inject()
     fhirEngine = mockk()
     Faker.initPatientRepositoryMocks(patientRepository)
-    questPatientDetailViewModel =
+    listDataDetailViewModel =
       ListDataDetailViewModel(
         patientRepository = patientRepository,
         defaultRepository = defaultRepository,
@@ -73,62 +76,62 @@ class ListDataDetailViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetDemographicsShouldFetchPatient() {
-    questPatientDetailViewModel.getDemographicsWithAdditionalData(
+    listDataDetailViewModel.getDemographicsWithAdditionalData(
       patientId,
       mockk { every { valuePrefix } returns "" }
     )
-    val patient = questPatientDetailViewModel.patientItem.value
+    val patient = listDataDetailViewModel.patientItem.value
     Assert.assertNotNull(patient)
     Assert.assertEquals(patientId, patient!!.id)
   }
 
   @Test
   fun testOnMenuItemClickListener() {
-    questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results)
-    Assert.assertNotNull(questPatientDetailViewModel.onMenuItemClicked.value)
+    listDataDetailViewModel.onMenuItemClickListener(R.string.test_results)
+    Assert.assertNotNull(listDataDetailViewModel.onMenuItemClicked.value)
   }
 
   @Test
   fun testOnBackPressed() {
-    questPatientDetailViewModel.onBackPressed(true)
-    Assert.assertNotNull(questPatientDetailViewModel.onBackPressClicked.value)
-    Assert.assertTrue(questPatientDetailViewModel.onBackPressClicked.value!!)
+    listDataDetailViewModel.onBackPressed(true)
+    Assert.assertNotNull(listDataDetailViewModel.onBackPressClicked.value)
+    Assert.assertTrue(listDataDetailViewModel.onBackPressClicked.value!!)
   }
 
   @Test
   fun testOnFormItemClickListener() {
     val questionnaireConfig = mockk<QuestionnaireConfig>()
-    questPatientDetailViewModel.onFormItemClickListener(questionnaireConfig)
-    Assert.assertNotNull(questPatientDetailViewModel.onFormItemClicked.value)
-    Assert.assertEquals(questionnaireConfig, questPatientDetailViewModel.onFormItemClicked.value!!)
+    listDataDetailViewModel.onFormItemClickListener(questionnaireConfig)
+    Assert.assertNotNull(listDataDetailViewModel.onFormItemClicked.value)
+    Assert.assertEquals(questionnaireConfig, listDataDetailViewModel.onFormItemClicked.value!!)
   }
 
   @Test
   fun testOnTestResultItemClickListener() {
     val resultItem = mockk<QuestResultItem>()
-    questPatientDetailViewModel.onTestResultItemClickListener(resultItem)
-    Assert.assertNotNull(questPatientDetailViewModel.onFormTestResultClicked.value)
-    Assert.assertEquals(resultItem, questPatientDetailViewModel.onFormTestResultClicked.value!!)
+    listDataDetailViewModel.onTestResultItemClickListener(resultItem)
+    Assert.assertNotNull(listDataDetailViewModel.onFormTestResultClicked.value)
+    Assert.assertEquals(resultItem, listDataDetailViewModel.onFormTestResultClicked.value!!)
   }
 
   @Test
   fun testGetAllForms() {
-    questPatientDetailViewModel.getAllForms(mockk())
-    Assert.assertNotNull(questPatientDetailViewModel.questionnaireConfigs.value)
-    Assert.assertEquals(2, questPatientDetailViewModel.questionnaireConfigs.value!!.size)
+    listDataDetailViewModel.getAllForms(mockk())
+    Assert.assertNotNull(listDataDetailViewModel.questionnaireConfigs.value)
+    Assert.assertEquals(2, listDataDetailViewModel.questionnaireConfigs.value!!.size)
     Assert.assertEquals(
       "12345",
-      questPatientDetailViewModel.questionnaireConfigs.value!!.first().identifier
+      listDataDetailViewModel.questionnaireConfigs.value!!.first().identifier
     )
     Assert.assertEquals(
       "67890",
-      questPatientDetailViewModel.questionnaireConfigs.value!!.last().identifier
+      listDataDetailViewModel.questionnaireConfigs.value!!.last().identifier
     )
   }
 
   fun testFetchResultNonNullNameShouldReturnNameValue() {
     val result =
-      questPatientDetailViewModel.fetchResultItemLabel(
+      listDataDetailViewModel.fetchResultItemLabel(
         testResult =
           Pair(
             QuestionnaireResponse(),
@@ -146,7 +149,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
   @Test
   fun testFetchResultNullNameShouldReturnTitleValue() {
     val result =
-      questPatientDetailViewModel.fetchResultItemLabel(
+      listDataDetailViewModel.fetchResultItemLabel(
         testResult =
           Pair(
             QuestionnaireResponse(),
@@ -164,7 +167,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
   @Test
   fun testFetchResultNullNameTitleShouldReturnId() {
     val result =
-      questPatientDetailViewModel.fetchResultItemLabel(
+      listDataDetailViewModel.fetchResultItemLabel(
         testResult =
           Pair(
             QuestionnaireResponse(),
@@ -177,5 +180,74 @@ class ListDataDetailViewModelTest : RobolectricTest() {
       )
 
     Assert.assertEquals("1234", result)
+  }
+
+  @Test
+  fun fetchResultItemLabelShouldReturnLocalizedQuestionnaireTitle() {
+    val questionnaire =
+      Questionnaire().apply {
+        titleElement =
+          StringType("Registration").apply {
+            addExtension(
+              Extension().apply {
+                url = "http://hl7.org/fhir/StructureDefinition/translation"
+                addExtension("lang", StringType("sw"))
+                addExtension("content", StringType("Sajili"))
+              }
+            )
+          }
+
+        nameElement =
+          StringType("Registration2").apply {
+            addExtension(
+              Extension().apply {
+                url = "http://hl7.org/fhir/StructureDefinition/translation"
+                addExtension("lang", StringType("sw"))
+                addExtension("content", StringType("Sajili2"))
+              }
+            )
+          }
+      }
+
+    Locale.setDefault(Locale.forLanguageTag("en"))
+    Assert.assertEquals(
+      "Registration",
+      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire))
+    )
+
+    Locale.setDefault(Locale.forLanguageTag("sw"))
+    Assert.assertEquals(
+      "Sajili",
+      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire))
+    )
+  }
+
+  @Test
+  fun fetchResultItemLabelShouldReturnLocalizedQuestionnaireNameWhenTitleIsAbsent() {
+    val questionnaire =
+      Questionnaire().apply {
+        nameElement =
+          StringType("Registration").apply {
+            addExtension(
+              Extension().apply {
+                url = "http://hl7.org/fhir/StructureDefinition/translation"
+                addExtension("lang", StringType("sw"))
+                addExtension("content", StringType("Sajili"))
+              }
+            )
+          }
+      }
+
+    Locale.setDefault(Locale.forLanguageTag("en"))
+    Assert.assertEquals(
+      "Registration",
+      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire))
+    )
+
+    Locale.setDefault(Locale.forLanguageTag("sw"))
+    Assert.assertEquals(
+      "Sajili",
+      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire))
+    )
   }
 }

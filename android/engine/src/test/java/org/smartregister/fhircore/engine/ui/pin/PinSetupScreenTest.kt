@@ -37,6 +37,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 
 @ExperimentalCoroutinesApi
 class PinSetupScreenTest : RobolectricTest() {
@@ -50,6 +51,7 @@ class PinSetupScreenTest : RobolectricTest() {
         fun onPinChanged() {}
         fun onPinConfirmed() {}
         fun onMenuSettingsClicked() {}
+        fun onMenuLoginClicked(value: String) {}
       }
     )
 
@@ -82,9 +84,11 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+        onMenuLoginClicked = {
+          listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
+        },
         setPinEnabled = false,
-        inputPin = "",
-        appLogoResFile = "ic_liberia"
+        inputPin = ""
       )
     }
 
@@ -107,15 +111,51 @@ class PinSetupScreenTest : RobolectricTest() {
   }
 
   @Test
+  fun testPinSetupPageLogin() {
+    composeRule.setContent {
+      PinSetupPage(
+        onPinChanged = { listenerObjectSpy.onPinChanged() },
+        onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
+        onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+        onMenuLoginClicked = {
+          listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
+        },
+        setPinEnabled = false,
+        inputPin = ""
+      )
+    }
+
+    composeRule.onNodeWithTag(PIN_VIEW).assertExists()
+
+    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).assertExists()
+    composeRule.onNodeWithTag(PIN_SET_PIN_CONFIRM_BUTTON).assertHasClickAction()
+
+    composeRule.onNodeWithTag(PIN_TOOLBAR_TITLE).assertExists()
+    composeRule.onNodeWithTag(PIN_TOOLBAR_MENU_BUTTON).assertHasClickAction().performClick()
+    composeRule.onNodeWithTag(PIN_TOOLBAR_MENU).assertIsDisplayed()
+
+    composeRule
+      .onNodeWithTag(PIN_TOOLBAR_MENU)
+      .onChildAt(1)
+      .assertTextEquals(application.getString(R.string.pin_menu_login))
+      .assertHasClickAction()
+      .performClick()
+
+    verify { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP) }
+  }
+
+  @Test
   fun testPinSetupPageSetPinButtonEnabled() {
     composeRule.setContent {
       PinSetupPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
+        onMenuLoginClicked = {
+          listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
+        },
         setPinEnabled = true,
-        inputPin = "0000",
-        appLogoResFile = "ic_logo_g6pd"
+        inputPin = "0000"
       )
     }
 

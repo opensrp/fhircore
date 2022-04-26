@@ -12,13 +12,13 @@ apply from: '../jacoco.gradle'
 
 android {
 
-    compileSdkVersion 30
+    compileSdkVersion sdk_versions.compile_sdk
     dataBinding {
         enabled true
     }
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdkVersion sdk_versions.min_sdk
+        targetSdkVersion sdk_versions.target_sdk
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
@@ -33,19 +33,19 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-        coreLibraryDesugaringEnabled true
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_11.toString()
+        freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
     buildFeatures {
         compose true
         viewBinding true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.0.1'
+        kotlinCompilerExtensionVersion '1.1.1'
     }
 
     //CQL
@@ -96,22 +96,22 @@ android {
 
 dependencies {
 
-    implementation 'androidx.preference:preference-ktx:1.1.1'
+    implementation 'androidx.preference:preference-ktx:1.2.0'
     coreLibraryDesugaring deps.desugar
 
-    implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-rc02"
-    implementation 'androidx.fragment:fragment-ktx:1.3.6'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0"
+    implementation 'androidx.fragment:fragment-ktx:1.4.1'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation "androidx.cardview:cardview:1.0.0"
     implementation 'joda-time:joda-time:2.10.6'
-    implementation 'androidx.paging:paging-runtime-ktx:3.0.1'
+    implementation 'androidx.paging:paging-runtime-ktx:3.1.1'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     implementation 'id.zelory:compressor:3.0.1'
 
@@ -125,19 +125,30 @@ dependencies {
     implementation 'org.opencds.cqf.cql:evaluator:1.3.1-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.builder:1.3.1-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.dagger:1.3.1-SNAPSHOT'
+    api('org.smartregister:workflow:0.1.0-alpha02-preview-SNAPSHOT') {
+        transitive = true
+        exclude group: 'xerces'
+        exclude group: 'com.github.java-json-tools'
+        exclude group: 'org.codehaus.woodstox'
+        exclude group: 'ca.uhn.hapi.fhir'
+        exclude group: 'org.opencds.cqf.cql'
+        exclude group: 'com.google.android.fhir', module: 'common'
+//        exclude group: 'com.google.android.fhir', module: 'engine'
+        exclude group: 'org.smartregister', module: 'engine'
+    }
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
-    api 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
-    api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
+    api 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
+    api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
 
     // P2P dependency
     implementation project(":p2p-lib")
 
     //Configure Jetpack Compose
-    def composeVersion = "1.0.5"
+    def composeVersion = "1.1.1"
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
     api("androidx.compose.foundation:foundation:$composeVersion")
@@ -145,12 +156,15 @@ dependencies {
     api("androidx.compose.material:material-icons-core:$composeVersion")
     api("androidx.compose.material:material-icons-extended:$composeVersion")
     api("androidx.compose.runtime:runtime-livedata:$composeVersion")
-    api("androidx.paging:paging-compose:1.0.0-alpha12")
-    api("androidx.activity:activity-compose:1.3.1")
+    api("androidx.navigation:navigation-compose:2.5.0-alpha03")
+    api ("androidx.hilt:hilt-navigation-compose:1.0.0")
+    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0-alpha04")
+    api("androidx.paging:paging-compose:1.0.0-alpha14")
+    api("androidx.activity:activity-compose:1.4.0")
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
-    api("androidx.work:work-runtime-ktx:2.3.4")
+    api("androidx.work:work-runtime-ktx:2.7.1")
 
-    def coroutineVersion = '1.5.1'
+    def coroutineVersion = '1.6.0'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     api('org.smartregister:data-capture:0.1.0-beta02-preview4-SNAPSHOT') {
@@ -180,7 +194,7 @@ dependencies {
     }
 
     api 'com.google.code.gson:gson:2.8.7'
-    api 'com.jakewharton.timber:timber:5.0.0'
+    api 'com.jakewharton.timber:timber:5.0.1'
 
     def retrofitVersion = '2.9.0'
 
@@ -209,7 +223,6 @@ dependencies {
     testImplementation deps.mockk
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'

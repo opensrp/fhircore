@@ -1,0 +1,16 @@
+//FHIR CORE CREDENTIALS
+ext.props = new Properties()
+
+def fhirAuthArray = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
+if (rootProject.file("local.properties").exists()) {
+    props.load(rootProject.file("local.properties").newDataInputStream())
+
+    fhirAuthArray.each { prop ->
+        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
+    }
+} else {
+    println("local.properties does not exist. The following values are required " + fhirAuthArray.join(", "))
+    fhirAuthArray.each { prop ->
+        project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
+    }
+}

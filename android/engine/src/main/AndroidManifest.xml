@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.smartregister.fhircore.engine">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission
         android:name="android.permission.AUTHENTICATE_ACCOUNTS"
         android:maxSdkVersion="21" />
@@ -18,6 +20,25 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application>
-        <activity android:name=".HiltActivityForTest" android:theme="@style/AppTheme" />
+
+        <activity
+            android:name=".ui.appsetting.AppSettingActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ui.login.LoginActivity" />
+        <activity android:name=".ui.pin.PinLoginActivity" />
+        <activity android:name=".ui.pin.PinSetupActivity" />
+        <activity
+            android:name=".ui.questionnaire.QuestionnaireActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".HiltActivityForTest"
+            android:theme="@style/AppTheme" />
+
     </application>
 </manifest>

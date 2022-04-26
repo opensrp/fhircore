@@ -42,6 +42,7 @@ import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -100,7 +101,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToLoginShouldVerifyExpectedIntent() {
-    pinLoginActivity.pinViewModel.onMenuLoginClicked()
+    pinLoginActivity.pinViewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME)
     val expectedIntent = Intent(pinLoginActivity, LoginActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)

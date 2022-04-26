@@ -25,7 +25,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.Before
 import org.mockito.Mock
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
@@ -56,7 +55,6 @@ internal class SyncBroadcasterTest {
 
   @Mock private lateinit var fhirResourceService: FhirResourceService
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
-  private lateinit var configurationRegistry: ConfigurationRegistry
   @Mock private lateinit var configService: ConfigService
   @Mock private lateinit var context: Context
   @Mock private lateinit var syncJob: SyncJob
@@ -71,11 +69,10 @@ internal class SyncBroadcasterTest {
   fun setup() {
     fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
     sharedPreferencesHelper = SharedPreferencesHelper(context)
-    configurationRegistry = ConfigurationRegistry(context, sharedPreferencesHelper, configService)
     syncBroadcaster =
       SyncBroadcaster(
         fhirResourceDataSource,
-        configurationRegistry,
+        configService,
         syncJob,
         fhirEngine,
         sharedSyncStatus,

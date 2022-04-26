@@ -47,6 +47,8 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -106,16 +108,34 @@ constructor(
 
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
-      withContext(dispatcherProvider.io()) {
-        AssetUtil.decodeAsset<List<QuestionnaireConfig>>(
-          fileName = QuestionnaireActivity.FORM_CONFIGURATIONS,
-          context = context
+      loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
+    return loadConfig!!.first { it.form == form }
+  }
+
+  private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
+    return kotlin
+      .runCatching {
+        configurationRegistry.retrieveConfiguration<FormConfiguration>(
+          AppConfigClassification.FORMS
         )
       }
-
-    val appId = configurationRegistry.appId
-    return loadConfig.associateBy { it.appId + it.form }.getValue(appId + form)
+      .getOrNull()
+      ?.forms
   }
+
+  private suspend fun loadQuestionnaireConfigFromAssets(
+    context: Context
+  ): List<QuestionnaireConfig>? =
+    kotlin
+      .runCatching {
+        withContext(dispatcherProvider.io()) {
+          AssetUtil.decodeAsset<List<QuestionnaireConfig>>(
+            fileName = QuestionnaireActivity.FORM_CONFIGURATIONS,
+            context = context
+          )
+        }
+      }
+      .getOrNull()
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null

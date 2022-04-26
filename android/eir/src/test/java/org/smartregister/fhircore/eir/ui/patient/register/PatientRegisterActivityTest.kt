@@ -24,18 +24,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
-import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
 import org.junit.Assert
@@ -49,9 +47,9 @@ import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.eir.fake.Faker
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
@@ -64,19 +62,15 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientRegisterActivity: PatientRegisterActivity
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("covax", mockk())
   @Before
   fun setUp() {
     mockkObject(Sync)
 
-    val accountAuthenticator = mockk<AccountAuthenticator>()
-    every { accountAuthenticator.launchLoginScreen() } just runs
-
     hiltAndroidRule.inject()
 
-    configurationRegistry.appId = "covax"
-    configurationRegistry.loadAppConfigurations("covax", accountAuthenticator) {}
     patientRegisterActivity =
       Robolectric.buildActivity(PatientRegisterActivity::class.java).create().get()
   }

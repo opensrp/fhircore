@@ -16,64 +16,81 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.ui.test.onNodeWithText
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.Assert
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
 class ReportResultPageTest : RobolectricTest() {
 
-  private lateinit var viewModel: ReportViewModel
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val composeRule = createComposeRule()
-  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
-  private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Report Result Title"))
-  private val patientSelectionType = MutableLiveData("")
-  private val selectedPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
-  private val resultForIndividual =
-    MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
-  private val resultForPopulation = MutableLiveData(listOf(ResultItemPopulation()))
+
+  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule(order = 3) val coroutinesTestRule = CoroutineTestRule()
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  private lateinit var viewModel: ReportViewModel
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    val fhirEngine = mockk<FhirEngine>(relaxed = true)
+    val fhirOperatorDecorator = mockk<FhirOperatorDecorator>(relaxed = true)
+    val reportRepository = mockk<ReportRepository>()
+    val ancPatientRepository = mockk<PatientRepository>()
     viewModel =
-      mockk {
-        every { selectedMeasureReportItem } returns this@ReportResultPageTest.testMeasureReportItem
-        every { isReadyToGenerateReport } returns MutableLiveData(true)
-        every { startDate } returns MutableLiveData("")
-        every { endDate } returns MutableLiveData("")
-        every { patientSelectionType } returns this@ReportResultPageTest.patientSelectionType
-        every { selectedPatientItem } returns this@ReportResultPageTest.selectedPatient
-        every { getSelectedPatient() } returns this@ReportResultPageTest.selectedPatient
-        every { resultForIndividual } returns this@ReportResultPageTest.resultForIndividual
-        every { resultForPopulation } returns this@ReportResultPageTest.resultForPopulation
-      }
+      spyk(
+        ReportViewModel(
+          repository = reportRepository,
+          dispatcher = coroutinesTestRule.testDispatcherProvider,
+          patientRepository = ancPatientRepository,
+          fhirEngine = fhirEngine,
+          fhirOperatorDecorator = fhirOperatorDecorator,
+          sharedPreferencesHelper = sharedPreferencesHelper
+        )
+      )
+  }
+
+  @After
+  fun tearDown() {
+    viewModel.resetValues()
   }
 
   @Test
   fun testReportResultScreen() {
+    viewModel.selectedMeasureReportItem.value = ReportItem(title = "Report Result Title")
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
     // toolbar should have valid title and icon
-    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("Report Result Title")
+    composeRule.onNodeWithText("Report Result Title").assertExists()
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
 
@@ -86,7 +103,6 @@ class ReportResultPageTest : RobolectricTest() {
         reportMeasureItem = ReportItem(),
         startDate = "",
         endDate = "",
-        isAllPatientSelection = true,
         selectedPatient = PatientItem(),
         resultForIndividual = ResultItem(),
         resultItemPopulation = emptyList()
@@ -101,9 +117,16 @@ class ReportResultPageTest : RobolectricTest() {
   @Test
   fun testResultItemIndividual() {
     composeRule.setContent { ResultItemIndividual(selectedPatient = PatientItem()) }
-    Assert.assertEquals(resultForIndividual, viewModel.resultForIndividual)
     composeRule.onNodeWithTag(REPORT_RESULT_ITEM_INDIVIDUAL).assertExists()
     composeRule.onNodeWithTag(REPORT_RESULT_PATIENT_DATA).assertExists()
+  }
+
+  @Test
+  fun testResultItemIndividualWithIndicator() {
+    composeRule.setContent {
+      ResultItemIndividual(selectedPatient = PatientItem(), indicatorDescription = "show")
+    }
+    composeRule.onNodeWithTag(INDICATOR_TEXT).assertExists()
   }
 
   @Test
@@ -120,7 +143,7 @@ class ReportResultPageTest : RobolectricTest() {
 
   @Test
   fun testResultPopulation() {
-    composeRule.setContent { ResultPopulationItem(ResultItem()) }
+    composeRule.setContent { ResultPopulationItem(ResultItem(percentage = "10")) }
     composeRule.onNodeWithTag(REPORT_RESULT_POPULATION_ITEM).assertExists()
   }
 }

@@ -24,7 +24,9 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import org.smartregister.fhircore.engine.ui.register.model.Language
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
@@ -39,28 +41,21 @@ class UserProfileFragment : Fragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    return ComposeView(requireContext()).apply {
-      setContent { AppTheme { UserProfileScreen(userProfileViewModel) } }
-    }
+    return ComposeView(requireContext()).apply { setContent { AppTheme { UserProfileScreen() } } }
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-    userProfileViewModel.onLogout.observe(
-      viewLifecycleOwner,
-      { shouldLogout: Boolean? ->
-        if (shouldLogout != null && !shouldLogout) requireActivity().finish()
-      }
-    )
+    userProfileViewModel.onLogout.observe(viewLifecycleOwner) { shouldLogout: Boolean? ->
+      if (shouldLogout != null && shouldLogout)
+        AlertDialogue.showProgressAlert(requireActivity(), R.string.logging_out)
+    }
 
-    userProfileViewModel.language.observe(
-      viewLifecycleOwner,
-      { language: Language? ->
-        if (language == null) return@observe
+    userProfileViewModel.language.observe(viewLifecycleOwner) { language: Language? ->
+      if (language == null) return@observe
 
-        setLanguageAndRefresh(language)
-      }
-    )
+      setLanguageAndRefresh(language)
+    }
   }
 
   fun setLanguageAndRefresh(language: Language) {

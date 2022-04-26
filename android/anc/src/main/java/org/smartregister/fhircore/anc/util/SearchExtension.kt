@@ -50,8 +50,8 @@ fun Search.filterBy(filter: SearchFilter) {
       filter(
         StringClientParam(filter.key),
         {
-          modifier = StringFilterModifier.MATCHES_EXACTLY
-          value = filter.valueString!!
+          this.modifier = StringFilterModifier.MATCHES_EXACTLY
+          this.value = filter.valueString!!
         }
       )
     else ->

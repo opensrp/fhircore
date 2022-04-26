@@ -1,0 +1,47 @@
+{
+  "defaultFeatures": [
+    {
+      "name": "PatientManagement",
+      "active": true,
+      "settings": {}
+    }
+  ],
+  "healthModules": [
+    {
+      "healthModule": "RDT",
+      "active": false
+    },
+    {
+      "healthModule": "CHW",
+      "active": true,
+      "features": [
+        {
+          "name": "Referral",
+          "active": true,
+          "settings": {}
+        }
+      ]
+    },
+    {
+      "healthModule": "ANC",
+      "active": true,
+      "features": [
+        {
+          "name": "InAppReporting",
+          "active": true,
+          "settings": {
+            "dailyTallies": false
+          }
+        }
+      ]
+    },
+    {
+      "healthModule": "PNC",
+      "active": false
+    },
+    {
+      "healthModule": "EIR",
+      "active": false
+    }
+  ]
+}

@@ -23,8 +23,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
-import io.mockk.spyk
-import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
@@ -33,17 +31,15 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.smartregister.fhircore.eir.EirApplication
-import org.smartregister.fhircore.eir.EirConfigService
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
+import org.smartregister.fhircore.eir.fake.Faker
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
 @HiltAndroidTest
@@ -53,20 +49,12 @@ class PatientRegisterFragmentTest : RobolectricTest() {
 
   @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
   @BindValue
-  val configService: ConfigService = EirConfigService(ApplicationProvider.getApplicationContext())
-  @BindValue
-  val configurationRegistry: ConfigurationRegistry =
-    spyk(ConfigurationRegistry(ApplicationProvider.getApplicationContext(), mockk(), configService))
-
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("covax", mockk())
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-
-    configurationRegistry.appId = "covax"
-    configurationRegistry.loadAppConfigurations("covax", accountAuthenticator) {}
 
     registerFragment = PatientRegisterFragment()
     val registerActivity =

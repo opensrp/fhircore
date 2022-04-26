@@ -1,0 +1,12 @@
+{
+  "appId": "quest",
+  "classification": "application",
+  "theme": "QuestDefault",
+  "languages": [
+    "en",
+    "sw"
+  ],
+  "applicationName": "Quest",
+  "appLogoIconResourceFile": "ic_liberia",
+  "count": "100"
+}

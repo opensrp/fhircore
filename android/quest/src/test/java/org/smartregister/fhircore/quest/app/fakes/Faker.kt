@@ -17,24 +17,34 @@
 package org.smartregister.fhircore.quest.app.fakes
 
 import io.mockk.coEvery
+import io.mockk.mockk
+import io.mockk.spyk
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest.Companion.readFile
 
 object Faker {
 
@@ -143,5 +153,38 @@ object Faker {
     coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
     coEvery { patientRepository.fetchTestForms(any()) } returns emptyList()
     coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns emptyList()
+  }
+
+  fun loadTestConfigurationRegistryData(
+    appId: String,
+    defaultRepository: DefaultRepository,
+    configurationRegistry: ConfigurationRegistry
+  ) {
+    val composition =
+      "/configs/$appId/config_composition.json".readFile().decodeResourceFromString() as Composition
+    coEvery { defaultRepository.searchCompositionByIdentifier(appId) } returns composition
+
+    coEvery { defaultRepository.getBinary(any()) } answers
+      {
+        val section =
+          composition.section.first { it.focus.extractId() == this.args.first().toString() }
+        Binary().apply {
+          content =
+            "/configs/$appId/config_${section.focus.identifier.value}.json".readFile().toByteArray()
+        }
+      }
+
+    runBlocking { configurationRegistry.loadConfigurations(appId) {} }
+  }
+
+  fun buildTestConfigurationRegistry(
+    appId: String,
+    defaultRepository: DefaultRepository
+  ): ConfigurationRegistry {
+    val configurationRegistry = spyk(ConfigurationRegistry(mockk(), mockk(), defaultRepository))
+
+    loadTestConfigurationRegistryData(appId, defaultRepository, configurationRegistry)
+
+    return configurationRegistry
   }
 }

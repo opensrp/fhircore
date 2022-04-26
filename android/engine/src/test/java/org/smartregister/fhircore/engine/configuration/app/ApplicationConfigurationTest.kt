@@ -31,7 +31,8 @@ class ApplicationConfigurationTest {
         languages = listOf("en"),
         syncInterval = 15,
         applicationName = "Test App",
-        appLogoIconResourceFile = "ic_launcher"
+        appLogoIconResourceFile = "ic_launcher",
+        count = "100"
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
     Assert.assertEquals("classification", applicationConfiguration.classification)
@@ -39,6 +40,7 @@ class ApplicationConfigurationTest {
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
     Assert.assertEquals("Test App", applicationConfiguration.applicationName)
     Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
+    Assert.assertEquals("100", applicationConfiguration.count)
   }
 
   @Test
@@ -51,7 +53,8 @@ class ApplicationConfigurationTest {
         languages = listOf("en"),
         syncInterval = 15,
         applicationName = "Test App",
-        appLogoIconResourceFile = "ic_launcher"
+        appLogoIconResourceFile = "ic_launcher",
+        count = "100"
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
     Assert.assertEquals("classification", applicationConfiguration.classification)
@@ -59,5 +62,6 @@ class ApplicationConfigurationTest {
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
     Assert.assertEquals("Test App", applicationConfiguration.applicationName)
     Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
+    Assert.assertEquals("100", applicationConfiguration.count)
   }
 }

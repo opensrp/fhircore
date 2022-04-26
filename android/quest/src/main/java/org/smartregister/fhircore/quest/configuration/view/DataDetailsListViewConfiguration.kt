@@ -24,12 +24,12 @@ import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 @Stable
 @Serializable
 data class DataDetailsListViewConfiguration(
-  override val appId: String,
-  override val classification: String,
+  override val appId: String = "",
+  override val classification: String = "",
   val contentTitle: String = "Content Title",
   val valuePrefix: String = "Value Prefix",
   val dataRowClickable: Boolean = true,
-  val dynamicRows: List<List<Filter>>,
+  val dynamicRows: List<List<Filter>> = listOf(),
   val questionnaireFilter: SearchFilter? = null,
   val questionnaireFieldsFilter: List<QuestionnaireItemFilter> = listOf()
 ) : Configuration

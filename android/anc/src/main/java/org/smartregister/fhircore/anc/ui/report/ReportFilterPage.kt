@@ -27,20 +27,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.anc.R
@@ -50,28 +49,64 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 @Composable
 fun ReportFilterPage(
   topBarTitle: String,
-  onBackPress: () -> Unit,
+  onBackPress: (ReportViewModel.ReportScreen) -> Unit,
   startDate: String,
   endDate: String,
-  onStartDatePress: () -> Unit,
-  onEndDatePress: () -> Unit,
-  patientSelectionText: String,
-  onPatientSelectionTypeChanged: (String) -> Unit,
-  generateReportEnabled: Boolean,
-  onGenerateReportPress: () -> Unit,
-  selectedPatient: PatientItem?
+  onDateRangeClick: () -> Unit,
+  selectedPatient: PatientItem?,
+  reportType: String,
+  onReportTypeSelected: (String, Boolean) -> Unit,
+  generateReport: Boolean,
+  onGenerateReportClicked: () -> Unit,
+  showProgressIndicator: Boolean = false
 ) {
+
   Surface(color = colorResource(id = R.color.white)) {
     Column(modifier = Modifier.fillMaxSize().testTag(REPORT_FILTER_PAGE)) {
-      TopBarBox(topBarTitle, onBackPress)
-      Box(modifier = Modifier.padding(16.dp)) {
-        Column {
-          DateSelectionBox(startDate, endDate, true, onStartDatePress, onEndDatePress)
-          Spacer(modifier = Modifier.size(16.dp))
-          PatientSelectionBox(patientSelectionText, selectedPatient, onPatientSelectionTypeChanged)
-          Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-              GenerateReportButton(generateReportEnabled, onGenerateReportPress)
+      TopBarBox(topBarTitle) { onBackPress(ReportViewModel.ReportScreen.HOME) }
+      Box(modifier = Modifier.padding(16.dp).fillMaxSize(), contentAlignment = Alignment.Center) {
+        if (showProgressIndicator) {
+          Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.testTag(PROGRESS_BAR_COLUMN)
+          ) {
+            CircularProgressIndicator(
+              modifier = Modifier.size(40.dp).testTag(PROGRESS_BAR),
+              strokeWidth = 2.dp
+            )
+            Text(
+              text = stringResource(R.string.please_wait),
+              textAlign = TextAlign.Center,
+              modifier = Modifier.padding(vertical = 16.dp).testTag(PROGRESS_BAR_TEXT)
+            )
+          }
+        } else {
+          Column {
+            DateSelectionBox(
+              startDate = startDate,
+              endDate = endDate,
+              canChange = true,
+              onDateRangeClick = onDateRangeClick,
+            )
+            Spacer(modifier = Modifier.size(32.dp))
+            PatientSelectionBox(
+              radioOptions =
+                listOf(
+                  Pair(stringResource(R.string.all), false),
+                  Pair(stringResource(R.string.individual), true)
+                ),
+              selectedPatient = selectedPatient,
+              reportType = reportType,
+              onReportTypeSelected = onReportTypeSelected
+            )
+            Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
+              Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+                GenerateReportButton(
+                  generateReportEnabled = generateReport,
+                  onGenerateReportClicked = onGenerateReportClicked
+                )
+              }
             }
           }
         }
@@ -82,27 +117,26 @@ fun ReportFilterPage(
 
 @Composable
 fun ReportFilterScreen(viewModel: ReportViewModel) {
-
-  val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
-  val patientSelectionType by remember { mutableStateOf(viewModel.patientSelectionType.value) }
-  val generateReportEnabled by remember { mutableStateOf(viewModel.isReadyToGenerateReport.value) }
-  val selectedPatient by remember { mutableStateOf(viewModel.getSelectedPatient().value) }
+  val reportMeasureItem by viewModel.selectedMeasureReportItem.observeAsState(null)
+  val selectedPatient by viewModel.getSelectedPatient().observeAsState(initial = null)
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
-  val homeActivity = LocalContext.current
+  val reportType by viewModel.currentReportType.observeAsState("")
+  val generateReport by viewModel.generateReport.observeAsState(false)
+  val showProgressIndicator by viewModel.showProgressIndicator.observeAsState(false)
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
-    onBackPress = viewModel::onBackPressFromFilter,
+    onBackPress = viewModel::onBackPress,
     startDate = startDate,
     endDate = endDate,
-    onStartDatePress = viewModel::onStartDatePress,
-    onEndDatePress = viewModel::onEndDatePress,
-    patientSelectionText = patientSelectionType ?: "All",
-    onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
-    generateReportEnabled = generateReportEnabled ?: true,
-    onGenerateReportPress = viewModel::auxGenerateReport,
-    selectedPatient = selectedPatient
+    onDateRangeClick = viewModel::onDateRangeClick,
+    selectedPatient = selectedPatient,
+    generateReport = generateReport,
+    onGenerateReportClicked = viewModel::onGenerateReportClicked,
+    reportType = reportType,
+    onReportTypeSelected = viewModel::onReportTypeSelected,
+    showProgressIndicator = showProgressIndicator
   )
 }
 
@@ -111,9 +145,14 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
 @ExcludeFromJacocoGeneratedReport
 fun PreviewPatientSelectionAll() {
   PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
-    onPatientSelectionChange = {},
-    selectedPatient = PatientItem()
+    radioOptions =
+      listOf(
+        Pair(stringResource(R.string.all), false),
+        Pair(stringResource(R.string.individual), true)
+      ),
+    reportType = "Individual",
+    onReportTypeSelected = { _, _ -> },
+    selectedPatient = null
   )
 }
 
@@ -122,8 +161,13 @@ fun PreviewPatientSelectionAll() {
 @ExcludeFromJacocoGeneratedReport
 fun PreviewPatientSelectionIndividual() {
   PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.INDIVIDUAL,
-    onPatientSelectionChange = {},
+    radioOptions =
+      listOf(
+        Pair(stringResource(R.string.all), false),
+        Pair(stringResource(R.string.individual), true)
+      ),
+    reportType = "All",
+    onReportTypeSelected = { _, _ -> },
     selectedPatient = PatientItem(name = "Ind Patient Item")
   )
 }
@@ -137,13 +181,13 @@ fun ReportFilterPreview() {
     onBackPress = {},
     startDate = "StartDate",
     endDate = "EndDate",
-    onStartDatePress = {},
-    onEndDatePress = {},
-    patientSelectionText = "ALL",
-    onPatientSelectionTypeChanged = {},
-    generateReportEnabled = false,
-    onGenerateReportPress = {},
-    selectedPatient = PatientItem()
+    onDateRangeClick = {},
+    selectedPatient = PatientItem(),
+    generateReport = true,
+    onGenerateReportClicked = {},
+    onReportTypeSelected = { _, _ -> },
+    reportType = "All",
+    showProgressIndicator = false
   )
 }
 

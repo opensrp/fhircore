@@ -47,19 +47,27 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
 
 fun Base?.valueToString(): String {
-  return if (this == null) return ""
-  else if (this.isDateTime) (this as BaseDateTimeType).value.makeItReadable()
-  else if (this.isPrimitive) (this as PrimitiveType<*>).asStringValue()
-  else if (this is Coding) this.display ?: code
-  else if (this is CodeableConcept) this.stringValue()
-  else if (this is Quantity) this.value.toPlainString()
-  else if (this is Timing)
-    this.repeat.let {
-      it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
-    }
-  else if (this is HumanName) "${this.given.firstOrNull().valueToString()} ${this.family}"
-  else this.toString()
+  return when {
+    this == null -> return ""
+    this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable()
+    this.isPrimitive -> (this as PrimitiveType<*>).asStringValue()
+    this is Coding -> this.display ?: code
+    this is CodeableConcept -> this.stringValue()
+    this is Quantity -> this.value.toPlainString()
+    this is Timing ->
+      this.repeat.let {
+        it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
+      }
+    this is HumanName -> "${this.given.firstOrNull().valueToString()} ${this.family}"
+    else -> this.toString()
+  }
 }
+
+fun Coding.asCodeableConcept() =
+  CodeableConcept().apply {
+    addCoding(this@asCodeableConcept)
+    text = this@asCodeableConcept.display
+  }
 
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code

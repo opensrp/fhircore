@@ -20,16 +20,19 @@ import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
@@ -38,6 +41,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -45,11 +49,11 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -74,8 +78,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue var configurationRegistry: ConfigurationRegistry = mockk()
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -84,7 +87,9 @@ class PatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
+
+    every { configurationRegistry.appId } returns "quest"
+
     repository =
       PatientRepository(
         fhirEngine,
@@ -347,7 +352,7 @@ class PatientRepositoryTest : RobolectricTest() {
       )
     }
     with(data.data[0]) {
-      Assert.assertEquals("Questionnaire Name", this[0].value)
+      Assert.assertEquals("Questionnaire Title", this[0].value)
       Assert.assertEquals(" (${today.asDdMmmYyyy()})", this[1].value)
     }
 
@@ -545,5 +550,62 @@ class PatientRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.search<MedicationRequest>(any()) }
 
     Assert.assertEquals("mr1", result.first().logicalId)
+  }
+
+  @Test
+  fun fetchResultItemLabelShouldReturnLocalizedQuestionnaireTitle() {
+    val questionnaire =
+      Questionnaire().apply {
+        titleElement =
+          StringType("Registration").apply {
+            addExtension(
+              Extension().apply {
+                url = "http://hl7.org/fhir/StructureDefinition/translation"
+                addExtension("lang", StringType("sw"))
+                addExtension("content", StringType("Sajili"))
+              }
+            )
+          }
+
+        nameElement =
+          StringType("Registration2").apply {
+            addExtension(
+              Extension().apply {
+                url = "http://hl7.org/fhir/StructureDefinition/translation"
+                addExtension("lang", StringType("sw"))
+                addExtension("content", StringType("Sajili2"))
+              }
+            )
+          }
+      }
+
+    Locale.setDefault(Locale.forLanguageTag("en"))
+    Assert.assertEquals("Registration", repository.fetchResultItemLabel(questionnaire))
+
+    Locale.setDefault(Locale.forLanguageTag("sw"))
+    Assert.assertEquals("Sajili", repository.fetchResultItemLabel(questionnaire))
+  }
+
+  @Test
+  fun fetchResultItemLabelShouldReturnLocalizedQuestionnaireNameWhenTitleIsAbsent() {
+    val questionnaire =
+      Questionnaire().apply {
+        nameElement =
+          StringType("Registration").apply {
+            addExtension(
+              Extension().apply {
+                url = "http://hl7.org/fhir/StructureDefinition/translation"
+                addExtension("lang", StringType("sw"))
+                addExtension("content", StringType("Sajili"))
+              }
+            )
+          }
+      }
+
+    Locale.setDefault(Locale.forLanguageTag("en"))
+    Assert.assertEquals("Registration", repository.fetchResultItemLabel(questionnaire))
+
+    Locale.setDefault(Locale.forLanguageTag("sw"))
+    Assert.assertEquals("Sajili", repository.fetchResultItemLabel(questionnaire))
   }
 }

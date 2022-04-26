@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -30,7 +31,10 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.util.Date
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
@@ -188,5 +192,36 @@ class DefaultRepositoryTest : RobolectricTest() {
     verify { resource.generateMissingId() }
 
     unmockkStatic(Resource::generateMissingId)
+  }
+
+  @Test
+  fun testSearchCompositionByIdentifier() = runBlockingTest {
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(Composition().apply { id = "123" })
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    val result = defaultRepository.searchCompositionByIdentifier("appId")
+
+    coVerify { fhirEngine.search<Composition>(any()) }
+
+    Assert.assertEquals("123", result!!.logicalId)
+  }
+
+  @Test
+  fun testGetBinaryResource() = runBlockingTest {
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.load(Binary::class.java, any()) } returns Binary().apply { id = "111" }
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    val result = defaultRepository.getBinary("111")
+
+    coVerify { fhirEngine.load(Binary::class.java, any()) }
+
+    Assert.assertEquals("111", result.logicalId)
   }
 }

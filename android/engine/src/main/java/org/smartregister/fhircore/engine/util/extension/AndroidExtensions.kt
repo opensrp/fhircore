@@ -28,6 +28,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import timber.log.Timber
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
@@ -56,15 +57,35 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   } catch (e: Exception) {
     Timber.e(e)
   }
+
+  if (Build.VERSION.SDK_INT <= 23) {
+    Locale.setDefault(Locale(languageTag))
+  }
+
   return configuration
 }
 
 fun Context.getDrawable(name: String): Drawable {
   var resourceId = this.resources.getIdentifier(name, "drawable", packageName)
-  if (resourceId == 0) resourceId = R.drawable.ic_default_logo
+  if (resourceId == 0) resourceId = R.drawable.ic_app_logo
   return ContextCompat.getDrawable(this, resourceId)!!
 }
 
 fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
   return values.any { this == it }
+}
+
+inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
+  questionnaireId: String,
+  clientIdentifier: String? = null
+) {
+  this.startActivity(
+    Intent(this, Q::class.java)
+      .putExtras(
+        QuestionnaireActivity.intentArgs(
+          clientIdentifier = clientIdentifier,
+          formName = questionnaireId
+        )
+      )
+  )
 }

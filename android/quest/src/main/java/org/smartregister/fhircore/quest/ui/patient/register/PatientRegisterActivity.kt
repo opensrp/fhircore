@@ -21,37 +21,32 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
-import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
+import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
-import org.smartregister.fhircore.quest.configuration.view.P2PSyncNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity.Companion.CLASSIFICATION_ARG
 import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
-import org.smartregister.p2p.sync.DataType
-import org.smartregister.p2p.utils.startP2PScreen
-import javax.inject.Inject
-
+import timber.log.Timber
 
 @AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
-
-  @Inject lateinit var p2PSenderTransferDao: P2PSenderTransferDao
+  @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -63,10 +58,23 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       )
     configureViews(registerViewConfiguration)
 
-    // TODO: REmove this test code
-/*    GlobalScope.launch(Dispatchers.IO) {
-      p2PSenderTransferDao.getJsonData(DataType(P2PConstants.P2PDataTypes.QUESTIONNAIRE, DataType.Filetype.JSON, 1), 0, 20)
-    }*/
+    Timber.e("I M HEREEEEEEEEEEEEEEEEEEEEEEEEEEE")
+    with(registerViewModel.configService) {
+      if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
+        this.schedulePlan(this@PatientRegisterActivity)
+      else this.unschedulePlan(this@PatientRegisterActivity)
+    }
+
+    // TODO move to where required.. Elly
+    runBlocking {
+      fhirTaskGenerator.generateCarePlan(
+        "105121",
+        Patient().apply {
+          birthDate = DateTimeType.now().value
+          id = "327378278"
+        }
+      )
+    }
   }
 
   override fun onBottomNavigationOptionItemSelected(
@@ -89,10 +97,6 @@ class PatientRegisterActivity : BaseRegisterActivity() {
               Intent(this, QuestionnaireDataDetailActivity::class.java).apply {
                 putExtra(CLASSIFICATION_ARG, action.classification)
               }
-            )
-          }
-          is P2PSyncNavigationAction -> {
-            startP2PScreen(this
             )
           }
         }
@@ -118,9 +122,4 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         isSelected = true
       )
     )
-
- /* override fun registerClient(clientIdentifier: String?) {
-    startP2PScreen(this
-    )
-  }*/
 }

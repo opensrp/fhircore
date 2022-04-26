@@ -70,5 +70,6 @@ class SharedPreferencesHelper @Inject constructor(@ApplicationContext val contex
     const val LANG = "shared_pref_lang"
     const val THEME = "shared_pref_theme"
     const val PREFS_NAME = "params"
+    const val MEASURE_RESOURCES_LOADED = "measure_resources_loaded"
   }
 }

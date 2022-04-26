@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.ui.userprofile
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.State
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -28,8 +29,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -37,15 +38,16 @@ import org.junit.Test
 import org.mockito.Mock
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.app.AppConfigService
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -59,11 +61,10 @@ class UserProfileViewModelTest : RobolectricTest() {
   lateinit var secureSharedPreference: SecureSharedPreference
   lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  @Inject lateinit var realConfigurationRegistry: ConfigurationRegistry
-
   @Mock private lateinit var fhirResourceService: FhirResourceService
 
-  @Mock private lateinit var configurationRegistry: ConfigurationRegistry
+  val defaultRepository: DefaultRepository = mockk()
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
 
   private lateinit var configService: ConfigService
 
@@ -78,12 +79,11 @@ class UserProfileViewModelTest : RobolectricTest() {
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context)
     configService = AppConfigService(context = context)
-    configurationRegistry = ConfigurationRegistry(context, sharedPreferencesHelper, configService)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
     syncBroadcaster =
       SyncBroadcaster(
         fhirResourceDataSource,
-        configurationRegistry,
+        configService,
         syncJob = mockk(),
         fhirEngine = mockk(),
         sharedSyncStatus,
@@ -97,7 +97,6 @@ class UserProfileViewModelTest : RobolectricTest() {
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
-    configurationRegistry = mockk()
     userProfileViewModel =
       UserProfileViewModel(
         syncBroadcaster,
@@ -178,19 +177,8 @@ class UserProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() {
-    every { accountAuthenticator.launchLoginScreen() } just runs
-    realConfigurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
-    userProfileViewModel =
-      UserProfileViewModel(
-        syncBroadcaster,
-        accountAuthenticator,
-        secureSharedPreference,
-        sharedPreferencesHelper,
-        realConfigurationRegistry
-      )
-
-    val languages = userProfileViewModel.fetchLanguages()
+  fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() = runBlockingTest {
+    val languages = userProfileViewModel.languages
     Assert.assertEquals("English", languages[0].displayName)
     Assert.assertEquals("en", languages[0].tag)
     Assert.assertEquals("Swahili", languages[1].displayName)
@@ -199,20 +187,6 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun languagesLazyPropertyShouldRunFetchLanguagesAndReturnConfiguredLanguages() {
-    realConfigurationRegistry.appId = "appId"
-    every { accountAuthenticator.launchLoginScreen() } just runs
-    userProfileViewModel =
-      spyk(
-        UserProfileViewModel(
-          syncBroadcaster,
-          accountAuthenticator,
-          secureSharedPreference,
-          sharedPreferencesHelper,
-          realConfigurationRegistry
-        )
-      )
-    every { userProfileViewModel.fetchLanguages() } returns mockk()
-
     val languages = userProfileViewModel.languages
 
     Assert.assertEquals("English", languages[0].displayName)

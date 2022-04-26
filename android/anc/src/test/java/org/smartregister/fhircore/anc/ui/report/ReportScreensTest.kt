@@ -16,24 +16,62 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import android.content.Context
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
+import androidx.lifecycle.MutableLiveData
+import androidx.paging.PagingData
+import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import org.hl7.fhir.r4.model.MeasureReport
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
+@HiltAndroidTest
 class ReportScreensTest : RobolectricTest() {
 
-  @get:Rule val composeRule = createComposeRule()
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val composeRule = createComposeRule()
+
+  @get:Rule(order = 2) val coroutinesTestRule = CoroutineTestRule()
+
+  @get:Rule(order = 3) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @BindValue lateinit var reportViewModel: ReportViewModel
+
+  @Inject lateinit var reportRepository: ReportRepository
+  @Inject lateinit var patientRepository: PatientRepository
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
+  private val fhirEngine: FhirEngine = spyk()
+  private val fhirOperatorDecorator: FhirOperatorDecorator = mockk()
 
   private val listenerObjectSpy =
     spyk(
@@ -41,22 +79,59 @@ class ReportScreensTest : RobolectricTest() {
         // Imitate click action by doing nothing
         fun onBackPress() {}
         fun onReportMeasureItemClick() {}
-        fun onStartDatePress() {}
-        fun onEndDatePress() {}
+        fun onDateRangeClick() {}
         fun onPatientSelectionChanged(patientSelectionType: String) {}
         fun onCancelSelectedPatient() {}
         fun onPatientChangeClick() {}
-        fun onGenerateReportClick() {}
       }
     )
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+    reportViewModel =
+      spyk(
+        ReportViewModel(
+          repository = reportRepository,
+          dispatcher = coroutinesTestRule.testDispatcherProvider,
+          patientRepository = patientRepository,
+          fhirEngine = fhirEngine,
+          fhirOperatorDecorator = fhirOperatorDecorator,
+          sharedPreferencesHelper = sharedPreferencesHelper
+        )
+      )
+    val allRegisterData: MutableStateFlow<Flow<PagingData<PatientItem>>> =
+      MutableStateFlow(emptyFlow())
+
+    every {
+      fhirOperatorDecorator.evaluateMeasure(any(), any(), any(), any(), any(), any())
+    } returns
+      MeasureReport().apply {
+        status = MeasureReport.MeasureReportStatus.COMPLETE
+        type = MeasureReport.MeasureReportType.INDIVIDUAL
+      }
+
+    registerDataViewModel =
+      mockk {
+        every { registerData } returns allRegisterData
+        every { showHeader } returns MutableLiveData(true)
+        every { showFooter } returns MutableLiveData(true)
+        every { showResultsCount } returns MutableLiveData(false)
+        every { showLoader } returns MutableLiveData(false)
+        every { currentPage() } returns 1
+        every { countPages() } returns 1
+        every { filterRegisterData(any(), any(), any()) } returns Unit
+      }
+
+    every { reportViewModel.selectedMeasureReportItem } returns
+      MutableLiveData(ReportItem(name = "First ANC", reportType = "Individual"))
+  }
 
   @Test
   fun testReportMeasureList() {
     composeRule.setContent {
-      ReportHomeListBox(
-        dataList = emptyFlow(),
-        onReportMeasureItemClick = { listenerObjectSpy.onReportMeasureItemClick() }
-      )
+      ReportHomeListBox(dataList = emptyFlow(), onReportMeasureItemClick = {})
     }
     composeRule.onNodeWithTag(REPORT_MEASURE_LIST).assertExists()
   }
@@ -83,8 +158,8 @@ class ReportScreensTest : RobolectricTest() {
         startDate = "startDate",
         endDate = "endDate",
         canChange = true,
-        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
-        onEndDatePress = { listenerObjectSpy.onEndDatePress() }
+        showDateRangePicker = true,
+        onDateRangeClick = listenerObjectSpy::onDateRangeClick
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
@@ -97,8 +172,8 @@ class ReportScreensTest : RobolectricTest() {
         startDate = "startDate",
         endDate = "endDate",
         canChange = false,
-        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
-        onEndDatePress = { listenerObjectSpy.onEndDatePress() }
+        showDateRangePicker = true,
+        onDateRangeClick = listenerObjectSpy::onDateRangeClick
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
@@ -110,23 +185,19 @@ class ReportScreensTest : RobolectricTest() {
       DateRangeItem(
         text = "startDate",
         canChange = true,
-        clickListener = { listenerObjectSpy.onStartDatePress() }
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).assertExists()
-    // composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).performClick()
-    // verify { listenerObjectSpy.onDateRangePress() }
   }
 
   @Test
   fun testPatientSelectionForAll() {
     composeRule.setContent {
       PatientSelectionBox(
-        patientSelectionText = "All",
+        reportType = "All",
         selectedPatient = null,
-        onPatientSelectionChange = {
-          listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.ALL)
-        }
+        onReportTypeSelected = { it, _ -> listenerObjectSpy.onPatientSelectionChanged(it) },
+        radioOptions = listOf(Pair("All", true), Pair("Individual", false))
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -136,13 +207,10 @@ class ReportScreensTest : RobolectricTest() {
   fun testPatientSelectionForIndividual() {
     composeRule.setContent {
       PatientSelectionBox(
-        patientSelectionText = "Individual",
+        reportType = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = {
-          listenerObjectSpy.onPatientSelectionChanged(
-            ReportViewModel.PatientSelectionType.INDIVIDUAL
-          )
-        }
+        onReportTypeSelected = { it, _ -> listenerObjectSpy.onPatientSelectionChanged(it) },
+        radioOptions = listOf(Pair("All", false), Pair("Individual", true))
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -153,26 +221,16 @@ class ReportScreensTest : RobolectricTest() {
   fun testPatientSelectionChangeListener() {
     composeRule.setContent {
       PatientSelectionBox(
-        patientSelectionText = "Individual",
+        reportType = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = {
-          listenerObjectSpy.onPatientSelectionChanged(
-            ReportViewModel.PatientSelectionType.INDIVIDUAL
-          )
-        }
+        onReportTypeSelected = { reportType, _ ->
+          listenerObjectSpy.onPatientSelectionChanged(reportType)
+        },
+        radioOptions = listOf(Pair("All", false), Pair("Individual", true))
       )
     }
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
-    composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).performClick()
-    verify {
-      listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
-    }
-
     composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).assertExists()
-    composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).performClick()
-    verify {
-      listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
-    }
   }
 
   @Test
@@ -187,5 +245,46 @@ class ReportScreensTest : RobolectricTest() {
     composeRule.onNodeWithTag(REPORT_PATIENT_ITEM).assertExists()
     composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).assertExists()
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
+  }
+
+  @Test
+  fun testReportView() {
+    every { reportViewModel.currentScreen } returns ReportViewModel.ReportScreen.RESULT
+
+    composeRule.setContent {
+      ReportView(reportViewModel = reportViewModel, registerDataViewModel = registerDataViewModel)
+    }
+  }
+
+  @Test
+  fun testReportViewHome() {
+    every { reportViewModel.currentScreen } returns ReportViewModel.ReportScreen.HOME
+
+    composeRule.setContent {
+      ReportView(reportViewModel = reportViewModel, registerDataViewModel = registerDataViewModel)
+    }
+  }
+
+  @Test
+  fun testReportViewFilter() {
+    every { reportViewModel.currentScreen } returns ReportViewModel.ReportScreen.FILTER
+
+    composeRule.setContent {
+      ReportView(reportViewModel = reportViewModel, registerDataViewModel = registerDataViewModel)
+    }
+  }
+
+  @Test
+  fun testReportViewPickPatient() {
+    every { reportViewModel.currentScreen } returns ReportViewModel.ReportScreen.PICK_PATIENT
+
+    composeRule.setContent {
+      ReportView(reportViewModel = reportViewModel, registerDataViewModel = registerDataViewModel)
+    }
+  }
+
+  @Test
+  fun testReportResultScreen() {
+    composeRule.setContent { ReportResultScreen(viewModel = reportViewModel) }
   }
 }

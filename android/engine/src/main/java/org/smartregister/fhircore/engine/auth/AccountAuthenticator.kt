@@ -33,17 +33,21 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
@@ -54,10 +58,11 @@ constructor(
   @ApplicationContext val context: Context,
   val accountManager: AccountManager,
   val oAuthService: OAuthService,
-  val configurationRegistry: ConfigurationRegistry,
+  val configService: ConfigService,
   val secureSharedPreference: SecureSharedPreference,
   val tokenManagerService: TokenManagerService,
-  val sharedPreference: SharedPreferencesHelper
+  val sharedPreference: SharedPreferencesHelper,
+  val dispatcherProvider: DispatcherProvider
 ) : AbstractAccountAuthenticator(context) {
 
   override fun addAccount(
@@ -274,30 +279,32 @@ constructor(
   }
 
   fun logout() {
-    val account = tokenManagerService.getActiveAccount()
-
-    val refreshToken = getRefreshToken()
-    if (refreshToken != null) {
-      oAuthService
-        .logout(clientId(), clientSecret(), refreshToken)
-        .enqueue(
-          object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-              accountManager.clearPassword(account)
-              secureSharedPreference.deleteCredentials()
-              launchScreen(AppSettingActivity::class.java)
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-              secureSharedPreference.deleteCredentials()
-              launchScreen(AppSettingActivity::class.java)
+    getRefreshToken()?.run {
+      val logoutService = oAuthService.logout(clientId(), clientSecret(), this)
+      kotlin
+        .runCatching {
+          CoroutineScope(dispatcherProvider.io() + coroutineExceptionHandler).launch {
+            logoutService.execute().run {
+              if (!this.isSuccessful) {
+                Timber.w(this.errorBody()?.toString())
+                context.showToast(
+                  context.getString(R.string.error_contacting_server, this.code().toString())
+                )
+              }
             }
           }
-        )
-    } else {
-      secureSharedPreference.deleteCredentials()
-      launchScreen(AppSettingActivity::class.java)
+        }
+        .onFailure {
+          Timber.w(it)
+          context.showToast(context.getString(R.string.error_contacting_server, it.message ?: ""))
+        }
     }
+
+    launchLoginScreen()
+  }
+
+  val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+    throwable.printStackTrace()
   }
 
   fun launchLoginScreen() {
@@ -311,7 +318,7 @@ constructor(
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         addCategory(Intent.CATEGORY_LAUNCHER)
       }
     )
@@ -319,13 +326,13 @@ constructor(
 
   fun getLoginActivityClass(): Class<*> = LoginActivity::class.java
 
-  fun getAccountType(): String = configurationRegistry.authConfiguration.accountType
+  fun getAccountType(): String = configService.provideAuthConfiguration().accountType
 
-  fun clientSecret(): String = configurationRegistry.authConfiguration.clientSecret
+  fun clientSecret(): String = configService.provideAuthConfiguration().clientSecret
 
-  fun clientId(): String = configurationRegistry.authConfiguration.clientId
+  fun clientId(): String = configService.provideAuthConfiguration().clientId
 
-  fun providerScope(): String = configurationRegistry.authConfiguration.scope
+  fun providerScope(): String = configService.provideAuthConfiguration().scope
 
   companion object {
     const val AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE"

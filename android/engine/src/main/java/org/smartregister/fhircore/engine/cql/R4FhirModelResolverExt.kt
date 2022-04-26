@@ -16,8 +16,8 @@
 
 package org.smartregister.fhircore.engine.cql
 
-import java.lang.System.out
 import org.opencds.cqf.cql.engine.fhir.model.R4FhirModelResolver
+import timber.log.Timber
 
 class R4FhirModelResolverExt : R4FhirModelResolver() {
   override fun resolveType(typeName: String): Class<*> {
@@ -35,7 +35,7 @@ class R4FhirModelResolverExt : R4FhirModelResolver() {
               // builds package.Dosage$DosageDoseAndRateComponent from Dosage.DoseAndRate
               Class.forName("$it.${path[0]}$${path[0]}${path[1]}Component")
             }
-            .onFailure { out.println(it.stackTraceToString()) }
+            .onFailure { Timber.e(it.stackTraceToString()) }
             .getOrNull()
         }
       if (cls != null) return cls

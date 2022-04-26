@@ -133,7 +133,7 @@ fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDat
           dataList.forEachIndexed { i, item ->
             item.label?.let {
               Text(
-                text = item.label,
+                text = it,
                 color =
                   Color(
                     android.graphics.Color.parseColor(item.properties?.label?.color ?: "#000000")

@@ -26,9 +26,4 @@ import kotlinx.serialization.Serializable
  * @property identifier Represents the identifier as synced from the server
  */
 @Serializable
-data class QuestionnaireConfig(
-  val appId: String,
-  val form: String,
-  val title: String,
-  val identifier: String
-)
+data class QuestionnaireConfig(val form: String, val title: String, val identifier: String)

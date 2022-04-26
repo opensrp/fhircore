@@ -1,0 +1,12 @@
+{
+  "appId": "g6pd",
+  "classification": "application",
+  "theme": "QuestDefault",
+  "languages": [
+    "en",
+    "sw"
+  ],
+  "applicationName": "G6PD Test Reader",
+  "appLogoIconResourceFile": "ic_logo_g6pd",
+  "count": "100"
+}

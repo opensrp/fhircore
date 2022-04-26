@@ -55,10 +55,7 @@ fun PatientRegisterList(
         loadState.refresh is LoadState.Error -> {
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error
           item {
-            ErrorMessage(
-              message = loadStateError.error.localizedMessage!!,
-              onClickRetry = { retry() }
-            )
+            ErrorMessage(message = loadStateError.error.message ?: "", onClickRetry = { retry() })
           }
         }
         loadState.append is LoadState.Error -> {

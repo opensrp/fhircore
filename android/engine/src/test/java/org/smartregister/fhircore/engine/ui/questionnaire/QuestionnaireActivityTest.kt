@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -102,7 +103,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
 
-    val questionnaireConfig = QuestionnaireConfig("appId", "form", "title", "form-id")
+    val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
     coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
       questionnaireConfig
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
@@ -233,6 +234,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       getString(R.string.questionnaire_alert_back_pressed_button_title),
       alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
     )
+  }
+  @Test
+  fun testOnBackPressedShouldCallFinishWhenInReadOnlyMode() {
+    val qActivity = spyk(questionnaireActivity)
+    ReflectionHelpers.setField(qActivity, "questionnaireType", QuestionnaireType.READ_ONLY)
+    qActivity.onBackPressed()
+
+    verify { qActivity.finish() }
   }
 
   @Test
@@ -380,6 +389,31 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
 
     Assert.assertEquals("ABC", alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text)
+  }
+
+  @Test
+  fun onOptionsItemSelectedShouldCallOnBackPressedWhenHomeIsPressed() {
+    val spiedActivity = spyk(questionnaireActivity)
+    val menuItem = mockk<MenuItem>()
+    every { menuItem.itemId } returns android.R.id.home
+    every { spiedActivity.onBackPressed() } just runs
+
+    Assert.assertTrue(spiedActivity.onOptionsItemSelected(menuItem))
+
+    verify { spiedActivity.onBackPressed() }
+  }
+
+  @Test
+  fun onPostSaveShouldCallPostSaveSuccessfulWhenResultIsTrue() {
+    val spiedActivity = spyk(questionnaireActivity)
+    val qr = mockk<QuestionnaireResponse>()
+    every { qr.copy() } returns qr
+    every { spiedActivity.postSaveSuccessful(qr) } just runs
+
+    spiedActivity.onPostSave(true, qr)
+
+    verify { spiedActivity.postSaveSuccessful(qr) }
+    verify { spiedActivity.dismissSaveProcessing() }
   }
 
   private fun buildQuestionnaireWithConstraints(): Questionnaire {

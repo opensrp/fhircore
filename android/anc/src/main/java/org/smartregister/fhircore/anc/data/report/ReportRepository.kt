@@ -23,7 +23,7 @@ import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.AssetUtil
 
 class ReportRepository
 @Inject
@@ -36,18 +36,11 @@ constructor(val fhirEngine: FhirEngine, @ApplicationContext val context: Context
 
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ReportItem> {
     return try {
-      val data = createTestData(context)
+      val data = AssetUtil.decodeAsset<List<ReportItem>>(SAMPLE_REPORT_MEASURES_FILE, context)
       LoadResult.Page(data = data, prevKey = null, nextKey = null)
     } catch (e: Exception) {
       LoadResult.Error(e)
     }
-  }
-
-  /** Load report-measures from asset directory */
-  fun createTestData(context: Context): List<ReportItem> {
-    val json =
-      context.assets.open(SAMPLE_REPORT_MEASURES_FILE).bufferedReader().use { it.readText() }
-    return json.decodeJson()
   }
 
   companion object {

@@ -47,11 +47,9 @@ constructor(
   suspend fun fetchEncounters(familyId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
-        apply {
-          filter(Encounter.SUBJECT, { value = "Patient/$familyId" })
-          from = 0
-          count = 3
-        }
+        filter(Encounter.SUBJECT, { value = "Patient/$familyId" })
+        from = 0
+        count = 3
       }
     }
 

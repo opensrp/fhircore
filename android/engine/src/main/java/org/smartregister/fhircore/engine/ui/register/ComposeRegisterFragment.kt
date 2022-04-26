@@ -31,8 +31,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.ui.components.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.PaginatedRegister
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 abstract class ComposeRegisterFragment<I : Any, O : Any> :
@@ -51,20 +51,23 @@ abstract class ComposeRegisterFragment<I : Any, O : Any> :
           val pagingItems = registerData.value.collectAsLazyPagingItems()
           val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
           val showLoader by registerDataViewModel.showLoader.observeAsState(false)
-          val showPageCount by registerDataViewModel.showPageCount.observeAsState(true)
+          val showHeader by registerDataViewModel.showHeader.observeAsState(true)
+          val showFooter by registerDataViewModel.showFooter.observeAsState(true)
+
           val modifier = Modifier
           if (showLoader) LoaderDialog(modifier = Modifier)
           PaginatedRegister(
             loadState = pagingItems.loadState.refresh,
             showResultsCount = showResultsCount,
             resultCount = pagingItems.itemCount,
+            showHeader = showHeader,
             body = { ConstructRegisterList(pagingItems, modifier) },
-            showPageCount = showPageCount,
+            showFooter = showFooter,
             currentPage = registerDataViewModel.currentPage(),
             pagesCount = registerDataViewModel.countPages(),
             previousButtonClickListener = { registerDataViewModel.previousPage() },
             nextButtonClickListener = { registerDataViewModel.nextPage() },
-            modifier = modifier
+            modifier = modifier,
           )
         }
       }

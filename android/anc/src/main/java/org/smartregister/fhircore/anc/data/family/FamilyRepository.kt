@@ -39,8 +39,8 @@ import org.smartregister.fhircore.anc.util.asCodeableConcept
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatientName
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractFamilyTag
@@ -51,7 +51,7 @@ class FamilyRepository
 constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: FamilyItemMapper,
+  override val dataMapper: FamilyItemMapper,
   val dispatcherProvider: DispatcherProvider,
   val ancPatientRepository: PatientRepository
 ) : RegisterRepository<Family, FamilyItem> {
@@ -71,15 +71,15 @@ constructor(
           filterByPatientName(query)
 
           sort(Patient.NAME, Order.ASCENDING)
-          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+          count = if (loadAll) countAll().toInt() else PaginationConstant.DEFAULT_PAGE_SIZE
+          from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
         }
 
       patients.map { p ->
         val members = searchFamilyMembers(p.logicalId)
 
         val familyServices = ancPatientRepository.searchCarePlan(p.logicalId, p.extractFamilyTag())
-        domainMapper.mapToDomainModel(Family(p, members, familyServices))
+        dataMapper.transformInputToOutputModel(Family(p, members, familyServices))
       }
     }
   }
@@ -98,7 +98,7 @@ constructor(
       .map {
         val services = ancPatientRepository.searchCarePlan(it.logicalId)
         val conditions = ancPatientRepository.searchCondition(it.logicalId)
-        domainMapper.toFamilyMemberItem(it, conditions, services)
+        dataMapper.toFamilyMemberItem(it, conditions, services)
       }
       .sortedBy {
         var weight = 0

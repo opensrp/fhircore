@@ -22,9 +22,14 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.rules.ActivityScenarioRule
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
@@ -34,8 +39,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.HiltActivityForTest
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
@@ -49,6 +55,10 @@ class UserProfileFragmentTest : RobolectricTest() {
 
   @get:Rule(order = 2) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
+  @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
+  @BindValue
+  var userProfileViewModel: UserProfileViewModel =
+    UserProfileViewModel(mockk(), accountAuthenticator, mockk(), mockk(), mockk())
   private lateinit var userProfileFragment: UserProfileFragment
 
   @Before
@@ -74,6 +84,8 @@ class UserProfileFragmentTest : RobolectricTest() {
 
   @Test
   fun testThatProfileIsDestroyedWhenUserLogsOut() {
+    every { accountAuthenticator.logout() } just runs
+
     launchUserProfileFragment()
     activityScenarioRule.scenario.moveToState(Lifecycle.State.RESUMED)
     userProfileFragment.userProfileViewModel.logoutUser()

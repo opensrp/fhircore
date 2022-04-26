@@ -23,8 +23,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Stable
 @Serializable
 data class ImmunizationProfileViewConfiguration(
-  override val appId: String,
-  override val classification: String,
+  override val appId: String = "",
+  override val classification: String = "",
   val showScanBarcode: Boolean = false,
   val showReportAdverseEvent: Boolean = true
 ) : Configuration

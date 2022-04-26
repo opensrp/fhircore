@@ -47,6 +47,8 @@ import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBa
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
+import java.io.InterruptedIOException
+import java.net.UnknownHostException
 import java.text.ParseException
 import java.util.Date
 import java.util.Locale
@@ -58,12 +60,12 @@ import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
+import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
@@ -82,6 +84,7 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.show
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
+import retrofit2.HttpException
 import timber.log.Timber
 
 abstract class BaseRegisterActivity :
@@ -96,8 +99,6 @@ abstract class BaseRegisterActivity :
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
-  override val configurableViews: Map<String, View> = mutableMapOf()
 
   val registerViewModel: RegisterViewModel by viewModels()
 
@@ -124,19 +125,15 @@ abstract class BaseRegisterActivity :
 
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
 
-    registerViewModel.lastSyncTimestamp.observe(
-      this,
-      {
-        registerActivityBinding.btnRegisterNewClient.isEnabled = !it.isNullOrEmpty()
-        registerActivityBinding.tvLastSyncTimestamp.text = it?.formatSyncDate() ?: ""
-      }
-    )
+    registerViewModel.lastSyncTimestamp.observe(this) {
+      registerActivityBinding.btnRegisterNewClient.isEnabled = !it.isNullOrEmpty()
+      registerActivityBinding.tvLastSyncTimestamp.text = it?.formatSyncDate() ?: ""
+    }
 
     registerViewModel.run {
-      selectedLanguage.observe(
-        this@BaseRegisterActivity,
-        { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
-      )
+      selectedLanguage.observe(this@BaseRegisterActivity) {
+        updateLanguage(Language(it, Locale.forLanguageTag(it).displayName))
+      }
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
@@ -291,6 +288,7 @@ abstract class BaseRegisterActivity :
         this.background = getDrawable(registerViewConfiguration.newClientButtonStyle)
       }
       this.text = registerViewConfiguration.newClientButtonText
+      toggleVisibility(registerViewConfiguration.showNewClientButton)
     }
   }
 
@@ -389,11 +387,7 @@ abstract class BaseRegisterActivity :
         registerActivityBinding.updateSyncStatus(state)
       }
       is State.Failed, is State.Glitch -> {
-        showToast(getString(R.string.sync_failed))
-        registerActivityBinding.updateSyncStatus(state)
-        sideMenuOptions().forEach { updateCount(it) }
-        manipulateDrawer(open = false)
-        this.registerViewModel.setRefreshRegisterData(true)
+        handleSyncFailed(state)
       }
       is State.Finished -> {
         showToast(getString(R.string.sync_completed))
@@ -454,7 +448,6 @@ abstract class BaseRegisterActivity :
     when (item.itemId) {
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
-        finish()
         accountAuthenticator.logout()
         manipulateDrawer(open = false)
       }
@@ -513,7 +506,10 @@ abstract class BaseRegisterActivity :
     isFilterVisible: Boolean = true,
     toolbarTitle: String? = null
   ) {
-    registerActivityBinding.btnRegisterNewClient.toggleVisibility(tag == mainFragmentTag())
+    registerActivityBinding.btnRegisterNewClient.toggleVisibility(
+      tag == mainFragmentTag() &&
+        registerViewModel.registerViewConfiguration.value!!.showNewClientButton
+    )
     if (supportedFragments.isEmpty() && !supportedFragments.containsKey(tag)) {
       throw IllegalAccessException("No fragment exists with the tag $tag")
     }
@@ -694,6 +690,35 @@ abstract class BaseRegisterActivity :
   }
 
   open fun onBarcodeResult(barcode: String, view: View) {}
+
+  private fun handleSyncFailed(state: State) {
+
+    val exceptions =
+      when (state) {
+        is State.Glitch -> state.exceptions
+        is State.Failed -> state.result.exceptions
+        else -> listOf()
+      }
+
+    if (exceptions.map { it.exception }.filterIsInstance<HttpException>().firstOrNull()?.code() ==
+        401
+    ) {
+      showToast(getString(R.string.session_expired))
+      accountAuthenticator.logout()
+    } else {
+      if (exceptions.map { it.exception }.any {
+          it is InterruptedIOException || it is UnknownHostException
+        }
+      ) {
+        showToast(getString(R.string.sync_failed))
+      }
+      Timber.e(exceptions.map { it.exception.message }.joinToString(", "))
+      registerActivityBinding.updateSyncStatus(state)
+      sideMenuOptions().forEach { updateCount(it) }
+      manipulateDrawer(open = false)
+      this.registerViewModel.setRefreshRegisterData(true)
+    }
+  }
 
   companion object {
     const val BARCODE_RESULT_KEY = "result"

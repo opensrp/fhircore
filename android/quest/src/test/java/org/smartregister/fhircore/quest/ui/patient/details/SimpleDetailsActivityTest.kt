@@ -61,7 +61,7 @@ class SimpleDetailsActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+
     Faker.initPatientRepositoryMocks(patientRepository)
 
     val intent = Intent().putExtra(RECORD_ID_ARG, "1234")

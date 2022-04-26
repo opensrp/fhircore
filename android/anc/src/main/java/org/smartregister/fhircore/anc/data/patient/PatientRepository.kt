@@ -24,7 +24,6 @@ import com.google.android.fhir.search.count
 import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.lang.IllegalStateException
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
@@ -58,8 +57,8 @@ import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -85,7 +84,7 @@ class PatientRepository
 constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: AncItemMapper,
+  override val dataMapper: AncItemMapper,
   val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Anc, PatientItem> {
 
@@ -106,8 +105,8 @@ constructor(
             filterBy(registerConfig.primaryFilter!!)
             registerConfig.secondaryFilter?.let { filterBy(it) }
 
-            count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-            from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+            count = if (loadAll) countAll().toInt() else PaginationConstant.DEFAULT_PAGE_SIZE
+            from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
           }
           .distinctBy { it.subject.extractId() }
 
@@ -127,7 +126,7 @@ constructor(
 
         val carePlans = searchCarePlan(it.logicalId)
         val conditions = searchCondition(it.logicalId)
-        domainMapper.mapToDomainModel(Anc(it, head, conditions, carePlans))
+        dataMapper.transformInputToOutputModel(Anc(it, head, conditions, carePlans))
       }
     }
   }
@@ -258,16 +257,19 @@ constructor(
     return fhirEngine
       .search<Flag> { filterByResourceTypeId(Flag.PATIENT, ResourceType.Patient, patientId) }
       .firstOrNull {
-        it.status == Flag.FlagStatus.ACTIVE && it.code.coding.any { it.code == flagCode.code }
+        it.status == Flag.FlagStatus.ACTIVE &&
+          it.code.coding.any { coding -> coding.code == flagCode.code }
       }
   }
 
   fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> =
-    carePlan.filter { it.due() || it.overdue() }.map { CarePlanItemMapper.mapToDomainModel(it) }
+    carePlan.filter { it.due() || it.overdue() }.map {
+      CarePlanItemMapper.transformInputToOutputModel(it)
+    }
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search { apply { filter(CarePlan.SUBJECT, { value = "Patient/$patientId" }) } }
+      fhirEngine.search { filter(CarePlan.SUBJECT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun fetchObservations(patientId: String, searchFilterString: String): Observation {
@@ -326,9 +328,7 @@ constructor(
 
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        apply { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }.getQuery()
-      }
+      fhirEngine.search { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun markDeceased(patientId: String, deathDate: Date) {
@@ -390,7 +390,7 @@ constructor(
         var task: Task
         withContext(dispatcherProvider.io()) {
           val carePlanId = it.logicalId
-          var tasks =
+          val tasks =
             fhirEngine.search<Task> {
               apply { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }.getQuery()
             }
@@ -414,7 +414,7 @@ constructor(
     val listCarePlan = arrayListOf<EncounterItem>()
     if (encounters.isNotEmpty()) {
       for (i in encounters.indices) {
-        listCarePlan.add(EncounterItemMapper.mapToDomainModel(encounters[i]))
+        listCarePlan.add(EncounterItemMapper.transformInputToOutputModel(encounters[i]))
       }
     }
     return listCarePlan
@@ -544,7 +544,7 @@ constructor(
   }
 
   fun setAncItemMapperType(ancItemMapperType: AncItemMapper.AncItemMapperType) {
-    domainMapper.setAncItemMapperType(ancItemMapperType)
+    dataMapper.setAncItemMapperType(ancItemMapperType)
   }
 
   companion object {

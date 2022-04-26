@@ -1,0 +1,45 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "item": [
+    {
+      "linkId": "select-mode",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "metric",
+            "display": "METRIC"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "data details",
+      "item": [
+        {
+          "linkId": "vital-signs-body-wight_kg",
+          "answer": [
+            {
+              "valueDecimal": 80
+            }
+          ]
+        },
+        {
+          "linkId": "vital-signs-height_cm",
+          "answer": [
+            {
+              "valueDecimal": 150
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "patient-id",
+      "answer": [
+        {
+          "valueString": "33cdf263-6891-4dac-909f-f9ae92ddc23c"
+        }
+      ]
+    }
+  ]
+}

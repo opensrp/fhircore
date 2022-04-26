@@ -1,0 +1,16 @@
+{
+  "appId": "covax",
+  "classification": "patient_register",
+  "appTitle": "Covax",
+  "filterText": "Show overdue",
+  "searchBarHint": "Search name or ID",
+  "newClientButtonText": "Register new client",
+  "newClientButtonStyle": "",
+  "showSearchBar": true,
+  "showFilter": true,
+  "showScanQRCode": true,
+  "showNewClientButton": true,
+  "showSideMenu": true,
+  "showBottomMenu": false,
+  "registrationForm": "patient-registration"
+}

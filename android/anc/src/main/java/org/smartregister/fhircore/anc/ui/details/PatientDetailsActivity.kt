@@ -94,7 +94,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
   }
 
-  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+  override fun onCreateOptionsMenu(menu: Menu): Boolean {
     menuInflater.inflate(R.menu.profile_menu, menu)
     return true
   }

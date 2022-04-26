@@ -23,13 +23,12 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -123,7 +122,6 @@ constructor(
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
       _showError.postValue(false)
       secureSharedPreference.saveSessionPin(newPin)
-      secureSharedPreference.savePinCredentials()
       _navigateToHome.postValue(true)
     } else {
       _showError.postValue(true)
@@ -138,7 +136,6 @@ constructor(
       showError.value = !pinMatched
       _pin.postValue(newPin)
       if (pinMatched && !isSetupPage) {
-        secureSharedPreference.saveCredentials(secureSharedPreference.retrievePinCredentials()!!)
         _navigateToHome.value = true
       }
     } else {
@@ -147,8 +144,8 @@ constructor(
     }
   }
 
-  fun onMenuLoginClicked() {
-    sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, true)
+  fun onMenuLoginClicked(sharedPreferencesKey: String) {
+    sharedPreferences.write(sharedPreferencesKey, true)
     _navigateToLogin.value = true
   }
 

@@ -23,10 +23,10 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Stable
 @Serializable
 class DetailViewConfiguration(
-  override val appId: String,
-  override val classification: String,
+  override val appId: String = "",
+  override val classification: String = "",
   val label: String = "",
-  val rows: List<DetailViewRowConfiguration>
+  val rows: List<DetailViewRowConfiguration> = listOf()
 ) : Configuration
 
 @Stable @Serializable class DetailViewRowConfiguration(val filters: List<Filter>)

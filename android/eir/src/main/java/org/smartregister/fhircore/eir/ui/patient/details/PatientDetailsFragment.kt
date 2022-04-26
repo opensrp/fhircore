@@ -24,24 +24,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.android.synthetic.main.fragment_patient_details.immuneStatusImageView
-import kotlinx.android.synthetic.main.fragment_patient_details.immuneTextView
-import kotlinx.android.synthetic.main.fragment_patient_details.immunizationsListView
-import kotlinx.android.synthetic.main.fragment_patient_details.noVaccinesTextView
-import kotlinx.android.synthetic.main.fragment_patient_details.patientAgeTextView
-import kotlinx.android.synthetic.main.fragment_patient_details.patientGenderTextView
-import kotlinx.android.synthetic.main.fragment_patient_details.patientNameTextView
-import kotlinx.android.synthetic.main.fragment_patient_details.recordVaccineButton
-import kotlinx.android.synthetic.main.fragment_patient_details.reportAdverseEventButton
-import kotlinx.android.synthetic.main.fragment_patient_details.showQRCodeButton
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.databinding.FragmentPatientDetailsBinding
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventQuestionnaireActivity
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.eir.util.ADVERSE_EVENT_FORM
@@ -67,16 +59,19 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
 
   private lateinit var patientId: String
 
-  private val patientImmunizationsAdapter = PatientImmunizationsAdapter()
+  private lateinit var patientDetailsFragmentBinding: FragmentPatientDetailsBinding
 
-  override val configurableViews: Map<String, View>
-    get() = mutableMapOf()
+  private val patientImmunizationsAdapter = PatientImmunizationsAdapter()
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View = inflater.inflate(R.layout.fragment_patient_details, container, false)
+  ): View {
+    patientDetailsFragmentBinding =
+      DataBindingUtil.inflate(inflater, R.layout.fragment_patient_details, container, false)
+    return patientDetailsFragmentBinding.root
+  }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
@@ -109,12 +104,12 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
   }
 
   private fun setupViews(patientId: String) {
-    immunizationsListView.apply {
+    patientDetailsFragmentBinding.immunizationsListView.apply {
       adapter = patientImmunizationsAdapter
       layoutManager = LinearLayoutManager(requireContext())
     }
 
-    recordVaccineButton.setOnClickListener {
+    patientDetailsFragmentBinding.recordVaccineButton.setOnClickListener {
       startActivity(
         Intent(requireContext(), RecordVaccineActivity::class.java)
           .putExtras(
@@ -126,7 +121,7 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
       )
     }
 
-    reportAdverseEventButton.setOnClickListener {
+    patientDetailsFragmentBinding.reportAdverseEventButton.setOnClickListener {
       val immunizations = patientDetailsViewModel.patientImmunizations.value as List<Immunization>
       val immunizationItemWithIds =
         immunizations.toImmunizationAdverseEventItem(requireContext()).first()
@@ -170,9 +165,9 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
 
   private fun handlePatientDemographics(patient: Patient) {
     with(patient) {
-      patientNameTextView.text = extractName()
-      patientGenderTextView.text = extractGender(requireContext())
-      patientAgeTextView.text = getString(R.string.age, extractAge())
+      patientDetailsFragmentBinding.patientNameTextView.text = extractName()
+      patientDetailsFragmentBinding.patientGenderTextView.text = extractGender(requireContext())
+      patientDetailsFragmentBinding.patientAgeTextView.text = getString(R.string.age, extractAge())
     }
   }
 
@@ -181,29 +176,33 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
     when {
       immunizations.isEmpty() -> {
         toggleImmunizationStatus(fullyImmunized = false)
-        noVaccinesTextView.show()
-        immunizationsListView.hide()
-        recordVaccineButton.show()
-        showQRCodeButton.hide()
-        reportAdverseEventButton.hide()
+        patientDetailsFragmentBinding.noVaccinesTextView.show()
+        patientDetailsFragmentBinding.immunizationsListView.hide()
+        patientDetailsFragmentBinding.recordVaccineButton.show()
+        patientDetailsFragmentBinding.showQRCodeButton.hide()
+        patientDetailsFragmentBinding.reportAdverseEventButton.hide()
       }
       immunizations.size == 1 -> {
         toggleImmunizationStatus(fullyImmunized = false)
         populateImmunizationList(immunizations)
-        recordVaccineButton.show()
-        showQRCodeButton.hide()
+        patientDetailsFragmentBinding.recordVaccineButton.show()
+        patientDetailsFragmentBinding.showQRCodeButton.hide()
         val showAdverseReportButton =
           immunizations.size == 1 && configuration != null && configuration.showReportAdverseEvent
-        reportAdverseEventButton.toggleVisibility(showAdverseReportButton)
-        noVaccinesTextView.hide()
+        patientDetailsFragmentBinding.reportAdverseEventButton.toggleVisibility(
+          showAdverseReportButton
+        )
+        patientDetailsFragmentBinding.noVaccinesTextView.hide()
       }
       else -> {
         toggleImmunizationStatus(fullyImmunized = true)
         populateImmunizationList(immunizations)
-        noVaccinesTextView.hide()
-        recordVaccineButton.hide()
-        showQRCodeButton.toggleVisibility(configuration != null && configuration.showScanBarcode)
-        reportAdverseEventButton.toggleVisibility(
+        patientDetailsFragmentBinding.noVaccinesTextView.hide()
+        patientDetailsFragmentBinding.recordVaccineButton.hide()
+        patientDetailsFragmentBinding.showQRCodeButton.toggleVisibility(
+          configuration != null && configuration.showScanBarcode
+        )
+        patientDetailsFragmentBinding.reportAdverseEventButton.toggleVisibility(
           configuration != null && configuration.showReportAdverseEvent
         )
       }
@@ -211,16 +210,16 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
   }
 
   private fun populateImmunizationList(immunizations: List<Immunization>) {
-    immunizationsListView.show()
+    patientDetailsFragmentBinding.immunizationsListView.show()
     patientImmunizationsAdapter.submitList(immunizations.toImmunizationItems(requireContext()))
   }
 
   private fun toggleImmunizationStatus(fullyImmunized: Boolean = false) {
-    immuneStatusImageView.background =
+    patientDetailsFragmentBinding.immuneStatusImageView.background =
       if (fullyImmunized) ContextCompat.getDrawable(requireContext(), R.drawable.ic_check)
       else ContextCompat.getDrawable(requireContext(), R.drawable.ic_close)
 
-    immuneTextView.apply {
+    patientDetailsFragmentBinding.immuneTextView.apply {
       text = if (fullyImmunized) getString(R.string.immune) else getString(R.string.not_immune)
       setTextColor(
         if (fullyImmunized) ContextCompat.getColor(requireContext(), R.color.immune)

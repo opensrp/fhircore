@@ -23,15 +23,12 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.fragment.app.commitNow
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.runs
 import io.mockk.unmockkObject
-import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Assert.assertNotNull
@@ -40,16 +37,16 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.task.PatientTaskRepository
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
-import org.smartregister.fhircore.quest.ui.task.component.ROW_PATIENT_TASK
-import org.smartregister.fhircore.quest.ui.task.component.dummyPatientTaskPagingList
+import org.smartregister.fhircore.quest.ui.task.components.ROW_PATIENT_TASK
+import org.smartregister.fhircore.quest.ui.task.components.dummyPatientTaskPagingList
 
 @HiltAndroidTest
 class PatientTaskFragmentTest : RobolectricTest() {
@@ -57,7 +54,9 @@ class PatientTaskFragmentTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("g6pd", mockk())
 
   private lateinit var patientTaskFragment: PatientTaskFragment
 
@@ -65,15 +64,8 @@ class PatientTaskFragmentTest : RobolectricTest() {
   fun setUp() {
     mockkObject(Sync)
 
-    val accountAuthenticator = mockk<AccountAuthenticator>()
-    every { accountAuthenticator.launchLoginScreen() } just runs
-
     hiltRule.inject()
 
-    configurationRegistry.loadAppConfigurations(
-      appId = "quest",
-      accountAuthenticator = accountAuthenticator
-    ) {}
     patientTaskFragment = PatientTaskFragment()
     val patientRegisterActivity =
       Robolectric.buildActivity(PatientRegisterActivity::class.java).create().get()

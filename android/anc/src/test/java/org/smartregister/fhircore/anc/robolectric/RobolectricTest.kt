@@ -69,12 +69,6 @@ abstract class RobolectricTest {
     return data[0] as T?
   }
 
-  fun String.readFile(): String {
-    val file = File("$ASSET_BASE_PATH/$this")
-    val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
-    return String(charArray)
-  }
-
   fun buildStructureMapUtils(): StructureMapUtilities {
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -144,6 +138,12 @@ abstract class RobolectricTest {
         File.separator +
         "resources" +
         File.separator)
+
+    fun String.readFile(): String {
+      val file = File("$ASSET_BASE_PATH/$this")
+      val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
+      return String(charArray)
+    }
 
     @JvmStatic
     @BeforeClass

@@ -28,12 +28,13 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.ui.register.model.Language
+import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
@@ -52,6 +53,7 @@ constructor(
   val syncJob: SyncJob,
   val fhirResourceDataSource: FhirResourceDataSource,
   val configurationRegistry: ConfigurationRegistry,
+  val configService: ConfigService,
   val dispatcher: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel() {

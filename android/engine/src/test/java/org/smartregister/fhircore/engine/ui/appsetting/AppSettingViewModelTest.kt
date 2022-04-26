@@ -17,16 +17,27 @@
 package org.smartregister.fhircore.engine.ui.appsetting
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class AppSettingViewModelTest {
+class AppSettingViewModelTest : RobolectricTest() {
 
-  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private val appSettingViewModel = spyk(AppSettingViewModel())
+  private val appSettingViewModel = spyk(AppSettingViewModel(mockk(), mockk()))
 
   @Test
   fun testOnApplicationIdChanged() {
@@ -43,9 +54,30 @@ class AppSettingViewModelTest {
   }
 
   @Test
-  fun testLoadConfigurations() {
+  fun testLoadConfigurations() = runBlockingTest {
+    coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
+      Bundle().apply { addEntry().resource = Composition() }
+    coEvery { appSettingViewModel.defaultRepository.save(any()) } just runs
+
     appSettingViewModel.loadConfigurations(true)
     Assert.assertNotNull(appSettingViewModel.loadConfigs.value)
     Assert.assertEquals(true, appSettingViewModel.loadConfigs.value)
+  }
+
+  @Test
+  fun testFetchConfigurations() = runBlockingTest {
+    coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
+      Bundle().apply {
+        addEntry().resource =
+          Composition().apply {
+            addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
+          }
+      }
+    coEvery { appSettingViewModel.defaultRepository.save(any()) } just runs
+
+    appSettingViewModel.fetchConfigurations("appId", ApplicationProvider.getApplicationContext())
+
+    coVerify { appSettingViewModel.fhirResourceDataSource.loadData(any()) }
+    coVerify { appSettingViewModel.defaultRepository.save(any()) }
   }
 }

@@ -29,7 +29,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
-import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -38,7 +37,6 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
@@ -48,6 +46,7 @@ import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
@@ -57,9 +56,9 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("quest", mockk())
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
@@ -80,7 +79,6 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
       }
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
-    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     patientRegisterActivity =
       Robolectric.buildActivity(PatientRegisterActivity::class.java).create().resume().get()
   }

@@ -38,7 +38,7 @@ class PatientTaskRepository
 constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: PatientTaskItemMapper,
+  override val dataMapper: PatientTaskItemMapper,
   private val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<PatientTask, PatientTaskItem> {
 
@@ -61,7 +61,7 @@ constructor(
         val patientId = task.`for`.reference.replace("Patient/", "")
         val patient = fhirEngine.load(Patient::class.java, patientId)
 
-        domainMapper.mapToDomainModel(PatientTask(patient, task))
+        dataMapper.transformInputToOutputModel(PatientTask(patient, task))
       }
     }
   }

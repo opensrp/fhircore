@@ -18,6 +18,9 @@ package org.smartregister.fhircore.engine.di
 
 import android.accounts.AccountManager
 import android.content.Context
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.context.support.DefaultProfileValidationSupport
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
@@ -29,7 +32,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
+import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 
@@ -39,7 +45,7 @@ class EngineModule {
 
   @Singleton
   @Provides
-  fun provideFhirEngine(@ApplicationContext context: Context) =
+  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine =
     FhirEngineProvider.getInstance(context)
 
   @Singleton
@@ -50,21 +56,41 @@ class EngineModule {
   @Provides
   fun provideSyncBroadcaster(
     fhirResourceDataSource: FhirResourceDataSource,
-    configurationRegistry: ConfigurationRegistry,
+    configService: ConfigService,
     syncJob: SyncJob,
     fhirEngine: FhirEngine
   ) =
     SyncBroadcaster(
       fhirEngine = fhirEngine,
       syncJob = syncJob,
-      configurationRegistry = configurationRegistry,
+      configService = configService,
       fhirResourceDataSource = fhirResourceDataSource
     )
 
-  @Singleton @Provides fun provideWorkerContextProvider() = SimpleWorkerContext()
+  @Singleton
+  @Provides
+  fun provideWorkerContextProvider(): SimpleWorkerContext =
+    SimpleWorkerContext().apply {
+      setExpansionProfile(Parameters())
+      isCanRunWithoutTerminology = true
+    }
 
   @Singleton
   @Provides
   fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
     AccountManager.get(context)
+
+  @Singleton
+  @Provides
+  fun provideFhirContext(): FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+
+  @Singleton
+  @Provides
+  fun provideHapiWorkerContext(fhirContext: FhirContext) =
+    HapiWorkerContext(fhirContext, DefaultProfileValidationSupport(fhirContext))
+
+  @Singleton
+  @Provides
+  fun provideFhirPathEngine(hapiWorkerContext: HapiWorkerContext) =
+    FHIRPathEngine(hapiWorkerContext)
 }

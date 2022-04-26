@@ -30,6 +30,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Questionnaire
@@ -58,6 +59,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 
+@ExperimentalCoroutinesApi
 @HiltAndroidTest
 internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
@@ -161,7 +163,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testTextOfSaveButtonForFamilyMemberRegistration() = runBlockingTest {
+  fun testTextOfSaveButtonForFamilyMemberRegistration() {
     buildActivityFor(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, false)
 
     assertEquals(
@@ -178,7 +180,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testTextOfSaveButtonForFamilyRegistration() = runBlockingTest {
+  fun testTextOfSaveButtonForFamilyRegistration() {
     buildActivityFor(FamilyFormConstants.FAMILY_REGISTER_FORM, false)
 
     assertEquals(
@@ -195,7 +197,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testTextOfSavedButtonForAncRegister() = runBlockingTest {
+  fun testTextOfSavedButtonForAncRegister() {
     buildActivityFor(FamilyFormConstants.ANC_ENROLLMENT_FORM, false)
 
     assertEquals(

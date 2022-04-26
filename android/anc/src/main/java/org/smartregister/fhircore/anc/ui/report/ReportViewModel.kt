@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -27,16 +28,18 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.FhirEngine
+import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
@@ -45,14 +48,16 @@ import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
-import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
+import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.ListenerIntent
-import timber.log.Timber
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 
 @HiltViewModel
 class ReportViewModel
@@ -61,71 +66,77 @@ constructor(
   val repository: ReportRepository,
   val dispatcher: DispatcherProvider,
   val patientRepository: PatientRepository,
+  val fhirEngine: FhirEngine,
+  val fhirOperatorDecorator: FhirOperatorDecorator,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
-  lateinit var patientId: String
-
-  lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
-
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
+
+  val onGenerateReportClicked: MutableLiveData<Boolean> = MutableLiveData(false)
+
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
-  val processGenerateReport: MutableLiveData<Boolean> = MutableLiveData(false)
-  val alertSelectPatient: MutableLiveData<Boolean> = MutableLiveData(false)
-  val isChangingStartDate: MutableLiveData<Boolean> = MutableLiveData(false)
+
+  val showProgressIndicator: MutableLiveData<Boolean> = MutableLiveData(false)
+
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
-  val selectedPatientItem: MutableLiveData<PatientItem> = MutableLiveData(null)
-  val simpleDateFormatPattern = "d MMM, yyyy"
 
-  val startDateTimeMillis: MutableLiveData<Long> = MutableLiveData(0L)
-  val endDateTimeMillis: MutableLiveData<Long> = MutableLiveData(0L)
+  val selectedPatientItem: MutableLiveData<PatientItem?> = MutableLiveData(null)
 
-  private val _startDate = MutableLiveData("start date")
-  val startDate: LiveData<String>
-    get() = _startDate
+  val currentReportType: MutableLiveData<String> = MutableLiveData("")
 
-  private val _endDate = MutableLiveData("end date")
-  val endDate: LiveData<String>
-    get() = _endDate
+  val generateReport = MutableLiveData(false)
 
-  private val _patientSelectionType = MutableLiveData("All")
-  val patientSelectionType: LiveData<String>
-    get() = _patientSelectionType
+  val resultForPopulation: MutableLiveData<List<ResultItemPopulation>?> = MutableLiveData(null)
+
+  val resultForIndividual: MutableLiveData<ResultItem?> = MutableLiveData(null)
+
+  var currentScreen by mutableStateOf(ReportScreen.HOME)
 
   var searchTextState = mutableStateOf(TextFieldValue(""))
 
-  fun getSelectedPatient(): MutableLiveData<PatientItem> {
-    return if (selectedPatientItem.value != null) selectedPatientItem
-    else MutableLiveData(PatientItem(patientIdentifier = "Select Patient", name = "Select Patient"))
+  private val regex = Regex(".*\\d.*")
+
+  private val dateRangeDateFormatter = SimpleDateFormat(DATE_RANGE_DATE_FORMAT, Locale.getDefault())
+
+  private val measureReportDateFormatter =
+    SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
+
+  private val authenticatedUserInfo by lazy {
+    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
   }
+
+  private val _dateRange =
+    MutableLiveData(
+      androidx.core.util.Pair(
+        MaterialDatePicker.thisMonthInUtcMilliseconds(),
+        MaterialDatePicker.todayInUtcMilliseconds()
+      )
+    )
+  val dateRange: LiveData<androidx.core.util.Pair<Long, Long>>
+    get() = _dateRange
+
+  private val _startDate = MutableLiveData("")
+  val startDate: LiveData<String>
+    get() = _startDate
+
+  private val _endDate = MutableLiveData("")
+  val endDate: LiveData<String>
+    get() = _endDate
 
   private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any?>>()
   val filterValue
     get() = _filterValue
 
-  private val _isReadyToGenerateReport = MutableLiveData(true)
-  val isReadyToGenerateReport: LiveData<Boolean>
-    get() = _isReadyToGenerateReport
-
-  val resultForIndividual: MutableLiveData<ResultItem> =
-    MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
-
-  val resultForPopulation: MutableLiveData<List<ResultItemPopulation>> =
-    MutableLiveData(loadDummyResultForPopulation())
-
-  fun loadDummyResultForPopulation(): List<ResultItemPopulation>? {
-    val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10%", count = "1/10")
-    val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50%", count = "30/60")
-    return listOf(
-      ResultItemPopulation(title = "Age Range", listOf(testResultItem1, testResultItem2)),
-      ResultItemPopulation(title = "Education Level", listOf(testResultItem1, testResultItem2))
-    )
+  fun onDateRangeClick() {
+    showDatePicker.value = true
   }
 
-  var reportState: ReportState = ReportState()
+  fun getSelectedPatient(): MutableLiveData<PatientItem?> =
+    if (selectedPatientItem.value != null) selectedPatientItem else MutableLiveData(null)
 
-  fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
-    return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
-  }
+  fun getReportsTypeList(): Flow<PagingData<ReportItem>> =
+    Pager(PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE)) { repository }.flow
 
   fun onPatientItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
     if (listenerIntent is AncRowClickListenerIntent) {
@@ -137,215 +148,168 @@ constructor(
 
   fun updateSelectedPatient(patient: PatientItem) {
     selectedPatientItem.value = patient
-    reportState.currentScreen = ReportScreen.FILTER
+    currentScreen = ReportScreen.FILTER
   }
 
   fun onReportMeasureItemClicked(item: ReportItem) {
-    setDefaultDates()
     selectedMeasureReportItem.value = item
-    reportState.currentScreen = ReportScreen.FILTER
-  }
-
-  private fun setDefaultDates() {
-    val endDate = Date()
-    val cal: Calendar = Calendar.getInstance().apply { add(Calendar.DATE, -30) }
-    val startDate = cal.time
-
-    val formattedStartDate =
-      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(startDate)
-    val formattedEndDate =
-      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(endDate)
-
-    startDateTimeMillis.value = startDate.time
-    endDateTimeMillis.value = endDate.time
-
-    _startDate.value = formattedStartDate
-    _endDate.value = formattedEndDate
+    currentScreen = ReportScreen.FILTER
   }
 
   fun onBackPress() {
     backPress.value = true
+    resetValues()
   }
 
-  fun fetchCqlLibraryData(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    libraryURL: String
-  ): LiveData<String> {
-    val libraryData = MutableLiveData<String>()
-    viewModelScope.launch(dispatcher.io()) {
-      val auxCQLLibraryData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(libraryURL).entry[0].resource)
-      libraryData.postValue(auxCQLLibraryData)
-    }
-    return libraryData
+  fun onBackPress(reportScreen: ReportScreen) {
+    currentScreen = reportScreen
+    resetValues()
+    updateGenerateReport()
   }
 
-  fun onBackPressFromFilter() {
-    reportState.currentScreen = ReportScreen.HOME
+  fun resetValues() {
+    currentReportType.value = ""
+    selectedPatientItem.value = null
+    resultForIndividual.value = null
+    resultForPopulation.value = null
   }
 
-  fun onBackPressFromPatientSearch() {
-    reportState.currentScreen = ReportScreen.FILTER
+  fun onGenerateReportClicked() {
+    onGenerateReportClicked.value = true
   }
 
-  fun onBackPressFromResult() {
-    reportState.currentScreen = ReportScreen.FILTER
-  }
+  fun evaluateMeasure(
+    context: Context,
+    measureUrl: String,
+    individualEvaluation: Boolean,
+    measureResourceBundleUrl: String
+  ) {
+    viewModelScope.launch {
+      val startDateFormatted =
+        measureReportDateFormatter.format(dateRangeDateFormatter.parse(startDate.value!!)!!)
+      val endDateFormatted =
+        measureReportDateFormatter.format(dateRangeDateFormatter.parse(endDate.value!!)!!)
+      showProgressIndicator.value = true
 
-  fun getSelectionDate(): Long {
-    val sdf = SimpleDateFormat(simpleDateFormatPattern, Locale.ENGLISH)
-    try {
-      var mDate = sdf.parse(_endDate.value!!)
-      if (isChangingStartDate.value != false) {
-        mDate = sdf.parse(_startDate.value!!)
+      withContext(dispatcher.io()) {
+        fhirEngine.loadCqlLibraryBundle(
+          context = context,
+          fhirOperator = fhirOperatorDecorator,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          resourcesBundlePath = measureResourceBundleUrl
+        )
       }
-      val timeInMilliseconds = mDate?.time
-      println("Date in milli :: $timeInMilliseconds")
-      return timeInMilliseconds!!
-    } catch (e: ParseException) {
-      e.printStackTrace()
-      return Date().time
-    }
-  }
 
-  fun onStartDatePress() {
-    isChangingStartDate.value = true
-    showDatePicker.value = true
-  }
+      if (selectedPatientItem.value != null && individualEvaluation) {
+        val measureReport =
+          withContext(dispatcher.io()) {
+            fhirOperatorDecorator.evaluateMeasure(
+              url = measureUrl,
+              start = startDateFormatted,
+              end = endDateFormatted,
+              reportType = SUBJECT,
+              subject = selectedPatientItem.value!!.patientIdentifier,
+              practitioner = authenticatedUserInfo?.keyclockuuid!!
+            )
+          }
 
-  fun onEndDatePress() {
-    isChangingStartDate.value = false
-    showDatePicker.value = true
-  }
-
-  fun onPatientSelectionTypeChanged(newType: String) {
-    _patientSelectionType.value = newType
-  }
-
-  fun onGenerateReportPress() {
-    reportState.currentScreen = ReportScreen.RESULT
-  }
-
-  fun auxGenerateReport() {
-    if (patientSelectionType.value.equals("All", true) || selectedPatientItem.value != null) {
-      processGenerateReport.setValue(true)
-    } else {
-      alertSelectPatient.setValue(true)
-    }
-  }
-
-  fun onDatePicked(selection: Long) {
-    showDatePicker.value = false
-    if (isChangingStartDate.value != false) {
-      val startDate = Date().apply { time = selection }
-      val formattedStartDate =
-        SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(startDate)
-      startDateTimeMillis.value = startDate.time
-      _startDate.value = formattedStartDate
-    } else {
-      val endDate = Date().apply { time = selection }
-      val formattedEndDate =
-        SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(endDate)
-      endDateTimeMillis.value = endDate.time
-      _endDate.value = formattedEndDate
-    }
-    _isReadyToGenerateReport.value = true
-    reportState.currentScreen = ReportScreen.FILTER
-  }
-
-  fun fetchCqlFhirHelperData(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    helperURL: String
-  ): LiveData<String> {
-    val helperData = MutableLiveData<String>()
-    viewModelScope.launch(dispatcher.io()) {
-      val auxCQLHelperData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(helperURL).entry[0].resource)
-      helperData.postValue(auxCQLHelperData)
-    }
-    return helperData
-  }
-
-  fun fetchCqlValueSetData(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    valueSetURL: String
-  ): LiveData<String> {
-    val valueSetData = MutableLiveData<String>()
-    viewModelScope.launch(dispatcher.io()) {
-      val auxCQLValueSetData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(valueSetURL))
-      valueSetData.postValue(auxCQLValueSetData)
-    }
-    return valueSetData
-  }
-
-  fun fetchCqlPatientData(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    patientURL: String
-  ): LiveData<String> {
-    val patientData = MutableLiveData<String>()
-    viewModelScope.launch(dispatcher.io()) {
-      try {
-        val dataFromUrl = fhirResourceDataSource.loadData(patientURL)
-        val auxCQLPatientData = parser.encodeResourceToString(dataFromUrl)
-        patientData.postValue(auxCQLPatientData)
-      } catch (e: Exception) {
-        Timber.e(e)
-        patientData.postValue("")
-      }
-    }
-    return patientData
-  }
-
-  fun fetchCqlMeasureEvaluateLibraryAndValueSets(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    libAndValueSetURL: String,
-    measureURL: String,
-    cqlMeasureReportLibInitialString: String
-  ): LiveData<String> {
-    val valueSetData = MutableLiveData<String>()
-    val equalsIndexUrl: Int = libAndValueSetURL.indexOf("=")
-
-    val libStrAfterEquals = libAndValueSetURL.substring(libAndValueSetURL.lastIndexOf("=") + 1)
-    val libList = libStrAfterEquals.split(",").map { it.trim() }
-
-    val libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
-    val fullResourceString = StringBuilder(cqlMeasureReportLibInitialString)
-
-    viewModelScope.launch(dispatcher.io()) {
-      val measureObject =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
-
-      fullResourceString.append("{\"resource\":")
-      fullResourceString.append(measureObject)
-      fullResourceString.append("}")
-
-      var auxCQLValueSetData: String
-      for (lib in libList) {
-        auxCQLValueSetData =
-          parser.encodeResourceToString(
-            fhirResourceDataSource.loadData(libURLStrBeforeEquals + lib).entry[0].resource
+        if (measureReport.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
+          val population: MeasureReport.MeasureReportGroupPopulationComponent? =
+            measureReport.group.first().population.find { it.id == NUMERATOR }
+          resultForIndividual.postValue(
+            ResultItem(status = if (population != null && population.count > 0) "True" else "False")
           )
+          showProgressIndicator.postValue(false)
+          currentScreen = ReportScreen.RESULT
+        }
+      } else if (selectedPatientItem.value == null && !individualEvaluation) {
+        val measureReport =
+          withContext(dispatcher.io()) {
+            fhirOperatorDecorator.evaluateMeasure(
+              url = measureUrl,
+              start = startDateFormatted,
+              end = endDateFormatted,
+              reportType = POPULATION,
+              subject = null,
+              practitioner = authenticatedUserInfo?.keyclockuuid!!
+            )
+          }
 
-        fullResourceString.append(",")
-        fullResourceString.append("{\"resource\":")
-        fullResourceString.append(auxCQLValueSetData)
-        fullResourceString.append("}")
+        resultForPopulation.postValue(formatPopulationMeasureReport(measureReport))
+        showProgressIndicator.postValue(false)
+        currentScreen = ReportScreen.RESULT
       }
-      fullResourceString.deleteCharAt(fullResourceString.length - 1)
-      fullResourceString.append("}]}")
-      valueSetData.postValue(fullResourceString.toString())
     }
-    return valueSetData
   }
 
-  class ReportState {
-    var currentScreen by mutableStateOf(ReportScreen.PREHOMElOADING)
+  fun formatPopulationMeasureReport(measureReport: MeasureReport): List<ResultItemPopulation> {
+    return measureReport.group.flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
+      reportGroup.stratifier.map { stratifier ->
+        val resultItems: List<ResultItem> =
+          stratifier.stratum.filter { it.hasValue() }.map { stratifierComponent ->
+            val text =
+              when {
+                stratifierComponent.value.hasText() -> stratifierComponent.value.text
+                stratifierComponent.value.hasCoding() ->
+                  stratifierComponent.value.coding.last().display
+                else -> ""
+              }
+
+            val numerator = stratifierComponent.findPopulation(NUMERATOR)?.count ?: 0
+            val denominator = stratifierComponent.findPopulation(DENOMINATOR)?.count ?: 0
+
+            val percentage =
+              ceil((numerator / if (denominator == 0) 1 else denominator) * 100.0).toInt()
+            val count = "$numerator/$denominator"
+            ResultItem(title = text, percentage = percentage.toString(), count = count)
+          }
+        ResultItemPopulation(title = stratifier.id.replaceDashes(), dataList = resultItems)
+      }
+    }
+  }
+
+  private fun MeasureReport.StratifierGroupComponent.findPopulation(
+    id: String
+  ): MeasureReport.StratifierGroupPopulationComponent? {
+    return this.population.find { it.hasId() && it.id.equals(id, ignoreCase = true) }
+  }
+
+  fun String.replaceDashes() = this.replace("-", " ").uppercase(Locale.getDefault())
+
+  fun onReportTypeSelected(reportType: String, launchPatientList: Boolean = false) {
+    this.currentReportType.value = reportType
+    if (launchPatientList) {
+      filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, ""))
+      currentScreen = ReportScreen.PICK_PATIENT
+    }
+    // Update generate report value
+    updateGenerateReport()
+  }
+
+  fun setDateRange(dateRange: androidx.core.util.Pair<Long, Long>) {
+    this._dateRange.value = dateRange
+    // Format displayed date e.g 16 Nov, 2020 - 29 Oct, 2021
+    setStartEndDate(
+      startDate = dateRangeDateFormatter.format(Date(dateRange.first)),
+      endDate = dateRangeDateFormatter.format(Date(dateRange.second))
+    )
+  }
+
+  fun setStartEndDate(startDate: String, endDate: String) {
+    this._startDate.value = startDate
+    this._endDate.value = endDate
+    updateGenerateReport()
+  }
+
+  private fun updateGenerateReport() {
+    generateReport.value =
+      _startDate.value!!.matches(regex) &&
+        _endDate.value!!.matches(regex) &&
+        currentReportType.value!!.isNotEmpty()
+  }
+
+  override fun onCleared() {
+    resetValues()
   }
 
   enum class ReportScreen {
@@ -353,11 +317,15 @@ constructor(
     FILTER,
     PICK_PATIENT,
     RESULT,
-    PREHOMElOADING
   }
 
-  object PatientSelectionType {
-    const val ALL = "All"
-    const val INDIVIDUAL = "Individual"
+  companion object {
+    const val DATE_RANGE_DATE_FORMAT = "d MMM, yyyy"
+    const val MEASURE_REPORT_DATE_FORMAT = "yyyy-MM-dd"
+    const val NUMERATOR = "numerator"
+    const val DENOMINATOR = "denominator"
+    const val INITIAL_POPULATION = "initial-population"
+    const val SUBJECT = "subject"
+    const val POPULATION = "population"
   }
 }
