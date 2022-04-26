@@ -167,6 +167,33 @@ constructor(
         }
     }
 
+    suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead:String) {
+
+        val patient = fhirEngine.load(Patient::class.java, newFamilyHead)
+
+        val relatedPerson =  RelatedPerson().apply {
+            this.active = true
+            this.name = patient.name
+            this.birthDate = patient.birthDate
+            this.identifier = patient.identifier
+        }
+
+        fhirEngine.save(relatedPerson)
+
+        //TODO add proper relatedPerson Reference
+
+        val family = fhirEngine.search<Group>{
+            filterByResourceTypeId(
+            RelatedPerson.RES_ID,
+            ResourceType.RelatedPerson,
+            oldFamilyHead
+            )
+        }.firstOrNull()?.apply {
+            managingEntity = relatedPerson
+        }
+        fhirEngine.update(family)
+    }
+
   private suspend fun loadFamilyMemberRegisterData(memberId: String) =
     defaultRepository.loadResource<Patient>(memberId)?.let { patient ->
       val conditions = loadMemberCondition(patient.logicalId)
