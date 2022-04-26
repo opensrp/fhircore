@@ -57,9 +57,6 @@
     <string name="questionnaire_alert_back_pressed_message">Are you sure you want to go back?</string>
     <string name="questionnaire_alert_back_pressed_title">Discard changes</string>
     <string name="questionnaire_alert_back_pressed_button_title">Discard</string>
-    <string name="unsaved_changes_message_alert">If you leave before saving, your edits or changes will be lost</string>
-    <string name="unsaved_changes_neg">Leave</string>
-    <string name="unsaved_changes_pos">Stay</string>
     <string name="questionnaire_alert_submit_message">Please confirm that you have all details filled in before submission</string>
     <string name="questionnaire_alert_submit_title">Submit details</string>
     <string name="questionnaire_alert_submit_button_title">Save</string>

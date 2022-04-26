@@ -20,10 +20,10 @@ import android.app.Activity
 import android.content.Intent
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_CALLING_ACTIVITY
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_RELATED_TO_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-//todo remove this const once we can remove the dependency on the Family Questionnaire
-private const val QUESTIONNAIRE_RELATED_TO_KEY = "questionnaire-related-to"
-private const val QUESTIONNAIRE_CALLING_ACTIVITY = "questionnaire-calling-activity"
+
 fun Activity.startAncEnrollment(patientId: String) {
   startActivity(getFamilyQuestionnaireIntent(patientId, FamilyFormConstants.ANC_ENROLLMENT_FORM))
 }

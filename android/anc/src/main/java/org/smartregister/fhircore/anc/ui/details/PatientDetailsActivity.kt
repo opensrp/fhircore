@@ -46,7 +46,7 @@ import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActi
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_REGISTER_FORM
-import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.AlertDialogListItem
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
@@ -145,7 +145,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       }
       R.id.edit_info -> {
         startActivity(
-          Intent(this, org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity::class.java)
+          Intent(this, FamilyQuestionnaireActivity::class.java)
             .putExtras(
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
@@ -156,7 +156,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
               )
             )
             .putExtra(
-              org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY,
+              FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY,
               patient.value?.headId
             )
         )

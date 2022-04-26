@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.navigation.NavigationScreen
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
+import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -59,7 +60,7 @@ constructor(
   fun onEvent(event: FamilyProfileEvent) {
     when (event) {
       is FamilyProfileEvent.AddMember ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
+        event.context.launchQuestionnaire<FamilyQuestionnaireActivity>(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM
         )
       is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)

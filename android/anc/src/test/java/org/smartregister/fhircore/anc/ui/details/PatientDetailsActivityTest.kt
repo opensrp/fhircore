@@ -62,7 +62,7 @@ import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
-import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.plusYears
@@ -153,7 +153,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     val menuItem = RoboMenuItem(R.id.anc_enrollment)
     patientDetailsActivity.onOptionsItemSelected(menuItem)
 
-    val expectedIntent = Intent(patientDetailsActivity, org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity::class.java)
+    val expectedIntent = Intent(patientDetailsActivity, FamilyQuestionnaireActivity::class.java)
     val actualIntent =
       Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
         .nextStartedActivity
@@ -168,7 +168,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     val menuItem = RoboMenuItem(R.id.edit_info)
     patientDetailsActivity.onOptionsItemSelected(menuItem)
 
-    val expectedIntent = Intent(patientDetailsActivity, org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity::class.java)
+    val expectedIntent = Intent(patientDetailsActivity, FamilyQuestionnaireActivity::class.java)
     val actualIntent =
       Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
         .nextStartedActivity
