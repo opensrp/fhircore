@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.form
+package org.smartregister.fhircore.anc.ui.family.form
 
 import android.content.Intent
 import android.widget.Button
@@ -25,14 +25,15 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
-import org.smartregister.fhircore.quest.R
 const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
 const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
 @AndroidEntryPoint
+//todo - this class should be removed once AncActivityExtension is being cleared
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   lateinit var saveBtn: Button
@@ -86,7 +87,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       finish()
     }
   }
-  //todo - will be removed
+
   private fun startAncEnrollment(patientId: String) {
     startActivity(
       Intent(this, FamilyQuestionnaireActivity::class.java)

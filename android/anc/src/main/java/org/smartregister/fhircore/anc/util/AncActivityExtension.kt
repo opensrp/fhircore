@@ -19,7 +19,7 @@ package org.smartregister.fhircore.anc.util
 import android.app.Activity
 import android.content.Intent
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 //todo remove this const once we can remove the dependency on the Family Questionnaire
 private const val QUESTIONNAIRE_RELATED_TO_KEY = "questionnaire-related-to"
@@ -37,7 +37,7 @@ fun Activity.startFamilyMemberRegistration(familyId: String) {
 //todo - from here questionnaireType will be default which will need to
 // have a Save as prefix on save button text, need to handle that case on QuestionnaireActivity
 fun Activity.getFamilyQuestionnaireIntent(patientId: String? = null, form: String): Intent {
-  return Intent(this, org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity::class.java)
+  return Intent(this, FamilyQuestionnaireActivity::class.java)
     .putExtras(QuestionnaireActivity.intentArgs(clientIdentifier = patientId, formName = form))
     .putExtra(QUESTIONNAIRE_CALLING_ACTIVITY, getCallerActivity())
 }
