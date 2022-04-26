@@ -23,6 +23,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
@@ -32,6 +33,7 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.navigation.NavigationScreen
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
+import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -90,6 +92,19 @@ constructor(
                 ProfileViewData.FamilyProfileViewData
           }
       }
+    }
+  }
+
+  fun filterEligibleFamilyMember(profileViewData: ProfileViewData.FamilyProfileViewData): List<FamilyMemberViewState> {
+    return profileViewData.familyMemberViewStates.filter {
+      if (it.age.contains("y")) (it.age.split(" ")[0].replace("y", "").toInt() > 15)
+      else false
+    }
+  }
+
+  suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead:String){
+    withContext(dispatcherProvider.io()) {
+      patientRegisterRepository.registerDaoFactory.familyRegisterDao.changeFamilyHead(newFamilyHead = newFamilyHead, oldFamilyHead = oldFamilyHead)
     }
   }
 
