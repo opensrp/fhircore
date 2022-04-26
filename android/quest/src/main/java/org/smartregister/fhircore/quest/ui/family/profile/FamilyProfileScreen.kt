@@ -111,8 +111,8 @@ fun FamilyProfileScreen(
         coroutineScope = coroutineScope,
         bottomSheetScaffoldState = bottomSheetScaffoldState,
         title = bottomSheetTitle,
-        familyMembers = profileViewData.takeIf { it.age.toInt()>15 },
-        onSaveClick = { logicalId ->
+        familyMembers = profileViewData.familyMemberViewStates.filter { it.age.toInt()>15 },
+        onSaveClick = { familyMember ->
             // changeHeadLogic
         },
         onCancelClick = {

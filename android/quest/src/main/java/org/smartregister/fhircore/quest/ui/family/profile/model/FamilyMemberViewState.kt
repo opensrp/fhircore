@@ -24,6 +24,7 @@ data class FamilyMemberViewState(
   val statuses: List<String> = emptyList(),
   val showAtRisk: Boolean = false,
   val isDeceased: Boolean = false,
+  var selected: Boolean = false,
   val memberIcon: Int? = null,
   val memberTasks: List<FamilyMemberTask> = emptyList()
 )
