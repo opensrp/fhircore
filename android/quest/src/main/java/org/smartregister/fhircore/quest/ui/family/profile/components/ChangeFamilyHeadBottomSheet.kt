@@ -148,7 +148,7 @@ const val TAG_CANCEL = "cancel"
                 modifier = Modifier.fillMaxWidth()
                 ) {
                     itemsIndexed(
-                    items = source.list.toMutableStateList(),
+                    items = source,
                     itemContent = { index, item ->
                         BottomListItem(item) {
                             isEnabled = true
