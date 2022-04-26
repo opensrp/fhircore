@@ -62,6 +62,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           logicalId = inputModel.logicalId,
           name = context.getString(R.string.family_suffix, inputModel.name),
           address = inputModel.address,
+          age = inputModel.age,
           familyMemberViewStates =
             inputModel.members.map { memberProfileData ->
               FamilyMemberViewState(
