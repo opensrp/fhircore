@@ -59,6 +59,8 @@ import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
 import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
@@ -75,6 +77,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
+  val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
+
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
     spyk(
@@ -83,7 +87,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         defaultRepository = mockk(),
         configurationRegistry = mockk(),
         transformSupportServices = mockk(),
-        dispatcherProvider = mockk(),
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = mockk(),
         libraryEvaluator = mockk()
       )
