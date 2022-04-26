@@ -90,7 +90,7 @@ fun ChangeFamilyHeadBottomSheet(
             .padding(horizontal = 16.dp, vertical = 16.dp)
       ) {
         Text(
-          text = stringResource(id = R.string.label_select_new_head),
+          text = stringResource(id = R.string.label_assign_new_family_head),
           textAlign = TextAlign.Start,
           fontWeight = FontWeight.Light,
           fontSize = 20.sp,
@@ -141,7 +141,7 @@ fun ChangeFamilyHeadBottomSheet(
         )
       }
       Text(
-        text = stringResource(id = R.string.label_assign_new_family_head),
+        text = stringResource(id = R.string.label_select_new_head),
         modifier = modifier.padding(horizontal = 12.dp),
         textAlign = TextAlign.Start,
         fontWeight = FontWeight.Light,
