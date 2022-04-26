@@ -57,6 +57,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 
 const val TAG_SAVE = "save"
@@ -67,8 +68,8 @@ const val TAG_CANCEL = "cancel"
 @Composable fun ChangeFamilyHeadBottomSheet(coroutineScope: CoroutineScope,
                                             bottomSheetScaffoldState: BottomSheetScaffoldState,
                                             title: String,
-                                            familyMembers: ProfileViewData.FamilyProfileViewData?,
-                                            onSaveClick: (String) -> Unit,
+                                            familyMembers: List<FamilyMemberViewState>?,
+                                            onSaveClick: (FamilyMemberViewState) -> Unit,
                                             onCancelClick: () -> Unit,
                                             modifier: Modifier = Modifier) {
 
@@ -129,7 +130,7 @@ const val TAG_CANCEL = "cancel"
                     modifier = modifier.padding(horizontal = 12.dp)
                     )
                     Text(
-                    text = bottomSheetHolder.tvWarningTitle,
+                    text = stringResource(id = R.string.label_select_new_head),
                     textAlign = TextAlign.Start,
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp,
@@ -137,7 +138,7 @@ const val TAG_CANCEL = "cancel"
                     )
                 }
                 Text(
-                text = bottomSheetHolder.subTitle.uppercase(),
+                text = stringResource(id = R.string.label_assign_new_family_head),
                 modifier = modifier.padding(horizontal = 12.dp),
                 textAlign = TextAlign.Start,
                 fontWeight = FontWeight.Light,
@@ -148,13 +149,13 @@ const val TAG_CANCEL = "cancel"
                 modifier = Modifier.fillMaxWidth()
                 ) {
                     itemsIndexed(
-                    items = source,
+                    items = source!!,
                     itemContent = { index, item ->
                         BottomListItem(item) {
                             isEnabled = true
-                            source.list.forEach { it.selected = false }
-                            source.list[index].selected = true
-                            source = source.copy(reselect = source.reselect.not())
+                            source!!.forEach { it.selected = false }
+                            source!![index].selected = true
+                            source = source!!
                         }
                         Divider(color = DividerColor, thickness = 1.dp)
                     }
@@ -170,8 +171,11 @@ const val TAG_CANCEL = "cancel"
                 .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
                     TextButton(
-                    onClick = { onBottomSheetListener.onCancel() },
-                    modifier = modifier.fillMaxWidth().weight(1F).testTag(TAG_CANCEL),
+                    onClick = { onCancelClick },
+                    modifier = modifier
+                    .fillMaxWidth()
+                    .weight(1F)
+                    .testTag(TAG_CANCEL),
                     ) {
                         Text(
                         fontSize = 14.sp,
@@ -181,8 +185,11 @@ const val TAG_CANCEL = "cancel"
                     }
                     TextButton(
                     enabled = isEnabled,
-                    onClick = { onBottomSheetListener.onSave(source.list.first { it.selected }) },
-                    modifier = modifier.fillMaxWidth().weight(1F).testTag(TAG_SAVE),
+                    onClick = { onSaveClick(source!!.first { it.selected }) },
+                    modifier = modifier
+                    .fillMaxWidth()
+                    .weight(1F)
+                    .testTag(TAG_SAVE),
                     colors =
                     ButtonDefaults.textButtonColors(
                     backgroundColor =
@@ -202,16 +209,19 @@ const val TAG_CANCEL = "cancel"
 
     @Composable
     fun BottomListItem(
-    model: BottomSheetDataModel,
+    model: FamilyMemberViewState,
     modifier: Modifier = Modifier,
-    onClick: (BottomSheetDataModel) -> Unit
+    onClick: (FamilyMemberViewState) -> Unit
     ) {
-        Row(modifier = modifier.fillMaxWidth().padding(14.dp).clickable { onClick(model) }) {
+        Row(modifier = modifier
+        .fillMaxWidth()
+        .padding(14.dp)
+        .clickable { onClick(model) }) {
             RadioButton(
             selected = model.selected,
-            modifier = modifier.testTag(model.id),
+            modifier = modifier.testTag(model.patientId),
             onClick = { onClick(model) }
             )
-            Text(text = model.itemName, modifier = modifier.padding(horizontal = 12.dp))
+            Text(text = model.name, modifier = modifier.padding(horizontal = 12.dp))
         }
     }
