@@ -67,10 +67,8 @@ const val TAG_CANCEL = "cancel"
 @OptIn(ExperimentalMaterialApi::class)
 @Composable fun ChangeFamilyHeadBottomSheet(coroutineScope: CoroutineScope,
                                             bottomSheetScaffoldState: BottomSheetScaffoldState,
-                                            title: String,
                                             familyMembers: List<FamilyMemberViewState>?,
                                             onSaveClick: (FamilyMemberViewState) -> Unit,
-                                            onCancelClick: () -> Unit,
                                             modifier: Modifier = Modifier) {
 
         var source by remember { mutableStateOf(familyMembers) }
@@ -87,7 +85,7 @@ const val TAG_CANCEL = "cancel"
                 .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
                     Text(
-                    text = title,
+                    text = stringResource(id = R.string.label_select_new_head),
                     textAlign = TextAlign.Start,
                     fontWeight = FontWeight.Light,
                     fontSize = 20.sp,
@@ -130,7 +128,7 @@ const val TAG_CANCEL = "cancel"
                     modifier = modifier.padding(horizontal = 12.dp)
                     )
                     Text(
-                    text = stringResource(id = R.string.label_select_new_head),
+                    text = stringResource(id = R.string.alert_message_abort_operation),
                     textAlign = TextAlign.Start,
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp,
@@ -171,11 +169,14 @@ const val TAG_CANCEL = "cancel"
                 .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
                     TextButton(
-                    onClick = { onCancelClick },
+                    onClick = { coroutineScope.launch {
+                        if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                            bottomSheetScaffoldState.bottomSheetState.collapse()
+                    }},
                     modifier = modifier
                     .fillMaxWidth()
                     .weight(1F)
-                    .testTag(TAG_CANCEL),
+                    .testTag(TAG_CANCEL)
                     ) {
                         Text(
                         fontSize = 14.sp,
@@ -185,7 +186,10 @@ const val TAG_CANCEL = "cancel"
                     }
                     TextButton(
                     enabled = isEnabled,
-                    onClick = { onSaveClick(source!!.first { it.selected }) },
+                    onClick = {
+                        val item = source!!.first { it.selected}
+                        onSaveClick(item)
+                              },
                     modifier = modifier
                     .fillMaxWidth()
                     .weight(1F)
@@ -220,8 +224,9 @@ const val TAG_CANCEL = "cancel"
             RadioButton(
             selected = model.selected,
             modifier = modifier.testTag(model.patientId),
-            onClick = { onClick(model) }
+            onClick = {
+                onClick(model) }
             )
-            Text(text = model.name, modifier = modifier.padding(horizontal = 12.dp))
+            Text(text = model.name + ", " + model.age +", "+ model.gender)
         }
     }
