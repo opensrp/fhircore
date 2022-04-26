@@ -113,8 +113,7 @@ fun FamilyProfileScreen(
             bottomSheetScaffoldState = bottomSheetScaffoldState,
             familyMembers =
               profileViewData.familyMemberViewStates.filter {
-                if (it.age.contains("y"))
-                  (it.age.split(" ")[0].replace("y", "").toInt() > 15) && (!!it.isDeceased)
+                if (it.age.contains("y")) (it.age.split(" ")[0].replace("y", "").toInt() > 15)
                 else false
               },
             onSaveClick = { familyMember ->
