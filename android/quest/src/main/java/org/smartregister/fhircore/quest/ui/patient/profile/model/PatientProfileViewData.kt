@@ -43,6 +43,7 @@ sealed class ProfileViewData(
     override val logicalId: String = "",
     override val name: String = "",
     val address: String = "",
+    val age: String = "",
     val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
   ) : ProfileViewData(logicalId = logicalId, name = name)
 }
