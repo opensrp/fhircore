@@ -29,7 +29,13 @@ jobs:
       - name: Decode Keystore file
         run: echo $ENCODED_KEYSTORE | base64 -di > "${HOME}"/fhircore.keystore.jks
         env:
-          ENCODED_KEYSTORE: ${{ secrets.KEYSTORE_FILE }}  
+          ENCODED_KEYSTORE: ${{ secrets.KEYSTORE_FILE }}
+      
+      - name: Generate local.properties file
+        run: echo $LOCAL_PROPERTIES > local.properties
+        working-directory: android
+        env:
+          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}    
 
       - name: Checkout 🛎️
         uses: actions/checkout@v2
