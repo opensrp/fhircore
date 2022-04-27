@@ -208,7 +208,9 @@ constructor(
           appendPractitionerInfo(bun.resource)
 
           if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
-            resourceId?.let { appendPatientsAndRelatedPersonsToGroups(resource = bun.resource, resourceId = it) }
+            resourceId?.let {
+              appendPatientsAndRelatedPersonsToGroups(resource = bun.resource, resourceId = it)
+            }
           }
 
           // response MUST have subject by far otherwise flow has issues
