@@ -61,7 +61,7 @@ constructor(
       is FamilyProfileEvent.AddMember ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
-          clientIdentifier = event.familyHeadId
+          clientIdentifier = event.familyId
         )
       is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)
       is FamilyProfileEvent.OpenMemberProfile -> {

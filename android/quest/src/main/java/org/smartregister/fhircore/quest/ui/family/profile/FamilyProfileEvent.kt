@@ -23,7 +23,7 @@ sealed class FamilyProfileEvent {
 
   object RoutineVisit : FamilyProfileEvent()
 
-  data class AddMember(val context: Context, val familyHeadId: String?) : FamilyProfileEvent()
+  data class AddMember(val context: Context, val familyId: String?) : FamilyProfileEvent()
 
   data class OpenTaskForm(val context: Context, val taskFormId: String) : FamilyProfileEvent()
 
