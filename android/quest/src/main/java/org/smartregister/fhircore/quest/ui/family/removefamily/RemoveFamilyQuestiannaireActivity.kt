@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.profile
+package org.smartregister.fhircore.quest.ui.family.removefamily
 
 import android.content.Intent
 import android.os.Bundle
@@ -25,15 +25,11 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager_Factory
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
-import javax.inject.Inject
 
 class RemoveFamilyQuestionnaireActivity : QuestionnaireActivity() {
 
