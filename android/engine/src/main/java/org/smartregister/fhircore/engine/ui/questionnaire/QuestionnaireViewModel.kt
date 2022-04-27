@@ -167,7 +167,7 @@ constructor(
     }
   }
 
-  suspend fun appendPatientsToGroups(resource: Resource, resourceId: String) {
+  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, resourceId: String) {
     val family = defaultRepository.loadResource<Group>(resourceId)!!
     if (resource.resourceType == ResourceType.Patient) {
       family.member.add(
@@ -208,7 +208,7 @@ constructor(
           appendPractitionerInfo(bun.resource)
 
           if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
-            resourceId?.let { appendPatientsToGroups(resource = bun.resource, resourceId = it) }
+            resourceId?.let { appendPatientsAndRelatedPersonsToGroups(resource = bun.resource, resourceId = it) }
           }
 
           // response MUST have subject by far otherwise flow has issues
