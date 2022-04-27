@@ -150,9 +150,9 @@ fun Patient.extractAddressText(): String {
   return with(addressFirstRep) { this.text ?: "" }
 }
 
-fun Patient.extractTelecom(): String {
-  if (!hasTelecom()) return ""
-  return with(telecomFirstRep) { this.value }
+fun Patient.extractTelecom(): List<String>? {
+  if (!hasTelecom()) return null
+  return telecom.map { it.value }
 }
 
 fun Patient.extractGeneralPractitionerReference(): String {
