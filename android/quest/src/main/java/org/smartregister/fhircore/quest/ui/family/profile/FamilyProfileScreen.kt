@@ -178,8 +178,8 @@ fun FamilyProfileScreen(
                                             familyProfileViewModel.onEvent(
                                                 FamilyProfileEvent.OverflowMenuClick(
                                                     context,
-                                                    familyHeadId,
-                                                    it.id
+                                                    it.id,
+                                                    familyHeadId
                                                 )
                                             )
                                     },
