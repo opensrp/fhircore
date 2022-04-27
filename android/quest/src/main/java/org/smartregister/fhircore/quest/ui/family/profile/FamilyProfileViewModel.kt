@@ -101,16 +101,20 @@ constructor(
     }
   }
 
-  fun filterEligibleFamilyMember(profileViewData: ProfileViewData.FamilyProfileViewData): List<FamilyMemberViewState> {
+  fun filterEligibleFamilyMember(
+    profileViewData: ProfileViewData.FamilyProfileViewData
+  ): List<FamilyMemberViewState> {
     return profileViewData.familyMemberViewStates.filter {
-      if (it.age.contains("y")) (it.age.split(" ")[0].replace("y", "").toInt() > 15)
-      else false
+      if (it.age.contains("y")) (it.age.split(" ")[0].replace("y", "").toInt() > 15) else false
     }
   }
 
-  suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead:String){
+  suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
     withContext(dispatcherProvider.io()) {
-      patientRegisterRepository.registerDaoFactory.familyRegisterDao.changeFamilyHead(newFamilyHead = newFamilyHead, oldFamilyHead = oldFamilyHead)
+      patientRegisterRepository.registerDaoFactory.familyRegisterDao.changeFamilyHead(
+        newFamilyHead = newFamilyHead,
+        oldFamilyHead = oldFamilyHead
+      )
     }
   }
 

@@ -158,7 +158,6 @@ fun ChangeFamilyHeadBottomSheet(
               isEnabled = true
               source!!.forEach { it.selected = false }
               source!![index].selected = true
-              source = source!!
             }
             Divider(color = DividerColor, thickness = 1.dp)
           }
