@@ -20,7 +20,6 @@ import android.content.Intent
 import android.widget.Button
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -30,8 +29,10 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.quest.R
+
 const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
 const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
+
 @AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
@@ -86,12 +87,16 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       finish()
     }
   }
-  //todo - will be removed
+  // todo - will be removed
   private fun startAncEnrollment(patientId: String) {
     startActivity(
       Intent(this, FamilyQuestionnaireActivity::class.java)
-      .putExtras(intentArgs(clientIdentifier = patientId, formName = ANC_ENROLLMENT_FORM))
-      .putExtra(QUESTIONNAIRE_CALLING_ACTIVITY, intent.getStringExtra(QUESTIONNAIRE_CALLING_ACTIVITY) ?: this::class.java.name))
+        .putExtras(intentArgs(clientIdentifier = patientId, formName = ANC_ENROLLMENT_FORM))
+        .putExtra(
+          QUESTIONNAIRE_CALLING_ACTIVITY,
+          intent.getStringExtra(QUESTIONNAIRE_CALLING_ACTIVITY) ?: this::class.java.name
+        )
+    )
   }
 
   companion object {

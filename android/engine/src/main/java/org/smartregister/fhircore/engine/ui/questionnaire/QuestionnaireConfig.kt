@@ -27,10 +27,10 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class QuestionnaireConfig(
-    val form: String,
-    val title: String,
-    val identifier: String,
-    val safeButtonText: String? = null,
-    val setPractitionerDetails: Boolean = false,
-    val setOrganizationDetails: Boolean = false
+  val form: String,
+  val title: String,
+  val identifier: String,
+  val safeButtonText: String? = null,
+  val setPractitionerDetails: Boolean = false,
+  val setOrganizationDetails: Boolean = false
 )

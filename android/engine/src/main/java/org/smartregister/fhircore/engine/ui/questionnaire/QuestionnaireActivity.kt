@@ -123,8 +123,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (questionnaireType.isReadOnly() || questionnaire.experimental) {
         text = context.getString(R.string.done)
       } else if (questionnaireType.isEditMode()) {
-        //setting the save button text from Questionnaire Config
-        text = questionnaireConfig.safeButtonText ?: getString(R.string.questionnaire_alert_submit_button_title)
+        // setting the save button text from Questionnaire Config
+        text =
+          questionnaireConfig.safeButtonText
+            ?: getString(R.string.questionnaire_alert_submit_button_title)
       }
     }
 
