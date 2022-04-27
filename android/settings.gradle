@@ -4,6 +4,4 @@ include ':eir'
 include ':engine'
 
 include ':quest'
-include ':p2p-lib'
-project(':p2p-lib').projectDir = new File(rootDir, 'p2p/p2p-lib/')
 
