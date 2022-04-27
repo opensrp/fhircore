@@ -97,10 +97,15 @@ constructor(
 
   fun filterEligibleFamilyMember(
     profileViewData: ProfileViewData.FamilyProfileViewData
-  ): List<FamilyMemberViewState> {
-    return profileViewData.familyMemberViewStates.filter {
-      if (it.age.contains("y")) (it.age.split(" ")[0].replace("y", "").toInt() > 15) else false
-    }
+  ): ChangeFamilyMembersHolder {
+    val listOfFamilies =
+      profileViewData.familyMemberViewStates.filter {
+        if (it.age.contains("y")) (it.age.split(" ")[0].replace("y", "").toInt() > 15) else false
+      }
+    val listOfChangeFamilyMembersModel = mutableListOf<ChangeFamilyMembersModel>()
+    listOfFamilies.forEach { listOfChangeFamilyMembersModel.add(ChangeFamilyMembersModel(it)) }
+
+    return ChangeFamilyMembersHolder(listOfChangeFamilyMembersModel)
   }
 
   suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
@@ -111,6 +116,16 @@ constructor(
       )
     }
   }
+
+  data class ChangeFamilyMembersHolder(
+    val list: List<ChangeFamilyMembersModel>,
+    var reselect: Boolean = false
+  )
+
+  data class ChangeFamilyMembersModel(
+    val familyMember: FamilyMemberViewState,
+    var selected: Boolean = false
+  )
 
   companion object {
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
