@@ -47,6 +47,8 @@ constructor(
     val jsonParser = FhirContext.forR4().newJsonParser()
     var classType: Class<out Resource> = Encounter::class.java
     when (type.name) {
+      // TODO move to utility function
+      P2PConstants.P2PDataTypes.GROUP -> classType = Group::class.java
       P2PConstants.P2PDataTypes.ENCOUNTER -> classType = Encounter::class.java
       P2PConstants.P2PDataTypes.OBSERVATION -> classType = Observation::class.java
       P2PConstants.P2PDataTypes.PATIENT -> classType = Patient::class.java

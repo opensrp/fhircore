@@ -21,6 +21,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -55,6 +56,8 @@ constructor(
     var highestRecordId = lastUpdated
     var classType: Class<out Resource> = Encounter::class.java
     when (dataType.name) {
+        // TODO move to utility function
+        P2PConstants.P2PDataTypes.GROUP -> classType = Group::class.java
         P2PConstants.P2PDataTypes.ENCOUNTER -> classType = Encounter::class.java
         P2PConstants.P2PDataTypes.OBSERVATION -> classType = Observation::class.java
         P2PConstants.P2PDataTypes.PATIENT -> classType = Patient::class.java
