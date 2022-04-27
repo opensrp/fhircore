@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
@@ -38,8 +39,23 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.extension.*
-import java.util.*
+import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.daysPassed
+import org.smartregister.fhircore.engine.util.extension.due
+import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractDeathDate
+import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.filterBy
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
+import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
+import org.smartregister.fhircore.engine.util.extension.isFamilyHead
+import org.smartregister.fhircore.engine.util.extension.lastSeenFormat
+import org.smartregister.fhircore.engine.util.extension.overdue
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
+import org.smartregister.fhircore.engine.util.extension.toCoding
 
 @Singleton
 class FamilyRegisterDao
@@ -165,16 +181,18 @@ constructor(
         this.telecom = patient.telecom
         this.address = patient.address
         this.gender = patient.gender
-        this.relationshipFirstRep.codingFirstRep.system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+        this.relationshipFirstRep.codingFirstRep.system =
+          "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
         this.patient = patient.asReference()
         this.id = UUID.randomUUID().toString()
       }
 
     fhirEngine.save(relatedPerson)
-    val family = fhirEngine.load(Group::class.java, oldFamilyHead).apply {
+    val family =
+      fhirEngine.load(Group::class.java, oldFamilyHead).apply {
         managingEntity = relatedPerson.asReference()
         name = relatedPerson.name.first().nameAsSingleString
-    }
+      }
     fhirEngine.update(family)
   }
 
