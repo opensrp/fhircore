@@ -30,7 +30,7 @@ sealed class FamilyProfileEvent {
   data class OpenMemberProfile(val patientId: String, val navController: NavHostController) :
     FamilyProfileEvent()
 
-  data class OverflowMenuClick(val menuId: Int) : FamilyProfileEvent()
+  data class OverflowMenuClick(val context: Context, val menuId: Int, val familyId: String?) : FamilyProfileEvent()
 
   data class FetchFamilyProfileData(val familyHeadId: String?) : FamilyProfileEvent()
 

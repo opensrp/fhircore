@@ -78,7 +78,7 @@ constructor(
                     R.id.remove_family ->
                         event.context.launchQuestionnaire<RemoveFamilyQuestionnaireActivity>(
                             questionnaireId = REMOVE_FAMILY_FORM,
-                            clientIdentifier = event.familyHeadId
+                            clientIdentifier = event.familyId
                         )
                 }
             }
