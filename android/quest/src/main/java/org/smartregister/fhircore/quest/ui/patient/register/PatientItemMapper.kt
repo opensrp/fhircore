@@ -51,10 +51,10 @@ class PatientItemMapper @Inject constructor(@ApplicationContext val context: Con
       displayAddress = inputModel.extractAddress(),
       address =
         AddressData(
-                inputModel.extractAddressDistrict(),
-                inputModel.extractAddressState(),
-                inputModel.extractAddressText(),
-                inputModel.extractAddress()
+          inputModel.extractAddressDistrict(),
+          inputModel.extractAddressState(),
+          inputModel.extractAddressText(),
+          inputModel.extractAddress()
         ),
       telecom = inputModel.extractTelecom(),
       generalPractitionerReference = inputModel.extractGeneralPractitionerReference(),

@@ -45,7 +45,7 @@ class PatientMapperTest : RobolectricTest() {
   @Test
   fun testMapToDomainModel() {
 
-    val dto = buildPatient("123456", "123456", "Doe", "John", 12)
+    val dto = buildPatient("123456", "123456", "Doe", "John", 12, listOf("+12345678"))
     val patientItem = patientItemMapper.transformInputToOutputModel(dto)
     with(patientItem) {
       assertEquals("12y", age)
@@ -53,7 +53,7 @@ class PatientMapperTest : RobolectricTest() {
       assertEquals("123456", id)
       assertEquals("123456", identifier)
       assertEquals("Dist 1 City 1 State 1", displayAddress)
-      assertEquals("+12345678", telecom)
+      assertEquals("+12345678", telecom!![0])
       assertEquals("practitioner/1234", generalPractitionerReference)
       assertEquals("reference/5678", managingOrganizationReference)
       assertEquals("State 1", address!!.state)
@@ -65,14 +65,15 @@ class PatientMapperTest : RobolectricTest() {
 
   @Test
   fun testMapToDomainModelWithoutIdentifier() {
-    val dto = buildPatient("123456", null, "Doe", "John", 12)
+    val dto = buildPatient("123456", null, "Doe", "John", 12, listOf("+1234", "+5678"))
     val patientItem = patientItemMapper.transformInputToOutputModel(dto)
     with(patientItem) {
       assertEquals("12y", age)
       assertEquals("John Doe", name)
       assertEquals("123456", id)
       assertEquals("", identifier)
-      assertEquals("+12345678", telecom)
+      assertEquals("+1234", telecom!![0])
+      assertEquals("+5678", telecom!![1])
       assertEquals("practitioner/1234", generalPractitionerReference)
       assertEquals("reference/5678", managingOrganizationReference)
       assertEquals("Dist 1 City 1 State 1", displayAddress)
@@ -88,7 +89,8 @@ class PatientMapperTest : RobolectricTest() {
     identifier: String?,
     family: String,
     given: String,
-    age: Int
+    age: Int,
+    telephones: List<String>
   ): Patient {
     return Patient().apply {
       this.id = id
@@ -106,7 +108,8 @@ class PatientMapperTest : RobolectricTest() {
         text = "Location 1"
       }
 
-      this.addTelecom().apply { value = "+12345678" }
+      telephones.forEach { telephoneItem -> this.addTelecom().apply { value = telephoneItem } }
+
       this.generalPractitionerFirstRep.apply { reference = "practitioner/1234" }
       this.managingOrganization.apply { reference = "reference/5678" }
     }

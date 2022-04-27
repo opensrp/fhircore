@@ -70,8 +70,13 @@ class PatientExtensionTest : RobolectricTest() {
 
   @Test
   fun testExtractTelecomShouldReturnTelecom() {
-    val patient = Patient().apply { addTelecom().apply { this.value = "+12345678" } }
-    Assert.assertEquals("+12345678", patient.extractTelecom())
+    val patient =
+      Patient().apply {
+        addTelecom().apply { this.value = "+1234" }
+        addTelecom().apply { this.value = "+5678" }
+      }
+    val expectedList: List<String> = listOf("+1234", "+5678")
+    Assert.assertEquals(expectedList, patient.extractTelecom())
   }
 
   @Test
