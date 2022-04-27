@@ -20,6 +20,7 @@ interface P2PConstants {
   interface P2PDataTypes {
     companion object {
       const val ENCOUNTER = "Encounter"
+      const val GROUP = "Group"
       const val PATIENT = "Patient"
       const val OBSERVATION = "Observation"
       const val TASK = "Task"

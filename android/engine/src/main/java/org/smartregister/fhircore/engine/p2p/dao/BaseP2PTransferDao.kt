@@ -34,17 +34,19 @@ open class BaseP2PTransferDao constructor(
   open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider
 ) {
 
-  val patient = DataType(name = P2PConstants.P2PDataTypes.PATIENT, DataType.Filetype.JSON, 0)
+  val group = DataType(name = P2PConstants.P2PDataTypes.GROUP, DataType.Filetype.JSON, 0)
+  val patient = DataType(name = P2PConstants.P2PDataTypes.PATIENT, DataType.Filetype.JSON, 1)
   val questionnaire =
-    DataType(name = P2PConstants.P2PDataTypes.QUESTIONNAIRE, DataType.Filetype.JSON, 1)
+    DataType(name = P2PConstants.P2PDataTypes.QUESTIONNAIRE, DataType.Filetype.JSON, 2)
   val questionnaireResponse =
-    DataType(name = P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE, DataType.Filetype.JSON, 2)
+    DataType(name = P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE, DataType.Filetype.JSON, 3)
   val observation =
-    DataType(name = P2PConstants.P2PDataTypes.OBSERVATION, DataType.Filetype.JSON, 3)
-  val encounter = DataType(name = P2PConstants.P2PDataTypes.ENCOUNTER, DataType.Filetype.JSON, 4)
+    DataType(name = P2PConstants.P2PDataTypes.OBSERVATION, DataType.Filetype.JSON, 4)
+  val encounter = DataType(name = P2PConstants.P2PDataTypes.ENCOUNTER, DataType.Filetype.JSON, 5)
 
   fun getTypes(): TreeSet<DataType> {
     val  dataTypes = TreeSet<DataType>()
+    dataTypes!!.add(group)
     dataTypes!!.add(patient)
     dataTypes!!.add(questionnaire)
     dataTypes!!.add(questionnaireResponse)
