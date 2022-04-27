@@ -166,17 +166,21 @@ constructor(
           )
     }
   }
-  
+
   suspend fun appendPatientsToGroups(resource: Resource, resourceId: String) {
-      val family = defaultRepository.loadResource<Group>(resourceId)!!
-      if (resource.resourceType == ResourceType.Patient) {
-          family.member.add(Group.GroupMemberComponent().apply { entity = Reference().apply { reference = "Patient/${resource.logicalId}"}});
-          
-      } else {
-          family.managingEntity  = Reference().apply { reference = "RelatedPerson/${resource.logicalId}"}
-      }
-      
-      defaultRepository.addOrUpdate(family);
+    val family = defaultRepository.loadResource<Group>(resourceId)!!
+    if (resource.resourceType == ResourceType.Patient) {
+      family.member.add(
+        Group.GroupMemberComponent().apply {
+          entity = Reference().apply { reference = "Patient/${resource.logicalId}" }
+        }
+      )
+    } else {
+      family.managingEntity =
+        Reference().apply { reference = "RelatedPerson/${resource.logicalId}" }
+    }
+
+    defaultRepository.addOrUpdate(family)
   }
 
   fun extractAndSaveResources(
@@ -202,9 +206,9 @@ constructor(
           }
 
           appendPractitionerInfo(bun.resource)
-          
-          if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType. RelatedPerson)) {
-              resourceId?.let { appendPatientsToGroups(resource = bun.resource, resourceId = it) }
+
+          if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
+            resourceId?.let { appendPatientsToGroups(resource = bun.resource, resourceId = it) }
           }
 
           // response MUST have subject by far otherwise flow has issues
