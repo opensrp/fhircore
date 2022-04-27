@@ -61,6 +61,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileViewModel
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
 const val TAG_SAVE = "save"
@@ -71,7 +72,7 @@ const val TAG_CANCEL = "cancel"
 fun ChangeFamilyHeadBottomSheet(
   coroutineScope: CoroutineScope,
   bottomSheetScaffoldState: BottomSheetScaffoldState,
-  familyMembers: List<FamilyMemberViewState>?,
+  familyMembers: FamilyProfileViewModel.ChangeFamilyMembersHolder?,
   onSaveClick: (FamilyMemberViewState) -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -152,12 +153,13 @@ fun ChangeFamilyHeadBottomSheet(
         modifier = Modifier.fillMaxWidth()
       ) {
         itemsIndexed(
-          items = source!!,
+          items = source!!.list.toMutableList(),
           itemContent = { index, item ->
             BottomListItem(item) {
               isEnabled = true
-              source!!.forEach { it.selected = false }
-              source!![index].selected = true
+              source!!.list.forEach { it.selected = false }
+              source!!.list[index].selected = true
+              source = source!!.copy(reselect = source!!.reselect.not())
             }
             Divider(color = DividerColor, thickness = 1.dp)
           }
@@ -189,7 +191,7 @@ fun ChangeFamilyHeadBottomSheet(
         }
         TextButton(
           enabled = isEnabled,
-          onClick = { onSaveClick(source!!.first { it.selected }) },
+          onClick = { onSaveClick(source!!.list.first { it.selected }.familyMember) },
           modifier = modifier.fillMaxWidth().weight(1F).testTag(TAG_SAVE),
           colors =
             ButtonDefaults.textButtonColors(
@@ -210,16 +212,19 @@ fun ChangeFamilyHeadBottomSheet(
 
 @Composable
 fun BottomListItem(
-  model: FamilyMemberViewState,
+  model: FamilyProfileViewModel.ChangeFamilyMembersModel,
   modifier: Modifier = Modifier,
   onClick: (FamilyMemberViewState) -> Unit
 ) {
-  Row(modifier = modifier.fillMaxWidth().padding(14.dp).clickable { onClick(model) }) {
+  Row(modifier = modifier.fillMaxWidth().padding(14.dp).clickable { onClick(model.familyMember) }) {
     RadioButton(
       selected = model.selected,
-      modifier = modifier.testTag(model.patientId),
-      onClick = { onClick(model) }
+      modifier = modifier.testTag(model.familyMember.patientId),
+      onClick = { onClick(model.familyMember) }
     )
-    Text(text = model.name + ", " + model.age + ", " + model.gender)
+    Text(
+      text =
+        model.familyMember.name + ", " + model.familyMember.age + ", " + model.familyMember.gender
+    )
   }
 }

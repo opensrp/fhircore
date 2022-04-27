@@ -75,7 +75,6 @@ import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyMembe
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileRow
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileTopBar
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyBottomSheetAction
-import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
 @Composable
 fun FamilyProfileScreen(
@@ -102,7 +101,9 @@ fun FamilyProfileScreen(
   var currentMemberPatientId by remember { mutableStateOf("") }
   var bottomSheetTitle by remember { mutableStateOf("") }
   var formButtonData by remember { mutableStateOf<List<FormButtonData>>(emptyList()) }
-  var familyList by remember { mutableStateOf<List<FamilyMemberViewState>>(emptyList()) }
+  var familyList by remember {
+    mutableStateOf(FamilyProfileViewModel.ChangeFamilyMembersHolder(emptyList()))
+  }
   var familyBottomSheetAction by remember {
     mutableStateOf(FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS)
   }
@@ -181,7 +182,7 @@ fun FamilyProfileScreen(
                     if (it.id == R.id.change_family_head) {
                       familyList =
                         familyProfileViewModel.filterEligibleFamilyMember(profileViewData)
-                      if (familyList.isNotEmpty()) {
+                      if (familyList.list.isNotEmpty()) {
                         familyBottomSheetAction = FamilyBottomSheetAction.CHANGE_FAMILY_HEAD
                         coroutineScope.launch {
                           if (bottomSheetScaffoldState.bottomSheetState.isCollapsed)
