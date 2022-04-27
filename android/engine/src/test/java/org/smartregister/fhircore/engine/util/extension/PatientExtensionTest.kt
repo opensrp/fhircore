@@ -50,6 +50,45 @@ class PatientExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun testExtractAddressAttributes() {
+    val patient =
+      Patient().apply {
+        addAddress().apply {
+          this.addLine("12 B")
+          this.addLine("Gulshan")
+          this.district = "Karimabad"
+          this.state = "Sindh"
+          this.text = "home location Karachi"
+        }
+      }
+
+    Assert.assertEquals("12 B, Gulshan, Karimabad Sindh", patient.extractAddress())
+    Assert.assertEquals("Karimabad", patient.extractAddressDistrict())
+    Assert.assertEquals("Sindh", patient.extractAddressState())
+    Assert.assertEquals("home location Karachi", patient.extractAddressText())
+  }
+
+  @Test
+  fun testExtractTelecomShouldReturnTelecom() {
+    val patient = Patient().apply { addTelecom().apply { this.value = "+12345678" } }
+    Assert.assertEquals("+12345678", patient.extractTelecom())
+  }
+
+  @Test
+  fun testExtractGeneralPractitionerShouldReturnReference() {
+    val patient =
+      Patient().apply { addGeneralPractitioner().apply { this.reference = "practitioner/1234" } }
+    Assert.assertEquals("practitioner/1234", patient.extractGeneralPractitionerReference())
+  }
+
+  @Test
+  fun testExtractManagingOrganizationShouldReturnReference() {
+    val patient =
+      Patient().apply { managingOrganization.apply { this.reference = "reference/1234" } }
+    Assert.assertEquals("reference/1234", patient.extractManagingOrganizationReference())
+  }
+
+  @Test
   fun testIsFamilyHeadShouldReturnTrueWithTagFamily() {
     val patient = Patient().apply { meta.addTag().display = "FamiLy" }
 
