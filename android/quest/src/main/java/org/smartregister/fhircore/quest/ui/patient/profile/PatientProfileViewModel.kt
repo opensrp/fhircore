@@ -27,6 +27,9 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
+import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -34,9 +37,18 @@ import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 class PatientProfileViewModel
 @Inject
 constructor(
+  val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper
 ) : ViewModel() {
+
+  val patientProfileUiState: MutableState<PatientProfileUiState> =
+    mutableStateOf(
+      PatientProfileUiState(
+        overflowMenuItems =
+          overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.PATIENT_PROFILE)
+      )
+    )
 
   val patientProfileViewData: MutableState<ProfileViewData.PatientProfileViewData> =
     mutableStateOf(ProfileViewData.PatientProfileViewData())
@@ -64,6 +76,14 @@ constructor(
         event.context.launchQuestionnaire<QuestionnaireActivity>(event.questionnaireId)
       is PatientProfileEvent.SeeAll -> {
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
+      }
+      is PatientProfileEvent.OverflowMenuClick -> {
+        when (event.menuId) {
+          R.id.remove_family_member -> {
+            /* TODO Launch RemoveFamilyQuestionnaireActivity */
+          }
+          else -> {}
+        }
       }
     }
 }
