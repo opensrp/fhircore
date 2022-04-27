@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -149,8 +150,9 @@ fun LoginPage(
       )
     }
     Column(
-      modifier = modifier.padding(horizontal = 16.dp).fillMaxHeight(),
-      verticalArrangement = Arrangement.SpaceBetween
+      modifier =
+        modifier.padding(horizontal = 16.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
+      verticalArrangement = Arrangement.SpaceBetween,
     ) {
       Spacer(modifier = modifier.height(20.dp))
       Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
