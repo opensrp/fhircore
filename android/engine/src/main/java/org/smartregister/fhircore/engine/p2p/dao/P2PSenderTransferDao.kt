@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Observation
@@ -76,6 +77,7 @@ constructor(
     records?.forEach {
       jsonArray.put(jsonParser.encodeResourceToString(it))
       highestRecordId = if (it.meta?.lastUpdated?.time!! > highestRecordId) it.meta?.lastUpdated?.time!! else highestRecordId
+      Timber.e("Sending ${it.resourceType} with id ====== ${it.logicalId}")
     }
 
     Timber.e("New highest Last updated at value is $highestRecordId")

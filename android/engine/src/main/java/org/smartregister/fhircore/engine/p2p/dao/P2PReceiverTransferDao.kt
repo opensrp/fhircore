@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.p2p.dao
 import androidx.annotation.NonNull
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.*
 import org.json.JSONArray
@@ -58,6 +59,7 @@ constructor(
         val resource = jsonParser.parseResource(classType, jsonArray.get(it).toString())
         addOrUpdate(resource = resource)
         maxLastUpdated = if (resource.meta.lastUpdated.time > maxLastUpdated) resource.meta.lastUpdated.time else maxLastUpdated
+        Timber.e("Received ${resource.resourceType} with id ====== ${resource.logicalId}")
       }
     }
     Timber.e("max last updated is $maxLastUpdated")
