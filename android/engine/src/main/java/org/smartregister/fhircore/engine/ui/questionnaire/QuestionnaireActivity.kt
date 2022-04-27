@@ -96,7 +96,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     val loadProgress = showProgressAlert(this, R.string.loading)
 
-    lifecycleScope.launch {
+    // Initialises the lateinit variable questionnaireViewModel to prevent
+    // some init operations running on a separate thread and causing a crash
+    questionnaireViewModel.sharedPreferencesHelper
+
+    lifecycleScope.launch(dispatcherProvider.io()) {
       loadQuestionnaireAndConfig(formName)
 
       withContext(dispatcherProvider.io()) { questionnaireViewModel.libraryEvaluator.initialize() }
@@ -106,9 +110,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         renderFragment()
       }
 
-      updateViews()
-
-      fragment.whenStarted { withContext(dispatcherProvider.main()) { loadProgress.dismiss() } }
+      withContext(dispatcherProvider.main()) {
+        updateViews()
+        fragment.whenStarted { loadProgress.dismiss() }
+      }
     }
   }
 
@@ -216,7 +221,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       val loadProgress = showProgressAlert(this, R.string.loading)
 
-      lifecycleScope.launch {
+      lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
         loadQuestionnaireAndConfig(questionnaireConfig.identifier)
 
@@ -224,9 +229,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
         renderFragment()
 
-        updateViews()
-
-        loadProgress.dismiss()
+        withContext(dispatcherProvider.main()) {
+          updateViews()
+          loadProgress.dismiss()
+        }
       }
     } else {
       showToast(getString(R.string.error_saving_form))

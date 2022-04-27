@@ -39,6 +39,13 @@ subprojects {
             ktfmt().googleStyle()
             licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
         }
+
+        format 'xml', {
+            target '**/*.xml'
+            indentWithSpaces()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
     }
 
     configurations.all {
