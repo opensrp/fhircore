@@ -52,7 +52,9 @@
     {
       "feature": "HouseHoldManagement",
       "active": true,
-      "settings": {},
+      "settings": {
+        "deactivateMembers": "true"
+      },
       "target": "CHW",
       "healthModule": "FAMILY",
       "useCases": [

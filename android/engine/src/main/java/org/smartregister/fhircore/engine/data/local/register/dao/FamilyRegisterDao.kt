@@ -27,6 +27,7 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task

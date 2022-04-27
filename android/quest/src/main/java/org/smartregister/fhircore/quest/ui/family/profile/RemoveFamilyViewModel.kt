@@ -23,8 +23,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.appfeature.AppFeature
+import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.util.extension.extractId
 import timber.log.Timber
@@ -34,11 +37,17 @@ class RemoveFamilyViewModel
 @Inject
 constructor(
     val repository: PatientRegisterRepository,
+    val appFeatureManager: AppFeatureManager
 ) : ViewModel() {
 
     var isRemoveFamily = MutableLiveData(false)
     var discardRemoving = MutableLiveData(false)
     val family = MutableLiveData<Group>()
+    var deactivateMembers = false
+
+    fun init(){
+        deactivateMembers =  appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement)[DEACTIVATE_FAMILY_MEMBERS_SETTING_KEY].toBoolean()
+    }
 
     fun fetchFamily(familyId: String) {
         viewModelScope.launch { family.postValue(repository.loadResource(familyId)) }
@@ -61,8 +70,17 @@ constructor(
                         ?.let { relatedPerson ->
                             repository.delete(relatedPerson)
                         }
-
                     family.managingEntity = null
+                    deactivateMembers.let {
+                        if (it) {
+                            family.member.map { member ->
+                                repository.loadResource<Patient>(member.entity.extractId())?.let { patient ->
+                                    patient.active = false
+                                    repository.addOrUpdate(patient)
+                                }
+                            }
+                        }
+                    }
                     family.member.clear()
                     family.active = false
 
@@ -78,5 +96,9 @@ constructor(
 
     fun discardRemovingFamily() {
         discardRemoving.postValue(true)
+    }
+
+    companion object {
+        const val DEACTIVATE_FAMILY_MEMBERS_SETTING_KEY = "deactivateMembers"
     }
 }
