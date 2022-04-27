@@ -24,7 +24,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -32,11 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -46,7 +43,7 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
-import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 @Composable
 fun PatientRegisterScreen(
@@ -59,10 +56,9 @@ fun PatientRegisterScreen(
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val context = LocalContext.current
-  val lifecycleOwner = LocalLifecycleOwner.current
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
-  // Safely update the current lambdas when a new one is provided
+
   val currentSetTotalRecordCount by rememberUpdatedState(
     patientRegisterViewModel::setTotalRecordsCount
   )
@@ -70,22 +66,9 @@ fun PatientRegisterScreen(
     patientRegisterViewModel::paginateRegisterData
   )
 
-  DisposableEffect(lifecycleOwner) {
-    // Create an observer that triggers our remembered functions for setting register total count
-    // and paginating the data. This will be triggered whenever the activity resumes to refresh data
-    val observer = LifecycleEventObserver { _, event ->
-      if (event == Lifecycle.Event.ON_RESUME) {
-        currentSetTotalRecordCount(appFeatureName, healthModule)
-        currentPaginateRegisterData(appFeatureName, healthModule, false)
-      }
-    }
-
-    lifecycleOwner.lifecycle.run {
-      // Register observer to lifecycle
-      addObserver(observer)
-      // Remove observer when effect leaves the lifecycle
-      onDispose { removeObserver(observer) }
-    }
+  LaunchedEffect(Unit) {
+    currentSetTotalRecordCount(appFeatureName, healthModule)
+    currentPaginateRegisterData(appFeatureName, healthModule, false)
   }
 
   val pagingItems: LazyPagingItems<RegisterViewData> =
@@ -98,23 +81,21 @@ fun PatientRegisterScreen(
   Scaffold(
     topBar = {
       // Top section has toolbar and a results counts view
-      Column {
-        TopScreenSection(
-          title = screenTitle,
-          searchText = searchText,
-          onSearchTextChanged = { searchText ->
-            patientRegisterViewModel.onEvent(
-              PatientRegisterEvent.SearchRegister(
-                searchText = searchText,
-                appFeatureName = appFeatureName,
-                healthModule = healthModule
-              )
+      TopScreenSection(
+        title = screenTitle,
+        searchText = searchText,
+        onSearchTextChanged = { searchText ->
+          patientRegisterViewModel.onEvent(
+            PatientRegisterEvent.SearchRegister(
+              searchText = searchText,
+              appFeatureName = appFeatureName,
+              healthModule = healthModule
             )
-          }
-        ) { openDrawer(true) }
-        // Only show counter during search
-        if (searchText.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
-      }
+          )
+        }
+      ) { openDrawer(true) }
+      // Only show counter during search
+      if (searchText.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
     },
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action
@@ -156,7 +137,7 @@ fun PatientRegisterScreen(
     Box(modifier = modifier.padding(innerPadding)) {
       RegisterList(
         pagingItems = pagingItems,
-        onOpenProfileClick = { patientId: String ->
+        onRowClick = { patientId: String ->
           patientRegisterViewModel.onEvent(
             PatientRegisterEvent.OpenProfile(appFeatureName, healthModule, patientId, navController)
           )

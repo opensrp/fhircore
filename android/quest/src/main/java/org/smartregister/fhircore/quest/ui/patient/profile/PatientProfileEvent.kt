@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.quest.ui.patient.profile
 
 import android.content.Context
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewSection
+import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 sealed class PatientProfileEvent {
   data class SeeAll(val patientProfileViewSection: PatientProfileViewSection) :

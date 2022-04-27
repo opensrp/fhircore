@@ -28,7 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
+import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 @Composable
 fun FamilyProfileTopBar(

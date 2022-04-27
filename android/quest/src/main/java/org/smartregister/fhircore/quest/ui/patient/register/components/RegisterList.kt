@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
@@ -29,26 +29,30 @@ import androidx.paging.compose.items
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import timber.log.Timber
 
 @Composable
 fun RegisterList(
-  modifier: Modifier = Modifier,
   pagingItems: LazyPagingItems<RegisterViewData>,
-  onOpenProfileClick: (String) -> Unit
+  onRowClick: (String) -> Unit,
+  modifier: Modifier = Modifier
 ) {
   LazyColumn {
-    items(pagingItems, key = { it.id }) {
-      RegisterListRow(registerViewData = it!!, onOpenProfileClick = onOpenProfileClick)
+    items(pagingItems, key = { it.logicalId }) {
+      RegisterListRow(registerViewData = it!!, onRowClick = onRowClick)
       Divider(color = DividerColor, thickness = 1.dp)
     }
     pagingItems.apply {
       when {
         loadState.refresh is LoadState.Loading ->
-          item { CircularProgressBar(modifier = modifier.wrapContentSize(Alignment.Center)) }
+          item {
+            CircularProgressBar(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally))
+          }
         loadState.append is LoadState.Loading ->
-          item { CircularProgressBar(modifier = modifier.wrapContentSize(Alignment.Center)) }
+          item {
+            CircularProgressBar(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally))
+          }
         loadState.refresh is LoadState.Error -> {
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error
           item {
