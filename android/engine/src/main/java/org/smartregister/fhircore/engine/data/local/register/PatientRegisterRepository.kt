@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.patient
+package org.smartregister.fhircore.engine.data.local.register
 
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.local.patient.dao.register.RegisterDaoFactory
+import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFactory
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
@@ -42,24 +43,31 @@ constructor(
     appFeatureName: String?,
     healthModule: HealthModule
   ): List<RegisterData> =
-    registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
-      currentPage = currentPage,
-      appFeatureName = appFeatureName
-    )
-      ?: emptyList()
+    withContext(dispatcherProvider.io()) {
+      registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
+        currentPage = currentPage,
+        appFeatureName = appFeatureName
+      )
+        ?: emptyList()
+    }
 
   override suspend fun countRegisterData(
     appFeatureName: String?,
     healthModule: HealthModule
-  ): Long = registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+  ): Long =
+    withContext(dispatcherProvider.io()) {
+      registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+    }
 
   override suspend fun loadPatientProfileData(
     appFeatureName: String?,
     healthModule: HealthModule,
     patientId: String
   ): ProfileData? =
-    registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
-      appFeatureName = appFeatureName,
-      resourceId = patientId
-    )
+    withContext(dispatcherProvider.io()) {
+      registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
+        appFeatureName = appFeatureName,
+        resourceId = patientId
+      )
+    }
 }

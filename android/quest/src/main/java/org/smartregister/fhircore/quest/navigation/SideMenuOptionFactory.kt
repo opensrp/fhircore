@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.navigation
+package org.smartregister.fhircore.quest.navigation
 
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.runBlocking
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
+import org.smartregister.fhircore.quest.R
 
 @Singleton
 class SideMenuOptionFactory
@@ -54,7 +54,7 @@ constructor(
       appFeatureManager.activeRegisterFeatures().map {
         SideMenuOption(
           appFeatureName = it.feature,
-          healthModule = it.healthModule,
+          healthModule = it.healthModule!!,
           iconResource =
             when (it.healthModule) {
               HealthModule.FAMILY -> R.drawable.ic_households
@@ -77,7 +77,7 @@ constructor(
             runBlocking {
               patientRegisterRepository.countRegisterData(
                 appFeatureName = it.feature,
-                healthModule = it.healthModule
+                healthModule = it.healthModule!!
               )
             }
         )

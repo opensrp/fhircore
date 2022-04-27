@@ -28,12 +28,13 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.appfeature.AppFeature
+import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.navigation.SideMenuOptionFactory
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -41,6 +42,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
 
 @HiltViewModel
 class AppMainViewModel
@@ -52,7 +54,8 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val configService: ConfigService
+  val configService: ConfigService,
+  val appFeatureManager: AppFeatureManager
 ) : ViewModel() {
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
@@ -73,7 +76,8 @@ constructor(
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
         sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
-        languages = configurationRegistry.fetchLanguages()
+        languages = configurationRegistry.fetchLanguages(),
+        enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync)
       )
   }
 
@@ -93,7 +97,7 @@ constructor(
         appMainUiState =
           appMainUiState.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
       }
-      AppMainEvent.TransferData -> {} // TODO Transfer data via P2P
+      is AppMainEvent.DeviceToDeviceSync -> {} // TODO Transfer data via P2P
       is AppMainEvent.UpdateSyncState -> {
         appMainUiState = appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
       }

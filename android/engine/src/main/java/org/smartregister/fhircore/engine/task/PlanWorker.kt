@@ -49,28 +49,24 @@ class PlanWorker(val appContext: Context, workerParams: WorkerParameters) :
           { value = of(Task.TaskStatus.RECEIVED.toCode()) },
         )
       }
-      .forEach { tsk ->
-        if (tsk.hasPastEnd()) {
-          tsk.status = Task.TaskStatus.FAILED
-
-          fhirEngine.save(tsk)
-
-          tsk.reasonReference.extractId().takeIf { it.isNotBlank() }?.let {
+      .forEach { task ->
+        if (task.hasPastEnd()) {
+          task.status = Task.TaskStatus.FAILED
+          fhirEngine.save(task)
+          task.reasonReference.extractId().takeIf { it.isNotBlank() }?.let {
             val carePlan = fhirEngine.load(CarePlan::class.java, it)
-
-            if (carePlan.isLastTask(tsk)) {
+            if (carePlan.isLastTask(task)) {
               carePlan.status = CarePlan.CarePlanStatus.COMPLETED
               fhirEngine.save(carePlan)
             }
           }
-        } else if (tsk.hasStarted()) {
-          tsk.status = Task.TaskStatus.READY
-          fhirEngine.save(tsk)
+        } else if (task.hasStarted()) {
+          task.status = Task.TaskStatus.READY
+          fhirEngine.save(task)
         }
       }
 
     Timber.i("Done task scheduling")
-
     return Result.success()
   }
 

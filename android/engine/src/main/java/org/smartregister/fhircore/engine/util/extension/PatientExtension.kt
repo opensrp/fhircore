@@ -22,6 +22,7 @@ import java.util.Date
 import java.util.Locale
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
@@ -210,3 +211,8 @@ fun Enumerations.AdministrativeGender.translateGender(context: Context) =
     Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
     else -> context.getString(R.string.unknown)
   }
+
+fun Patient.extractOfficialIdentifier(): String? =
+  if (this.hasIdentifier())
+    this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
+  else null

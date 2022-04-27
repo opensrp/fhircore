@@ -61,6 +61,11 @@
         "HOUSEHOLD_VISITS",
         "REMOVE_HOUSEHOLD_MEMBER"
       ]
+    },
+    {
+      "feature": "DeviceToDeviceSync",
+      "settings": {},
+      "active": true
     }
   ]
 }

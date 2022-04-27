@@ -33,7 +33,7 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val identifier: String? = null,
     val address: String,
     val head: FamilyMemberRegisterData? = null,
-    val members: List<FamilyMemberRegisterData>,
+    val members: List<FamilyMemberRegisterData> = emptyList(),
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null,
     val lastSeen: String? = null

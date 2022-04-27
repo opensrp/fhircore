@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.patient.dao.register
+package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
@@ -86,7 +86,7 @@ constructor(
       val formsFilter = configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY)
 
       ProfileData.DefaultProfileData(
-        id = patient.logicalId,
+        logicalId = patient.logicalId,
         name = patient.extractName(),
         identifier = patient.identifierFirstRep.value,
         address = patient.extractAge(),
@@ -127,6 +127,5 @@ constructor(
 
   companion object {
     const val FORMS_LIST_FILTER_KEY = "forms_list"
-    const val OFFICIAL_IDENTIFIER = "official"
   }
 }

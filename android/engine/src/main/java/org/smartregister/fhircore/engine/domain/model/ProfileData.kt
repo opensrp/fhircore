@@ -27,9 +27,9 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-sealed class ProfileData(open val id: String, open val name: String) {
+sealed class ProfileData(open val logicalId: String, open val name: String) {
   data class DefaultProfileData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val birthdate: Date,
@@ -45,10 +45,10 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val visits: List<Encounter> = listOf(),
     val forms: List<QuestionnaireConfig> = listOf(),
     val responses: List<QuestionnaireResponse> = listOf()
-  ) : ProfileData(id = id, name = name)
+  ) : ProfileData(logicalId = logicalId, name = name)
 
   data class FamilyProfileData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val address: String,
@@ -56,10 +56,10 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val members: List<FamilyMemberProfileData>,
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf()
-  ) : ProfileData(id = id, name = name)
+  ) : ProfileData(logicalId = logicalId, name = name)
 
   data class AncProfileData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val birthdate: Date,
@@ -72,5 +72,5 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf(),
     val visits: List<Encounter> = listOf()
-  ) : ProfileData(id = id, name = name)
+  ) : ProfileData(logicalId = logicalId, name = name)
 }
