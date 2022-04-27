@@ -38,22 +38,8 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
-import org.smartregister.fhircore.engine.util.extension.daysPassed
-import org.smartregister.fhircore.engine.util.extension.due
-import org.smartregister.fhircore.engine.util.extension.extractAddress
-import org.smartregister.fhircore.engine.util.extension.extractAge
-import org.smartregister.fhircore.engine.util.extension.extractDeathDate
-import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.extension.filterBy
-import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
-import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
-import org.smartregister.fhircore.engine.util.extension.isFamilyHead
-import org.smartregister.fhircore.engine.util.extension.lastSeenFormat
-import org.smartregister.fhircore.engine.util.extension.overdue
-import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
-import org.smartregister.fhircore.engine.util.extension.toCoding
+import org.smartregister.fhircore.engine.util.extension.*
+import java.util.*
 
 @Singleton
 class FamilyRegisterDao
@@ -176,21 +162,20 @@ constructor(
         this.active = true
         this.name = patient.name
         this.birthDate = patient.birthDate
-        this.identifier = patient.identifier
+        this.telecom = patient.telecom
+        this.address = patient.address
+        this.gender = patient.gender
+        this.relationshipFirstRep.codingFirstRep.system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+        this.patient = patient.asReference()
+        this.id = UUID.randomUUID().toString()
       }
 
     fhirEngine.save(relatedPerson)
-
-    // TODO add proper relatedPerson Reference
-
-    val family =
-      fhirEngine
-        .search<Group> {
-          filterByResourceTypeId(RelatedPerson.RES_ID, ResourceType.RelatedPerson, oldFamilyHead)
-        }
-        .firstOrNull()
-        ?.apply { managingEntity.identifier.value = newFamilyHead }
-    fhirEngine.update(family!!)
+    val family = fhirEngine.load(Group::class.java, oldFamilyHead).apply {
+        managingEntity = relatedPerson.asReference()
+        name = relatedPerson.name.first().nameAsSingleString
+    }
+    fhirEngine.update(family)
   }
 
   private suspend fun loadFamilyMemberRegisterData(memberId: String) =

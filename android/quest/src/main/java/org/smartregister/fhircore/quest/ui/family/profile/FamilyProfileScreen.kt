@@ -118,6 +118,8 @@ fun FamilyProfileScreen(
             onSaveClick = { familyMember ->
               coroutineScope.launch {
                 familyProfileViewModel.changeFamilyHead(familyMember.patientId, familyHeadId!!)
+                  if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                      bottomSheetScaffoldState.bottomSheetState.collapse()
               }
             }
           )
