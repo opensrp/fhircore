@@ -46,4 +46,9 @@
     <string name="households">Households</string>
     <string name="children">Children</string>
 
+    <!--remove family questionnaire strings-->
+    <string name="remove_family_warning">Removing %1$s will remove their entire health record from your device. This action can’t be undone.</string>
+    <string name="confirm_remove_family_title">Remove Family</string>
+    <string name="family_register_ok_title">Yes</string>
+
 </resources>

@@ -69,7 +69,7 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
   val configurationRegistry: ConfigurationRegistry =
     spyk(ConfigurationRegistry(mockk(), mockk(), mockk()))
 
-  private lateinit var removeFamilyQuestionnaireActivity: RemoveFamilyQuestionnaireActivity
+  private lateinit var removeFamilyQuestionnaireActivity: org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity
 
   @Before
   fun setUp() {
@@ -166,7 +166,7 @@ internal class RemoveFamilyQuestionnaireActivityTest : ActivityRobolectricTest()
       }
 
     removeFamilyQuestionnaireActivity =
-      Robolectric.buildActivity(RemoveFamilyQuestionnaireActivity::class.java, intent)
+      Robolectric.buildActivity(org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity::class.java, intent)
         .create()
         .get()
   }

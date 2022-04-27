@@ -28,7 +28,7 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.family.removefamily.RemoveFamilyQuestionnaireActivity
+//import org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.getCallerActivity
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
 import org.smartregister.fhircore.engine.ui.base.AlertDialogListItem
@@ -161,8 +161,8 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   }
 
   private fun removeFamilyMenuItemClicked(familyId: String) {
-    startActivity(
-      Intent(this, RemoveFamilyQuestionnaireActivity::class.java).apply {
+   /* startActivity(
+      Intent(this, org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity::class.java).apply {
         putExtras(
           QuestionnaireActivity.intentArgs(
             clientIdentifier = familyId,
@@ -172,6 +172,6 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
         putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_CALLING_ACTIVITY, getCallerActivity())
         putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, familyId)
       }
-    )
+    )*/
   }
 }

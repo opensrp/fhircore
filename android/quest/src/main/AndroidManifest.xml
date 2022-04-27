@@ -14,6 +14,7 @@
         android:theme="@style/AppTheme.NoActionBar"
         tools:ignore="UnusedAttribute">
 
+        <activity android:name=".ui.family.profile.RemoveFamilyQuestionnaireActivity"/>
         <activity android:name=".ui.patient.register.PatientRegisterActivity" />
         <activity android:name=".ui.patient.details.QuestPatientDetailActivity" />
         <activity android:name=".ui.patient.details.QuestionnaireDataDetailActivity" />
