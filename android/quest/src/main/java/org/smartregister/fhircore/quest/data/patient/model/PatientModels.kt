@@ -29,7 +29,7 @@ data class PatientItem(
   val age: String = "",
   val displayAddress: String = "",
   var additionalData: List<AdditionalData>? = null,
-  val telecom: String = "",
+  val telecom: List<String>? = null,
   val address: AddressData? = null,
   val generalPractitionerReference: String = "",
   val managingOrganizationReference: String = ""
