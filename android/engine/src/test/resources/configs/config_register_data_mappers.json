@@ -100,14 +100,14 @@
           "name": "id",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "$this.id.value"
+            "expression": "$this.id"
           }
         },
         {
           "name": "name",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "$this.name.given + ' ' + $this.name.family"
+            "expression": "$this.name.first().select(given.toString() + ' ' + family)"
           }
         },
         {
@@ -118,10 +118,24 @@
           }
         },
         {
+          "name": "birthDate",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate"
+          }
+        },
+        {
+          "name": "gender",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.gender.toString()"
+          }
+        },
+        {
           "name": "address",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "$this.address.first().district + ', ' + $this.address.first().city"
+            "expression": "$this.address.first().select(line.toString() + ', ' + district.toString() + ', ' + state.toString())"
           }
         },
         {

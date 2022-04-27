@@ -50,19 +50,19 @@
       }
     },
     {
-      "title": "Data Filters configuration",
+      "title": "Register Data Filters configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/b_data_filters",
-        "identifier": { "value": "data_filters" }
+        "reference": "Binary/b_register_data_filters",
+        "identifier": { "value": "register_data_filters" }
       }
     },
     {
       "title": "Data Mappers configuration",
       "mode": "working",
       "focus": {
-        "reference": "Binary/b_data_mappers",
-        "identifier": { "value": "data_mappers" }
+        "reference": "Binary/b_register_data_mappers",
+        "identifier": { "value": "register_data_mappers" }
       }
     },
     {

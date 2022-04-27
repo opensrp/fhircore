@@ -19,11 +19,15 @@ package org.smartregister.fhircore.quest.util.mappers
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.RegisterData
+import org.smartregister.fhircore.engine.domain.model.VisitStatus
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DueLightColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
+import org.smartregister.fhircore.engine.util.extension.milestonesDue
+import org.smartregister.fhircore.engine.util.extension.milestonesOverdue
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
 
 class RegisterViewDataMapper @Inject constructor() : DataMapper<RegisterData, RegisterViewData> {
@@ -32,40 +36,63 @@ class RegisterViewDataMapper @Inject constructor() : DataMapper<RegisterData, Re
       is RegisterData.DefaultRegisterData ->
         RegisterViewData(
           id = inputModel.id,
-          title = listOf(inputModel.name, inputModel.age).joinToString(", "),
+          title =
+            listOf(
+                inputModel.name,
+                inputModel.gender.first().uppercase(),
+                inputModel.birthDate.toAgeDisplay()
+              )
+              .joinToString(", "),
           subtitle =
-            inputModel.gender.name.lowercase().replaceFirstChar {
+            inputModel.gender.lowercase().replaceFirstChar {
               it.uppercase()
             } // TODO make transalatable
         )
       is RegisterData.FamilyRegisterData ->
         RegisterViewData(
           id = inputModel.id,
-          title = listOf(inputModel.name, inputModel.address).joinToString(),
+          title =
+            listOf(
+                inputModel.name,
+                inputModel.gender?.first()?.uppercase(),
+                inputModel.birthDate.toAgeDisplay()
+              )
+              .joinToString(),
           subtitle = inputModel.address,
           healthModule = HealthModule.FAMILY,
           status = "", // tODO
           otherStatus = "", // TODO
           serviceAsButton = false,
           serviceBackgroundColor =
-            if (inputModel.servicesOverdue == 0) DueLightColor else OverdueLightColor,
+            if (inputModel.services.count { it.milestonesOverdue().isEmpty() } == 0) DueLightColor
+            else OverdueLightColor,
           serviceForegroundColor =
-            if (inputModel.servicesOverdue == 0) BlueTextColor else OverdueDarkRedColor,
+            if (inputModel.services.count { it.milestonesOverdue().isEmpty() } == 0) BlueTextColor
+            else OverdueDarkRedColor,
           serviceMemberIcons = listOf(), // tODO
           serviceText = inputModel.members.count { it.pregnant == true }.toString()
         )
       is RegisterData.AncRegisterData ->
         RegisterViewData(
           id = inputModel.id,
-          title = listOf(inputModel.name, inputModel.age).joinToString(),
+          title = listOf(inputModel.name, inputModel.birthDate.toAgeDisplay()).joinToString(),
           subtitle = inputModel.address,
-          status = inputModel.visitStatus.name,
+          status =
+            inputModel
+              .let {
+                if (it.services.any { it.milestonesOverdue().isNotEmpty() }) VisitStatus.OVERDUE
+                else if (it.services.any { it.milestonesDue().isNotEmpty() }) VisitStatus.DUE
+                else VisitStatus.PLANNED
+              }
+              .name,
           otherStatus = "", // TODO
           serviceAsButton = true,
           serviceBackgroundColor =
-            if (inputModel.servicesOverdue == 0) DueLightColor else OverdueLightColor,
+            if (inputModel.services.count { it.milestonesOverdue().isEmpty() } == 0) DueLightColor
+            else OverdueLightColor,
           serviceForegroundColor =
-            if (inputModel.servicesOverdue == 0) BlueTextColor else OverdueDarkRedColor,
+            if (inputModel.services.count { it.milestonesOverdue().isEmpty() } == 0) BlueTextColor
+            else OverdueDarkRedColor,
           healthModule = HealthModule.ANC
         )
       else -> throw UnsupportedOperationException()

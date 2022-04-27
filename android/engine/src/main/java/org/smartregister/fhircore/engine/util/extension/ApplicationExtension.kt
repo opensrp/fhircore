@@ -138,7 +138,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
   resourcesBundlePath: String
 ) =
   try {
-    val jsonParser = FhirContext.forR4().newJsonParser()
+    val jsonParser = FhirContext.forR4Cached().newJsonParser()
     val savedResources =
       sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
 

@@ -68,6 +68,22 @@
       }
     },
     {
+      "title": "Register Data Filters configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/109073",
+        "identifier": { "value": "register_data_filters" }
+      }
+    },
+    {
+      "title": "Register Data Mappers configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/109076",
+        "identifier": { "value": "register_data_mappers" }
+      }
+    },
+    {
       "title": "Forms configuration",
       "mode": "working",
       "focus": {

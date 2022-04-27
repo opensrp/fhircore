@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
@@ -70,7 +71,7 @@ constructor(
           .filter { it.value.fhirType() == Enumerations.FHIRAllTypes.ID.toCode() }
           .map { idParamRef ->
             val partParam =
-              configurationRegistry.retrieveDataFilterConfiguration(
+              configurationRegistry.retrieveRegisterDataFilterConfiguration(
                 idParamRef.castToId(idParamRef.value).value
               )!!
 
@@ -86,7 +87,7 @@ constructor(
     }
 
   override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData {
-    val family = fhirEngine.load(Patient::class.java, patientId)
+    val family = fhirEngine.load(Patient::class.java, IdType(patientId).idPart)
     val members = loadFamilyMembersDetails(family.logicalId)
     val familyServices =
       defaultRepository.searchResourceFor<CarePlan>(
@@ -138,8 +139,5 @@ constructor(
     }
 
   private fun getRegisterDataFilters() =
-    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.FAMILY.name)
-
-  private fun getMembersDataFilters(configName: String) =
-    configurationRegistry.retrieveDataFilterConfiguration(configName)
+    configurationRegistry.retrieveRegisterDataFilterConfiguration(HealthModule.FAMILY.name)
 }

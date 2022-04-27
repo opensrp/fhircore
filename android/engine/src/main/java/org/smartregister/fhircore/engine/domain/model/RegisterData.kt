@@ -44,6 +44,8 @@ sealed class RegisterData(open val id: String, open val name: String) {
     override val id: String,
     override val name: String,
     val identifier: String? = null,
+    val birthDate: Date?,
+    val gender: String?,
     val address: String? = null,
     var members: MutableList<FamilyMemberRegisterData> = mutableListOf(),
     val services: List<CarePlan> = mutableListOf()

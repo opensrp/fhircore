@@ -22,12 +22,21 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 // TODO convert to a sealed class to capture data for different health modules
 sealed class ProfileData(open val id: String, open val name: String) {
+  data class RawProfileData(
+    override val id: String,
+    override val name: String,
+    val main: Resource,
+    internal val _details: MutableMap<String, List<Resource>> = mutableMapOf(),
+    val details: Map<String, List<Resource>> = _details
+  ) : ProfileData(id = id, name = name)
+
   data class DefaultProfileData(
     override val id: String,
     override val name: String,

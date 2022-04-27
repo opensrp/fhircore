@@ -26,7 +26,8 @@ import org.hl7.fhir.r4.utils.FHIRPathEngine
 class FhirPathHostServices : FHIRPathEngine.IEvaluationContext {
   override fun resolveConstant(appContext: Any?, name: String?, beforeContext: Boolean): Base? {
     return when {
-      appContext is Map<*, *> && appContext[name] != null ->
+      // do not process constants which are not sent as constants i.e. beforeContext=true
+      !beforeContext && appContext is Map<*, *> && appContext[name] != null ->
         appContext[name]!!.let { value ->
           if (value is Collection<*>)
             ListResource().apply { value.forEach { contained.add(it as Resource) } }

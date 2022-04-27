@@ -22,8 +22,11 @@ enum class AppConfigClassification : ConfigClassification {
   APPLICATION,
   APP_FEATURE,
   FORMS,
-  DATA_FILTERS,
-  DATA_MAPPERS,
+  DATA_FILTERS, // TODO delete in final PR.. just for backward compatibility
+  REGISTER_DATA_FILTERS,
+  REGISTER_DATA_MAPPERS,
+  PROFILE_DATA_FILTERS,
+  PROFILE_DATA_MAPPERS,
   LOGIN,
   PIN,
   SYNC,

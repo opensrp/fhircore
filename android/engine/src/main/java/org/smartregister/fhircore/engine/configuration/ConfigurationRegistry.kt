@@ -84,8 +84,8 @@ constructor(
         T
     }
 
-  fun retrieveDataFilterConfiguration(id: String) =
-    retrieveConfiguration<FhirConfiguration<Parameters>>(AppConfigClassification.DATA_FILTERS)
+  private fun retrieveConfiguration(id: String, classification: ConfigClassification) =
+    retrieveConfiguration<FhirConfiguration<Parameters>>(classification)
       .resource
       .parameter
       .firstOrNull { it.name.contentEquals(id, ignoreCase = true) }
@@ -97,11 +97,17 @@ constructor(
           }
       }
 
-  fun retrieveDataMapperConfiguration(id: String) =
-    retrieveConfiguration<FhirConfiguration<Parameters>>(AppConfigClassification.DATA_MAPPERS)
-      .resource
-      .parameter
-      .firstOrNull { it.name.contentEquals(id, ignoreCase = true) }
+  fun retrieveRegisterDataFilterConfiguration(id: String) =
+    retrieveConfiguration(id, AppConfigClassification.REGISTER_DATA_FILTERS)
+
+  fun retrieveRegisterDataMapperConfiguration(id: String) =
+    retrieveConfiguration(id, AppConfigClassification.REGISTER_DATA_MAPPERS)
+
+  fun retrieveProfileDataFilterConfiguration(id: String) =
+    retrieveConfiguration(id, AppConfigClassification.PROFILE_DATA_FILTERS)
+
+  fun retrieveProfileDataMapperConfiguration(id: String) =
+    retrieveConfiguration(id, AppConfigClassification.PROFILE_DATA_MAPPERS)
 
   suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     this.appId = appId

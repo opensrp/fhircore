@@ -20,7 +20,6 @@ import android.accounts.AccountManager
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
-import ca.uhn.fhir.context.support.DefaultProfileValidationSupport
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
@@ -88,7 +87,7 @@ class EngineModule {
   @Singleton
   @Provides
   fun provideHapiWorkerContext(fhirContext: FhirContext) =
-    HapiWorkerContext(fhirContext, DefaultProfileValidationSupport(fhirContext))
+    HapiWorkerContext(fhirContext, fhirContext.validationSupport)
 
   @Singleton
   @Provides

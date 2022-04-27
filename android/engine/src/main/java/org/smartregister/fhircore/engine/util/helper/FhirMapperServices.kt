@@ -33,7 +33,7 @@ object FhirMapperServices {
     configurationRegistry: ConfigurationRegistry,
     fhirPathEngine: FHIRPathEngine
   ): RegisterData {
-    return configurationRegistry.retrieveDataMapperConfiguration(config)?.let {
+    return configurationRegistry.retrieveRegisterDataMapperConfiguration(config)?.let {
       parseMapping(it, registerData, fhirPathEngine)
     }
       ?: registerData

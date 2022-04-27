@@ -278,7 +278,7 @@ constructor(
       param
         .let { mainParam ->
           if (mainParam.hasValue()) listOf(mainParam.value!!)
-          else mainParam.part.filter { it.name == mainParam.name }
+          else mainParam.part.filter { it.name == mainParam.name }.map { it.value }
         }
         .flatMap { it.castToDataRequirement(it).asSearchFilter(fhirPathEngine) }
         .forEach { filterBy(it) }

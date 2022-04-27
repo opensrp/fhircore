@@ -160,7 +160,7 @@ class FamilyDaoRegisterTest : RobolectricTest() {
 
   private fun buildPatient(serial: Int): Patient {
     return Patient().apply {
-      id = serial.toString()
+      id = "Patient/$serial/_history/1"
       addIdentifier(Identifier().apply { value = "000$serial" })
       gender = Enumerations.AdministrativeGender.FEMALE
       addName().apply {
@@ -173,6 +173,8 @@ class FamilyDaoRegisterTest : RobolectricTest() {
       addAddress().apply {
         district = "Disteert"
         city = "Ceeteee"
+        addLine("L1")
+        addLine("L2")
       }
     }
   }

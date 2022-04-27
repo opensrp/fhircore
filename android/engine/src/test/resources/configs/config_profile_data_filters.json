@@ -1,0 +1,314 @@
+{
+  "resourceType": "Parameters",
+  "parameter": [
+    {
+      "name": "default",
+      "part": [
+        {
+          "name": "default",
+          "valueDataRequirement": {
+            "type": "Patient",
+            "codeFilter": [
+              {
+                "searchParam": "_id",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "$this"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "anc",
+      "part": [
+        {
+          "name": "anc",
+          "valueDataRequirement": {
+            "type": "Condition",
+            "codeFilter": [
+              {
+                "searchParam": "code",
+                "code": {
+                  "system": "http://loinc.org",
+                  "code": "LA15173-0"
+                }
+              },
+              {
+                "searchParam": "clinical-status",
+                "code": {
+                  "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                  "code": "active"
+                }
+              }
+            ],
+            "limit": 20
+          }
+        },
+        {
+          "name": "patients",
+          "valueDataRequirement": {
+            "type": "Patient",
+            "codeFilter": [
+              {
+                "searchParam": "_id",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.subject.reference"
+                    }
+                  }
+                ]
+              }
+            ],
+            "sort": [
+              {
+                "path": "name",
+                "direction": "ascending"
+              }
+            ]
+          }
+        },
+        {
+          "name": "careplans",
+          "valueDataRequirement": {
+            "type": "CarePlan",
+            "codeFilter": [
+              {
+                "searchParam": "subject",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "status",
+                "code": {
+                  "system": "http://hl7.org/fhir/request-status",
+                  "code": "active"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "family",
+      "part": [
+        {
+          "name": "family",
+          "valueDataRequirement": {
+            "type": "Patient",
+            "codeFilter": [
+              {
+                "searchParam": "_tag",
+                "code": {
+                  "system": "https://www.snomed.org",
+                  "code": "35359004"
+                }
+              },
+              {
+                "searchParam": "active",
+                "code": {
+                  "code": "true"
+                }
+              }
+            ],
+            "sort": [
+              {
+                "path": "name",
+                "direction": "ascending"
+              }
+            ],
+            "limit": 20
+          }
+        },
+        {
+          "name": "members",
+          "valueId": "family_members"
+        },
+        {
+          "name": "careplans",
+          "valueDataRequirement": {
+            "type": "CarePlan",
+            "codeFilter": [
+              {
+                "searchParam": "subject",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "_tag",
+                "code": {
+                  "system": "https://www.snomed.org",
+                  "code": "35359004"
+                }
+              },
+              {
+                "searchParam": "status",
+                "code": {
+                  "system": "http://hl7.org/fhir/request-status",
+                  "code": "active"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "family_members",
+      "part": [
+        {
+          "name": "family_members",
+          "valueDataRequirement": {
+            "type": "Patient",
+            "codeFilter": [
+              {
+                "searchParam": "_id",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "family_members",
+          "valueDataRequirement": {
+            "type": "Patient",
+            "codeFilter": [
+              {
+                "searchParam": "link",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "active",
+                "code": {
+                  "code": "true"
+                }
+              }
+            ],
+            "sort": [
+              {
+                "path": "name",
+                "direction": "ascending"
+              }
+            ],
+            "limit": 100
+          }
+        },
+        {
+          "name": "conditions",
+          "valueDataRequirement": {
+            "type": "Condition",
+            "codeFilter": [
+              {
+                "searchParam": "subject",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "code",
+                "code": {
+                  "system": "http://loinc.org",
+                  "code": "LA15173-0"
+                }
+              },
+              {
+                "searchParam": "clinicalStatus",
+                "code": {
+                  "system": "http://hl7.org/fhir/ValueSet/condition-clinical",
+                  "code": "active"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "careplans",
+          "valueDataRequirement": {
+            "type": "CarePlan",
+            "codeFilter": [
+              {
+                "searchParam": "subject",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "status",
+                "code": {
+                  "system": "http://hl7.org/fhir/request-status",
+                  "code": "active"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "forms_list",
+      "valueDataRequirement": {
+        "type": "Patient",
+        "codeFilter": {
+          "searchParam": "context",
+          "code": {
+            "system": "http://fhir.ona.io",
+            "code": "000002"
+          }
+        }
+      }
+    }
+  ]
+}

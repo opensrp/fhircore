@@ -1,0 +1,223 @@
+{
+  "resourceType": "Parameters",
+  "parameter": [
+    {
+      "name": "anc",
+      "extension": [{
+        "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
+        "valueString": "org.smartregister.fhircore.engine.domain.model.RegisterData$AncRegisterData"
+      }],
+      "part": [
+        {
+          "name": "id",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%patients.contained.first().id.value"
+          }
+        },
+        {
+          "name": "name",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%patients.contained.first().select(name.given + ' ' + name.family)"
+          }
+        },
+        {
+          "name": "identifier",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%patients.contained.first().identifier.first().value"
+          }
+        },
+        {
+          "name": "birthDate",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%patients.contained.first().birthDate"
+          }
+        },
+        {
+          "name": "address",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%patients.contained.first().select(address.first().district + ', ' + address.first().city)"
+          }
+        },
+        {
+          "name": "services",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%careplans.contained"
+          }
+        }
+      ]
+    },
+    {
+      "name": "default",
+      "extension": [{
+        "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
+        "valueString": "org.smartregister.fhircore.engine.domain.model.RegisterData$DefaultRegisterData"
+      }],
+      "part": [
+        {
+          "name": "id",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.id.value"
+          }
+        },
+        {
+          "name": "name",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.name.given + ' ' + $this.name.family"
+          }
+        },
+        {
+          "name": "gender",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.gender.toString()"
+          }
+        },
+        {
+          "name": "birthDate",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate"
+          }
+        }
+      ]
+    },
+    {
+      "name": "family",
+      "extension": [{
+        "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
+        "valueString": "org.smartregister.fhircore.engine.domain.model.RegisterData$FamilyRegisterData"
+      }],
+      "part": [
+        {
+          "name": "id",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.id"
+          }
+        },
+        {
+          "name": "name",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.name.first().select(given.toString() + ' ' + family)"
+          }
+        },
+        {
+          "name": "identifier",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.identifier.first().value"
+          }
+        },
+        {
+          "name": "birthDate",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate"
+          }
+        },
+        {
+          "name": "gender",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.gender.toString()"
+          }
+        },
+        {
+          "name": "address",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.address.first().select(line.toString() + ', ' + district.toString() + ', ' + state.toString())"
+          }
+        },
+        {
+          "name": "services",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%careplans.contained"
+          }
+        }
+      ]
+    },
+    {
+      "name": "family_members",
+      "extension": [{
+        "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name",
+        "valueString": "org.smartregister.fhircore.engine.domain.model.RegisterData$FamilyMemberRegisterData"
+      }],
+      "part": [
+        {
+          "name": "id",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.id.value"
+          }
+        },
+        {
+          "name": "name",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.name.given + ' ' + $this.name.family"
+          }
+        },
+        {
+          "name": "identifier",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.identifier.first().value"
+          }
+        },
+        {
+          "name": "birthDate",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate"
+          }
+        },
+        {
+          "name": "gender",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.gender.toString()"
+          }
+        },
+        {
+          "name": "deceased",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.deceased"
+          }
+        },
+        {
+          "name": "head",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "$this.link.empty()"
+          }
+        },
+        {
+          "name": "pregnant",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%conditions.contained.select( code.coding.select(display.lower() = 'pregnant' or code = 'LA15173-0') ).exists()"
+          }
+        },
+        {
+          "name": "services",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%careplans.contained"
+          }
+        }
+      ]
+    }
+  ]
+}

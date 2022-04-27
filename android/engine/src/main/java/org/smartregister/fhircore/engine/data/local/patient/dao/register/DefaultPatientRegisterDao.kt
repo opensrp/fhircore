@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.helper.FhirMapperServices.parseMapping
@@ -59,8 +58,7 @@ constructor(
     appFeatureName: String?
   ): List<RegisterData> {
     return withContext(dispatcherProvider.io()) {
-      configurationRegistry.retrieveDataFilterConfiguration(HealthModule.DEFAULT.name)!!.let { param
-        ->
+      getRegisterDataFilters()!!.let { param ->
         defaultRepository.loadDataForParam(param, null).map { data ->
           parseMapping(param.name, data, configurationRegistry, fhirPathEngine)
         }
@@ -69,9 +67,11 @@ constructor(
   }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long =
-    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+    withContext(dispatcherProvider.default()) {
+      getRegisterDataFilters()?.let { defaultRepository.countDataForParam(it) } ?: 0
+    }
 
-  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? {
+  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData {
     return withContext(dispatcherProvider.io()) {
       val patient = fhirEngine.load(Patient::class.java, patientId)
       val formsFilter = listOf<SearchFilter>() // TODO ???????????????????????????????
@@ -120,6 +120,12 @@ constructor(
       )
     }
   }
+
+  private fun getRegisterDataFilters() =
+    configurationRegistry.retrieveRegisterDataFilterConfiguration(HealthModule.DEFAULT.name)
+
+  private fun getProfileDataFilters() =
+    configurationRegistry.retrieveProfileDataFilterConfiguration(HealthModule.DEFAULT.name)
 
   companion object {
     const val FORMS_LIST_FILTER_KEY = "forms_list"
