@@ -21,10 +21,6 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -32,10 +28,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.quest.ui.family.remove.BaseRemoveFamilyEntityViewModel
 import timber.log.Timber
-import java.util.*
 
 @HiltViewModel
 class RemoveFamilyMemberViewModel
@@ -62,11 +56,12 @@ constructor(
                 remove(this.find { it.entity.reference == "Patient/${patient.logicalId}" })
               }
 
-              //TODO fetch head and compare to patient.. make   family.managingEntity ref to null
-
+              // TODO update managing entity when removing a member who is the family head
+              if ((family.managingEntity.resource as RelatedPerson).patient.id == patient.id) {
+                family.managingEntity = null
+              }
             }
           }
-
           repository.addOrUpdate(patient)
         }
         isRemoved.postValue(true)
@@ -96,5 +91,4 @@ constructor(
             .firstOrNull()
         }
     }
-
 }

@@ -22,7 +22,8 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.remove.BaseRemoveFamilyEntityQuestionnaireActivity
 
-class RemoveFamilyMemberQuestionnaireActivity : BaseRemoveFamilyEntityQuestionnaireActivity<Patient>() {
+class RemoveFamilyMemberQuestionnaireActivity :
+  BaseRemoveFamilyEntityQuestionnaireActivity<Patient>() {
 
   override val viewModel by viewModels<RemoveFamilyMemberViewModel>()
 
@@ -41,5 +42,4 @@ class RemoveFamilyMemberQuestionnaireActivity : BaseRemoveFamilyEntityQuestionna
   override fun setRemoveDialogMessage(profileName: String): String {
     return getString(R.string.remove_family_member_warning, profileName)
   }
-
 }

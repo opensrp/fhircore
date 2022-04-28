@@ -138,7 +138,11 @@ fun FamilyProfileScreen(
             },
             onViewProfile = {
               familyProfileViewModel.onEvent(
-                FamilyProfileEvent.OpenMemberProfile(currentMemberPatientId, familyId, navController)
+                FamilyProfileEvent.OpenMemberProfile(
+                  currentMemberPatientId,
+                  familyId,
+                  navController
+                )
               )
             }
           )

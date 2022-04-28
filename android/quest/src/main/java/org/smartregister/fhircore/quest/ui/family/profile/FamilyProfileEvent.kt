@@ -27,8 +27,11 @@ sealed class FamilyProfileEvent {
 
   data class OpenTaskForm(val context: Context, val taskFormId: String) : FamilyProfileEvent()
 
-  data class OpenMemberProfile(val patientId: String, val familyId: String? = null, val navController: NavHostController) :
-    FamilyProfileEvent()
+  data class OpenMemberProfile(
+    val patientId: String,
+    val familyId: String? = null,
+    val navController: NavHostController
+  ) : FamilyProfileEvent()
 
   data class OverflowMenuClick(val context: Context, val menuId: Int, val familyId: String?) :
     FamilyProfileEvent()

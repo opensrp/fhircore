@@ -56,7 +56,7 @@ constructor(
     mutableStateOf(
       FamilyProfileUiState(
         overflowMenuItems =
-        overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.FAMILY_PROFILE)
+          overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.FAMILY_PROFILE)
       )
     )
 
@@ -105,14 +105,14 @@ constructor(
     viewModelScope.launch(dispatcherProvider.io()) {
       if (!patientId.isNullOrEmpty()) {
         patientRegisterRepository.loadPatientProfileData(
-          AppFeature.HouseholdManagement.name,
-          HealthModule.FAMILY,
-          patientId
-        )
+            AppFeature.HouseholdManagement.name,
+            HealthModule.FAMILY,
+            patientId
+          )
           ?.let {
             familyMemberProfileData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
-                      ProfileViewData.FamilyProfileViewData
+                ProfileViewData.FamilyProfileViewData
           }
       }
     }

@@ -21,13 +21,10 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 
@@ -49,8 +46,8 @@ abstract class BaseRemoveFamilyEntityQuestionnaireActivity<T> : QuestionnaireAct
 
     viewModel.apply {
       isRemoved.observe(this@BaseRemoveFamilyEntityQuestionnaireActivity) { if (it) onRemove() }
-      isDiscarded.observe(this@BaseRemoveFamilyEntityQuestionnaireActivity) { if (it) onDiscard() }
-      onFetch()
+      isDiscarded.observe(this@BaseRemoveFamilyEntityQuestionnaireActivity) { if (it) finish() }
+      fetch(profileId)
       profile.observe(this@BaseRemoveFamilyEntityQuestionnaireActivity) { onReceive(it) }
     }
   }
@@ -65,14 +62,6 @@ abstract class BaseRemoveFamilyEntityQuestionnaireActivity<T> : QuestionnaireAct
       startActivity(intent)
       finish()
     }
-  }
-
-  fun onDiscard() {
-    finish()
-  }
-
-  fun onFetch() {
-    viewModel.fetch(profileId)
   }
 
   abstract fun onReceive(profile: T)

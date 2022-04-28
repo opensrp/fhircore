@@ -49,7 +49,7 @@ constructor(
     mutableStateOf(
       PatientProfileUiState(
         overflowMenuItems =
-        overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.PATIENT_PROFILE)
+          overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.PATIENT_PROFILE)
       )
     )
 
@@ -67,7 +67,7 @@ constructor(
           ?.let {
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
-                      ProfileViewData.PatientProfileViewData
+                ProfileViewData.PatientProfileViewData
           }
       }
     }
@@ -86,9 +86,7 @@ constructor(
             event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
               clientIdentifier = event.patientId,
-              bundleOf(
-                Pair(NavigationArg.FAMILY_ID, event.familyId)
-              )
+              bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
             )
           }
           else -> {}

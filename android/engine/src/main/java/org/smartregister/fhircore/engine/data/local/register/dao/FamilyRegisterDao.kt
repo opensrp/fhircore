@@ -115,7 +115,7 @@ constructor(
       age = familyHead?.extractAge() ?: "",
       head = familyHead?.let { loadFamilyMemberProfileData(familyHead.logicalId) },
       members =
-        family.member?.map { member ->
+        family.member?.mapNotNull { member ->
           loadFamilyMemberProfileData(
             defaultRepository.loadResource<Patient>(member.entity.extractId())!!.logicalId
           )
@@ -193,8 +193,11 @@ constructor(
     fhirEngine.update(family)
   }
 
-  private suspend fun loadFamilyMemberRegisterData(memberId: String) =
-    defaultRepository.loadResource<Patient>(memberId)?.let { patient ->
+  private suspend fun loadFamilyMemberRegisterData(
+    memberId: String
+  ): RegisterData.FamilyMemberRegisterData? {
+    return defaultRepository.loadResource<Patient>(memberId)?.let { patient ->
+      if (!patient.active) return null
       val conditions = loadMemberCondition(patient.logicalId)
       val carePlans = loadMemberCarePlan(patient.logicalId)
       RegisterData.FamilyMemberRegisterData(
@@ -210,9 +213,11 @@ constructor(
         servicesOverdue = carePlans.filter { it.overdue() }.flatMap { it.activity }.size
       )
     }
+  }
 
-  private suspend fun loadFamilyMemberProfileData(memberId: String) =
+  private suspend fun loadFamilyMemberProfileData(memberId: String): FamilyMemberProfileData? =
     defaultRepository.loadResource<Patient>(memberId)!!.let { patient ->
+      if (!patient.active) return null
       val conditions = loadMemberCondition(patient.logicalId)
       val carePlans = loadMemberCarePlan(patient.logicalId)
       val tasks = loadMemberTask(patient.logicalId)
