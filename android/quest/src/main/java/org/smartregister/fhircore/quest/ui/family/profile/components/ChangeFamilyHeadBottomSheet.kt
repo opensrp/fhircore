@@ -58,9 +58,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
 import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMemberViewState
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState

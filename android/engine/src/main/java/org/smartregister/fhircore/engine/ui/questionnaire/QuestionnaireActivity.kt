@@ -72,11 +72,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   lateinit var questionnaireConfig: QuestionnaireConfig
+
   var questionnaireType = QuestionnaireType.DEFAULT
 
   protected lateinit var questionnaire: Questionnaire
+
   protected var clientIdentifier: String? = null
+
   lateinit var fragment: FhirCoreQuestionnaireFragment
+
   val parser = FhirContext.forR4Cached().newJsonParser()
 
   override fun onSaveInstanceState(outState: Bundle) {
@@ -285,10 +289,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     handleQuestionnaireResponse(questionnaireResponse)
 
-    questionnaireViewModel.extractionProgress.observe(
-      this,
-      { result -> onPostSave(result, questionnaireResponse) }
-    )
+    questionnaireViewModel.extractionProgress.observe(this) { result ->
+      onPostSave(result, questionnaireResponse)
+    }
   }
 
   fun onPostSave(result: Boolean, questionnaireResponse: QuestionnaireResponse) {

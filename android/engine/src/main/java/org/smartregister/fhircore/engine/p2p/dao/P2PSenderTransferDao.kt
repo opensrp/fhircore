@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.p2p.dao
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import java.util.TreeSet
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
@@ -35,14 +37,11 @@ import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 import timber.log.Timber
-import java.util.TreeSet
-import javax.inject.Inject
 
 class P2PSenderTransferDao
 @Inject
-constructor(
-  fhirEngine: FhirEngine, dispatcherProvider: DispatcherProvider
-)   : BaseP2PTransferDao(fhirEngine, dispatcherProvider), SenderTransferDao {
+constructor(fhirEngine: FhirEngine, dispatcherProvider: DispatcherProvider) :
+  BaseP2PTransferDao(fhirEngine, dispatcherProvider), SenderTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> {
     return getTypes()
@@ -56,30 +55,34 @@ constructor(
     var highestRecordId = lastUpdated
     var classType: Class<out Resource> = Encounter::class.java
     when (dataType.name) {
-        // TODO move to utility function
-        P2PConstants.P2PDataTypes.GROUP -> classType = Group::class.java
-        P2PConstants.P2PDataTypes.ENCOUNTER -> classType = Encounter::class.java
-        P2PConstants.P2PDataTypes.OBSERVATION -> classType = Observation::class.java
-        P2PConstants.P2PDataTypes.PATIENT -> classType = Patient::class.java
-        P2PConstants.P2PDataTypes.QUESTIONNAIRE -> classType = Questionnaire::class.java
-        P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE -> classType = QuestionnaireResponse::class.java
+      // TODO move to utility function
+      P2PConstants.P2PDataTypes.GROUP -> classType = Group::class.java
+      P2PConstants.P2PDataTypes.ENCOUNTER -> classType = Encounter::class.java
+      P2PConstants.P2PDataTypes.OBSERVATION -> classType = Observation::class.java
+      P2PConstants.P2PDataTypes.PATIENT -> classType = Patient::class.java
+      P2PConstants.P2PDataTypes.QUESTIONNAIRE -> classType = Questionnaire::class.java
+      P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE ->
+        classType = QuestionnaireResponse::class.java
     }
     val records = runBlocking {
       loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize, classType)
     }
     Timber.e("Fetching resources from base dao of type  $dataType.name")
-    highestRecordId = if (records!!.isNotEmpty()) {
-      records?.get(records.size - 1)?.meta?.lastUpdated?.time ?: highestRecordId
-    } else {
-      lastUpdated
-    }
+    highestRecordId =
+      if (records!!.isNotEmpty()) {
+        records?.get(records.size - 1)?.meta?.lastUpdated?.time ?: highestRecordId
+      } else {
+        lastUpdated
+      }
 
     var jsonArray = JSONArray()
     val jsonParser = FhirContext.forR4().newJsonParser()
 
     records?.forEach {
       jsonArray.put(jsonParser.encodeResourceToString(it))
-      highestRecordId = if (it.meta?.lastUpdated?.time!! > highestRecordId) it.meta?.lastUpdated?.time!! else highestRecordId
+      highestRecordId =
+        if (it.meta?.lastUpdated?.time!! > highestRecordId) it.meta?.lastUpdated?.time!!
+        else highestRecordId
       Timber.e("Sending ${it.resourceType} with id ====== ${it.logicalId}")
     }
 
@@ -94,7 +97,7 @@ constructor(
     resourceTypes.forEach {
       runBlocking {
         try {
-          val RC = Class.forName("org.hl7.fhir.r4.model.${it}") as Class<out Resource>
+          val RC = Class.forName("org.hl7.fhir.r4.model.$it") as Class<out Resource>
           Timber.e("Fetch data for resource type ----> ${RC.name}")
           val records2 = loadResources(lastUpdated, batchSize, RC)
 

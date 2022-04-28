@@ -23,7 +23,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
-import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
@@ -169,5 +168,4 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
     }
   }
-
 }

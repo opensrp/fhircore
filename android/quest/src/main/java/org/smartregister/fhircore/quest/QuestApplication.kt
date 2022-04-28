@@ -61,16 +61,17 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
 
         Timber.i("Loading ResourceMapper on application init")
       }
-
     }
 
     // Init P2PLibrary
-    val p2POptions = P2PLibrary.Options(context = this,
-      dbPassphrase = "demo",
-      username = "demo",
-      senderTransferDao = pSenderTransferDao,
-      receiverTransferDao = p2PReceiverTransferDao
-    )
+    val p2POptions =
+      P2PLibrary.Options(
+        context = this,
+        dbPassphrase = "demo",
+        username = "demo",
+        senderTransferDao = pSenderTransferDao,
+        receiverTransferDao = p2PReceiverTransferDao
+      )
     P2PLibrary().init(p2POptions)
   }
 

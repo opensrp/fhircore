@@ -17,27 +17,19 @@
 package org.smartregister.fhircore.quest.ui.family.form
 
 import android.content.Intent
-import android.widget.Button
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
-import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.quest.R
 
 @AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
-  lateinit var saveBtn: Button
-
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    saveBtn.hide(false)
-
     questionnaireViewModel.extractAndSaveResources(
       this,
       intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
@@ -45,13 +37,6 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       questionnaireResponse,
       questionnaireType
     )
-  }
-
-  override fun populateInitialValues(questionnaire: Questionnaire) {
-    if (questionnaireConfig.form == FAMILY_MEMBER_REGISTER_FORM) {
-      questionnaire.find(HEAD_RECORD_ID_KEY)!!.initialFirstRep.value =
-        StringType(intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!)
-    }
   }
 
   override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {

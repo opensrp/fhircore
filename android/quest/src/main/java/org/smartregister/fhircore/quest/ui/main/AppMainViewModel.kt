@@ -99,7 +99,8 @@ constructor(
           appMainUiState.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
       }
       is AppMainEvent.DeviceToDeviceSync -> {
-        startP2PScreen(context = event.context)}
+        startP2PScreen(context = event.context)
+      }
       is AppMainEvent.UpdateSyncState -> {
         appMainUiState = appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
       }

@@ -20,19 +20,18 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.SearchQuery
+import java.util.TreeSet
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import java.util.TreeSet
 import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.p2p.sync.DataType
 
-open class BaseP2PTransferDao constructor(
-  open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider
-) {
+open class BaseP2PTransferDao
+constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
 
   val group = DataType(name = P2PConstants.P2PDataTypes.GROUP, DataType.Filetype.JSON, 0)
   val patient = DataType(name = P2PConstants.P2PDataTypes.PATIENT, DataType.Filetype.JSON, 1)
@@ -45,7 +44,7 @@ open class BaseP2PTransferDao constructor(
   val encounter = DataType(name = P2PConstants.P2PDataTypes.ENCOUNTER, DataType.Filetype.JSON, 5)
 
   fun getTypes(): TreeSet<DataType> {
-    val  dataTypes = TreeSet<DataType>()
+    val dataTypes = TreeSet<DataType>()
     dataTypes!!.add(group)
     dataTypes!!.add(patient)
     dataTypes!!.add(questionnaire)
@@ -97,7 +96,7 @@ open class BaseP2PTransferDao constructor(
       )
       ORDER BY b.index_from ASC
       LIMIT ?
-    """.trimIndent(),
+          """.trimIndent(),
           listOf(lastRecordUpdatedAt, batchSize)
         )
 
@@ -105,11 +104,15 @@ open class BaseP2PTransferDao constructor(
     }
   }
 
-  suspend fun loadResources(lastRecordUpdatedAt: Long, batchSize: Int, classType: Class<out Resource>): List<Resource> {
+  suspend fun loadResources(
+    lastRecordUpdatedAt: Long,
+    batchSize: Int,
+    classType: Class<out Resource>
+  ): List<Resource> {
     // TODO remove harcoded strings
     return withContext(dispatcherProvider.io()) {
 
-/*      val search = Search(type = classType.newInstance().resourceType)
+      /*      val search = Search(type = classType.newInstance().resourceType)
       search.apply {
         filter(DateClientParam("_lastUpdated"), {
           value = of(DateTimeType(Date(lastRecordUpdatedAt)))
@@ -134,12 +137,11 @@ open class BaseP2PTransferDao constructor(
       )
       ORDER BY b.index_from ASC
       LIMIT ?
-    """.trimIndent(),
+          """.trimIndent(),
           listOf(lastRecordUpdatedAt, batchSize)
         )
 
       fhirEngine.search(searchQuery)
-
     }
   }
 }

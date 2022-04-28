@@ -65,8 +65,7 @@ constructor(
     when (event) {
       is FamilyProfileEvent.AddMember ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(
-          questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
-          clientIdentifier = event.familyId
+          questionnaireId = FAMILY_MEMBER_REGISTER_FORM
         )
       is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)
       is FamilyProfileEvent.OpenMemberProfile -> {
@@ -81,8 +80,12 @@ constructor(
       is FamilyProfileEvent.OpenTaskForm ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(event.taskFormId)
       is FamilyProfileEvent.OverflowMenuClick -> {}
-      is FamilyProfileEvent.FetchMemberTasks -> TODO()
-      FamilyProfileEvent.RoutineVisit -> TODO()
+      is FamilyProfileEvent.FetchMemberTasks -> {
+        /*TODO fetch tasks for this member*/
+      }
+      FamilyProfileEvent.RoutineVisit -> {
+        /*TODO Implement family routine visit*/
+      }
     }
   }
 

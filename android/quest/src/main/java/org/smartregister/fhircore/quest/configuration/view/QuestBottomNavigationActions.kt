@@ -41,4 +41,3 @@ data class ActionSwitchFragment(
 @Serializable
 @SerialName("p2p-sync")
 data class P2PSyncNavigationAction(val tag: String) : NavigationAction
-
