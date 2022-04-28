@@ -102,21 +102,15 @@ fun AppDrawer(
             endText = sideMenuOption.count.toString(),
             showEndText = sideMenuOption.showCount,
             onSideMenuClick = {
-              onSideMenuClick(
-                AppMainEvent.SwitchRegister(
-                  navigateToRegister = {
-                    openDrawer(false)
-                    navController.navigate(
-                      route =
-                        MainNavigationScreen.Home.route +
-                          NavigationArg.bindArgumentsOf(
-                            Pair(NavigationArg.FEATURE, sideMenuOption.appFeatureName),
-                            Pair(NavigationArg.HEALTH_MODULE, sideMenuOption.healthModule.name),
-                            Pair(NavigationArg.SCREEN_TITLE, title)
-                          )
+              openDrawer(false)
+              navController.navigate(
+                route =
+                  MainNavigationScreen.Home.route +
+                    NavigationArg.bindArgumentsOf(
+                      Pair(NavigationArg.FEATURE, sideMenuOption.appFeatureName),
+                      Pair(NavigationArg.HEALTH_MODULE, sideMenuOption.healthModule.name),
+                      Pair(NavigationArg.SCREEN_TITLE, title)
                     )
-                  }
-                )
               )
             }
           )

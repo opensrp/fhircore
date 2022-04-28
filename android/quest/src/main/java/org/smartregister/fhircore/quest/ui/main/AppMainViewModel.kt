@@ -96,7 +96,6 @@ constructor(
           (this as Activity).refresh()
         }
       }
-      is AppMainEvent.SwitchRegister -> event.navigateToRegister()
       AppMainEvent.SyncData -> {
         syncBroadcaster.runSync()
         appMainUiState =
