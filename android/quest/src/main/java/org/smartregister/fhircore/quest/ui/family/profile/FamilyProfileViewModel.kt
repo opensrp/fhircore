@@ -108,10 +108,7 @@ constructor(
       profileViewData.familyMemberViewStates.filter {
         if (it.age.contains("y")) (it.age.split(" ")[0].replace("y", "").toInt() > 15) else false
       }
-    val listOfChangeFamilyMembersModel = mutableListOf<ChangeFamilyMembersModel>()
-    listOfFamilies.forEach { listOfChangeFamilyMembersModel.add(ChangeFamilyMembersModel(it)) }
-
-    return ChangeFamilyMembersHolder(listOfChangeFamilyMembersModel)
+    return ChangeFamilyMembersHolder( listOfFamilies.map { ChangeFamilyMembersModel(it) })
   }
 
   suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
