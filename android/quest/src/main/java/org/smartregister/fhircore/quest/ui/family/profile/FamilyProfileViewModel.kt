@@ -120,7 +120,7 @@ constructor(
     }
   }
 
-  data class ChangeFamilyMembersHolder(
+  data class EligibleFamilyHeadMember(
     val list: List<ChangeFamilyMembersModel>,
     var reselect: Boolean = false
   )
