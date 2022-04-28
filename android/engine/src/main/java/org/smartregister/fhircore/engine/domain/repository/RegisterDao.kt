@@ -16,19 +16,18 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 
 interface RegisterDao {
 
-    suspend fun loadRegisterData(
-        currentPage: Int,
-        loadAll: Boolean = false,
-        appFeatureName: String?
-    ): List<RegisterData>
+  suspend fun loadRegisterData(
+    currentPage: Int,
+    loadAll: Boolean = false,
+    appFeatureName: String?
+  ): List<RegisterData>
 
-    suspend fun countRegisterData(appFeatureName: String?): Long = 0
+  suspend fun countRegisterData(appFeatureName: String?): Long = 0
 
-    suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? = null
+  suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? = null
 }

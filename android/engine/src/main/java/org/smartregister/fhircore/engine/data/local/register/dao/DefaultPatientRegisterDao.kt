@@ -46,94 +46,86 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 class DefaultPatientRegisterDao
 @Inject
 constructor(
-    val fhirEngine: FhirEngine,
-    val defaultRepository: DefaultRepository,
-    val configurationRegistry: ConfigurationRegistry,
-    val dispatcherProvider: DefaultDispatcherProvider,
-    val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DefaultDispatcherProvider,
+  val fhirPathDataExtractor: FhirPathDataExtractor
 ) : RegisterDao {
 
-    override suspend fun loadRegisterData(
-        currentPage: Int,
-        loadAll: Boolean,
-        appFeatureName: String?
-    ): List<RegisterData> =
-        withContext(dispatcherProvider.io()) {
-            val patients =
-                fhirEngine.search<Patient> {
-                    filter(Patient.ACTIVE, { value = of(true) })
-                    sort(Patient.NAME, Order.ASCENDING)
-                    count =
-                        if (loadAll) countRegisterData(appFeatureName).toInt() else DEFAULT_PAGE_SIZE
-                    from = currentPage * DEFAULT_PAGE_SIZE
-                }
-
-            patients.map {
-                RegisterData.DefaultRegisterData(
-                    id = it.logicalId,
-                    name = it.extractName(),
-                    gender = it.gender,
-                    age = it.extractAge()
-                )
-            }
+  override suspend fun loadRegisterData(
+    currentPage: Int,
+    loadAll: Boolean,
+    appFeatureName: String?
+  ): List<RegisterData> =
+    withContext(dispatcherProvider.io()) {
+      val patients =
+        fhirEngine.search<Patient> {
+          filter(Patient.ACTIVE, { value = of(true) })
+          sort(Patient.NAME, Order.ASCENDING)
+          count = if (loadAll) countRegisterData(appFeatureName).toInt() else DEFAULT_PAGE_SIZE
+          from = currentPage * DEFAULT_PAGE_SIZE
         }
 
-    override suspend fun countRegisterData(appFeatureName: String?): Long =
-        withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
-
-    override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData =
-        withContext(dispatcherProvider.io()) {
-            val patient = fhirEngine.load(Patient::class.java, resourceId)
-            val formsFilter =
-                configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY)
-
-            ProfileData.DefaultProfileData(
-                logicalId = patient.logicalId,
-                name = patient.extractName(),
-                identifier = patient.identifierFirstRep.value,
-                address = patient.extractAge(),
-                gender = patient.gender,
-                birthdate = patient.birthDate,
-                deathDate =
-                if (patient.hasDeceasedDateTimeType()) patient.deceasedDateTimeType.value else null,
-                deceased =
-                if (patient.hasDeceasedBooleanType()) patient.deceasedBooleanType.booleanValue()
-                else null,
-                visits =
-                defaultRepository.searchResourceFor(
-                    subjectId = resourceId,
-                    subjectParam = Encounter.SUBJECT
-                ),
-                flags =
-                defaultRepository.searchResourceFor(
-                    subjectId = resourceId,
-                    subjectParam = Flag.SUBJECT
-                ),
-                conditions =
-                defaultRepository.searchResourceFor(
-                    subjectId = resourceId,
-                    subjectParam = Condition.SUBJECT
-                ),
-                tasks =
-                defaultRepository.searchResourceFor(
-                    subjectId = resourceId,
-                    subjectParam = Task.SUBJECT
-                ),
-                services =
-                defaultRepository.searchResourceFor(
-                    subjectId = resourceId,
-                    subjectParam = CarePlan.SUBJECT
-                ),
-                forms = defaultRepository.searchQuestionnaireConfig(formsFilter),
-                responses =
-                defaultRepository.searchResourceFor(
-                    subjectId = resourceId,
-                    subjectParam = QuestionnaireResponse.SUBJECT
-                )
-            )
-        }
-
-    companion object {
-        const val FORMS_LIST_FILTER_KEY = "forms_list"
+      patients.map {
+        RegisterData.DefaultRegisterData(
+          id = it.logicalId,
+          name = it.extractName(),
+          gender = it.gender,
+          age = it.extractAge()
+        )
+      }
     }
+
+  override suspend fun countRegisterData(appFeatureName: String?): Long =
+    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+
+  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData =
+    withContext(dispatcherProvider.io()) {
+      val patient = fhirEngine.load(Patient::class.java, resourceId)
+      val formsFilter = configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY)
+
+      ProfileData.DefaultProfileData(
+        logicalId = patient.logicalId,
+        name = patient.extractName(),
+        identifier = patient.identifierFirstRep.value,
+        address = patient.extractAge(),
+        gender = patient.gender,
+        birthdate = patient.birthDate,
+        deathDate =
+          if (patient.hasDeceasedDateTimeType()) patient.deceasedDateTimeType.value else null,
+        deceased =
+          if (patient.hasDeceasedBooleanType()) patient.deceasedBooleanType.booleanValue()
+          else null,
+        visits =
+          defaultRepository.searchResourceFor(
+            subjectId = resourceId,
+            subjectParam = Encounter.SUBJECT
+          ),
+        flags =
+          defaultRepository.searchResourceFor(subjectId = resourceId, subjectParam = Flag.SUBJECT),
+        conditions =
+          defaultRepository.searchResourceFor(
+            subjectId = resourceId,
+            subjectParam = Condition.SUBJECT
+          ),
+        tasks =
+          defaultRepository.searchResourceFor(subjectId = resourceId, subjectParam = Task.SUBJECT),
+        services =
+          defaultRepository.searchResourceFor(
+            subjectId = resourceId,
+            subjectParam = CarePlan.SUBJECT
+          ),
+        forms = defaultRepository.searchQuestionnaireConfig(formsFilter),
+        responses =
+          defaultRepository.searchResourceFor(
+            subjectId = resourceId,
+            subjectParam = QuestionnaireResponse.SUBJECT
+          )
+      )
+    }
+
+  companion object {
+    const val FORMS_LIST_FILTER_KEY = "forms_list"
+  }
 }

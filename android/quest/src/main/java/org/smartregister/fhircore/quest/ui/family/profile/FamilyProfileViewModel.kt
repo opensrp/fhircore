@@ -33,7 +33,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.NavigationScreen
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
-import org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.family.remove.family.RemoveFamilyProfileQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -41,71 +41,71 @@ import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 class FamilyProfileViewModel
 @Inject
 constructor(
-    val overflowMenuFactory: OverflowMenuFactory,
-    val patientRegisterRepository: PatientRegisterRepository,
-    val profileViewDataMapper: ProfileViewDataMapper,
-    val dispatcherProvider: DefaultDispatcherProvider
+  val overflowMenuFactory: OverflowMenuFactory,
+  val patientRegisterRepository: PatientRegisterRepository,
+  val profileViewDataMapper: ProfileViewDataMapper,
+  val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
 
-    val familyProfileUiState: MutableState<FamilyProfileUiState> =
-        mutableStateOf(
-            FamilyProfileUiState(
-                overflowMenuItems =
-                overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.FAMILY_PROFILE)
-            )
+  val familyProfileUiState: MutableState<FamilyProfileUiState> =
+    mutableStateOf(
+      FamilyProfileUiState(
+        overflowMenuItems =
+          overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.FAMILY_PROFILE)
+      )
+    )
+
+  val familyMemberProfileData: MutableState<ProfileViewData.FamilyProfileViewData> =
+    mutableStateOf(ProfileViewData.FamilyProfileViewData())
+
+  fun onEvent(event: FamilyProfileEvent) {
+    when (event) {
+      is FamilyProfileEvent.AddMember ->
+        event.context.launchQuestionnaire<QuestionnaireActivity>(
+          questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
+          clientIdentifier = event.familyId
         )
-
-    val familyMemberProfileData: MutableState<ProfileViewData.FamilyProfileViewData> =
-        mutableStateOf(ProfileViewData.FamilyProfileViewData())
-
-    fun onEvent(event: FamilyProfileEvent) {
-        when (event) {
-            is FamilyProfileEvent.AddMember ->
-                event.context.launchQuestionnaire<QuestionnaireActivity>(
-                    questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
-                    clientIdentifier = event.familyId
-                )
-            is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)
-            is FamilyProfileEvent.OpenMemberProfile -> {
-                val urlParams =
-                    "?feature=${AppFeature.PatientManagement.name}&healthModule=${HealthModule.DEFAULT.name}&patientId=${event.patientId}"
-                event.navController.navigate(route = NavigationScreen.PatientProfile.route + urlParams)
-            }
-            is FamilyProfileEvent.OpenTaskForm ->
-                event.context.launchQuestionnaire<QuestionnaireActivity>(event.taskFormId)
-            is FamilyProfileEvent.OverflowMenuClick -> {
-                when (event.menuId) {
-                    R.id.remove_family ->
-                        event.context.launchQuestionnaire<RemoveFamilyQuestionnaireActivity>(
-                            questionnaireId = REMOVE_FAMILY_FORM,
-                            clientIdentifier = event.familyId
-                        )
-                }
-            }
-            is FamilyProfileEvent.FetchMemberTasks -> TODO()
-            FamilyProfileEvent.RoutineVisit -> TODO()
+      is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)
+      is FamilyProfileEvent.OpenMemberProfile -> {
+        val urlParams =
+          "?feature=${AppFeature.PatientManagement.name}&healthModule=${HealthModule.DEFAULT.name}&patientId=${event.patientId}"
+        event.navController.navigate(route = NavigationScreen.PatientProfile.route + urlParams)
+      }
+      is FamilyProfileEvent.OpenTaskForm ->
+        event.context.launchQuestionnaire<QuestionnaireActivity>(event.taskFormId)
+      is FamilyProfileEvent.OverflowMenuClick -> {
+        when (event.menuId) {
+          R.id.remove_family ->
+            event.context.launchQuestionnaire<RemoveFamilyProfileQuestionnaireActivity>(
+              questionnaireId = REMOVE_FAMILY_FORM,
+              clientIdentifier = event.familyId
+            )
         }
+      }
+      is FamilyProfileEvent.FetchMemberTasks -> TODO()
+      FamilyProfileEvent.RoutineVisit -> TODO()
     }
+  }
 
-    private fun fetchFamilyProfileData(patientId: String?) {
-        viewModelScope.launch(dispatcherProvider.io()) {
-            if (!patientId.isNullOrEmpty()) {
-                patientRegisterRepository.loadPatientProfileData(
-                    AppFeature.HouseholdManagement.name,
-                    HealthModule.FAMILY,
-                    patientId
-                )
-                    ?.let {
-                        familyMemberProfileData.value =
-                            profileViewDataMapper.transformInputToOutputModel(it) as
-                                    ProfileViewData.FamilyProfileViewData
-                    }
-            }
-        }
+  private fun fetchFamilyProfileData(patientId: String?) {
+    viewModelScope.launch(dispatcherProvider.io()) {
+      if (!patientId.isNullOrEmpty()) {
+        patientRegisterRepository.loadPatientProfileData(
+            AppFeature.HouseholdManagement.name,
+            HealthModule.FAMILY,
+            patientId
+          )
+          ?.let {
+            familyMemberProfileData.value =
+              profileViewDataMapper.transformInputToOutputModel(it) as
+                ProfileViewData.FamilyProfileViewData
+          }
+      }
     }
+  }
 
-    companion object {
-        const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-        const val REMOVE_FAMILY_FORM = "remove-family"
-    }
+  companion object {
+    const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
+    const val REMOVE_FAMILY_FORM = "remove-family"
+  }
 }

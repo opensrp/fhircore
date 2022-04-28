@@ -26,16 +26,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
-import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-//import org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.util.getCallerActivity
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
 import org.smartregister.fhircore.engine.ui.base.AlertDialogListItem
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedKey
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
@@ -161,7 +156,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   }
 
   private fun removeFamilyMenuItemClicked(familyId: String) {
-   /* startActivity(
+    /* startActivity(
       Intent(this, org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity::class.java).apply {
         putExtras(
           QuestionnaireActivity.intentArgs(

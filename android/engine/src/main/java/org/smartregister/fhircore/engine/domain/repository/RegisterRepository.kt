@@ -22,21 +22,21 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 
 /** Common repository for register. */
 interface RegisterRepository {
-    suspend fun loadRegisterData(
-        currentPage: Int,
-        loadAll: Boolean = false,
-        appFeatureName: String? = null,
-        healthModule: HealthModule = HealthModule.DEFAULT
-    ): List<RegisterData>
+  suspend fun loadRegisterData(
+    currentPage: Int,
+    loadAll: Boolean = false,
+    appFeatureName: String? = null,
+    healthModule: HealthModule = HealthModule.DEFAULT
+  ): List<RegisterData>
 
-    suspend fun countRegisterData(
-        appFeatureName: String? = null,
-        healthModule: HealthModule = HealthModule.DEFAULT
-    ): Long
+  suspend fun countRegisterData(
+    appFeatureName: String? = null,
+    healthModule: HealthModule = HealthModule.DEFAULT
+  ): Long
 
-    suspend fun loadPatientProfileData(
-        appFeatureName: String? = null,
-        healthModule: HealthModule = HealthModule.DEFAULT,
-        patientId: String
-    ): ProfileData?
+  suspend fun loadPatientProfileData(
+    appFeatureName: String? = null,
+    healthModule: HealthModule = HealthModule.DEFAULT,
+    patientId: String
+  ): ProfileData?
 }
