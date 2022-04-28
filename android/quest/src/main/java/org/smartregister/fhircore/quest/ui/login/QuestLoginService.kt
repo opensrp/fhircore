@@ -21,25 +21,50 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
+import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
+import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.ui.login.LoginService
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
+import org.smartregister.p2p.P2PLibrary
 
-class QuestLoginService @Inject constructor(val appFeatureManager: AppFeatureManager) :
-  LoginService {
+class QuestLoginService
+@Inject
+constructor(
+  val appFeatureManager: AppFeatureManager,
+  val secureSharedPreference: SecureSharedPreference,
+  val p2pSenderTransferDao: P2PSenderTransferDao,
+  val p2pReceiverTransferDao: P2PReceiverTransferDao
+) : LoginService {
 
   override lateinit var loginActivity: AppCompatActivity
 
   @OptIn(ExperimentalMaterialApi::class)
   override fun navigateToHome() {
-    val intent =
-      Intent(loginActivity, AppMainActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      }
     loginActivity.run {
-      startActivity(intent)
+      startActivity(
+        Intent(loginActivity, AppMainActivity::class.java).apply {
+          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+      )
       finish()
     }
 
     appFeatureManager.loadAndActivateFeatures()
+
+    // Initialize P2P after login only when username is provided
+    val username = secureSharedPreference.retrieveSessionUsername()
+    if (!username.isNullOrEmpty()) {
+      P2PLibrary()
+        .init(
+          P2PLibrary.Options(
+            context = loginActivity.applicationContext,
+            dbPassphrase = username,
+            username = username,
+            senderTransferDao = p2pSenderTransferDao,
+            receiverTransferDao = p2pReceiverTransferDao
+          )
+        )
+    }
   }
 }
