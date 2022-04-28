@@ -72,7 +72,7 @@ jobs:
         working-directory: android
 
       - name: Run Quest unit tests with Gradle
-        run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReport -x :quest:testReleaseUnitTest --stacktrace
+        run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReportQuestDebug -x :quest:testQuestReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload Quest Test Report to codecov
