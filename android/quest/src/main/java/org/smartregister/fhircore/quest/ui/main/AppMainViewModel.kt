@@ -78,7 +78,8 @@ constructor(
         sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
-        enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync)
+        enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync),
+        enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting)
       )
   }
 
@@ -98,12 +99,9 @@ constructor(
         appMainUiState =
           appMainUiState.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
       }
-      is AppMainEvent.DeviceToDeviceSync -> {
-        startP2PScreen(context = event.context)
-      }
-      is AppMainEvent.UpdateSyncState -> {
+      is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
+      is AppMainEvent.UpdateSyncState ->
         appMainUiState = appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
-      }
     }
   }
 

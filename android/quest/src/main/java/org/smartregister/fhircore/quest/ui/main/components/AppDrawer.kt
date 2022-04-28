@@ -75,7 +75,8 @@ fun AppDrawer(
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  enableDeviceToDeviceSync: Boolean
+  enableDeviceToDeviceSync: Boolean,
+  enableReports: Boolean
 ) {
   val context = LocalContext.current
   var expandLanguageDropdown by remember { mutableStateOf(false) }
@@ -121,7 +122,14 @@ fun AppDrawer(
           )
         }
       }
-
+      if (enableReports) {
+        SideMenuItem(
+          iconResource = R.drawable.ic_reports,
+          title = stringResource(R.string.reports),
+          showEndText = false,
+          onSideMenuClick = { navController.navigate(MainNavigationScreen.Reports.route) }
+        )
+      }
       if (enableDeviceToDeviceSync) {
         SideMenuItem(
           iconResource = R.drawable.ic_sync,
@@ -257,6 +265,7 @@ fun AppDrawerPreview() {
       ),
     onSideMenuClick = {},
     languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-    enableDeviceToDeviceSync = true
+    enableDeviceToDeviceSync = true,
+    enableReports = true
   )
 }
