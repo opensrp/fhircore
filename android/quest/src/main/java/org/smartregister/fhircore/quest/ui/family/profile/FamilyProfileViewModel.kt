@@ -101,7 +101,7 @@ constructor(
     }
   }
 
-  fun filterEligibleFamilyMember(
+  fun filterEligibleFamilyHeadMembers(
     profileViewData: ProfileViewData.FamilyProfileViewData
   ): ChangeFamilyMembersHolder {
     val listOfFamilies =
