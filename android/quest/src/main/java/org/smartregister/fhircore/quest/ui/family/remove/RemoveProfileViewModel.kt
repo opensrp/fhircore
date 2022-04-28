@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.remove.family
+package org.smartregister.fhircore.quest.ui.family.remove
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

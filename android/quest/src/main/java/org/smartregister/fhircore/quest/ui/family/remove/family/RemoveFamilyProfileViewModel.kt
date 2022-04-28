@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.quest.ui.family.remove.RemoveProfileViewModel
 import timber.log.Timber
 
 @HiltViewModel

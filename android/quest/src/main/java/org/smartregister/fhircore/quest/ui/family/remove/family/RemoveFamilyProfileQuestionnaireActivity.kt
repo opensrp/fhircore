@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.family.remove.family
 import androidx.activity.viewModels
 import org.hl7.fhir.r4.model.Group
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.family.remove.RemoveProfileQuestionnaireActivity
 
 class RemoveFamilyProfileQuestionnaireActivity : RemoveProfileQuestionnaireActivity<Group>() {
 
