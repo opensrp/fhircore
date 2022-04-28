@@ -27,37 +27,41 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 
-abstract class RemoveProfileQuestionnaireActivity<T> : QuestionnaireActivity() {
+abstract class BaseRemoveFamilyEntityQuestionnaireActivity<T> : QuestionnaireActivity() {
 
-  abstract val viewModel: RemoveProfileViewModel<T>
+  abstract val viewModel: BaseRemoveFamilyEntityViewModel<T>
 
   private lateinit var btnRemove: Button
   private lateinit var profileId: String
   lateinit var profileName: String
+  lateinit var familyId: String
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     profileId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    familyId = intent.extras?.getString(NavigationArg.FAMILY_ID) ?: ""
     btnRemove = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
     btnRemove.text = setRemoveButtonText()
 
     viewModel.apply {
-      isRemoved.observe(this@RemoveProfileQuestionnaireActivity) { if (it) onRemove() }
-      isDiscarded.observe(this@RemoveProfileQuestionnaireActivity) { if (it) onDiscard() }
+      isRemoved.observe(this@BaseRemoveFamilyEntityQuestionnaireActivity) { if (it) onRemove() }
+      isDiscarded.observe(this@BaseRemoveFamilyEntityQuestionnaireActivity) { if (it) onDiscard() }
       onFetch()
-      profile.observe(this@RemoveProfileQuestionnaireActivity) { onReceive(it) }
+      profile.observe(this@BaseRemoveFamilyEntityQuestionnaireActivity) { onReceive(it) }
     }
   }
 
   @OptIn(ExperimentalMaterialApi::class)
   fun onRemove() {
     val intent =
-      Intent(this@RemoveProfileQuestionnaireActivity, AppMainActivity::class.java).apply {
+      Intent(this@BaseRemoveFamilyEntityQuestionnaireActivity, AppMainActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
-    this@RemoveProfileQuestionnaireActivity.run {
+    this@BaseRemoveFamilyEntityQuestionnaireActivity.run {
       startActivity(intent)
       finish()
     }
@@ -81,10 +85,10 @@ abstract class RemoveProfileQuestionnaireActivity<T> : QuestionnaireActivity() {
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     dismissSaveProcessing()
-    lifecycleScope.launch { removeDialog(profileId = profileId, profileName = profileName) }
+    confirmationDialog(profileId = profileId, profileName = profileName)
   }
 
-  private fun removeDialog(profileId: String, profileName: String) {
+  private fun confirmationDialog(profileId: String, profileName: String) {
     AlertDialogue.showAlert(
       context = this,
       alertIntent = AlertIntent.CONFIRM,

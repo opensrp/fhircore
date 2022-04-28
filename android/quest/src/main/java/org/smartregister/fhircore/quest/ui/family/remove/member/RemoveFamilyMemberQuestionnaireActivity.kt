@@ -14,30 +14,32 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.remove.family
+package org.smartregister.fhircore.quest.ui.family.remove.member
 
 import androidx.activity.viewModels
-import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.family.remove.RemoveProfileQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.family.remove.BaseRemoveFamilyEntityQuestionnaireActivity
 
-class RemoveFamilyProfileQuestionnaireActivity : RemoveProfileQuestionnaireActivity<Group>() {
+class RemoveFamilyMemberQuestionnaireActivity : BaseRemoveFamilyEntityQuestionnaireActivity<Patient>() {
 
-  override val viewModel by viewModels<RemoveFamilyProfileViewModel>()
+  override val viewModel by viewModels<RemoveFamilyMemberViewModel>()
 
-  override fun onReceive(profile: Group) {
-    profileName = profile.name
+  override fun onReceive(profile: Patient) {
+    profileName = profile.extractName()
   }
 
   override fun setRemoveButtonText(): String {
-    return getString(R.string.remove_family)
+    return getString(R.string.remove_member)
   }
 
   override fun setRemoveDialogTitle(): String {
-    return getString(R.string.confirm_remove_family_title)
+    return getString(R.string.confirm_remove_family_member_title)
   }
 
   override fun setRemoveDialogMessage(profileName: String): String {
-    return getString(R.string.remove_family_warning, profileName)
+    return getString(R.string.remove_family_member_warning, profileName)
   }
+
 }

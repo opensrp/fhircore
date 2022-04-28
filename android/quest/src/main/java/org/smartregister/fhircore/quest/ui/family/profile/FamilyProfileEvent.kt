@@ -27,13 +27,13 @@ sealed class FamilyProfileEvent {
 
   data class OpenTaskForm(val context: Context, val taskFormId: String) : FamilyProfileEvent()
 
-  data class OpenMemberProfile(val patientId: String, val navController: NavHostController) :
+  data class OpenMemberProfile(val patientId: String, val familyId: String? = null, val navController: NavHostController) :
     FamilyProfileEvent()
 
   data class OverflowMenuClick(val context: Context, val menuId: Int, val familyId: String?) :
     FamilyProfileEvent()
 
-  data class FetchFamilyProfileData(val familyHeadId: String?) : FamilyProfileEvent()
+  data class FetchFamilyProfileData(val familyId: String?) : FamilyProfileEvent()
 
   data class FetchMemberTasks(val patientId: String?) : FamilyProfileEvent()
 }

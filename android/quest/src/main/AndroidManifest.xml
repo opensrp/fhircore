@@ -16,8 +16,8 @@
         android:largeHeap="true"
         >
 
-        <activity android:name=".ui.family.remove.member.RemoveMemberProfileQuestionnaireActivity"/>
-        <activity android:name=".ui.family.remove.family.RemoveFamilyProfileQuestionnaireActivity"/>
+        <activity android:name=".ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity"/>
+        <activity android:name=".ui.family.remove.family.RemoveFamilyQuestionnaireActivity"/>
         <activity android:name=".ui.patient.register.PatientRegisterActivity" />
         <activity android:name=".ui.patient.details.QuestPatientDetailActivity" />
         <activity android:name=".ui.patient.details.QuestionnaireDataDetailActivity" />

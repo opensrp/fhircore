@@ -20,7 +20,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 
-abstract class RemoveProfileViewModel<T>
+abstract class BaseRemoveFamilyEntityViewModel<T>
 constructor(open val repository: PatientRegisterRepository) : ViewModel() {
 
   val profile = MutableLiveData<T>()
@@ -29,7 +29,7 @@ constructor(open val repository: PatientRegisterRepository) : ViewModel() {
 
   abstract fun fetch(profileId: String)
 
-  abstract fun remove(profileId: String)
+  abstract fun remove(profileId: String, familyId: String? = null)
 
   fun discard() {
     isDiscarded.postValue(true)

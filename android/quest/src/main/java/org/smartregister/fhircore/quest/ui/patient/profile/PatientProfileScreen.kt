@@ -62,7 +62,8 @@ fun PatientProfileScreen(
   patientId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  patientProfileViewModel: PatientProfileViewModel = hiltViewModel()
+  patientProfileViewModel: PatientProfileViewModel = hiltViewModel(),
+  familyId: String?
 ) {
 
   LaunchedEffect(Unit) {
@@ -100,7 +101,7 @@ fun PatientProfileScreen(
                 onClick = {
                   showOverflowMenu = false
                   patientProfileViewModel.onEvent(
-                    PatientProfileEvent.OverflowMenuClick(context, it.id, profileViewData.logicalId)
+                    PatientProfileEvent.OverflowMenuClick(context, it.id, profileViewData.logicalId, familyId)
                   )
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),

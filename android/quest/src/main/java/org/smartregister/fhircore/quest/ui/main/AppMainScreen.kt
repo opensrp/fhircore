@@ -160,15 +160,17 @@ private fun AppMainNavigationGraph(
         MainNavigationScreen.PatientProfile ->
           composable(
             route =
-              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument())
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
+            val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
             PatientProfileScreen(
               navController = navController,
               appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
               healthModule = stackEntry.retrieveHealthModuleArg(),
-              patientId = patientId
+              patientId = patientId,
+              familyId = familyId
             )
           }
         MainNavigationScreen.FamilyProfile ->
@@ -192,8 +194,16 @@ private fun NavBackStackEntry.retrieveHealthModuleArg(): HealthModule =
   (this.arguments?.get(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT) as HealthModule
 
 private fun patientIdNavArgument() =
-  navArgument(NavigationArg.PATIENT_ID) {
-    type = NavType.StringType
-    nullable = true
-    defaultValue = null
-  }
+  listOf(
+    navArgument(NavigationArg.PATIENT_ID) {
+      type = NavType.StringType
+      nullable = true
+      defaultValue = null
+    },
+    navArgument(NavigationArg.FAMILY_ID) {
+      type = NavType.StringType
+      nullable = true
+      defaultValue = null
+    }
+  )
+

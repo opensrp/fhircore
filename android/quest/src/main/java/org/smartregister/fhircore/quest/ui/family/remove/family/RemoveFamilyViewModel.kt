@@ -28,16 +28,16 @@ import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.quest.ui.family.remove.RemoveProfileViewModel
+import org.smartregister.fhircore.quest.ui.family.remove.BaseRemoveFamilyEntityViewModel
 import timber.log.Timber
 
 @HiltViewModel
-class RemoveFamilyProfileViewModel
+class RemoveFamilyViewModel
 @Inject
 constructor(
   override val repository: PatientRegisterRepository,
   val appFeatureManager: AppFeatureManager
-) : RemoveProfileViewModel<Group>(repository) {
+) : BaseRemoveFamilyEntityViewModel<Group>(repository) {
 
   var isDeactivateMembers = false
 
@@ -52,7 +52,7 @@ constructor(
     viewModelScope.launch { profile.postValue(repository.loadResource(profileId)) }
   }
 
-  override fun remove(profileId: String) {
+  override fun remove(profileId: String, familyId: String?) {
     viewModelScope.launch {
       try {
         repository.loadResource<Group>(profileId)?.let { family ->

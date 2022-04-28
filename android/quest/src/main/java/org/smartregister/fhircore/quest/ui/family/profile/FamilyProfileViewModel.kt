@@ -38,7 +38,7 @@ import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
 import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMemberViewState
-import org.smartregister.fhircore.quest.ui.family.remove.family.RemoveFamilyProfileQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.family.remove.family.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -69,13 +69,14 @@ constructor(
         event.context.launchQuestionnaire<QuestionnaireActivity>(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM
         )
-      is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)
+      is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyId)
       is FamilyProfileEvent.OpenMemberProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
             Pair(NavigationArg.HEALTH_MODULE, HealthModule.DEFAULT.name),
-            Pair(NavigationArg.PATIENT_ID, event.patientId)
+            Pair(NavigationArg.PATIENT_ID, event.patientId),
+            Pair(NavigationArg.FAMILY_ID, event.familyId)
           )
         event.navController.navigate(route = MainNavigationScreen.PatientProfile.route + urlParams)
       }
@@ -84,7 +85,7 @@ constructor(
       is FamilyProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
           R.id.remove_family ->
-            event.context.launchQuestionnaire<RemoveFamilyProfileQuestionnaireActivity>(
+            event.context.launchQuestionnaire<RemoveFamilyQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
               clientIdentifier = event.familyId
             )

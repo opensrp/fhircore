@@ -22,6 +22,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 
 object NavigationArg {
 
+  const val FAMILY_ID = "familyId"
   const val FEATURE = "feature"
   const val HEALTH_MODULE = "healthModule"
   const val SCREEN_TITLE = "screenTitle"
@@ -50,6 +51,6 @@ object NavigationArg {
   private fun List<String>.joinByAmpersand() = this.joinToString("&") { "$it={$it}" }
 
   /** Bind nav arguments values */
-  fun bindArgumentsOf(vararg navArg: Pair<String, String>): String =
+  fun bindArgumentsOf(vararg navArg: Pair<String, String?>): String =
     "?" + navArg.joinToString("&") { "${it.first}=${it.second}" }
 }
