@@ -117,10 +117,10 @@ fun FamilyProfileScreen(
             familyMembers = familyList,
             onSaveClick = { familyMember ->
               coroutineScope.launch {
-                familyProfileViewModel.changeFamilyHead(familyMember.patientId, familyHeadId!!)
-                familyProfileViewModel.onEvent(
-                  FamilyProfileEvent.FetchFamilyProfileData(familyHeadId)
-                )
+                familyProfileViewModel.run {
+                  changeFamilyHead(familyMember.patientId, familyHeadId!!)
+                  onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyHeadId))
+                }
                 if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
                   bottomSheetScaffoldState.bottomSheetState.collapse()
               }

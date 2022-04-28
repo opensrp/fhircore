@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.main
+package org.smartregister.fhircore.quest.ui.shared.models
 
-import android.content.Context
-import com.google.android.fhir.sync.State
-import org.smartregister.fhircore.engine.domain.model.Language
-
-sealed class AppMainEvent {
-  data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
-  data class DeviceToDeviceSync(val context: Context) : AppMainEvent()
-  object Logout : AppMainEvent()
-  object SyncData : AppMainEvent()
-  data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
-}
+data class GlobalEventState(val refreshSync: Boolean = false)
