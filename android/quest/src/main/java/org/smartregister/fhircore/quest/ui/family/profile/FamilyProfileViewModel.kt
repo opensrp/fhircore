@@ -33,9 +33,8 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
-import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
+import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
 @HiltViewModel
@@ -64,7 +63,7 @@ constructor(
       is FamilyProfileEvent.AddMember ->
         event.context.launchQuestionnaire<FamilyQuestionnaireActivity>(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
-          clientIdentifier = event.familyHeadId
+          clientIdentifier = event.familyId
         )
       is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)
       is FamilyProfileEvent.OpenMemberProfile -> {
