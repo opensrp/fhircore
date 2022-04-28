@@ -190,12 +190,7 @@ fun FamilyProfileScreen(
                           else bottomSheetScaffoldState.bottomSheetState.collapse()
                         }
                       } else {
-                        Toast.makeText(
-                            context,
-                            "No eligible family members found for family head",
-                            Toast.LENGTH_SHORT
-                          )
-                          .show()
+ context.showToast(getString(R.string.no_eligible_family_members))                      
                       }
                     } else
                       familyProfileViewModel.onEvent(FamilyProfileEvent.OverflowMenuClick(it.id))
