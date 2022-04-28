@@ -27,12 +27,12 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-sealed class ProfileData(open val logicalId: String, open val name: String, open val age: String) {
+sealed class ProfileData(open val logicalId: String, open val name: String) {
   data class DefaultProfileData(
     override val logicalId: String,
     override val name: String,
     val birthdate: Date,
-    override val age: String = birthdate.toAgeDisplay(),
+    val age: String = birthdate.toAgeDisplay(),
     val identifier: String? = null,
     val address: String,
     val gender: Enumerations.AdministrativeGender,
@@ -45,26 +45,26 @@ sealed class ProfileData(open val logicalId: String, open val name: String, open
     val visits: List<Encounter> = listOf(),
     val forms: List<QuestionnaireConfig> = listOf(),
     val responses: List<QuestionnaireResponse> = listOf()
-  ) : ProfileData(logicalId = logicalId, name = name, age = age)
+  ) : ProfileData(logicalId = logicalId, name = name)
 
   data class FamilyProfileData(
     override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val address: String,
-    override val age: String,
+    val age: String,
     val head: FamilyMemberProfileData? = null,
     val members: List<FamilyMemberProfileData>,
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf()
-  ) : ProfileData(logicalId = logicalId, name = name, age = age)
+  ) : ProfileData(logicalId = logicalId, name = name)
 
   data class AncProfileData(
     override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val birthdate: Date,
-    override val age: String,
+    val age: String,
     val gender: Enumerations.AdministrativeGender,
     val address: String,
     val visitStatus: VisitStatus,
@@ -73,5 +73,5 @@ sealed class ProfileData(open val logicalId: String, open val name: String, open
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf(),
     val visits: List<Encounter> = listOf()
-  ) : ProfileData(logicalId = logicalId, name = name, age = age)
+  ) : ProfileData(logicalId = logicalId, name = name)
 }
