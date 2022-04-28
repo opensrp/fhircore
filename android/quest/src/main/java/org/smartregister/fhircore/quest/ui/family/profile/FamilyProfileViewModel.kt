@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepo
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
@@ -106,9 +107,7 @@ constructor(
     profileViewData: ProfileViewData.FamilyProfileViewData
   ): EligibleFamilyHeadMember {
     val listOfFamilies =
-      profileViewData.familyMemberViewStates.filter {
-        if (it.age.contains("y")) (it.age.split(" ")[0].replace("y", "").toInt() > 15) else false
-      }
+      profileViewData.familyMemberViewStates.filter { it.birthDate.yearsPassed() > 15 }
     return EligibleFamilyHeadMember(listOfFamilies.map { EligibleFamilyHeadMemberViewState(it) })
   }
 

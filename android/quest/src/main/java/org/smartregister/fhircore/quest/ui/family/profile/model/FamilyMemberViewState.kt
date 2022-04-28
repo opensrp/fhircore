@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile.model
 
+import java.util.Date
+
 data class FamilyMemberViewState(
   val patientId: String,
   val name: String,
   val gender: String,
+  val birthDate: Date,
   val age: String,
   val statuses: List<String> = emptyList(),
   val showAtRisk: Boolean = false,

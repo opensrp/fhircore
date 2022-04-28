@@ -67,6 +67,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
             inputModel.members.map { memberProfileData ->
               FamilyMemberViewState(
                 patientId = memberProfileData.id,
+                birthDate = memberProfileData.birthdate!!,
                 age = memberProfileData.age,
                 gender = memberProfileData.gender.translateGender(context),
                 name = memberProfileData.name,
