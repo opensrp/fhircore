@@ -38,6 +38,7 @@ import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
+import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
@@ -59,12 +60,10 @@ fun PatientRegisterScreen(
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
 
-  val currentSetTotalRecordCount by rememberUpdatedState(
-    patientRegisterViewModel::setTotalRecordsCount
-  )
-  val currentPaginateRegisterData by rememberUpdatedState(
-    patientRegisterViewModel::paginateRegisterData
-  )
+  val currentSetTotalRecordCount by
+    rememberUpdatedState(patientRegisterViewModel::setTotalRecordsCount)
+  val currentPaginateRegisterData by
+    rememberUpdatedState(patientRegisterViewModel::paginateRegisterData)
 
   LaunchedEffect(Unit) {
     currentSetTotalRecordCount(appFeatureName, healthModule)
@@ -124,12 +123,17 @@ fun PatientRegisterScreen(
               )
             }
           )
-          Button(
-            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            onClick = {
-              patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
+          // TODO activate this button action via config; now only activated for family register
+          if (appFeatureName.equals(AppFeature.HouseholdManagement.name, true)) {
+            Button(
+              modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+              onClick = {
+                patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
+              }
+            ) {
+              Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp))
             }
-          ) { Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp)) }
+          }
         }
       }
     }
