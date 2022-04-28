@@ -1,5 +1,6 @@
 {
   "resourceType": "Parameters",
+  "classification": "sync",
   "parameter": [
     {
       "resource": {
