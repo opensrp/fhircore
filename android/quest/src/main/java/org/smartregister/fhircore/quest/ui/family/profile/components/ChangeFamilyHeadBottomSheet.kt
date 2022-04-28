@@ -64,8 +64,8 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileViewModel
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
-const val TAG_SAVE = "save"
-const val TAG_CANCEL = "cancel"
+const val TEST_TAG_SAVE = "saveTestTag"
+const val TEST_TAG_CANCEL = "cancelTestTag"
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
