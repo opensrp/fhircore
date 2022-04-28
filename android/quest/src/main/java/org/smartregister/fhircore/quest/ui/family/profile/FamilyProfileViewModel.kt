@@ -35,7 +35,6 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
-import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
