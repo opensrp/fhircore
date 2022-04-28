@@ -173,6 +173,7 @@ constructor(
 
     val patient = fhirEngine.load(Patient::class.java, newFamilyHead)
 
+    //TODO create a utility/extension function for creating RelatedPersonResource
     val relatedPerson =
       RelatedPerson().apply {
         this.active = true
