@@ -49,13 +49,13 @@ constructor(
   open fun getDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf(
-          ResourceType.Group,
-          ResourceType.Patient,
-          ResourceType.Questionnaire,
-          ResourceType.QuestionnaireResponse,
-          ResourceType.Observation,
-          ResourceType.Encounter
-        )
+        ResourceType.Group,
+        ResourceType.Patient,
+        ResourceType.Questionnaire,
+        ResourceType.QuestionnaireResponse,
+        ResourceType.Observation,
+        ResourceType.Encounter
+      )
         .mapIndexed { index, resourceType ->
           DataType(name = resourceType.name, DataType.Filetype.JSON, index)
         }
@@ -103,7 +103,7 @@ constructor(
       )
       ORDER BY b.index_from ASC
       LIMIT ?
-    """.trimIndent(),
+          """.trimIndent(),
           listOf(lastRecordUpdatedAt, batchSize)
         )
 
@@ -144,7 +144,7 @@ constructor(
       )
       ORDER BY b.index_from ASC
       LIMIT ?
-    """.trimIndent(),
+          """.trimIndent(),
           listOf(lastRecordUpdatedAt, batchSize)
         )
 

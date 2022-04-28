@@ -108,5 +108,4 @@ class LoginActivity :
   private fun launchDialPad(phone: String) {
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
-
 }

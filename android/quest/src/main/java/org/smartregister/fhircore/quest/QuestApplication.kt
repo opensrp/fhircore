@@ -28,10 +28,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
-import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.p2p.P2PLibrary
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -73,7 +69,8 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
       .get(null)
       .let { fhirPathEngine ->
         ((fhirPathEngine as FHIRPathEngine).worker as HapiWorkerContext).let { workerContext ->
-          workerContext.javaClass
+          workerContext
+            .javaClass
             .getDeclaredField("myValidationSupport")
             .also { it.isAccessible = true }
             .get(workerContext) as

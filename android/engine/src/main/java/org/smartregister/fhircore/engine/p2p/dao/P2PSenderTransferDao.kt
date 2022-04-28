@@ -80,7 +80,7 @@ constructor(
     resourceTypes.forEach {
       runBlocking {
         try {
-          val resourceClass = Class.forName("org.hl7.fhir.r4.model.${it}") as Class<out Resource>
+          val resourceClass = Class.forName("org.hl7.fhir.r4.model.$it") as Class<out Resource>
           Timber.e("Fetch data for resource type ----> ${resourceClass.name}")
           val loadedResources = loadResources(lastUpdated, batchSize, resourceClass)
           loadedResources.forEachIndexed { index, resource ->
