@@ -94,6 +94,19 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
     }
 
+  suspend inline fun <reified T : Resource> searchResourceFor(
+    token: TokenClientParam,
+    subjectType: ResourceType,
+    subjectId: String,
+    filters: List<SearchFilter> = listOf()
+  ): List<T> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filterByResourceTypeId(token, subjectType, subjectId)
+        filters.forEach { filterBy(it) }
+      }
+    }
+
   suspend fun searchQuestionnaireConfig(
     filters: List<SearchFilter> = listOf()
   ): List<QuestionnaireConfig> =

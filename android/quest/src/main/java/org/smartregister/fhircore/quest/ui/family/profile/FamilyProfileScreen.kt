@@ -79,14 +79,14 @@ import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyBottomShee
 
 @Composable
 fun FamilyProfileScreen(
-  familyHeadId: String?,
+  familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
   familyProfileViewModel: FamilyProfileViewModel = hiltViewModel()
 ) {
 
   LaunchedEffect(Unit) {
-    familyProfileViewModel.onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyHeadId))
+    familyProfileViewModel.onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyId))
   }
 
   val viewState = familyProfileViewModel.familyProfileUiState.value
@@ -118,8 +118,8 @@ fun FamilyProfileScreen(
             onSaveClick = { familyMember ->
               coroutineScope.launch {
                 familyProfileViewModel.run {
-                  changeFamilyHead(familyMember.patientId, familyHeadId!!)
-                  onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyHeadId))
+                  changeFamilyHead(familyMember.patientId, familyId!!)
+                  onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyId))
                 }
                 if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
                   bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -138,7 +138,11 @@ fun FamilyProfileScreen(
             },
             onViewProfile = {
               familyProfileViewModel.onEvent(
-                FamilyProfileEvent.OpenMemberProfile(currentMemberPatientId, navController)
+                FamilyProfileEvent.OpenMemberProfile(
+                  currentMemberPatientId,
+                  familyId,
+                  navController
+                )
               )
             }
           )
@@ -197,7 +201,9 @@ fun FamilyProfileScreen(
                           .show()
                       }
                     } else
-                      familyProfileViewModel.onEvent(FamilyProfileEvent.OverflowMenuClick(it.id))
+                      familyProfileViewModel.onEvent(
+                        FamilyProfileEvent.OverflowMenuClick(context, it.id, familyId)
+                      )
                   },
                   contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                   modifier =
@@ -219,7 +225,7 @@ fun FamilyProfileScreen(
           contentColor = Color.White,
           text = { Text(text = stringResource(R.string.add_memeber).uppercase()) },
           onClick = {
-            familyProfileViewModel.onEvent(FamilyProfileEvent.AddMember(context, familyHeadId))
+            familyProfileViewModel.onEvent(FamilyProfileEvent.AddMember(context, familyId))
           },
           backgroundColor = MaterialTheme.colors.primary,
           icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },

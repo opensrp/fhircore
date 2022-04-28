@@ -31,12 +31,14 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
 import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMemberViewState
+import org.smartregister.fhircore.quest.ui.family.remove.family.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -68,19 +70,28 @@ constructor(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
           clientIdentifier = event.familyId
         )
-      is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)
+      is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyId)
       is FamilyProfileEvent.OpenMemberProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
             Pair(NavigationArg.HEALTH_MODULE, HealthModule.DEFAULT.name),
-            Pair(NavigationArg.PATIENT_ID, event.patientId)
+            Pair(NavigationArg.PATIENT_ID, event.patientId),
+            Pair(NavigationArg.FAMILY_ID, event.familyId)
           )
         event.navController.navigate(route = MainNavigationScreen.PatientProfile.route + urlParams)
       }
       is FamilyProfileEvent.OpenTaskForm ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(event.taskFormId)
-      is FamilyProfileEvent.OverflowMenuClick -> {}
+      is FamilyProfileEvent.OverflowMenuClick -> {
+        when (event.menuId) {
+          R.id.remove_family ->
+            event.context.launchQuestionnaire<RemoveFamilyQuestionnaireActivity>(
+              questionnaireId = REMOVE_FAMILY_FORM,
+              clientIdentifier = event.familyId
+            )
+        }
+      }
       is FamilyProfileEvent.FetchMemberTasks -> {
         /*TODO fetch tasks for this member*/
       }
@@ -126,5 +137,6 @@ constructor(
 
   companion object {
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
+    const val REMOVE_FAMILY_FORM = "remove-family"
   }
 }

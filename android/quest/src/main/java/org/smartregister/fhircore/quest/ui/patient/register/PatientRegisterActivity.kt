@@ -39,7 +39,6 @@ import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDeta
 import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
-import timber.log.Timber
 
 @AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
@@ -58,7 +57,6 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       )
     configureViews(registerViewConfiguration)
 
-    Timber.e("I M HEREEEEEEEEEEEEEEEEEEEEEEEEEEE")
     with(registerViewModel.configService) {
       if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
         this.schedulePlan(this@PatientRegisterActivity)

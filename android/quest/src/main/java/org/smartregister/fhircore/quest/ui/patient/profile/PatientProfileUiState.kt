@@ -16,21 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile
 
-import android.content.Context
-import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
 
-sealed class PatientProfileEvent {
-
-  data class SeeAll(val patientProfileViewSection: PatientProfileViewSection) :
-    PatientProfileEvent()
-
-  data class LoadQuestionnaire(val questionnaireId: String, val context: Context) :
-    PatientProfileEvent()
-
-  data class OverflowMenuClick(
-    val context: Context,
-    val menuId: Int,
-    val patientId: String,
-    val familyId: String? = null
-  ) : PatientProfileEvent()
-}
+data class PatientProfileUiState(val overflowMenuItems: List<OverflowMenuItem> = emptyList())

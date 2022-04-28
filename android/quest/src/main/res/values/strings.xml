@@ -36,6 +36,7 @@
     <string name="view_past_encounters">View past encounters</string>
     <string name="remove_family">Remove family</string>
     <string name="family_suffix">%1$s Family</string>
+    <string name="remove_this_person">Remove this person</string>
 
     <!-- SideMenu option strings-->
     <string name="device_to_device_sync">Device to device sync</string>
@@ -45,6 +46,15 @@
     <string name="family_planning_clients">Family Planning Clients</string>
     <string name="households">Households</string>
     <string name="children">Children</string>
+
+    <!--remove family questionnaire strings-->
+    <string name="remove_family_warning">Removing %1$s will remove their entire health record from your device. This action can’t be undone.</string>
+    <string name="confirm_remove_family_title">Remove Family</string>
+
+    <!--remove family member questionnaire strings-->
+    <string name="remove_family_member_warning">%1$s will be removed permanently from this family. This action can’t be undone.</string>
+    <string name="confirm_remove_family_member_title">Remove member</string>
+    <string name="remove_member">Remove member</string>
 
     <!--Reporting strings -->
     <string name="date_range">Date range</string>
