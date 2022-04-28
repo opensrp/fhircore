@@ -60,10 +60,12 @@ fun PatientRegisterScreen(
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
 
-  val currentSetTotalRecordCount by
-    rememberUpdatedState(patientRegisterViewModel::setTotalRecordsCount)
-  val currentPaginateRegisterData by
-    rememberUpdatedState(patientRegisterViewModel::paginateRegisterData)
+  val currentSetTotalRecordCount by rememberUpdatedState(
+    patientRegisterViewModel::setTotalRecordsCount
+  )
+  val currentPaginateRegisterData by rememberUpdatedState(
+    patientRegisterViewModel::paginateRegisterData
+  )
 
   LaunchedEffect(Unit) {
     currentSetTotalRecordCount(appFeatureName, healthModule)

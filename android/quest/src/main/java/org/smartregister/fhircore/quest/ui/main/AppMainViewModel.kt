@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
@@ -101,7 +102,17 @@ constructor(
       }
       is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
       is AppMainEvent.UpdateSyncState ->
-        appMainUiState = appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
+        appMainUiState =
+          when (event.state) {
+            // Update register count when sync completes
+            is State.Finished,
+            is State.Failed ->
+              appMainUiState.copy(
+                lastSyncTime = event.lastSyncTime ?: "",
+                sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions()
+              )
+            else -> appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
+          }
     }
   }
 

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
+import com.google.android.fhir.sync.State
 import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class AppMainEvent {
@@ -25,5 +26,5 @@ sealed class AppMainEvent {
   data class DeviceToDeviceSync(val context: Context) : AppMainEvent()
   object Logout : AppMainEvent()
   object SyncData : AppMainEvent()
-  data class UpdateSyncState(val lastSyncTime: String?) : AppMainEvent()
+  data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
 }
