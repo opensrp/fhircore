@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
+import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveMemberProfileQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -80,10 +81,17 @@ constructor(
       is PatientProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
           R.id.remove_family_member -> {
-            /* TODO Launch RemoveFamilyQuestionnaireActivity */
+             event.context.launchQuestionnaire<RemoveMemberProfileQuestionnaireActivity>(
+               questionnaireId = REMOVE_FAMILY_FORM,
+               clientIdentifier = event.patientId
+             )
           }
           else -> {}
         }
       }
     }
+
+  companion object {
+    const val REMOVE_FAMILY_FORM = "remove-family"
+  }
 }

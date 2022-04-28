@@ -44,11 +44,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.FormButton
@@ -101,17 +99,19 @@ fun PatientProfileScreen(
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
-                  patientProfileViewModel.onEvent(PatientProfileEvent.OverflowMenuClick(it.id))
+                  patientProfileViewModel.onEvent(
+                    PatientProfileEvent.OverflowMenuClick(context, it.id, profileViewData.logicalId)
+                  )
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier =
-                modifier
-                  .fillMaxWidth()
-                  .background(
-                    color =
-                    if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
-                    else Color.Transparent
-                  )
+                  modifier
+                    .fillMaxWidth()
+                    .background(
+                      color =
+                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
+                        else Color.Transparent
+                    )
               ) { Text(text = stringResource(id = it.titleResource), color = it.titleColor) }
             }
           }

@@ -27,5 +27,6 @@ sealed class PatientProfileEvent {
   data class LoadQuestionnaire(val questionnaireId: String, val context: Context) :
     PatientProfileEvent()
 
-  data class OverflowMenuClick(val menuId: Int) : PatientProfileEvent()
+  data class OverflowMenuClick(val context: Context, val menuId: Int, val patientId: String) :
+    PatientProfileEvent()
 }
