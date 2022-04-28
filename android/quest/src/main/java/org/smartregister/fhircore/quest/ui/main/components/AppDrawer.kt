@@ -127,7 +127,10 @@ fun AppDrawer(
           iconResource = R.drawable.ic_reports,
           title = stringResource(R.string.reports),
           showEndText = false,
-          onSideMenuClick = { navController.navigate(MainNavigationScreen.Reports.route) }
+          onSideMenuClick = {
+            openDrawer(false)
+            navController.navigate(MainNavigationScreen.Reports.route)
+          }
         )
       }
       if (enableDeviceToDeviceSync) {
@@ -135,7 +138,10 @@ fun AppDrawer(
           iconResource = R.drawable.ic_sync,
           title = stringResource(R.string.device_to_device_sync),
           showEndText = false,
-          onSideMenuClick = { onSideMenuClick(AppMainEvent.DeviceToDeviceSync(context)) }
+          onSideMenuClick = {
+            openDrawer(false)
+            onSideMenuClick(AppMainEvent.DeviceToDeviceSync(context))
+          }
         )
       }
       Box {
