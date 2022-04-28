@@ -30,7 +30,7 @@ data class QuestionnaireConfig(
   val form: String,
   val title: String,
   val identifier: String,
-  val safeButtonText: String? = null,
+  val saveButtonText: String? = null,
   val setPractitionerDetails: Boolean = false,
   val setOrganizationDetails: Boolean = false
 )

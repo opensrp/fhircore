@@ -125,7 +125,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       } else if (questionnaireType.isEditMode()) {
         // setting the save button text from Questionnaire Config
         text =
-          questionnaireConfig.safeButtonText
+          questionnaireConfig.saveButtonText
             ?: getString(R.string.questionnaire_alert_submit_button_title)
       }
     }

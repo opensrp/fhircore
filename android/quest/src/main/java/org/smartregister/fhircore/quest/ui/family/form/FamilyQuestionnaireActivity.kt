@@ -30,9 +30,6 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.quest.R
 
-const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
-
 @AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
@@ -104,5 +101,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     const val QUESTIONNAIRE_CALLING_ACTIVITY = "questionnaire-calling-activity"
     const val IS_PREGNANT_KEY = "is_pregnant"
     const val HEAD_RECORD_ID_KEY = "head_record_id"
+    const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
+    const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
   }
 }

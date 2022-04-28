@@ -14,7 +14,7 @@
       "form": "family-member-registration",
       "title": "Add Family Member",
       "identifier": "82953",
-      "saveButtonText": "Update Family Member",
+      "saveButtonText": "ADD FAMILY MEMBER",
       "setPractitionerDetails" : true,
       "setOrganizationDetails" : true
     },
@@ -32,7 +32,7 @@
       "form": "family-registration",
       "title": "Add Family",
       "identifier": "82952",
-      "saveButtonText": "Update Family",
+      "saveButtonText": "ADD FAMILY",
       "setPractitionerDetails" : true,
       "setOrganizationDetails" : true
     },
