@@ -119,13 +119,7 @@ fun ChangeFamilyHeadBottomSheet(
             .padding(horizontal = 12.dp, vertical = 18.dp)
             .background(
               color = colorResource(id = R.color.background_warning),
-              shape =
-                RoundedCornerShape(
-                  topStart = 8.dp,
-                  topEnd = 8.dp,
-                  bottomStart = 8.dp,
-                  bottomEnd = 8.dp
-                )
+            shape = RoundedCornerShape(8.dp)
             )
       ) {
         Image(
