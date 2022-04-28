@@ -58,7 +58,6 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       )
     configureViews(registerViewConfiguration)
 
-    Timber.e("I M HEREEEEEEEEEEEEEEEEEEEEEEEEEEE")
     with(registerViewModel.configService) {
       if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
         this.schedulePlan(this@PatientRegisterActivity)

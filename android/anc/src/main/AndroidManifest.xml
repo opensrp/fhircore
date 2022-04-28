@@ -21,7 +21,7 @@
 
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".ui.family.removefamily.RemoveFamilyQuestionnaireActivity"
+            android:name="org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.family.form.FamilyQuestionnaireActivity"

@@ -48,7 +48,7 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.family.removefamily.RemoveFamilyQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.util.extension.plusYears
 
@@ -150,7 +150,7 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
   fun testRemoveShouldShowRemoveFamilyConfirmationDialogue() {
     familyDetailsActivity.familyDetailViewModel.onRemoveFamilyMenuItemClicked()
     val expectedIntent =
-      Intent(familyDetailsActivity, RemoveFamilyQuestionnaireActivity::class.java)
+      Intent(familyDetailsActivity, org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyQuestionnaireActivity::class.java)
     val actualIntent = shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }

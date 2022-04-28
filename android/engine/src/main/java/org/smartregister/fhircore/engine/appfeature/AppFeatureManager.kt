@@ -26,23 +26,28 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 @Singleton
 class AppFeatureManager @Inject constructor(val configurationRegistry: ConfigurationRegistry) {
 
-  private var _appFeatureConfig: AppFeatureConfig? = null
+    private var _appFeatureConfig: AppFeatureConfig? = null
 
-  fun loadAndActivateFeatures() {
-    // TODO do we want to handle missing this config for any app
-    _appFeatureConfig =
-      configurationRegistry.retrieveConfiguration(AppConfigClassification.APP_FEATURE)
-  }
-
-  fun activatedFeatures(): List<FeatureConfig> =
-    _appFeatureConfig?.appFeatures?.filter { it.active } ?: emptyList()
-
-  fun activeRegisterFeatures() =
-    activatedFeatures().filter {
-      it.feature.equals(AppFeature.PatientManagement.name, true) ||
-        it.feature.equals(AppFeature.HouseholdManagement.name, true)
+    fun loadAndActivateFeatures() {
+        // TODO do we want to handle missing this config for any app
+        _appFeatureConfig =
+            configurationRegistry.retrieveConfiguration(AppConfigClassification.APP_FEATURE)
     }
 
-  fun isFeatureActive(appFeature: AppFeature) =
-    activatedFeatures().find { appFeature.name.equals(it.feature, true) } != null
+    fun activatedFeatures(): List<FeatureConfig> =
+        _appFeatureConfig?.appFeatures?.filter { it.active } ?: emptyList()
+
+    fun activeRegisterFeatures() =
+        activatedFeatures().filter {
+            it.feature.equals(AppFeature.PatientManagement.name, true) ||
+                    it.feature.equals(AppFeature.HouseholdManagement.name, true)
+        }
+
+    fun isFeatureActive(appFeature: AppFeature) =
+        activatedFeatures().find { appFeature.name.equals(it.feature, true) } != null
+
+    fun appFeatureSettings(appFeature: AppFeature) =
+        activatedFeatures()
+            .find { appFeature.name.equals(it.feature, true) }?.settings
+            ?: mapOf()
 }
