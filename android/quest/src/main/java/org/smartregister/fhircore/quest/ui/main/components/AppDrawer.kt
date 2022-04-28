@@ -57,7 +57,8 @@ import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.navigation.NavigationScreen
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
@@ -106,7 +107,12 @@ fun AppDrawer(
                     openDrawer(false)
                     navController.navigate(
                       route =
-                        "${NavigationScreen.Home.route}?feature=${sideMenuOption.appFeatureName}&healthModule=${sideMenuOption.healthModule.name}&screenTitle=$title"
+                        MainNavigationScreen.Home.route +
+                          NavigationArg.bindArgumentsOf(
+                            Pair(NavigationArg.FEATURE, sideMenuOption.appFeatureName),
+                            Pair(NavigationArg.HEALTH_MODULE, sideMenuOption.healthModule.name),
+                            Pair(NavigationArg.SCREEN_TITLE, title)
+                          )
                     )
                   }
                 )

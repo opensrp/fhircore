@@ -126,7 +126,6 @@ class ReportHomeActivity :
               ignoreCase = true
             )
           ) {
-
             val reportName = selectedMeasureReportItem.value?.name!!
             Timber.d(message = "This is the measure name => ".plus(reportName))
             reportViewModel.evaluateMeasure(

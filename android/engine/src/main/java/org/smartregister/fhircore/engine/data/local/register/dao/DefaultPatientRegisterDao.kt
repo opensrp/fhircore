@@ -69,7 +69,7 @@ constructor(
 
       patients.map {
         RegisterData.DefaultRegisterData(
-          id = it.logicalId,
+          logicalId = it.logicalId,
           name = it.extractName(),
           gender = it.gender,
           age = it.extractAge()

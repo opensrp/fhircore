@@ -31,17 +31,17 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
-import org.smartregister.fhircore.quest.navigation.NavigationScreen
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 
 @Composable
 fun BottomScreenSection(
   navController: NavHostController,
-  navigationScreens: List<NavigationScreen>
+  mainNavigationScreens: List<MainNavigationScreen>
 ) {
   BottomNavigation(backgroundColor = Color.White, contentColor = Color.Black) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    navigationScreens.filter { it.showInBottomNav }.forEach { navigationScreen ->
+    mainNavigationScreens.filter { it.showInBottomNav }.forEach { navigationScreen ->
       if (navigationScreen.titleResource != null) {
         BottomNavigationItem(
           icon = {
@@ -83,11 +83,11 @@ fun BottomScreenSectionPreview() {
   val navController = rememberNavController()
   val navigationScreens =
     listOf(
-      NavigationScreen.Home,
-      NavigationScreen.Tasks,
-      NavigationScreen.Reports,
-      NavigationScreen.Settings
+      MainNavigationScreen.Home,
+      MainNavigationScreen.Tasks,
+      MainNavigationScreen.Reports,
+      MainNavigationScreen.Settings
     )
 
-  BottomScreenSection(navController = navController, navigationScreens = navigationScreens)
+  BottomScreenSection(navController = navController, mainNavigationScreens = navigationScreens)
 }

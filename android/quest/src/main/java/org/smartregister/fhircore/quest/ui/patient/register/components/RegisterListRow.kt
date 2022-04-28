@@ -57,14 +57,14 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
-import org.smartregister.fhircore.quest.ui.patient.register.model.ServiceMember
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
+import org.smartregister.fhircore.quest.ui.shared.models.ServiceMember
 
 @Composable
 fun RegisterListRow(
   modifier: Modifier = Modifier,
   registerViewData: RegisterViewData,
-  onOpenProfileClick: (String) -> Unit
+  onRowClick: (String) -> Unit
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -74,7 +74,7 @@ fun RegisterListRow(
     Column(
       modifier =
         modifier
-          .clickable { onOpenProfileClick(registerViewData.id) }
+          .clickable { onRowClick(registerViewData.logicalId) }
           .weight(0.75f)
           .padding(horizontal = 16.dp, vertical = 28.dp)
     ) {
@@ -265,7 +265,7 @@ fun RegisterListRowForFamilyRegisterOverduePreview() {
   RegisterListRow(
     registerViewData =
       RegisterViewData(
-        id = "1234",
+        logicalId = "1234",
         title = "John Doe, Male, 40y",
         subtitle = "#90129",
         status = "Last visited on Thursday",
@@ -282,7 +282,7 @@ fun RegisterListRowForFamilyRegisterOverduePreview() {
             ServiceMember(R.drawable.ic_pregnant, "1920194")
           )
       ),
-    onOpenProfileClick = {}
+    onRowClick = {}
   )
 }
 
@@ -292,7 +292,7 @@ fun RegisterListRowForFamilyRegisterDuePreview() {
   RegisterListRow(
     registerViewData =
       RegisterViewData(
-        id = "1234",
+        logicalId = "1234",
         title = "Ekuro Eoukot, Male, 67y",
         subtitle = "#90129",
         status = "Last visited on 03-03-2022",
@@ -303,7 +303,7 @@ fun RegisterListRowForFamilyRegisterDuePreview() {
         serviceButtonBorderColor = InfoColor,
         showDivider = true,
       ),
-    onOpenProfileClick = {}
+    onRowClick = {}
   )
 }
 
@@ -311,8 +311,9 @@ fun RegisterListRowForFamilyRegisterDuePreview() {
 @Preview(showBackground = true)
 fun RegisterListRowForQuestRegisterPreview() {
   RegisterListRow(
-    registerViewData = RegisterViewData(id = "1234", title = "John Doe, 40y", subtitle = "Male"),
-    onOpenProfileClick = {}
+    registerViewData =
+      RegisterViewData(logicalId = "1234", title = "John Doe, 40y", subtitle = "Male"),
+    onRowClick = {}
   )
 }
 
@@ -322,12 +323,12 @@ fun RegisterListRowForRdtRegisterPreview() {
   RegisterListRow(
     registerViewData =
       RegisterViewData(
-        id = "1234",
+        logicalId = "1234",
         title = "Jackie Johnson, Female, 40y",
         status = "Last test",
         otherStatus = "04 Feb 2022"
       ),
-    onOpenProfileClick = {}
+    onRowClick = {}
   )
 }
 
@@ -337,7 +338,7 @@ fun RegisterListRowForAncRegisterPreview() {
   RegisterListRow(
     registerViewData =
       RegisterViewData(
-        id = "121299",
+        logicalId = "121299",
         title = "Alberta Tuft, Female, 26Y",
         status = "ID Number: 1929102",
         otherStatus = "Kimulu village",
@@ -345,7 +346,7 @@ fun RegisterListRowForAncRegisterPreview() {
         serviceText = "ANC visit",
         serviceButtonForegroundColor = InfoColor
       ),
-    onOpenProfileClick = {}
+    onRowClick = {}
   )
 }
 
@@ -355,7 +356,7 @@ fun RegisterListRowForEirRegisterPreview() {
   RegisterListRow(
     registerViewData =
       RegisterViewData(
-        id = "1212299",
+        logicalId = "1212299",
         title = "Mohamed Ali, Male, 26Y",
         status = "Last test",
         otherStatus = "04 Feb 2022",
@@ -364,6 +365,6 @@ fun RegisterListRowForEirRegisterPreview() {
         serviceButtonBackgroundColor = OverdueColor,
         showDivider = true
       ),
-    onOpenProfileClick = {}
+    onRowClick = {}
   )
 }
