@@ -29,9 +29,11 @@ import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepo
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.quest.navigation.NavigationScreen
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
+import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
@@ -61,13 +63,18 @@ constructor(
     when (event) {
       is FamilyProfileEvent.AddMember ->
         event.context.launchQuestionnaire<FamilyQuestionnaireActivity>(
-          questionnaireId = FAMILY_MEMBER_REGISTER_FORM
+          questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
+          clientIdentifier = event.familyHeadId
         )
       is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyHeadId)
       is FamilyProfileEvent.OpenMemberProfile -> {
         val urlParams =
-          "?feature=${AppFeature.PatientManagement.name}&healthModule=${HealthModule.DEFAULT.name}&patientId=${event.patientId}"
-        event.navController.navigate(route = NavigationScreen.PatientProfile.route + urlParams)
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+            Pair(NavigationArg.HEALTH_MODULE, HealthModule.DEFAULT.name),
+            Pair(NavigationArg.PATIENT_ID, event.patientId)
+          )
+        event.navController.navigate(route = MainNavigationScreen.PatientProfile.route + urlParams)
       }
       is FamilyProfileEvent.OpenTaskForm ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(event.taskFormId)

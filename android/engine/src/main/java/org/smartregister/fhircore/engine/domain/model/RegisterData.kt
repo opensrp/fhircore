@@ -19,16 +19,16 @@ package org.smartregister.fhircore.engine.domain.model
 import java.util.Date
 import org.hl7.fhir.r4.model.Enumerations
 
-sealed class RegisterData(open val id: String, open val name: String) {
+sealed class RegisterData(open val logicalId: String, open val name: String) {
   data class DefaultRegisterData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val gender: Enumerations.AdministrativeGender,
     val age: String
-  ) : RegisterData(id = id, name = name)
+  ) : RegisterData(logicalId = logicalId, name = name)
 
   data class FamilyRegisterData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val address: String,
@@ -37,10 +37,10 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null,
     val lastSeen: String? = null
-  ) : RegisterData(id = id, name = name)
+  ) : RegisterData(logicalId = logicalId, name = name)
 
   data class FamilyMemberRegisterData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val age: String,
@@ -51,16 +51,18 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val deathDate: Date? = null,
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null
-  ) : RegisterData(id = id, name = name)
+  ) : RegisterData(logicalId = logicalId, name = name)
 
   data class AncRegisterData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
+    val gender: Enumerations.AdministrativeGender,
     val age: String,
     val address: String,
     val visitStatus: VisitStatus,
     val servicesDue: Int? = null,
-    val servicesOverdue: Int? = null
-  ) : RegisterData(id = id, name = name)
+    val servicesOverdue: Int? = null,
+    val familyName: String? = null
+  ) : RegisterData(logicalId = logicalId, name = name)
 }

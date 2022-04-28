@@ -168,6 +168,22 @@ constructor(
     }
   }
 
+  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, resourceId: String) {
+    val family = defaultRepository.loadResource<Group>(resourceId)!!
+    if (resource.resourceType == ResourceType.Patient) {
+      family.member.add(
+        Group.GroupMemberComponent().apply {
+          entity = Reference().apply { reference = "Patient/${resource.logicalId}" }
+        }
+      )
+    } else {
+      family.managingEntity =
+        Reference().apply { reference = "RelatedPerson/${resource.logicalId}" }
+    }
+
+    defaultRepository.addOrUpdate(family)
+  }
+
   fun extractAndSaveResources(
     context: Context,
     resourceId: String?,
@@ -195,6 +211,12 @@ constructor(
             appendPractitionerInfo(bun.resource)
           }
 
+          if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
+            resourceId?.let {
+              appendPatientsAndRelatedPersonsToGroups(resource = bun.resource, resourceId = it)
+            }
+          }
+
           // response MUST have subject by far otherwise flow has issues
           if (!questionnaire.experimental) questionnaireResponse.assertSubject()
 
@@ -209,7 +231,6 @@ constructor(
               bun.resource.setPropertySafely("patient", questionnaireResponse.subject)
             }
           }
-
           questionnaireResponse.contained.add(bun.resource)
         }
 

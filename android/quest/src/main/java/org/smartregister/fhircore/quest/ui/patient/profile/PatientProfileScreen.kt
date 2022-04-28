@@ -40,7 +40,7 @@ import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewSection
+import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 @Composable
 fun PatientProfileScreen(

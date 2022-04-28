@@ -87,7 +87,7 @@ constructor(
       val familyHead = loadFamilyHead(family)
 
       RegisterData.FamilyRegisterData(
-        id = family.logicalId,
+        logicalId = family.logicalId,
         name = family.name,
         identifier = family.extractOfficialIdentifier(),
         address = familyHead?.extractAddress() ?: "",
@@ -170,7 +170,7 @@ constructor(
       val conditions = loadMemberCondition(patient.logicalId)
       val carePlans = loadMemberCarePlan(patient.logicalId)
       RegisterData.FamilyMemberRegisterData(
-        id = patient.logicalId,
+        logicalId = patient.logicalId,
         name = patient.extractName(),
         age = (patient.birthDate.daysPassed() / DAYS_IN_YEAR).toString(),
         birthdate = patient.birthDate,

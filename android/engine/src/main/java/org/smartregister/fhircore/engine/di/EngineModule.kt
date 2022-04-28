@@ -25,6 +25,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
+import com.google.android.fhir.workflow.FhirOperator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -83,6 +84,11 @@ class EngineModule {
   @Singleton
   @Provides
   fun provideFhirContext(): FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+
+  @Singleton
+  @Provides
+  fun provideFhirOperator(fhirContext: FhirContext, fhirEngine: FhirEngine): FhirOperator =
+    FhirOperator(fhirContext = fhirContext, fhirEngine = fhirEngine)
 
   @Singleton
   @Provides

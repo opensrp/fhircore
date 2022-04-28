@@ -29,8 +29,8 @@ import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
-import org.smartregister.fhircore.quest.ui.patient.register.model.ServiceMember
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
+import org.smartregister.fhircore.quest.ui.shared.models.ServiceMember
 
 class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<RegisterData, RegisterViewData> {
@@ -38,7 +38,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
     return when (inputModel) {
       is RegisterData.DefaultRegisterData ->
         RegisterViewData(
-          id = inputModel.id,
+          logicalId = inputModel.logicalId,
           title = listOf(inputModel.name, inputModel.age).joinToString(", "),
           subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter()
         )
@@ -50,7 +50,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
             else -> null
           }
         RegisterViewData(
-          id = inputModel.id,
+          logicalId = inputModel.logicalId,
           title = context.getString(R.string.family_suffix, inputModel.name),
           subtitle = inputModel.address,
           status = context.getString(R.string.date_last_visited, inputModel.lastSeen),
@@ -68,7 +68,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
                     it.age.toInt() <= 5 -> R.drawable.ic_kids
                     else -> R.drawable.ic_users
                   },
-                id = it.id
+                logicalId = it.logicalId
               )
             },
           serviceText = serviceText,
@@ -80,7 +80,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
       }
       is RegisterData.AncRegisterData ->
         RegisterViewData(
-          id = inputModel.id,
+          logicalId = inputModel.logicalId,
           title = listOf(inputModel.name, inputModel.age).joinToString(),
           status = inputModel.address,
           serviceButtonActionable = true,
