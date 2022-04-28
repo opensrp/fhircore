@@ -33,6 +33,7 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
+import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -60,7 +61,7 @@ constructor(
   fun onEvent(event: FamilyProfileEvent) {
     when (event) {
       is FamilyProfileEvent.AddMember ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
+        event.context.launchQuestionnaire<FamilyQuestionnaireActivity>(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
           clientIdentifier = event.familyId
         )

@@ -123,7 +123,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (questionnaireType.isReadOnly() || questionnaire.experimental) {
         text = context.getString(R.string.done)
       } else if (questionnaireType.isEditMode()) {
-        text = getString(R.string.edit)
+        // setting the save button text from Questionnaire Config
+        text =
+          questionnaireConfig.saveButtonText
+            ?: getString(R.string.questionnaire_alert_submit_button_title)
       }
     }
 
@@ -447,11 +450,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     } else {
       showConfirmAlert(
         this,
-        R.string.questionnaire_alert_back_pressed_message,
+        getDismissDialogMessage(),
         R.string.questionnaire_alert_back_pressed_title,
         { finish() },
         R.string.questionnaire_alert_back_pressed_button_title
       )
     }
   }
+
+  open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message
 }

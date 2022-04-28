@@ -59,4 +59,7 @@
     <string name="end_date">End date</string>
     <string name="select_date">Select dates</string>
 
+    <!-- Dialog alert messages-->
+    <string name="unsaved_changes_message_alert">If you leave before saving, your edits or changes will be lost</string>
+
 </resources>

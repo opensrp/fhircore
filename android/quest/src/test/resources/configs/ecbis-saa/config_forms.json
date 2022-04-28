@@ -5,12 +5,18 @@
     {
       "form": "anc-patient-registration",
       "title": "Enroll as ANC Patient",
-      "identifier": "1924"
+      "identifier": "1924",
+      "saveButtonText": "Mark as ANC client",
+      "setPractitionerDetails" : true,
+      "setOrganizationDetails" : true
     },
     {
       "form": "family-member-registration",
       "title": "Add Family Member",
-      "identifier": "82953"
+      "identifier": "82953",
+      "saveButtonText": "ADD FAMILY MEMBER",
+      "setPractitionerDetails" : true,
+      "setOrganizationDetails" : true
     },
     {
       "form": "non-anc-patient-vital-signs_metric",
@@ -25,7 +31,10 @@
     {
       "form": "family-registration",
       "title": "Add Family",
-      "identifier": "82952"
+      "identifier": "82952",
+      "saveButtonText": "ADD FAMILY",
+      "setPractitionerDetails" : true,
+      "setOrganizationDetails" : true
     },
     {
       "form": "family-patient_bmi_compute",
