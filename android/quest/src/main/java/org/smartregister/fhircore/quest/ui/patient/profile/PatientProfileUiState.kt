@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.repository
+package org.smartregister.fhircore.quest.ui.patient.profile
 
-import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterData
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
 
-interface RegisterDao {
-
-  suspend fun loadRegisterData(
-    currentPage: Int,
-    loadAll: Boolean = false,
-    appFeatureName: String?
-  ): List<RegisterData>
-
-  suspend fun countRegisterData(appFeatureName: String?): Long = 0
-
-  suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? = null
-}
+data class PatientProfileUiState(val overflowMenuItems: List<OverflowMenuItem> = emptyList())

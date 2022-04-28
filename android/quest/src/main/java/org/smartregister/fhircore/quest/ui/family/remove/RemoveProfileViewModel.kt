@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.repository
+package org.smartregister.fhircore.quest.ui.family.remove
 
-import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 
-interface RegisterDao {
+abstract class RemoveProfileViewModel<T>
+constructor(open val repository: PatientRegisterRepository) : ViewModel() {
 
-  suspend fun loadRegisterData(
-    currentPage: Int,
-    loadAll: Boolean = false,
-    appFeatureName: String?
-  ): List<RegisterData>
+  val profile = MutableLiveData<T>()
+  var isRemoved = MutableLiveData(false)
+  var isDiscarded = MutableLiveData(false)
 
-  suspend fun countRegisterData(appFeatureName: String?): Long = 0
+  abstract fun fetch(profileId: String)
 
-  suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? = null
+  abstract fun remove(profileId: String)
+
+  fun discard() {
+    isDiscarded.postValue(true)
+  }
 }
