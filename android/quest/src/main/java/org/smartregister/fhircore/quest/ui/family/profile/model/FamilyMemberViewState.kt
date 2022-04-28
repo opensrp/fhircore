@@ -27,3 +27,13 @@ data class FamilyMemberViewState(
   val memberIcon: Int? = null,
   val memberTasks: List<FamilyMemberTask> = emptyList()
 )
+
+data class EligibleFamilyHeadMember(
+  val list: List<EligibleFamilyHeadMemberViewState>,
+  var reselect: Boolean = false
+)
+
+data class EligibleFamilyHeadMemberViewState(
+  val familyMember: FamilyMemberViewState,
+  var selected: Boolean = false
+)

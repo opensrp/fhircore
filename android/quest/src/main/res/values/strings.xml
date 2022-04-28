@@ -58,5 +58,6 @@
     <string name="start_date">Start date</string>
     <string name="end_date">End date</string>
     <string name="select_date">Select dates</string>
+    <string name="no_eligible_family_members">No eligible family members found for family head.</string>
 
 </resources>

@@ -34,7 +34,8 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
-import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
+import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
+import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMemberViewState
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -103,12 +104,12 @@ constructor(
 
   fun filterEligibleFamilyHeadMembers(
     profileViewData: ProfileViewData.FamilyProfileViewData
-  ): ChangeFamilyMembersHolder {
+  ): EligibleFamilyHeadMember {
     val listOfFamilies =
       profileViewData.familyMemberViewStates.filter {
         if (it.age.contains("y")) (it.age.split(" ")[0].replace("y", "").toInt() > 15) else false
       }
-    return ChangeFamilyMembersHolder( listOfFamilies.map { ChangeFamilyMembersModel(it) })
+    return EligibleFamilyHeadMember(listOfFamilies.map { EligibleFamilyHeadMemberViewState(it) })
   }
 
   suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
@@ -119,16 +120,6 @@ constructor(
       )
     }
   }
-
-  data class EligibleFamilyHeadMember(
-    val list: List<ChangeFamilyMembersModel>,
-    var reselect: Boolean = false
-  )
-
-  data class EligibleFamilyHeadMemberViewState(
-    val familyMember: FamilyMemberViewState,
-    var selected: Boolean = false
-  )
 
   companion object {
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"

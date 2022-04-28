@@ -74,6 +74,7 @@ import org.smartregister.fhircore.quest.ui.family.profile.components.ChangeFamil
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyMemberBottomSheet
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileRow
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileTopBar
+import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyBottomSheetAction
 
 @Composable
@@ -101,9 +102,7 @@ fun FamilyProfileScreen(
   var currentMemberPatientId by remember { mutableStateOf("") }
   var bottomSheetTitle by remember { mutableStateOf("") }
   var formButtonData by remember { mutableStateOf<List<FormButtonData>>(emptyList()) }
-  var familyList by remember {
-    mutableStateOf(FamilyProfileViewModel.ChangeFamilyMembersHolder(emptyList()))
-  }
+  var familyList by remember { mutableStateOf(EligibleFamilyHeadMember(emptyList())) }
   var familyBottomSheetAction by remember {
     mutableStateOf(FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS)
   }
@@ -181,7 +180,7 @@ fun FamilyProfileScreen(
 
                     if (it.id == R.id.change_family_head) {
                       familyList =
-                        familyProfileViewModel.filterEligibleFamilyMember(profileViewData)
+                        familyProfileViewModel.filterEligibleFamilyHeadMembers(profileViewData)
                       if (familyList.list.isNotEmpty()) {
                         familyBottomSheetAction = FamilyBottomSheetAction.CHANGE_FAMILY_HEAD
                         coroutineScope.launch {
@@ -190,7 +189,12 @@ fun FamilyProfileScreen(
                           else bottomSheetScaffoldState.bottomSheetState.collapse()
                         }
                       } else {
- context.showToast(getString(R.string.no_eligible_family_members))                      
+                        Toast.makeText(
+                            context,
+                            "No eligible family members found for family head",
+                            Toast.LENGTH_SHORT
+                          )
+                          .show()
                       }
                     } else
                       familyProfileViewModel.onEvent(FamilyProfileEvent.OverflowMenuClick(it.id))

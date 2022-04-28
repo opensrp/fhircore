@@ -61,7 +61,8 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileViewModel
+import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
+import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMemberViewState
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
 const val TEST_TAG_SAVE = "saveTestTag"
@@ -72,7 +73,7 @@ const val TEST_TAG_CANCEL = "cancelTestTag"
 fun ChangeFamilyHeadBottomSheet(
   coroutineScope: CoroutineScope,
   bottomSheetScaffoldState: BottomSheetScaffoldState,
-  familyMembers: FamilyProfileViewModel.ChangeFamilyMembersHolder?,
+  familyMembers: EligibleFamilyHeadMember?,
   onSaveClick: (FamilyMemberViewState) -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -119,7 +120,7 @@ fun ChangeFamilyHeadBottomSheet(
             .padding(horizontal = 12.dp, vertical = 18.dp)
             .background(
               color = colorResource(id = R.color.background_warning),
-            shape = RoundedCornerShape(8.dp)
+              shape = RoundedCornerShape(8.dp)
             )
       ) {
         Image(
@@ -175,7 +176,7 @@ fun ChangeFamilyHeadBottomSheet(
                 bottomSheetScaffoldState.bottomSheetState.collapse()
             }
           },
-          modifier = modifier.fillMaxWidth().weight(1F).testTag(TAG_CANCEL)
+          modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_CANCEL)
         ) {
           Text(
             fontSize = 14.sp,
@@ -186,7 +187,7 @@ fun ChangeFamilyHeadBottomSheet(
         TextButton(
           enabled = isEnabled,
           onClick = { onSaveClick(source!!.list.first { it.selected }.familyMember) },
-          modifier = modifier.fillMaxWidth().weight(1F).testTag(TAG_SAVE),
+          modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_SAVE),
           colors =
             ButtonDefaults.textButtonColors(
               backgroundColor =
@@ -206,7 +207,7 @@ fun ChangeFamilyHeadBottomSheet(
 
 @Composable
 fun BottomListItem(
-  model: FamilyProfileViewModel.ChangeFamilyMembersModel,
+  model: EligibleFamilyHeadMemberViewState,
   modifier: Modifier = Modifier,
   onClick: (FamilyMemberViewState) -> Unit
 ) {
