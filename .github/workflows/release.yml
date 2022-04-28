@@ -44,16 +44,16 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
+
+      - name: Decode local.properties file
+        run: echo $LOCAL_PROPERTIES | base64 -di > local.properties
+        working-directory: android
+        env:
+          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }} 
  
       - name: Spotless check quest application
         run: ./gradlew :quest:spotlessCheck
         working-directory: android
-      
-      - name: Generate local.properties file
-        run: echo $LOCAL_PROPERTIES > local.properties
-        working-directory: android
-        env:
-          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }} 
 
       - name: Generate AAB (Android App Bundle) file
         if: ${{ false }}
