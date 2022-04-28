@@ -128,7 +128,7 @@ constructor(
     var reselect: Boolean = false
   )
 
-  data class ChangeFamilyMembersModel(
+  data class EligibleFamilyHeadMemberViewState(
     val familyMember: FamilyMemberViewState,
     var selected: Boolean = false
   )
