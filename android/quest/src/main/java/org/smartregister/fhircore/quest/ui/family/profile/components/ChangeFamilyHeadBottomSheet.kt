@@ -218,7 +218,8 @@ fun BottomListItem(
     )
     Text(
       text =
-        model.familyMember.name + ", " + model.familyMember.age + ", " + model.familyMember.gender
+        listOf(model.familyMember.name, model.familyMember.age, model.familyMember.gender)
+          .joinToString(", ")
     )
   }
 }
