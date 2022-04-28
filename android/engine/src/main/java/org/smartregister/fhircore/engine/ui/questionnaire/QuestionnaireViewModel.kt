@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -69,6 +70,7 @@ import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadi
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -84,6 +86,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator
 ) : ViewModel() {
+  @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
 
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
@@ -217,6 +220,10 @@ constructor(
             }
           }
 
+          if (bun.resource.resourceType.isIn(ResourceType.Patient)) {
+            generateCarePlanForUnder5(bun.resource as Patient)
+          }
+
           // response MUST have subject by far otherwise flow has issues
           if (!questionnaire.experimental) questionnaireResponse.assertSubject()
 
@@ -260,6 +267,14 @@ constructor(
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+    }
+  }
+
+  // TODO Update the structure map id to be dynamic
+  suspend fun generateCarePlanForUnder5(patient: Patient) {
+    val age = patient.birthDate!!.yearsPassed()
+    if (age < 5) {
+      fhirTaskGenerator.generateCarePlan("105121", patient)
     }
   }
 
