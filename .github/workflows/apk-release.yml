@@ -45,11 +45,17 @@ jobs:
         run: chmod +x gradlew
         working-directory: android
 
-      - name: Decode local.properties file
+      - name: Decode & Generate local.properties file
         run: echo $LOCAL_PROPERTIES | base64 -di > local.properties
         working-directory: android
         env:
           LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }} 
+
+      - name: Decode & Generate keystore.properties file
+        run: echo $KEYSTORE_PROPERTIES | base64 -di > keystore.properties
+        working-directory: android
+        env:
+          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }} 
  
       - name: Spotless check quest application
         run: ./gradlew :quest:spotlessCheck
