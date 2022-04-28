@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
-import org.smartregister.fhircore.quest.ui.patient.profile.model.ProfileViewData
+import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 @Composable
 fun PersonalData(

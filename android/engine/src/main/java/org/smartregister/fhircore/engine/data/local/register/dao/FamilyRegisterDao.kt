@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
@@ -39,9 +40,11 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractDeathDate
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -87,7 +90,7 @@ constructor(
       val familyHead = loadFamilyHead(family)
 
       RegisterData.FamilyRegisterData(
-        id = family.logicalId,
+        logicalId = family.logicalId,
         name = family.name,
         identifier = family.extractOfficialIdentifier(),
         address = familyHead?.extractAddress() ?: "",
@@ -109,6 +112,7 @@ constructor(
       name = family.name,
       identifier = family.extractOfficialIdentifier(),
       address = familyHead?.extractAddress() ?: "",
+      age = familyHead?.extractAge() ?: "",
       head = familyHead?.let { loadFamilyMemberProfileData(familyHead.logicalId) },
       members =
         family.member?.map { member ->
@@ -161,12 +165,40 @@ constructor(
         }
     }
 
+  suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
+
+    val patient = fhirEngine.load(Patient::class.java, newFamilyHead)
+
+    // TODO create a utility/extension function for creating RelatedPersonResource
+    val relatedPerson =
+      RelatedPerson().apply {
+        this.active = true
+        this.name = patient.name
+        this.birthDate = patient.birthDate
+        this.telecom = patient.telecom
+        this.address = patient.address
+        this.gender = patient.gender
+        this.relationshipFirstRep.codingFirstRep.system =
+          "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+        this.patient = patient.asReference()
+        this.id = UUID.randomUUID().toString()
+      }
+
+    fhirEngine.save(relatedPerson)
+    val family =
+      fhirEngine.load(Group::class.java, oldFamilyHead).apply {
+        managingEntity = relatedPerson.asReference()
+        name = relatedPerson.name.first().nameAsSingleString
+      }
+    fhirEngine.update(family)
+  }
+
   private suspend fun loadFamilyMemberRegisterData(memberId: String) =
     defaultRepository.loadResource<Patient>(memberId)?.let { patient ->
       val conditions = loadMemberCondition(patient.logicalId)
       val carePlans = loadMemberCarePlan(patient.logicalId)
       RegisterData.FamilyMemberRegisterData(
-        id = patient.logicalId,
+        logicalId = patient.logicalId,
         name = patient.extractName(),
         age = (patient.birthDate.daysPassed() / DAYS_IN_YEAR).toString(),
         birthdate = patient.birthDate,

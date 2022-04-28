@@ -93,7 +93,7 @@ constructor(
   val extractionProgressMessage = MutableLiveData<String>()
 
   var editQuestionnaireResponse: QuestionnaireResponse? = null
-
+  private lateinit var questionnaireConfig: QuestionnaireConfig
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
@@ -109,7 +109,8 @@ constructor(
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    return loadConfig!!.first { it.form == form }
+    questionnaireConfig = loadConfig!!.first { it.form == form }
+    return questionnaireConfig
   }
 
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
@@ -200,12 +201,15 @@ constructor(
         bundle.entry.forEach { bun ->
           // add organization to entities representing individuals in registration questionnaire
           if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-            appendOrganizationInfo(bun.resource)
+            if (questionnaireConfig.setOrganizationDetails) {
+              appendOrganizationInfo(bun.resource)
+            }
             // if it is new registration set response subject
             if (resourceId == null) questionnaireResponse.subject = bun.resource.asReference()
           }
-
-          appendPractitionerInfo(bun.resource)
+          if (questionnaireConfig.setPractitionerDetails) {
+            appendPractitionerInfo(bun.resource)
+          }
 
           if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
             resourceId?.let {

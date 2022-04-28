@@ -40,12 +40,15 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.navigation.NavigationScreen
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
+import org.smartregister.fhircore.quest.ui.main.components.BottomScreenSection
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
+import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
+import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
 
 @Composable
 fun MainScreen(
@@ -81,16 +84,16 @@ fun MainScreen(
     },
     bottomBar = {
       // TODO Activate bottom nav via view configuration
-      /* BottomScreenSection(
+      BottomScreenSection(
         navController = navController,
-        navigationScreens = NavigationScreen.appScreens
-      )*/
+        mainNavigationScreens = MainNavigationScreen.appScreens
+      )
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       AppMainNavigationGraph(
         navController = navController,
-        navigationScreens = NavigationScreen.appScreens,
+        mainNavigationScreens = MainNavigationScreen.appScreens,
         openDrawer = openDrawer,
         sideMenuOptions = uiState.sideMenuOptions
       )
@@ -101,19 +104,21 @@ fun MainScreen(
 @Composable
 private fun AppMainNavigationGraph(
   navController: NavHostController,
-  navigationScreens: List<NavigationScreen>,
+  mainNavigationScreens: List<MainNavigationScreen>,
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
+  measureReportViewModel: MeasureReportViewModel = hiltViewModel()
 ) {
 
   val firstSideMenuOption = sideMenuOptions.first()
   val firstScreenTitle = stringResource(firstSideMenuOption.titleResource)
-
   NavHost(
     navController = navController,
-    startDestination = NavigationScreen.Home.route + NavigationArg.HOME_ROUTE_PATH
+    startDestination =
+      MainNavigationScreen.Home.route +
+        NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)
   ) {
-    navigationScreens.forEach {
+    mainNavigationScreens.forEach {
       val commonNavArgs =
         NavigationArg.commonNavArgs(
           firstSideMenuOption.appFeatureName,
@@ -121,9 +126,10 @@ private fun AppMainNavigationGraph(
         )
 
       when (it) {
-        is NavigationScreen.Home -> {
+        is MainNavigationScreen.Home ->
           composable(
-            route = "${it.route}${NavigationArg.HOME_ROUTE_PATH}",
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)}",
             arguments =
               commonNavArgs.plus(
                 navArgument(NavigationArg.SCREEN_TITLE) {
@@ -146,14 +152,15 @@ private fun AppMainNavigationGraph(
               screenTitle = screenTitle
             )
           }
-        }
-        NavigationScreen.Tasks -> composable(NavigationScreen.Tasks.route) {}
-        NavigationScreen.Reports -> composable(NavigationScreen.Reports.route) {}
-        NavigationScreen.Settings ->
-          composable(NavigationScreen.Settings.route) { UserProfileScreen() }
-        NavigationScreen.PatientProfile ->
+        MainNavigationScreen.Tasks -> composable(MainNavigationScreen.Tasks.route) {}
+        MainNavigationScreen.Reports ->
+          measureReportNavigationGraph(navController, measureReportViewModel)
+        MainNavigationScreen.Settings ->
+          composable(MainNavigationScreen.Settings.route) { UserProfileScreen() }
+        MainNavigationScreen.PatientProfile ->
           composable(
-            route = "${it.route}${NavigationArg.PATIENT_ROUTE_PATH}",
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument())
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
@@ -164,9 +171,10 @@ private fun AppMainNavigationGraph(
               patientId = patientId
             )
           }
-        NavigationScreen.FamilyProfile ->
+        MainNavigationScreen.FamilyProfile ->
           composable(
-            route = "${it.route}${NavigationArg.PATIENT_ROUTE_PATH}",
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument())
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)

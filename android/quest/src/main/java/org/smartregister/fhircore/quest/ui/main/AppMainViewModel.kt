@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
+import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
 class AppMainViewModel
@@ -97,7 +98,9 @@ constructor(
         appMainUiState =
           appMainUiState.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
       }
-      is AppMainEvent.DeviceToDeviceSync -> {} // TODO Transfer data via P2P
+      is AppMainEvent.DeviceToDeviceSync -> {
+        startP2PScreen(context = event.context)
+      }
       is AppMainEvent.UpdateSyncState -> {
         appMainUiState = appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
       }

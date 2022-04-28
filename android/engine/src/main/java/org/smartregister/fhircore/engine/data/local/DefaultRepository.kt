@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
 @Singleton
 open class DefaultRepository
@@ -156,6 +157,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
   suspend fun save(resource: Resource) {
     return withContext(dispatcherProvider.io()) {
       resource.generateMissingId()
+      resource.updateLastUpdated()
       fhirEngine.save(resource)
     }
   }
@@ -168,6 +170,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
 
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
       try {
         fhirEngine.load(resource::class.java, resource.logicalId).run {
           fhirEngine.update(updateFrom(resource))
