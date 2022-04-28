@@ -160,6 +160,7 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
+    implementation('org.smartregister:p2p-lib:0.2.0-SNAPSHOT')
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
