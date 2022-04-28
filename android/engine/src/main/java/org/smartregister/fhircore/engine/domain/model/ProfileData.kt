@@ -52,6 +52,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     override val name: String,
     val identifier: String? = null,
     val address: String,
+    val age: String,
     val head: FamilyMemberProfileData? = null,
     val members: List<FamilyMemberProfileData>,
     val services: List<CarePlan> = listOf(),

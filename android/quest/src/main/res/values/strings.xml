@@ -59,6 +59,13 @@
     <string name="end_date">End date</string>
     <string name="select_date">Select dates</string>
 
+
+    <!--Change family head strings -->
+    <string name="no_eligible_family_members">No eligible family members found for family head.</string>
+    <string name="label_select_new_head">Select a new family head</string>
+    <string name="label_assign_new_family_head">Assign new family head</string>
+    <string name="alert_message_abort_operation">Are you sure you want to abort this operation?</string>
+
     <!-- Dialog alert messages-->
     <string name="unsaved_changes_message_alert">If you leave before saving, your edits or changes will be lost</string>
 

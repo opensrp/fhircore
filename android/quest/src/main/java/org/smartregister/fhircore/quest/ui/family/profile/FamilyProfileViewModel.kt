@@ -23,17 +23,20 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
-import org.smartregister.fhircore.quest.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
+import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMemberViewState
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -61,7 +64,7 @@ constructor(
   fun onEvent(event: FamilyProfileEvent) {
     when (event) {
       is FamilyProfileEvent.AddMember ->
-        event.context.launchQuestionnaire<FamilyQuestionnaireActivity>(
+        event.context.launchQuestionnaire<QuestionnaireActivity>(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
           clientIdentifier = event.familyId
         )
@@ -97,6 +100,23 @@ constructor(
                 ProfileViewData.FamilyProfileViewData
           }
       }
+    }
+  }
+
+  fun filterEligibleFamilyHeadMembers(
+    profileViewData: ProfileViewData.FamilyProfileViewData
+  ): EligibleFamilyHeadMember {
+    val listOfFamilies =
+      profileViewData.familyMemberViewStates.filter { it.birthDate!!.yearsPassed() > 15 }
+    return EligibleFamilyHeadMember(listOfFamilies.map { EligibleFamilyHeadMemberViewState(it) })
+  }
+
+  suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
+    withContext(dispatcherProvider.io()) {
+      patientRegisterRepository.registerDaoFactory.familyRegisterDao.changeFamilyHead(
+        newFamilyHead = newFamilyHead,
+        oldFamilyHead = oldFamilyHead
+      )
     }
   }
 
