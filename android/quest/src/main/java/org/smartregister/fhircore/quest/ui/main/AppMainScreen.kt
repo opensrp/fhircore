@@ -44,7 +44,6 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
-import org.smartregister.fhircore.quest.ui.main.components.BottomScreenSection
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
@@ -79,15 +78,16 @@ fun MainScreen(
         sideMenuOptions = uiState.sideMenuOptions,
         onSideMenuClick = appMainViewModel::onEvent,
         navController = navController,
-        enableDeviceToDeviceSync = uiState.enableDeviceToDeviceSync
+        enableDeviceToDeviceSync = uiState.enableDeviceToDeviceSync,
+        enableReports = uiState.enableReports
       )
     },
     bottomBar = {
       // TODO Activate bottom nav via view configuration
-      BottomScreenSection(
+      /* BottomScreenSection(
         navController = navController,
         mainNavigationScreens = MainNavigationScreen.appScreens
-      )
+      )*/
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {

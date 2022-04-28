@@ -75,7 +75,8 @@ fun AppDrawer(
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  enableDeviceToDeviceSync: Boolean
+  enableDeviceToDeviceSync: Boolean,
+  enableReports: Boolean
 ) {
   val context = LocalContext.current
   var expandLanguageDropdown by remember { mutableStateOf(false) }
@@ -101,33 +102,40 @@ fun AppDrawer(
             endText = sideMenuOption.count.toString(),
             showEndText = sideMenuOption.showCount,
             onSideMenuClick = {
-              onSideMenuClick(
-                AppMainEvent.SwitchRegister(
-                  navigateToRegister = {
-                    openDrawer(false)
-                    navController.navigate(
-                      route =
-                        MainNavigationScreen.Home.route +
-                          NavigationArg.bindArgumentsOf(
-                            Pair(NavigationArg.FEATURE, sideMenuOption.appFeatureName),
-                            Pair(NavigationArg.HEALTH_MODULE, sideMenuOption.healthModule.name),
-                            Pair(NavigationArg.SCREEN_TITLE, title)
-                          )
+              openDrawer(false)
+              navController.navigate(
+                route =
+                  MainNavigationScreen.Home.route +
+                    NavigationArg.bindArgumentsOf(
+                      Pair(NavigationArg.FEATURE, sideMenuOption.appFeatureName),
+                      Pair(NavigationArg.HEALTH_MODULE, sideMenuOption.healthModule.name),
+                      Pair(NavigationArg.SCREEN_TITLE, title)
                     )
-                  }
-                )
               )
             }
           )
         }
       }
-
+      if (enableReports) {
+        SideMenuItem(
+          iconResource = R.drawable.ic_reports,
+          title = stringResource(R.string.reports),
+          showEndText = false,
+          onSideMenuClick = {
+            openDrawer(false)
+            navController.navigate(MainNavigationScreen.Reports.route)
+          }
+        )
+      }
       if (enableDeviceToDeviceSync) {
         SideMenuItem(
           iconResource = R.drawable.ic_sync,
           title = stringResource(R.string.device_to_device_sync),
           showEndText = false,
-          onSideMenuClick = { onSideMenuClick(AppMainEvent.DeviceToDeviceSync(context)) }
+          onSideMenuClick = {
+            openDrawer(false)
+            onSideMenuClick(AppMainEvent.DeviceToDeviceSync(context))
+          }
         )
       }
       Box {
@@ -257,6 +265,7 @@ fun AppDrawerPreview() {
       ),
     onSideMenuClick = {},
     languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-    enableDeviceToDeviceSync = true
+    enableDeviceToDeviceSync = true,
+    enableReports = true
   )
 }

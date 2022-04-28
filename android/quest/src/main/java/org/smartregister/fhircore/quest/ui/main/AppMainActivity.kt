@@ -59,18 +59,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       is State.Started -> {
         showToast(getString(R.string.syncing))
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(getString(R.string.syncing_initiated))
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_initiated))
         )
       }
       is State.InProgress -> {
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(getString(R.string.syncing_in_progress))
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
         )
       }
       is State.Glitch -> {
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(appMainViewModel.retrieveLastSyncTimestamp())
+          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
         )
         Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
       }
@@ -78,6 +78,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         showToast(getString(R.string.sync_failed))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
+            state,
             appMainViewModel.retrieveLastSyncTimestamp() ?: getString(R.string.syncing_failed)
           )
         )
@@ -88,6 +89,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
+              state,
               getString(
                 R.string.last_sync_timestamp,
                 formatLastSyncTimestamp(state.result.timestamp)
@@ -96,7 +98,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           )
           updateLastSyncTimestamp(state.result.timestamp)
 
-          tempMethodToUpdatePeriodPlanWorkerAndFhirGen()
+          //          tempMethodToUpdatePeriodPlanWorkerAndFhirGen()
         }
       }
     }

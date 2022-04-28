@@ -25,6 +25,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -38,11 +39,14 @@ import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
+import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
+import org.smartregister.fhircore.quest.ui.shared.models.GlobalEventState
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 @Composable
@@ -58,7 +62,7 @@ fun PatientRegisterScreen(
   val context = LocalContext.current
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
-
+  val globalEventState by AppMainViewModel.EVENT_BUS.observeAsState(GlobalEventState())
   val currentSetTotalRecordCount by rememberUpdatedState(
     patientRegisterViewModel::setTotalRecordsCount
   )
@@ -69,6 +73,16 @@ fun PatientRegisterScreen(
   LaunchedEffect(Unit) {
     currentSetTotalRecordCount(appFeatureName, healthModule)
     currentPaginateRegisterData(appFeatureName, healthModule, false)
+  }
+
+  SideEffect {
+    // Refresh data everytime sync completes then reset the state to avoid refreshing data during
+    // recomposition
+    if (globalEventState!!.refreshSync) {
+      currentSetTotalRecordCount(appFeatureName, healthModule)
+      currentPaginateRegisterData(appFeatureName, healthModule, false)
+      AppMainViewModel.EVENT_BUS.value = globalEventState.copy(refreshSync = false)
+    }
   }
 
   val pagingItems: LazyPagingItems<RegisterViewData> =
@@ -124,12 +138,17 @@ fun PatientRegisterScreen(
               )
             }
           )
-          Button(
-            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            onClick = {
-              patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
+          // TODO activate this button action via config; now only activated for family register
+          if (appFeatureName.equals(AppFeature.HouseholdManagement.name, true)) {
+            Button(
+              modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+              onClick = {
+                patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
+              }
+            ) {
+              Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp))
             }
-          ) { Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp)) }
+          }
         }
       }
     }
