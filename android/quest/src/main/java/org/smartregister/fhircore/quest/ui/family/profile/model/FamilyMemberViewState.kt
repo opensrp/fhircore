@@ -22,7 +22,7 @@ data class FamilyMemberViewState(
   val patientId: String,
   val name: String,
   val gender: String,
-  val birthDate: Date,
+  val birthDate: Date? = null,
   val age: String,
   val statuses: List<String> = emptyList(),
   val showAtRisk: Boolean = false,

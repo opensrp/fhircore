@@ -148,7 +148,7 @@ fun ChangeFamilyHeadBottomSheet(
         modifier = Modifier.fillMaxWidth()
       ) {
         itemsIndexed(
-          items = source!!.list.toMutableList(),
+          items = source!!.list,
           itemContent = { index, item ->
             BottomListItem(item) {
               isEnabled = true

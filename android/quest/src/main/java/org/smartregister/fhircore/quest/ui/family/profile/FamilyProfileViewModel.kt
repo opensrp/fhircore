@@ -107,7 +107,7 @@ constructor(
     profileViewData: ProfileViewData.FamilyProfileViewData
   ): EligibleFamilyHeadMember {
     val listOfFamilies =
-      profileViewData.familyMemberViewStates.filter { it.birthDate.yearsPassed() > 15 }
+      profileViewData.familyMemberViewStates.filter { it.birthDate!!.yearsPassed() > 15 }
     return EligibleFamilyHeadMember(listOfFamilies.map { EligibleFamilyHeadMemberViewState(it) })
   }
 
