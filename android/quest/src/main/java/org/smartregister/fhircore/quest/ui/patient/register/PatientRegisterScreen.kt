@@ -25,6 +25,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -42,8 +43,10 @@ import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
+import org.smartregister.fhircore.quest.ui.shared.models.GlobalEventState
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 @Composable
@@ -59,17 +62,25 @@ fun PatientRegisterScreen(
   val context = LocalContext.current
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
-
-  val currentSetTotalRecordCount by rememberUpdatedState(
-    patientRegisterViewModel::setTotalRecordsCount
-  )
-  val currentPaginateRegisterData by rememberUpdatedState(
-    patientRegisterViewModel::paginateRegisterData
-  )
+  val globalEventState by AppMainViewModel.EVENT_BUS.observeAsState(GlobalEventState())
+  val currentSetTotalRecordCount by
+    rememberUpdatedState(patientRegisterViewModel::setTotalRecordsCount)
+  val currentPaginateRegisterData by
+    rememberUpdatedState(patientRegisterViewModel::paginateRegisterData)
 
   LaunchedEffect(Unit) {
     currentSetTotalRecordCount(appFeatureName, healthModule)
     currentPaginateRegisterData(appFeatureName, healthModule, false)
+  }
+
+  SideEffect {
+    // Refresh data everytime sync completes then reset the state to avoid refreshing data during
+    // recomposition
+    if (globalEventState!!.refreshSync) {
+      currentSetTotalRecordCount(appFeatureName, healthModule)
+      currentPaginateRegisterData(appFeatureName, healthModule, false)
+      AppMainViewModel.EVENT_BUS.value = globalEventState.copy(refreshSync = false)
+    }
   }
 
   val pagingItems: LazyPagingItems<RegisterViewData> =
