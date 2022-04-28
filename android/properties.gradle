@@ -14,3 +14,18 @@ if (rootProject.file("local.properties").exists()) {
         project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
     }
 }
+
+//KEYSTORE CREDENTIALS
+def keystoreAuthArray = ["KEYSTORE_ALIAS", "KEY_PASSWORD", "KEYSTORE_PASSWORD"]
+if (rootProject.file("keystore.properties").exists()) {
+    props.load(rootProject.file("keystore.properties").newDataInputStream())
+
+    keystoreAuthArray.each { arrayProp ->
+        project.ext.set(arrayProp, props.getProperty(arrayProp, "sample"))
+    }
+} else {
+    println("keystore.properties does not exist. The following values are required " + keystoreAuthArray.join(", "))
+    keystoreAuthArray.each { arrayProp ->
+        project.ext.set(arrayProp, props.getProperty(arrayProp, "sample_" + arrayProp))
+    }
+}
