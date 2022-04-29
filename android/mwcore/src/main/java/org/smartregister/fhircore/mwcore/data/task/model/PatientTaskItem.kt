@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore.util
+package org.smartregister.fhircore.mwcore.data.task.model
 
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Enumerations
+import androidx.compose.runtime.Stable
+import java.util.Date
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-data class RegisterConfiguration(
-  val id: String,
-  val primaryFilter: SearchFilter?,
-  val secondaryFilter: SearchFilter?
-)
-
-/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
-data class SearchFilter(
-  val key: String,
-  val filterType: Enumerations.SearchParamType,
-  val valueType: Enumerations.DataType,
-  val valueCoding: Coding? = null,
-  val valueString: String? = null
-)
+@Stable
+data class PatientTaskItem(
+  val id: String = "",
+  val name: String = "",
+  val gender: String = "",
+  val birthdate: Date? = null,
+  val address: String = "",
+  val description: String = "",
+  val overdue: Boolean = false
+) {
+  fun demographics(): String {
+    return "$name, $gender, ${birthdate.toAgeDisplay()}"
+  }
+}

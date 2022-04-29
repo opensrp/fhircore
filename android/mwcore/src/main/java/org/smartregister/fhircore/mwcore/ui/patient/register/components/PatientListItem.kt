@@ -16,218 +16,148 @@
 
 package org.smartregister.fhircore.mwcore.ui.patient.register.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Female
-import androidx.compose.material.icons.filled.Handyman
-import androidx.compose.material.icons.filled.Male
-import androidx.compose.material.icons.filled.PregnantWoman
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.mwcore.R
+import org.smartregister.fhircore.mwcore.configuration.view.Properties
+import org.smartregister.fhircore.mwcore.configuration.view.Property
+import org.smartregister.fhircore.mwcore.data.patient.model.AdditionalData
 import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
 import org.smartregister.fhircore.mwcore.data.patient.model.genderFull
 import org.smartregister.fhircore.mwcore.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRowClickListenerIntent
 
-
-@Composable
-fun MwChip(
-    text: String,
-    fontSize: TextUnit,
-    modifier: Modifier = Modifier,
-    textColor: Color = MaterialTheme.colors.onSecondary,
-    background: Color = MaterialTheme.colors.secondary
-) {
-    Box(
-        modifier = Modifier.background(
-            background,
-            RoundedCornerShape(18.dp)
-        )
-    ) {
-        Text(
-            color = textColor,
-            text = text,
-            fontSize = fontSize,
-            modifier = modifier
-                .wrapContentWidth()
-                .padding(8.dp, 2.dp)
-        )
-    }
-}
-
-@Composable
-fun ArtChip(text: String,
-            fontSize: TextUnit,
-            modifier: Modifier = Modifier,
-            textColor: Color = MaterialTheme.colors.onSecondary,
-            background: Color = MaterialTheme.colors.secondary)
-{
-    Box(modifier = modifier.background( color = MaterialTheme.colors.secondary.copy(alpha = 0.2F), 
-        RoundedCornerShape(4.dp)))
-    {
-        Text(
-            
-            color = textColor,
-            text = text,
-            fontSize = fontSize,
-            modifier = modifier
-                .wrapContentWidth()
-                .padding(8.dp, 2.dp)
-        )
-    }
-
-}
+const val PATIENT_BIO = "patientBio"
 
 @Composable
 fun PatientRow(
-    patientItem: PatientItem,
-    clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
-    modifier: Modifier = Modifier,
+  patientItem: PatientItem,
+  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
+  modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier =
+  Row(
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically,
+    modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
+  ) {
+    Column(
+      modifier =
         modifier
-            .clickable { clickListener(OpenPatientProfile, patientItem) }
-
-            .padding(6.dp),
-        elevation = 6.dp,
-        shape = MaterialTheme.shapes.medium.copy(
-            androidx.compose.foundation.shape.CornerSize(
-                16.dp
-            )
-        )
+          .clickable { clickListener(OpenPatientProfile, patientItem) }
+          .padding(15.dp)
+          .weight(0.65f)
+          .testTag(PATIENT_BIO)
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(12.dp, 4.dp)
-        ) {
-            
-            ArtChip(text = patientItem.identifier, fontSize =22.sp )
-
-
-            //Adding space between image and the column
-            Spacer(modifier = Modifier.size(8.dp))
-            Column(
-                modifier =
-                modifier
-
-                    .padding(15.dp)
-                    .weight(0.65f)
-            ) {
+      Text(
+        text = "${patientItem.name}, ${patientItem.age}",
+        fontSize = 18.sp,
+        modifier = modifier.wrapContentWidth()
+      )
+      Spacer(modifier = modifier.height(8.dp))
+      Row {
+        Text(
+          color = SubtitleTextColor,
+          text = patientItem.genderFull(),
+          fontSize = 16.sp,
+          modifier = modifier.wrapContentWidth()
+        )
+        Column {
+          patientItem.additionalData?.forEach {
+            Row {
+              it.label?.let { label ->
                 Text(
-                    text = "${patientItem.name}",
-                    fontSize = 18.sp,
-                    modifier = modifier.wrapContentWidth(),
-                    color = MaterialTheme.colors.secondaryVariant,
-                    style = MaterialTheme.typography.subtitle2
+                  text = label,
+                  color =
+                    Color(
+                      android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000")
+                    ),
+                  fontSize = it.properties?.label?.textSize?.sp ?: 16.sp,
+                  modifier = modifier.wrapContentWidth(),
+                  fontWeight =
+                    FontWeight(it.properties?.label?.fontWeight?.weight ?: FontWeight.Normal.weight)
                 )
-                Spacer(modifier = modifier.height(8.dp))
-                Row() {
-                    MwChip(
-                        text = patientItem.age,
-                        fontSize = 16.sp,
-                        textColor = MaterialTheme.colors.secondary,
-                        background = MaterialTheme.colors.secondary.copy(alpha = 0.2F)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    MwChip(
-                        fontSize = 16.sp,
-                        text = "[Club]"  ,
-                        textColor = MaterialTheme.colors.primary,
-                        background = MaterialTheme.colors.primary.copy(alpha = 0.2F)
-                    )
-                }
+              }
+
+              Text(
+                text = " " + stringResource(id = R.string.last_test, "${it.lastDateAdded}"),
+                fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
+                modifier = modifier.wrapContentWidth(),
+                fontWeight =
+                  FontWeight(it.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight)
+              )
             }
-            
-            clientImage(text = patientItem.genderFull())
-
+          }
         }
+      }
     }
-
+  }
 }
 
 @Composable
-fun clientImage( text: String){
-    if ( text == "Male"){
-        Image(
-            painter = painterResource(
-                id = R.drawable.ic_man),
-            contentDescription = "Contact profile picture",
-            //resizing our profile picture
-            modifier = Modifier
-                .size(40.dp)
-
-                //shaping the picture
-                .clip(CircleShape)
-                .background(MaterialTheme.colors.secondary.copy(alpha = .4F))
-                .border(1.5.dp, MaterialTheme.colors.secondary, CircleShape)
-        )
-    }
-    else
-    {
-       Image(
-           painter = painterResource(
-               id = R.drawable.ic_woman_),
-
-            contentDescription = "Contact profile picture",
-
-            //resizing our profile picture
-            modifier = Modifier
-                .size(40.dp)
-
-                //shaping the picture
-                .clip(CircleShape)
-                .background(color = Color(0xFFFFC0CB)) //Cyan.copy(alpha = .4F )) //MaterialTheme.colors.secondary.copy(alpha = .4F))
-                .border(1.5.dp, color = Color( 0xFFAA336A), CircleShape)
-        )
-    }
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PatientRowPreview() {
-    val patientItem =
-        PatientItem(
-            id = "my-test-id",
-            identifier = "10001",
-            name = "John Doe",
-            gender = "M",
-            age = "27",
-            address = "Nairobi"
-        )
-    LazyColumn() {
-        items(10) {
-            PatientRow(patientItem = patientItem, { _, _ -> })
-        }
-    }
+fun PreviewPatientRow() {
+  MaterialTheme {
+    PatientRow(
+      patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", ""),
+      clickListener = { listenerIntent, data -> },
+      modifier = Modifier.background(Color.White)
+    )
+  }
+}
 
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PreviewPatientRowWithG6PDNormalStatus() {
+  MaterialTheme {
+    PatientRow(
+      patientItem =
+        PatientItem(
+          "1",
+          "1",
+          "Rickey Ron",
+          "M",
+          "32y",
+          "",
+          listOf(
+            AdditionalData(
+              label = " Label 1",
+              value = "Normal",
+              valuePrefix = " G6PD Status - ",
+              properties =
+                Properties(
+                  label = Property(color = "#FF0000", textSize = 16),
+                  value = Property(color = "#00a000", textSize = 16)
+                )
+            )
+          )
+        ),
+      clickListener = { listenerIntent, data -> },
+      modifier = Modifier.background(Color.White)
+    )
+  }
 }

@@ -27,8 +27,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 @Stable
 @Serializable
 class PatientRegisterRowViewConfiguration(
-  override val appId: String,
-  override val classification: String,
+  override val appId: String = "",
+  override val classification: String = "",
   val filters: List<Filter>? = null
 ) : Configuration
 
@@ -39,10 +39,21 @@ data class Filter(
   val key: String,
   val displayableProperty: String = key,
   val valuePrefix: String? = null,
+  val valuePostfix: String? = null,
   val label: String? = null,
   val valueType: Enumerations.DataType,
-  val valueCoding: Code?,
+  val valueCoding: Code? = null,
   val valueString: String? = null,
+  val dynamicColors: List<DynamicColor>? = null,
+  val properties: Properties? = null
+)
+
+@Stable
+@Serializable
+data class QuestionnaireItemFilter(
+  val key: String,
+  val label: String? = null,
+  val index: Int? = null,
   val dynamicColors: List<DynamicColor>? = null,
   val properties: Properties? = null
 )

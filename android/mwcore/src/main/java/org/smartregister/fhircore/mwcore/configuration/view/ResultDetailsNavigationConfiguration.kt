@@ -17,30 +17,20 @@
 package org.smartregister.fhircore.mwcore.configuration.view
 
 import androidx.compose.runtime.Stable
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.view.NavigationAction
+import org.smartregister.fhircore.engine.configuration.view.NavigationOption
+
+@Serializable
+@SerialName("test_details")
+data class TestDetailsNavigationAction(val form: String, val readOnly: Boolean) : NavigationAction
 
 @Stable
 @Serializable
-data class PatientDetailsViewConfiguration(
-  override val appId: String,
-  override val classification: String,
-  val contentTitle: String = "Responses",
-  val valuePrefix: String = "G6PD ",
-  val parser: String
+data class ResultDetailsNavigationConfiguration(
+  override val appId: String = "",
+  override val classification: String = "",
+  val navigationOptions: List<NavigationOption> = listOf()
 ) : Configuration
-
-@Stable
-fun patientDetailsViewConfigurationOf(
-  appId: String = "mw-core",
-  classification: String = "patient_details",
-  contentTitle: String = "Responses",
-  valuePrefix: String = "G6PD "
-) =
-  PatientDetailsViewConfiguration(
-    appId = appId,
-    classification = classification,
-    contentTitle = contentTitle,
-    valuePrefix = valuePrefix,
-    parser = "G6PDDetailConfigParser"
-  )

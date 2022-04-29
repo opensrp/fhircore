@@ -23,175 +23,157 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
+import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.getEncounterId
 import org.smartregister.fhircore.mwcore.R
-import org.smartregister.fhircore.mwcore.configuration.parser.DetailConfigParser
-import org.smartregister.fhircore.mwcore.configuration.view.PatientDetailsViewConfiguration
+import org.smartregister.fhircore.mwcore.configuration.view.DataDetailsListViewConfiguration
+import org.smartregister.fhircore.mwcore.configuration.view.QuestionnaireNavigationAction
+import org.smartregister.fhircore.mwcore.configuration.view.ResultDetailsNavigationConfiguration
+import org.smartregister.fhircore.mwcore.configuration.view.TestDetailsNavigationAction
 import org.smartregister.fhircore.mwcore.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.mwcore.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
-import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRegisterActivity
-import org.smartregister.fhircore.mwcore.ui.patient.register.fragments.ClientsRegisterFragment
 import org.smartregister.fhircore.mwcore.util.MwCoreConfigClassification
-import org.smartregister.fhircore.mwcore.util.RegisterType
-import javax.inject.Inject
+import org.smartregister.fhircore.mwcore.util.QuestJsonSpecificationProvider
 
 @AndroidEntryPoint
 class QuestPatientDetailActivity :
-  BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
+  BaseMultiLanguageActivity(), ConfigurableComposableView<DataDetailsListViewConfiguration> {
 
-  private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
-  private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
+  var patientResourcesList: ArrayList<String> = arrayListOf()
+  private lateinit var patientDetailConfig: DataDetailsListViewConfiguration
   private lateinit var patientId: String
-  var patientType: String? = null
-  private var parser: DetailConfigParser? = null
 
-  val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+  val patientViewModel by viewModels<ListDataDetailViewModel>()
 
-
-
-  @Inject
-  lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-  patientType = this.intent.getStringExtra(getString(R.string.patient_type))
+
     patientViewModel.apply {
       val detailActivity = this@QuestPatientDetailActivity
-      onBackPressClicked.observe(
-        detailActivity,
-        { backPressed -> if (backPressed) detailActivity.finish() }
-      )
+      onBackPressClicked.observe(detailActivity) { backPressed ->
+        if (backPressed) detailActivity.finish()
+      }
+      fetchPatientResources(patientId)
+        .observe(detailActivity, detailActivity::handlePatientResources)
       onMenuItemClicked.observe(detailActivity, detailActivity::launchTestResults)
       onFormItemClicked.observe(detailActivity, detailActivity::launchQuestionnaireForm)
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
 
-
     patientDetailConfig =
       configurationRegistry.retrieveConfiguration(
-        configClassification = MwCoreConfigClassification.PATIENT_DETAILS_VIEW
+        configClassification = MwCoreConfigClassification.PATIENT_DETAILS_VIEW,
+        questJsonSpecificationProvider.getJson()
       )
-
-    parser = patientViewModel.loadParser(packageName, patientDetailConfig)
-
-    // TODO Load binary resources
-    profileConfig =
-      AssetUtil.decodeAsset(fileName = QuestPatientDetailViewModel.PROFILE_CONFIG, this)
 
     if (configurationRegistry.isAppIdInitialized()) {
       configureViews(patientDetailConfig)
     }
-    patientViewModel.run {
-      getDemographicsWithAdditionalData(patientId, patientDetailConfig)
-      getAllResults(patientId, profileConfig, patientDetailConfig, parser)
-      getAllForms(profileConfig)
-    }
-    setContent { AppTheme { patientType?.let {
-      QuestPatientDetailScreen(patientViewModel, configurationRegistry,
-        it
-      )
-    } } }
+
+    loadData()
+
+    setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
+  }
+
+  private fun handlePatientResources(resourceList: ArrayList<String>) {
+    if (resourceList.isNotEmpty()) patientResourcesList.addAll(resourceList)
   }
 
   override fun onResume() {
     super.onResume()
 
+    loadData()
+  }
+
+  fun loadData() {
     patientViewModel.run {
       getDemographicsWithAdditionalData(patientId, patientDetailConfig)
-      getAllResults(patientId, profileConfig, patientDetailConfig, parser)
-      getAllForms(profileConfig)
+      getAllResults(
+        patientId,
+        ResourceType.Patient,
+        patientDetailConfig.questionnaireFilter!!,
+        patientDetailConfig
+      )
+      getAllForms(patientDetailConfig.questionnaireFilter!!)
     }
   }
 
   private fun launchTestResults(@StringRes id: Int) {
     when (id) {
-      R.string.test_results ->
-        startActivity(
-          Intent(this, SimpleDetailsActivity::class.java).apply {
-            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-          }
-        )
-      R.string.run_cql -> runCql()
-      R.string.edit_patient_info ->
+      R.string.edit_patient_info -> {
         startActivity(
           Intent(this, QuestionnaireActivity::class.java)
             .putExtras(
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
                 formName = getRegistrationForm(),
-                questionnaireType = QuestionnaireType.EDIT,
+                questionnaireType = QuestionnaireType.EDIT
               )
             )
+            .apply {
+              if (patientResourcesList.isNotEmpty()) {
+                this.putStringArrayListExtra(
+                  QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+                  patientResourcesList
+                )
+              }
+            }
         )
+      }
     }
   }
 
   fun getRegistrationForm(): String {
     return configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-      configClassification = MwCoreConfigClassification.PATIENT_REGISTER_CLIENT
-    )
+        configClassification = MwCoreConfigClassification.PATIENT_REGISTER,
+        questJsonSpecificationProvider.getJson()
+      )
       .registrationForm
   }
 
-  fun runCql() {
-    val progress = AlertDialogue.showProgressAlert(this, R.string.loading)
-
-    patientViewModel
-      .runCqlFor(patientId, this)
-      .observe(
-        this,
-        {
-          if (it?.isNotBlank() == true) {
-            progress.dismiss()
-
-            AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_log))
-            // show separate alert for output resources generated
-            it.substringAfter(LibraryEvaluator.OUTPUT_PARAMETER_KEY, "").takeIf { it.isNotBlank() }?.let {
-              AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_output))
-            }
-          }
-        }
-      )
-  }
-
-  // TODO https://github.com/opensrp/fhircore/issues/961
-  // allow handling the data back and forth between activities via workflow or config
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
 
     if (resultCode == Activity.RESULT_OK)
-      if (configurationRegistry.appId == "g6pd") {
-        data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)?.let {
-          val response =
-            FhirContext.forR4().newJsonParser().parseResource(it) as QuestionnaireResponse
-          response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
-            startActivity(
-              Intent(this, SimpleDetailsActivity::class.java).apply {
-                putExtra(RECORD_ID_ARG, it.replace("#", ""))
+      getResultDetailsNavigationOptions().navigationOptions.forEach {
+        when (it.action) {
+          is TestDetailsNavigationAction -> {
+            data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
+              val response =
+                FhirContext.forR4Cached().newJsonParser().parseResource(it) as QuestionnaireResponse
+              response.getEncounterId()?.let {
+                startActivity(
+                  Intent(this, SimpleDetailsActivity::class.java).apply {
+                    putExtra(RECORD_ID_ARG, it.replace("#", ""))
+                  }
+                )
               }
-            )
+            }
           }
+          is QuestionnaireNavigationAction -> {}
         }
       }
   }
 
-  // TODO https://github.com/opensrp/fhircore/issues/961
-  // allow handling the data back and forth between activities via workflow or config
   private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {
     if (questionnaireConfig != null) {
       startActivityForResult(
@@ -209,10 +191,60 @@ class QuestPatientDetailActivity :
   }
 
   private fun onTestResultItemClickListener(resultItem: QuestResultItem?) {
-    resultItem?.let { parser?.onResultItemClicked(resultItem, this, patientId) }
+    getResultDetailsNavigationOptions().navigationOptions.forEach {
+      handleNavigationOptions(it, resultItem, patientId)
+    }
   }
 
-  override fun configureViews(viewConfiguration: PatientDetailsViewConfiguration) {
+  private fun handleNavigationOptions(
+    navigationOption: NavigationOption,
+    resultItem: QuestResultItem?,
+    patientId: String
+  ) {
+    when (navigationOption.action) {
+      is QuestionnaireNavigationAction -> {
+        resultItem?.let {
+          when {
+            resultItem.source.second.logicalId.isNullOrBlank() -> {
+              AlertDialogue.showErrorAlert(this, R.string.invalid_form_id)
+            }
+            else -> {
+              startActivity(
+                Intent(this@QuestPatientDetailActivity, QuestionnaireActivity::class.java)
+                  .putExtras(
+                    QuestionnaireActivity.intentArgs(
+                      clientIdentifier = patientId,
+                      formName = resultItem.source.second.logicalId!!,
+                      questionnaireType = QuestionnaireType.READ_ONLY,
+                      questionnaireResponse =
+                        resultItem.source.first.questionnaireResponseString
+                          .decodeResourceFromString()
+                    )
+                  )
+              )
+            }
+          }
+        }
+      }
+      is TestDetailsNavigationAction -> {
+        resultItem?.source?.first?.encounterId?.let {
+          startActivity(
+            Intent(this@QuestPatientDetailActivity, SimpleDetailsActivity::class.java).apply {
+              putExtra(RECORD_ID_ARG, it)
+            }
+          )
+        }
+      }
+    }
+  }
+
+  fun getResultDetailsNavigationOptions() =
+    configurationRegistry.retrieveConfiguration<ResultDetailsNavigationConfiguration>(
+      configClassification = MwCoreConfigClassification.RESULT_DETAILS_NAVIGATION,
+      questJsonSpecificationProvider.getJson()
+    )
+
+  override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {
     patientViewModel.updateViewConfigurations(viewConfiguration)
   }
 }
