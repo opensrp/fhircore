@@ -84,6 +84,14 @@
       }
     },
     {
+      "title": "Profile Data Filters configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/110401",
+        "identifier": { "value": "profile_data_filters" }
+      }
+    },
+    {
       "title": "Forms configuration",
       "mode": "working",
       "focus": {

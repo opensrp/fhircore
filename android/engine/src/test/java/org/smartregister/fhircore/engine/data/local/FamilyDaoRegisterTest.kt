@@ -111,6 +111,30 @@ class FamilyDaoRegisterTest : RobolectricTest() {
   }
 
   @Test
+  fun loadFamilyProfileData() = runTest {
+    coEvery { defaultRepository.searchResource(ResourceType.Patient, any(), any(), any()) } returns
+      listOf(buildPatient(1), buildPatient(2))
+
+    coEvery { defaultRepository.searchResource(ResourceType.CarePlan, any(), any(), any()) } returns
+      listOf(
+        CarePlan().apply {
+          status = CarePlan.CarePlanStatus.ACTIVE
+          period =
+            Period().apply {
+              start = Date().plusYears(-1)
+              end = Date().plusYears(1)
+            }
+        }
+      )
+
+    coEvery {
+      defaultRepository.searchResource(ResourceType.Condition, any(), any(), any())
+    } returns listOf(buildPregnancy(1))
+
+    familyRegisterDao.loadProfileData(null, "1234").apply { println(this.toString()) }
+  }
+
+  @Test
   fun loadDefaultRegisterData() = runTest {
     coEvery { defaultRepository.searchResource(ResourceType.Patient, any(), any(), any()) } returns
       listOf(buildPatient(1), buildPatient(2))

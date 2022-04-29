@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import java.util.Date
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.full.memberProperties
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
@@ -32,7 +34,8 @@ sealed class ProfileData(open val id: String, open val name: String) {
   data class RawProfileData(
     override val id: String,
     override val name: String,
-    val main: Resource,
+    val module: String,
+    val main: Pair<String, Resource>,
     internal val _details: MutableMap<String, List<Resource>> = mutableMapOf(),
     val details: Map<String, List<Resource>> = _details
   ) : ProfileData(id = id, name = name)
@@ -95,4 +98,10 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val tasks: List<Task> = listOf(),
     val visits: List<Encounter> = listOf()
   ) : ProfileData(id = id, name = name)
+
+  fun addCollectionData(fieldName: String, data: Collection<Any>) {
+    this::class.memberProperties.find { it.name == fieldName }?.let {
+      (it as KMutableProperty<MutableCollection<Any>>).getter.call(this).addAll(data)
+    }
+  }
 }

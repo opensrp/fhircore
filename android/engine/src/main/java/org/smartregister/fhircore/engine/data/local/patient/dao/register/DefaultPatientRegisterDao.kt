@@ -17,29 +17,20 @@
 package org.smartregister.fhircore.engine.data.local.patient.dao.register
 
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Flag
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.extractAge
-import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.helper.FhirMapperServices.parseMapping
+import org.smartregister.fhircore.engine.util.helper.FhirMapperServices.parseRegisterMapping
 
 @Singleton
 class DefaultPatientRegisterDao
@@ -59,8 +50,8 @@ constructor(
   ): List<RegisterData> {
     return withContext(dispatcherProvider.io()) {
       getRegisterDataFilters()!!.let { param ->
-        defaultRepository.loadDataForParam(param, null).map { data ->
-          parseMapping(param.name, data, configurationRegistry, fhirPathEngine)
+        defaultRepository.loadRegisterListData(param, null, null).map { data ->
+          parseRegisterMapping(param.name, data, configurationRegistry, fhirPathEngine)
         }
       }
     }
@@ -71,16 +62,14 @@ constructor(
       getRegisterDataFilters()?.let { defaultRepository.countDataForParam(it) } ?: 0
     }
 
-  override suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData {
+  override suspend fun loadProfileData(appFeatureName: String?, id: String): ProfileData {
+    val idPart = IdType(id).idPart
     return withContext(dispatcherProvider.io()) {
-      val patient = fhirEngine.load(Patient::class.java, patientId)
-      val formsFilter = listOf<SearchFilter>() // TODO ???????????????????????????????
-      //        configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY).flatMap
-      // {
-      //          it.asSearchFilter()
-      //        }
+      getProfileDataFilters()!!
+        .let { param -> defaultRepository.loadProfileData(param, null, StringType(idPart)) }
+        .first() // TODO
 
-      ProfileData.DefaultProfileData(
+      /* ProfileData.DefaultProfileData(
         id = patient.logicalId,
         name = patient.extractName(),
         identifier = patient.identifierFirstRep.value,
@@ -117,7 +106,7 @@ constructor(
             subjectId = patientId,
             subjectParam = QuestionnaireResponse.SUBJECT
           )
-      )
+      )*/
     }
   }
 

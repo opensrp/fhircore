@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.helper
 
+import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
@@ -24,30 +25,54 @@ import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 
 object FhirMapperServices {
-  fun parseMapping(
+  fun parseRegisterMapping(
     config: String,
     registerData: RegisterData.RawRegisterData,
     configurationRegistry: ConfigurationRegistry,
     fhirPathEngine: FHIRPathEngine
   ): RegisterData {
     return configurationRegistry.retrieveRegisterDataMapperConfiguration(config)?.let {
-      parseMapping(it, registerData, fhirPathEngine)
+      parseRegisterMapping(it, registerData, fhirPathEngine)?.getResult<RegisterData>()
     }
       ?: registerData
   }
 
-  fun parseMapping(
+  fun parseProfileMapping(
+    config: String,
+    profileData: ProfileData.RawProfileData,
+    configurationRegistry: ConfigurationRegistry,
+    fhirPathEngine: FHIRPathEngine
+  ): ProfileData {
+    return configurationRegistry.retrieveProfileDataFilterConfiguration(config)?.let {
+      parseProfileMapping(it, profileData, fhirPathEngine)?.getResult<ProfileData>()
+    }
+      ?: profileData
+  }
+
+  fun parseRegisterMapping(
     mapperParam: Parameters.ParametersParameterComponent,
     registerData: RegisterData.RawRegisterData,
     fhirPathEngine: FHIRPathEngine
-  ): RegisterData? {
+  ): CallableParser? {
     val contextData: MutableMap<String, Any> = registerData.details.toMutableMap()
     contextData[registerData.main.first] = registerData.main.second
 
     return parseMapping(mapperParam, contextData, registerData.main.second, fhirPathEngine)
+  }
+
+  fun parseProfileMapping(
+    mapperParam: Parameters.ParametersParameterComponent,
+    profileData: ProfileData.RawProfileData,
+    fhirPathEngine: FHIRPathEngine
+  ): CallableParser? {
+    val contextData: MutableMap<String, Any> = profileData.details.toMutableMap()
+    contextData[profileData.main.first] = profileData.main.second
+
+    return parseMapping(mapperParam, contextData, profileData.main.second, fhirPathEngine)
   }
 
   fun parseMapping(
@@ -55,7 +80,7 @@ object FhirMapperServices {
     contextData: MutableMap<String, Any>,
     base: Resource,
     fhirPathEngine: FHIRPathEngine
-  ): RegisterData? {
+  ): CallableParser? {
     val className =
       mapperParam
         .extension
@@ -111,8 +136,15 @@ object FhirMapperServices {
             ?.also { evalValue -> paramValues[clsParam] = evalValue }
         }
 
-        construct.callBy(paramValues) as RegisterData
+        CallableParser(construct, paramValues)
       }
     }
+  }
+
+  data class CallableParser(
+    val constructorFunction: KFunction<Any>,
+    val parametersMap: MutableMap<KParameter, Any?>
+  ) {
+    fun <T> getResult() = constructorFunction.callBy(parametersMap) as T
   }
 }

@@ -32,7 +32,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.helper.FhirMapperServices.parseMapping
+import org.smartregister.fhircore.engine.util.helper.FhirMapperServices.parseRegisterMapping
 
 @Singleton
 class AncPatientRegisterDao
@@ -52,8 +52,8 @@ constructor(
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
       getRegisterDataFilters()!!.let { param ->
-        defaultRepository.loadDataForParam(param, null).map { data ->
-          parseMapping(param.name, data, configurationRegistry, fhirPathEngine)
+        defaultRepository.loadRegisterListData(param, null, null, currentPage).map { data ->
+          parseRegisterMapping(param.name, data, configurationRegistry, fhirPathEngine)
         }
       }
     }

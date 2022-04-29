@@ -56,5 +56,5 @@ fun Search.filterToken(filter: SearchFilter) {
 }
 
 fun Search.filterReference(filter: SearchFilter) {
-  filter(ReferenceClientParam(filter.key), { value = filter.valueReference!! })
+  filter(ReferenceClientParam(filter.key), { value = filter.valueReference!!.referencePart() })
 }

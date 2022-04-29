@@ -27,6 +27,7 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Composition
@@ -52,6 +53,8 @@ import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.configuration.view.asCode
 import org.smartregister.fhircore.engine.configuration.view.asSearchFilter
 import org.smartregister.fhircore.engine.configuration.view.expressionExtension
+import org.smartregister.fhircore.engine.domain.model.ProfileData
+import org.smartregister.fhircore.engine.domain.model.RawData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.components.register.DEFAULT_MAX_PAGE_COUNT
@@ -60,6 +63,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.idPart
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
@@ -99,7 +103,7 @@ constructor(
     }
 
   // TODO handle date-filter, value-set, multi-value code-filter
-  fun DataRequirement.asSearchFilter(focusResource: Resource? = null) =
+  fun DataRequirement.asSearchFilter(focusResource: Resource? = null, baseContext: Base? = null) =
     codeFilter.map {
       // by definition path or searchParam are mutually exclusive
       SearchFilter(key = it.path ?: it.searchParam).apply {
@@ -117,7 +121,7 @@ constructor(
                   null,
                   focusResource,
                   null,
-                  null,
+                  baseContext,
                   this.castToExpression(this.value).expression
                 )
                 .firstOrNull()
@@ -130,10 +134,16 @@ constructor(
     resourceType: ResourceType,
     dataRequirement: DataRequirement,
     focusResource: Resource? = null,
+    baseContext: Base? = null,
     currentPage: Int = 0,
     limit: Int = PaginationConstant.DEFAULT_QUERY_LOAD_SIZE
   ): List<Resource> =
-    searchResource(resourceType, dataRequirement.asSearchFilter(focusResource), currentPage, limit)
+    searchResource(
+      resourceType,
+      dataRequirement.asSearchFilter(focusResource, baseContext),
+      currentPage,
+      limit
+    )
 
   suspend fun searchResource(
     resourceType: ResourceType,
@@ -162,12 +172,16 @@ constructor(
     limit: Int = PaginationConstant.DEFAULT_QUERY_LOAD_SIZE
   ): List<T> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filters.forEach { filterBy(it) }
-
-        count = limit
-        from = currentPage * limit
+      // search by _id if id key exists OR search by all given filters
+      filters.findLast { it.key == Resource.SP_RES_ID }?.let {
+        listOf(fhirEngine.load(T::class.java, it.valueReference!!.idPart()))
       }
+        ?: fhirEngine.search {
+          filters.forEach { filterBy(it) }
+
+          count = limit
+          from = currentPage * limit
+        }
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
@@ -184,12 +198,47 @@ constructor(
       }
     }
 
-  suspend fun loadDataForParam(
+  suspend fun loadRegisterListData(
     param: Parameters.ParametersParameterComponent,
     focusResource: Resource?,
+    baseContext: Base?,
     currentPage: Int = 0,
     limit: Int = DEFAULT_MAX_PAGE_COUNT
   ): List<RegisterData.RawRegisterData> {
+    return loadDataForParam(param, focusResource, baseContext, currentPage, limit).map {
+      RegisterData.RawRegisterData(
+        id = it.main.logicalId,
+        name = it.main.logicalId,
+        module = param.name,
+        main = Pair(param.name, it.main),
+        _details = it.map.toMutableMap()
+      )
+    }
+  }
+
+  suspend fun loadProfileData(
+    param: Parameters.ParametersParameterComponent,
+    focusResource: Resource?,
+    baseContext: Base?
+  ): List<ProfileData.RawProfileData> {
+    return loadDataForParam(param, focusResource, baseContext).map {
+      ProfileData.RawProfileData(
+        id = it.main.logicalId,
+        name = it.main.logicalId,
+        module = param.name,
+        main = Pair(param.name, it.main),
+        _details = it.map.toMutableMap()
+      )
+    }
+  }
+
+  suspend fun loadDataForParam(
+    param: Parameters.ParametersParameterComponent,
+    focusResource: Resource?,
+    baseContext: Base?,
+    currentPage: Int = 0,
+    limit: Int = DEFAULT_MAX_PAGE_COUNT
+  ): List<RawData> {
     param.let { param ->
       // http://hl7.org/fhir/parameters.html -
       // Rule - inv-1: A parameter must have one and only one of (value, resource, part)
@@ -206,20 +255,15 @@ constructor(
 
       return when {
         param.hasValue() ->
-          loadValueData(param, focusResource, currentPage, limit).map {
-            RegisterData.RawRegisterData(
-              id = it.logicalId,
-              name = it.logicalId,
-              module = param.name,
-              main = Pair(param.name, it)
-            )
+          loadValueData(param, focusResource, baseContext, currentPage, limit).map {
+            RawData(it, mapOf())
           }
         param.hasResource() -> throw UnsupportedOperationException("Dont know resource handling")
         else -> {
           // for parts defined the config must define the mapping for main param
           val main =
             param.part.filter { it.name == param.name }.flatMap { mainParam ->
-              loadValueData(mainParam, focusResource)
+              loadValueData(mainParam, focusResource, baseContext)
             }
 
           main.map {
@@ -229,7 +273,7 @@ constructor(
             val details = mutableMapOf<String, MutableList<Resource>>()
 
             param.part.filter { it.name != param.name }.forEach { partParam ->
-              loadValueData(partParam, it)
+              loadValueData(partParam, it, null)
                 .apply {
                   if (details[partParam.name] == null)
                     details[partParam.name] = this.toMutableList()
@@ -241,13 +285,7 @@ constructor(
                 }
             }
 
-            RegisterData.RawRegisterData(
-              id = it.logicalId,
-              name = it.logicalId,
-              module = param.name,
-              main = Pair(param.name, it),
-              _details = details.toMutableMap()
-            )
+            RawData(it, details)
           }
         }
       }
@@ -257,6 +295,7 @@ constructor(
   suspend fun loadValueData(
     param: Parameters.ParametersParameterComponent,
     focusResource: Resource?,
+    baseContext: Base?,
     currentPage: Int = 0,
     limit: Int = DEFAULT_MAX_PAGE_COUNT
   ): List<Resource> {
@@ -267,6 +306,7 @@ constructor(
         resourceType = ResourceType.fromCode(this.type),
         dataRequirement = this,
         focusResource = focusResource,
+        baseContext = baseContext,
         currentPage = currentPage,
         limit = if (this.limit > 0) this.limit else limit // Bug in FHIR where for null it returns 0
       )

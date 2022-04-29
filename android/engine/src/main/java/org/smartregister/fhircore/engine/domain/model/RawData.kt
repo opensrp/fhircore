@@ -14,25 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util.extension
+package org.smartregister.fhircore.engine.domain.model
 
-import org.hl7.fhir.r4.model.IdType
-import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Resource
 
-fun Reference.extractId(): String {
-  return this.reference.idPart()
-}
-
-fun String.asReference(resourceType: ResourceType): Reference {
-  val resourceId = this
-  return Reference().apply { reference = "${resourceType.name}/$resourceId" }
-}
-
-fun String.idPart(): String {
-  return IdType(this).idPart
-}
-
-fun String.referencePart(): String {
-  return IdType(this).let { "${it.resourceType}/${it.idPart}" }
-}
+data class RawData(val main: Resource, val map: Map<String, List<Resource>>)

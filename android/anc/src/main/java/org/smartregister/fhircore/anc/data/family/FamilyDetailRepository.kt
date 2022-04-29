@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
@@ -36,8 +37,9 @@ constructor(
   val familyItemMapper: FamilyItemMapper,
   override val dispatcherProvider: DispatcherProvider,
   val ancPatientRepository: PatientRepository,
-  val familyRepository: FamilyRepository
-) : DefaultRepository(fhirEngine, dispatcherProvider) {
+  val familyRepository: FamilyRepository,
+  override val fhirPathEngine: FHIRPathEngine
+) : DefaultRepository(fhirEngine, dispatcherProvider, fhirPathEngine) {
   suspend fun fetchDemographics(familyId: String): Patient =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, familyId) }
 
