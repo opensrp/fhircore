@@ -20,6 +20,7 @@ import android.content.Intent
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
+import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -28,6 +29,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowIntent
+import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
@@ -37,9 +39,11 @@ class QuestLoginServiceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
+  @Inject lateinit var appFeatureManager: AppFeatureManager
+
   lateinit var loginActivity: LoginActivity
 
-  private val loginService: QuestLoginService = spyk(QuestLoginService())
+  private val loginService: QuestLoginService = spyk(QuestLoginService(appFeatureManager))
 
   @Before
   fun setUp() {

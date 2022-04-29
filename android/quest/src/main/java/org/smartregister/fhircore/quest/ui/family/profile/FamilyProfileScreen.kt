@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -73,18 +74,19 @@ import org.smartregister.fhircore.quest.ui.family.profile.components.ChangeFamil
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyMemberBottomSheet
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileRow
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfileTopBar
+import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyBottomSheetAction
 
 @Composable
 fun FamilyProfileScreen(
-  familyHeadId: String?,
+  familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
   familyProfileViewModel: FamilyProfileViewModel = hiltViewModel()
 ) {
 
   LaunchedEffect(Unit) {
-    familyProfileViewModel.onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyHeadId))
+    familyProfileViewModel.onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyId))
   }
 
   val viewState = familyProfileViewModel.familyProfileUiState.value
@@ -100,6 +102,7 @@ fun FamilyProfileScreen(
   var currentMemberPatientId by remember { mutableStateOf("") }
   var bottomSheetTitle by remember { mutableStateOf("") }
   var formButtonData by remember { mutableStateOf<List<FormButtonData>>(emptyList()) }
+  var familyList by remember { mutableStateOf(EligibleFamilyHeadMember(emptyList())) }
   var familyBottomSheetAction by remember {
     mutableStateOf(FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS)
   }
@@ -107,8 +110,24 @@ fun FamilyProfileScreen(
   BottomSheetScaffold(
     sheetContent = {
       when (familyBottomSheetAction) {
-        FamilyBottomSheetAction.CHANGE_FAMILY_HEAD -> ChangeFamilyHeadBottomSheet()
-        FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS ->
+        FamilyBottomSheetAction.CHANGE_FAMILY_HEAD -> {
+          ChangeFamilyHeadBottomSheet(
+            coroutineScope = coroutineScope,
+            bottomSheetScaffoldState = bottomSheetScaffoldState,
+            familyMembers = familyList,
+            onSaveClick = { familyMember ->
+              coroutineScope.launch {
+                familyProfileViewModel.run {
+                  changeFamilyHead(familyMember.patientId, familyId!!)
+                  onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyId))
+                }
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                  bottomSheetScaffoldState.bottomSheetState.collapse()
+              }
+            }
+          )
+        }
+        FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS -> {
           FamilyMemberBottomSheet(
             coroutineScope = coroutineScope,
             bottomSheetScaffoldState = bottomSheetScaffoldState,
@@ -119,10 +138,15 @@ fun FamilyProfileScreen(
             },
             onViewProfile = {
               familyProfileViewModel.onEvent(
-                FamilyProfileEvent.OpenMemberProfile(currentMemberPatientId, navController)
+                FamilyProfileEvent.OpenMemberProfile(
+                  currentMemberPatientId,
+                  familyId,
+                  navController
+                )
               )
             }
           )
+        }
       }
     },
     scaffoldState = bottomSheetScaffoldState,
@@ -159,14 +183,27 @@ fun FamilyProfileScreen(
                     showOverflowMenu = false
 
                     if (it.id == R.id.change_family_head) {
-                      familyBottomSheetAction = FamilyBottomSheetAction.CHANGE_FAMILY_HEAD
-                      coroutineScope.launch {
-                        if (bottomSheetScaffoldState.bottomSheetState.isCollapsed)
-                          bottomSheetScaffoldState.bottomSheetState.expand()
-                        else bottomSheetScaffoldState.bottomSheetState.collapse()
+                      familyList =
+                        familyProfileViewModel.filterEligibleFamilyHeadMembers(profileViewData)
+                      if (familyList.list.isNotEmpty()) {
+                        familyBottomSheetAction = FamilyBottomSheetAction.CHANGE_FAMILY_HEAD
+                        coroutineScope.launch {
+                          if (bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                            bottomSheetScaffoldState.bottomSheetState.expand()
+                          else bottomSheetScaffoldState.bottomSheetState.collapse()
+                        }
+                      } else {
+                        Toast.makeText(
+                            context,
+                            "No eligible family members found for family head",
+                            Toast.LENGTH_SHORT
+                          )
+                          .show()
                       }
                     } else
-                      familyProfileViewModel.onEvent(FamilyProfileEvent.OverflowMenuClick(it.id))
+                      familyProfileViewModel.onEvent(
+                        FamilyProfileEvent.OverflowMenuClick(context, it.id, familyId)
+                      )
                   },
                   contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                   modifier =
@@ -188,7 +225,7 @@ fun FamilyProfileScreen(
           contentColor = Color.White,
           text = { Text(text = stringResource(R.string.add_memeber).uppercase()) },
           onClick = {
-            familyProfileViewModel.onEvent(FamilyProfileEvent.AddMember(context, familyHeadId))
+            familyProfileViewModel.onEvent(FamilyProfileEvent.AddMember(context, familyId))
           },
           backgroundColor = MaterialTheme.colors.primary,
           icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },

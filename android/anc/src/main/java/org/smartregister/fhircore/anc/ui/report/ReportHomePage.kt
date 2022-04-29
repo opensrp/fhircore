@@ -85,7 +85,6 @@ fun ReportHomeListBox(
   onReportMeasureItemClick: (ReportItem) -> Unit
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems()
-
   LazyColumn(
     modifier = Modifier.background(Color.White).fillMaxSize().testTag(REPORT_MEASURE_LIST)
   ) {
@@ -93,15 +92,10 @@ fun ReportHomeListBox(
       ReportRow(item!!, Modifier.clickable(onClick = { onReportMeasureItemClick(item) }))
       Divider(color = DividerColor, thickness = 1.dp)
     }
-
     lazyReportItems.apply {
       when {
-        loadState.refresh is LoadState.Loading -> {
-          item { LoadingItem() }
-        }
-        loadState.append is LoadState.Loading -> {
-          item { LoadingItem() }
-        }
+        loadState.refresh is LoadState.Loading -> item { LoadingItem() }
+        loadState.append is LoadState.Loading -> item { LoadingItem() }
       }
     }
   }

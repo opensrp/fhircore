@@ -16,22 +16,35 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import org.smartregister.fhircore.engine.R
@@ -40,7 +53,7 @@ import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewSection
+import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 @Composable
 fun PatientProfileScreen(
@@ -49,7 +62,8 @@ fun PatientProfileScreen(
   patientId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  patientProfileViewModel: PatientProfileViewModel = hiltViewModel()
+  patientProfileViewModel: PatientProfileViewModel = hiltViewModel(),
+  familyId: String?
 ) {
 
   LaunchedEffect(Unit) {
@@ -57,8 +71,9 @@ fun PatientProfileScreen(
   }
 
   val context = LocalContext.current
-
   val profileViewData = patientProfileViewModel.patientProfileViewData.value
+  var showOverflowMenu by remember { mutableStateOf(false) }
+  val viewState = patientProfileViewModel.patientProfileUiState.value
 
   Scaffold(
     topBar = {
@@ -67,6 +82,44 @@ fun PatientProfileScreen(
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.Filled.ArrowBack, null)
+          }
+        },
+        actions = {
+          IconButton(onClick = { showOverflowMenu = !showOverflowMenu }) {
+            Icon(
+              imageVector = Icons.Outlined.MoreVert,
+              contentDescription = null,
+              tint = Color.White
+            )
+          }
+          DropdownMenu(
+            expanded = showOverflowMenu,
+            onDismissRequest = { showOverflowMenu = false }
+          ) {
+            viewState.overflowMenuItems.forEach {
+              DropdownMenuItem(
+                onClick = {
+                  showOverflowMenu = false
+                  patientProfileViewModel.onEvent(
+                    PatientProfileEvent.OverflowMenuClick(
+                      context,
+                      it.id,
+                      profileViewData.logicalId,
+                      familyId
+                    )
+                  )
+                },
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                modifier =
+                  modifier
+                    .fillMaxWidth()
+                    .background(
+                      color =
+                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
+                        else Color.Transparent
+                    )
+              ) { Text(text = stringResource(id = it.titleResource), color = it.titleColor) }
+            }
           }
         }
       )

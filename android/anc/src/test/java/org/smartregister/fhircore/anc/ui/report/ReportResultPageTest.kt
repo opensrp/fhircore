@@ -23,6 +23,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
@@ -41,7 +42,6 @@ import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -64,7 +64,7 @@ class ReportResultPageTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     val fhirEngine = mockk<FhirEngine>(relaxed = true)
-    val fhirOperatorDecorator = mockk<FhirOperatorDecorator>(relaxed = true)
+    val fhirOperator = mockk<FhirOperator>(relaxed = true)
     val reportRepository = mockk<ReportRepository>()
     val ancPatientRepository = mockk<PatientRepository>()
     viewModel =
@@ -74,7 +74,7 @@ class ReportResultPageTest : RobolectricTest() {
           dispatcher = coroutinesTestRule.testDispatcherProvider,
           patientRepository = ancPatientRepository,
           fhirEngine = fhirEngine,
-          fhirOperatorDecorator = fhirOperatorDecorator,
+          fhirOperator = fhirOperator,
           sharedPreferencesHelper = sharedPreferencesHelper
         )
       )

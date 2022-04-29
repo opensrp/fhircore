@@ -23,6 +23,7 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -77,7 +78,8 @@ fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
 
 inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   questionnaireId: String,
-  clientIdentifier: String? = null
+  clientIdentifier: String? = null,
+  intentBundle: Bundle = Bundle.EMPTY
 ) {
   this.startActivity(
     Intent(this, Q::class.java)
@@ -87,5 +89,6 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
           formName = questionnaireId
         )
       )
+      .putExtras(intentBundle)
   )
 }

@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -69,6 +70,7 @@ import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadi
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -84,6 +86,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator
 ) : ViewModel() {
+  @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
 
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
@@ -93,7 +96,7 @@ constructor(
   val extractionProgressMessage = MutableLiveData<String>()
 
   var editQuestionnaireResponse: QuestionnaireResponse? = null
-
+  private lateinit var questionnaireConfig: QuestionnaireConfig
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
@@ -109,7 +112,8 @@ constructor(
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    return loadConfig!!.first { it.form == form }
+    questionnaireConfig = loadConfig!!.first { it.form == form }
+    return questionnaireConfig
   }
 
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
@@ -167,6 +171,22 @@ constructor(
     }
   }
 
+  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, resourceId: String) {
+    val family = defaultRepository.loadResource<Group>(resourceId)!!
+    if (resource.resourceType == ResourceType.Patient) {
+      family.member.add(
+        Group.GroupMemberComponent().apply {
+          entity = Reference().apply { reference = "Patient/${resource.logicalId}" }
+        }
+      )
+    } else {
+      family.managingEntity =
+        Reference().apply { reference = "RelatedPerson/${resource.logicalId}" }
+    }
+
+    defaultRepository.addOrUpdate(family)
+  }
+
   fun extractAndSaveResources(
     context: Context,
     resourceId: String?,
@@ -174,7 +194,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT
   ) {
-    viewModelScope.launch {
+    viewModelScope.launch(dispatcherProvider.io()) {
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
@@ -184,12 +204,25 @@ constructor(
         bundle.entry.forEach { bun ->
           // add organization to entities representing individuals in registration questionnaire
           if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-            appendOrganizationInfo(bun.resource)
+            if (questionnaireConfig.setOrganizationDetails) {
+              appendOrganizationInfo(bun.resource)
+            }
             // if it is new registration set response subject
             if (resourceId == null) questionnaireResponse.subject = bun.resource.asReference()
           }
+          if (questionnaireConfig.setPractitionerDetails) {
+            appendPractitionerInfo(bun.resource)
+          }
 
-          appendPractitionerInfo(bun.resource)
+          if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
+            resourceId?.let {
+              appendPatientsAndRelatedPersonsToGroups(resource = bun.resource, resourceId = it)
+            }
+          }
+
+          if (bun.resource.resourceType.isIn(ResourceType.Patient)) {
+            generateCarePlanForUnder5(bun.resource as Patient)
+          }
 
           // response MUST have subject by far otherwise flow has issues
           if (!questionnaire.experimental) questionnaireResponse.assertSubject()
@@ -205,7 +238,6 @@ constructor(
               bun.resource.setPropertySafely("patient", questionnaireResponse.subject)
             }
           }
-
           questionnaireResponse.contained.add(bun.resource)
         }
 
@@ -235,6 +267,14 @@ constructor(
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+    }
+  }
+
+  // TODO Update the structure map id to be dynamic
+  suspend fun generateCarePlanForUnder5(patient: Patient) {
+    val age = patient.birthDate!!.yearsPassed()
+    if (age < 5) {
+      fhirTaskGenerator.generateCarePlan("105121", patient)
     }
   }
 

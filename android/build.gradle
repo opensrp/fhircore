@@ -4,6 +4,8 @@ buildscript {
     repositories {
         google()
         maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+
     }
     dependencies {
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10'
@@ -38,6 +40,13 @@ subprojects {
             ktlint(versions.ktlint).userData(['indent_size': '2', 'continuation_indent_size': '2'])
             ktfmt().googleStyle()
             licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
+        }
+
+        format 'xml', {
+            target '**/*.xml'
+            indentWithSpaces()
+            trimTrailingWhitespace()
+            endWithNewline()
         }
     }
 

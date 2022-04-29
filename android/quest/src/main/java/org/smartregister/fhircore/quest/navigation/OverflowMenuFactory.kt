@@ -42,5 +42,15 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
         confirmAction = true
       )
     )
+  ),
+  PATIENT_PROFILE(
+    listOf(
+      OverflowMenuItem(
+        id = R.id.remove_family_member,
+        titleResource = R.string.remove_this_person,
+        titleColor = DangerColor,
+        confirmAction = true
+      )
+    )
   )
 }

@@ -48,7 +48,6 @@ import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 

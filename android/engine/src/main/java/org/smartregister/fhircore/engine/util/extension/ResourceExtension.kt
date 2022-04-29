@@ -206,6 +206,10 @@ fun Resource.generateMissingId() {
   if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
 
+fun Resource.updateLastUpdated() {
+  meta.lastUpdated = Date()
+}
+
 fun Resource.isPatient(patientId: String) =
   this.resourceType == ResourceType.Patient && this.logicalId == patientId
 

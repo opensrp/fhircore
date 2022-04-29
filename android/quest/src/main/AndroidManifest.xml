@@ -12,14 +12,19 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
-        tools:ignore="UnusedAttribute">
+        tools:ignore="UnusedAttribute"
+        android:largeHeap="true"
+        >
 
+        <activity android:name=".ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity"/>
+        <activity android:name=".ui.family.remove.family.RemoveFamilyQuestionnaireActivity"/>
         <activity android:name=".ui.patient.register.PatientRegisterActivity" />
         <activity android:name=".ui.patient.details.QuestPatientDetailActivity" />
         <activity android:name=".ui.patient.details.QuestionnaireDataDetailActivity" />
         <activity android:name=".ui.patient.details.SimpleDetailsActivity" />
         <activity android:name=".ui.main.AppMainActivity" />
-
+        <activity android:name=".ui.family.form.FamilyQuestionnaireActivity"
+            android:theme="@style/AppTheme" />
         <service
             android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService"
             android:exported="false">
