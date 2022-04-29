@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore.ui.patient.register.components
+package org.smartregister.fhircore.mwcore.ui.task.component
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
@@ -31,19 +31,22 @@ import kotlinx.coroutines.flow.flowOf
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
-import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRowClickListenerIntent
+import org.smartregister.fhircore.mwcore.data.task.model.PatientTaskItem
+import org.smartregister.fhircore.mwcore.ui.task.PatientTaskListenerIntent
 
 @Composable
-fun PatientRegisterList(
-  pagingItems: LazyPagingItems<PatientItem>,
+fun PatientTaskList(
+  pagingItems: LazyPagingItems<PatientTaskItem>,
+  useLabel: Boolean,
   modifier: Modifier = Modifier,
-  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit
+  clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit
 ) {
+
   LazyColumn {
     items(pagingItems, key = { it.id }) {
-      PatientRow(it!!, clickListener, modifier = modifier)
+      PatientTaskRow(it!!, useLabel, clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)
     }
 
@@ -55,7 +58,11 @@ fun PatientRegisterList(
         loadState.refresh is LoadState.Error -> {
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error
           item {
-            ErrorMessage(message = loadStateError.error.message ?: "", onClickRetry = { retry() })
+            ErrorMessage(
+              message = loadStateError.error.localizedMessage!!,
+              modifier = modifier.fillParentMaxSize(),
+              onClickRetry = { retry() }
+            )
           }
         }
         loadState.append is LoadState.Error -> {
@@ -72,26 +79,28 @@ fun PatientRegisterList(
 @Composable
 @Preview
 @ExcludeFromJacocoGeneratedReport
-fun dummyPatientPagingList(): LazyPagingItems<PatientItem> {
+fun dummyPatientTaskPagingList(): LazyPagingItems<PatientTaskItem> {
   val listFlow =
     flowOf(
       PagingData.from(
         listOf(
-          PatientItem(
-            id = "my-test-id1",
-            identifier = "10001",
-            name = "John Doe",
-            gender = "M",
-            age = "27y",
-            address = "Nairobi"
-          ),
-          PatientItem(
-            id = "my-test-id2",
-            identifier = "10002",
-            name = "Jane Doe",
+          PatientTaskItem(
+            id = "1",
+            name = "Eve",
             gender = "F",
-            age = "20y",
-            address = "Nairobi"
+            birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
+            address = "Nairobi",
+            description = "Sick Visit",
+            overdue = true
+          ),
+          PatientTaskItem(
+            id = "2",
+            name = "Vivi",
+            gender = "M",
+            birthdate = "2021-04-20".getDate("yyyy-MM-dd"),
+            address = "Nairobi",
+            description = "Immunization Visit",
+            overdue = false
           )
         )
       )

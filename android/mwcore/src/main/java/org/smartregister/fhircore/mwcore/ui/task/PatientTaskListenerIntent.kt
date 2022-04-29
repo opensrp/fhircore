@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore.ui.patient.register
+package org.smartregister.fhircore.mwcore.ui.task
 
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
-sealed interface PatientRowClickListenerIntent : ListenerIntent
-
-object OpenPatientProfile : PatientRowClickListenerIntent
+/** [ListenerIntent] used on individual rows click listeners for patient task register. */
+sealed class PatientTaskListenerIntent : ListenerIntent

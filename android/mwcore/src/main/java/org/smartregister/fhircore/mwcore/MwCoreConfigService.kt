@@ -40,7 +40,6 @@ constructor(
     private val authenticatedUserInfo by lazy {
         sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
     }
-
     override val resourceSyncParams: Map<ResourceType, Map<String, String>> by lazy {
         loadRegistrySyncParams(configurationRegistry, authenticatedUserInfo)
     }

@@ -16,8 +16,20 @@
 
 package org.smartregister.fhircore.mwcore.ui.patient.details
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import android.widget.TextView
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -30,7 +42,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.ExperimentalUnitApi
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.ui.core.Direction
@@ -40,7 +56,11 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.mwcore.R
-import org.smartregister.fhircore.mwcore.configuration.view.*
+import org.smartregister.fhircore.mwcore.configuration.view.Code
+import org.smartregister.fhircore.mwcore.configuration.view.DynamicColor
+import org.smartregister.fhircore.mwcore.configuration.view.Filter
+import org.smartregister.fhircore.mwcore.configuration.view.Properties
+import org.smartregister.fhircore.mwcore.configuration.view.Property
 import org.smartregister.fhircore.mwcore.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.mwcore.data.patient.model.DetailsViewItemCell
 import org.smartregister.fhircore.mwcore.data.patient.model.DetailsViewItemRow
@@ -69,11 +89,11 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
         }
       )
 
-      Column(modifier = Modifier.padding(20.dp).testTag(DETAILS_DATA_ROWS)) {
+      Column(modifier = Modifier.padding(5.dp).testTag(DETAILS_DATA_ROWS)) {
         dataItem?.rows?.forEachIndexed { i, r ->
           kotlin
             .runCatching {
-              Row(Modifier.padding(10.dp).testTag(DETAILS_DATA_ROW)) {
+              Row(Modifier.padding(5.dp).testTag(DETAILS_DATA_ROW)) {
                 r.cells.forEach { c ->
                   if (c.filter.properties?.labelDirection == Direction.UP) {
                     Column(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
@@ -85,7 +105,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
               if (r.cells.size == 0) {
                 Divider(
                   color = colorResource(id = R.color.white_smoke),
-                  modifier = Modifier.padding(15.dp)
+                  modifier = Modifier.padding(2.dp)
                 )
               }
             }

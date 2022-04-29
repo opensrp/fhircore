@@ -25,6 +25,10 @@
     <string name="loading_responses">Loading responses ...</string>
     <string name="no_test_results_found">No test results found</string>
     <string name="patient_test_results">TEST RESULTS</string>
-    <string name="patient_type"> Patient_Type</string>
+    <string name="last_test"> Last Test - %1$s</string>
+    <string name="sample_distance">2.4 km</string>
+    <string name="hash_sign">#</string>
+    <string name="menu_tasks">Tasks</string>
 
+    <string name="patient_type"> Patient_Type</string>
 </resources>

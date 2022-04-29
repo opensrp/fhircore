@@ -17,15 +17,23 @@
 package org.smartregister.fhircore.mwcore
 
 import android.app.Application
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.support.DefaultProfileValidationSupport
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import dagger.hilt.android.HiltAndroidApp
-import timber.log.Timber
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
+import org.hl7.fhir.r4.utils.FHIRPathEngine
+import timber.log.Timber
 
 @HiltAndroidApp
 class MwCoreApplication : Application(), DataCaptureConfig.Provider {
-  @Inject
-  lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+
+  @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
   private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {
@@ -33,7 +41,41 @@ class MwCoreApplication : Application(), DataCaptureConfig.Provider {
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
+    CoroutineScope(Dispatchers.Default).launch {
+      val fhirContext =
+        FhirContext.forR4Cached().apply {
+          Timber.i("Loading FhirContext.forR4Cached on application init")
+        }
+      ResourceMapper.run {
+        // TODO https://github.com/google/android-fhir/issues/1173
+        // Action: Remove once fixed
+        // Once SDK resolves the issue this can be removed from here as there would be no
+        // duplication of objects
+        val validationSupport = extractResourceMapperValidationSupport()
+        fhirContext.validationSupport = validationSupport
+
+        Timber.i("Loading ResourceMapper on application init")
+      }
+    }
   }
+
+  // TODO https://github.com/google/android-fhir/issues/1173
+  // Action: Remove once fixed
+  private fun extractResourceMapperValidationSupport() =
+    ResourceMapper::class
+      .java
+      .getDeclaredField("fhirPathEngine")
+      .also { it.isAccessible = true }
+      .get(null)
+      .let {
+        ((it as FHIRPathEngine).worker as HapiWorkerContext).let {
+          it.javaClass
+            .getDeclaredField("myValidationSupport")
+            .also { it.isAccessible = true }
+            .get(it) as
+                  DefaultProfileValidationSupport
+        }
+      }
 
   override fun getDataCaptureConfig(): DataCaptureConfig {
     configuration =

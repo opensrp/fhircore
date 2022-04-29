@@ -1,4 +1,4 @@
-package org.smartregister.fhircore.mwcore.ui.fragments
+package org.smartregister.fhircore.mwcore.ui.appointments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @AndroidEntryPoint
-class TracingFragment: Fragment() {
+class AppointmentsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,11 +35,11 @@ class TracingFragment: Fragment() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Tracing")
+            Text("Appointments")
         }
     }
 
     companion object {
-        const val TAG = "TracingFragment"
+        const val TAG = "AppointmentsFragment"
     }
 }

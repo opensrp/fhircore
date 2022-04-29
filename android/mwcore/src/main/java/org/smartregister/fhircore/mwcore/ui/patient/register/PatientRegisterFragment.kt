@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore.ui.patient.register.fragments
+package org.smartregister.fhircore.mwcore.ui.patient.register
 
 import android.content.Intent
 import androidx.compose.runtime.Composable
@@ -30,30 +30,28 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.mwcore.R
 import org.smartregister.fhircore.mwcore.data.patient.PatientRepository
 import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
 import org.smartregister.fhircore.mwcore.ui.patient.details.QuestPatientDetailActivity
-import org.smartregister.fhircore.mwcore.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.mwcore.ui.patient.register.components.PatientRegisterList
-import org.smartregister.fhircore.mwcore.util.RegisterType
-import org.smartregister.fhircore.mwcore.util.RegisterType.CLIENT_ID
-
 
 @AndroidEntryPoint
-class ClientsRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
+class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
 
   @Inject lateinit var patientRepository: PatientRepository
+
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), QuestPatientDetailActivity::class.java)
         .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
-        .putExtra(getString(R.string.patient_type), CLIENT_ID)
     )
   }
 
   @Composable
-  override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>, modifier: Modifier) {
+  override fun ConstructRegisterList(
+    pagingItems: LazyPagingItems<PatientItem>,
+    modifier: Modifier
+  ) {
     PatientRegisterList(
       pagingItems = pagingItems,
       modifier = modifier,
@@ -68,6 +66,17 @@ class ClientsRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
     }
   }
 
+  /**
+   * Filters the given data if there is a matching condition.
+   *
+   * SEARCH_FILTER will filters data based on name OR id OR identifier.
+   *
+   * @param registerFilterType the filter type
+   * @param data the data that will be filtered
+   * @param value the query
+   *
+   * @return true if the data should be filtered
+   */
   override fun performFilter(
     registerFilterType: RegisterFilterType,
     data: PatientItem,
@@ -78,27 +87,24 @@ class ClientsRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
         if (value is String && value.isEmpty()) return true
         else
           data.name.contains(value.toString(), ignoreCase = true) ||
-                  data.identifier.contentEquals(value.toString()) ||
-                  data.id == value.toString()
+            data.identifier.contentEquals(value.toString()) ||
+            data.id == value.toString()
       }
       else -> false
     }
   }
 
-  @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Patient, PatientItem> {
-    return ViewModelProvider(
-      viewModelStore,
+    val registerDataViewModel =
       RegisterDataViewModel(
         application = requireActivity().application,
         registerRepository = patientRepository
       )
-        .createFactory()
-    )[RegisterDataViewModel::class.java] as
-            RegisterDataViewModel<Patient, PatientItem>
+    return ViewModelProvider(viewModelStore, registerDataViewModel.createFactory())[
+      registerDataViewModel::class.java]
   }
 
   companion object {
-    const val TAG = "ClientsRegisterFragment"
+    const val TAG = "PatientRegisterFragment"
   }
 }
