@@ -28,7 +28,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
@@ -140,7 +139,7 @@ constructor(
       newHead.link.clear()
 
       val newHeadFlag = Flag()
-      newHeadFlag.id = ResourceType.Flag.generateUniqueId()
+      newHeadFlag.id = generateUniqueId()
       newHeadFlag.status = Flag.FlagStatus.ACTIVE
       newHeadFlag.subject = newHead.asReference()
       newHeadFlag.code = familyTag.asCodeableConcept()

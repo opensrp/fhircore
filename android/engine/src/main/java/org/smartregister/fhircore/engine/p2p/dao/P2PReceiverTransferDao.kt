@@ -23,15 +23,7 @@ import com.google.android.fhir.logicalId
 import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.json.JSONArray
-import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.sync.DataType
@@ -39,37 +31,26 @@ import timber.log.Timber
 
 open class P2PReceiverTransferDao
 @Inject
-constructor(fhirEngine: FhirEngine, dispatcherProvider: DispatcherProvider) :
-  BaseP2PTransferDao(fhirEngine, dispatcherProvider), ReceiverTransferDao {
+constructor(
+  fhirEngine: FhirEngine,
+  dispatcherProvider: DispatcherProvider,
+  fhirContext: FhirContext
+) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, fhirContext), ReceiverTransferDao {
 
-  override fun getP2PDataTypes(): TreeSet<DataType> {
-    return getTypes()!!.clone() as TreeSet<DataType>
-  }
+  override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 
   override fun receiveJson(@NonNull type: DataType, @NonNull jsonArray: JSONArray): Long {
     var maxLastUpdated = 0L
-    // save resources
-    val jsonParser = FhirContext.forR4().newJsonParser()
-    var classType: Class<out Resource> = Encounter::class.java
-    when (type.name) {
-      // TODO move to utility function
-      P2PConstants.P2PDataTypes.GROUP -> classType = Group::class.java
-      P2PConstants.P2PDataTypes.ENCOUNTER -> classType = Encounter::class.java
-      P2PConstants.P2PDataTypes.OBSERVATION -> classType = Observation::class.java
-      P2PConstants.P2PDataTypes.PATIENT -> classType = Patient::class.java
-      P2PConstants.P2PDataTypes.QUESTIONNAIRE -> classType = Questionnaire::class.java
-      P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE ->
-        classType = QuestionnaireResponse::class.java
-    }
     Timber.e("saving resources from base dai")
     (0 until jsonArray.length()).forEach {
       runBlocking {
-        val resource = jsonParser.parseResource(classType, jsonArray.get(it).toString())
+        val resource =
+          jsonParser.parseResource(resourceClassType(type), jsonArray.get(it).toString())
         addOrUpdate(resource = resource)
         maxLastUpdated =
-          if (resource.meta.lastUpdated.time > maxLastUpdated) resource.meta.lastUpdated.time
-          else maxLastUpdated
-        Timber.e("Received ${resource.resourceType} with id ====== ${resource.logicalId}")
+          (if (resource.meta.lastUpdated.time > maxLastUpdated) resource.meta.lastUpdated.time
+          else maxLastUpdated)
+        Timber.e("Received ${resource.resourceType} with id = ${resource.logicalId}")
       }
     }
     Timber.e("max last updated is $maxLastUpdated")

@@ -16,43 +16,50 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.SearchQuery
 import java.util.TreeSet
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.p2p.dao.util.P2PConstants
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao
-constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
+constructor(
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider,
+  val fhirContext: FhirContext
+) {
 
-  val group = DataType(name = P2PConstants.P2PDataTypes.GROUP, DataType.Filetype.JSON, 0)
-  val patient = DataType(name = P2PConstants.P2PDataTypes.PATIENT, DataType.Filetype.JSON, 1)
-  val questionnaire =
-    DataType(name = P2PConstants.P2PDataTypes.QUESTIONNAIRE, DataType.Filetype.JSON, 2)
-  val questionnaireResponse =
-    DataType(name = P2PConstants.P2PDataTypes.QUESTIONNAIRE_RESPONSE, DataType.Filetype.JSON, 3)
-  val observation =
-    DataType(name = P2PConstants.P2PDataTypes.OBSERVATION, DataType.Filetype.JSON, 4)
-  val encounter = DataType(name = P2PConstants.P2PDataTypes.ENCOUNTER, DataType.Filetype.JSON, 5)
+  protected val jsonParser: IParser = fhirContext.newJsonParser()
 
-  fun getTypes(): TreeSet<DataType> {
-    val dataTypes = TreeSet<DataType>()
-    dataTypes!!.add(group)
-    dataTypes!!.add(patient)
-    dataTypes!!.add(questionnaire)
-    dataTypes!!.add(questionnaireResponse)
-    dataTypes!!.add(observation)
-    dataTypes!!.add(encounter)
-    return dataTypes
-  }
+  open fun getDataTypes(): TreeSet<DataType> =
+    TreeSet<DataType>(
+      listOf(
+        ResourceType.Group,
+        ResourceType.Patient,
+        ResourceType.Questionnaire,
+        ResourceType.QuestionnaireResponse,
+        ResourceType.Observation,
+        ResourceType.Encounter
+      )
+        .mapIndexed { index, resourceType ->
+          DataType(name = resourceType.name, DataType.Filetype.JSON, index)
+        }
+    )
 
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
@@ -144,4 +151,15 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       fhirEngine.search(searchQuery)
     }
   }
+
+  protected fun resourceClassType(type: DataType) =
+    when (ResourceType.valueOf(type.name)) {
+      ResourceType.Group -> Group::class.java
+      ResourceType.Encounter -> Encounter::class.java
+      ResourceType.Observation -> Observation::class.java
+      ResourceType.Patient -> Patient::class.java
+      ResourceType.Questionnaire -> Questionnaire::class.java
+      ResourceType.QuestionnaireResponse -> QuestionnaireResponse::class.java
+      else -> null /*TODO support other resource types*/
+    }
 }
