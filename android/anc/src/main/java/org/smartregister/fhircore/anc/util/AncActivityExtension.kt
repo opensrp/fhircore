@@ -34,7 +34,8 @@ fun Activity.startFamilyMemberRegistration(familyId: String) {
       .putExtra(QUESTIONNAIRE_RELATED_TO_KEY, familyId)
   )
 }
-
+// todo - from here questionnaireType will be default which will need to
+// have a Save as prefix on save button text, need to handle that case on QuestionnaireActivity
 fun Activity.getFamilyQuestionnaireIntent(patientId: String? = null, form: String): Intent {
   return Intent(this, FamilyQuestionnaireActivity::class.java)
     .putExtras(QuestionnaireActivity.intentArgs(clientIdentifier = patientId, formName = form))

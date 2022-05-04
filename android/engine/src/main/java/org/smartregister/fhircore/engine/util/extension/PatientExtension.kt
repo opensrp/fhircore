@@ -51,9 +51,7 @@ fun Patient.extractFamilyName(): String {
   } else ""
 }
 
-fun String.capitalizeFirstLetter() = replaceFirstChar {
-  if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-}
+fun String.capitalizeFirstLetter() = replaceFirstChar { it.titlecase(Locale.getDefault()) }
 
 fun Patient.extractGender(context: Context): String? =
   if (hasGender()) {

@@ -21,13 +21,12 @@ import androidx.navigation.navArgument
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 
 object NavigationArg {
+
+  const val FAMILY_ID = "familyId"
   const val FEATURE = "feature"
   const val HEALTH_MODULE = "healthModule"
   const val SCREEN_TITLE = "screenTitle"
   const val PATIENT_ID = "patientId"
-  private const val COMMON_ROUTE_PATH = "?feature={$FEATURE}&healthModule={$HEALTH_MODULE}"
-  const val HOME_ROUTE_PATH = "$COMMON_ROUTE_PATH&screenTitle={$SCREEN_TITLE}"
-  const val PATIENT_ROUTE_PATH = "$COMMON_ROUTE_PATH&patientId={$PATIENT_ID}"
 
   fun commonNavArgs(appFeatureName: String, healthModule: HealthModule) =
     mutableListOf(
@@ -42,4 +41,16 @@ object NavigationArg {
         defaultValue = healthModule
       }
     )
+
+  /** Create route paths */
+  fun routePathsOf(includeCommonArgs: Boolean = false, vararg navArg: String): String =
+    "?" +
+      if (includeCommonArgs) listOf(FEATURE, HEALTH_MODULE).plus(navArg).joinByAmpersand()
+      else navArg.toList().joinByAmpersand()
+
+  private fun List<String>.joinByAmpersand() = this.joinToString("&") { "$it={$it}" }
+
+  /** Bind nav arguments values */
+  fun bindArgumentsOf(vararg navArg: Pair<String, String?>): String =
+    "?" + navArg.joinToString("&") { "${it.first}=${it.second}" }
 }

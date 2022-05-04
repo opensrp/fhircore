@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
@@ -65,7 +66,7 @@ constructor(
       fhirEngine
         .search<Condition> {
           getRegisterDataFilters().forEach { filterBy(it) }
-
+          sort(Patient.NAME, Order.ASCENDING)
           count =
             if (loadAll) countRegisterData(appFeatureName).toInt()
             else PaginationConstant.DEFAULT_PAGE_SIZE
@@ -86,14 +87,16 @@ constructor(
         )
 
       RegisterData.AncRegisterData(
-        id = patient.logicalId,
+        logicalId = patient.logicalId,
         name = patient.extractName(),
         identifier = patient.extractOfficialIdentifier(),
+        gender = patient.gender,
         age = patient.birthDate.toAgeDisplay(),
         address = patient.extractAddress(),
         visitStatus = getVisitStatus(carePlans),
         servicesDue = carePlans.sumOf { it.milestonesDue().size },
-        servicesOverdue = carePlans.sumOf { it.milestonesOverdue().size }
+        servicesOverdue = carePlans.sumOf { it.milestonesOverdue().size },
+        familyName = if (patient.hasName()) patient.nameFirstRep.family else null
       )
     }
   }

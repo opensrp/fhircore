@@ -21,8 +21,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
@@ -34,7 +36,8 @@ constructor(
   val appFeatureManager: AppFeatureManager,
   val secureSharedPreference: SecureSharedPreference,
   val p2pSenderTransferDao: P2PSenderTransferDao,
-  val p2pReceiverTransferDao: P2PReceiverTransferDao
+  val p2pReceiverTransferDao: P2PReceiverTransferDao,
+  val configService: ConfigService
 ) : LoginService {
 
   override lateinit var loginActivity: AppCompatActivity
@@ -66,5 +69,8 @@ constructor(
           )
         )
     }
+
+    // Schedule CarePlan generation job
+    configService.schedulePlan(loginActivity)
   }
 }

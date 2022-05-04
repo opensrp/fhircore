@@ -20,7 +20,9 @@ import android.app.Activity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
@@ -43,6 +45,8 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
+import org.smartregister.p2p.utils.startP2PScreen
+import org.smartregister.fhircore.quest.ui.shared.models.GlobalEventState
 import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
@@ -78,7 +82,8 @@ constructor(
         sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
-        enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync)
+        enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync),
+        enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting)
       )
   }
 
@@ -92,17 +97,32 @@ constructor(
           (this as Activity).refresh()
         }
       }
-      is AppMainEvent.SwitchRegister -> event.navigateToRegister()
       AppMainEvent.SyncData -> {
         syncBroadcaster.runSync()
         appMainUiState =
           appMainUiState.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
       }
+      is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
       is AppMainEvent.DeviceToDeviceSync -> {
         startP2PScreen(context = event.context)
       }
       is AppMainEvent.UpdateSyncState -> {
-        appMainUiState = appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
+        when (event.state) {
+          // Update register count when sync completes
+          is State.Finished,
+          is State.Failed -> {
+            // Notify subscribers to refresh views after sync
+            if (EVENT_BUS.hasActiveObservers()) {
+              EVENT_BUS.postValue(GlobalEventState(refreshSync = true))
+            }
+            appMainUiState =
+              appMainUiState.copy(
+                lastSyncTime = event.lastSyncTime ?: "",
+                sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions()
+              )
+          }
+          else -> appMainUiState = appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
+        }
       }
     }
   }
@@ -131,6 +151,10 @@ constructor(
   }
 
   companion object {
+
+    // TODO: find better way for propagating events between components not sharing the same parent
+    val EVENT_BUS: MutableLiveData<GlobalEventState> = MutableLiveData(GlobalEventState())
+
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
     const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "hh:mm aa, MMM d"
     const val UTC = "UTC"

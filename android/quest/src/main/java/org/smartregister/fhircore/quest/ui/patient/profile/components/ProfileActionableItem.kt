@@ -55,8 +55,8 @@ import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileRowItem
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewSection
+import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileRowItem
+import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 @Composable
 fun ProfileActionableItem(
