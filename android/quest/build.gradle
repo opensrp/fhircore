@@ -46,9 +46,9 @@ android {
             v1SigningEnabled false
             v2SigningEnabled true
 
-            keyAlias System.getenv("KEYSTORE_ALIAS")
-            keyPassword System.getenv("KEY_PASSWORD")
-            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEYSTORE_ALIAS")?: project.KEYSTORE_ALIAS
+            keyPassword System.getenv("KEY_PASSWORD") ?: project.KEY_PASSWORD
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: project.KEYSTORE_PASSWORD
             storeFile file(System.getProperty("user.home") + "/fhircore.keystore.jks")
         }
     }
@@ -126,6 +126,32 @@ android {
 
     lintOptions {
         abortOnError false
+    }
+
+    flavorDimensions "apps"
+
+    productFlavors {
+        quest {
+            dimension "apps"
+            applicationIdSuffix ".quest"
+            versionNameSuffix "-quest"
+            getIsDefault().set(true)
+        }
+        ecbis {
+            dimension "apps"
+            applicationIdSuffix ".ecbis"
+            versionNameSuffix "-ecbis"
+        }
+        g6pd {
+            dimension "apps"
+            applicationIdSuffix ".g6pd"
+            versionNameSuffix "-g6pd"
+        }
+        mwcore {
+            dimension "apps"
+            applicationIdSuffix ".mwcore"
+            versionNameSuffix "-mwcore"
+        }
     }
 }
 

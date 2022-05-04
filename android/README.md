@@ -10,7 +10,7 @@
 
 ### local.properties
 
-If you would like to log into remote servers and authenticate against remote FHIR APIs, you will need Keycloak credentials. For this, add the following properties to `~/local.properties`:
+If you would like to log into remote servers and authenticate against remote FHIR APIs, you will need Keycloak credentials. For this, add the following properties to `local.properties`:
 
 ```
 OAUTH_BASE_URL=https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/
@@ -32,6 +32,16 @@ Place the Keystore file in your _user(home)_ directory i.e. `/Users/username/fhi
 
 You then need to create the following _System variables_ and set the corresponding values `KEYSTORE_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`
 **Note:** The values used in generating the keystore will be the values assigned to the system properties above. Also note, if your platform doesn't prompt you for a second password when generating the Keystore (e.g. of type PKCS12) then the KEYSTORE_PASSWORD and KEY_PASSWORD values will be the same.
+
+You can also choose to store the above credentials in a file named `keystore.properties`
+
+```
+KEYSTORE_PASSWORD=xxxxxx
+KEYSTORE_ALIAS=xxxxxx
+KEY_PASSWORD=xxxxxx
+```
+
+**Note** When using this approach to store credentials please remember to add a `keystore.properties` entry to the `.gitignore` file to prevent versioning on git
 
 - For more on the `keytool` utility see: [Java Key and Certificate Management Tool](https://docs.oracle.com/javase/6/docs/technotes/tools/windows/keytool.html)
 - For more on signing your application see: [Signing your Android app](https://developer.android.com/studio/publish/app-signing)
