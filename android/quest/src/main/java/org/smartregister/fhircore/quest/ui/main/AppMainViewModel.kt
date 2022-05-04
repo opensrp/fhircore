@@ -45,8 +45,8 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
-import org.smartregister.p2p.utils.startP2PScreen
 import org.smartregister.fhircore.quest.ui.shared.models.GlobalEventState
+import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
 class AppMainViewModel
