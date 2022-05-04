@@ -103,9 +103,6 @@ constructor(
           appMainUiState.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
       }
       is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
-      is AppMainEvent.DeviceToDeviceSync -> {
-        startP2PScreen(context = event.context)
-      }
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
           // Update register count when sync completes
