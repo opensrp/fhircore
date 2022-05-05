@@ -75,6 +75,7 @@ constructor(
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+            // TODO depending on client type, use relevant health module to load the correct content
             Pair(NavigationArg.HEALTH_MODULE, HealthModule.DEFAULT.name),
             Pair(NavigationArg.PATIENT_ID, event.patientId),
             Pair(NavigationArg.FAMILY_ID, event.familyId)

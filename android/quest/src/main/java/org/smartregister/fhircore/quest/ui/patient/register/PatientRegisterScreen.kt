@@ -25,6 +25,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,7 +44,6 @@ import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
-import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
 import org.smartregister.fhircore.quest.ui.shared.models.GlobalEventState
@@ -57,18 +57,19 @@ fun PatientRegisterScreen(
   screenTitle: String,
   openDrawer: (Boolean) -> Unit,
   navController: NavHostController,
+  globalEventState: MutableState<GlobalEventState>,
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val context = LocalContext.current
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
-  val globalEventState by AppMainViewModel.EVENT_BUS.observeAsState(GlobalEventState())
   val currentSetTotalRecordCount by rememberUpdatedState(
     patientRegisterViewModel::setTotalRecordsCount
   )
   val currentPaginateRegisterData by rememberUpdatedState(
     patientRegisterViewModel::paginateRegisterData
   )
+  val globalEventStateValue by remember { globalEventState }
 
   LaunchedEffect(Unit) {
     currentSetTotalRecordCount(appFeatureName, healthModule)
@@ -76,12 +77,12 @@ fun PatientRegisterScreen(
   }
 
   SideEffect {
-    // Refresh data everytime sync completes then reset the state to avoid refreshing data during
-    // recomposition
-    if (globalEventState!!.refreshSync) {
+    // Refresh data everytime sync completes.
+    if (globalEventStateValue.syncComplete == true) {
       currentSetTotalRecordCount(appFeatureName, healthModule)
       currentPaginateRegisterData(appFeatureName, healthModule, false)
-      AppMainViewModel.EVENT_BUS.value = globalEventState.copy(refreshSync = false)
+      // Reset refresh sync state
+      globalEventState.value = GlobalEventState(syncComplete = null)
     }
   }
 

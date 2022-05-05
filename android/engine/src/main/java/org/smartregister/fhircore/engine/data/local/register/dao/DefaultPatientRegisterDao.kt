@@ -110,7 +110,11 @@ constructor(
             subjectParam = Condition.SUBJECT
           ),
         tasks =
-          defaultRepository.searchResourceFor(subjectId = resourceId, subjectParam = Task.SUBJECT),
+          defaultRepository.searchResourceFor<Task>(
+              subjectId = resourceId,
+              subjectParam = Task.SUBJECT
+            )
+            .sortedBy { it.executionPeriod.start.time },
         services =
           defaultRepository.searchResourceFor(
             subjectId = resourceId,

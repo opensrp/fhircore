@@ -137,6 +137,10 @@ fun FamilyProfileScreen(
               familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
             },
             onViewProfile = {
+              coroutineScope.launch {
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                  bottomSheetScaffoldState.bottomSheetState.collapse()
+              }
               familyProfileViewModel.onEvent(
                 FamilyProfileEvent.OpenMemberProfile(
                   currentMemberPatientId,

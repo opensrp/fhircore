@@ -46,8 +46,8 @@ fun FormButton(
     },
     colors =
       ButtonDefaults.buttonColors(
-        backgroundColor = formButtonData.color.copy(alpha = 0.2f),
-        contentColor = formButtonData.color.copy(alpha = 0.6f)
+        backgroundColor = formButtonData.color.copy(alpha = 0.1f),
+        contentColor = formButtonData.color.copy(alpha = 0.9f)
       ),
     modifier = modifier.fillMaxWidth().padding(top = 0.dp, start = 16.dp, end = 16.dp)
   ) {
