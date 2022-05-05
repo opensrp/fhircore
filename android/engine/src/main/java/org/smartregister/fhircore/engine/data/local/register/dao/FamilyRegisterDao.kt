@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.engine.data.local.register.dao
 
+import androidx.compose.animation.defaultDecayAnimationSpec
+import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -56,6 +59,7 @@ import org.smartregister.fhircore.engine.util.extension.lastSeenFormat
 import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.toCoding
+import timber.log.Timber
 
 @Singleton
 class FamilyRegisterDao
@@ -191,6 +195,68 @@ constructor(
         name = relatedPerson.name.first().nameAsSingleString
       }
     fhirEngine.update(family)
+  }
+
+  suspend fun removeFamily(familyId: String, isDeactivateMembers: Boolean?) {
+        defaultRepository.loadResource<Group>(familyId)?.let { family ->
+          if (!family.active) throw IllegalStateException("Family already deleted")
+          family
+            .managingEntity
+            ?.let { reference ->
+              defaultRepository.searchResourceFor<RelatedPerson>(
+                token = RelatedPerson.RES_ID,
+                subjectType = ResourceType.RelatedPerson,
+                subjectId = reference.extractId()
+              )
+            }
+            ?.firstOrNull()
+            ?.let { relatedPerson -> defaultRepository.delete(relatedPerson) }
+          family.managingEntity = null
+          isDeactivateMembers?.let {
+            if (it) {
+              family.member.map { member ->
+                defaultRepository.loadResource<Patient>(member.entity.extractId())?.let { patient ->
+                  patient.active = false
+                  defaultRepository.addOrUpdate(patient)
+                }
+              }
+            }
+          }
+          family.member.clear()
+          family.active = false
+
+          defaultRepository.addOrUpdate(family)
+        }
+  }
+
+  suspend fun removeFamilyMember(patientId: String, familyId: String?){
+    defaultRepository.loadResource<Patient>(patientId)?.let { patient ->
+      if (!patient.active) throw IllegalStateException("Patient already deleted")
+      patient.active = false
+
+      if (familyId != null) {
+        defaultRepository.loadResource<Group>(familyId)?.let { family ->
+          family.member.run {
+            remove(this.find { it.entity.reference == "Patient/${patient.logicalId}" })
+          }
+          family.managingEntity?.let { reference ->
+              defaultRepository.searchResourceFor<RelatedPerson>(
+                token = RelatedPerson.RES_ID,
+                subjectType = ResourceType.RelatedPerson,
+                subjectId = reference.extractId()
+              )
+            }
+            ?.firstOrNull()
+            ?.let { relatedPerson ->
+              if ( relatedPerson.patient.id == patientId ){
+                defaultRepository.delete(relatedPerson)
+                family.managingEntity = null
+              }
+            }
+        }
+      }
+      defaultRepository.addOrUpdate(patient)
+    }
   }
 
   private suspend fun loadFamilyMemberRegisterData(
