@@ -214,7 +214,7 @@ constructor(
             appendPractitionerInfo(bun.resource)
           }
 
-          if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
+          if (questionnaireType != QuestionnaireType.EDIT && bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
             resourceId?.let {
               appendPatientsAndRelatedPersonsToGroups(resource = bun.resource, resourceId = it)
             }
