@@ -70,7 +70,6 @@ constructor(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
           clientIdentifier = event.familyId
         )
-      is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyId)
       is FamilyProfileEvent.OpenMemberProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
@@ -102,13 +101,13 @@ constructor(
     }
   }
 
-  private fun fetchFamilyProfileData(patientId: String?) {
+  fun fetchFamilyProfileData(familyId: String?) {
     viewModelScope.launch(dispatcherProvider.io()) {
-      if (!patientId.isNullOrEmpty()) {
+      if (!familyId.isNullOrEmpty()) {
         patientRegisterRepository.loadPatientProfileData(
             AppFeature.HouseholdManagement.name,
             HealthModule.FAMILY,
-            patientId
+            familyId
           )
           ?.let {
             familyMemberProfileData.value =

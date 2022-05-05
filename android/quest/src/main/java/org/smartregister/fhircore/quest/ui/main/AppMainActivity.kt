@@ -20,6 +20,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,6 +47,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     super.onCreate(savedInstanceState)
     setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
+  }
+
+  override fun onResume() {
+    super.onResume()
+    appMainViewModel.refreshDataState.value = true
   }
 
   override fun onSync(state: State) {

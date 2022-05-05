@@ -152,7 +152,7 @@ private fun AppMainNavigationGraph(
               appFeatureName = appFeatureName,
               healthModule = healthModule,
               screenTitle = screenTitle,
-              globalEventState = appMainViewModel.globalEventState
+              refreshDataState = appMainViewModel.refreshDataState
             )
           }
         MainNavigationScreen.Tasks -> composable(MainNavigationScreen.Tasks.route) {}
@@ -183,7 +183,11 @@ private fun AppMainNavigationGraph(
             arguments = commonNavArgs.plus(patientIdNavArgument())
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
-            FamilyProfileScreen(familyId = patientId, navController = navController)
+            FamilyProfileScreen(
+              familyId = patientId,
+              navController = navController,
+              refreshDataState = appMainViewModel.refreshDataState
+            )
           }
       }
     }

@@ -36,7 +36,5 @@ sealed class FamilyProfileEvent {
   data class OverflowMenuClick(val context: Context, val menuId: Int, val familyId: String?) :
     FamilyProfileEvent()
 
-  data class FetchFamilyProfileData(val familyId: String?) : FamilyProfileEvent()
-
   data class FetchMemberTasks(val patientId: String?) : FamilyProfileEvent()
 }

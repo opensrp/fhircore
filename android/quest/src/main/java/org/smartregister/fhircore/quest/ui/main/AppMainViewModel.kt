@@ -45,7 +45,6 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
-import org.smartregister.fhircore.quest.ui.shared.models.GlobalEventState
 import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
@@ -70,7 +69,7 @@ constructor(
   var applicationConfiguration: ApplicationConfiguration
     private set
 
-  val globalEventState: MutableState<GlobalEventState> = mutableStateOf(GlobalEventState())
+  val refreshDataState: MutableState<Boolean> = mutableStateOf(false)
 
   init {
     applicationConfiguration =
@@ -110,7 +109,7 @@ constructor(
           is State.Finished,
           is State.Failed -> {
             // Notify subscribers to refresh views after sync
-            globalEventState.value = GlobalEventState(syncComplete = true)
+            refreshDataState.value = true
             appMainUiState =
               appMainUiState.copy(
                 lastSyncTime = event.lastSyncTime ?: "",

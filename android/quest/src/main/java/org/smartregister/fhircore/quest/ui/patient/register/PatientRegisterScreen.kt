@@ -46,7 +46,6 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
-import org.smartregister.fhircore.quest.ui.shared.models.GlobalEventState
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 @Composable
@@ -57,7 +56,7 @@ fun PatientRegisterScreen(
   screenTitle: String,
   openDrawer: (Boolean) -> Unit,
   navController: NavHostController,
-  globalEventState: MutableState<GlobalEventState>,
+  refreshDataState: MutableState<Boolean>,
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val context = LocalContext.current
@@ -69,7 +68,7 @@ fun PatientRegisterScreen(
   val currentPaginateRegisterData by rememberUpdatedState(
     patientRegisterViewModel::paginateRegisterData
   )
-  val globalEventStateValue by remember { globalEventState }
+  val refreshDataStateValue by remember { refreshDataState }
 
   LaunchedEffect(Unit) {
     currentSetTotalRecordCount(appFeatureName, healthModule)
@@ -77,12 +76,11 @@ fun PatientRegisterScreen(
   }
 
   SideEffect {
-    // Refresh data everytime sync completes.
-    if (globalEventStateValue.syncComplete == true) {
+    // Refresh data everytime sync completes then reset state
+    if (refreshDataStateValue) {
       currentSetTotalRecordCount(appFeatureName, healthModule)
       currentPaginateRegisterData(appFeatureName, healthModule, false)
-      // Reset refresh sync state
-      globalEventState.value = GlobalEventState(syncComplete = null)
+      refreshDataState.value = false
     }
   }
 
