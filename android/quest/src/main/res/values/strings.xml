@@ -37,6 +37,7 @@
     <string name="remove_family">Remove family</string>
     <string name="family_suffix">%1$s Family</string>
     <string name="remove_this_person">Remove this person</string>
+    <string name="individual_details">Individual details</string>
 
     <!-- SideMenu option strings-->
     <string name="device_to_device_sync">Device to device sync</string>
@@ -78,5 +79,6 @@
 
     <!-- Dialog alert messages-->
     <string name="unsaved_changes_message_alert">If you leave before saving, your edits or changes will be lost</string>
+
 
 </resources>
