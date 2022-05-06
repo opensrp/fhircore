@@ -85,6 +85,8 @@ class AppSettingActivity : AppCompatActivity() {
           lifecycleScope.launch(dispatcherProvider.io()) {
             fetchConfigurations(appId.value!!, this@AppSettingActivity)
           }
+        } else if (it == false) {
+          loadConfigurations(true)
         }
       }
     }
