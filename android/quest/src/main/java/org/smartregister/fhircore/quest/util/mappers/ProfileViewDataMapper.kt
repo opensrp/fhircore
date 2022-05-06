@@ -90,17 +90,21 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 gender = memberProfileData.gender.translateGender(context),
                 name = memberProfileData.name,
                 memberTasks =
-                  memberProfileData.tasks.take(DEFAULT_TASKS_COUNT).map {
-                    FamilyMemberTask(
-                      task = it.description,
-                      taskStatus = it.status,
-                      colorCode = it.status.retrieveColorCode(),
-                      taskFormId =
-                        if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                          it.reasonReference.extractId()
-                        else null
-                    )
-                  }
+                  memberProfileData
+                    .tasks
+                    .filter { it.status == Task.TaskStatus.READY }
+                    .take(DEFAULT_TASKS_COUNT)
+                    .map {
+                      FamilyMemberTask(
+                        task = it.description,
+                        taskStatus = it.status,
+                        colorCode = it.status.retrieveColorCode(),
+                        taskFormId =
+                          if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                            it.reasonReference.extractId()
+                          else null
+                      )
+                    }
               )
             }
         )

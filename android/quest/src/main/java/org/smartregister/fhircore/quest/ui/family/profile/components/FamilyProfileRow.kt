@@ -122,32 +122,36 @@ fun FamilyProfileRow(
 
       // Display family members tasks
       Column(modifier = modifier.weight(0.4f)) {
-        familyMemberViewState.memberTasks.take(3).forEach {
-          OutlinedButton(
-            onClick = { it.taskFormId?.let { taskFormId -> onTaskClick(taskFormId) } },
-            colors =
-              ButtonDefaults.buttonColors(
-                backgroundColor = it.colorCode.copy(alpha = 0.1f),
-                contentColor = it.colorCode.copy(alpha = 0.8f),
-              ),
-            modifier = modifier.padding(vertical = 2.2.dp).fillMaxWidth()
-          ) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.Start
+        familyMemberViewState
+          .memberTasks
+          .filter { it.taskStatus == Task.TaskStatus.READY }
+          .take(3)
+          .forEach {
+            OutlinedButton(
+              onClick = { it.taskFormId?.let { taskFormId -> onTaskClick(taskFormId) } },
+              colors =
+                ButtonDefaults.buttonColors(
+                  backgroundColor = it.colorCode.copy(alpha = 0.1f),
+                  contentColor = it.colorCode.copy(alpha = 0.8f),
+                ),
+              modifier = modifier.padding(vertical = 2.2.dp).fillMaxWidth()
             ) {
-              Icon(
-                imageVector =
-                  if (it.taskStatus == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-                  else Icons.Filled.Add,
-                contentDescription = null,
-                tint =
-                  if (it.taskStatus == Task.TaskStatus.COMPLETED) SuccessColor else it.colorCode
-              )
-              Text(text = it.task, color = it.colorCode.copy(alpha = 0.9f))
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+              ) {
+                Icon(
+                  imageVector =
+                    if (it.taskStatus == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+                    else Icons.Filled.Add,
+                  contentDescription = null,
+                  tint =
+                    if (it.taskStatus == Task.TaskStatus.COMPLETED) SuccessColor else it.colorCode
+                )
+                Text(text = it.task, color = it.colorCode.copy(alpha = 0.9f))
+              }
             }
           }
-        }
       }
     }
   }
