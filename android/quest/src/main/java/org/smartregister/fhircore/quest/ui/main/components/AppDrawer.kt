@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
@@ -57,7 +56,9 @@ import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.quest.navigation.NavigationScreen
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
@@ -73,7 +74,9 @@ fun AppDrawer(
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
-  onSideMenuClick: (AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  enableDeviceToDeviceSync: Boolean,
+  enableReports: Boolean
 ) {
   val context = LocalContext.current
   var expandLanguageDropdown by remember { mutableStateOf(false) }
@@ -90,7 +93,7 @@ fun AppDrawer(
         modifier = modifier.padding(vertical = 16.dp)
       )
       LazyColumn {
-        items(sideMenuOptions, { "${it.appFeatureName}|${it.healthModule?.name}" }) { sideMenuOption
+        items(sideMenuOptions, { "${it.appFeatureName}|${it.healthModule.name}" }) { sideMenuOption
           ->
           val title = stringResource(sideMenuOption.titleResource)
           SideMenuItem(
@@ -99,27 +102,42 @@ fun AppDrawer(
             endText = sideMenuOption.count.toString(),
             showEndText = sideMenuOption.showCount,
             onSideMenuClick = {
-              onSideMenuClick(
-                AppMainEvent.SwitchRegister(
-                  navigateToRegister = {
-                    openDrawer(false)
-                    navController.navigate(
-                      route =
-                        "${NavigationScreen.Home.route}?feature=${sideMenuOption.appFeatureName}&healthModule=${sideMenuOption.healthModule.name}&screenTitle=$title"
+              openDrawer(false)
+              navController.navigate(
+                route =
+                  MainNavigationScreen.Home.route +
+                    NavigationArg.bindArgumentsOf(
+                      Pair(NavigationArg.FEATURE, sideMenuOption.appFeatureName),
+                      Pair(NavigationArg.HEALTH_MODULE, sideMenuOption.healthModule.name),
+                      Pair(NavigationArg.SCREEN_TITLE, title)
                     )
-                  }
-                )
               )
             }
           )
         }
       }
-      SideMenuItem(
-        iconResource = R.drawable.ic_sync,
-        title = stringResource(R.string.transfer_data),
-        showEndText = false,
-        onSideMenuClick = { onSideMenuClick(AppMainEvent.TransferData) }
-      )
+      if (enableReports) {
+        SideMenuItem(
+          iconResource = R.drawable.ic_reports,
+          title = stringResource(R.string.reports),
+          showEndText = false,
+          onSideMenuClick = {
+            openDrawer(false)
+            navController.navigate(MainNavigationScreen.Reports.route)
+          }
+        )
+      }
+      if (enableDeviceToDeviceSync) {
+        SideMenuItem(
+          iconResource = R.drawable.ic_sync,
+          title = stringResource(R.string.device_to_device_sync),
+          showEndText = false,
+          onSideMenuClick = {
+            openDrawer(false)
+            onSideMenuClick(AppMainEvent.DeviceToDeviceSync(context))
+          }
+        )
+      }
       Box {
         SideMenuItem(
           iconResource = R.drawable.ic_outline_language_white,
@@ -246,6 +264,8 @@ fun AppDrawerPreview() {
         )
       ),
     onSideMenuClick = {},
-    languages = listOf(Language("en", "English"), Language("sw", "Swahili"))
+    languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+    enableDeviceToDeviceSync = true,
+    enableReports = true
   )
 }

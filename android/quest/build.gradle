@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "org.smartregister.fhircore.quest"
+        applicationId "org.smartregister.fhircore"
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
         versionCode 3
@@ -36,16 +36,16 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-    
+
     signingConfigs {
         release {
 
             v1SigningEnabled false
             v2SigningEnabled true
 
-            keyAlias System.getenv("KEYSTORE_ALIAS")
-            keyPassword System.getenv("KEY_PASSWORD")
-            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEYSTORE_ALIAS")?: project.KEYSTORE_ALIAS
+            keyPassword System.getenv("KEY_PASSWORD") ?: project.KEY_PASSWORD
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: project.KEYSTORE_PASSWORD
             storeFile file(System.getProperty("user.home") + "/fhircore.keystore.jks")
         }
     }
@@ -86,6 +86,7 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
@@ -122,6 +123,32 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    flavorDimensions "apps"
+
+    productFlavors {
+        quest {
+            dimension "apps"
+            applicationIdSuffix ".quest"
+            versionNameSuffix "-quest"
+            getIsDefault().set(true)
+        }
+        ecbis {
+            dimension "apps"
+            applicationIdSuffix ".ecbis"
+            versionNameSuffix "-ecbis"
+        }
+        g6pd {
+            dimension "apps"
+            applicationIdSuffix ".g6pd"
+            versionNameSuffix "-g6pd"
+        }
+        mwcore {
+            dimension "apps"
+            applicationIdSuffix ".mwcore"
+            versionNameSuffix "-mwcore"
+        }
+    }
 }
 
 dependencies {
@@ -133,6 +160,7 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
+    implementation('org.smartregister:p2p-lib:0.2.0-SNAPSHOT')
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"

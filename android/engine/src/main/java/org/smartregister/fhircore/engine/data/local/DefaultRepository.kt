@@ -49,9 +49,9 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.configuration.view.Code
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.configuration.view.asCode
-import org.smartregister.fhircore.engine.configuration.view.asSearchFilter
 import org.smartregister.fhircore.engine.configuration.view.expressionExtension
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RawData
@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
 @Singleton
 open class DefaultRepository
@@ -105,29 +106,31 @@ constructor(
   // TODO handle date-filter, value-set, multi-value code-filter
   fun DataRequirement.asSearchFilter(focusResource: Resource? = null, baseContext: Base? = null) =
     codeFilter.map {
-      // by definition path or searchParam are mutually exclusive
-      SearchFilter(key = it.path ?: it.searchParam).apply {
+      val value =
         if (!it.hasCode() && it.extension.expressionExtension() == null)
           throw UnsupportedOperationException(
             "Either code or value expression for extension cqf-initiatingPerson should be specified"
           )
-
-        if (it.hasCode()) valueCoding = it.codeFirstRep.asCode()
+        else if (it.hasCode()) it.codeFirstRep.asCode()
         else
-          it.extension.expressionExtension()!!.run {
-            valueReference =
-              fhirPathEngine
-                .evaluate(
-                  null,
-                  focusResource,
-                  null,
-                  baseContext,
-                  this.castToExpression(this.value).expression
-                )
-                .firstOrNull()
-                .toString()
+          it.extension.expressionExtension()!!.let {
+            fhirPathEngine
+              .evaluate(
+                null,
+                focusResource,
+                null,
+                baseContext,
+                it.castToExpression(it.value).expression
+              )
+              .firstOrNull()
           }
-      }
+
+      // by definition path or searchParam are mutually exclusive
+      SearchFilter(
+        key = it.path ?: it.searchParam,
+        valueCoding = if (it.hasCode()) value as Code else null,
+        valueReference = if (!it.hasCode()) value.toString() else null
+      )
     }
 
   suspend fun searchResourceFor(
@@ -198,6 +201,19 @@ constructor(
       }
     }
 
+  suspend inline fun <reified T : Resource> searchResourceFor(
+    token: TokenClientParam,
+    subjectType: ResourceType,
+    subjectId: String,
+    filters: List<SearchFilter> = listOf()
+  ): List<T> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filterByResourceTypeId(token, subjectType, subjectId)
+        filters.forEach { filterBy(it) }
+      }
+    }
+
   suspend fun loadRegisterListData(
     param: Parameters.ParametersParameterComponent,
     focusResource: Resource?,
@@ -207,7 +223,7 @@ constructor(
   ): List<RegisterData.RawRegisterData> {
     return loadDataForParam(param, focusResource, baseContext, currentPage, limit).map {
       RegisterData.RawRegisterData(
-        id = it.main.logicalId,
+        logicalId = it.main.logicalId,
         name = it.main.logicalId,
         module = param.name,
         main = Pair(param.name, it.main),
@@ -223,7 +239,7 @@ constructor(
   ): List<ProfileData.RawProfileData> {
     return loadDataForParam(param, focusResource, baseContext).map {
       ProfileData.RawProfileData(
-        id = it.main.logicalId,
+        logicalId = it.main.logicalId,
         name = it.main.logicalId,
         module = param.name,
         main = Pair(param.name, it.main),
@@ -320,7 +336,7 @@ constructor(
           if (mainParam.hasValue()) listOf(mainParam.value!!)
           else mainParam.part.filter { it.name == mainParam.name }.map { it.value }
         }
-        .flatMap { it.castToDataRequirement(it).asSearchFilter(fhirPathEngine) }
+        .flatMap { it.castToDataRequirement(it).asSearchFilter() }
         .forEach { filterBy(it) }
     }
   }
@@ -375,6 +391,7 @@ constructor(
   suspend fun save(resource: Resource) {
     return withContext(dispatcherProvider.io()) {
       resource.generateMissingId()
+      resource.updateLastUpdated()
       fhirEngine.save(resource)
     }
   }
@@ -387,6 +404,7 @@ constructor(
 
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
       try {
         fhirEngine.load(resource::class.java, resource.logicalId).run {
           fhirEngine.update(updateFrom(resource))

@@ -21,9 +21,6 @@
 
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".ui.family.removefamily.RemoveFamilyQuestionnaireActivity"
-            android:theme="@style/AppTheme" />
-        <activity
             android:name=".ui.family.form.FamilyQuestionnaireActivity"
 
             android:noHistory="true"

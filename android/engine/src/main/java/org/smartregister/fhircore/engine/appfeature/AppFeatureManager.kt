@@ -42,4 +42,10 @@ class AppFeatureManager @Inject constructor(val configurationRegistry: Configura
       it.feature.equals(AppFeature.PatientManagement.name, true) ||
         it.feature.equals(AppFeature.HouseholdManagement.name, true)
     }
+
+  fun isFeatureActive(appFeature: AppFeature) =
+    activatedFeatures().find { appFeature.name.equals(it.feature, true) } != null
+
+  fun appFeatureSettings(appFeature: AppFeature) =
+    activatedFeatures().find { appFeature.name.equals(it.feature, true) }?.settings ?: mapOf()
 }

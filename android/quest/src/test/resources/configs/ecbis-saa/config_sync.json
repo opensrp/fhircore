@@ -1,5 +1,6 @@
 {
   "resourceType": "Parameters",
+  "classification": "sync",
   "parameter": [
     {
       "resource": {
@@ -8,6 +9,18 @@
         "code": "organization",
         "base": [
           "Patient"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "managing-entity.patient.organization",
+        "base": [
+          "Group"
         ],
         "type": "token",
         "expression": "#organization"
@@ -62,7 +75,8 @@
           "Questionnaire",
           "StructureMap",
           "Binary",
-          "Task"
+          "Task",
+          "Group"
         ],
         "type": "token",
         "expression": "#count"

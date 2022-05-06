@@ -22,37 +22,38 @@ import kotlin.reflect.full.memberProperties
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Resource
 
-sealed class RegisterData(open val id: String, open val name: String) {
+sealed class RegisterData(open val logicalId: String, open val name: String) {
 
   data class RawRegisterData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val module: String,
     val main: Pair<String, Resource>,
     internal val _details: MutableMap<String, List<Resource>> = mutableMapOf(),
     val details: Map<String, List<Resource>> = _details
-  ) : RegisterData(id = id, name = name)
+  ) : RegisterData(logicalId = logicalId, name = name)
 
   data class DefaultRegisterData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val gender: String,
     val birthDate: Date
-  ) : RegisterData(id = id, name = name)
+  ) : RegisterData(logicalId = logicalId, name = name)
 
   data class FamilyRegisterData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val birthDate: Date?,
     val gender: String?,
     val address: String? = null,
+    val lastSeen: String? = null,
     var members: MutableList<FamilyMemberRegisterData> = mutableListOf(),
     val services: List<CarePlan> = mutableListOf()
-  ) : RegisterData(id = id, name = name)
+  ) : RegisterData(logicalId = logicalId, name = name)
 
   data class FamilyMemberRegisterData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val birthDate: Date?,
@@ -61,19 +62,20 @@ sealed class RegisterData(open val id: String, open val name: String) {
     val pregnant: Boolean? = null,
     val deceased: Any? = null, // deceased can be boolean or datetime as well
     val services: MutableList<CarePlan> = mutableListOf()
-  ) : RegisterData(id = id, name = name) {
+  ) : RegisterData(logicalId = logicalId, name = name) {
     fun isDead() = deceased != null
     fun deathDate() = deceased?.let { if (it is Boolean) null else (it as Date) }
   }
 
   data class AncRegisterData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
+    val familyName: String? = null,
     val identifier: String? = null,
     val birthDate: Date? = null,
     val address: String? = null,
     val services: MutableList<CarePlan> = mutableListOf()
-  ) : RegisterData(id = id, name = name)
+  ) : RegisterData(logicalId = logicalId, name = name)
 
   fun addCollectionData(fieldName: String, data: Collection<Any>) {
     this::class.memberProperties.find { it.name == fieldName }?.let {

@@ -23,7 +23,7 @@ data class FeatureConfig(
   val feature: String,
   val active: Boolean,
   val settings: Map<String, String> = emptyMap(),
-  val target: AppTarget = AppTarget.CHW,
-  val healthModule: HealthModule = HealthModule.DEFAULT,
-  val useCases: List<String> = listOf()
+  val target: AppTarget? = null,
+  val healthModule: HealthModule? = null,
+  val useCases: List<String>? = null
 )

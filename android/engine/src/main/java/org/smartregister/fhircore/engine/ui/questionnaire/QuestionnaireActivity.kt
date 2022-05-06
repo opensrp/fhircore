@@ -72,11 +72,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   lateinit var questionnaireConfig: QuestionnaireConfig
+
   var questionnaireType = QuestionnaireType.DEFAULT
 
   protected lateinit var questionnaire: Questionnaire
+
   protected var clientIdentifier: String? = null
+
   lateinit var fragment: FhirCoreQuestionnaireFragment
+
   val parser = FhirContext.forR4Cached().newJsonParser()
 
   override fun onSaveInstanceState(outState: Bundle) {
@@ -96,7 +100,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     val loadProgress = showProgressAlert(this, R.string.loading)
 
-    lifecycleScope.launch {
+    // Initialises the lateinit variable questionnaireViewModel to prevent
+    // some init operations running on a separate thread and causing a crash
+    questionnaireViewModel.sharedPreferencesHelper
+
+    lifecycleScope.launch(dispatcherProvider.io()) {
       loadQuestionnaireAndConfig(formName)
 
       withContext(dispatcherProvider.io()) { questionnaireViewModel.libraryEvaluator.initialize() }
@@ -106,9 +114,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         renderFragment()
       }
 
-      updateViews()
-
-      fragment.whenStarted { withContext(dispatcherProvider.main()) { loadProgress.dismiss() } }
+      withContext(dispatcherProvider.main()) {
+        updateViews()
+        fragment.whenStarted { loadProgress.dismiss() }
+      }
     }
   }
 
@@ -123,7 +132,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (questionnaireType.isReadOnly() || questionnaire.experimental) {
         text = context.getString(R.string.done)
       } else if (questionnaireType.isEditMode()) {
-        text = getString(R.string.edit)
+        // setting the save button text from Questionnaire Config
+        text =
+          questionnaireConfig.saveButtonText
+            ?: getString(R.string.questionnaire_alert_submit_button_title)
       }
     }
 
@@ -216,7 +228,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       val loadProgress = showProgressAlert(this, R.string.loading)
 
-      lifecycleScope.launch {
+      lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
         loadQuestionnaireAndConfig(questionnaireConfig.identifier)
 
@@ -224,16 +236,17 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
         renderFragment()
 
-        updateViews()
-
-        loadProgress.dismiss()
+        withContext(dispatcherProvider.main()) {
+          updateViews()
+          loadProgress.dismiss()
+        }
       }
     } else {
       showToast(getString(R.string.error_saving_form))
     }
   }
 
-  fun showFormSubmissionConfirmAlert() {
+  open fun showFormSubmissionConfirmAlert() {
     if (questionnaire.experimental)
       showConfirmAlert(
         context = this,
@@ -282,10 +295,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     handleQuestionnaireResponse(questionnaireResponse)
 
-    questionnaireViewModel.extractionProgress.observe(
-      this,
-      { result -> onPostSave(result, questionnaireResponse) }
-    )
+    questionnaireViewModel.extractionProgress.observe(this) { result ->
+      onPostSave(result, questionnaireResponse)
+    }
   }
 
   fun onPostSave(result: Boolean, questionnaireResponse: QuestionnaireResponse) {
@@ -447,11 +459,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     } else {
       showConfirmAlert(
         this,
-        R.string.questionnaire_alert_back_pressed_message,
+        getDismissDialogMessage(),
         R.string.questionnaire_alert_back_pressed_title,
         { finish() },
         R.string.questionnaire_alert_back_pressed_button_title
       )
     }
   }
+
+  open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message
 }

@@ -29,19 +29,19 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
-// TODO convert to a sealed class to capture data for different health modules
-sealed class ProfileData(open val id: String, open val name: String) {
+sealed class ProfileData(open val logicalId: String, open val name: String) {
+
   data class RawProfileData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val module: String,
     val main: Pair<String, Resource>,
     internal val _details: MutableMap<String, List<Resource>> = mutableMapOf(),
     val details: Map<String, List<Resource>> = _details
-  ) : ProfileData(id = id, name = name)
+  ) : ProfileData(logicalId = logicalId, name = name)
 
   data class DefaultProfileData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val birthdate: Date,
@@ -57,21 +57,22 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val visits: List<Encounter> = listOf(),
     val forms: List<QuestionnaireConfig> = listOf(),
     val responses: List<QuestionnaireResponse> = listOf()
-  ) : ProfileData(id = id, name = name)
+  ) : ProfileData(logicalId = logicalId, name = name)
 
   data class FamilyProfileData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val address: String,
+    val birthdate: Date?,
     val head: FamilyMemberProfileData,
     val members: List<FamilyMemberProfileData>,
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf()
-  ) : ProfileData(id = id, name = name)
+  ) : ProfileData(logicalId = logicalId, name = name)
 
   data class FamilyMemberProfileData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
     val birthdate: Date?,
@@ -83,13 +84,13 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val flags: List<Flag> = listOf(),
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf()
-  ) : ProfileData(id = id, name = name)
+  ) : ProfileData(logicalId = logicalId, name = name)
 
   data class AncProfileData(
-    override val id: String,
+    override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
-    val age: String,
+    val birthdate: Date,
     val address: String,
     val visitStatus: VisitStatus,
     val conditions: List<Condition> = listOf(),
@@ -97,7 +98,7 @@ sealed class ProfileData(open val id: String, open val name: String) {
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf(),
     val visits: List<Encounter> = listOf()
-  ) : ProfileData(id = id, name = name)
+  ) : ProfileData(logicalId = logicalId, name = name)
 
   fun addCollectionData(fieldName: String, data: Collection<Any>) {
     this::class.memberProperties.find { it.name == fieldName }?.let {

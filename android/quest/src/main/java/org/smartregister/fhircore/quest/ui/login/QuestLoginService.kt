@@ -18,16 +18,21 @@ package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.ExperimentalMaterialApi
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 
-class QuestLoginService @Inject constructor(val appFeatureManager: AppFeatureManager) :
+class QuestLoginService
+@Inject
+constructor(val appFeatureManager: AppFeatureManager, val configService: ConfigService) :
   LoginService {
 
   override lateinit var loginActivity: AppCompatActivity
 
+  @OptIn(ExperimentalMaterialApi::class)
   override fun navigateToHome() {
     val intent =
       Intent(loginActivity, AppMainActivity::class.java).apply {
@@ -39,5 +44,8 @@ class QuestLoginService @Inject constructor(val appFeatureManager: AppFeatureMan
     }
 
     appFeatureManager.loadAndActivateFeatures()
+
+    // Schedule CarePlan generation job
+    configService.schedulePlan(loginActivity)
   }
 }

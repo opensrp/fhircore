@@ -32,18 +32,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
+import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
-import org.smartregister.fhircore.quest.navigation.NavigationScreen
-import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
@@ -136,13 +139,22 @@ constructor(
         paginateRegisterData(event.appFeatureName, event.healthModule)
       }
       is PatientRegisterEvent.RegisterNewClient ->
-        event.context.launchQuestionnaireActivity(registerViewConfiguration.registrationForm)
+        event.context.launchQuestionnaire<QuestionnaireActivity>(
+          registerViewConfiguration.registrationForm
+        )
       is PatientRegisterEvent.OpenProfile -> {
         val urlParams =
-          "?feature=${event.appFeatureName}&healthModule=${event.healthModule.name}&patientId=${event.patientId}"
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+            Pair(NavigationArg.HEALTH_MODULE, HealthModule.DEFAULT.name),
+            Pair(NavigationArg.PATIENT_ID, event.patientId)
+          )
         if (event.healthModule == HealthModule.FAMILY)
-          event.navController.navigate(route = NavigationScreen.FamilyProfile.route + urlParams)
-        else event.navController.navigate(route = NavigationScreen.PatientProfile.route + urlParams)
+          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
+        else
+          event.navController.navigate(
+            route = MainNavigationScreen.PatientProfile.route + urlParams
+          )
       }
     }
   }
@@ -153,7 +165,7 @@ constructor(
         pagingData: PagingData<RegisterViewData> ->
         pagingData.filter {
           it.title.contains(event.searchText, ignoreCase = true) ||
-            it.id.contentEquals(event.searchText, ignoreCase = true)
+            it.logicalId.contentEquals(event.searchText, ignoreCase = true)
         }
       }
   }

@@ -32,33 +32,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewData
+import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 @Composable
 fun PersonalData(
-  patientProfileViewData: PatientProfileViewData,
+  patientProfileViewData: ProfileViewData.PatientProfileViewData,
   modifier: Modifier = Modifier,
 ) {
   Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
     Column(modifier = modifier.padding(16.dp)) {
-      Text(text = patientProfileViewData.name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
       Text(
-        text = patientProfileViewData.status,
-        color = StatusTextColor,
+        text = patientProfileViewData.name,
+        fontWeight = FontWeight.Bold,
         fontSize = 18.sp,
-        modifier = modifier.padding(vertical = 10.dp)
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
       )
-      Text(
-        text = stringResource(R.string.id, patientProfileViewData.id),
-        color = StatusTextColor,
-        fontSize = 18.sp
-      )
+      if (patientProfileViewData.status != null) {
+        Text(
+          text = patientProfileViewData.status,
+          color = StatusTextColor,
+          fontSize = 18.sp,
+          modifier = modifier.padding(vertical = 10.dp)
+        )
+      }
+      if (patientProfileViewData.identifier != null) {
+        Text(
+          text = stringResource(R.string.id, patientProfileViewData.identifier),
+          color = StatusTextColor,
+          fontSize = 18.sp,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
+        )
+      }
       Spacer(modifier = modifier.height(16.dp))
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -85,13 +98,14 @@ private fun OtherDetailsItem(title: String, value: String, modifier: Modifier = 
 @Preview(showBackground = true)
 fun PersonalDataPreview() {
   val patientProfileData =
-    PatientProfileViewData(
+    ProfileViewData.PatientProfileViewData(
+      logicalId = "99358357",
       name = "Kim Panny",
       status = "Family Head",
-      id = "99358357",
       sex = "Female",
       age = "48y",
-      dob = "08 Dec"
+      dob = "08 Dec",
+      identifier = "123455"
     )
   PersonalData(patientProfileViewData = patientProfileData)
 }

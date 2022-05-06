@@ -29,5 +29,5 @@ interface RegisterDao {
 
   suspend fun countRegisterData(appFeatureName: String?): Long = 0
 
-  suspend fun loadProfileData(appFeatureName: String?, patientId: String): ProfileData? = null
+  suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? = null
 }

@@ -114,13 +114,20 @@
         {
           "name": "family",
           "valueDataRequirement": {
-            "type": "Patient",
+            "type": "Group",
             "codeFilter": [
               {
                 "searchParam": "_tag",
                 "code": {
                   "system": "https://www.snomed.org",
                   "code": "35359004"
+                }
+              },
+              {
+                "searchParam": "type",
+                "code": {
+                  "system": "http://hl7.org/fhir/group-type",
+                  "code": "person"
                 }
               },
               {
@@ -208,31 +215,18 @@
             "type": "Patient",
             "codeFilter": [
               {
-                "searchParam": "link",
+                "searchParam": "_id",
                 "extension": [
                   {
                     "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
                     "valueExpression": {
                       "language": "text/fhirpath",
-                      "expression": "%resource.id"
+                      "expression": "%context.reference"
                     }
                   }
                 ]
-              },
-              {
-                "searchParam": "active",
-                "code": {
-                  "code": "true"
-                }
               }
-            ],
-            "sort": [
-              {
-                "path": "name",
-                "direction": "ascending"
-              }
-            ],
-            "limit": 100
+            ]
           }
         },
         {

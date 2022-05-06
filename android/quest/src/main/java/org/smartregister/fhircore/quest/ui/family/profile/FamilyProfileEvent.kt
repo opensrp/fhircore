@@ -16,13 +16,27 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile
 
+import android.content.Context
+import androidx.navigation.NavHostController
+
 sealed class FamilyProfileEvent {
 
   object RoutineVisit : FamilyProfileEvent()
 
-  data class MemberClick(val patientId: String) : FamilyProfileEvent()
+  data class AddMember(val context: Context, val familyId: String?) : FamilyProfileEvent()
 
-  data class OpenTaskForm(val taskFormId: String) : FamilyProfileEvent()
+  data class OpenTaskForm(val context: Context, val taskFormId: String) : FamilyProfileEvent()
 
-  data class OverflowMenuClick(val menuId: String) : FamilyProfileEvent()
+  data class OpenMemberProfile(
+    val patientId: String,
+    val familyId: String? = null,
+    val navController: NavHostController
+  ) : FamilyProfileEvent()
+
+  data class OverflowMenuClick(val context: Context, val menuId: Int, val familyId: String?) :
+    FamilyProfileEvent()
+
+  data class FetchFamilyProfileData(val familyId: String?) : FamilyProfileEvent()
+
+  data class FetchMemberTasks(val patientId: String?) : FamilyProfileEvent()
 }

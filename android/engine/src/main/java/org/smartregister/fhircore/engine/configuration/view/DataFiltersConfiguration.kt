@@ -20,9 +20,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Extension
-import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.Configuration
 
 const val INIT_PERSION_EXPRESSION_EXTENSION_URL =
@@ -42,38 +40,15 @@ class DataFiltersConfiguration(
 
 @Stable
 @Serializable
-/** Only TokenClientParam supported as Register Primary Filter. */
+/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
 data class SearchFilter(
   val id: String = "",
   val key: String,
-  var valueCoding: Code? = null,
-  var valueReference: String? = null
+  val valueBoolean: Boolean? = null,
+  val valueCoding: Code? = null,
+  val valueReference: String? = null,
+  val valueString: String? = null
 )
-
-// TODO handle date-filter, value-set, multi-value code-filter
-fun DataRequirement.asSearchFilter(
-  fhirPathEngine: FHIRPathEngine,
-  contextData: Map<String, Any> = mapOf()
-) =
-  codeFilter.map {
-    // by definition path or searchParam are mutually exclusive
-    SearchFilter(key = it.path ?: it.searchParam).apply {
-      if (!it.hasCode() && it.extension.expressionExtension() == null)
-        throw UnsupportedOperationException(
-          "Either code or value expression for extension cqf-initiatingPerson should be specified"
-        )
-
-      if (it.hasCode()) valueCoding = it.codeFirstRep.asCode()
-      else
-        it.extension.expressionExtension()!!.run {
-          valueReference =
-            fhirPathEngine
-              .evaluate(contextData, null, null, null, this.castToExpression(this.value).expression)
-              .firstOrNull()
-              .toString()
-        }
-    }
-  }
 
 @Stable
 @Serializable

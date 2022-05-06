@@ -19,25 +19,22 @@ package org.smartregister.fhircore.quest.ui.main
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.lifecycleScope
-import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Date
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
 @AndroidEntryPoint
+@ExperimentalMaterialApi
 open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
@@ -57,18 +54,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       is State.Started -> {
         showToast(getString(R.string.syncing))
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(getString(R.string.syncing_initiated))
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_initiated))
         )
       }
       is State.InProgress -> {
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(getString(R.string.syncing_in_progress))
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
         )
       }
       is State.Glitch -> {
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(appMainViewModel.retrieveLastSyncTimestamp())
+          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
         )
         Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
       }
@@ -76,6 +73,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         showToast(getString(R.string.sync_failed))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
+            state,
             appMainViewModel.retrieveLastSyncTimestamp() ?: getString(R.string.syncing_failed)
           )
         )
@@ -86,6 +84,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
+              state,
               getString(
                 R.string.last_sync_timestamp,
                 formatLastSyncTimestamp(state.result.timestamp)
@@ -93,35 +92,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             )
           )
           updateLastSyncTimestamp(state.result.timestamp)
-
-          tempMethodToUpdatePeriodPlanWorkerAndFhirGen()
         }
       }
-    }
-  }
-
-  // TODO move to where required.. Elly
-  fun tempMethodToUpdatePeriodPlanWorkerAndFhirGen() {
-    Timber.e("Registering plan and task scheduler")
-    with(appMainViewModel.configService) {
-      if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
-        this.schedulePlan(this@AppMainActivity)
-      else this.unschedulePlan(this@AppMainActivity)
-    }
-
-    runBlocking {
-      fhirTaskGenerator.generateCarePlan(
-        "105121",
-        Patient().apply {
-          birthDate = Date().plusYears(-5)
-          id =
-            fhirTaskGenerator
-              .fhirEngine
-              .search<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
-              .last()
-              .id
-        }
-      )
     }
   }
 }

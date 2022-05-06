@@ -16,24 +16,38 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileUiState
+import androidx.compose.ui.unit.sp
+import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 @Composable
-fun FamilyProfileTopBar(uiState: FamilyProfileUiState, modifier: Modifier) {
-  Column(modifier = modifier.fillMaxWidth()) {
-    Text(text = uiState.familyName, color = Color.White, modifier = modifier.padding(top = 4.dp))
+fun FamilyProfileTopBar(
+  familyProfileViewData: ProfileViewData.FamilyProfileViewData,
+  modifier: Modifier
+) {
+  Column(
+    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary).padding(16.dp)
+  ) {
     Text(
-      text = "${uiState.houseNumber} ${uiState.villageTown}",
-      color = Color.LightGray.copy(alpha = 0.4f),
+      text = familyProfileViewData.name,
+      color = Color.White,
+      fontSize = 20.sp,
+      modifier = modifier.padding(top = 4.dp)
+    )
+    Text(
+      text = familyProfileViewData.address,
+      color = Color.LightGray.copy(alpha = 0.8f),
+      fontSize = 20.sp,
       modifier = modifier.padding(top = 4.dp)
     )
   }
@@ -43,9 +57,8 @@ fun FamilyProfileTopBar(uiState: FamilyProfileUiState, modifier: Modifier) {
 @Preview(showBackground = true)
 fun FamilyProfileTopBarPreview() {
   FamilyProfileTopBar(
-    uiState =
-      FamilyProfileUiState()
-        .copy(familyName = "William Odinga", houseNumber = "#4", villageTown = "Sugoi, Bondo"),
+    familyProfileViewData =
+      ProfileViewData.FamilyProfileViewData(name = "William Odinga", address = "#4 Sugoi, Bondo"),
     modifier = Modifier
   )
 }

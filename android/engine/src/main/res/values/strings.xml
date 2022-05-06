@@ -32,6 +32,7 @@
     <string name="already_fully_vaccinated">"Can not receive another dose. Already fully vaccinated"</string>
     <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="date_last_seen">Last seen %1$s</string>
+    <string name="date_last_visited">Last visited %1$s</string>
     <string name="str_save">Save</string>
     <string name="login_error">Login error: %1$s</string>
     <string name="str_next">NEXT</string>
@@ -134,7 +135,5 @@
     <string name="family_activity">Family activity</string>
     <string name="view_past_encounters">View past encounters</string>
     <string name="remove_family">Remove family</string>
-
     <string name="health_module_filters_not_configured">%1$s module data filters not configured</string>
-
 </resources>

@@ -16,12 +16,27 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile.model
 
+import java.util.Date
+
 data class FamilyMemberViewState(
   val patientId: String,
   val name: String,
   val gender: String,
+  val birthDate: Date? = null,
   val age: String,
   val statuses: List<String> = emptyList(),
+  val showAtRisk: Boolean = false,
+  val isDeceased: Boolean = false,
   val memberIcon: Int? = null,
   val memberTasks: List<FamilyMemberTask> = emptyList()
+)
+
+data class EligibleFamilyHeadMember(
+  val list: List<EligibleFamilyHeadMemberViewState>,
+  var reselect: Boolean = false
+)
+
+data class EligibleFamilyHeadMemberViewState(
+  val familyMember: FamilyMemberViewState,
+  var selected: Boolean = false
 )

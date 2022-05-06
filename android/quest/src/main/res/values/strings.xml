@@ -21,5 +21,62 @@
     <string name="menu_tasks">Tasks</string>
     <string name="household">Household</string>
     <string name="routine_visit">Routine visit</string>
+    <string name="anc_visit">ANC visit</string>
+    <string name="at_risk">At risk</string>
+    <string name="no_tasks">No tasks</string>
+    <string name="add_memeber">ADD MEMBER</string>
+    <string name="what_to_do">What do you want to do?</string>
+
+    <!--Overflow menu strings -->
+    <string name="view_profile">View profile</string>
+    <string name="family_details">Family details</string>
+    <string name="change_family_head">Change family head</string>
+    <string name="change_primary_caregiver">Change primary caregiver</string>
+    <string name="family_activity">Family activity</string>
+    <string name="view_past_encounters">View past encounters</string>
+    <string name="remove_family">Remove family</string>
+    <string name="family_suffix">%1$s Family</string>
+    <string name="remove_this_person">Remove this person</string>
+
+    <!-- SideMenu option strings-->
+    <string name="device_to_device_sync">Device to device sync</string>
+    <string name="anc_clients">ANC Clients</string>
+    <string name="all_clients">All Clients</string>
+    <string name="pnc_clients">PNC Clients</string>
+    <string name="family_planning_clients">Family Planning Clients</string>
+    <string name="households">Households</string>
+    <string name="children">Children</string>
+
+    <!--remove family questionnaire strings-->
+    <string name="remove_family_warning">Removing %1$s will remove their entire health record from your device. This action can’t be undone.</string>
+    <string name="confirm_remove_family_title">Remove Family</string>
+
+    <!--remove family member questionnaire strings-->
+    <string name="remove_family_member_warning">%1$s will be removed permanently from this family. This action can’t be undone.</string>
+    <string name="confirm_remove_family_member_title">Remove member</string>
+    <string name="remove_member">Remove member</string>
+
+    <!--Reporting strings -->
+    <string name="date_range">Date range</string>
+    <string name="change">Change</string>
+    <string name="all">All</string>
+    <string name="individual">Individual</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="patient">Patient</string>
+    <string name="generate_report">GENERATE REPORT</string>
+    <string name="select_patient">SELECT PATIENT</string>
+    <string name="start_date">Start date</string>
+    <string name="end_date">End date</string>
+    <string name="select_date">Select dates</string>
+
+
+    <!--Change family head strings -->
+    <string name="no_eligible_family_members">No eligible family members found for family head.</string>
+    <string name="label_select_new_head">Select a new family head</string>
+    <string name="label_assign_new_family_head">Assign new family head</string>
+    <string name="alert_message_abort_operation">Are you sure you want to abort this operation?</string>
+
+    <!-- Dialog alert messages-->
+    <string name="unsaved_changes_message_alert">If you leave before saving, your edits or changes will be lost</string>
 
 </resources>

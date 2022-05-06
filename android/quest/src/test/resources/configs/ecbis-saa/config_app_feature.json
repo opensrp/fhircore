@@ -52,7 +52,9 @@
     {
       "feature": "HouseHoldManagement",
       "active": true,
-      "settings": {},
+      "settings": {
+        "deactivateMembers": "true"
+      },
       "target": "CHW",
       "healthModule": "FAMILY",
       "useCases": [
@@ -61,6 +63,11 @@
         "HOUSEHOLD_VISITS",
         "REMOVE_HOUSEHOLD_MEMBER"
       ]
+    },
+    {
+      "feature": "DeviceToDeviceSync",
+      "settings": {},
+      "active": true
     }
   ]
 }

@@ -33,6 +33,14 @@ fun Search.filterByResourceTypeId(
   filter(reference, { value = "${resourceType.name}/$resourceId" })
 }
 
+fun Search.filterByResourceTypeId(
+  token: TokenClientParam,
+  resourceType: ResourceType,
+  resourceId: String
+) {
+  filter(token, { value = of("${resourceType.name}/$resourceId") })
+}
+
 fun Search.filterByPatientName(name: String?) {
   if (name?.isNotBlank() == true) {
     filter(

@@ -18,49 +18,83 @@ package org.smartregister.fhircore.quest.ui.patient.profile
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.patient.profile.model.PatientProfileViewData
-import org.smartregister.fhircore.quest.util.mappers.PatientProfileViewDataMapper
+import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
+import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
+import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
 @HiltViewModel
 class PatientProfileViewModel
 @Inject
 constructor(
+  val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
-  val patientProfileViewDataMapper: PatientProfileViewDataMapper
+  val profileViewDataMapper: ProfileViewDataMapper
 ) : ViewModel() {
 
-  val patientProfileViewData: MutableState<PatientProfileViewData> =
-    mutableStateOf(PatientProfileViewData())
+  val patientProfileUiState: MutableState<PatientProfileUiState> =
+    mutableStateOf(
+      PatientProfileUiState(
+        overflowMenuItems =
+          overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.PATIENT_PROFILE)
+      )
+    )
+
+  val patientProfileViewData: MutableState<ProfileViewData.PatientProfileViewData> =
+    mutableStateOf(ProfileViewData.PatientProfileViewData())
 
   fun fetchPatientProfileData(
     appFeatureName: String?,
     healthModule: HealthModule,
     patientId: String
   ) {
-    if (patientId.isNotEmpty())
+    if (patientId.isNotEmpty()) {
       viewModelScope.launch {
         patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
           ?.let {
             patientProfileViewData.value =
-              patientProfileViewDataMapper.transformInputToOutputModel(it)
+              profileViewDataMapper.transformInputToOutputModel(it) as
+                ProfileViewData.PatientProfileViewData
           }
       }
+    }
   }
 
   fun onEvent(event: PatientProfileEvent) =
     when (event) {
       is PatientProfileEvent.LoadQuestionnaire ->
-        event.context.launchQuestionnaireActivity(event.questionnaireId)
+        event.context.launchQuestionnaire<QuestionnaireActivity>(event.questionnaireId)
       is PatientProfileEvent.SeeAll -> {
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
+      is PatientProfileEvent.OverflowMenuClick -> {
+        when (event.menuId) {
+          R.id.remove_family_member -> {
+            event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
+              questionnaireId = REMOVE_FAMILY_FORM,
+              clientIdentifier = event.patientId,
+              bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
+            )
+          }
+          else -> {}
+        }
+      }
     }
+
+  companion object {
+    const val REMOVE_FAMILY_FORM = "remove-family"
+  }
 }

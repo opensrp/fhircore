@@ -32,29 +32,6 @@
         {
           "name": "anc",
           "valueDataRequirement": {
-            "type": "Condition",
-            "codeFilter": [
-              {
-                "searchParam": "code",
-                "code": {
-                  "system": "http://loinc.org",
-                  "code": "LA15173-0"
-                }
-              },
-              {
-                "searchParam": "clinical-status",
-                "code": {
-                  "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                  "code": "active"
-                }
-              }
-            ],
-            "limit": 20
-          }
-        },
-        {
-          "name": "patients",
-          "valueDataRequirement": {
             "type": "Patient",
             "codeFilter": [
               {
@@ -64,16 +41,37 @@
                     "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
                     "valueExpression": {
                       "language": "text/fhirpath",
-                      "expression": "%resource.subject.reference"
+                      "expression": "%context.value"
                     }
                   }
                 ]
               }
-            ],
-            "sort": [
+            ]
+          }
+        },
+        {
+          "name": "conditions",
+          "valueDataRequirement": {
+            "type": "Condition",
+            "codeFilter": [
               {
-                "path": "name",
-                "direction": "ascending"
+                "searchParam": "subject",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "%resource.id"
+                    }
+                  }
+                ]
+              },
+              {
+                "searchParam": "status",
+                "code": {
+                  "system": "http://hl7.org/fhir/ValueSet/condition-clinical",
+                  "code": "active"
+                }
               }
             ]
           }

@@ -45,8 +45,8 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.patient.dao.register.DefaultPatientRegisterDao
-import org.smartregister.fhircore.engine.data.local.patient.dao.register.anc.AncPatientRegisterDao
 import org.smartregister.fhircore.engine.data.local.patient.dao.register.family.FamilyRegisterDao
+import org.smartregister.fhircore.engine.data.local.register.dao.AncPatientRegisterDao
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.plusYears

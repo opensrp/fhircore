@@ -12,35 +12,42 @@
           "name": "id",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%patients.contained.first().id.value"
+            "expression": "$this.id.value"
           }
         },
         {
           "name": "name",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%patients.contained.first().select(name.given + ' ' + name.family)"
+            "expression": "$this.name.select(given + ' ' + family)"
           }
         },
         {
           "name": "identifier",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%patients.contained.first().identifier.first().value"
+            "expression": "$this.identifier.first().value"
           }
         },
         {
           "name": "birthDate",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%patients.contained.first().birthDate"
+            "expression": "$this.birthDate"
           }
         },
         {
           "name": "address",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%patients.contained.first().select(address.first().district + ', ' + address.first().city)"
+            "expression": "$this.address.first().select(district + ', ' + city)"
+          }
+        },
+        {
+          "name": "conditions",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%conditions.contained"
           }
         },
         {

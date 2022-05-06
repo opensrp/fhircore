@@ -18,9 +18,9 @@ package org.smartregister.fhircore.quest.data.patient
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import org.smartregister.fhircore.engine.data.local.patient.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
-import org.smartregister.fhircore.quest.ui.patient.register.model.RegisterViewData
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 /**
