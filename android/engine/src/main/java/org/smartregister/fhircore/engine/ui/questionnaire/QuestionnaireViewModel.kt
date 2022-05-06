@@ -201,27 +201,27 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
 
-        bundle.entry.forEach { bun ->
+        bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
-          if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
             if (questionnaireConfig.setOrganizationDetails) {
-              appendOrganizationInfo(bun.resource)
+              appendOrganizationInfo(bundleEntry.resource)
             }
             // if it is new registration set response subject
-            if (resourceId == null) questionnaireResponse.subject = bun.resource.asReference()
+            if (resourceId == null) questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
           if (questionnaireConfig.setPractitionerDetails) {
-            appendPractitionerInfo(bun.resource)
+            appendPractitionerInfo(bundleEntry.resource)
           }
 
-          if (questionnaireType != QuestionnaireType.EDIT && bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
+          if (questionnaireType != QuestionnaireType.EDIT && bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
             resourceId?.let {
-              appendPatientsAndRelatedPersonsToGroups(resource = bun.resource, resourceId = it)
+              appendPatientsAndRelatedPersonsToGroups(resource = bundleEntry.resource, resourceId = it)
             }
           }
 
-          if (bun.resource.resourceType.isIn(ResourceType.Patient)) {
-            generateCarePlanForUnder5(bun.resource as Patient)
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient)) {
+            generateCarePlanForUnder5(bundleEntry.resource as Patient)
           }
 
           // response MUST have subject by far otherwise flow has issues
@@ -231,14 +231,14 @@ constructor(
           // for edit mode replace client and resource subject ids.
           // Ideally ResourceMapper should allow this internally via structure-map
           if (questionnaireType.isEditMode()) {
-            if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
-              bun.resource.id = questionnaireResponse.subject.extractId()
+            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
+              bundleEntry.resource.id = questionnaireResponse.subject.extractId()
             else {
-              bun.resource.setPropertySafely("subject", questionnaireResponse.subject)
-              bun.resource.setPropertySafely("patient", questionnaireResponse.subject)
+              bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
+              bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
             }
           }
-          questionnaireResponse.contained.add(bun.resource)
+          questionnaireResponse.contained.add(bundleEntry.resource)
         }
 
         if (questionnaire.experimental) {
