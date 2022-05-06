@@ -148,10 +148,10 @@ fun FamilyProfileScreen(
             onFormClick = { taskFormId, taskId ->
               familyProfileViewModel.onEvent(
                 FamilyProfileEvent.OpenTaskForm(
-                  context,
-                  taskFormId,
-                  taskId!!,
-                  currentMemberPatientId
+                  context = context,
+                  taskFormId = taskFormId,
+                  taskId = taskId!!,
+                  patientId = currentMemberPatientId
                 )
               )
             },
@@ -162,9 +162,9 @@ fun FamilyProfileScreen(
               }
               familyProfileViewModel.onEvent(
                 FamilyProfileEvent.OpenMemberProfile(
-                  currentMemberPatientId,
-                  familyId,
-                  navController
+                  patientId = currentMemberPatientId,
+                  familyId = familyId,
+                  navController = navController
                 )
               )
             }
@@ -326,10 +326,10 @@ fun FamilyProfileScreen(
               onTaskClick = { taskFormId, taskId ->
                 familyProfileViewModel.onEvent(
                   FamilyProfileEvent.OpenTaskForm(
-                    context,
-                    taskFormId,
-                    taskId,
-                    memberViewState.patientId
+                    context = context,
+                    taskFormId = taskFormId,
+                    taskId = taskId,
+                    patientId = memberViewState.patientId
                   )
                 )
               }
