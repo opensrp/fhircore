@@ -23,13 +23,19 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.model.TaskStatus
 import org.smartregister.fhircore.engine.domain.util.DataMapper
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.ui.theme.OverdueColor
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberTask
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
+import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileRowItem
+import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
@@ -55,7 +61,18 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           identifier = inputModel.identifier,
           age = inputModel.age,
           sex = inputModel.gender.translateGender(context),
-          dob = inputModel.birthdate.formatDob()
+          dob = inputModel.birthdate.formatDob(),
+          tasks =
+            inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
+              PatientProfileRowItem(
+                title = it.description,
+                subtitle =
+                  context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
+                profileViewSection = PatientProfileViewSection.TASKS,
+                actionButtonColor = it.status.retrieveColorCode(),
+                actionButtonText = it.description
+              )
+            }
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(
@@ -72,11 +89,11 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 gender = memberProfileData.gender.translateGender(context),
                 name = memberProfileData.name,
                 memberTasks =
-                  memberProfileData.tasks.map {
+                  memberProfileData.tasks.take(DEFAULT_TASKS_COUNT).map {
                     FamilyMemberTask(
                       task = it.description,
-                      taskStatus = TaskStatus.DUE,
-                      colorCode = Color.Unspecified
+                      taskStatus = it.status,
+                      colorCode = it.status.retrieveColorCode()
                     )
                   }
               )
@@ -85,5 +102,17 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
     }
   }
 
+  private fun Task.TaskStatus.retrieveColorCode(): Color =
+    when (this) {
+      Task.TaskStatus.READY -> InfoColor
+      Task.TaskStatus.CANCELLED -> OverdueColor
+      Task.TaskStatus.FAILED -> OverdueColor
+      else -> DefaultColor
+    }
+
   private fun Date.formatDob(): String = simpleDateFormat.format(this)
+
+  companion object {
+    const val DEFAULT_TASKS_COUNT = 5 // TODO Configure tasks to display
+  }
 }

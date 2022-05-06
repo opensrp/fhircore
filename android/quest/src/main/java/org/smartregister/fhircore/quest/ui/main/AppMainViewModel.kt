@@ -17,10 +17,10 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,7 +45,6 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
-import org.smartregister.fhircore.quest.ui.shared.models.GlobalEventState
 import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
@@ -69,6 +68,8 @@ constructor(
 
   var applicationConfiguration: ApplicationConfiguration
     private set
+
+  val refreshDataState: MutableState<Boolean> = mutableStateOf(false)
 
   init {
     applicationConfiguration =
@@ -108,9 +109,7 @@ constructor(
           is State.Finished,
           is State.Failed -> {
             // Notify subscribers to refresh views after sync
-            if (EVENT_BUS.hasActiveObservers()) {
-              EVENT_BUS.postValue(GlobalEventState(refreshSync = true))
-            }
+            refreshDataState.value = true
             appMainUiState =
               appMainUiState.copy(
                 lastSyncTime = event.lastSyncTime ?: "",
@@ -147,10 +146,6 @@ constructor(
   }
 
   companion object {
-
-    // TODO: find better way for propagating events between components not sharing the same parent
-    val EVENT_BUS: MutableLiveData<GlobalEventState> = MutableLiveData(GlobalEventState())
-
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
     const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "hh:mm aa, MMM d"
     const val UTC = "UTC"

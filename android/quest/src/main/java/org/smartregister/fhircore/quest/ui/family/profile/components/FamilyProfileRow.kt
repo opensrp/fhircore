@@ -43,8 +43,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.TaskStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
@@ -125,8 +127,8 @@ fun FamilyProfileRow(
             onClick = { it.taskFormId?.let { taskFormId -> onTaskClick(taskFormId) } },
             colors =
               ButtonDefaults.buttonColors(
-                backgroundColor = it.colorCode.copy(alpha = 0.2f),
-                contentColor = it.colorCode,
+                backgroundColor = it.colorCode.copy(alpha = 0.1f),
+                contentColor = it.colorCode.copy(alpha = 0.8f),
               ),
             modifier = modifier.padding(vertical = 2.2.dp).fillMaxWidth()
           ) {
@@ -136,11 +138,13 @@ fun FamilyProfileRow(
             ) {
               Icon(
                 imageVector =
-                  if (it.taskStatus == TaskStatus.COMPLETED) Icons.Filled.Check
+                  if (it.taskStatus == Task.TaskStatus.COMPLETED) Icons.Filled.Check
                   else Icons.Filled.Add,
-                contentDescription = null
+                contentDescription = null,
+                tint =
+                  if (it.taskStatus == Task.TaskStatus.COMPLETED) SuccessColor else it.colorCode
               )
-              Text(text = it.task)
+              Text(text = it.task, color = it.colorCode.copy(alpha = 0.9f))
             }
           }
         }
@@ -235,19 +239,19 @@ private fun membersTasks() =
     FamilyMemberTask(
       taskFormId = "t12991",
       task = "Malaria Follow-up",
-      taskStatus = TaskStatus.COMPLETED,
-      colorCode = SuccessColor
+      taskStatus = Task.TaskStatus.COMPLETED,
+      colorCode = DefaultColor
     ),
     FamilyMemberTask(
       taskFormId = "t12991",
       task = "Bednet",
-      taskStatus = TaskStatus.OVERDUE,
+      taskStatus = Task.TaskStatus.FAILED,
       colorCode = DangerColor
     ),
     FamilyMemberTask(
       taskFormId = "t12991",
       task = "Family Planning",
-      taskStatus = TaskStatus.DUE,
+      taskStatus = Task.TaskStatus.READY,
       colorCode = InfoColor
     )
   )

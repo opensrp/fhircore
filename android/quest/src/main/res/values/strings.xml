@@ -78,5 +78,6 @@
 
     <!-- Dialog alert messages-->
     <string name="unsaved_changes_message_alert">If you leave before saving, your edits or changes will be lost</string>
+    <string name="due_on">Due on %1$s</string>
 
 </resources>

@@ -88,21 +88,24 @@ constructor(
 ) : ViewModel() {
   @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
 
+  val extractionProgress = MutableLiveData<Boolean>()
+
+  val extractionProgressMessage = MutableLiveData<String>()
+
+  var editQuestionnaireResponse: QuestionnaireResponse? = null
+
+  var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
+
+  private lateinit var questionnaireConfig: QuestionnaireConfig
+
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
   }
 
-  val extractionProgress = MutableLiveData<Boolean>()
-  val extractionProgressMessage = MutableLiveData<String>()
-
-  var editQuestionnaireResponse: QuestionnaireResponse? = null
-  private lateinit var questionnaireConfig: QuestionnaireConfig
-  var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
-
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (type.isReadOnly() || type.isEditMode()) {
-        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", type.isReadOnly())
+        item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
       }
 
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
@@ -436,12 +439,17 @@ constructor(
       ?.toInt()
   }
 
-  fun calculateDobFromAge(age: Int): Date {
-    val cal: Calendar = Calendar.getInstance()
-    // Subtract #age years from the calendar
-    cal.add(Calendar.YEAR, -age)
-    cal.set(Calendar.DAY_OF_YEAR, 1)
-    cal.set(Calendar.MONTH, 1)
-    return cal.time
+  /** Subtract [age] from today's date */
+  fun calculateDobFromAge(age: Int): Date =
+    Calendar.getInstance()
+      .apply {
+        add(Calendar.YEAR, -age)
+        set(Calendar.DAY_OF_YEAR, 1)
+        set(Calendar.MONTH, 1)
+      }
+      .time
+
+  companion object {
+    private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
   }
 }

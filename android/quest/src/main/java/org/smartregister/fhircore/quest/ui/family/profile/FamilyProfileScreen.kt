@@ -51,6 +51,8 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,11 +84,19 @@ fun FamilyProfileScreen(
   familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
+  refreshDataState: MutableState<Boolean>,
   familyProfileViewModel: FamilyProfileViewModel = hiltViewModel()
 ) {
+  val refreshDataStateValue by remember { refreshDataState }
 
-  LaunchedEffect(Unit) {
-    familyProfileViewModel.onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyId))
+  LaunchedEffect(Unit) { familyProfileViewModel.fetchFamilyProfileData(familyId) }
+
+  SideEffect {
+    // Refresh family profile data on resume
+    if (refreshDataStateValue) {
+      familyProfileViewModel.fetchFamilyProfileData(familyId)
+      refreshDataState.value = false
+    }
   }
 
   val viewState = familyProfileViewModel.familyProfileUiState.value
@@ -119,7 +129,7 @@ fun FamilyProfileScreen(
               coroutineScope.launch {
                 familyProfileViewModel.run {
                   changeFamilyHead(familyMember.patientId, familyId!!)
-                  onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyId))
+                  fetchFamilyProfileData(familyId)
                 }
                 if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
                   bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -137,6 +147,10 @@ fun FamilyProfileScreen(
               familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
             },
             onViewProfile = {
+              coroutineScope.launch {
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                  bottomSheetScaffoldState.bottomSheetState.collapse()
+              }
               familyProfileViewModel.onEvent(
                 FamilyProfileEvent.OpenMemberProfile(
                   currentMemberPatientId,

@@ -83,12 +83,12 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
 ) {
   this.startActivity(
     Intent(this, Q::class.java)
+      .putExtras(intentBundle)
       .putExtras(
         QuestionnaireActivity.intentArgs(
           clientIdentifier = clientIdentifier,
           formName = questionnaireId
         )
       )
-      .putExtras(intentBundle)
   )
 }

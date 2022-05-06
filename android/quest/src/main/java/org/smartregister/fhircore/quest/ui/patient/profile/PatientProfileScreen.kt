@@ -60,10 +60,10 @@ fun PatientProfileScreen(
   appFeatureName: String?,
   healthModule: HealthModule,
   patientId: String?,
+  familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  patientProfileViewModel: PatientProfileViewModel = hiltViewModel(),
-  familyId: String?
+  patientProfileViewModel: PatientProfileViewModel = hiltViewModel()
 ) {
 
   LaunchedEffect(Unit) {

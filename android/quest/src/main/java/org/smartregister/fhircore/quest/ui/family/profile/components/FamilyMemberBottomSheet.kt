@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -64,7 +66,7 @@ fun FamilyMemberBottomSheet(
   onViewProfile: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Column {
+  Column(modifier = modifier.verticalScroll(rememberScrollState())) {
 
     // Top section displays the name, gender and age for member
     Spacer(modifier = modifier.height(16.dp))
