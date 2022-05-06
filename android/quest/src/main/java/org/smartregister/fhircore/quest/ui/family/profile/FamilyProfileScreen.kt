@@ -68,8 +68,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.profile.components.ChangeFamilyHeadBottomSheet
@@ -143,8 +145,15 @@ fun FamilyProfileScreen(
             bottomSheetScaffoldState = bottomSheetScaffoldState,
             title = bottomSheetTitle,
             formButtonData = formButtonData,
-            onFormClick = { taskFormId ->
-              familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
+            onFormClick = { taskFormId, taskId ->
+              familyProfileViewModel.onEvent(
+                FamilyProfileEvent.OpenTaskForm(
+                  context,
+                  taskFormId,
+                  taskId!!,
+                  currentMemberPatientId
+                )
+              )
             },
             onViewProfile = {
               coroutineScope.launch {
@@ -303,6 +312,7 @@ fun FamilyProfileScreen(
                     FormButtonData(
                       questionnaire = it.task,
                       questionnaireId = it.taskFormId,
+                      backReference = it.taskId.asReference(ResourceType.Task),
                       color = it.colorCode
                     )
                   }
@@ -313,8 +323,15 @@ fun FamilyProfileScreen(
                   else bottomSheetScaffoldState.bottomSheetState.collapse()
                 }
               },
-              onTaskClick = { taskFormId ->
-                familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
+              onTaskClick = { taskFormId, taskId ->
+                familyProfileViewModel.onEvent(
+                  FamilyProfileEvent.OpenTaskForm(
+                    context,
+                    taskFormId,
+                    taskId,
+                    memberViewState.patientId
+                  )
+                )
               }
             )
             Divider()

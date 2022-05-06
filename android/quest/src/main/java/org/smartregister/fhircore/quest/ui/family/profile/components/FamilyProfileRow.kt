@@ -58,7 +58,7 @@ import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberView
 fun FamilyProfileRow(
   familyMemberViewState: FamilyMemberViewState,
   onFamilyMemberClick: (String) -> Unit,
-  onTaskClick: (String) -> Unit,
+  onTaskClick: (String, String) -> Unit,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -128,7 +128,7 @@ fun FamilyProfileRow(
           .take(3)
           .forEach {
             OutlinedButton(
-              onClick = { it.taskFormId?.let { taskFormId -> onTaskClick(taskFormId) } },
+              onClick = { it.taskFormId?.let { taskFormId -> onTaskClick(taskFormId, it.taskId) } },
               colors =
                 ButtonDefaults.buttonColors(
                   backgroundColor = it.colorCode.copy(alpha = 0.1f),
@@ -195,7 +195,7 @@ fun FamilyProfileRowPreviewWithAtRisk() {
         memberTasks = membersTasks()
       ),
     onFamilyMemberClick = {},
-    onTaskClick = {}
+    onTaskClick = { _, _ -> }
   )
 }
 
@@ -215,7 +215,7 @@ fun FamilyProfileRowPreviewWithoutAtRisk() {
         memberTasks = membersTasks().take(1)
       ),
     onFamilyMemberClick = {},
-    onTaskClick = {}
+    onTaskClick = { _, _ -> }
   )
 }
 
@@ -233,7 +233,7 @@ fun FamilyProfileRowPreviewWithNoTasks() {
         memberTasks = emptyList()
       ),
     onFamilyMemberClick = {},
-    onTaskClick = {}
+    onTaskClick = { _, _ -> }
   )
 }
 
@@ -241,18 +241,21 @@ fun FamilyProfileRowPreviewWithNoTasks() {
 private fun membersTasks() =
   listOf(
     FamilyMemberTask(
+      taskId = "1123",
       taskFormId = "t12991",
       task = "Malaria Follow-up",
       taskStatus = Task.TaskStatus.COMPLETED,
       colorCode = DefaultColor
     ),
     FamilyMemberTask(
+      taskId = "1124",
       taskFormId = "t12991",
       task = "Bednet",
       taskStatus = Task.TaskStatus.FAILED,
       colorCode = DangerColor
     ),
     FamilyMemberTask(
+      taskId = "1125",
       taskFormId = "t12991",
       task = "Family Planning",
       taskStatus = Task.TaskStatus.READY,

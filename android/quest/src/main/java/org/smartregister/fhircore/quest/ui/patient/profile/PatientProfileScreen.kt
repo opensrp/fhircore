@@ -149,7 +149,7 @@ fun PatientProfileScreen(
             profileViewData.forms.forEach {
               FormButton(
                 formButtonData = it,
-                onFormClick = { questionnaireId ->
+                onFormClick = { questionnaireId, _ ->
                   patientProfileViewModel.onEvent(
                     PatientProfileEvent.LoadQuestionnaire(questionnaireId, context)
                   )

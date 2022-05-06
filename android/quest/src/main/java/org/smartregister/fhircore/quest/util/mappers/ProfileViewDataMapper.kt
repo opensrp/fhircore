@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.util.mappers
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -96,6 +97,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                     .take(DEFAULT_TASKS_COUNT)
                     .map {
                       FamilyMemberTask(
+                        taskId = it.logicalId,
                         task = it.description,
                         taskStatus = it.status,
                         colorCode = it.status.retrieveColorCode(),
