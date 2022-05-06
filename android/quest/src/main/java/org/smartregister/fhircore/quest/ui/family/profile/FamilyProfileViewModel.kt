@@ -24,12 +24,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
@@ -87,7 +89,7 @@ constructor(
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,
-          backReference = event.taskId
+          backReference = event.taskId.asReference(ResourceType.Task).reference
         )
       is FamilyProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
