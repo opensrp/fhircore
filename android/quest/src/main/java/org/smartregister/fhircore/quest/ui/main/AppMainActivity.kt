@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -24,13 +26,19 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BACK_REFERENCE_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -120,5 +128,19 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         this.schedulePlan(this@AppMainActivity)
       else this.unschedulePlan(this@AppMainActivity)
     }
+  }
+
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+
+    if (resultCode == Activity.RESULT_OK)
+      data?.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
+        lifecycleScope.launch(Dispatchers.IO) {
+          when {
+            it.startsWith(ResourceType.Task.name) ->
+              fhirTaskGenerator.completeTask(it.asReference(ResourceType.Task).extractId())
+          }
+        }
+      }
   }
 }

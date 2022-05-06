@@ -95,3 +95,25 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
       )
   )
 }
+
+inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForResult(
+  questionnaireId: String,
+  clientIdentifier: String? = null,
+  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+  backReference: String? = null,
+  intentBundle: Bundle = Bundle.EMPTY
+) {
+  (this as Activity).startActivityForResult(
+    Intent(this, Q::class.java)
+      .putExtras(intentBundle)
+      .putExtras(
+        QuestionnaireActivity.intentArgs(
+          clientIdentifier = clientIdentifier,
+          formName = questionnaireId,
+          questionnaireType = questionnaireType,
+          backReference = backReference
+        )
+      ),
+    0
+  )
+}

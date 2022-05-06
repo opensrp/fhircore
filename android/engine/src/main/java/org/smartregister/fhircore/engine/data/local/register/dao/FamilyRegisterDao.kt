@@ -126,11 +126,12 @@ constructor(
           filters = getRegisterDataFilters(FAMILY_CARE_PLAN)
         ),
       tasks =
-        defaultRepository.searchResourceFor(
-          subjectId = family.logicalId,
-          subjectParam = Task.SUBJECT,
-          subjectType = ResourceType.Group
-        )
+        defaultRepository.searchResourceFor<Task>(
+            subjectId = family.logicalId,
+            subjectParam = Task.SUBJECT,
+            subjectType = ResourceType.Group
+          )
+          .let { it.sortedBy { it.executionPeriod.start.time } }
     )
   }
 
@@ -316,10 +317,11 @@ constructor(
 
   private suspend fun loadMemberTask(patientId: String) =
     defaultRepository.searchResourceFor<Task>(
-      subjectId = patientId,
-      subjectParam = Task.SUBJECT,
-      subjectType = ResourceType.Patient
-    )
+        subjectId = patientId,
+        subjectParam = Task.SUBJECT,
+        subjectType = ResourceType.Patient
+      )
+      .let { it.sortedBy { it.executionPeriod.start.time } }
 
   private fun Group.extractOfficialIdentifier(): String? =
     if (this.hasIdentifier())

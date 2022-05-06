@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.TaskStatus
 
 data class FamilyMemberTask(
+  val taskId: String,
   val taskFormId: String? = null,
   val task: String,
   val taskStatus: Task.TaskStatus,

@@ -58,7 +58,7 @@ import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberView
 fun FamilyProfileRow(
   familyMemberViewState: FamilyMemberViewState,
   onFamilyMemberClick: (String) -> Unit,
-  onTaskClick: (String) -> Unit,
+  onTaskClick: (String, String) -> Unit,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -122,32 +122,36 @@ fun FamilyProfileRow(
 
       // Display family members tasks
       Column(modifier = modifier.weight(0.4f)) {
-        familyMemberViewState.memberTasks.take(3).forEach {
-          OutlinedButton(
-            onClick = { it.taskFormId?.let { taskFormId -> onTaskClick(taskFormId) } },
-            colors =
-              ButtonDefaults.buttonColors(
-                backgroundColor = it.colorCode.copy(alpha = 0.1f),
-                contentColor = it.colorCode.copy(alpha = 0.8f),
-              ),
-            modifier = modifier.padding(vertical = 2.2.dp).fillMaxWidth()
-          ) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.Start
+        familyMemberViewState
+          .memberTasks
+          .filter { it.taskStatus == Task.TaskStatus.READY }
+          .take(3)
+          .forEach {
+            OutlinedButton(
+              onClick = { it.taskFormId?.let { taskFormId -> onTaskClick(taskFormId, it.taskId) } },
+              colors =
+                ButtonDefaults.buttonColors(
+                  backgroundColor = it.colorCode.copy(alpha = 0.1f),
+                  contentColor = it.colorCode.copy(alpha = 0.8f),
+                ),
+              modifier = modifier.padding(vertical = 2.2.dp).fillMaxWidth()
             ) {
-              Icon(
-                imageVector =
-                  if (it.taskStatus == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-                  else Icons.Filled.Add,
-                contentDescription = null,
-                tint =
-                  if (it.taskStatus == Task.TaskStatus.COMPLETED) SuccessColor else it.colorCode
-              )
-              Text(text = it.task, color = it.colorCode.copy(alpha = 0.9f))
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+              ) {
+                Icon(
+                  imageVector =
+                    if (it.taskStatus == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+                    else Icons.Filled.Add,
+                  contentDescription = null,
+                  tint =
+                    if (it.taskStatus == Task.TaskStatus.COMPLETED) SuccessColor else it.colorCode
+                )
+                Text(text = it.task, color = it.colorCode.copy(alpha = 0.9f))
+              }
             }
           }
-        }
       }
     }
   }
@@ -191,7 +195,7 @@ fun FamilyProfileRowPreviewWithAtRisk() {
         memberTasks = membersTasks()
       ),
     onFamilyMemberClick = {},
-    onTaskClick = {}
+    onTaskClick = { _, _ -> }
   )
 }
 
@@ -211,7 +215,7 @@ fun FamilyProfileRowPreviewWithoutAtRisk() {
         memberTasks = membersTasks().take(1)
       ),
     onFamilyMemberClick = {},
-    onTaskClick = {}
+    onTaskClick = { _, _ -> }
   )
 }
 
@@ -229,7 +233,7 @@ fun FamilyProfileRowPreviewWithNoTasks() {
         memberTasks = emptyList()
       ),
     onFamilyMemberClick = {},
-    onTaskClick = {}
+    onTaskClick = { _, _ -> }
   )
 }
 
@@ -237,18 +241,21 @@ fun FamilyProfileRowPreviewWithNoTasks() {
 private fun membersTasks() =
   listOf(
     FamilyMemberTask(
+      taskId = "1123",
       taskFormId = "t12991",
       task = "Malaria Follow-up",
       taskStatus = Task.TaskStatus.COMPLETED,
       colorCode = DefaultColor
     ),
     FamilyMemberTask(
+      taskId = "1124",
       taskFormId = "t12991",
       task = "Bednet",
       taskStatus = Task.TaskStatus.FAILED,
       colorCode = DangerColor
     ),
     FamilyMemberTask(
+      taskId = "1125",
       taskFormId = "t12991",
       task = "Family Planning",
       taskStatus = Task.TaskStatus.READY,
