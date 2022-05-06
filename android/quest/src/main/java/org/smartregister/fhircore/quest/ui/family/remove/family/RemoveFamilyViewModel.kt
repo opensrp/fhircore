@@ -55,35 +55,7 @@ constructor(
   override fun remove(profileId: String, familyId: String?) {
     viewModelScope.launch {
       try {
-        repository.loadResource<Group>(profileId)?.let { family ->
-          if (!family.active) throw IllegalStateException("Family already deleted")
-          family
-            .managingEntity
-            ?.let { reference ->
-              repository.searchResourceFor<RelatedPerson>(
-                token = RelatedPerson.RES_ID,
-                subjectType = ResourceType.RelatedPerson,
-                subjectId = reference.extractId()
-              )
-            }
-            ?.firstOrNull()
-            ?.let { relatedPerson -> repository.delete(relatedPerson) }
-          family.managingEntity = null
-          isDeactivateMembers.let {
-            if (it) {
-              family.member.map { member ->
-                repository.loadResource<Patient>(member.entity.extractId())?.let { patient ->
-                  patient.active = false
-                  repository.addOrUpdate(patient)
-                }
-              }
-            }
-          }
-          family.member.clear()
-          family.active = false
-
-          repository.addOrUpdate(family)
-        }
+        repository.registerDaoFactory.familyRegisterDao.removeFamily(profileId, isDeactivateMembers)
         isRemoved.postValue(true)
       } catch (e: Exception) {
         Timber.e(e)

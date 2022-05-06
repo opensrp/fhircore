@@ -46,24 +46,7 @@ constructor(
   override fun remove(profileId: String, familyId: String?) {
     viewModelScope.launch {
       try {
-        repository.loadResource<Patient>(profileId)?.let { patient ->
-          if (!patient.active) throw IllegalStateException("Patient already deleted")
-          patient.active = false
-
-          if (familyId != null) {
-            repository.loadResource<Group>(familyId)?.let { family ->
-              family.member.run {
-                remove(this.find { it.entity.reference == "Patient/${patient.logicalId}" })
-              }
-
-              // TODO update managing entity when removing a member who is the family head
-              if ((family.managingEntity.resource as RelatedPerson).patient.id == patient.id) {
-                family.managingEntity = null
-              }
-            }
-          }
-          repository.addOrUpdate(patient)
-        }
+        repository.registerDaoFactory.familyRegisterDao.removeFamilyMember(profileId, familyId)
         isRemoved.postValue(true)
       } catch (e: Exception) {
         Timber.e(e)
@@ -72,23 +55,4 @@ constructor(
     }
   }
 
-  private suspend fun loadFamilyHead(family: Group) =
-    family.managingEntity?.let { reference ->
-      repository
-        .searchResourceFor<RelatedPerson>(
-          token = RelatedPerson.RES_ID,
-          subjectType = ResourceType.RelatedPerson,
-          subjectId = reference.extractId()
-        )
-        .firstOrNull()
-        ?.let { relatedPerson ->
-          repository
-            .searchResourceFor<Patient>(
-              token = Patient.RES_ID,
-              subjectType = ResourceType.Patient,
-              subjectId = relatedPerson.patient.extractId()
-            )
-            .firstOrNull()
-        }
-    }
 }
