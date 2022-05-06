@@ -57,7 +57,7 @@ fun MainScreen(
   val navController = rememberNavController()
   val scope = rememberCoroutineScope()
   val scaffoldState = rememberScaffoldState()
-  val uiState: AppMainUiState = appMainViewModel.appMainUiState
+  val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
   val openDrawer: (Boolean) -> Unit = { open: Boolean ->
     scope.launch {
       if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()

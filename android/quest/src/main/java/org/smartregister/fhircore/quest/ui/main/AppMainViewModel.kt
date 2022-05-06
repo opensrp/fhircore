@@ -61,20 +61,17 @@ constructor(
   val appFeatureManager: AppFeatureManager
 ) : ViewModel() {
 
-  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
-
-  var appMainUiState by mutableStateOf(appMainUiStateOf())
-    private set
-
-  var applicationConfiguration: ApplicationConfiguration
-    private set
+  val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
 
   val refreshDataState: MutableState<Boolean> = mutableStateOf(false)
 
-  init {
-    applicationConfiguration =
-      configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
-    appMainUiState =
+  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+
+  private val applicationConfiguration: ApplicationConfiguration =
+    configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+
+  fun retrieveAppMainUiState() {
+    appMainUiState.value =
       appMainUiStateOf(
         appTitle = applicationConfiguration.applicationName,
         currentLanguage = loadCurrentLanguage(),
@@ -99,8 +96,10 @@ constructor(
       }
       AppMainEvent.SyncData -> {
         syncBroadcaster.runSync()
-        appMainUiState =
-          appMainUiState.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
+        appMainUiState.value =
+          appMainUiState.value.copy(
+            sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions()
+          )
       }
       is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
       is AppMainEvent.UpdateSyncState -> {
@@ -110,13 +109,15 @@ constructor(
           is State.Failed -> {
             // Notify subscribers to refresh views after sync
             refreshDataState.value = true
-            appMainUiState =
-              appMainUiState.copy(
+            appMainUiState.value =
+              appMainUiState.value.copy(
                 lastSyncTime = event.lastSyncTime ?: "",
                 sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions()
               )
           }
-          else -> appMainUiState = appMainUiState.copy(lastSyncTime = event.lastSyncTime ?: "")
+          else ->
+            appMainUiState.value =
+              appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
     }
