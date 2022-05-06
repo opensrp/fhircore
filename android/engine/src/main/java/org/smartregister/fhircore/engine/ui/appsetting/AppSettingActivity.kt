@@ -81,12 +81,11 @@ class AppSettingActivity : AppCompatActivity() {
 
     with(appSettingViewModel) {
       this.fetchConfigs.observe(this@AppSettingActivity) {
-        if (it == true) {
-          if (appId.value?.isNotBlank() == true)
-            lifecycleScope.launch(dispatcherProvider.io()) {
-              fetchConfigurations(appId.value!!, this@AppSettingActivity)
-            }
-        } else {
+        if (it == true && appId.value?.isNotBlank() == true)
+          lifecycleScope.launch(dispatcherProvider.io()) {
+            fetchConfigurations(appId.value!!, this@AppSettingActivity)
+          }
+        else {
           loadConfigurations(true)
         }
       }
