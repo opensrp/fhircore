@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
@@ -93,7 +94,11 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                     FamilyMemberTask(
                       task = it.description,
                       taskStatus = it.status,
-                      colorCode = it.status.retrieveColorCode()
+                      colorCode = it.status.retrieveColorCode(),
+                      taskFormId =
+                        if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                          it.reasonReference.extractId()
+                        else null
                     )
                   }
               )

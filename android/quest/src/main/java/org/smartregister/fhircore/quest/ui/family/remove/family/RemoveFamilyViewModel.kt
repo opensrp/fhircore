@@ -21,13 +21,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.RelatedPerson
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
-import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.quest.ui.family.remove.BaseRemoveFamilyEntityViewModel
 import timber.log.Timber
 

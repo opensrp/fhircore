@@ -20,12 +20,12 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskGenerator
@@ -39,7 +39,10 @@ import timber.log.Timber
 open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
   @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
+
+  @Inject lateinit var configService: ConfigService
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
@@ -80,10 +83,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
             state,
-            appMainViewModel.retrieveLastSyncTimestamp() ?: getString(R.string.syncing_failed)
+            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
+              getString(R.string.last_sync_timestamp, appMainViewModel.retrieveLastSyncTimestamp())
+            else getString(R.string.syncing_failed)
           )
         )
         Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
+        scheduleFhirTaskStatusUpdater()
       }
       is State.Finished -> {
         showToast(getString(R.string.sync_completed))
@@ -99,7 +105,17 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           )
           updateLastSyncTimestamp(state.result.timestamp)
         }
+        scheduleFhirTaskStatusUpdater()
       }
+    }
+  }
+
+  private fun scheduleFhirTaskStatusUpdater() {
+    // TODO use sharedpref to save the state
+    with(configService) {
+      if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
+        this.schedulePlan(this@AppMainActivity)
+      else this.unschedulePlan(this@AppMainActivity)
     }
   }
 }
