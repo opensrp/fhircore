@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -300,7 +301,7 @@ constructor(
         }
     }
 
-    launchLoginScreen()
+    launchScreen(AppSettingActivity::class.java)
   }
 
   val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
