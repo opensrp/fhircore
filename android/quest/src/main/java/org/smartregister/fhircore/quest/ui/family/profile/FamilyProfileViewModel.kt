@@ -58,7 +58,7 @@ constructor(
     mutableStateOf(
       FamilyProfileUiState(
         overflowMenuItems =
-          overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.FAMILY_PROFILE)
+          overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)
       )
     )
 
