@@ -37,11 +37,13 @@ class AppFeatureManager @Inject constructor(val configurationRegistry: Configura
   fun activatedFeatures(): List<FeatureConfig> =
     _appFeatureConfig?.appFeatures?.filter { it.active } ?: emptyList()
 
-  fun activeRegisterFeatures() =
-    activatedFeatures().filter {
+  fun activeRegisterFeatures(): List<FeatureConfig> {
+    loadAndActivateFeatures()
+    return activatedFeatures().filter {
       it.feature.equals(AppFeature.PatientManagement.name, true) ||
         it.feature.equals(AppFeature.HouseholdManagement.name, true)
     }
+  }
 
   fun isFeatureActive(appFeature: AppFeature) =
     activatedFeatures().find { appFeature.name.equals(it.feature, true) } != null
