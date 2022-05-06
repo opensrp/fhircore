@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
@@ -85,6 +86,12 @@ constructor(
         event.context.launchQuestionnaire<QuestionnaireActivity>(event.taskFormId)
       is FamilyProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
+          R.id.family_details ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = FAMILY_REGISTRATION_FORM,
+              clientIdentifier = event.familyId,
+              questionnaireType = QuestionnaireType.EDIT
+            )
           R.id.remove_family ->
             event.context.launchQuestionnaire<RemoveFamilyQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
@@ -138,5 +145,6 @@ constructor(
   companion object {
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
     const val REMOVE_FAMILY_FORM = "remove-family"
+    const val FAMILY_REGISTRATION_FORM = "family-registration"
   }
 }

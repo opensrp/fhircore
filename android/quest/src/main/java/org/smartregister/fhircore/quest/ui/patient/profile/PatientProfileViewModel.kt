@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -82,11 +83,18 @@ constructor(
       }
       is PatientProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
+          R.id.individual_details -> {
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.EDIT
+            )
+          }
           R.id.remove_family_member -> {
             event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
               clientIdentifier = event.patientId,
-              bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
+              intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
             )
           }
           else -> {}
@@ -96,5 +104,6 @@ constructor(
 
   companion object {
     const val REMOVE_FAMILY_FORM = "remove-family"
+    const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
   }
 }

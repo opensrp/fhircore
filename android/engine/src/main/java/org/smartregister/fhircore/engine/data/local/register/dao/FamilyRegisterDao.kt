@@ -115,12 +115,10 @@ constructor(
       age = familyHead?.extractAge() ?: "",
       head = familyHead?.let { loadFamilyMemberProfileData(familyHead.logicalId) },
       members =
-        family.member?.mapNotNull { member ->
-          loadFamilyMemberProfileData(
-            defaultRepository.loadResource<Patient>(member.entity.extractId())!!.logicalId
-          )
-        }
-          ?: listOf(),
+      family.member?.filter { it.hasEntity() && it.entity.hasReference() }?.mapNotNull {
+        loadFamilyMemberProfileData(it.entity.extractId())
+      }
+        ?: listOf(),
       services =
         defaultRepository.searchResourceFor(
           subjectId = family.logicalId,
@@ -280,7 +278,7 @@ constructor(
   }
 
   private suspend fun loadFamilyMemberProfileData(memberId: String): FamilyMemberProfileData? =
-    defaultRepository.loadResource<Patient>(memberId)!!.let { patient ->
+    defaultRepository.loadResource<Patient>(memberId)?.let { patient ->
       if (!patient.active) return null
       val conditions = loadMemberCondition(patient.logicalId)
       val carePlans = loadMemberCarePlan(patient.logicalId)
