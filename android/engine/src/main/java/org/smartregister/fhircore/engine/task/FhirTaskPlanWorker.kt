@@ -22,12 +22,13 @@ import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.search.search
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.hasStarted
 import org.smartregister.fhircore.engine.util.extension.isLastTask
+import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
 class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters) :
@@ -43,24 +44,30 @@ class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters
       .search<Task> {
         filter(
           Task.STATUS,
-          { value = of(Task.TaskStatus.REQUESTED.let { Coding(it.system, it.toCode(), null) }) },
-          { value = of(Task.TaskStatus.READY.let { Coding(it.system, it.toCode(), null) }) },
-          { value = of(Task.TaskStatus.ACCEPTED.let { Coding(it.system, it.toCode(), null) }) },
-          { value = of(Task.TaskStatus.INPROGRESS.let { Coding(it.system, it.toCode(), null) }) },
-          { value = of(Task.TaskStatus.RECEIVED.let { Coding(it.system, it.toCode(), null) }) },
+          { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
+          { value = of(Task.TaskStatus.READY.toCoding()) },
+          { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
+          { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
+          { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
         )
       }
       .forEach { task ->
         if (task.hasPastEnd()) {
           task.status = Task.TaskStatus.FAILED
           fhirEngine.save(task)
-          task.reasonReference.extractId().takeIf { it.isNotBlank() }?.let {
-            val carePlan = fhirEngine.load(CarePlan::class.java, it)
-            if (carePlan.isLastTask(task)) {
-              carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-              fhirEngine.save(carePlan)
+          task
+            .basedOn
+            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
+            ?.extractId()
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+              1234
+              val carePlan = fhirEngine.load(CarePlan::class.java, it)
+              if (carePlan.isLastTask(task)) {
+                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+                fhirEngine.save(carePlan)
+              }
             }
-          }
         } else if (task.hasStarted()) {
           task.status = Task.TaskStatus.READY
           fhirEngine.save(task)

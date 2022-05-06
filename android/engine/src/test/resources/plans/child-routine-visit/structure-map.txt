@@ -89,7 +89,7 @@ group ExtractTasks(
                task.priority = 'routine',
                task.description = 'Child Routine  visit Task',
                task.for = create('Reference') as ref, ref.reference = evaluate(src, $this.id),
-               task.reasonReference = reference(careplan),
+               task.basedOn = reference(careplan),
                task.authoredOn = evaluate(src, now()),
                task.requester = evaluate(src, $this.generalPractitioner.first()),
                task.owner = evaluate(src, $this.generalPractitioner.first()) "r_task_data";
