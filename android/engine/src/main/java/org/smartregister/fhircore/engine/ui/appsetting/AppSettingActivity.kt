@@ -30,9 +30,11 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -43,6 +45,7 @@ class AppSettingActivity : AppCompatActivity() {
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+  @Inject lateinit var loginService: LoginService
 
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
@@ -50,6 +53,7 @@ class AppSettingActivity : AppCompatActivity() {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
 
+    val isLoggedIn = sharedPreferencesHelper.read(IS_LOGGED_IN, false)
     appSettingViewModel.loadConfigs.observe(this) { loadConfigs ->
       if (loadConfigs == true) {
         val applicationId = appSettingViewModel.appId.value!!
@@ -57,7 +61,12 @@ class AppSettingActivity : AppCompatActivity() {
           configurationRegistry.loadConfigurations(applicationId) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
               sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
-              accountAuthenticator.launchLoginScreen()
+              if (!isLoggedIn) {
+                accountAuthenticator.launchLoginScreen()
+              } else {
+                loginService.loginActivity = this@AppSettingActivity
+                loginService.navigateToHome()
+              }
               finish()
             } else {
               showToast(
@@ -72,11 +81,14 @@ class AppSettingActivity : AppCompatActivity() {
 
     with(appSettingViewModel) {
       this.fetchConfigs.observe(this@AppSettingActivity) {
-        val viewModel = this
-        if (it == true && this.appId.value?.isNotBlank() == true)
-          lifecycleScope.launch(dispatcherProvider.io()) {
-            viewModel.fetchConfigurations(viewModel.appId.value!!, this@AppSettingActivity)
-          }
+        if (it == true) {
+          if (appId.value?.isNotBlank() == true)
+            lifecycleScope.launch(dispatcherProvider.io()) {
+              fetchConfigurations(appId.value!!, this@AppSettingActivity)
+            }
+        } else {
+          loadConfigurations(true)
+        }
       }
     }
 
@@ -105,7 +117,7 @@ class AppSettingActivity : AppCompatActivity() {
     lastAppId?.let {
       with(appSettingViewModel) {
         onApplicationIdChanged(it)
-        fetchConfigurations(true)
+        fetchConfigurations(!isLoggedIn)
       }
     }
       ?: run {

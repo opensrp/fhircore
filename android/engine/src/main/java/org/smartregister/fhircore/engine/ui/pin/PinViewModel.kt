@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -122,6 +123,7 @@ constructor(
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
       _showError.postValue(false)
       secureSharedPreference.saveSessionPin(newPin)
+      sharedPreferences.write(IS_LOGGED_IN, true)
       _navigateToHome.postValue(true)
     } else {
       _showError.postValue(true)
@@ -136,6 +138,7 @@ constructor(
       showError.value = !pinMatched
       _pin.postValue(newPin)
       if (pinMatched && !isSetupPage) {
+        sharedPreferences.write(IS_LOGGED_IN, true)
         _navigateToHome.value = true
       }
     } else {
