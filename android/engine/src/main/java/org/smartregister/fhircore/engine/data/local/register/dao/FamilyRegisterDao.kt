@@ -115,10 +115,10 @@ constructor(
       age = familyHead?.extractAge() ?: "",
       head = familyHead?.let { loadFamilyMemberProfileData(familyHead.logicalId) },
       members =
-      family.member?.filter { it.hasEntity() && it.entity.hasReference() }?.mapNotNull {
-        loadFamilyMemberProfileData(it.entity.extractId())
-      }
-        ?: listOf(),
+        family.member?.filter { it.hasEntity() && it.entity.hasReference() }?.mapNotNull {
+          loadFamilyMemberProfileData(it.entity.extractId())
+        }
+          ?: listOf(),
       services =
         defaultRepository.searchResourceFor(
           subjectId = family.logicalId,

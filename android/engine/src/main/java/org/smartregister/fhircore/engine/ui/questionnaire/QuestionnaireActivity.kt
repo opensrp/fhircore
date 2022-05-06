@@ -330,6 +330,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       Intent().apply {
         putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(parcelResponse))
         putExtra(QUESTIONNAIRE_ARG_FORM, questionnaire.logicalId)
+        putExtra(
+          QUESTIONNAIRE_BACK_REFERENCE_KEY,
+          intent.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)
+        )
       }
     )
     finish()
@@ -434,6 +438,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
     const val QUESTIONNAIRE_ARG_TYPE = "questionnaire-type"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
+    const val QUESTIONNAIRE_BACK_REFERENCE_KEY = "questionnaire-back-reference"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
@@ -447,12 +452,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       formName: String,
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
+      backReference: String? = null,
       populationResources: ArrayList<Resource> = ArrayList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, formName),
-        Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name)
+        Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
+        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)
       )
         .apply {
           questionnaireResponse?.let {

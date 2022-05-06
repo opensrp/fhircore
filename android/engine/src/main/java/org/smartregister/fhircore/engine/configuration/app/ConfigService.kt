@@ -78,7 +78,7 @@ interface ConfigService {
       .enqueueUniquePeriodicWork(
         FhirTaskPlanWorker.WORK_ID,
         ExistingPeriodicWorkPolicy.REPLACE,
-        PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(1, TimeUnit.MINUTES).build()
+        PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
       )
   }
 

@@ -211,15 +211,24 @@ constructor(
               appendOrganizationInfo(bundleEntry.resource)
             }
             // if it is new registration set response subject
-            if (resourceId == null) questionnaireResponse.subject = bundleEntry.resource.asReference()
+            if (resourceId == null)
+              questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
           }
 
-          if (questionnaireType != QuestionnaireType.EDIT && bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
+          if (questionnaireType != QuestionnaireType.EDIT &&
+              bundleEntry.resource.resourceType.isIn(
+                ResourceType.Patient,
+                ResourceType.RelatedPerson
+              )
+          ) {
             resourceId?.let {
-              appendPatientsAndRelatedPersonsToGroups(resource = bundleEntry.resource, resourceId = it)
+              appendPatientsAndRelatedPersonsToGroups(
+                resource = bundleEntry.resource,
+                resourceId = it
+              )
             }
           }
 
