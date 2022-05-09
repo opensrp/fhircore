@@ -93,24 +93,28 @@ private fun PatientProfileSectionPreview() {
     Column {
       ProfileActionableItem(
         PatientProfileRowItem(
+          id = "1",
           title = "ANC",
           titleIcon = R.drawable.ic_pregnant,
           subtitle = "due date",
           profileViewSection = PatientProfileViewSection.TASKS,
           actionButtonColor = InfoColor,
           actionButtonText = "ANC visit"
-        )
+        ),
+        onActionClick = { _, _ -> }
       )
       Divider()
       ProfileActionableItem(
         PatientProfileRowItem(
+          id = "2",
           title = "Sick",
           titleIcon = R.drawable.ic_pregnant,
           subtitle = "due date",
           profileViewSection = PatientProfileViewSection.TASKS,
           actionButtonColor = OverdueColor,
           actionButtonText = "Malaria medicine"
-        )
+        ),
+        onActionClick = { _, _ -> }
       )
     }
   }
