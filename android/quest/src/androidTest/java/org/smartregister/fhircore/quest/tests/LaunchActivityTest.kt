@@ -20,10 +20,10 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
-import org.junit.After
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
+import androidx.test.espresso.Espresso
+import androidx.test.espresso.action.ViewActions
+import androidx.test.espresso.matcher.ViewMatchers
+import org.junit.*
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 
 class LaunchActivityTest {
@@ -40,18 +40,16 @@ class LaunchActivityTest {
     composeTestRule.onNodeWithText("Enter Application ID").performTextInput("quest")
     composeTestRule.onNodeWithText("LOAD CONFIGURATIONS").performClick()
     Thread.sleep(15000)
-    //composeTestRule.waitForIdle()
-  }
-  @After
-  fun tearDown() {
-    scenario.close()
+    composeTestRule.waitForIdle()
   }
 
   @Test
   fun successfulLogin() {
-    composeTestRule.onNodeWithText("Enter username").performTextInput("demo")
+    Thread.sleep(5000)
+    composeTestRule.onNodeWithText("Enter username").performTextInput("ecbis")
     composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
     composeTestRule.onNodeWithText("LOGIN").performClick()
-    Thread.sleep(35000)
+    Thread.sleep(5000)
   }
+
 }
