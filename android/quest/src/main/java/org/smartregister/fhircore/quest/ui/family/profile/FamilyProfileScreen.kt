@@ -51,6 +51,8 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,8 +68,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.profile.components.ChangeFamilyHeadBottomSheet
@@ -82,11 +86,19 @@ fun FamilyProfileScreen(
   familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
+  refreshDataState: MutableState<Boolean>,
   familyProfileViewModel: FamilyProfileViewModel = hiltViewModel()
 ) {
+  val refreshDataStateValue by remember { refreshDataState }
 
-  LaunchedEffect(Unit) {
-    familyProfileViewModel.onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyId))
+  LaunchedEffect(Unit) { familyProfileViewModel.fetchFamilyProfileData(familyId) }
+
+  SideEffect {
+    // Refresh family profile data on resume
+    if (refreshDataStateValue) {
+      familyProfileViewModel.fetchFamilyProfileData(familyId)
+      refreshDataState.value = false
+    }
   }
 
   val viewState = familyProfileViewModel.familyProfileUiState.value
@@ -119,7 +131,7 @@ fun FamilyProfileScreen(
               coroutineScope.launch {
                 familyProfileViewModel.run {
                   changeFamilyHead(familyMember.patientId, familyId!!)
-                  onEvent(FamilyProfileEvent.FetchFamilyProfileData(familyId))
+                  fetchFamilyProfileData(familyId)
                 }
                 if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
                   bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -133,15 +145,26 @@ fun FamilyProfileScreen(
             bottomSheetScaffoldState = bottomSheetScaffoldState,
             title = bottomSheetTitle,
             formButtonData = formButtonData,
-            onFormClick = { taskFormId ->
-              familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
+            onFormClick = { taskFormId, taskId ->
+              familyProfileViewModel.onEvent(
+                FamilyProfileEvent.OpenTaskForm(
+                  context = context,
+                  taskFormId = taskFormId,
+                  taskId = taskId!!,
+                  patientId = currentMemberPatientId
+                )
+              )
             },
             onViewProfile = {
+              coroutineScope.launch {
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                  bottomSheetScaffoldState.bottomSheetState.collapse()
+              }
               familyProfileViewModel.onEvent(
                 FamilyProfileEvent.OpenMemberProfile(
-                  currentMemberPatientId,
-                  familyId,
-                  navController
+                  patientId = currentMemberPatientId,
+                  familyId = familyId,
+                  navController = navController
                 )
               )
             }
@@ -289,6 +312,7 @@ fun FamilyProfileScreen(
                     FormButtonData(
                       questionnaire = it.task,
                       questionnaireId = it.taskFormId,
+                      backReference = it.taskId.asReference(ResourceType.Task),
                       color = it.colorCode
                     )
                   }
@@ -299,8 +323,15 @@ fun FamilyProfileScreen(
                   else bottomSheetScaffoldState.bottomSheetState.collapse()
                 }
               },
-              onTaskClick = { taskFormId ->
-                familyProfileViewModel.onEvent(FamilyProfileEvent.OpenTaskForm(context, taskFormId))
+              onTaskClick = { taskFormId, taskId ->
+                familyProfileViewModel.onEvent(
+                  FamilyProfileEvent.OpenTaskForm(
+                    context = context,
+                    taskFormId = taskFormId,
+                    taskId = taskId,
+                    patientId = memberViewState.patientId
+                  )
+                )
               }
             )
             Divider()

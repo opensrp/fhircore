@@ -17,11 +17,13 @@
 package org.smartregister.fhircore.quest.ui.family.profile.model
 
 import androidx.compose.ui.graphics.Color
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.TaskStatus
 
 data class FamilyMemberTask(
+  val taskId: String,
   val taskFormId: String? = null,
   val task: String,
-  val taskStatus: TaskStatus,
+  val taskStatus: Task.TaskStatus,
   val colorCode: Color,
 )

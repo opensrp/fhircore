@@ -37,7 +37,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.FhirConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.task.PlanWorker
+import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import timber.log.Timber
 
 /**
@@ -76,14 +76,14 @@ interface ConfigService {
   fun schedulePlan(context: Context) {
     WorkManager.getInstance(context)
       .enqueueUniquePeriodicWork(
-        PlanWorker.WORK_ID,
+        FhirTaskPlanWorker.WORK_ID,
         ExistingPeriodicWorkPolicy.REPLACE,
-        PeriodicWorkRequestBuilder<PlanWorker>(1, TimeUnit.MINUTES).build()
+        PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
       )
   }
 
   fun unschedulePlan(context: Context) {
-    WorkManager.getInstance(context).cancelUniqueWork(PlanWorker.WORK_ID)
+    WorkManager.getInstance(context).cancelUniqueWork(FhirTaskPlanWorker.WORK_ID)
   }
 
   fun loadRegistrySyncParams(

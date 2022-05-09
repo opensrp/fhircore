@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import timber.log.Timber
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
@@ -79,16 +80,40 @@ fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
 inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   questionnaireId: String,
   clientIdentifier: String? = null,
+  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
   intentBundle: Bundle = Bundle.EMPTY
 ) {
   this.startActivity(
     Intent(this, Q::class.java)
+      .putExtras(intentBundle)
       .putExtras(
         QuestionnaireActivity.intentArgs(
           clientIdentifier = clientIdentifier,
-          formName = questionnaireId
+          formName = questionnaireId,
+          questionnaireType = questionnaireType
         )
       )
+  )
+}
+
+inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForResult(
+  questionnaireId: String,
+  clientIdentifier: String? = null,
+  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+  backReference: String? = null,
+  intentBundle: Bundle = Bundle.EMPTY
+) {
+  (this as Activity).startActivityForResult(
+    Intent(this, Q::class.java)
       .putExtras(intentBundle)
+      .putExtras(
+        QuestionnaireActivity.intentArgs(
+          clientIdentifier = clientIdentifier,
+          formName = questionnaireId,
+          questionnaireType = questionnaireType,
+          backReference = backReference
+        )
+      ),
+    0
   )
 }

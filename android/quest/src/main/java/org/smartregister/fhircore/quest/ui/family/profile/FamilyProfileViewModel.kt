@@ -24,12 +24,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -56,7 +60,7 @@ constructor(
     mutableStateOf(
       FamilyProfileUiState(
         overflowMenuItems =
-          overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.FAMILY_PROFILE)
+          overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)
       )
     )
 
@@ -70,11 +74,11 @@ constructor(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
           clientIdentifier = event.familyId
         )
-      is FamilyProfileEvent.FetchFamilyProfileData -> fetchFamilyProfileData(event.familyId)
       is FamilyProfileEvent.OpenMemberProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+            // TODO depending on client type, use relevant health module to load the correct content
             Pair(NavigationArg.HEALTH_MODULE, HealthModule.DEFAULT.name),
             Pair(NavigationArg.PATIENT_ID, event.patientId),
             Pair(NavigationArg.FAMILY_ID, event.familyId)
@@ -82,9 +86,19 @@ constructor(
         event.navController.navigate(route = MainNavigationScreen.PatientProfile.route + urlParams)
       }
       is FamilyProfileEvent.OpenTaskForm ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(event.taskFormId)
+        event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
+          questionnaireId = event.taskFormId,
+          clientIdentifier = event.patientId,
+          backReference = event.taskId.asReference(ResourceType.Task).reference
+        )
       is FamilyProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
+          R.id.family_details ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = FAMILY_REGISTRATION_FORM,
+              clientIdentifier = event.familyId,
+              questionnaireType = QuestionnaireType.EDIT
+            )
           R.id.remove_family ->
             event.context.launchQuestionnaire<RemoveFamilyQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
@@ -101,13 +115,13 @@ constructor(
     }
   }
 
-  private fun fetchFamilyProfileData(patientId: String?) {
+  fun fetchFamilyProfileData(familyId: String?) {
     viewModelScope.launch(dispatcherProvider.io()) {
-      if (!patientId.isNullOrEmpty()) {
+      if (!familyId.isNullOrEmpty()) {
         patientRegisterRepository.loadPatientProfileData(
             AppFeature.HouseholdManagement.name,
             HealthModule.FAMILY,
-            patientId
+            familyId
           )
           ?.let {
             familyMemberProfileData.value =
@@ -138,5 +152,6 @@ constructor(
   companion object {
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
     const val REMOVE_FAMILY_FORM = "remove-family"
+    const val FAMILY_REGISTRATION_FORM = "family-registration"
   }
 }

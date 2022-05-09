@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.databinding.FragmentPatientDetailsBinding
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventQuestionnaireActivity
+import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventQuestionnaireActivity.Companion.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.eir.util.ADVERSE_EVENT_FORM
 import org.smartregister.fhircore.eir.util.EirConfigClassification
@@ -148,11 +149,14 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
         setSingleChoiceItems(list.toTypedArray(), -1) { dialog: DialogInterface, position: Int ->
           startActivity(
             Intent(requireContext(), AdverseEventQuestionnaireActivity::class.java)
+              .putExtra(
+                ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY,
+                immunizationAdverseEventItem.immunizationIds[position]
+              )
               .putExtras(
                 QuestionnaireActivity.intentArgs(
                   clientIdentifier = patientId,
                   formName = ADVERSE_EVENT_FORM,
-                  immunizationId = immunizationAdverseEventItem.immunizationIds[position]
                 )
               )
           )

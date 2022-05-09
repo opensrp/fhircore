@@ -57,7 +57,7 @@ fun MainScreen(
   val navController = rememberNavController()
   val scope = rememberCoroutineScope()
   val scaffoldState = rememberScaffoldState()
-  val uiState: AppMainUiState = appMainViewModel.appMainUiState
+  val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
   val openDrawer: (Boolean) -> Unit = { open: Boolean ->
     scope.launch {
       if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -95,7 +95,8 @@ fun MainScreen(
         navController = navController,
         mainNavigationScreens = MainNavigationScreen.appScreens,
         openDrawer = openDrawer,
-        sideMenuOptions = uiState.sideMenuOptions
+        sideMenuOptions = uiState.sideMenuOptions,
+        appMainViewModel = appMainViewModel
       )
     }
   }
@@ -107,7 +108,8 @@ private fun AppMainNavigationGraph(
   mainNavigationScreens: List<MainNavigationScreen>,
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
-  measureReportViewModel: MeasureReportViewModel = hiltViewModel()
+  measureReportViewModel: MeasureReportViewModel = hiltViewModel(),
+  appMainViewModel: AppMainViewModel
 ) {
 
   val firstSideMenuOption = sideMenuOptions.first()
@@ -149,7 +151,8 @@ private fun AppMainNavigationGraph(
               openDrawer = openDrawer,
               appFeatureName = appFeatureName,
               healthModule = healthModule,
-              screenTitle = screenTitle
+              screenTitle = screenTitle,
+              refreshDataState = appMainViewModel.refreshDataState
             )
           }
         MainNavigationScreen.Tasks -> composable(MainNavigationScreen.Tasks.route) {}
@@ -180,7 +183,11 @@ private fun AppMainNavigationGraph(
             arguments = commonNavArgs.plus(patientIdNavArgument())
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
-            FamilyProfileScreen(patientId, navController)
+            FamilyProfileScreen(
+              familyId = patientId,
+              navController = navController,
+              refreshDataState = appMainViewModel.refreshDataState
+            )
           }
       }
     }

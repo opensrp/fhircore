@@ -60,10 +60,10 @@ fun PatientProfileScreen(
   appFeatureName: String?,
   healthModule: HealthModule,
   patientId: String?,
+  familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  patientProfileViewModel: PatientProfileViewModel = hiltViewModel(),
-  familyId: String?
+  patientProfileViewModel: PatientProfileViewModel = hiltViewModel()
 ) {
 
   LaunchedEffect(Unit) {
@@ -149,7 +149,7 @@ fun PatientProfileScreen(
             profileViewData.forms.forEach {
               FormButton(
                 formButtonData = it,
-                onFormClick = { questionnaireId ->
+                onFormClick = { questionnaireId, _ ->
                   patientProfileViewModel.onEvent(
                     PatientProfileEvent.LoadQuestionnaire(questionnaireId, context)
                   )

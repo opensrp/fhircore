@@ -89,7 +89,6 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
         filterByResourceTypeId(subjectParam, subjectType, subjectId)
-
         filters.forEach { filterBy(it) }
       }
     }

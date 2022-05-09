@@ -22,9 +22,6 @@ import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.task.FhirTaskGenerator
@@ -56,23 +53,6 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         questJsonSpecificationProvider.getJson()
       )
     configureViews(registerViewConfiguration)
-
-    with(registerViewModel.configService) {
-      if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
-        this.schedulePlan(this@PatientRegisterActivity)
-      else this.unschedulePlan(this@PatientRegisterActivity)
-    }
-
-    // TODO move to where required.. Elly
-    runBlocking {
-      fhirTaskGenerator.generateCarePlan(
-        "105121",
-        Patient().apply {
-          birthDate = DateTimeType.now().value
-          id = "327378278"
-        }
-      )
-    }
   }
 
   override fun onBottomNavigationOptionItemSelected(

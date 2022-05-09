@@ -38,18 +38,23 @@ constructor(
   val defaultRepository: DefaultRepository
 ) : ViewModel() {
 
+  val rememberApp: MutableLiveData<Boolean?> = MutableLiveData(null)
+
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
+
   val fetchConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   private val _appId = MutableLiveData("")
   val appId
     get() = _appId
 
-  val rememberApp: MutableLiveData<Boolean?> = MutableLiveData(null)
-
   private val _showProgressBar = MutableLiveData(false)
   val showProgressBar
     get() = _showProgressBar
+
+  private val _error = MutableLiveData("")
+  val error: LiveData<String>
+    get() = _error
 
   fun onApplicationIdChanged(appId: String) {
     _appId.value = appId
@@ -58,10 +63,6 @@ constructor(
   fun onRememberAppChecked(rememberMe: Boolean) {
     rememberApp.postValue(rememberMe)
   }
-
-  private val _error = MutableLiveData("")
-  val error: LiveData<String>
-    get() = _error
 
   fun loadConfigurations(loadConfigs: Boolean) {
     this.loadConfigs.postValue(loadConfigs)

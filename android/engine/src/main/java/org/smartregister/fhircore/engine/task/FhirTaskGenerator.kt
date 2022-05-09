@@ -17,11 +17,13 @@
 package org.smartregister.fhircore.engine.task
 
 import com.google.android.fhir.FhirEngine
+import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -49,5 +51,14 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
       }
       .also { it.entry.forEach { fhirEngine.save(it.resource) } }
       .also { Timber.i(it.encodeResourceToString()) }
+  }
+
+  suspend fun completeTask(id: String) {
+    fhirEngine.load(Task::class.java, id).apply {
+      this.status = Task.TaskStatus.COMPLETED
+      this.lastModified = Date()
+
+      fhirEngine.save(this)
+    }
   }
 }

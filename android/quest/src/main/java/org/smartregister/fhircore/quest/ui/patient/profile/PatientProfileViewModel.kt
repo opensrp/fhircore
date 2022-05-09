@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -48,8 +49,7 @@ constructor(
   val patientProfileUiState: MutableState<PatientProfileUiState> =
     mutableStateOf(
       PatientProfileUiState(
-        overflowMenuItems =
-          overflowMenuFactory.overflowMenuMap.getValue(OverflowMenuHost.PATIENT_PROFILE)
+        overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.PATIENT_PROFILE)
       )
     )
 
@@ -68,6 +68,7 @@ constructor(
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
                 ProfileViewData.PatientProfileViewData
+            // TODO only display some overflow menu items when certain conditions are met
           }
       }
     }
@@ -82,13 +83,24 @@ constructor(
       }
       is PatientProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
-          R.id.remove_family_member -> {
+          R.id.individual_details ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.EDIT
+            )
+          R.id.remove_family_member ->
             event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
               clientIdentifier = event.patientId,
-              bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
+              intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
             )
-          }
+          R.id.record_as_anc ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = ANC_ENROLLMENT_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
           else -> {}
         }
       }
@@ -96,5 +108,7 @@ constructor(
 
   companion object {
     const val REMOVE_FAMILY_FORM = "remove-family"
+    const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
+    const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
   }
 }

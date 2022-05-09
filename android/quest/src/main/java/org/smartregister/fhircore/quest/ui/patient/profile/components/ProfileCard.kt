@@ -78,7 +78,7 @@ fun ProfileCard(
     Card(
       elevation = 5.dp,
       modifier = modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp)).padding(16.dp)
-    ) { body() }
+    ) { Column { body() } }
   }
 }
 

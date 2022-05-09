@@ -115,10 +115,8 @@ constructor(
       age = familyHead?.extractAge() ?: "",
       head = familyHead?.let { loadFamilyMemberProfileData(familyHead.logicalId) },
       members =
-        family.member?.mapNotNull { member ->
-          loadFamilyMemberProfileData(
-            defaultRepository.loadResource<Patient>(member.entity.extractId())!!.logicalId
-          )
+        family.member?.filter { it.hasEntity() && it.entity.hasReference() }?.mapNotNull {
+          loadFamilyMemberProfileData(it.entity.extractId())
         }
           ?: listOf(),
       services =
@@ -128,11 +126,12 @@ constructor(
           filters = getRegisterDataFilters(FAMILY_CARE_PLAN)
         ),
       tasks =
-        defaultRepository.searchResourceFor(
-          subjectId = family.logicalId,
-          subjectParam = Task.SUBJECT,
-          subjectType = ResourceType.Group
-        )
+        defaultRepository.searchResourceFor<Task>(
+            subjectId = family.logicalId,
+            subjectParam = Task.SUBJECT,
+            subjectType = ResourceType.Group
+          )
+          .let { it.sortedBy { it.executionPeriod.start.time } }
     )
   }
 
@@ -193,6 +192,70 @@ constructor(
     fhirEngine.update(family)
   }
 
+  suspend fun removeFamily(familyId: String, isDeactivateMembers: Boolean?) {
+    defaultRepository.loadResource<Group>(familyId)?.let { family ->
+      if (!family.active) throw IllegalStateException("Family already deleted")
+      family
+        .managingEntity
+        ?.let { reference ->
+          defaultRepository.searchResourceFor<RelatedPerson>(
+            token = RelatedPerson.RES_ID,
+            subjectType = ResourceType.RelatedPerson,
+            subjectId = reference.extractId()
+          )
+        }
+        ?.firstOrNull()
+        ?.let { relatedPerson -> defaultRepository.delete(relatedPerson) }
+      family.managingEntity = null
+      isDeactivateMembers?.let {
+        if (it) {
+          family.member.map { member ->
+            defaultRepository.loadResource<Patient>(member.entity.extractId())?.let { patient ->
+              patient.active = false
+              defaultRepository.addOrUpdate(patient)
+            }
+          }
+        }
+      }
+      family.member.clear()
+      family.active = false
+
+      defaultRepository.addOrUpdate(family)
+    }
+  }
+
+  suspend fun removeFamilyMember(patientId: String, familyId: String?) {
+    defaultRepository.loadResource<Patient>(patientId)?.let { patient ->
+      if (!patient.active) throw IllegalStateException("Patient already deleted")
+      patient.active = false
+
+      if (familyId != null) {
+        defaultRepository.loadResource<Group>(familyId)?.let { family ->
+          family.member.run {
+            remove(this.find { it.entity.reference == "Patient/${patient.logicalId}" })
+          }
+          family
+            .managingEntity
+            ?.let { reference ->
+              defaultRepository.searchResourceFor<RelatedPerson>(
+                token = RelatedPerson.RES_ID,
+                subjectType = ResourceType.RelatedPerson,
+                subjectId = reference.extractId()
+              )
+            }
+            ?.firstOrNull()
+            ?.let { relatedPerson ->
+              if (relatedPerson.patient.id == patientId) {
+                defaultRepository.delete(relatedPerson)
+                family.managingEntity = null
+              }
+            }
+        }
+      }
+      defaultRepository.addOrUpdate(patient)
+    }
+  }
+
   private suspend fun loadFamilyMemberRegisterData(
     memberId: String
   ): RegisterData.FamilyMemberRegisterData? {
@@ -216,7 +279,7 @@ constructor(
   }
 
   private suspend fun loadFamilyMemberProfileData(memberId: String): FamilyMemberProfileData? =
-    defaultRepository.loadResource<Patient>(memberId)!!.let { patient ->
+    defaultRepository.loadResource<Patient>(memberId)?.let { patient ->
       if (!patient.active) return null
       val conditions = loadMemberCondition(patient.logicalId)
       val carePlans = loadMemberCarePlan(patient.logicalId)
@@ -254,10 +317,11 @@ constructor(
 
   private suspend fun loadMemberTask(patientId: String) =
     defaultRepository.searchResourceFor<Task>(
-      subjectId = patientId,
-      subjectParam = Task.SUBJECT,
-      subjectType = ResourceType.Patient
-    )
+        subjectId = patientId,
+        subjectParam = Task.SUBJECT,
+        subjectType = ResourceType.Patient
+      )
+      .let { it.sortedBy { it.executionPeriod.start.time } }
 
   private fun Group.extractOfficialIdentifier(): String? =
     if (this.hasIdentifier())

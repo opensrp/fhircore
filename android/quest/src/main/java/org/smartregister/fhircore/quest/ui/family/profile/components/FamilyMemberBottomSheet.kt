@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -60,11 +62,11 @@ fun FamilyMemberBottomSheet(
   bottomSheetScaffoldState: BottomSheetScaffoldState,
   title: String,
   formButtonData: List<FormButtonData>,
-  onFormClick: (String) -> Unit,
+  onFormClick: (String, String?) -> Unit,
   onViewProfile: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Column {
+  Column(modifier = modifier.verticalScroll(rememberScrollState())) {
 
     // Top section displays the name, gender and age for member
     Spacer(modifier = modifier.height(16.dp))
@@ -103,8 +105,8 @@ fun FamilyMemberBottomSheet(
       formButtonData.forEach {
         FormButton(
           formButtonData = it,
-          onFormClick = { questionnaireId ->
-            if (it.questionnaireId != null) onFormClick(questionnaireId)
+          onFormClick = { questionnaireId, taskId ->
+            if (it.questionnaireId != null) onFormClick(questionnaireId, taskId)
           }
         )
       }
@@ -134,7 +136,7 @@ private fun FamilyMemberBottomSheetWithoutFormDataPreview() {
     bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     title = "John Doe, M, 35y",
     formButtonData = emptyList(),
-    onFormClick = { /*Do nothing*/},
+    onFormClick = { _, _ -> /*Do nothing*/ },
     onViewProfile = { /*Do nothing*/}
   )
 }
@@ -148,11 +150,11 @@ private fun FamilyMemberBottomSheetWithFormDataPreview() {
     title = "John Doe, M, 35y",
     formButtonData =
       listOf(
-        FormButtonData("Issue bednet", "12344", OverdueColor),
-        FormButtonData("Sick child", "12345", OverdueColor),
+        FormButtonData("Issue bednet", "12344", null, OverdueColor),
+        FormButtonData("Sick child", "12345", null, OverdueColor),
         FormButtonData("Pregnancy visit", "12008")
       ),
-    onFormClick = { /*Do nothing*/},
+    onFormClick = { _, _ -> /*Do nothing*/ },
     onViewProfile = { /*Do nothing*/}
   )
 }

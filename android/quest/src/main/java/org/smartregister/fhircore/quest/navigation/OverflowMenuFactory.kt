@@ -22,8 +22,20 @@ import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.quest.R
 
 class OverflowMenuFactory @Inject constructor() {
-  val overflowMenuMap: Map<OverflowMenuHost, List<OverflowMenuItem>> by lazy {
-    OverflowMenuHost.values().associate { Pair(it, it.overflowMenuItems) }
+  private val overflowMenuMap: Map<OverflowMenuHost, MutableList<OverflowMenuItem>> by lazy {
+    OverflowMenuHost.values().associate { Pair(it, it.overflowMenuItems.toMutableList()) }
+  }
+
+  /** Retrieve [overflowMenuHost]. Remove any menu ids that satisfy the [conditions] */
+  fun retrieveOverflowMenuItems(
+    overflowMenuHost: OverflowMenuHost,
+    conditions: List<Pair<Int, Boolean>> = emptyList()
+  ): MutableList<OverflowMenuItem> {
+    val overflowMenuItems = overflowMenuMap.getValue(overflowMenuHost)
+    conditions.forEach { conditionPair: Pair<Int, Boolean> ->
+      overflowMenuItems.removeIf { it.id == conditionPair.first && conditionPair.second }
+    }
+    return overflowMenuItems
   }
 }
 
@@ -45,6 +57,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
   ),
   PATIENT_PROFILE(
     listOf(
+      OverflowMenuItem(R.id.individual_details, R.string.individual_details),
+      OverflowMenuItem(R.id.record_as_anc, R.string.record_as_anc),
       OverflowMenuItem(
         id = R.id.remove_family_member,
         titleResource = R.string.remove_this_person,

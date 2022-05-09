@@ -30,9 +30,11 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -43,6 +45,7 @@ class AppSettingActivity : AppCompatActivity() {
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+  @Inject lateinit var loginService: LoginService
 
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
@@ -50,6 +53,7 @@ class AppSettingActivity : AppCompatActivity() {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
 
+    val isLoggedIn = sharedPreferencesHelper.read(IS_LOGGED_IN, false)
     appSettingViewModel.loadConfigs.observe(this) { loadConfigs ->
       if (loadConfigs == true) {
         val applicationId = appSettingViewModel.appId.value!!
@@ -57,7 +61,12 @@ class AppSettingActivity : AppCompatActivity() {
           configurationRegistry.loadConfigurations(applicationId) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
               sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
-              accountAuthenticator.launchLoginScreen()
+              if (!isLoggedIn) {
+                accountAuthenticator.launchLoginScreen()
+              } else {
+                loginService.loginActivity = this@AppSettingActivity
+                loginService.navigateToHome()
+              }
               finish()
             } else {
               showToast(
@@ -72,21 +81,18 @@ class AppSettingActivity : AppCompatActivity() {
 
     with(appSettingViewModel) {
       this.fetchConfigs.observe(this@AppSettingActivity) {
-        val viewModel = this
-        if (it == true && this.appId.value?.isNotBlank() == true)
+        if (it == true && !appId.value.isNullOrEmpty()) {
           lifecycleScope.launch(dispatcherProvider.io()) {
-            viewModel.fetchConfigurations(viewModel.appId.value!!, this@AppSettingActivity)
+            fetchConfigurations(appId.value!!, this@AppSettingActivity)
           }
+        } else if (it == false) {
+          loadConfigurations(true)
+        }
       }
     }
 
     appSettingViewModel.error.observe(this) {
       if (it.isNotBlank()) showToast(getString(R.string.error_loading_config, it))
-
-      // load configs despite error from local db in case it's not first time setup
-      sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.let {
-        appSettingViewModel.loadConfigurations(true)
-      }
     }
 
     /* Todo: Enhancement remember appId by explicitly opting to via a checkbox
@@ -108,8 +114,10 @@ class AppSettingActivity : AppCompatActivity() {
 
     val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
     lastAppId?.let {
-      appSettingViewModel.onApplicationIdChanged(it)
-      appSettingViewModel.fetchConfigurations(true)
+      with(appSettingViewModel) {
+        onApplicationIdChanged(it)
+        fetchConfigurations(!isLoggedIn)
+      }
     }
       ?: run {
         setContent {

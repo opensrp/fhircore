@@ -88,21 +88,24 @@ constructor(
 ) : ViewModel() {
   @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
 
+  val extractionProgress = MutableLiveData<Boolean>()
+
+  val extractionProgressMessage = MutableLiveData<String>()
+
+  var editQuestionnaireResponse: QuestionnaireResponse? = null
+
+  var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
+
+  private lateinit var questionnaireConfig: QuestionnaireConfig
+
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
   }
 
-  val extractionProgress = MutableLiveData<Boolean>()
-  val extractionProgressMessage = MutableLiveData<String>()
-
-  var editQuestionnaireResponse: QuestionnaireResponse? = null
-  private lateinit var questionnaireConfig: QuestionnaireConfig
-  var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
-
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (type.isReadOnly() || type.isEditMode()) {
-        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", type.isReadOnly())
+        item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
       }
 
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
@@ -201,27 +204,36 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
 
-        bundle.entry.forEach { bun ->
+        bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
-          if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
             if (questionnaireConfig.setOrganizationDetails) {
-              appendOrganizationInfo(bun.resource)
+              appendOrganizationInfo(bundleEntry.resource)
             }
             // if it is new registration set response subject
-            if (resourceId == null) questionnaireResponse.subject = bun.resource.asReference()
+            if (resourceId == null)
+              questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
           if (questionnaireConfig.setPractitionerDetails) {
-            appendPractitionerInfo(bun.resource)
+            appendPractitionerInfo(bundleEntry.resource)
           }
 
-          if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.RelatedPerson)) {
+          if (questionnaireType != QuestionnaireType.EDIT &&
+              bundleEntry.resource.resourceType.isIn(
+                ResourceType.Patient,
+                ResourceType.RelatedPerson
+              )
+          ) {
             resourceId?.let {
-              appendPatientsAndRelatedPersonsToGroups(resource = bun.resource, resourceId = it)
+              appendPatientsAndRelatedPersonsToGroups(
+                resource = bundleEntry.resource,
+                resourceId = it
+              )
             }
           }
 
-          if (bun.resource.resourceType.isIn(ResourceType.Patient)) {
-            generateCarePlanForUnder5(bun.resource as Patient)
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient)) {
+            generateCarePlanForUnder5(bundleEntry.resource as Patient)
           }
 
           // response MUST have subject by far otherwise flow has issues
@@ -231,14 +243,14 @@ constructor(
           // for edit mode replace client and resource subject ids.
           // Ideally ResourceMapper should allow this internally via structure-map
           if (questionnaireType.isEditMode()) {
-            if (bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
-              bun.resource.id = questionnaireResponse.subject.extractId()
+            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
+              bundleEntry.resource.id = questionnaireResponse.subject.extractId()
             else {
-              bun.resource.setPropertySafely("subject", questionnaireResponse.subject)
-              bun.resource.setPropertySafely("patient", questionnaireResponse.subject)
+              bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
+              bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
             }
           }
-          questionnaireResponse.contained.add(bun.resource)
+          questionnaireResponse.contained.add(bundleEntry.resource)
         }
 
         if (questionnaire.experimental) {
@@ -436,12 +448,17 @@ constructor(
       ?.toInt()
   }
 
-  fun calculateDobFromAge(age: Int): Date {
-    val cal: Calendar = Calendar.getInstance()
-    // Subtract #age years from the calendar
-    cal.add(Calendar.YEAR, -age)
-    cal.set(Calendar.DAY_OF_YEAR, 1)
-    cal.set(Calendar.MONTH, 1)
-    return cal.time
+  /** Subtract [age] from today's date */
+  fun calculateDobFromAge(age: Int): Date =
+    Calendar.getInstance()
+      .apply {
+        add(Calendar.YEAR, -age)
+        set(Calendar.DAY_OF_YEAR, 1)
+        set(Calendar.MONTH, 1)
+      }
+      .time
+
+  companion object {
+    private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
   }
 }

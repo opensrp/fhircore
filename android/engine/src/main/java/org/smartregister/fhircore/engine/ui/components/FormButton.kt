@@ -38,16 +38,17 @@ import org.smartregister.fhircore.engine.domain.model.FormButtonData
 fun FormButton(
   formButtonData: FormButtonData,
   modifier: Modifier = Modifier,
-  onFormClick: (String) -> Unit
+  onFormClick: (String, String?) -> Unit
 ) {
   OutlinedButton(
     onClick = {
-      if (formButtonData.questionnaireId != null) onFormClick(formButtonData.questionnaireId)
+      if (formButtonData.questionnaireId != null)
+        onFormClick(formButtonData.questionnaireId, formButtonData.backReference?.reference)
     },
     colors =
       ButtonDefaults.buttonColors(
-        backgroundColor = formButtonData.color.copy(alpha = 0.2f),
-        contentColor = formButtonData.color.copy(alpha = 0.6f)
+        backgroundColor = formButtonData.color.copy(alpha = 0.1f),
+        contentColor = formButtonData.color.copy(alpha = 0.9f)
       ),
     modifier = modifier.fillMaxWidth().padding(top = 0.dp, start = 16.dp, end = 16.dp)
   ) {
@@ -62,10 +63,25 @@ fun FormButton(
 @Preview(showBackground = true)
 fun PatientFormPreview() {
   Column {
-    FormButton(formButtonData = FormButtonData("Household survey", "182912"), onFormClick = {})
-    FormButton(formButtonData = FormButtonData("Bednet distribution", "182212"), onFormClick = {})
-    FormButton(formButtonData = FormButtonData("Malaria diagnosis", "181212"), onFormClick = {})
-    FormButton(formButtonData = FormButtonData("Medicine treatment", "171212"), onFormClick = {})
-    FormButton(formButtonData = FormButtonData("G6PD test result", "171219"), onFormClick = {})
+    FormButton(
+      formButtonData = FormButtonData("Household survey", "182912"),
+      onFormClick = { _, _ -> }
+    )
+    FormButton(
+      formButtonData = FormButtonData("Bednet distribution", "182212"),
+      onFormClick = { _, _ -> }
+    )
+    FormButton(
+      formButtonData = FormButtonData("Malaria diagnosis", "181212"),
+      onFormClick = { _, _ -> }
+    )
+    FormButton(
+      formButtonData = FormButtonData("Medicine treatment", "171212"),
+      onFormClick = { _, _ -> }
+    )
+    FormButton(
+      formButtonData = FormButtonData("G6PD test result", "171219"),
+      onFormClick = { _, _ -> }
+    )
   }
 }

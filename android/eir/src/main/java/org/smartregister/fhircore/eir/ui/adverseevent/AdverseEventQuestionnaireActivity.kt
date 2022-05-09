@@ -50,16 +50,15 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
                     R.string.loading
                   )
                 questionnaireViewModel.extractionProgress.observe(
-                  this@AdverseEventQuestionnaireActivity,
-                  { result ->
-                    if (result) {
-                      alertDialog.dismiss()
-                      finish()
-                    } else {
-                      Timber.e("An error occurred during extraction")
-                    }
+                  this@AdverseEventQuestionnaireActivity
+                ) { result ->
+                  if (result) {
+                    alertDialog.dismiss()
+                    finish()
+                  } else {
+                    Timber.e("An error occurred during extraction")
                   }
-                )
+                }
 
                 questionnaireViewModel.performExtraction(
                     parent,
@@ -96,5 +95,9 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
       .setPositiveButton(android.R.string.ok) { dialogInterface, _ -> dialogInterface.dismiss() }
       .setCancelable(true)
       .show()
+  }
+
+  companion object {
+    const val ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY = "adverse_event_immunization_item_id"
   }
 }
