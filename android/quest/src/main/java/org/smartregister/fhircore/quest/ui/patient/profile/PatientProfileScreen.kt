@@ -136,7 +136,23 @@ fun PatientProfileScreen(
             title = stringResource(R.string.tasks).uppercase(),
             onActionClick = {},
             profileViewSection = PatientProfileViewSection.TASKS
-          ) { profileViewData.tasks.forEach { ProfileActionableItem(it) } }
+          ) {
+            profileViewData.tasks.forEach {
+              ProfileActionableItem(
+                it,
+                onActionClick = { taskFormId, taskId ->
+                  patientProfileViewModel.onEvent(
+                    PatientProfileEvent.OpenTaskForm(
+                      context = context,
+                      taskFormId = taskFormId,
+                      taskId = taskId,
+                      patientId = profileViewData.logicalId
+                    )
+                  )
+                }
+              )
+            }
+          }
         }
 
         // Forms: Loaded for quest app
@@ -160,12 +176,17 @@ fun PatientProfileScreen(
         }
 
         // Medical History: Show medication history for the patient
+        // TODO add handled events for all items action click
         if (profileViewData.medicalHistoryData.isNotEmpty()) {
           ProfileCard(
             title = stringResource(R.string.medical_history),
             onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
-          ) { profileViewData.medicalHistoryData.forEach { ProfileActionableItem(it) } }
+          ) {
+            profileViewData.medicalHistoryData.forEach {
+              ProfileActionableItem(it, onActionClick = { _, _ -> })
+            }
+          }
         }
 
         // Upcoming Services: Display upcoming services (or tasks) for the patient
@@ -174,7 +195,11 @@ fun PatientProfileScreen(
             title = stringResource(R.string.upcoming_services),
             onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES
-          ) { profileViewData.upcomingServices.forEach { ProfileActionableItem(it) } }
+          ) {
+            profileViewData.upcomingServices.forEach {
+              ProfileActionableItem(it, onActionClick = { _, _ -> })
+            }
+          }
         }
 
         // Service Card: Display other vital information for ANC/PNC
@@ -183,7 +208,11 @@ fun PatientProfileScreen(
             title = stringResource(R.string.service_card),
             onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.SERVICE_CARD
-          ) { profileViewData.ancCardData.forEach { ProfileActionableItem(it) } }
+          ) {
+            profileViewData.ancCardData.forEach {
+              ProfileActionableItem(it, onActionClick = { _, _ -> })
+            }
+          }
         }
       }
     }

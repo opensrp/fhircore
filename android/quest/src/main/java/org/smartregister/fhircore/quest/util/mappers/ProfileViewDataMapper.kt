@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.translateGender
@@ -67,12 +68,17 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
+                id = it.logicalId,
+                actionFormId =
+                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                    it.reasonReference.extractId()
+                  else null,
                 title = it.description,
                 subtitle =
                   context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
                 profileViewSection = PatientProfileViewSection.TASKS,
                 actionButtonColor = it.status.retrieveColorCode(),
-                actionButtonText = it.description
+                actionButtonText = it.description,
               )
             }
         )
@@ -118,6 +124,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       Task.TaskStatus.READY -> InfoColor
       Task.TaskStatus.CANCELLED -> OverdueColor
       Task.TaskStatus.FAILED -> OverdueColor
+      Task.TaskStatus.COMPLETED -> SuccessColor
       else -> DefaultColor
     }
 

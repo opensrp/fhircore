@@ -19,6 +19,8 @@ package org.smartregister.fhircore.quest.ui.shared.models
 import androidx.compose.ui.graphics.Color
 
 data class PatientProfileRowItem(
+  val id: String,
+  val actionFormId: String? = null,
   val startIcon: Int? = null,
   val startIconBackgroundColor: Color? = null,
   val title: String,
