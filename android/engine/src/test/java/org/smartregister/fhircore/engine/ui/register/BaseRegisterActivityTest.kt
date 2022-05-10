@@ -424,7 +424,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   fun testOnSync_with_syncStatus_finished() {
     // Status Sync Finished
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
-    val result = spyk(Result.Success)
+    val result = spyk(Result.Success())
     val currentDateTime = OffsetDateTime.now()
     every { result.timestamp } returns currentDateTime
     every { sharedPreferencesHelper.read(any(), any<String>()) } answers
