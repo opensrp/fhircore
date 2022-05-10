@@ -74,43 +74,6 @@ constructor(
     }
   }
 
-  suspend fun loadResources(lastRecordUpdatedAt: Long, batchSize: Int): List<Patient>? {
-    // TODO remove harcoded strings
-    return withContext(dispatcherProvider.io()) {
-      /*fhirEngine.search<Patient> {
-
-        sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
-        filter(DateClientParam("_lastUpdated"), {
-          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-        })
-
-        //sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
-        count = batchSize
-      }*/
-
-      val searchQuery =
-        SearchQuery(
-          """
-      SELECT a.serializedResource, b.index_to
-      FROM ResourceEntity a
-      LEFT JOIN DateTimeIndexEntity b
-      ON a.resourceType = b.resourceType AND a.resourceId = b.resourceId AND b.index_name = '_lastUpdated'
-      WHERE a.resourceType = 'Patient'
-      AND a.resourceId IN (
-      SELECT resourceId FROM DateTimeIndexEntity
-      WHERE resourceType = 'Patient' AND index_name = '_lastUpdated' AND index_to > ?
-      )
-      ORDER BY b.index_from ASC
-      LIMIT ?
-          """.trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize)
-        )
-
-      fhirEngine.search(searchQuery)
-    }
-  }
-
   suspend fun loadResources(
     lastRecordUpdatedAt: Long,
     batchSize: Int,
