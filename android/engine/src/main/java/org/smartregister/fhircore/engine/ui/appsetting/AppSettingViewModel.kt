@@ -97,4 +97,14 @@ constructor(
         error.postValue("${it.message}")
       }
   }
+
+  fun isDebugMode(): Boolean? {
+    return if (!appId.value.isNullOrBlank())
+      appId.value!!.split("/").last().contentEquals(DEBUG_MODE)
+    else null
+  }
+
+  companion object {
+    const val DEBUG_MODE = "debug"
+  }
 }
