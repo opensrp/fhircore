@@ -160,17 +160,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               if (questionnaireType.isReadOnly()) require(questionnaireResponse != null)
 
               if (clientIdentifier != null) {
+
                 setBarcode(questionnaire, clientIdentifier!!, true)
-
-                if (questionnaireResponse == null)
-                  questionnaireResponse =
-                    questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+                questionnaireResponse =
+                  questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+                this.putString(
+                  QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
+                  questionnaireResponse?.encodeResourceToString()
+                )
               }
-
-              this.putString(
-                QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
-                questionnaireResponse?.encodeResourceToString()
-              )
             }
       }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
