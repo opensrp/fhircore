@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -64,7 +65,10 @@ fun ProfileCard(
         color = DefaultColor,
         fontWeight = FontWeight.SemiBold
       )
-      Row(verticalAlignment = Alignment.CenterVertically) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.clickable { onActionClick(profileViewSection) }
+      ) {
         TextButton(onClick = { onActionClick(profileViewSection) }) {
           Text(
             text = stringResource(R.string.see_all).uppercase(Locale.getDefault()),
