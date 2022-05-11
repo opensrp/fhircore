@@ -30,7 +30,9 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -120,6 +122,12 @@ constructor(
           else -> {}
         }
       }
+      is PatientProfileEvent.OpenTaskForm ->
+        event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
+          questionnaireId = event.taskFormId,
+          clientIdentifier = event.patientId,
+          backReference = event.taskId.asReference(ResourceType.Task).reference
+        )
     }
 
   companion object {
