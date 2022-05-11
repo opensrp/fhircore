@@ -137,6 +137,8 @@ android {
             dimension "apps"
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
+            versionCode 3
+            versionName "0.0.6"
         }
         g6pd {
             dimension "apps"
