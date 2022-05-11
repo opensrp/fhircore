@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 
 data class PatientProfileRowItem(
   val id: String,
@@ -29,6 +32,8 @@ data class PatientProfileRowItem(
   val subtitleStatus: String? = null,
   val subtitleStatusColor: Color? = null,
   val profileViewSection: PatientProfileViewSection,
+  val actionButtonIcon: ImageVector = Icons.Filled.Add,
+  val actionIconColor: Color? = null,
   val actionButtonColor: Color? = null,
   val actionButtonText: String? = null,
   val showAngleRightIcon: Boolean = false,

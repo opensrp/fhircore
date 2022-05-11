@@ -17,6 +17,9 @@
 package org.smartregister.fhircore.quest.util.mappers
 
 import android.content.Context
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.graphics.Color
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -77,6 +80,12 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 subtitle =
                   context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
                 profileViewSection = PatientProfileViewSection.TASKS,
+                actionButtonIcon =
+                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+                  else Icons.Filled.Add,
+                actionIconColor =
+                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
+                  else it.status.retrieveColorCode(),
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
               )
@@ -124,7 +133,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       Task.TaskStatus.READY -> InfoColor
       Task.TaskStatus.CANCELLED -> OverdueColor
       Task.TaskStatus.FAILED -> OverdueColor
-      Task.TaskStatus.COMPLETED -> SuccessColor
+      Task.TaskStatus.COMPLETED -> DefaultColor
       else -> DefaultColor
     }
 
