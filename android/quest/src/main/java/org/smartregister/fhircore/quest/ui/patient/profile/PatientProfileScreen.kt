@@ -102,6 +102,7 @@ fun PatientProfileScreen(
                   showOverflowMenu = false
                   patientProfileViewModel.onEvent(
                     PatientProfileEvent.OverflowMenuClick(
+                      navController,
                       context,
                       it.id,
                       profileViewData.logicalId,
