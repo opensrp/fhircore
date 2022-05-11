@@ -425,6 +425,7 @@ constructor(
 
         resourcesList.add(this)
       }
+        ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
       loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
     }
 
