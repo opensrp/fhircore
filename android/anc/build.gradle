@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'de.mannodermaus.android-junit5'
-    id 'kotlin-android-extensions'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
@@ -14,7 +13,7 @@ apply from: '../properties.gradle'
 apply from: '../jacoco.gradle'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion sdk_versions.compile_sdk
 
     lintOptions {
         abortOnError false
@@ -38,8 +37,8 @@ android {
 
     defaultConfig {
         applicationId "org.smartregister.fhircore.anc"
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdkVersion sdk_versions.min_sdk
+        targetSdkVersion sdk_versions.target_sdk
         versionCode 2
         versionName "0.0.5"
         multiDexEnabled true
@@ -179,7 +178,7 @@ dependencies {
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
 
-    def composeVersion = "1.0.5"
+    def composeVersion = "1.1.1"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")

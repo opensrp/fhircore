@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
@@ -292,11 +293,13 @@ constructor(
   ): Bundle {
 
     return ResourceMapper.extract(
-      context = context,
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
-      structureMapProvider = retrieveStructureMapProvider(),
-      transformSupportServices = transformSupportServices
+      StructureMapExtractionContext(
+        context = context,
+        transformSupportServices = transformSupportServices,
+        structureMapProvider = retrieveStructureMapProvider()
+      )
     )
   }
 

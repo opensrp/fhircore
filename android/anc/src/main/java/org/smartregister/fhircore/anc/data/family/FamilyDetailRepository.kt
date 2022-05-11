@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.data.family
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
@@ -39,7 +40,7 @@ constructor(
   val familyRepository: FamilyRepository
 ) : DefaultRepository(fhirEngine, dispatcherProvider) {
   suspend fun fetchDemographics(familyId: String): Patient =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, familyId) }
+    withContext(dispatcherProvider.io()) { fhirEngine.get(familyId) }
 
   suspend fun fetchFamilyMembers(familyId: String): List<FamilyMemberItem> =
     withContext(dispatcherProvider.io()) { familyRepository.searchFamilyMembers(familyId) }

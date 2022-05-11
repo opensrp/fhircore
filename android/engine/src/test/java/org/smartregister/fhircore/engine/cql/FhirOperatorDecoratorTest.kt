@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.cql
 
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.workflow.FhirOperator
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.Assert
@@ -35,7 +37,7 @@ class FhirOperatorDecoratorTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirOperator = mockk()
-    fhirOperatorDecorator = FhirOperatorDecorator(mockk(), mockk())
+    fhirOperatorDecorator = FhirOperatorDecorator(mockk(), spyk(FhirContext.forR4Cached()))
   }
 
   @Test
@@ -49,7 +51,7 @@ class FhirOperatorDecoratorTest : RobolectricTest() {
   fun testEvaluateMeasureShouldCallOriginalOperator() {
     init()
 
-    every { fhirOperator.evaluateMeasure(any(), any(), any(), any(), any(), any()) } returns
+    every { fhirOperator.evaluateMeasure(any(), any(), any(), any(), any(), any(), null) } returns
       MeasureReport().apply {
         status = MeasureReport.MeasureReportStatus.COMPLETE
         type = MeasureReport.MeasureReportType.INDIVIDUAL
@@ -66,7 +68,15 @@ class FhirOperatorDecoratorTest : RobolectricTest() {
       )
 
     verify(exactly = 1) {
-      fhirOperator.evaluateMeasure("url", "start", "end", "report_type", "subject", "practitioner")
+      fhirOperator.evaluateMeasure(
+        "url",
+        "start",
+        "end",
+        "report_type",
+        "subject",
+        "practitioner",
+        null
+      )
     }
 
     Assert.assertEquals(MeasureReport.MeasureReportStatus.COMPLETE, result.status)

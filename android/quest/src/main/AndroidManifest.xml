@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="org.smartregister.fhircore.quest">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -13,7 +14,8 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:theme="@style/AppTheme.NoActionBar"
+        tools:replace="android:name">
         <activity
             android:name="org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity"
             android:exported="true">
@@ -23,18 +25,50 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity" />
-        <activity android:name=".ui.patient.register.PatientRegisterActivity" />
-        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinLoginActivity" />
-        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinSetupActivity" />
-        <activity android:name=".ui.patient.details.QuestPatientDetailActivity" />
-        <activity android:name=".ui.patient.details.QuestionnaireDataDetailActivity" />
-        <activity android:name=".ui.patient.details.SimpleDetailsActivity" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.patient.register.PatientRegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.ui.pin.PinLoginActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.ui.pin.PinSetupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.patient.details.QuestPatientDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.patient.details.QuestionnaireDataDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.patient.details.SimpleDetailsActivity"
+            android:exported="false" />
         <activity
             android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity"
+            android:exported="false"
             android:theme="@style/AppTheme" />
 
-        <service android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService">
+        <activity
+            android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"
+            android:exported="false"
+            tools:node="merge" />
+
+        <activity
+            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity"
+            android:exported="false"
+            tools:node="merge" />
+
+        <activity
+            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyFloatingActivity"
+            android:exported="false"
+            tools:node="merge" />
+
+        <service
+            android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>

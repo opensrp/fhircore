@@ -18,11 +18,15 @@ package org.smartregister.fhircore.engine.util.extension
 
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.targetStructureMap
+import java.util.Locale
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
-  this.linkId.replace("_", " ").capitalize().plus(": ")
+  this.linkId
+    .replace("_", " ")
+    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
+    .plus(": ")
 
 fun Questionnaire.isExtractionCandidate() =
   this.targetStructureMap != null ||

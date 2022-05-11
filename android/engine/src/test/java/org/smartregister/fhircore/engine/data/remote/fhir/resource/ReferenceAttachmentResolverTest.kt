@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest
+package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
 import android.graphics.Bitmap
 import com.google.android.fhir.FhirEngine
@@ -29,16 +29,18 @@ import okhttp3.MediaType
 import okhttp3.ResponseBody
 import okio.BufferedSource
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import retrofit2.Call
 import retrofit2.Response
 
 class ReferenceAttachmentResolverTest : RobolectricTest() {
-
+  @get:Rule val coroutineTestRule = CoroutineTestRule()
   private lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
   private val fhirEngine = mockk<FhirEngine>()
@@ -60,7 +62,7 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   fun testResolveBinaryResourceShouldReturnBinary() {
     coroutineTestRule.runBlockingTest {
       val binary = Binary().apply { id = "bId" }
-      coEvery { fhirEngine.load(Binary::class.java, any()) } returns binary
+      coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns binary
       Assert.assertEquals(
         binary,
         referenceAttachmentResolver.resolveBinaryResource(

@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
@@ -68,7 +69,9 @@ constructor(
     }
 
   suspend fun fetchDemographics(patientId: String): Patient =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.get(ResourceType.Patient, patientId) as Patient
+    }
 
   override suspend fun countAll(): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }

@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.data.local
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.delete
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import javax.inject.Inject
@@ -90,30 +92,28 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
       .firstOrNull()
 
-  suspend fun getBinary(id: String): Binary = fhirEngine.load(Binary::class.java, id)
+  suspend fun getBinary(id: String): Binary = fhirEngine.get(id)
 
   suspend fun save(resource: Resource) {
     return withContext(dispatcherProvider.io()) {
       resource.generateMissingId()
-      fhirEngine.save(resource)
+      fhirEngine.create(resource)
     }
   }
 
   suspend fun delete(resource: Resource) {
-    return withContext(dispatcherProvider.io()) {
-      fhirEngine.remove(resource::class.java, resource.logicalId)
-    }
+    return withContext(dispatcherProvider.io()) { fhirEngine.delete<Resource>(resource.logicalId) }
   }
 
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
       try {
-        fhirEngine.load(resource::class.java, resource.logicalId).run {
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
-        fhirEngine.save(resource)
+        fhirEngine.create(resource)
       }
     }
   }
