@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
@@ -33,6 +34,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
@@ -92,6 +94,19 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
+          R.id.view_family -> {
+            event.familyId?.let { familyId ->
+              val urlParams =
+                NavigationArg.bindArgumentsOf(
+                  Pair(NavigationArg.FEATURE, AppFeature.HouseholdManagement.name),
+                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.FAMILY.name),
+                  Pair(NavigationArg.PATIENT_ID, familyId)
+                )
+              event.navController.navigate(
+                route = MainNavigationScreen.FamilyProfile.route + urlParams
+              )
+            }
+          }
           R.id.remove_family_member ->
             event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
