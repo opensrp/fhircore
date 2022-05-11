@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile
 
-import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.os.bundleOf
@@ -31,7 +30,6 @@ import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepo
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -93,7 +91,7 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
-          R.id.view_family ->{
+          R.id.view_family -> {
             event.familyId?.let { familyId ->
               val urlParams =
                 NavigationArg.bindArgumentsOf(
@@ -101,7 +99,9 @@ constructor(
                   Pair(NavigationArg.HEALTH_MODULE, HealthModule.FAMILY.name),
                   Pair(NavigationArg.PATIENT_ID, familyId)
                 )
-              event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
+              event.navController.navigate(
+                route = MainNavigationScreen.FamilyProfile.route + urlParams
+              )
             }
           }
           R.id.remove_family_member ->
