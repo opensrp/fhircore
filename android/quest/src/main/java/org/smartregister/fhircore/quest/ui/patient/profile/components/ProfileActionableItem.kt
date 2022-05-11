@@ -33,7 +33,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -129,7 +128,11 @@ private fun ActionButton(
         )
     ) {
       Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+        Icon(
+          imageVector = patientProfileRowItem.actionButtonIcon,
+          contentDescription = null,
+          tint = patientProfileRowItem.actionIconColor ?: patientProfileRowItem.actionButtonColor
+        )
         Text(text = patientProfileRowItem.actionButtonText)
       }
     }

@@ -52,6 +52,7 @@ import androidx.navigation.NavHostController
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.FormButton
+import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
@@ -139,7 +140,12 @@ fun PatientProfileScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+      Column(
+        modifier =
+          modifier
+            .verticalScroll(rememberScrollState())
+            .background(PatientProfileSectionsBackgroundColor)
+      ) {
         // Personal Data: e.g. sex, age, dob
         PersonalData(profileViewData)
 
