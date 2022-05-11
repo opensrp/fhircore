@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'de.mannodermaus.android-junit5'
-    id 'kotlin-android-extensions'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
@@ -14,8 +13,8 @@ apply from: '../jacoco.gradle'
 apply from: '../properties.gradle'
 
 android {
-    compileSdkVersion 30
-    compileSdk 30
+    compileSdkVersion  sdk_versions.compile_sdk
+    compileSdk  sdk_versions.compile_sdk
 
     dataBinding {
         enabled true
@@ -23,8 +22,8 @@ android {
 
     defaultConfig {
         applicationId "org.smartregister.fhircore.quest"
-        minSdk 21
-        targetSdk 30
+        minSdk  sdk_versions.min_sdk
+        targetSdk  sdk_versions.target_sdk
         versionCode 3
         versionName "0.0.3"
         multiDexEnabled true
@@ -37,8 +36,8 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdkVersion sdk_versions.min_sdk
+        targetSdkVersion sdk_versions.target_sdk
     }
     
     signingConfigs {
@@ -123,7 +122,7 @@ android {
         }
     }
 
-    compileSdkVersion 30
+    compileSdkVersion sdk_versions.compile_sdk
 
     lintOptions {
         abortOnError false

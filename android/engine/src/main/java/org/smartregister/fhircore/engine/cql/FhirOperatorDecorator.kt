@@ -45,7 +45,7 @@ constructor(private val fhirEngine: FhirEngine, private val fhirContext: FhirCon
     practitioner: String?
   ): MeasureReport {
     init()
-    return operator!!.evaluateMeasure(url, start, end, reportType, subject, practitioner)
+    return operator!!.evaluateMeasure(url, start, end, reportType, subject, practitioner, null)
   }
 
   fun loadLib(lib: Library) {

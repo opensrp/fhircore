@@ -12,13 +12,13 @@ apply from: '../jacoco.gradle'
 
 android {
 
-    compileSdkVersion 30
+    compileSdkVersion  sdk_versions.compile_sdk
     dataBinding {
         enabled true
     }
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdkVersion  sdk_versions.min_sdk
+        targetSdkVersion  sdk_versions.target_sdk
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
@@ -122,10 +122,12 @@ dependencies {
     implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
     implementation 'org.opencds.cqf.cql:engine:1.5.4-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator:1.3.1-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.builder:1.3.1-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.dagger:1.3.1-SNAPSHOT'
-    api('org.smartregister:workflow:0.1.0-alpha02-preview-SNAPSHOT') {
+    implementation 'org.opencds.cqf.cql:evaluator:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.builder:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.activitydefinition:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.plandefinition:1.4.2-SNAPSHOT'
+    implementation ('org.opencds.cqf.cql:evaluator.dagger:1.4.2-SNAPSHOT'){}
+    api('org.smartregister:workflow:0.1.0-alpha01-preview4-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'
         exclude group: 'com.github.java-json-tools'
@@ -161,7 +163,7 @@ dependencies {
     def coroutineVersion = '1.5.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api('org.smartregister:data-capture:0.1.0-beta02-preview4-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta03-preview3-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -170,11 +172,11 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api('org.smartregister:common:0.1.0-alpha01-preview3-SNAPSHOT') {
+    api('org.smartregister:common:0.1.0-alpha02-preview-SNAPSHOT') {
         transitive = true
     }
 
-    api('org.smartregister:engine:0.1.0-alpha06-preview-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta01-preview8-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -220,11 +222,10 @@ dependencies {
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation "androidx.test.espresso:espresso-core:$versions.atsl_expresso"
     implementation deps.work.runtime
     testImplementation group: 'org.json', name: 'json', version: '20210307'
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-
 }

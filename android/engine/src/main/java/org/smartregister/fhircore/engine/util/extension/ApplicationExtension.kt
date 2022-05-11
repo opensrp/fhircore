@@ -21,16 +21,22 @@ import android.content.res.AssetManager
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.ResourceSyncParams
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.FhirSyncWorker
+import com.google.android.fhir.sync.PeriodicSyncConfiguration
+import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.SyncJob
 import com.google.gson.Gson
-import kotlinx.coroutines.flow.MutableSharedFlow
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Library
@@ -38,28 +44,12 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
-
-suspend fun FhirEngine.runOneTimeSync(
-  sharedSyncStatus: MutableSharedFlow<State>,
-  syncJob: SyncJob,
-  resourceSyncParams: ResourceSyncParams,
-  fhirResourceDataSource: FhirResourceDataSource
-) {
-
-  // TODO run initial sync for binary and library resources
-
-  syncJob.run(
-    fhirEngine = this,
-    dataSource = fhirResourceDataSource,
-    resourceSyncParams = resourceSyncParams,
-    subscribeTo = sharedSyncStatus
-  )
-}
 
 fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
   var json = assets.open(id).bufferedReader().use { it.readText() }
@@ -99,7 +89,7 @@ suspend fun FhirEngine.countActivePatients(): Long =
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {
-    this@loadResource.load(T::class.java, resourceId)
+    this@loadResource.get(resourceId)
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }
@@ -144,7 +134,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
           fhirOperator.loadLib(entry.resource as Library)
         } else {
           if (!savedResources!!.contains(resourcesBundlePath)) {
-            save(entry.resource)
+            create(entry.resource)
             sharedPreferencesHelper.write(
               SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,
               savedResources.plus(",").plus(resourcesBundlePath)
@@ -156,3 +146,22 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
   } catch (exception: Exception) {
     Timber.e(exception)
   }
+
+/**
+ * Schedule periodic sync periodically as defined in the [configurationRegistry] application config
+ * interval. The [syncBroadcaster] will broadcast the sync status to its listeners
+ */
+fun SyncJob.schedulePeriodicSync(
+  configurationRegistry: ConfigurationRegistry, // TODO Obtain sync interval from app config
+  syncBroadcaster: SyncBroadcaster,
+  syncInterval: Long = 30
+) {
+  CoroutineScope(Dispatchers.Main).launch {
+    syncBroadcaster.sharedSyncStatus.emitAll(this@schedulePeriodicSync.stateFlow())
+  }
+  this.poll(
+    periodicSyncConfiguration =
+      PeriodicSyncConfiguration(repeat = RepeatInterval(syncInterval, TimeUnit.MINUTES)),
+    clazz = FhirSyncWorker::class.java
+  )
+}

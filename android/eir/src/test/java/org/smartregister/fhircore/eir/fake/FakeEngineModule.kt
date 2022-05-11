@@ -14,58 +14,33 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.di
+package org.smartregister.fhircore.eir.fake
 
 import android.accounts.AccountManager
 import android.content.Context
-import com.google.android.fhir.DatabaseErrorStrategy
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineConfiguration
 import com.google.android.fhir.FhirEngineProvider
-import com.google.android.fhir.ServerConfiguration
-import com.google.android.fhir.sync.Authenticator
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
 import dagger.Module
 import dagger.Provides
-import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dagger.hilt.testing.TestInstallIn
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.di.EngineModule
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
-@InstallIn(SingletonComponent::class)
-@Module(includes = [NetworkModule::class, DispatcherModule::class, CqlModule::class])
-class EngineModule {
+@Module
+@TestInstallIn(components = [SingletonComponent::class], replaces = [EngineModule::class])
+class FakeEngineModule {
 
-  @Singleton
   @Provides
-  fun provideFhirEngine(
-    @ApplicationContext context: Context,
-    tokenManagerService: TokenManagerService,
-    configService: ConfigService
-  ): FhirEngine {
-
-    FhirEngineProvider.init(
-      FhirEngineConfiguration(
-        enableEncryptionIfSupported = true,
-        DatabaseErrorStrategy.UNSPECIFIED,
-        ServerConfiguration(
-          baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
-          authenticator =
-            object : Authenticator {
-              override fun getAccessToken() =
-                tokenManagerService.getBlockingActiveAuthToken() as String
-            }
-        )
-      )
-    )
-
+  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine {
     return FhirEngineProvider.getInstance(context)
   }
 
@@ -73,7 +48,6 @@ class EngineModule {
   @Provides
   fun provideSyncJob(@ApplicationContext context: Context) = Sync.basicSyncJob(context)
 
-  @Singleton
   @Provides
   fun provideSyncBroadcaster(
     configurationRegistry: ConfigurationRegistry,
