@@ -173,7 +173,8 @@ private fun AppMainNavigationGraph(
               appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
               healthModule = stackEntry.retrieveHealthModuleArg(),
               patientId = patientId,
-              familyId = familyId
+              familyId = familyId,
+              refreshDataState = appMainViewModel.refreshDataState
             )
           }
         MainNavigationScreen.FamilyProfile ->
