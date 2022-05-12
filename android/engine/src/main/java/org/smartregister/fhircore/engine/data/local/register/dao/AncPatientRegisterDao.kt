@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
@@ -75,7 +76,7 @@ constructor(
         .distinctBy { it.subject.reference }
 
     val patients =
-      pregnancies.map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }.sortedBy {
+      pregnancies.map { fhirEngine.get<Patient>(it.subject.extractId()) }.sortedBy {
         it.nameFirstRep.family
       }
 

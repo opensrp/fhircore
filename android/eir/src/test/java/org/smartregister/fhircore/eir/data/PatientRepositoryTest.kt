@@ -105,7 +105,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testFetchDemographicsShouldReturnPatientDetail() {
-    coEvery { fhirEngine.load(Patient::class.java, "test_patient_1_id") } returns getPatient()
+    coEvery { fhirEngine.get(ResourceType.Patient, "test_patient_1_id") } returns getPatient()
     val patient = runBlocking { patientRepository.fetchDemographics("test_patient_1_id") }
 
     Assert.assertEquals("jane", patient.nameFirstRep.givenAsSingleString)
@@ -118,7 +118,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testGetAdverseEventsShouldReturnExpectedItem() {
 
-    coEvery { fhirEngine.load(Observation::class.java, "1") } returns
+    coEvery { fhirEngine.get(ResourceType.Observation, "1") } returns
       Observation().apply {
         code = CodeableConcept().apply { addCoding().apply { display = "Obs" } }
       }

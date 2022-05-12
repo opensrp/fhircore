@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import androidx.annotation.NonNull
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import java.util.TreeSet
@@ -31,11 +30,8 @@ import timber.log.Timber
 
 open class P2PReceiverTransferDao
 @Inject
-constructor(
-  fhirEngine: FhirEngine,
-  dispatcherProvider: DispatcherProvider,
-  fhirContext: FhirContext
-) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, fhirContext), ReceiverTransferDao {
+constructor(fhirEngine: FhirEngine, dispatcherProvider: DispatcherProvider) :
+  BaseP2PTransferDao(fhirEngine, dispatcherProvider), ReceiverTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 

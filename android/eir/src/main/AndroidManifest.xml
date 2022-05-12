@@ -14,6 +14,7 @@
 
         <activity
             android:name=".ui.adverseevent.AdverseEventActivity"
+            android:exported="false"
             android:label=""
             android:parentActivityName=".ui.patient.details.PatientDetailsActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -23,7 +24,7 @@
         </activity>
         <activity
             android:name=".ui.patient.details.PatientDetailsActivity"
-
+            android:exported="false"
             android:label=""
             android:parentActivityName=".ui.patient.register.PatientRegisterActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -31,12 +32,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.patient.register.PatientRegisterActivity" />
         </activity>
-        <activity android:name=".ui.vaccine.RecordVaccineActivity" />
+        <activity
+            android:name=".ui.vaccine.RecordVaccineActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.patient.register.PatientRegisterActivity"
+            android:exported="false"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
-        <activity android:name=".ui.adverseevent.AdverseEventQuestionnaireActivity" />
+        <activity
+            android:name=".ui.adverseevent.AdverseEventQuestionnaireActivity"
+            android:exported="false" />
 
         <service
             android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService"

@@ -47,6 +47,7 @@ import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBa
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
+import dagger.Lazy
 import java.io.InterruptedIOException
 import java.net.UnknownHostException
 import java.text.ParseException
@@ -94,7 +95,7 @@ abstract class BaseRegisterActivity :
   ConfigurableView<RegisterViewConfiguration>,
   OnSyncListener {
 
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
@@ -119,7 +120,7 @@ abstract class BaseRegisterActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    syncBroadcaster.registerSyncListener(this, lifecycleScope)
+    syncBroadcaster.get().registerSyncListener(this, lifecycleScope)
 
     supportedFragments = supportedFragments()
 

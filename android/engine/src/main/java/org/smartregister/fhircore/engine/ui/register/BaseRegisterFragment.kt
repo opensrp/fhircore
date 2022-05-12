@@ -50,47 +50,40 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
 
     registerDataViewModel =
       initializeRegisterDataViewModel().apply {
-        this.currentPage.observe(viewLifecycleOwner, { registerDataViewModel.loadPageData(it) })
+        this.currentPage.observe(viewLifecycleOwner) { registerDataViewModel.loadPageData(it) }
       }
 
-    registerViewModel.filterValue.observe(
-      viewLifecycleOwner,
-      {
-        val (registerFilterType, value) = it
-        if (value != null) {
-          registerDataViewModel.run {
-            showResultsCount(true)
-            filterRegisterData(
-              registerFilterType = registerFilterType,
-              filterValue = value,
-              registerFilter = this@BaseRegisterFragment::performFilter
-            )
-          }
-        } else {
-          registerDataViewModel.run {
-            showResultsCount(false)
-            reloadCurrentPageData()
-          }
+    registerViewModel.filterValue.observe(viewLifecycleOwner) {
+      val (registerFilterType, value) = it
+      if (value != null) {
+        registerDataViewModel.run {
+          showResultsCount(true)
+          filterRegisterData(
+            registerFilterType = registerFilterType,
+            filterValue = value,
+            registerFilter = this@BaseRegisterFragment::performFilter
+          )
+        }
+      } else {
+        registerDataViewModel.run {
+          showResultsCount(false)
+          reloadCurrentPageData()
         }
       }
-    )
-
-    registerViewModel.run {
-      refreshRegisterData.observe(
-        viewLifecycleOwner,
-        { refreshData ->
-          if (refreshData) {
-            setRefreshRegisterData(false)
-            registerDataViewModel.reloadCurrentPageData(refreshTotalRecordsCount = true)
-          }
-        }
-      )
     }
 
-    registerViewModel.lastSyncTimestamp.observe(
-      viewLifecycleOwner,
-      { registerDataViewModel.setShowLoader(it.isNullOrEmpty()) }
-    )
+    registerViewModel.run {
+      refreshRegisterData.observe(viewLifecycleOwner) { refreshData ->
+        if (refreshData) {
+          setRefreshRegisterData(false)
+          registerDataViewModel.reloadCurrentPageData(refreshTotalRecordsCount = true)
+        }
+      }
+    }
+
+    registerViewModel.lastSyncTimestamp.observe(viewLifecycleOwner) {
+      registerDataViewModel.setShowLoader(it.isNullOrEmpty())
+    }
   }
 
   override fun onResume() {

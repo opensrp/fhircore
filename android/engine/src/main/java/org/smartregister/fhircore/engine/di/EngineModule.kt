@@ -21,8 +21,12 @@ import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport
+import com.google.android.fhir.DatabaseErrorStrategy
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.FhirEngineConfiguration
 import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.ServerConfiguration
+import com.google.android.fhir.sync.Authenticator
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
 import com.google.android.fhir.workflow.FhirOperator
@@ -36,9 +40,11 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.auth.TokenManagerService
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class])
@@ -46,8 +52,28 @@ class EngineModule {
 
   @Singleton
   @Provides
-  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine =
-    FhirEngineProvider.getInstance(context)
+  fun provideFhirEngine(
+    @ApplicationContext context: Context,
+    tokenManagerService: TokenManagerService,
+    configService: ConfigService
+  ): FhirEngine {
+    FhirEngineProvider.init(
+      FhirEngineConfiguration(
+        enableEncryptionIfSupported = true,
+        DatabaseErrorStrategy.UNSPECIFIED,
+        ServerConfiguration(
+          baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
+          authenticator =
+            object : Authenticator {
+              override fun getAccessToken() =
+                tokenManagerService.getBlockingActiveAuthToken() as String
+            }
+        )
+      )
+    )
+
+    return FhirEngineProvider.getInstance(context)
+  }
 
   @Singleton
   @Provides
@@ -56,16 +82,18 @@ class EngineModule {
   @Singleton
   @Provides
   fun provideSyncBroadcaster(
-    fhirResourceDataSource: FhirResourceDataSource,
+    configurationRegistry: ConfigurationRegistry,
+    sharedPreferencesHelper: SharedPreferencesHelper,
     configService: ConfigService,
     syncJob: SyncJob,
     fhirEngine: FhirEngine
   ) =
     SyncBroadcaster(
-      fhirEngine = fhirEngine,
-      syncJob = syncJob,
+      configurationRegistry = configurationRegistry,
+      sharedPreferencesHelper = sharedPreferencesHelper,
       configService = configService,
-      fhirResourceDataSource = fhirResourceDataSource
+      fhirEngine = fhirEngine,
+      syncJob = syncJob
     )
 
   @Singleton
@@ -83,17 +111,15 @@ class EngineModule {
 
   @Singleton
   @Provides
-  fun provideFhirContext(): FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+  fun provideFhirOperator(fhirEngine: FhirEngine): FhirOperator =
+    FhirOperator(fhirContext = FhirContext.forCached(FhirVersionEnum.R4), fhirEngine = fhirEngine)
 
   @Singleton
   @Provides
-  fun provideFhirOperator(fhirContext: FhirContext, fhirEngine: FhirEngine): FhirOperator =
-    FhirOperator(fhirContext = fhirContext, fhirEngine = fhirEngine)
-
-  @Singleton
-  @Provides
-  fun provideHapiWorkerContext(fhirContext: FhirContext) =
-    HapiWorkerContext(fhirContext, DefaultProfileValidationSupport(fhirContext))
+  fun provideHapiWorkerContext(): HapiWorkerContext =
+    with(FhirContext.forCached(FhirVersionEnum.R4)) {
+      HapiWorkerContext(this, DefaultProfileValidationSupport(this))
+    }
 
   @Singleton
   @Provides

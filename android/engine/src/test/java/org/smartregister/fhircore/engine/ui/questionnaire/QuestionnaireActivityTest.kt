@@ -27,6 +27,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -161,7 +162,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE)
     )
     Assert.assertEquals(
-      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(questionnaireResponse),
+      FhirContext.forCached(FhirVersionEnum.R4)
+        .newJsonParser()
+        .encodeResourceToString(questionnaireResponse),
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
     )
     Assert.assertEquals(
@@ -169,7 +172,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       result.getString(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
     )
     Assert.assertEquals(
-      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(patient),
+      FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(patient),
       result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
     )
   }

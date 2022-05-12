@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import java.util.UUID
@@ -166,7 +167,7 @@ constructor(
 
   suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
 
-    val patient = fhirEngine.load(Patient::class.java, newFamilyHead)
+    val patient = fhirEngine.get<Patient>(newFamilyHead)
 
     // TODO create a utility/extension function for creating RelatedPersonResource
     val relatedPerson =
@@ -183,9 +184,9 @@ constructor(
         this.id = UUID.randomUUID().toString()
       }
 
-    fhirEngine.save(relatedPerson)
+    fhirEngine.create(relatedPerson)
     val family =
-      fhirEngine.load(Group::class.java, oldFamilyHead).apply {
+      fhirEngine.get<Group>(oldFamilyHead).apply {
         managingEntity = relatedPerson.asReference()
         name = relatedPerson.name.first().nameAsSingleString
       }

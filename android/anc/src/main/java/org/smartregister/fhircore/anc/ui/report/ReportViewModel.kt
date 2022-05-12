@@ -202,12 +202,13 @@ constructor(
         val measureReport =
           withContext(dispatcher.io()) {
             fhirOperator.evaluateMeasure(
-              url = measureUrl,
+              measureUrl = measureUrl,
               start = startDateFormatted,
               end = endDateFormatted,
               reportType = SUBJECT,
               subject = selectedPatientItem.value!!.patientIdentifier,
-              practitioner = authenticatedUserInfo?.keyclockuuid!!
+              practitioner = authenticatedUserInfo?.keyclockuuid!!,
+              lastReceivedOn = null //Non-null value not supported yet
             )
           }
 
@@ -224,12 +225,13 @@ constructor(
         val measureReport =
           withContext(dispatcher.io()) {
             fhirOperator.evaluateMeasure(
-              url = measureUrl,
+              measureUrl = measureUrl,
               start = startDateFormatted,
               end = endDateFormatted,
               reportType = POPULATION,
               subject = null,
-              practitioner = authenticatedUserInfo?.keyclockuuid!!
+              practitioner = authenticatedUserInfo?.keyclockuuid!!,
+              lastReceivedOn = null //Non-null value not supported yet
             )
           }
 

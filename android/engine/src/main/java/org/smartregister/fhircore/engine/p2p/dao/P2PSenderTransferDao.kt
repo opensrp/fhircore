@@ -33,11 +33,8 @@ import timber.log.Timber
 
 class P2PSenderTransferDao
 @Inject
-constructor(
-  fhirEngine: FhirEngine,
-  dispatcherProvider: DefaultDispatcherProvider,
-  fhirContext: FhirContext
-) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, fhirContext), SenderTransferDao {
+constructor(fhirEngine: FhirEngine, dispatcherProvider: DefaultDispatcherProvider) :
+  BaseP2PTransferDao(fhirEngine, dispatcherProvider), SenderTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 

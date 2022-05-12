@@ -21,7 +21,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -33,24 +32,22 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class QuestConfigServiceTest : RobolectricTest() {
 
-  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val repository: DefaultRepository = mockk()
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  private lateinit var configService: QuestConfigService
+  private lateinit var configService: ConfigService
 
   @Before
   fun setUp() {
@@ -83,17 +80,16 @@ class QuestConfigServiceTest : RobolectricTest() {
     configService =
       QuestConfigService(
         context = ApplicationProvider.getApplicationContext(),
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry
       )
   }
 
   @Test
   fun testResourceSyncParam_shouldHaveResourceTypes() {
-    every { sharedPreferencesHelper.read(any(), null) } returns
-      UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
-
-    val syncParam = configService.resourceSyncParams
+    val syncParam =
+      configService.loadRegistrySyncParams(
+        configurationRegistry = configurationRegistry,
+        authenticatedUserInfo = UserInfo("ONA-Systems", "105", "Nairobi")
+      )
     Assert.assertTrue(syncParam.isNotEmpty())
 
     val resourceTypes =
@@ -156,10 +152,11 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testResourceSyncParam_allExpressionNull_shouldHaveResourceTypes() {
-    every { sharedPreferencesHelper.read(any(), null) } returns
-      UserInfo(null, null, null).encodeJson()
-
-    val syncParam = configService.resourceSyncParams
+    val syncParam =
+      configService.loadRegistrySyncParams(
+        configurationRegistry = configurationRegistry,
+        authenticatedUserInfo = UserInfo(null, null, null)
+      )
     val resourceTypes =
       arrayOf(
           ResourceType.Library,
