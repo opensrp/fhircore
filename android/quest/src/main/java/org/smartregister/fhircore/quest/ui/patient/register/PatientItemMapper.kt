@@ -21,21 +21,20 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.extractAddress
-import org.smartregister.fhircore.engine.util.extension.extractAddressDistrict
-import org.smartregister.fhircore.engine.util.extension.extractAddressState
-import org.smartregister.fhircore.engine.util.extension.extractAddressText
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractManagingOrganizationReference
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.data.patient.model.AddressData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 
-class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context) :
+class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context, val dataExtractor: FhirPathDataExtractor) :
   DataMapper<Patient, PatientItem> {
 
   override fun transformInputToOutputModel(inputModel: Patient): PatientItem {
@@ -51,9 +50,9 @@ class PatientItemMapper @Inject constructor(@ApplicationContext val context: Con
       displayAddress = inputModel.extractAddress(),
       address =
         AddressData(
-          inputModel.extractAddressDistrict(),
-          inputModel.extractAddressState(),
-          inputModel.extractAddressText(),
+                (dataExtractor.extractData(inputModel, "Patient.address.district").first() as StringType).value,
+                (dataExtractor.extractData(inputModel, "Patient.address.state").first() as StringType).value,
+                (dataExtractor.extractData(inputModel, "Patient.address.text").first() as StringType).value,
           inputModel.extractAddress()
         ),
       telecom = inputModel.extractTelecom(),
@@ -62,3 +61,8 @@ class PatientItemMapper @Inject constructor(@ApplicationContext val context: Con
     )
   }
 }
+
+//replaced below on line 53-56, to use FhirPathDataExtractor util
+//inputModel.extractAddressDistrict(),
+//inputModel.extractAddressState(),
+//inputModel.extractAddressText(),
