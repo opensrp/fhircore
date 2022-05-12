@@ -1,0 +1,9 @@
+{
+  "appId": "mwcore",
+  "classification": "login",
+  "applicationName": "MalawiCore",
+  "applicationVersion": "0.0.1",
+  "darkMode": false,
+  "showLogo": true,
+  "enablePin": false
+}
