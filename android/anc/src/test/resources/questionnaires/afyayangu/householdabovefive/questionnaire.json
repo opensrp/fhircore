@@ -1,0 +1,495 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "128806",
+  "meta": {
+    "versionId": "2",
+    "lastUpdated": "2022-05-11T08:57:14.012+00:00",
+    "source": "#36c663d273180ea2",
+    "profile": [ "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire" ],
+    "tag": [ {
+      "system": "urn:ietf:bcp:47",
+      "code": "nb-NO",
+      "display": "Norsk Bokmål"
+    } ]
+  },
+  "language": "nb-NO",
+  "extension": [ {
+    "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-sidebar",
+    "valueCoding": {
+      "system": "http://helsenorge.no/fhir/ValueSet/sdf-sidebar",
+      "code": "1"
+    }
+  }, {
+    "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-information-message",
+    "valueCoding": {
+      "system": "http://helsenorge.no/fhir/ValueSet/sdf-information-message",
+      "code": "1"
+    }
+  } ],
+  "version": "1",
+  "title": "register_other_family_members",
+  "status": "active",
+  "subjectType": [ "Patient" ],
+  "publisher": "afyayangu",
+  "useContext": [ {
+    "code": {
+      "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+      "code": "focus"
+    },
+    "valueCodeableConcept": {
+      "coding": [ {
+        "system": "http://fhir.ona.io",
+        "code": "000005",
+        "display": "Afya 3"
+      } ]
+    }
+  } ],
+  "item": [ {
+    "linkId": "dad8f9f9-f87d-47f4-a599-134e45b23427",
+    "text": "Surname",
+    "type": "string",
+    "required": true
+  }, {
+    "linkId": "22e5eebd-2d07-4ede-8bb7-ec1eebf16061",
+    "text": "First name",
+    "type": "string",
+    "required": true
+  }, {
+    "linkId": "6bf81c19-3f6b-4c8e-9259-d454e93d1561",
+    "text": "Middle name",
+    "type": "string",
+    "required": true
+  }, {
+    "linkId": "eb075a14-3674-4473-8633-666b7a6cab80",
+    "text": "Date of birth (DOB)",
+    "type": "date",
+    "required": true
+  }, {
+    "linkId": "6fb82adc-5e45-4272-d714-cce377f863c9",
+    "text": "Age",
+    "type": "integer",
+    "required": true
+  }, {
+    "linkId": "e5387ce8-b99a-4bb4-eefa-8b9445252661",
+    "text": "National ID number ",
+    "type": "integer",
+    "required": false
+  }, {
+    "linkId": "0af43fb3-744d-40b0-e639-770173f4ceed",
+    "text": "Voter's registration number",
+    "type": "string",
+    "required": false
+  }, {
+    "linkId": "37cb07c7-c25a-4c12-d331-52eb8cf68a05",
+    "text": "Driver's license number",
+    "type": "integer",
+    "required": false
+  }, {
+    "linkId": "b50d05b9-6e28-45f0-ed2b-1d2a62cc9540",
+    "text": "Passport number",
+    "type": "integer",
+    "required": false
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "d8bb863e-c364-4351-8b5c-eb014a070cdf",
+        "display": "Community Health Fund (CHF)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "db60546a-e253-4696-824c-b880927d8c4c",
+        "display": "iCHF"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "da6628f7-4944-4137-e1b2-addeb4d072be",
+        "display": "National Social Security Fund - Social Health Insurance Benefit (SHIB)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "78351072-1f11-4b2e-8838-062fe402b0d8",
+        "display": "Tiba Kwa Kadi (TIKA)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "c111e0f9-368e-4ac8-8c91-c3f9b7b1fb29",
+        "display": "AAR Healthcare"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "c16aa8f7-8a8b-4c35-89ad-c0ba1897088c",
+        "display": "Strategies Insurance"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "d86b5681-d843-46a6-9054-0e3ed806ff05",
+        "display": "Milvik Tanzania  Ltd (BIMA Mkononi)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "800d8cb6-d970-41b9-86b3-ac3ad1e6c670",
+        "display": "Britam Insurance Tanzania"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "c5875cd7-236d-4904-ccf0-51fae0452ce7",
+        "display": "Jubilee Insurance"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "ca7cc350-f48c-45fe-8546-b4d9d0ded9c5",
+        "display": "Resolutions Insurance"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "ae3aa99a-c1d1-4982-9bdd-1a24d83bb419",
+        "display": "Reliance Insurance"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "8f008e5d-85f6-4ea1-fe53-9ee96642cc8e",
+        "display": "None"
+      }
+    } ],
+    "linkId": "f9bcb892-a59d-4fa6-e02c-44eefe704f0b",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Health insurance provider",
+    "type": "choice",
+    "required": true
+  }, {
+    "linkId": "719f9e28-18be-4941-c07a-205ad0a2672f",
+    "text": "Other health insurance provider",
+    "type": "string",
+    "required": true
+  }, {
+    "linkId": "1ecec4ac-6079-4caf-8b08-1c01dbb4818e",
+    "text": "Health insurance provider number",
+    "type": "string",
+    "required": false
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "eebbc685-661b-41a4-9672-d60a9758355b",
+        "display": "Male"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "451100df-a6a6-4079-bf1d-5018254622a6",
+        "display": "Female"
+      }
+    } ],
+    "linkId": "d22d09c8-83cd-4f10-80fe-707ce8b15cc2",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Sex",
+    "type": "choice",
+    "required": true
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "51710b9c-b2fd-4423-9c9a-a76a9c402fc9",
+        "display": "Yes"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "3faa06a3-7634-4b41-a9c8-13b8d4e19c99",
+        "display": "No"
+      }
+    } ],
+    "linkId": "9837a02a-ec89-49b0-d671-e455b495d7f9",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Has the woman delivered in the last 1 year?",
+    "type": "choice",
+    "required": true
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "c14802d2-d355-499e-d606-8e347b96d2c0",
+        "display": "Yes"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "ad668858-8957-4db3-b8ec-47c44dafb503",
+        "display": "No"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "2f095279-cc4c-4cb8-8fe4-9ddd05a28423"
+      }
+    } ],
+    "linkId": "a5ece6ee-58be-4ac1-8fde-814e3f9ce63e",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Physical disabilities?\n",
+    "type": "choice",
+    "required": true
+  }, {
+    "linkId": "87f7958b-580d-4211-899c-b3d39e26deaf",
+    "text": "Type of physical disabilities",
+    "type": "string",
+    "required": true
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "583b9010-7692-4cd6-f3fc-0dcfc0e1a2c6",
+        "display": "Yes"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "9e305921-3130-4b93-9fd0-489b37968e6c",
+        "display": "No"
+      }
+    } ],
+    "linkId": "fc7ff5a2-1ddf-4dc1-8f30-3c8112fd74ae",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Is primary caregiver?",
+    "type": "choice",
+    "required": true
+  }, {
+    "linkId": "ca203e80-2777-4340-dfe6-f5d262f396de",
+    "text": "Phone number",
+    "type": "integer",
+    "required": false
+  }, {
+    "linkId": "24740260-ff48-4888-8dd7-e1e3084df783",
+    "text": "Other Phone Number",
+    "type": "integer",
+    "required": false
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "3339e1c6-07b6-4fa7-8f51-79fde3d9d690",
+        "display": "Farmer"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "1aa57309-b47e-4a12-e808-1aa69c40ba6a",
+        "display": "Civil Servant"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "24758712-aaee-4bd6-94cd-a109f8791e53",
+        "display": "Nurse"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "b4b6332c-f072-49bd-ba72-83fa5330d819",
+        "display": "Teacher"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "169ec885-6d18-4aa5-8f47-96e161c59986",
+        "display": "Traditional Healer"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "caa6dbe8-371b-46a6-8c46-01108126fc98",
+        "display": "Community Health Worker (CHW)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "202daa1d-13d7-4514-ef3b-cbc109f88a83",
+        "display": "Traditional Birth Attendant"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "95bc361a-2547-4bc5-c10b-e30a4f0c59c9",
+        "display": "Community HMIS (cHMIS)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "d1ea111f-3e45-424c-8a07-6b9b121cd813",
+        "display": "Community Based Distributor"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "925e5e5d-27b3-4cc9-8798-7ef1119fe348",
+        "display": "Home Based Care (HBC)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "77cf24b8-846e-4b53-98e5-375a78ca2799",
+        "display": "Community IMCI"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "e71f573f-8fd8-4d63-a01b-5277afd3187d",
+        "display": "Other"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "2ea79526-dd26-40f6-f95c-08804fd159b5",
+        "display": "None"
+      }
+    } ],
+    "linkId": "507f710d-6550-4349-c883-8b875fc75360",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Occupation",
+    "type": "choice",
+    "required": true
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "03069a3d-8170-47cb-98d0-9183a287eae0",
+        "display": "Religious leader"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "4d6462a3-2f10-4cc6-98c7-07d99765fac3",
+        "display": "Traditional leader"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "ae750583-7b59-4591-9a45-3df716b1e94d",
+        "display": "Political leader"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "a3c7655d-dc57-4473-9c56-1cd1b4466330",
+        "display": "Influential leader"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "df06a5e9-5c86-4c01-8494-1d71e1fee563",
+        "display": "Other"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "6a7c9132-172d-4158-8666-ea0ee7e4e327",
+        "display": "None"
+      }
+    } ],
+    "linkId": "0b5e4ba2-493a-4eef-9c81-8d669672d1e3",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Any leadership role in the community?",
+    "type": "choice",
+    "required": true
+  }, {
+    "linkId": "c525023e-ac04-4888-96c3-4302d17b4943",
+    "text": "Mention other role in the community",
+    "type": "string",
+    "required": true
+  } ]
+}
