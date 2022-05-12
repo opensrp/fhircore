@@ -25,29 +25,50 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity" />
-        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinLoginActivity" />
-        <activity android:name="org.smartregister.fhircore.engine.ui.pin.PinSetupActivity" />
-        <activity android:name=".ui.family.register.FamilyRegisterActivity" />
-        <activity android:name=".ui.report.ReportHomeActivity" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.ui.pin.PinLoginActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.ui.pin.PinSetupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.family.register.FamilyRegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.report.ReportHomeActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.details.bmicompute.BmiQuestionnaireActivity"
+            android:exported="false"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.family.removefamily.RemoveFamilyQuestionnaireActivity"
+            android:exported="false"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.family.form.FamilyQuestionnaireActivity"
             android:noHistory="true"
             android:theme="@style/AppTheme" />
-        <activity android:name="org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity" />
+        <activity
+            android:name="org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity"
+            android:exported="false" />
         <activity
             android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity"
+            android:exported="false"
             android:theme="@style/AppTheme" />
-        <activity android:name=".ui.anccare.encounters.EncounterListActivity" />
-        <activity android:name=".ui.family.details.FamilyDetailsActivity" />
+        <activity
+            android:name=".ui.anccare.encounters.EncounterListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.family.details.FamilyDetailsActivity"
+            android:exported="false" />
 
-        <service android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService">
+        <service
+            android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>

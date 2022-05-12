@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'de.mannodermaus.android-junit5'
-    id 'kotlin-android-extensions'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
@@ -20,7 +19,9 @@ android {
     lintOptions {
         abortOnError false
     }
-
+    buildFeatures {
+        viewBinding true
+    }
     dataBinding {
         enabled true
     }
@@ -194,7 +195,7 @@ dependencies {
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
 
-    def composeVersion = "1.0.5"
+    def composeVersion = "1.1.1"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 
