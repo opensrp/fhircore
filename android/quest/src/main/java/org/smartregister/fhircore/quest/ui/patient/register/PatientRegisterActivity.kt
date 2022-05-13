@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -28,14 +29,17 @@ import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
+import org.smartregister.fhircore.engine.util.extension.readAssetFileAsString
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity.Companion.CLASSIFICATION_ARG
 import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
+import org.smartregister.fhircore.quest.util.LocaleUtil
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
+import java.util.Locale
 
 @AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
@@ -53,6 +57,11 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         questJsonSpecificationProvider.getJson()
       )
     configureViews(registerViewConfiguration)
+
+    val fileSource = "sample_config_login.json";
+    val bundleName = LocaleUtil.getBundleNameFromFileSource(fileSource!!)
+    val rawJsonStringTemplate = this.readAssetFileAsString(fileSource!!)
+    registerActivityBinding.toolbarLayout.tvLocaleTest.text = LocaleUtil.parseTemplate(bundleName , Locale.getDefault(), rawJsonStringTemplate)
   }
 
   override fun onBottomNavigationOptionItemSelected(

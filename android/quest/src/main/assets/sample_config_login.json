@@ -1,0 +1,9 @@
+{
+  "appId": "quest",
+  "classification": "login",
+  "applicationName": "{{ application.name }}",
+  "applicationVersion": "0.0.2",
+  "darkMode": false,
+  "showLogo": false,
+  "enablePin": false
+}

@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import timber.log.Timber
+import java.nio.charset.StandardCharsets
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
   Toast.makeText(this, message, toastLength).show()
@@ -61,7 +62,7 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   }
 
   if (Build.VERSION.SDK_INT <= 23) {
-    Locale.setDefault(Locale(languageTag))
+    Locale.setDefault(Locale.forLanguageTag(languageTag))
   }
 
   return configuration
@@ -116,4 +117,22 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
       ),
     0
   )
+}
+
+fun Context.readAssetFileAsString(filePath: String): String {
+  val inputStream = resources.assets.open(filePath)
+  val size = inputStream.available()
+  val buffer = ByteArray(size)
+  inputStream.read(buffer)
+  inputStream.close()
+  return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+    String(buffer, StandardCharsets.UTF_8)
+  } else {
+    String(buffer)
+  }
+}
+
+fun String.localize(): String {
+
+  return this
 }

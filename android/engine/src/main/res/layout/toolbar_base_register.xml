@@ -120,6 +120,17 @@
                 android:textSize="22sp"
                 app:drawableStartCompat="@drawable/ic_barcode"
                 app:drawableTint="@color/white" />
+
+            <TextView
+                android:id="@+id/tv_locale_test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:paddingEnd="15dp"
+                android:text="test"
+                android:textColor="#E0E0E0" />
         </LinearLayout>
 
     </LinearLayout>
