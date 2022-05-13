@@ -53,23 +53,27 @@ class AppSettingActivity : AppCompatActivity() {
 
     with(appSettingViewModel) {
       loadConfigs.observe(this@AppSettingActivity) { loadConfigs ->
-        if (loadConfigs == false || appId.value.isNullOrBlank()) {
+        if (loadConfigs == false) {
           showToast(getString(R.string.application_not_supported, appId.value))
           return@observe
         }
+
+        if (appId.value.isNullOrBlank()) return@observe
 
         val appId = appId.value!!
 
         if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
           lifecycleScope.launch(dispatcherProvider.io()) {
             configurationRegistry.loadConfigurationsLocally(appId) { loadSuccessful: Boolean ->
-              if (!loadSuccessful) {
-                showToast(getString(R.string.application_not_supported, appId))
-                return@loadConfigurationsLocally
+              if (loadSuccessful) {
+                sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
+                accountAuthenticator.launchLoginScreen()
+                finish()
+              } else {
+                launch(dispatcherProvider.main()) {
+                  showToast(getString(R.string.application_not_supported, appId))
+                }
               }
-              sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
-              accountAuthenticator.launchLoginScreen()
-              finish()
             }
           }
           return@observe
@@ -77,13 +81,13 @@ class AppSettingActivity : AppCompatActivity() {
 
         lifecycleScope.launch(dispatcherProvider.io()) {
           configurationRegistry.loadConfigurations(appId) { loadSuccessful: Boolean ->
-            if (!loadSuccessful) {
+            if (loadSuccessful) {
+              sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
+              accountAuthenticator.launchLoginScreen()
+              finish()
+            } else {
               showToast(getString(R.string.application_not_supported, appId))
-              return@loadConfigurations
             }
-            sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
-            accountAuthenticator.launchLoginScreen()
-            finish()
           }
         }
       }

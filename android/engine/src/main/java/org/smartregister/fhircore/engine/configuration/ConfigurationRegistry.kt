@@ -28,7 +28,9 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
+import java.io.IOException
 
 /**
  * A configuration store used to store all the application configurations. Application
@@ -128,50 +130,50 @@ constructor(
         .bufferedReader()
         .use { it.readText() }
         .decodeResourceFromString<Composition>()
+        .section
+        .forEach { sectionComponent ->
+          // each section in composition represents workflow
+          // { "title": "register configuration",
+          //   "mode": "working",
+          //   "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } }
+          // }
+
+          // A workflow point would be mapped like
+          //   "workflowPoint": "registration",
+          //   "resource": "RegisterViewConfiguration",
+          //   "classification": "patient_register",
+          //   "description": "register configuration"
+
+          val binaryConfigPath =
+            BINARY_CONFIG_PATH.run {
+              replace(DEFAULT_CLASSIFICATION, sectionComponent.focus.identifier.value)
+            }
+
+          val localBinaryJsonConfig =
+            context.assets.open(baseConfigPath.plus(binaryConfigPath)).bufferedReader().use {
+              it.readText()
+            }
+
+          val binaryConfig =
+            Binary().apply {
+              contentType = CONFIG_CONTENT_TYPE
+              content = localBinaryJsonConfig.encodeToByteArray()
+            }
+
+          val workflowPointName = workflowPointName(sectionComponent.focus.identifier.value)
+          val workflowPoint =
+            WorkflowPoint(
+              classification = sectionComponent.focus.identifier.value,
+              description = sectionComponent.title,
+              resource = binaryConfig,
+              workflowPoint = sectionComponent.focus.identifier.value
+            )
+          workflowPointsMap[workflowPointName] = workflowPoint
+        }
     }
       .getOrNull()
       .also { if (it == null) configsLoadedCallback(false) }
-      ?.section
-      ?.forEach { sectionComponent ->
-        // each section in composition represents workflow
-        // { "title": "register configuration",
-        //   "mode": "working",
-        //   "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } }
-        // }
-
-        // A workflow point would be mapped like
-        //   "workflowPoint": "registration",
-        //   "resource": "RegisterViewConfiguration",
-        //   "classification": "patient_register",
-        //   "description": "register configuration"
-
-        val binaryConfigPath =
-          BINARY_CONFIG_PATH.run {
-            replace(DEFAULT_CLASSIFICATION, sectionComponent.focus.identifier.value)
-          }
-
-        val localBinaryJsonConfig =
-          context.assets.open(baseConfigPath.plus(binaryConfigPath)).bufferedReader().use {
-            it.readText()
-          }
-
-        val binaryConfig =
-          Binary().apply {
-            contentType = CONFIG_CONTENT_TYPE
-            content = localBinaryJsonConfig.encodeToByteArray()
-          }
-
-        val workflowPointName = workflowPointName(sectionComponent.focus.identifier.value)
-        val workflowPoint =
-          WorkflowPoint(
-            classification = sectionComponent.focus.identifier.value,
-            description = sectionComponent.title,
-            resource = binaryConfig,
-            workflowPoint = sectionComponent.focus.identifier.value
-          )
-        workflowPointsMap[workflowPointName] = workflowPoint
-      }
-      .also { configsLoadedCallback(true) }
+      ?.also { configsLoadedCallback(true) }
   }
 
   fun workflowPointName(key: String) = "$appId|$key"
