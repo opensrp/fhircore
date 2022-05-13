@@ -1,0 +1,8 @@
+{
+  "appId": "anc",
+  "classification": "pin",
+  "applicationName": "ANC",
+  "appLogoIconResourceFile": "ic_liberia",
+  "enablePin": false,
+  "showLogo": true
+}
