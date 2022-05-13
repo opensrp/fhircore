@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.data.family
 
 import android.content.Context
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
@@ -94,7 +95,7 @@ constructor(
   suspend fun searchFamilyMembers(familyHeadId: String): List<FamilyMemberItem> {
     return ancPatientRepository
       .searchPatientByLink(familyHeadId)
-      .plus(fhirEngine.load(Patient::class.java, familyHeadId))
+      .plus(fhirEngine.get<Patient>(familyHeadId))
       .map {
         val services = ancPatientRepository.searchCarePlan(it.logicalId)
         val conditions = ancPatientRepository.searchCondition(it.logicalId)
@@ -124,8 +125,8 @@ constructor(
       if (currentHeadId == newHeadId)
         throw IllegalStateException("Current and new Head ids are same")
 
-      val currentHead = fhirEngine.load(Patient::class.java, currentHeadId)
-      val newHead = fhirEngine.load(Patient::class.java, newHeadId)
+      val currentHead = fhirEngine.get<Patient>(currentHeadId)
+      val newHead = fhirEngine.get<Patient>(newHeadId)
 
       if (!newHead.active || newHead.hasDeceased())
         throw IllegalStateException("Inactive or deceased person can not be new head of family")
@@ -146,14 +147,14 @@ constructor(
       newHeadFlag.code = familyTag.asCodeableConcept()
       newHeadFlag.period.start = Date()
 
-      fhirEngine.save(newHeadFlag)
-      fhirEngine.save(newHead)
+      fhirEngine.create(newHeadFlag)
+      fhirEngine.create(newHead)
 
       ancPatientRepository.searchCarePlan(currentHeadId, familyTag).forEach {
         // assign family care plan to new head
         it.subject = newHead.asReference()
 
-        fhirEngine.save(it)
+        fhirEngine.create(it)
       }
 
       currentHead.meta.tag.remove(familyTag)
@@ -167,18 +168,18 @@ constructor(
         this.status = Flag.FlagStatus.INACTIVE
         this.period.end = Date()
 
-        fhirEngine.save(this)
+        fhirEngine.create(this)
       }
 
-      fhirEngine.save(currentHead)
+      fhirEngine.create(currentHead)
 
       searchFamilyMembers(currentHeadId)
         .filter { it.id != currentHeadId && it.id != newHeadId }
         .forEach {
-          val member = fhirEngine.load(Patient::class.java, it.id)
+          val member = fhirEngine.get<Patient>(it.id)
           member.linkFirstRep.other = newHead.asReference()
 
-          fhirEngine.save(member)
+          fhirEngine.create(member)
         }
     }
 }

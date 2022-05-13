@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest
+package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.AttachmentResolver
+import com.google.android.fhir.get
 import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Binary
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 
+@Singleton
 class ReferenceAttachmentResolver
 @Inject
 constructor(val fhirEngine: FhirEngine, val fhirResourceService: FhirResourceService) :
   AttachmentResolver {
 
   override suspend fun resolveBinaryResource(uri: String): Binary {
-    return uri.substringAfter("Binary/").substringBefore("/").run {
-      fhirEngine.load(Binary::class.java, this)
-    }
+    return uri.substringAfter("Binary/").substringBefore("/").run { fhirEngine.get(this) }
   }
 
   override suspend fun resolveImageUrl(uri: String): Bitmap? {
