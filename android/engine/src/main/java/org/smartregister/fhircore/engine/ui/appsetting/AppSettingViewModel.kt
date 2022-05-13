@@ -98,13 +98,13 @@ constructor(
       }
   }
 
-  fun isDebugMode(): Boolean? {
+  fun hasDebugSuffix(): Boolean? {
     return if (!appId.value.isNullOrBlank())
-      appId.value!!.split("/").last().contentEquals(DEBUG_MODE)
+      appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
     else null
   }
 
   companion object {
-    const val DEBUG_MODE = "debug"
+    const val DEBUG_SUFFIX = "debug"
   }
 }
