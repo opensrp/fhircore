@@ -28,9 +28,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
-import java.io.IOException
 
 /**
  * A configuration store used to store all the application configurations. Application
