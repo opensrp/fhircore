@@ -20,13 +20,18 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
+import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import timber.log.Timber
 
 /**
@@ -34,7 +39,8 @@ import timber.log.Timber
  * the [SyncBroadcaster] will transmit the [State] to every [OnSyncListener] that registered
  */
 class SyncBroadcaster(
-  val fhirResourceDataSource: FhirResourceDataSource,
+  val configurationRegistry: ConfigurationRegistry,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
   val configService: ConfigService,
   val syncJob: SyncJob,
   val fhirEngine: FhirEngine,
@@ -46,8 +52,18 @@ class SyncBroadcaster(
       try {
         syncJob.run(
           fhirEngine = fhirEngine,
-          dataSource = fhirResourceDataSource,
-          resourceSyncParams = configService.resourceSyncParams,
+          downloadManager =
+            ResourceParamsBasedDownloadWorkManager(
+              syncParams =
+                configService
+                  .loadRegistrySyncParams(
+                    configurationRegistry,
+                    sharedPreferencesHelper
+                      .read(USER_INFO_SHARED_PREFERENCE_KEY, null)
+                      ?.decodeJson<UserInfo>()
+                  )
+                  .toMap()
+            ),
           subscribeTo = sharedSyncStatus
         )
       } catch (exception: Exception) {

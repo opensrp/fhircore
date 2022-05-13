@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
@@ -54,23 +55,22 @@ class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters
       .forEach { task ->
         if (task.hasPastEnd()) {
           task.status = Task.TaskStatus.FAILED
-          fhirEngine.save(task)
+          fhirEngine.update(task)
           task
             .basedOn
             .find { it.reference.startsWith(ResourceType.CarePlan.name) }
             ?.extractId()
             ?.takeIf { it.isNotBlank() }
             ?.let {
-              1234
-              val carePlan = fhirEngine.load(CarePlan::class.java, it)
+              val carePlan = fhirEngine.get<CarePlan>(it)
               if (carePlan.isLastTask(task)) {
                 carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.save(carePlan)
+                fhirEngine.update(carePlan)
               }
             }
         } else if (task.hasStarted()) {
           task.status = Task.TaskStatus.READY
-          fhirEngine.save(task)
+          fhirEngine.update(task)
         }
       }
 

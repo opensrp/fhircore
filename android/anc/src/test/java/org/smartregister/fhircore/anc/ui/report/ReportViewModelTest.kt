@@ -204,7 +204,7 @@ internal class ReportViewModelTest : RobolectricTest() {
   @Test
   fun testEvaluateMeasureForIndividual() {
     coEvery { fhirOperatorDecorator.loadLib(any()) } just runs
-    coEvery { fhirEngine.save(any()) } returns Unit
+    coEvery { fhirEngine.create(any()) } returns Unit
 
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),

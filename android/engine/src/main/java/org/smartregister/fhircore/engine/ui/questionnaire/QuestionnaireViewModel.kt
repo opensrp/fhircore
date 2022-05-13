@@ -22,8 +22,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
@@ -97,6 +99,8 @@ constructor(
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
   private lateinit var questionnaireConfig: QuestionnaireConfig
+
+  private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
@@ -364,11 +368,13 @@ constructor(
   ): Bundle {
 
     return ResourceMapper.extract(
-      context = context,
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
-      structureMapProvider = retrieveStructureMapProvider(),
-      transformSupportServices = transformSupportServices
+      StructureMapExtractionContext(
+        context = context,
+        transformSupportServices = transformSupportServices,
+        structureMapProvider = retrieveStructureMapProvider()
+      )
     )
   }
 
@@ -405,7 +411,6 @@ constructor(
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
-      val jsonParser = FhirContext.forR4Cached().newJsonParser()
       forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
     }
 
@@ -420,7 +425,7 @@ constructor(
                 system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
               }
             )
-          Timber.e(FhirContext.forR4Cached().newJsonParser().encodeResourceToString(this))
+          Timber.e(jsonParser.encodeResourceToString(this))
         }
 
         resourcesList.add(this)

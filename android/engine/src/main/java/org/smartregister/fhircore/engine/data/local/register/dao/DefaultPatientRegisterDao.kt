@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
@@ -40,7 +41,6 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @Singleton
 class DefaultPatientRegisterDao
@@ -50,7 +50,6 @@ constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DefaultDispatcherProvider,
-  val fhirPathDataExtractor: FhirPathDataExtractor
 ) : RegisterDao {
 
   override suspend fun loadRegisterData(
@@ -82,7 +81,7 @@ constructor(
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData =
     withContext(dispatcherProvider.io()) {
-      val patient = fhirEngine.load(Patient::class.java, resourceId)
+      val patient = fhirEngine.get<Patient>(resourceId)
       val formsFilter = configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY)
 
       ProfileData.DefaultProfileData(

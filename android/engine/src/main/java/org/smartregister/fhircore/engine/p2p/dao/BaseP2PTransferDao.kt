@@ -17,13 +17,21 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.rest.gclient.DateClientParam
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.SearchQuery
+import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
+import java.util.Date
 import java.util.TreeSet
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Observation
@@ -38,58 +46,40 @@ import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao
-constructor(
-  open val fhirEngine: FhirEngine,
-  open val dispatcherProvider: DispatcherProvider,
-  val fhirContext: FhirContext
-) {
+constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
 
-  protected val jsonParser: IParser = fhirContext.newJsonParser()
+  protected val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   open fun getDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf(
-        ResourceType.Group,
-        ResourceType.Patient,
-        ResourceType.Questionnaire,
-        ResourceType.QuestionnaireResponse,
-        ResourceType.Observation,
-        ResourceType.Encounter
-      )
+          ResourceType.Group,
+          ResourceType.Patient,
+          ResourceType.Questionnaire,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.Observation,
+          ResourceType.Encounter
+        )
         .mapIndexed { index, resourceType ->
           DataType(name = resourceType.name, DataType.Filetype.JSON, index)
         }
     )
 
-  suspend fun <R : Resource> addOrUpdate(resource: R) {
+  suspend inline fun <reified R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
       try {
-        fhirEngine.load(resource::class.java, resource.logicalId).run {
-          fhirEngine.update(updateFrom(resource))
-        }
+        fhirEngine.get<R>(resource.logicalId).run { fhirEngine.update(updateFrom(resource)) }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
-        fhirEngine.save(resource)
+        fhirEngine.create(resource)
       }
     }
   }
 
   suspend fun loadResources(lastRecordUpdatedAt: Long, batchSize: Int): List<Patient>? {
-    // TODO remove harcoded strings
     return withContext(dispatcherProvider.io()) {
-      /*fhirEngine.search<Patient> {
-
-        sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
-        filter(DateClientParam("_lastUpdated"), {
-          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-        })
-
-        //sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
-        count = batchSize
-      }*/
-
-      val searchQuery =
+      // TODO FIX search order by _lastUpdated; SearchQuery no longer allowed in search API
+      /* val searchQuery =
         SearchQuery(
           """
       SELECT a.serializedResource, b.index_to
@@ -106,8 +96,22 @@ constructor(
           """.trimIndent(),
           listOf(lastRecordUpdatedAt, batchSize)
         )
+          fhirEngine.search(searchQuery)
+        */
 
-      fhirEngine.search(searchQuery)
+      fhirEngine.search {
+        sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
+        filter(
+          DateClientParam("_lastUpdated"),
+          {
+            value = of(DateTimeType(Date(lastRecordUpdatedAt)))
+            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+          }
+        )
+
+        // sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
+        count = batchSize
+      }
     }
   }
 
@@ -116,21 +120,10 @@ constructor(
     batchSize: Int,
     classType: Class<out Resource>
   ): List<Resource> {
-    // TODO remove harcoded strings
     return withContext(dispatcherProvider.io()) {
+      // TODO FIX search order by _lastUpdated; SearchQuery no longer allowed in search API
 
-      /*      val search = Search(type = classType.newInstance().resourceType)
-      search.apply {
-        filter(DateClientParam("_lastUpdated"), {
-          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS})
-
-        //sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
-        count = batchSize
-      }
-      fhirEngine.search(search)*/
-
-      val searchQuery =
+      /*  val searchQuery =
         SearchQuery(
           """
       SELECT a.serializedResource, b.index_to
@@ -148,7 +141,22 @@ constructor(
           listOf(lastRecordUpdatedAt, batchSize)
         )
 
-      fhirEngine.search(searchQuery)
+      fhirEngine.search(searchQuery)*/
+
+      val search =
+        Search(type = classType.newInstance().resourceType).apply {
+          filter(
+            DateClientParam("_lastUpdated"),
+            {
+              value = of(DateTimeType(Date(lastRecordUpdatedAt)))
+              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+            }
+          )
+
+          // sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
+          count = batchSize
+        }
+      fhirEngine.search(search)
     }
   }
 

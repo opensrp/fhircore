@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.task
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,7 +39,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
   }
 
   suspend fun generateCarePlan(structureMapId: String, patient: Patient): Bundle {
-    val structureMap = fhirEngine.load(StructureMap::class.java, structureMapId)
+    val structureMap = fhirEngine.get<StructureMap>(structureMapId)
 
     return Bundle()
       .apply {
@@ -49,16 +50,18 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
           this
         )
       }
-      .also { it.entry.forEach { fhirEngine.save(it.resource) } }
+      .also { it.entry.forEach { entryComponent -> fhirEngine.create(entryComponent.resource) } }
       .also { Timber.i(it.encodeResourceToString()) }
   }
 
   suspend fun completeTask(id: String) {
-    fhirEngine.load(Task::class.java, id).apply {
-      this.status = Task.TaskStatus.COMPLETED
-      this.lastModified = Date()
-
-      fhirEngine.save(this)
+    fhirEngine.run {
+      create(
+        get<Task>(id).apply {
+          this.status = Task.TaskStatus.COMPLETED
+          this.lastModified = Date()
+        }
+      )
     }
   }
 }

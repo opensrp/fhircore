@@ -20,6 +20,8 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.delete
+import com.google.android.fhir.get
 import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -33,7 +35,6 @@ import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -110,14 +111,16 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     filters: List<SearchFilter> = listOf()
   ): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search<Questionnaire> { filters.forEach { filterBy(it) } }.map {
-        QuestionnaireConfig(
-          form = it.nameElement.getLocalizedText() ?: it.logicalId,
-          title = it.titleElement.getLocalizedText()
-              ?: it.nameElement.getLocalizedText() ?: it.logicalId,
-          identifier = it.logicalId
-        )
-      }
+      fhirEngine
+        .search<Questionnaire> { filters.forEach { filterBy(it) } }
+        .map {
+          QuestionnaireConfig(
+            form = it.nameElement.getLocalizedText() ?: it.logicalId,
+            title = it.titleElement.getLocalizedText()
+                ?: it.nameElement.getLocalizedText() ?: it.logicalId,
+            identifier = it.logicalId
+          )
+        }
     }
 
   suspend fun loadConditions(
@@ -151,32 +154,29 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
       .firstOrNull()
 
-  suspend fun getBinary(id: String): Binary = fhirEngine.load(Binary::class.java, id)
+  suspend fun getBinary(id: String): Binary = fhirEngine.get(id)
 
   suspend fun save(resource: Resource) {
     return withContext(dispatcherProvider.io()) {
       resource.generateMissingId()
-      resource.updateLastUpdated()
-      fhirEngine.save(resource)
+      fhirEngine.create(resource)
     }
   }
 
   suspend fun delete(resource: Resource) {
-    return withContext(dispatcherProvider.io()) {
-      fhirEngine.remove(resource::class.java, resource.logicalId)
-    }
+    return withContext(dispatcherProvider.io()) { fhirEngine.delete<Resource>(resource.logicalId) }
   }
 
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
-        fhirEngine.load(resource::class.java, resource.logicalId).run {
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
-        fhirEngine.save(resource)
+        fhirEngine.create(resource)
       }
     }
   }

@@ -28,6 +28,7 @@ import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -68,7 +69,7 @@ class RegisterViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     val fhirEngine = spyk<FhirEngine>()
-    coEvery { fhirEngine.load(Patient::class.java, "barcodeId") } returns Patient()
+    coEvery { fhirEngine.get(ResourceType.Patient, "barcodeId") } returns Patient()
 
     viewModel =
       RegisterViewModel(

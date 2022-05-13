@@ -50,6 +50,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.After
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -103,11 +104,11 @@ class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     realFhirEngine = FhirEngineProvider.getInstance(ApplicationProvider.getApplicationContext())
 
-    coEvery { fhirEngine.load(Patient::class.java, "Patient/1") } returns Patient()
+    coEvery { fhirEngine.get(ResourceType.Patient, "Patient/1") } returns Patient()
     coEvery { fhirEngine.search<Immunization>(any()) } returns listOf()
-    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
-    coEvery { fhirEngine.load(Immunization::class.java, any()) } returns Immunization()
-    coEvery { fhirEngine.save(any()) } answers {}
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, any()) } returns Questionnaire()
+    coEvery { fhirEngine.get(ResourceType.Immunization, any()) } returns Immunization()
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     val intent =
       Intent().apply {

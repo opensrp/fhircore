@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data.patient
 
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
@@ -115,7 +116,7 @@ constructor(
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 
   suspend fun fetchDemographics(patientId: String): Patient =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
+    withContext(dispatcherProvider.io()) { fhirEngine.get<Patient>(patientId) }
 
   suspend fun fetchTestResults(
     subjectId: String,
@@ -292,12 +293,10 @@ constructor(
   }
 
   private suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.load(Questionnaire::class.java, questionnaireId)
-    }
+    withContext(dispatcherProvider.io()) { fhirEngine.get(questionnaireId) }
 
   suspend fun loadEncounter(id: String): Encounter =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Encounter::class.java, id) }
+    withContext(dispatcherProvider.io()) { fhirEngine.get(id) }
 
   private suspend fun searchQuestionnaireResponses(
     subjectId: String,

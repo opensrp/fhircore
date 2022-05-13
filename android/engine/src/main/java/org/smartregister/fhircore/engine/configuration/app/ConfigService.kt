@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
@@ -40,14 +39,8 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import timber.log.Timber
 
-/**
- * An interface that provides the application configurations.
- * @property resourceSyncParams Set [FhirEngine] resource sync params needed for syncing data from
- * the server
- */
+/** An interface that provides the application configurations. */
 interface ConfigService {
-
-  val resourceSyncParams: Map<ResourceType, Map<String, String>>
 
   /** Provide [AuthConfiguration] for the Application */
   fun provideAuthConfiguration(): AuthConfiguration
@@ -86,6 +79,7 @@ interface ConfigService {
     WorkManager.getInstance(context).cancelUniqueWork(FhirTaskPlanWorker.WORK_ID)
   }
 
+  /** Retrieve registry sync params */
   fun loadRegistrySyncParams(
     configurationRegistry: ConfigurationRegistry,
     authenticatedUserInfo: UserInfo?,

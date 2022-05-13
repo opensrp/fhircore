@@ -37,6 +37,7 @@ import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
@@ -116,7 +117,7 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
   @Test
   fun testLoadImmunizationShouldReturnLiveDataContainWithImmunization() {
 
-    coEvery { fhirEngine.load(Immunization::class.java, "1") } returns
+    coEvery { fhirEngine.get(ResourceType.Immunization, "1") } returns
       Immunization().apply { id = "1" }
     val immunizationLiveData: Immunization? =
       getLiveDataValue(adverseEventViewModel.loadImmunization("1"))

@@ -93,7 +93,7 @@ internal class AncDetailsViewModelTest : RobolectricTest() {
           idElement.id = patientId
           birthDate = Date().plusYears(-26)
         }
-      coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
+      coEvery { fhirEngine.get(ResourceType.Patient, patientId) } returns patient
       val patientDetailItem: PatientDetailItem =
         ancDetailsViewModel.fetchDemographics(patientId).value!!
       Assert.assertNotNull(patientDetailItem)

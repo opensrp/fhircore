@@ -19,30 +19,11 @@ package org.smartregister.fhircore.anc
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 
-class AncConfigService
-@Inject
-constructor(
-  @ApplicationContext val context: Context,
-  configurationRegistry: ConfigurationRegistry,
-  sharedPreferences: SharedPreferencesHelper
-) : ConfigService {
-
-  private val authenticatedUserInfo by lazy {
-    sharedPreferences.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
-  }
-
-  override val resourceSyncParams: Map<ResourceType, Map<String, String>> by lazy {
-    loadRegistrySyncParams(configurationRegistry, authenticatedUserInfo)
-  }
+class AncConfigService @Inject constructor(@ApplicationContext val context: Context) :
+  ConfigService {
 
   override fun provideAuthConfiguration() =
     AuthConfiguration(
