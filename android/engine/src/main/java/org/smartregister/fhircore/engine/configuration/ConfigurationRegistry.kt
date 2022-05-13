@@ -22,6 +22,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Composition
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
@@ -114,11 +115,76 @@ constructor(
       ?.also { configsLoadedCallback(true) }
   }
 
+  suspend fun loadConfigurationsLocally(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
+    this.appId = appId
+
+    // appId is identifier of Composition
+    val baseConfigPath = BASE_CONFIG_PATH.run { replace(DEFAULT_APP_ID, appId.split("/")[0]) }
+
+    runCatching {
+      context
+        .assets
+        .open(baseConfigPath.plus(COMPOSITION_CONFIG_PATH))
+        .bufferedReader()
+        .use { it.readText() }
+        .decodeResourceFromString<Composition>()
+    }
+      .getOrNull()
+      .also { if (it == null) configsLoadedCallback(false) }
+      ?.section
+      ?.forEach { sectionComponent ->
+        // each section in composition represents workflow
+        // { "title": "register configuration",
+        //   "mode": "working",
+        //   "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } }
+        // }
+
+        // A workflow point would be mapped like
+        //   "workflowPoint": "registration",
+        //   "resource": "RegisterViewConfiguration",
+        //   "classification": "patient_register",
+        //   "description": "register configuration"
+
+        val binaryConfigPath =
+          BINARY_CONFIG_PATH.run {
+            replace(DEFAULT_CLASSIFICATION, sectionComponent.focus.identifier.value)
+          }
+
+        val localBinaryJsonConfig =
+          context.assets.open(baseConfigPath.plus(binaryConfigPath)).bufferedReader().use {
+            it.readText()
+          }
+
+        val binaryConfig =
+          Binary().apply {
+            contentType = CONFIG_CONTENT_TYPE
+            content = localBinaryJsonConfig.encodeToByteArray()
+          }
+
+        val workflowPointName = workflowPointName(sectionComponent.focus.identifier.value)
+        val workflowPoint =
+          WorkflowPoint(
+            classification = sectionComponent.focus.identifier.value,
+            description = sectionComponent.title,
+            resource = binaryConfig,
+            workflowPoint = sectionComponent.focus.identifier.value
+          )
+        workflowPointsMap[workflowPointName] = workflowPoint
+      }
+      .also { configsLoadedCallback(true) }
+  }
+
   fun workflowPointName(key: String) = "$appId|$key"
 
   fun isAppIdInitialized() = this::appId.isInitialized
 
   companion object {
+    const val DEFAULT_APP_ID = "appId"
+    const val BASE_CONFIG_PATH = "configs/$DEFAULT_APP_ID"
+    const val COMPOSITION_CONFIG_PATH = "/config_composition.json"
+    const val DEFAULT_CLASSIFICATION = "classification"
+    const val BINARY_CONFIG_PATH = "/config_$DEFAULT_CLASSIFICATION.json"
+    const val CONFIG_CONTENT_TYPE = "application/json"
     const val ORGANIZATION = "organization"
     const val PUBLISHER = "publisher"
     const val ID = "_id"
