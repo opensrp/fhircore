@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Quest</string>
     <string name="back_to_clients">Rudi kwa orodha ya wateja</string>
-    <string name="test_results">Matokeo</string>
+    <string name="test_results">Matokeo ya Vipimo</string>
 
     <string name="edit_patient_info">Hariri</string>
 
@@ -13,6 +13,6 @@
     <string name="loading_responses">Majibu yanapakia...</string>
     <string name="no_test_results_found">Hakuna matokeo yaliyopatikana</string>
     <string name="patient_test_results">Matokeo</string>
-    <string name="last_test">" Mtihani Wa Mwisho - %1$s"</string>
+    <string name="last_test">" Kipimo Cha Mwisho - %1$s"</string>
 
 </resources>
