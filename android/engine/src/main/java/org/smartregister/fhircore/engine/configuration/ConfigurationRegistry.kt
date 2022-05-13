@@ -119,7 +119,7 @@ constructor(
     this.appId = appId
 
     // appId is identifier of Composition
-    val baseConfigPath = BASE_CONFIG_PATH.run { replace(DEFAULT_APP_ID, appId.split("/")[0]) }
+    val baseConfigPath = BASE_CONFIG_PATH.run { replace(DEFAULT_APP_ID, appId.split("/").first()) }
 
     runCatching {
       context
