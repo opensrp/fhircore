@@ -27,6 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -52,15 +53,28 @@ class AppSettingActivity : AppCompatActivity() {
 
     with(appSettingViewModel) {
       loadConfigs.observe(this@AppSettingActivity) { loadConfigs ->
-        if (loadConfigs == false) {
+        if (loadConfigs == false || appId.value.isNullOrBlank()) {
           showToast(getString(R.string.application_not_supported, appId.value))
           return@observe
         }
 
-        if (appId.value.isNullOrBlank())
-          return@observe
-
         val appId = appId.value!!
+
+        if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
+          lifecycleScope.launch(dispatcherProvider.io()) {
+            configurationRegistry.loadConfigurationsLocally(appId) { loadSuccessful: Boolean ->
+              if (!loadSuccessful) {
+                showToast(getString(R.string.application_not_supported, appId))
+                return@loadConfigurationsLocally
+              }
+              sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
+              accountAuthenticator.launchLoginScreen()
+              finish()
+            }
+          }
+          return@observe
+        }
+
         lifecycleScope.launch(dispatcherProvider.io()) {
           configurationRegistry.loadConfigurations(appId) { loadSuccessful: Boolean ->
             if (!loadSuccessful) {
@@ -75,16 +89,13 @@ class AppSettingActivity : AppCompatActivity() {
       }
 
       fetchConfigs.observe(this@AppSettingActivity) { fetchConfigs ->
-        if (fetchConfigs == false)
-          return@observe
+        if (fetchConfigs == false || appId.value.isNullOrBlank()) return@observe
 
-        if (appId.value.isNullOrBlank())
-          return@observe
-
-        if (isDebugMode() == true) {
-          // Fetch from local
+        if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
+          loadConfigurations(true)
           return@observe
         }
+
         lifecycleScope.launch(dispatcherProvider.io()) {
           fetchConfigurations(appId.value!!, this@AppSettingActivity)
         }
