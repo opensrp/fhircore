@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.app.fakes
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -44,7 +45,6 @@ import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest.Companion.readFile
-import java.io.File
 
 object Faker {
 
@@ -157,13 +157,13 @@ object Faker {
 
   val systemPath =
     (System.getProperty("user.dir") +
-            File.separator +
-            "src" +
-            File.separator +
-            "main" +
-            File.separator +
-            "assets" +
-            File.separator)
+      File.separator +
+      "src" +
+      File.separator +
+      "main" +
+      File.separator +
+      "assets" +
+      File.separator)
 
   fun loadTestConfigurationRegistryData(
     appId: String,
@@ -171,18 +171,21 @@ object Faker {
     configurationRegistry: ConfigurationRegistry
   ) {
     val composition =
-      getBasePath(appId,"composition").readFile(systemPath).decodeResourceFromString() as Composition
+      getBasePath(appId, "composition").readFile(systemPath).decodeResourceFromString() as
+        Composition
     coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns composition
 
     coEvery { defaultRepository.getBinary(any()) } answers
-            {
-              val sectionComponent =
-                composition.section.find {
-                  this.args.first().toString() == it.focus.reference.substringAfter("Binary/")
-                }
-              val classification = sectionComponent!!.focus.identifier.value
-              Binary().apply { content = getBasePath(appId, classification).readFile(systemPath).toByteArray() }
-            }
+      {
+        val sectionComponent =
+          composition.section.find {
+            this.args.first().toString() == it.focus.reference.substringAfter("Binary/")
+          }
+        val classification = sectionComponent!!.focus.identifier.value
+        Binary().apply {
+          content = getBasePath(appId, classification).readFile(systemPath).toByteArray()
+        }
+      }
 
     runBlocking { configurationRegistry.loadConfigurations(appId) {} }
   }

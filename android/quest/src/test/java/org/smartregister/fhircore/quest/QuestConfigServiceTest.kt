@@ -20,12 +20,8 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.mockk
-import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -56,9 +52,7 @@ class QuestConfigServiceTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    configService = QuestConfigService(
-        context = ApplicationProvider.getApplicationContext()
-      )
+    configService = QuestConfigService(context = ApplicationProvider.getApplicationContext())
   }
 
   @Test
