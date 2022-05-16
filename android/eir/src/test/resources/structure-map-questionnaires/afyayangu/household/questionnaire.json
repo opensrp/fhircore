@@ -13,6 +13,11 @@
         "system": "urn:ietf:bcp:47",
         "code": "nb-NO",
         "display": "Norsk Bokmål"
+      },
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "en-GB",
+        "display": "English"
       }
     ]
   },
@@ -37,7 +42,7 @@
   "title": "household_registration",
   "status": "active",
   "subjectType": [
-    "Patient"
+    "Group"
   ],
   "publisher": "afyayangu",
   "useContext": [
@@ -55,6 +60,14 @@
           }
         ]
       }
+    }
+  ],
+  "purpose": "Household Registration",
+  "code": [
+    {
+      "system": "https://www.snomed.org",
+      "code": "35359004",
+      "display": "Family"
     }
   ],
   "item": [
@@ -78,8 +91,34 @@
       "required": false
     },
     {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.name"
+          }
+        }
+      ],
       "linkId": "abb75057-f186-40bb-ddaf-da72043f5dae",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Group#Group.name",
       "text": "Family name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier[0].value"
+          }
+        }
+      ],
+      "linkId": "ce49bde4-6ef9-423e-c747-efab250cd770",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Group#Group.identifier.value",
+      "text": "Household ID",
       "type": "string",
       "required": true
     },

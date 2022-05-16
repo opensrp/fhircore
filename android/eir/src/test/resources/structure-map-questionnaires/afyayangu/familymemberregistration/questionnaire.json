@@ -37,7 +37,8 @@
   "title": "family_member_registration",
   "status": "active",
   "subjectType": [
-    "Patient"
+    "Patient",
+    "RelatedPerson"
   ],
   "publisher": "afyayangu",
   "useContext": [
@@ -55,6 +56,14 @@
           }
         ]
       }
+    }
+  ],
+  "purpose": "Family Member Registration",
+  "code": [
+    {
+      "system": "https://www.snomed.org",
+      "code": "303071001",
+      "display": "Family Member"
     }
   ],
   "item": [
