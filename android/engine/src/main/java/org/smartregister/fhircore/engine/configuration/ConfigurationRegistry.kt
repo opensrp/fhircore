@@ -119,7 +119,6 @@ constructor(
     val parsedAppId = appId.substringBefore("/$DEBUG_SUFFIX")
     this.appId = parsedAppId
 
-    // appId is identifier of Composition
     val baseConfigPath = BASE_CONFIG_PATH.run { replace(DEFAULT_APP_ID, parsedAppId) }
 
     runCatching {
@@ -131,18 +130,6 @@ constructor(
         .decodeResourceFromString<Composition>()
         .section
         .forEach { sectionComponent ->
-          // each section in composition represents workflow
-          // { "title": "register configuration",
-          //   "mode": "working",
-          //   "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } }
-          // }
-
-          // A workflow point would be mapped like
-          //   "workflowPoint": "registration",
-          //   "resource": "RegisterViewConfiguration",
-          //   "classification": "patient_register",
-          //   "description": "register configuration"
-
           val binaryConfigPath =
             BINARY_CONFIG_PATH.run {
               replace(DEFAULT_CLASSIFICATION, sectionComponent.focus.identifier.value)
