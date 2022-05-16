@@ -116,10 +116,11 @@ constructor(
   }
 
   suspend fun loadConfigurationsLocally(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
-    this.appId = appId
+    val parsedAppId = appId.substringBefore("/$DEBUG_SUFFIX")
+    this.appId = parsedAppId
 
     // appId is identifier of Composition
-    val baseConfigPath = BASE_CONFIG_PATH.run { replace(DEFAULT_APP_ID, appId.split("/").first()) }
+    val baseConfigPath = BASE_CONFIG_PATH.run { replace(DEFAULT_APP_ID, parsedAppId) }
 
     runCatching {
       context
@@ -185,6 +186,7 @@ constructor(
     const val DEFAULT_CLASSIFICATION = "classification"
     const val BINARY_CONFIG_PATH = "/config_$DEFAULT_CLASSIFICATION.json"
     const val CONFIG_CONTENT_TYPE = "application/json"
+    const val DEBUG_SUFFIX = "debug"
     const val ORGANIZATION = "organization"
     const val PUBLISHER = "publisher"
     const val ID = "_id"

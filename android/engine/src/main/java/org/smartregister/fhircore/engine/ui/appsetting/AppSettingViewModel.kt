@@ -24,6 +24,7 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -102,9 +103,5 @@ constructor(
     return if (!appId.value.isNullOrBlank())
       appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
     else null
-  }
-
-  companion object {
-    const val DEBUG_SUFFIX = "debug"
   }
 }
