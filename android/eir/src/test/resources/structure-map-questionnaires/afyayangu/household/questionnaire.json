@@ -1,0 +1,113 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "128804",
+  "meta": {
+    "versionId": "3",
+    "lastUpdated": "2022-05-13T15:37:34.921+00:00",
+    "source": "#a6d8caec3bc61e9f",
+    "profile": [
+      "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+    ],
+    "tag": [
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "nb-NO",
+        "display": "Norsk Bokmål"
+      }
+    ]
+  },
+  "language": "nb-NO",
+  "extension": [
+    {
+      "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-sidebar",
+      "valueCoding": {
+        "system": "http://helsenorge.no/fhir/ValueSet/sdf-sidebar",
+        "code": "1"
+      }
+    },
+    {
+      "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-information-message",
+      "valueCoding": {
+        "system": "http://helsenorge.no/fhir/ValueSet/sdf-information-message",
+        "code": "1"
+      }
+    }
+  ],
+  "version": "1",
+  "title": "household_registration",
+  "status": "active",
+  "subjectType": [
+    "Patient"
+  ],
+  "publisher": "afyayangu",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://fhir.ona.io",
+            "code": "000005",
+            "display": "Afya 1"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "highlight"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "7133a736-f901-4ef3-8861-2d0d00b1856e",
+      "text": "FAMILY",
+      "type": "display",
+      "required": false
+    },
+    {
+      "linkId": "abb75057-f186-40bb-ddaf-da72043f5dae",
+      "text": "Family name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "linkId": "659edbd3-a834-4ce5-86f6-c073c2fb2f13",
+      "text": "Village",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-markdown",
+            "valueMarkdown": "Village"
+          }
+        ]
+      },
+      "type": "string",
+      "required": false
+    },
+    {
+      "linkId": "3fea168f-b638-4389-a08b-2bd927309d15",
+      "text": "Landmark/ description of house location",
+      "type": "string",
+      "required": true
+    },
+    {
+      "linkId": "a9b36da5-e4fb-43dc-b066-4b1d98cd1f73",
+      "text": "Nearest health facility",
+      "type": "string",
+      "required": true
+    }
+  ]
+}
