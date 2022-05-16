@@ -77,6 +77,12 @@ class PatientExtensionTest : RobolectricTest() {
       }
     val expectedList: List<String> = listOf("+1234", "+5678")
     Assert.assertEquals(expectedList, patient.extractTelecom())
+    if (!patient.hasManagingOrganization()) {
+      Assert.assertEquals("", patient.extractManagingOrganizationReference())
+    }
+    if (!patient.hasGeneralPractitioner()) {
+      Assert.assertEquals("", patient.extractGeneralPractitionerReference())
+    }
   }
 
   @Test
@@ -84,6 +90,9 @@ class PatientExtensionTest : RobolectricTest() {
     val patient =
       Patient().apply { addGeneralPractitioner().apply { this.reference = "practitioner/1234" } }
     Assert.assertEquals("practitioner/1234", patient.extractGeneralPractitionerReference())
+    if (!patient.hasTelecom()) {
+      Assert.assertEquals(null, patient.extractTelecom())
+    }
   }
 
   @Test
