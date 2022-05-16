@@ -23,9 +23,16 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractAddressDistrict
+import org.smartregister.fhircore.engine.util.extension.extractAddressState
+import org.smartregister.fhircore.engine.util.extension.extractAddressText
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
+import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
+import org.smartregister.fhircore.engine.util.extension.extractManagingOrganizationReference
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.extractTelecom
+import org.smartregister.fhircore.quest.data.patient.model.AddressData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 
 class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context) :
@@ -41,7 +48,17 @@ class PatientItemMapper @Inject constructor(@ApplicationContext val context: Con
       name = name,
       gender = gender.toString(),
       age = age,
-      address = inputModel.extractAddress()
+      displayAddress = inputModel.extractAddress(),
+      address =
+        AddressData(
+          inputModel.extractAddressDistrict(),
+          inputModel.extractAddressState(),
+          inputModel.extractAddressText(),
+          inputModel.extractAddress()
+        ),
+      telecom = inputModel.extractTelecom(),
+      generalPractitionerReference = inputModel.extractGeneralPractitionerReference(),
+      managingOrganizationReference = inputModel.extractManagingOrganizationReference()
     )
   }
 }
