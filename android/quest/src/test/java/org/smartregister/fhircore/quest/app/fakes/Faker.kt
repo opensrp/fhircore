@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -45,6 +44,7 @@ import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest.Companion.readFile
+import java.io.File
 
 object Faker {
 
@@ -155,26 +155,40 @@ object Faker {
     coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns emptyList()
   }
 
+  val systemPath =
+    (System.getProperty("user.dir") +
+            File.separator +
+            "src" +
+            File.separator +
+            "main" +
+            File.separator +
+            "assets" +
+            File.separator)
+
   fun loadTestConfigurationRegistryData(
     appId: String,
     defaultRepository: DefaultRepository,
     configurationRegistry: ConfigurationRegistry
   ) {
     val composition =
-      "/configs/$appId/config_composition.json".readFile().decodeResourceFromString() as Composition
-    coEvery { defaultRepository.searchCompositionByIdentifier(appId) } returns composition
+      getBasePath(appId,"composition").readFile(systemPath).decodeResourceFromString() as Composition
+    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns composition
 
     coEvery { defaultRepository.getBinary(any()) } answers
-      {
-        val section =
-          composition.section.first { it.focus.extractId() == this.args.first().toString() }
-        Binary().apply {
-          content =
-            "/configs/$appId/config_${section.focus.identifier.value}.json".readFile().toByteArray()
-        }
-      }
+            {
+              val sectionComponent =
+                composition.section.find {
+                  this.args.first().toString() == it.focus.reference.substringAfter("Binary/")
+                }
+              val classification = sectionComponent!!.focus.identifier.value
+              Binary().apply { content = getBasePath(appId, classification).readFile(systemPath).toByteArray() }
+            }
 
     runBlocking { configurationRegistry.loadConfigurations(appId) {} }
+  }
+
+  private fun getBasePath(appId: String, classification: String): String {
+    return "/configs/$appId/config_$classification.json"
   }
 
   fun buildTestConfigurationRegistry(
