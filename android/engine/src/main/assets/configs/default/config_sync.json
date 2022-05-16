@@ -89,16 +89,6 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
-        "base": [
-          "Binary"
-        ]
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
         "name": "count",
         "code": "_count",
         "base": [
@@ -111,8 +101,7 @@
           "QuestionnaireResponse",
           "Questionnaire",
           "StructureMap",
-          "Library",
-          "Binary"
+          "Library"
         ],
         "type": "token",
         "expression": "#count"

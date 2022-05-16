@@ -1,0 +1,12 @@
+{
+  "appId": "default",
+  "classification": "application",
+  "theme": "Default",
+  "languages": [
+    "en",
+    "sw"
+  ],
+  "applicationName": "Sample App",
+  "appLogoIconResourceFile": "ic_launcher",
+  "count": "100"
+}
