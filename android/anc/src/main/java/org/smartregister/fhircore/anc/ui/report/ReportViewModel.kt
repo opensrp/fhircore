@@ -208,7 +208,7 @@ constructor(
               reportType = SUBJECT,
               subject = selectedPatientItem.value!!.patientIdentifier,
               practitioner = authenticatedUserInfo?.keyclockuuid!!,
-              lastReceivedOn = null //Non-null value not supported yet
+              lastReceivedOn = null // Non-null value not supported yet
             )
           }
 
@@ -231,7 +231,7 @@ constructor(
               reportType = POPULATION,
               subject = null,
               practitioner = authenticatedUserInfo?.keyclockuuid!!,
-              lastReceivedOn = null //Non-null value not supported yet
+              lastReceivedOn = null // Non-null value not supported yet
             )
           }
 

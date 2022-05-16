@@ -73,11 +73,12 @@ constructor(
     get() = _enableSetPin
 
   lateinit var savedPin: String
+
   lateinit var enterUserLoginMessage: String
 
   lateinit var appId: String
+
   lateinit var appName: String
-  lateinit var appLogoResFile: String
 
   lateinit var pinViewConfiguration: PinViewConfiguration
 
@@ -93,7 +94,6 @@ constructor(
     appId = retrieveAppId()
     pinViewConfiguration = getPinConfiguration()
     appName = retrieveAppName()
-    appLogoResFile = retrieveAppLogoIconResourceFile()
     savedPin = secureSharedPreference.retrieveSessionPin() ?: ""
     isSetupPage = isSetup
     enterUserLoginMessage =
@@ -112,8 +112,6 @@ constructor(
   fun retrieveAppId(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!
 
   fun retrieveAppName(): String = pinViewConfiguration.applicationName
-
-  fun retrieveAppLogoIconResourceFile(): String = pinViewConfiguration.appLogoIconResourceFile
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
@@ -158,8 +156,6 @@ constructor(
     // _launchDialPad.value = "tel:####"
   }
 
-  // Todo: discuss with ben, whether we need user to redirect to settings or not,
-  //  considering Maimoona's data syncing concerns
   fun onMenuSettingClicked() {
     sharedPreferences.remove(APP_ID_CONFIG)
     _navigateToSettings.value = true

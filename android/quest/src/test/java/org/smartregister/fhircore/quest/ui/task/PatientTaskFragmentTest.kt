@@ -49,6 +49,7 @@ import org.smartregister.fhircore.quest.ui.task.components.ROW_PATIENT_TASK
 import org.smartregister.fhircore.quest.ui.task.components.dummyPatientTaskPagingList
 
 @HiltAndroidTest
+@Ignore("To be deleted test class; new test to be written after refactor")
 class PatientTaskFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 

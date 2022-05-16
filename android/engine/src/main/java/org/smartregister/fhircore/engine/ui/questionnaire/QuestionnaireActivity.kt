@@ -30,7 +30,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
@@ -318,8 +317,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
     val parcelResponse = questionnaireResponse.copy()
-    questionnaire
-      .find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
+    questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
       .forEach { parcelResponse.find(it.linkId)?.answer?.clear() }
     setResult(
       Activity.RESULT_OK,
@@ -408,11 +406,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       populationResources: ArrayList<Resource> = ArrayList()
     ) =
       bundleOf(
-          Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-          Pair(QUESTIONNAIRE_ARG_FORM, formName),
-          Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
-          Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)
-        )
+        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
+        Pair(QUESTIONNAIRE_ARG_FORM, formName),
+        Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
+        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)
+      )
         .apply {
           questionnaireResponse?.let {
             putString(QUESTIONNAIRE_RESPONSE, it.encodeResourceToString())

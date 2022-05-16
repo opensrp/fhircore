@@ -42,16 +42,13 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-const val REMEMBER_APP_CHECKBOX_TAG = "rememberAppCheckboxTag"
 const val APP_ID_TEXT_INPUT_TAG = "appIdTextInputTag"
 
 @Composable
 fun AppSettingScreen(
   modifier: Modifier = Modifier,
   appId: String,
-  rememberApp: Boolean,
   onAppIdChanged: (String) -> Unit,
-  onRememberAppChecked: (Boolean) -> Unit,
   onLoadConfigurations: (Boolean) -> Unit,
   showProgressBar: Boolean = false
 ) {
@@ -114,11 +111,5 @@ fun AppSettingScreen(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 private fun AppSettingScreenPreview() {
-  AppSettingScreen(
-    appId = "",
-    onLoadConfigurations = {},
-    onAppIdChanged = {},
-    onRememberAppChecked = {},
-    rememberApp = false
-  )
+  AppSettingScreen(appId = "", onAppIdChanged = {}, onLoadConfigurations = {})
 }

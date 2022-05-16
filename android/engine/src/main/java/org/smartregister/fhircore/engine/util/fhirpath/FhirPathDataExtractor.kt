@@ -16,13 +16,18 @@
 
 package org.smartregister.fhircore.engine.util.fhirpath
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 
-@Singleton
-class FhirPathDataExtractor @Inject constructor(val fhirPathEngine: FHIRPathEngine) {
+object FhirPathDataExtractor {
+
+  private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+
+  private val fhirPathEngine: FHIRPathEngine =
+    FHIRPathEngine(HapiWorkerContext(fhirContext, fhirContext.validationSupport))
 
   fun extractData(base: Base, expressions: Map<String, String>): Map<String, List<Base>> =
     expressions.map { Pair(it.key, fhirPathEngine.evaluate(base, it.value)) }.toMap()

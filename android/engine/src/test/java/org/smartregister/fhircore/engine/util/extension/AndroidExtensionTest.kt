@@ -45,8 +45,7 @@ class AndroidExtensionTest : RobolectricTest() {
   @Test
   fun testGetDrawableShouldReturnDefaultIfInvalidNameSpecified() {
     val result = context.getDrawable("invalid")
-
-    val expected = context.getDrawable(R.drawable.ic_default_logo)!!
+    val expected = context.getDrawable(R.drawable.ic_app_logo)!!
     assertEquals(expected.constantState, result.constantState)
   }
 
