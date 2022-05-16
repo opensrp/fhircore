@@ -285,29 +285,27 @@ constructor(
     return measureReport.group.flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
       reportGroup.stratifier.map { stratifier ->
         val resultItems: List<MeasureReportIndividualResult> =
-          stratifier.stratum
-            .filter { it.hasValue() }
-            .map { stratifierComponent ->
-              val text =
-                when {
-                  stratifierComponent.value.hasText() -> stratifierComponent.value.text
-                  stratifierComponent.value.hasCoding() ->
-                    stratifierComponent.value.coding.last().display
-                  else -> ""
-                }
+          stratifier.stratum.filter { it.hasValue() }.map { stratifierComponent ->
+            val text =
+              when {
+                stratifierComponent.value.hasText() -> stratifierComponent.value.text
+                stratifierComponent.value.hasCoding() ->
+                  stratifierComponent.value.coding.last().display
+                else -> ""
+              }
 
-              val numerator = stratifierComponent.findPopulation(NUMERATOR)?.count ?: 0
-              val denominator = stratifierComponent.findPopulation(DENOMINATOR)?.count ?: 0
+            val numerator = stratifierComponent.findPopulation(NUMERATOR)?.count ?: 0
+            val denominator = stratifierComponent.findPopulation(DENOMINATOR)?.count ?: 0
 
-              val percentage =
-                ceil((numerator / if (denominator == 0) 1 else denominator) * 100.0).toInt()
-              val count = "$numerator/$denominator"
-              MeasureReportIndividualResult(
-                title = text,
-                percentage = percentage.toString(),
-                count = count
-              )
-            }
+            val percentage =
+              ceil((numerator / if (denominator == 0) 1 else denominator) * 100.0).toInt()
+            val count = "$numerator/$denominator"
+            MeasureReportIndividualResult(
+              title = text,
+              percentage = percentage.toString(),
+              count = count
+            )
+          }
         MeasureReportPopulationResult(
           title = stratifier.id.replace("-", " ").uppercase(Locale.getDefault()),
           dataList = resultItems

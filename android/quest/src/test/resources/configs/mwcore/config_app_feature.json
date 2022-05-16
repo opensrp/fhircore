@@ -3,29 +3,36 @@
   "classification": "app_feature",
   "appFeatures": [
     {
-      "feature": "HouseHoldManagement",
+      "feature": "PatientManagement",
       "active": true,
-      "settings": {},
+      "settings": {
+        "registerTitle" : "HIV"
+      },
       "target": "CHW",
-      "healthModule": "FAMILY",
-      "useCases": [
-        "HOUSEHOLD_REGISTRATION",
-        "REMOVE_HOUSEHOLD",
-        "HOUSEHOLD_VISITS",
-        "REMOVE_HOUSEHOLD_MEMBER"
-      ]
+      "healthModule": "HIV"
     },
     {
       "feature": "PatientManagement",
       "active": true,
-      "settings": {},
+      "settings": {
+        "registerTitle" : "Tracing"
+      },
       "target": "CHW",
-      "healthModule": "ANC",
-      "useCases": [
-        "PATIENT_REGISTRATION",
-        "ANC_VISITS",
-        "PREGNANCY_OUTCOME"
-      ]
+      "healthModule": "TRACING_AND_APPOINTMENT"
+    },
+    {
+      "feature": "PatientManagement",
+      "active": true,
+      "settings": {
+        "registerTitle" : "Appointment"
+      },
+      "target": "CHW",
+      "healthModule": "TRACING_AND_APPOINTMENT"
+    },
+    {
+      "feature": "InAppReporting",
+      "settings": {},
+      "active": true
     }
   ]
 }

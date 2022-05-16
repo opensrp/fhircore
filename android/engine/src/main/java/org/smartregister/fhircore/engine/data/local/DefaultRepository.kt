@@ -111,16 +111,14 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     filters: List<SearchFilter> = listOf()
   ): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine
-        .search<Questionnaire> { filters.forEach { filterBy(it) } }
-        .map {
-          QuestionnaireConfig(
-            form = it.nameElement.getLocalizedText() ?: it.logicalId,
-            title = it.titleElement.getLocalizedText()
-                ?: it.nameElement.getLocalizedText() ?: it.logicalId,
-            identifier = it.logicalId
-          )
-        }
+      fhirEngine.search<Questionnaire> { filters.forEach { filterBy(it) } }.map {
+        QuestionnaireConfig(
+          form = it.nameElement.getLocalizedText() ?: it.logicalId,
+          title = it.titleElement.getLocalizedText()
+              ?: it.nameElement.getLocalizedText() ?: it.logicalId,
+          identifier = it.logicalId
+        )
+      }
     }
 
   suspend fun loadConditions(

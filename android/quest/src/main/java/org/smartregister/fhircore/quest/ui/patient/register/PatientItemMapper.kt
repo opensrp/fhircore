@@ -34,7 +34,9 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.data.patient.model.AddressData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 
-class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context, val dataExtractor: FhirPathDataExtractor) :
+class PatientItemMapper
+@Inject
+constructor(@ApplicationContext val context: Context, val dataExtractor: FhirPathDataExtractor) :
   DataMapper<Patient, PatientItem> {
 
   override fun transformInputToOutputModel(inputModel: Patient): PatientItem {
@@ -50,9 +52,12 @@ class PatientItemMapper @Inject constructor(@ApplicationContext val context: Con
       displayAddress = inputModel.extractAddress(),
       address =
         AddressData(
-                (dataExtractor.extractData(inputModel, "Patient.address.district").first() as StringType).value,
-                (dataExtractor.extractData(inputModel, "Patient.address.state").first() as StringType).value,
-                (dataExtractor.extractData(inputModel, "Patient.address.text").first() as StringType).value,
+          (dataExtractor.extractData(inputModel, "Patient.address.district").first() as StringType)
+            .value,
+          (dataExtractor.extractData(inputModel, "Patient.address.state").first() as StringType)
+            .value,
+          (dataExtractor.extractData(inputModel, "Patient.address.text").first() as StringType)
+            .value,
           inputModel.extractAddress()
         ),
       telecom = inputModel.extractTelecom(),
@@ -62,7 +67,7 @@ class PatientItemMapper @Inject constructor(@ApplicationContext val context: Con
   }
 }
 
-//replaced below on line 53-56, to use FhirPathDataExtractor util
-//inputModel.extractAddressDistrict(),
-//inputModel.extractAddressState(),
-//inputModel.extractAddressText(),
+// replaced below on line 53-56, to use FhirPathDataExtractor util
+// inputModel.extractAddressDistrict(),
+// inputModel.extractAddressState(),
+// inputModel.extractAddressText(),

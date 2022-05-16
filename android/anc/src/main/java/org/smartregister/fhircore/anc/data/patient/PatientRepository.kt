@@ -22,7 +22,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.count
-import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
@@ -387,9 +386,7 @@ constructor(
         withContext(dispatcherProvider.io()) {
           val carePlanId = it.logicalId
           val tasks =
-            fhirEngine.search<Task> {
-             filter(Task.FOCUS, { value = "CarePlan/$carePlanId" })
-            }
+            fhirEngine.search<Task> { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }
           if (tasks.isNotEmpty()) {
             task = tasks[0]
             listCarePlan.add(

@@ -69,6 +69,8 @@ constructor(
               HealthModule.PNC -> R.string.pnc_clients
               HealthModule.FAMILY -> R.string.households
               HealthModule.CHILD -> R.string.children
+              HealthModule.HIV -> R.string.hiv_clients
+              HealthModule.TRACING_AND_APPOINTMENT -> R.string.hiv_clients
               HealthModule.FAMILY_PLANNING -> R.string.family_planning_clients
               else -> 0
             },

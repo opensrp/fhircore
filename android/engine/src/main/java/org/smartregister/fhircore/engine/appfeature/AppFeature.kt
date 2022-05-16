@@ -26,4 +26,6 @@ sealed class AppFeature(val name: String) {
   object PatientManagement : AppFeature(name = "PatientManagement")
   object HouseholdManagement : AppFeature(name = "HouseholdManagement")
   object DeviceToDeviceSync : AppFeature(name = "DeviceToDeviceSync")
+  object Hiv : AppFeature(name = "Hiv")
+  object TracingAndAppointment : AppFeature(name = "TracingAndAppointment")
 }

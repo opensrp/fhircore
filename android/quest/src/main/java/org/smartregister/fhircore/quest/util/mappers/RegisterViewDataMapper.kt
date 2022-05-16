@@ -91,6 +91,18 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           serviceText = context.getString(R.string.anc_visit),
           showServiceButton = inputModel.servicesOverdue != 0 || inputModel.servicesDue != 0
         )
+      is RegisterData.HivRegisterData ->
+        RegisterViewData(
+          logicalId = inputModel.logicalId,
+          title = listOf(inputModel.name, inputModel.age).joinToString(", "),
+          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter()
+        )
+      is RegisterData.TracingAndAppointmentRegisterData ->
+        RegisterViewData(
+          logicalId = inputModel.logicalId,
+          title = listOf(inputModel.name, inputModel.age).joinToString(", "),
+          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter()
+        )
       else -> throw UnsupportedOperationException()
     }
   }
