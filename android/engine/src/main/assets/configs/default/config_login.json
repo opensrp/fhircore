@@ -1,8 +1,9 @@
 {
-  "appId": "appId",
+  "appId": "default",
   "classification": "login",
   "applicationName": "Sample App",
   "applicationVersion": "0.0.1",
   "darkMode": false,
-  "showLogo": false
+  "showLogo": false,
+  "enablePin": false
 }

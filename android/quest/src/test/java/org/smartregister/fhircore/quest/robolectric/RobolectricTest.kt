@@ -170,8 +170,8 @@ abstract class RobolectricTest {
         "resources" +
         File.separator)
 
-    fun String.readFile(): String {
-      val file = File("$ASSET_BASE_PATH/$this")
+    fun String.readFile(systemPath: String = ASSET_BASE_PATH): String {
+      val file = File("$systemPath/$this")
       val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
       return String(charArray)
     }

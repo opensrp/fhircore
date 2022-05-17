@@ -51,7 +51,7 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private val testAppId = "appId"
+  private val testAppId = "default"
 
   val defaultRepository: DefaultRepository = mockk()
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
@@ -76,14 +76,14 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
 
     val workflowPointsMap = appSettingActivity.configurationRegistry.workflowPointsMap
     Assert.assertTrue(workflowPointsMap.isNotEmpty())
-    Assert.assertTrue(workflowPointsMap.containsKey("appId|application"))
+    Assert.assertTrue(workflowPointsMap.containsKey("default|application"))
     val configuration =
       appSettingActivity.configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
         AppConfigClassification.APPLICATION
       )
     Assert.assertEquals(testAppId, configuration.appId)
     Assert.assertEquals("application", configuration.classification)
-    Assert.assertEquals("AppTheme", configuration.theme)
+    Assert.assertEquals("DefaultAppTheme", configuration.theme)
     Assert.assertTrue(configuration.languages.containsAll(listOf("en", "sw")))
     // TODO Assert.assertTrue(appSettingActivity.isFinishing)
   }
@@ -100,6 +100,28 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
     }
     val latestToast = ShadowToast.getLatestToast()
     Assert.assertEquals(Toast.LENGTH_LONG, latestToast.duration)
+  }
+
+  @Test
+  fun testLocalConfig() {
+    appSettingActivity.appSettingViewModel.run {
+      onApplicationIdChanged("$testAppId/debug")
+      loadConfigurations(true)
+    }
+
+    Assert.assertTrue(appSettingActivity.appSettingViewModel.hasDebugSuffix() == true)
+    Assert.assertEquals("default/debug", appSettingActivity.appSettingViewModel.appId.value)
+    Assert.assertEquals(8, appSettingActivity.configurationRegistry.workflowPointsMap.size)
+
+    val workflows = appSettingActivity.configurationRegistry.workflowPointsMap
+    Assert.assertTrue(workflows.containsKey("default|application"))
+    Assert.assertTrue(workflows.containsKey("default|login"))
+    Assert.assertTrue(workflows.containsKey("default|patient_register"))
+    Assert.assertTrue(workflows.containsKey("default|patient_task_register"))
+    Assert.assertTrue(workflows.containsKey("default|pin"))
+    Assert.assertTrue(workflows.containsKey("default|patient_details_view"))
+    Assert.assertTrue(workflows.containsKey("default|result_details_navigation"))
+    Assert.assertTrue(workflows.containsKey("default|sync"))
   }
 
   override fun getActivity(): Activity = appSettingActivity

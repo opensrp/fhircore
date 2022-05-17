@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
-import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
@@ -46,6 +45,8 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
 
+private val fhirR4JsonParser = FhirContext.forR4Cached().newJsonParser()
+
 fun Base?.valueToString(): String {
   return if (this == null) return ""
   else if (this.isDateTime) (this as BaseDateTimeType).value.makeItReadable()
@@ -64,13 +65,11 @@ fun Base?.valueToString(): String {
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
-fun Resource.encodeResourceToString(
-  parser: IParser = FhirContext.forR4Cached().newJsonParser()
-): String = parser.encodeResourceToString(this)
+fun Resource.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
+  parser.encodeResourceToString(this)
 
-fun <T> String.decodeResourceFromString(
-  parser: IParser = FhirContext.forR4Cached().newJsonParser()
-): T = parser.parseResource(this) as T
+fun <T> String.decodeResourceFromString(parser: IParser = fhirR4JsonParser): T =
+  parser.parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   var extensionUpdateForm = listOf<Extension>()
@@ -81,7 +80,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   if (this is Patient) {
     extension = this.extension
   }
-  val jsonParser = FhirContext.forR4Cached().newJsonParser()
+  val jsonParser = fhirR4JsonParser
   val stringJson = encodeResourceToString(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
