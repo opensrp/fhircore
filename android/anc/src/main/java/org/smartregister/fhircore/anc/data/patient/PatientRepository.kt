@@ -22,7 +22,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.count
-import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
@@ -58,8 +57,8 @@ import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -85,7 +84,7 @@ class PatientRepository
 constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: AncItemMapper,
+  override val dataMapper: AncItemMapper,
   val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Anc, PatientItem> {
 
@@ -106,8 +105,8 @@ constructor(
             filterBy(registerConfig.primaryFilter!!)
             registerConfig.secondaryFilter?.let { filterBy(it) }
 
-            count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-            from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+            count = if (loadAll) countAll().toInt() else PaginationConstant.DEFAULT_PAGE_SIZE
+            from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
           }
           .distinctBy { it.subject.extractId() }
 
@@ -125,7 +124,7 @@ constructor(
 
         val carePlans = searchCarePlan(it.logicalId)
         val conditions = searchCondition(it.logicalId)
-        domainMapper.mapToDomainModel(Anc(it, head, conditions, carePlans))
+        dataMapper.transformInputToOutputModel(Anc(it, head, conditions, carePlans))
       }
     }
   }
@@ -259,7 +258,9 @@ constructor(
   }
 
   fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> =
-    carePlan.filter { it.due() || it.overdue() }.map { CarePlanItemMapper.mapToDomainModel(it) }
+    carePlan.filter { it.due() || it.overdue() }.map {
+      CarePlanItemMapper.transformInputToOutputModel(it)
+    }
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
@@ -385,10 +386,8 @@ constructor(
         withContext(dispatcherProvider.io()) {
           val carePlanId = it.logicalId
           val tasks =
-            fhirEngine.search<Task> {
-              apply { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }.getQuery()
-            }
-          if (!tasks.isNullOrEmpty()) {
+            fhirEngine.search<Task> { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }
+          if (tasks.isNotEmpty()) {
             task = tasks[0]
             listCarePlan.add(
               UpcomingServiceItem(
@@ -408,7 +407,7 @@ constructor(
     val listCarePlan = arrayListOf<EncounterItem>()
     if (encounters.isNotEmpty()) {
       for (i in encounters.indices) {
-        listCarePlan.add(EncounterItemMapper.mapToDomainModel(encounters[i]))
+        listCarePlan.add(EncounterItemMapper.transformInputToOutputModel(encounters[i]))
       }
     }
     return listCarePlan
@@ -457,7 +456,7 @@ constructor(
     val bmiEncounter = loadConfig(Template.BMI_ENCOUNTER, Encounter::class.java, bmiEncounterData)
     fhirEngine.create(bmiEncounter)
 
-    val bmiWeightObservationRecordId = ResourceType.Observation.generateUniqueId()
+    val bmiWeightObservationRecordId = generateUniqueId()
     val bmiWeightObservationData =
       buildBmiConfigData(
         patientId = patientId,
@@ -471,7 +470,7 @@ constructor(
       loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
     fhirEngine.create(bmiWeightObservation)
 
-    val bmiHeightObservationRecordId = ResourceType.Observation.generateUniqueId()
+    val bmiHeightObservationRecordId = generateUniqueId()
     val bmiHeightObservationData =
       buildBmiConfigData(
         patientId = patientId,
@@ -485,7 +484,7 @@ constructor(
       loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
     fhirEngine.create(bmiHeightObservation)
 
-    val bmiObservationRecordId = ResourceType.Observation.generateUniqueId()
+    val bmiObservationRecordId = generateUniqueId()
     val bmiObservationData =
       buildBmiConfigData(
         patientId = patientId,
@@ -538,7 +537,7 @@ constructor(
   }
 
   fun setAncItemMapperType(ancItemMapperType: AncItemMapper.AncItemMapperType) {
-    domainMapper.setAncItemMapperType(ancItemMapperType)
+    dataMapper.setAncItemMapperType(ancItemMapperType)
   }
 
   companion object {

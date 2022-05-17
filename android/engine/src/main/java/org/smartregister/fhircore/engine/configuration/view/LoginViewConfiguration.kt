@@ -25,12 +25,12 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 class LoginViewConfiguration(
   override val appId: String = "",
   override val classification: String = "",
-  var applicationName: String = "App Name",
-  var applicationVersion: String = "0.0.1",
-  var applicationVersionCode: Int = 1,
-  var darkMode: Boolean = true,
-  var showLogo: Boolean = false,
-  var enablePin: Boolean = false
+  val applicationName: String = "App Name",
+  val applicationVersion: String = "0.0.1",
+  val applicationVersionCode: Int = 1,
+  val darkMode: Boolean = true,
+  val showLogo: Boolean = false,
+  val enablePin: Boolean = false
 ) : Configuration
 /**
  * A function providing a DSL for configuring [LoginViewConfiguration]. The configurations provided

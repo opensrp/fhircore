@@ -22,9 +22,6 @@ import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_adverse_event.*
-import kotlinx.android.synthetic.main.activity_patient_details.*
-import kotlinx.android.synthetic.main.fragment_patient_details.*
 import org.hl7.fhir.r4.model.Immunization
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.databinding.ActivityAdverseEventBinding
@@ -63,7 +60,7 @@ class AdverseEventActivity : BaseMultiLanguageActivity() {
   }
 
   private fun setupViews() {
-    adverseEventListView.apply {
+    activityAdverseEventBinding.adverseEventListView.apply {
       adapter = adverseEventAdapter
       layoutManager = LinearLayoutManager(this@AdverseEventActivity)
     }

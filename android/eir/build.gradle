@@ -54,13 +54,9 @@ android {
         }
     }
     compileOptions {
-        // Flag to enable support for the new language APIs
-        // See https://developer.android.com/studio/write/java8-support
         coreLibraryDesugaringEnabled true
-        // Sets Java compatibility to Java 8
-        // See https://developer.android.com/studio/write/java8-support
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     packagingOptions {
         exclude 'license.html'
@@ -83,7 +79,8 @@ android {
     }
     // See https://developer.android.com/studio/write/java8-support
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = JavaVersion.VERSION_11.toString()
+        freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
 
     // avoid errors with message 'Duplicate files copied in APK ...'
@@ -94,9 +91,10 @@ android {
 
     buildFeatures {
         compose true
+        viewBinding true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.0.4'
+        kotlinCompilerExtensionVersion '1.1.1'
     }
 
     testOptions {
@@ -190,7 +188,7 @@ dependencies {
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0'
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso

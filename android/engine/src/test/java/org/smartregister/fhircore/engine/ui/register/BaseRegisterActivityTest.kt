@@ -67,7 +67,6 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
-import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
@@ -154,19 +153,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
     // Bottom navigation should not contains any menu option
     Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions(config).isEmpty())
-
-    config.bottomNavigationOptions =
-      listOf(
-        NavigationOption(
-          id = "profile",
-          title = getString(R.string.profile),
-          icon = "ic_user",
-          mockk()
-        )
-      )
-
-    // Bottom navigation contains one menu option
-    Assert.assertTrue(testRegisterActivity.bottomNavigationMenuOptions(config).isNotEmpty())
   }
 
   @Test

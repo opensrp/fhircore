@@ -1,0 +1,16 @@
+{
+  "appId": "ecbis-saa",
+  "classification": "patient_register",
+  "appTitle": "ECBIS",
+  "filterText": "Show overdue",
+  "searchBarHint": "Search name or ID",
+  "newClientButtonText": "ADD FAMILY",
+  "newClientButtonStyle": "",
+  "showSearchBar": true,
+  "showFilter": true,
+  "showScanQRCode": false,
+  "showNewClientButton": true,
+  "showSideMenu": true,
+  "showBottomMenu": false,
+  "registrationForm": "family-registration"
+}

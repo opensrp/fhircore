@@ -29,6 +29,7 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
@@ -46,7 +47,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -56,28 +57,31 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
 /**
- * Launches Questionnaire with given id. If questionnaire has subjectType = Patient his activity can
- * handle data persistence for [Patient] resources among others.
- *
- * Implement a subclass of this [QuestionnaireActivity] to provide functionality on how to
- * [handleQuestionnaireResponse]
+ * Launches Questionnaire/ Implement a subclass of this [QuestionnaireActivity] to provide
+ * functionality on how to [handleQuestionnaireResponse]
  */
 @AndroidEntryPoint
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   lateinit var questionnaireConfig: QuestionnaireConfig
+
   var questionnaireType = QuestionnaireType.DEFAULT
 
   protected lateinit var questionnaire: Questionnaire
+
   protected var clientIdentifier: String? = null
+
   lateinit var fragment: FhirCoreQuestionnaireFragment
-  val parser = FhirContext.forR4Cached().newJsonParser()
+
+  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+  private lateinit var saveProcessingAlertDialog: AlertDialog
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -87,7 +91,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
-
     val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
     intent.getStringExtra(QUESTIONNAIRE_ARG_TYPE)?.let {
@@ -128,7 +131,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (questionnaireType.isReadOnly() || questionnaire.experimental) {
         text = context.getString(R.string.done)
       } else if (questionnaireType.isEditMode()) {
-        text = getString(R.string.edit)
+        // setting the save button text from Questionnaire Config
+        text =
+          questionnaireConfig.saveButtonText
+            ?: getString(R.string.questionnaire_alert_submit_button_title)
       }
     }
 
@@ -160,13 +166,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               if (questionnaireType.isReadOnly()) require(questionnaireResponse != null)
 
               if (clientIdentifier != null) {
-
                 setBarcode(questionnaire, clientIdentifier!!, true)
                 questionnaireResponse =
                   questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
                 this.putString(
                   QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
-                  questionnaireResponse?.encodeResourceToString()
+                  questionnaireResponse.encodeResourceToString()
                 )
               }
             }
@@ -192,7 +197,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaire = questionnaireViewModel.loadQuestionnaire(formName, questionnaireType)!!
         questionnaireConfig =
           QuestionnaireConfig(
-            appId = configurationRegistry.appId,
             form = questionnaire.name ?: "",
             title = questionnaire.title ?: "",
             identifier = questionnaire.logicalId
@@ -217,17 +221,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
     } else if (view.id == R.id.btn_edit_qr) {
       questionnaireType = QuestionnaireType.EDIT
-
       val loadProgress = showProgressAlert(this, R.string.loading)
-
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
         loadQuestionnaireAndConfig(questionnaireConfig.identifier)
-
         supportFragmentManager.commit { detach(fragment) }
-
         renderFragment()
-
         withContext(dispatcherProvider.main()) {
           updateViews()
           loadProgress.dismiss()
@@ -238,7 +237,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  fun showFormSubmissionConfirmAlert() {
+  open fun showFormSubmissionConfirmAlert() {
     if (questionnaire.experimental)
       showConfirmAlert(
         context = this,
@@ -263,8 +262,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     return questionnaireFragment.getQuestionnaireResponse()
   }
 
-  private lateinit var saveProcessingAlertDialog: AlertDialog
-
   fun dismissSaveProcessing() {
     if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog.isShowing)
       saveProcessingAlertDialog.dismiss()
@@ -287,10 +284,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     handleQuestionnaireResponse(questionnaireResponse)
 
-    questionnaireViewModel.extractionProgress.observe(
-      this,
-      { result -> onPostSave(result, questionnaireResponse) }
-    )
+    questionnaireViewModel.extractionProgress.observe(this) { result ->
+      onPostSave(result, questionnaireResponse)
+    }
   }
 
   fun onPostSave(result: Boolean, questionnaireResponse: QuestionnaireResponse) {
@@ -306,7 +302,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     val message = questionnaireViewModel.extractionProgressMessage.value
-    if (message?.isNotBlank() == true)
+    if (message?.isNotEmpty() == true)
       AlertDialogue.showInfoAlert(
         this,
         message,
@@ -328,6 +324,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       Intent().apply {
         putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(parcelResponse))
         putExtra(QUESTIONNAIRE_ARG_FORM, questionnaire.logicalId)
+        putExtra(
+          QUESTIONNAIRE_BACK_REFERENCE_KEY,
+          intent.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)
+        )
       }
     )
     finish()
@@ -335,9 +335,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
     QuestionnaireResponseValidator.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        this
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        context = this
       )
       .values
       .flatten()
@@ -351,52 +351,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
       questionnaireType = questionnaireType
     )
-  }
-
-  companion object {
-    const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
-    const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
-    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
-    const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
-    const val ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY = "adverse_event_immunization_item_id"
-    const val FORM_CONFIGURATIONS = "configurations/form/form_configurations.json"
-    const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
-    const val QUESTIONNAIRE_ARG_TYPE = "questionnaire-type"
-    const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
-    const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
-    const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
-    const val QUESTIONNAIRE_AGE = "PR-age"
-
-    fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
-    fun Intent.populationResources() =
-      this.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)
-
-    fun intentArgs(
-      clientIdentifier: String? = null,
-      formName: String,
-      questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-      questionnaireResponse: QuestionnaireResponse? = null,
-      immunizationId: String? = null,
-      populationResources: ArrayList<Resource> = ArrayList()
-    ) =
-      bundleOf(
-        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-        Pair(QUESTIONNAIRE_ARG_FORM, formName),
-        Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
-        Pair(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, immunizationId),
-      )
-        .apply {
-          questionnaireResponse?.let {
-            putString(QUESTIONNAIRE_RESPONSE, it.encodeResourceToString())
-          }
-
-          val resourcesList = ArrayList<String>()
-          populationResources.map { it.encodeResourceToString() }.toCollection(resourcesList)
-
-          if (resourcesList.isNotEmpty()) {
-            putStringArrayList(QUESTIONNAIRE_POPULATION_RESOURCES, resourcesList)
-          }
-        }
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -415,11 +369,59 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     } else {
       showConfirmAlert(
         this,
-        R.string.questionnaire_alert_back_pressed_message,
+        getDismissDialogMessage(),
         R.string.questionnaire_alert_back_pressed_title,
         { finish() },
         R.string.questionnaire_alert_back_pressed_button_title
       )
     }
+  }
+
+  open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message
+
+  companion object {
+    const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
+    const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
+    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
+    const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
+    const val FORM_CONFIGURATIONS = "configurations/form/form_configurations.json"
+    const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
+    const val QUESTIONNAIRE_ARG_TYPE = "questionnaire-type"
+    const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
+    const val QUESTIONNAIRE_BACK_REFERENCE_KEY = "questionnaire-back-reference"
+    const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
+    const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
+    const val QUESTIONNAIRE_AGE = "PR-age"
+
+    fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
+    fun Intent.populationResources() =
+      this.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)
+
+    fun intentArgs(
+      clientIdentifier: String? = null,
+      formName: String,
+      questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+      questionnaireResponse: QuestionnaireResponse? = null,
+      backReference: String? = null,
+      populationResources: ArrayList<Resource> = ArrayList()
+    ) =
+      bundleOf(
+        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
+        Pair(QUESTIONNAIRE_ARG_FORM, formName),
+        Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
+        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)
+      )
+        .apply {
+          questionnaireResponse?.let {
+            putString(QUESTIONNAIRE_RESPONSE, it.encodeResourceToString())
+          }
+          val resourcesList = populationResources.map { it.encodeResourceToString() }
+          if (resourcesList.isNotEmpty()) {
+            putStringArrayList(
+              QUESTIONNAIRE_POPULATION_RESOURCES,
+              resourcesList.toCollection(ArrayList())
+            )
+          }
+        }
   }
 }

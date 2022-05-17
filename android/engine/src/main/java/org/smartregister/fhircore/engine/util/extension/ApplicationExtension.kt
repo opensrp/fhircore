@@ -31,7 +31,9 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.SyncJob
+import com.google.android.fhir.workflow.FhirOperator
 import com.google.gson.Gson
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,8 +47,10 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
@@ -80,8 +84,8 @@ suspend fun FhirEngine.searchActivePatients(
     sort(Patient.NAME, Order.ASCENDING)
     count =
       if (loadAll) this@searchActivePatients.countActivePatients().toInt()
-      else PaginationUtil.DEFAULT_PAGE_SIZE
-    from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+      else PaginationConstant.DEFAULT_PAGE_SIZE
+    from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
   }
 
 suspend fun FhirEngine.countActivePatients(): Long =
@@ -119,7 +123,7 @@ suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immuniz
 suspend fun FhirEngine.loadCqlLibraryBundle(
   context: Context,
   sharedPreferencesHelper: SharedPreferencesHelper,
-  fhirOperator: FhirOperatorDecorator,
+  fhirOperator: FhirOperator,
   resourcesBundlePath: String
 ) =
   try {
@@ -146,6 +150,11 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
   } catch (exception: Exception) {
     Timber.e(exception)
   }
+
+fun ConfigurationRegistry.fetchLanguages() =
+  this.retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
+    .run { this.languages }
+    .map { Language(it, Locale.forLanguageTag(it).displayName) }
 
 /**
  * Schedule periodic sync periodically as defined in the [configurationRegistry] application config

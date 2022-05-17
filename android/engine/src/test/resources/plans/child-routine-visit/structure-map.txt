@@ -1,0 +1,136 @@
+map "http://hl7.org/fhir/StructureMap/105121" = 'ChildRoutineCarePlan'
+
+uses "http://hl7.org/fhir/StructureDefinition/Patient" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group ChildRoutineCarePlan(source src : Patient, target bundle: Bundle) {
+    src -> bundle.type = 'collection' "r_bun_type";
+    src then ExtractCarePlan(src, bundle) "r_bun_entries";
+}
+
+group ExtractCarePlan(source src : Patient, target bundle : Bundle) {
+    src.birthDate as birthdate -> bundle.entry as entry, entry.resource = create('CarePlan') as cp then {
+        src -> cp.id = uuid() ,
+               cp.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+               cp.title = 'Child Routine visit CarePlan',
+               cp.description = 'This defines the schedule of care for patients under 5 years old',
+               cp.status = 'active',
+               cp.intent = 'plan',
+               cp.subject = create('Reference') as ref, ref.reference = evaluate(src, $this.id),
+               cp.created = evaluate(src, now()),
+               cp.author = evaluate(src, $this.generalPractitioner.first()),
+               cp.period = create('Period') as period then ExtractPeriod_now_5y(birthdate, period) "r_cp_data";
+
+        src then ExtractActivityDetail(src, cp, bundle) "r_cp_acti_det";
+    } "r_cp";
+}
+
+group ExtractActivityDetail(source src : Patient,
+    target careplan : CarePlan,
+    target bundle: Bundle){
+    src -> careplan.activity = create('CarePlan_Activity') as activity then {
+        src -> activity.detail = create('CarePlan_ActivityDetail') as det then {
+            src -> det.kind = 'Task',
+                   det.status = 'in-progress',
+                   det.description = 'Child Monthly Routine visit',
+                   det.performer = evaluate(src, $this.generalPractitioner.first()),
+                   det.code = create('CodeableConcept') as concept then ExtractTimingCode(src, concept) "r_act_det_data";
+
+            src where(src.birthDate > (today() - 60 'month')) -> det.scheduled = create('Timing') as timing,
+                   timing.repeat = create('Timing_Repeat') as repeat then {
+                src -> repeat.countMax = create('positiveInt') as cm, cm.value = "60" ,
+                       repeat.duration = create('decimal') as d, d.value = "2",
+                       repeat.durationMax = create('decimal') as dm, dm.value = "4",
+                       repeat.durationUnit = 'h',
+                       repeat.frequency = create('positiveInt') as f, f.value = "1",
+                       repeat.frequencyMax = create('positiveInt') as fm, fm.value = "1",
+                       repeat.period = create('decimal') as p, p.value = "1",
+                       repeat.periodMax = create('decimal') as pm, pm.value = "1",
+                       repeat.periodUnit = 'mo' "r_tim_repeat_data";
+
+                src -> evaluate(src, $this.birthDate) as birthdate,
+                       evaluate(careplan, $this.period) as range then
+                       ExtractTasks(birthdate, range, src, careplan, activity, timing, bundle) "r_tasks";
+
+                //TODO use better strategy
+                src -> repeat.count = create('positiveInt') as c, c.value = evaluate(activity, $this.outcomeReference.count().value) "r_task_rep_count";
+
+            } "r_tim_repeat";
+        } "r_act_det";
+
+    } "r_cp_acti";
+}
+
+group ExtractTasks(
+    source offset: DateType,
+    source range: Period,
+    source src : Patient,
+    source careplan: CarePlan,
+    target activity : CarePlan_Activity,
+    target timing: Timing,
+    target bundle: Bundle){
+
+    // skip task creation and move to next until offset/next due month is future
+    offset where(offset < today()) -> evaluate(offset, $this + 1 'month') as newoffset then
+                                      ExtractTasks(newoffset, range, src, careplan, activity, timing, bundle) "r_task_repeat";
+
+    offset where(offset >= today() and offset < range.end) -> evaluate(offset, $this.value.substring(0,7) + '-01') as startStr,
+                                        create('date') as start, start.value = startStr,
+                                        create('Period') as period,
+                                        bundle.entry as entry,
+                                        entry.resource = create('Task') as task then {
+        src then ExtractPeriod_1m(start, period) "r_task_period_extr";
+
+        src -> task.id = uuid(),
+               task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+               task.status = 'requested',
+               task.intent = 'plan',
+               task.executionPeriod = period,
+               task.priority = 'routine',
+               task.description = 'Child Routine  visit Task',
+               task.for = create('Reference') as ref, ref.reference = evaluate(src, $this.id),
+               task.basedOn = reference(careplan),
+               task.authoredOn = evaluate(src, now()),
+               task.requester = evaluate(src, $this.generalPractitioner.first()),
+               task.owner = evaluate(src, $this.generalPractitioner.first()) "r_task_data";
+
+        // use different forms for 1 year and under 1 year
+        src where(offset <= (src.birthDate + 12 'month')) -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/105056' "r_task_reason_ref_under1";
+
+        src where(offset > (src.birthDate + 12 'month')) -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/105057' "r_task_reason_ref_above1";
+
+        src -> activity.outcomeReference = reference(task) "r_cp_task_ref";
+        src -> timing.event = evaluate(period, $this.start) "r_activity_timing";
+
+        src -> evaluate(period, $this.end) as newoffset then ExtractTasks(newoffset, range, src, careplan, activity, timing, bundle) "r_task_repeat";
+    } "r_cp_acti_outcome";
+}
+
+group ExtractTimingCode(source src : Patient, target concept: CodeableConcept){
+    src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/v3-GTSAbbreviation", "MO") as coding then {
+        src -> coding.display = 'MO' "r_cp_cod_disp";
+    } "r_cp_cc_cod";
+    src -> concept.text = 'MO' "r_cp_cc_txt";
+}
+
+group ExtractPeriod_now_5y(source birthdate : DateType, target period: Period){
+    birthdate -> evaluate(birthdate, now()) as start,
+                 evaluate(birthdate, $this + 60 'month') as end then
+                 ExtractPeriod(start, end, period) "r_period";
+}
+
+group ExtractPeriod_1m(source offset : DateType, target period: Period){
+    offset -> offset as start,
+              evaluate(offset, $this + 1 'month') as end then
+              ExtractPeriod(start, end, period) "r_period";
+}
+
+group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00') "r_per_end";
+}

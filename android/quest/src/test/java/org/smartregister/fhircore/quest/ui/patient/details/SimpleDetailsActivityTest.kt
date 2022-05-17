@@ -26,7 +26,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import javax.inject.Inject
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -45,6 +44,7 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
+import timber.log.Timber
 
 @HiltAndroidTest
 class SimpleDetailsActivityTest : RobolectricTest() {
@@ -85,7 +85,7 @@ class SimpleDetailsActivityTest : RobolectricTest() {
   @Test
   fun testG6pdPatientRegistrationExtraction() {
     val g6pdStructureMap = "patient-registration-questionnaire/structure-map.txt".readFile()
-    val g6pdResposne = "patient-registration-questionnaire/questionnaire-response.json".readFile()
+    val g6pdResponse = "patient-registration-questionnaire/questionnaire-response.json".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -95,7 +95,6 @@ class SimpleDetailsActivityTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -104,23 +103,23 @@ class SimpleDetailsActivityTest : RobolectricTest() {
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
-    System.out.println(mapString)
+    Timber.d(mapString)
 
     val targetResource = Bundle()
 
-    val baseElement = iParser.parseResource(QuestionnaireResponse::class.java, g6pdResposne)
+    val baseElement = iParser.parseResource(QuestionnaireResponse::class.java, g6pdResponse)
 
     kotlin.runCatching { scu.transform(contextR4, baseElement, map, targetResource) }.onFailure {
-      System.out.println(it.stackTraceToString())
+      Timber.d(it.stackTraceToString())
     }
 
-    System.out.println(iParser.encodeResourceToString(targetResource))
+    println(iParser.encodeResourceToString(targetResource))
   }
 
   @Test
   fun testG6pdTestResultsExtraction() {
     val g6pdStructureMap = "test-results-questionnaire/structure-map.txt".readFile()
-    val g6pdResposne = "test-results-questionnaire/questionnaire-response.json".readFile()
+    val g6pdResponse = "test-results-questionnaire/questionnaire-response.json".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -138,16 +137,16 @@ class SimpleDetailsActivityTest : RobolectricTest() {
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
-    System.out.println(mapString)
+    Timber.d(mapString)
 
     val targetResource = Bundle()
 
-    val baseElement = iParser.parseResource(QuestionnaireResponse::class.java, g6pdResposne)
+    val baseElement = iParser.parseResource(QuestionnaireResponse::class.java, g6pdResponse)
 
     kotlin.runCatching { scu.transform(contextR4, baseElement, map, targetResource) }.onFailure {
-      System.out.println(it.stackTraceToString())
+      Timber.d(it.stackTraceToString())
     }
 
-    System.out.println(iParser.encodeResourceToString(targetResource))
+    Timber.d(iParser.encodeResourceToString(targetResource))
   }
 }

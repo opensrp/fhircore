@@ -21,7 +21,7 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAddressDistrict
 import org.smartregister.fhircore.engine.util.extension.extractAddressState
@@ -36,29 +36,29 @@ import org.smartregister.fhircore.quest.data.patient.model.AddressData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 
 class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context) :
-  DomainMapper<Patient, PatientItem> {
+  DataMapper<Patient, PatientItem> {
 
-  override fun mapToDomainModel(dto: Patient): PatientItem {
-    val name = dto.extractName()
-    val gender = dto.extractGender(context)?.first() ?: ""
-    val age = dto.extractAge()
+  override fun transformInputToOutputModel(inputModel: Patient): PatientItem {
+    val name = inputModel.extractName()
+    val gender = inputModel.extractGender(context)?.first() ?: ""
+    val age = inputModel.extractAge()
     return PatientItem(
-      id = dto.logicalId,
-      identifier = dto.identifierFirstRep.value ?: "",
+      id = inputModel.logicalId,
+      identifier = inputModel.identifierFirstRep.value ?: "",
       name = name,
       gender = gender.toString(),
       age = age,
-      displayAddress = dto.extractAddress(),
+      displayAddress = inputModel.extractAddress(),
       address =
         AddressData(
-          dto.extractAddressDistrict(),
-          dto.extractAddressState(),
-          dto.extractAddressText(),
-          dto.extractAddress()
+          inputModel.extractAddressDistrict(),
+          inputModel.extractAddressState(),
+          inputModel.extractAddressText(),
+          inputModel.extractAddress()
         ),
-      telecom = dto.extractTelecom(),
-      generalPractitionerReference = dto.extractGeneralPractitionerReference(),
-      managingOrganizationReference = dto.extractManagingOrganizationReference()
+      telecom = inputModel.extractTelecom(),
+      generalPractitionerReference = inputModel.extractGeneralPractitionerReference(),
+      managingOrganizationReference = inputModel.extractManagingOrganizationReference()
     )
   }
 }

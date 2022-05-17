@@ -108,7 +108,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
 
-    val questionnaireConfig = QuestionnaireConfig("appId", "form", "title", "form-id")
+    val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
     coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
       questionnaireConfig
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
@@ -149,8 +149,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         "my-form",
         QuestionnaireType.READ_ONLY,
         questionnaireResponse,
-        populationResources = populationResources,
-        immunizationId = "2323"
+        populationResources = populationResources
       )
     Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(
@@ -166,10 +165,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         .newJsonParser()
         .encodeResourceToString(questionnaireResponse),
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
-    )
-    Assert.assertEquals(
-      "2323",
-      result.getString(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
     )
     Assert.assertEquals(
       FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(patient),

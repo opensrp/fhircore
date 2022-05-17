@@ -47,13 +47,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnRememberAppChecked() {
-    appSettingViewModel.onRememberAppChecked(true)
-    Assert.assertNotNull(appSettingViewModel.rememberApp.value)
-    Assert.assertEquals(true, appSettingViewModel.rememberApp.value)
-  }
-
-  @Test
   fun testLoadConfigurations() = runBlockingTest {
     coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
       Bundle().apply { addEntry().resource = Composition() }
