@@ -1,0 +1,785 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "128806",
+  "meta": {
+    "versionId": "3",
+    "lastUpdated": "2022-05-13T15:42:06.008+00:00",
+    "source": "#d44530fb66dedb9d",
+    "profile": [
+      "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+    ],
+    "tag": [
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "nb-NO",
+        "display": "Norsk Bokmål"
+      }
+    ]
+  },
+  "language": "nb-NO",
+  "extension": [
+    {
+      "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-sidebar",
+      "valueCoding": {
+        "system": "http://helsenorge.no/fhir/ValueSet/sdf-sidebar",
+        "code": "1"
+      }
+    },
+    {
+      "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-information-message",
+      "valueCoding": {
+        "system": "http://helsenorge.no/fhir/ValueSet/sdf-information-message",
+        "code": "1"
+      }
+    }
+  ],
+  "version": "1",
+  "title": "family_member_registration",
+  "status": "active",
+  "subjectType": [
+    "Patient",
+    "RelatedPerson"
+  ],
+  "publisher": "afyayangu",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://fhir.ona.io",
+            "code": "000005",
+            "display": "Afya 3"
+          }
+        ]
+      }
+    }
+  ],
+  "purpose": "Family Member Registration",
+  "code": [
+    {
+      "system": "https://www.snomed.org",
+      "code": "303071001",
+      "display": "Family Member"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "c5f61e5e-61e0-490b-cfad-14c4b9f3723d",
+      "text": "OpenSRP ID",
+      "type": "string",
+      "required": true
+    },
+    {
+      "linkId": "397d4e72-0990-45ed-866b-fab3dd27f758",
+      "text": "Surname",
+      "type": "string",
+      "required": true
+    },
+    {
+      "linkId": "6bb3b09d-6f19-4aba-815c-5e36bea96dbc",
+      "text": "First name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "linkId": "fd734513-ba6f-4cf2-922f-0d1054e9353c",
+      "text": "Middle name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "0740ed31-554a-4069-81d9-08f9f1697a03",
+      "type": "choice",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "aa4c3a96-cd8a-4c3a-fea0-d35db33d8fbd",
+            "system": "urn:uuid:0c09753f-7b49-4127-df51-0d64095480b7",
+            "code": "date-of-birth-unknown",
+            "display": "Date of Birth Unknown"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "cce2da30-453c-4f03-88ce-c85c4bcc3a36",
+            "system": "urn:uuid:0c09753f-7b49-4127-df51-0d64095480b7",
+            "code": "remove",
+            "display": "remove"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "6c2d4f74-84d5-49cd-81dd-a53e101a6899",
+      "text": "Date of birth (DOB)",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "0740ed31-554a-4069-81d9-08f9f1697a03",
+          "operator": "exists",
+          "answerBoolean": false
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "5f06debf-721a-457d-8540-65cac95be9a1",
+      "text": "Age",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "0740ed31-554a-4069-81d9-08f9f1697a03",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ],
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "82fee04f-958c-41bf-8b67-c57eb2fdf3a9",
+      "text": "Does he/she have any of the following forms of ID",
+      "type": "choice",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "70479dd9-0e70-444f-bdd6-2cde4e50dabe",
+            "system": "urn:uuid:d766a758-4c64-40ce-83b7-59a2edeb4758",
+            "code": "national-id",
+            "display": "National ID"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "e22700ff-808c-461b-86c6-c7bbe4080c17",
+            "system": "urn:uuid:d766a758-4c64-40ce-83b7-59a2edeb4758",
+            "code": "voter's-registration-number",
+            "display": "Voter's registration number"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9f2009eb-44ff-4881-85b9-5ac9b8558c43",
+            "system": "urn:uuid:d766a758-4c64-40ce-83b7-59a2edeb4758",
+            "code": "driver's-license-number",
+            "display": "Driver's license number"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "8469e807-824a-4bca-925d-a6484f53c5ee",
+            "system": "urn:uuid:d766a758-4c64-40ce-83b7-59a2edeb4758",
+            "code": "passport-number",
+            "display": "Passport number"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "201fa9a2-1878-4939-a5ce-70985640b047",
+            "system": "urn:uuid:d766a758-4c64-40ce-83b7-59a2edeb4758",
+            "code": "birth-certificate",
+            "display": "Birth Certificate"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "03164682-d6db-4d85-b73c-8c7acea01d27",
+            "system": "urn:uuid:d766a758-4c64-40ce-83b7-59a2edeb4758",
+            "code": "none",
+            "display": "None"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "2dee80f1-525f-447a-8f63-d746dd1fc23a",
+          "text": "Identification Number",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "82fee04f-958c-41bf-8b67-c57eb2fdf3a9",
+              "operator": "!=",
+              "answerCoding": {
+                "system": "urn:uuid:d766a758-4c64-40ce-83b7-59a2edeb4758",
+                "code": "none"
+              }
+            }
+          ],
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "fca6a69f-7b41-4e50-822e-0dc566184abb",
+      "text": "Health insurance provider",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "4976f455-e1a3-4aa1-827d-93a1e776e6a8",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "community-health-fund-(chf)",
+            "display": "Community Health Fund (CHF)"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "beb187fb-9344-4ecc-8f16-916bacc205b1",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "ichf",
+            "display": "iCHF"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "434a00c9-7c8a-4e0b-e66f-79f274d42aed",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "national-social-security-fund-social-health-insurance-benefit-(shib)",
+            "display": "National Social Security Fund - Social Health Insurance Benefit (SHIB)"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "24b720fe-4b3c-4de5-8595-ab551ba9d515",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "tiba-kwa-kadi-(tika)",
+            "display": "Tiba Kwa Kadi (TIKA)"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a5216b3f-deaa-4c06-a187-1178232c650a",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "aar-healthcare",
+            "display": "AAR Healthcare"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "adf2f70c-543a-4742-a52b-acb1df80ad04",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "strategies-insurance",
+            "display": "Strategies Insurance"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "7f147b13-75d7-4306-8df6-7d3e3922b5d7",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "milvik-tanzania-ltd-(bima-mkononi)",
+            "display": "Milvik Tanzania Ltd (BIMA Mkononi)"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2227e99c-9d72-4561-80bd-5e07b10830b4",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "britam-insurance-tanzania",
+            "display": "Britam Insurance Tanzania"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "db730054-65b1-4268-d2d9-7648f76c4a1c",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "jubilee-insurance",
+            "display": "Jubilee Insurance"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "c9e4cd71-7427-47e3-813c-7f65820eb8c9",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "resolutions-insurance",
+            "display": "Resolutions Insurance"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "4619d94c-9cb1-4146-e797-21d91925d033",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "reliance-insurance",
+            "display": "Reliance Insurance"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "1fe9ab0b-0869-4012-8882-037addd9379e",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "other",
+            "display": "Other"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "03e92290-d4e8-4970-c397-ca00b995c1a7",
+            "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+            "code": "none",
+            "display": "None"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "1b43d02f-c752-42b8-8c31-7ac8ee7d55f8",
+          "text": "Other health insurance provider",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "fca6a69f-7b41-4e50-822e-0dc566184abb",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+                "code": "other"
+              }
+            }
+          ],
+          "required": true
+        },
+        {
+          "linkId": "45ecb72b-8af1-4a68-8f29-6fae12144175",
+          "text": "Health insurance provider number",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "fca6a69f-7b41-4e50-822e-0dc566184abb",
+              "operator": "!=",
+              "answerCoding": {
+                "system": "urn:uuid:58622775-8391-43e5-b4fd-404c99c11d91",
+                "code": "none"
+              }
+            }
+          ],
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "e5bb0db6-82a0-4200-b421-334da8a916a4",
+      "text": "Sex",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "657bbd9e-bf10-4de8-9b5b-d8fe1b7ba16b",
+            "system": "http://hl7.org/fhir/2018Sep/codesystem-administrative-gender.html",
+            "code": "male",
+            "display": "Male"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "4830f506-4ca4-4e03-8be6-a18b4cd2d7e4",
+            "system": "http://hl7.org/fhir/2018Sep/codesystem-administrative-gender.html",
+            "code": "female",
+            "display": "Female"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "8d15d9ca-5e51-409d-aefc-f186f4d92b78",
+      "text": "Is family head",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "82ae6651-5eb2-4439-8e9b-e8a23e5112be",
+            "system": "urn:uuid:0f5033b2-5184-40c5-80cf-e141719e31ea",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a12d8439-0084-45be-ab29-d71f2187002b",
+            "system": "urn:uuid:0f5033b2-5184-40c5-80cf-e141719e31ea",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "8cb27641-c815-4eb9-cfe4-9cd2c60d62c9",
+      "text": "Is primary caregiver",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "82ae6651-5eb2-4439-8e9b-e8a23e5112be",
+            "system": "urn:uuid:0f5033b2-5184-40c5-80cf-e141719e31ea",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a12d8439-0084-45be-ab29-d71f2187002b",
+            "system": "urn:uuid:0f5033b2-5184-40c5-80cf-e141719e31ea",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "1b937c7c-54c6-4415-e15c-bc328221bcaf",
+      "text": "Physical disabilities",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "a92a5f8c-0c7d-4f80-bbdb-0b996ce13263",
+            "system": "urn:uuid:65d8f88e-36a7-4132-8e86-69e479865cd6",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "e9f54b68-5890-41a5-83da-3f6d7aff6c0d",
+            "system": "urn:uuid:65d8f88e-36a7-4132-8e86-69e479865cd6",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "af683565-d632-407e-a56b-e3acaab705ce",
+          "text": "Type of physical disabilities",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "1b937c7c-54c6-4415-e15c-bc328221bcaf",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:65d8f88e-36a7-4132-8e86-69e479865cd6",
+                "code": "yes"
+              }
+            }
+          ],
+          "required": true
+        }
+      ]
+    },
+    {
+      "linkId": "7cb06ccc-ad90-4117-df30-fa44a60849af",
+      "text": "Phone number",
+      "type": "integer",
+      "required": false
+    },
+    {
+      "linkId": "be74f432-ca13-4ac8-db17-455127b4ec1c",
+      "text": "Other phone number",
+      "type": "integer",
+      "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "9142e550-7365-44fa-bc79-a481edc3e938",
+            "display": "Farmer"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "3a99ecc5-1a4f-4703-82f0-309a59f28e13",
+            "display": "Civil Servant"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "b32223b0-d0aa-419e-df0a-968c3a56cc04",
+            "display": "Nurse"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "185ac8cb-d3f8-4ddd-e0c9-b531ac8c2910",
+            "display": "Teacher"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "1224073a-6e3c-4fc9-9b32-0a676cd757fe",
+            "display": "Traditional Healer"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "662c85d0-490c-403e-8a6c-5de25327b413",
+            "display": "Other"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "ca6eeb16-8772-4ae7-8ee2-4741fb31b902",
+            "display": "Community Health Worker (CHW) "
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "f6c6df0b-f5e2-47b3-8b47-f3cd9b6d41b8",
+            "display": "Traditional Birth Attendant"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "61b89a45-8268-40dc-8c37-e1be7b9f9a76",
+            "display": "Community HMIS (cHMIS)"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "77722768-6273-44a5-8234-34f94cfc13d5",
+            "display": "Community Based Distributor"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "6a075ad7-6c6b-4a41-d6ea-ea9eb962ab8c",
+            "display": "Home Based Care (HBC)"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "dbba46f0-fcd4-4752-9d36-50e71e8d5182",
+            "display": "Community IMCI"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+          "valueReference": {
+            "id": "2f1cb9fd-ffc0-43be-fce8-b564ef96fcaa",
+            "display": "None"
+          }
+        }
+      ],
+      "linkId": "f2a95f48-41a7-4160-8fc4-814f3991e553",
+      "code": [
+        {
+          "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+          "code": "1",
+          "display": "Technical endpoint for receiving QuestionnaireResponse"
+        }
+      ],
+      "text": "Occupation",
+      "type": "choice",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "ecdec229-0103-4c16-a881-3e8ce3cbe7f1",
+      "text": "Leadership role in the community",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "416775e3-fe27-459e-d218-4d60080da6b9",
+            "system": "urn:uuid:352770ec-2e09-4614-98f7-b6393e512623",
+            "code": "religious-leader",
+            "display": "Religious leader"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "8c68774f-fccc-41f1-832a-257104ee447c",
+            "system": "urn:uuid:352770ec-2e09-4614-98f7-b6393e512623",
+            "code": "traditional-leader",
+            "display": "Traditional leader"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "46844b0d-219d-4f37-b0c7-df4ed76ce670",
+            "system": "urn:uuid:352770ec-2e09-4614-98f7-b6393e512623",
+            "code": "political-leader",
+            "display": "Political leader"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a51b8c18-df70-421b-8b77-a2f71db9caf9",
+            "system": "urn:uuid:352770ec-2e09-4614-98f7-b6393e512623",
+            "code": "influential-leader",
+            "display": "Influential leader"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "400de44d-affb-43fd-e658-10b2b612c20e",
+            "system": "urn:uuid:352770ec-2e09-4614-98f7-b6393e512623",
+            "code": "other",
+            "display": "Other"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "920c821a-e72e-4f6c-84f5-ee778df0991f",
+            "system": "urn:uuid:352770ec-2e09-4614-98f7-b6393e512623",
+            "code": "none",
+            "display": "None"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "6f62b16b-de33-4b49-8d98-6791f47108fd",
+          "text": "Mention other role in the community",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "ecdec229-0103-4c16-a881-3e8ce3cbe7f1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:352770ec-2e09-4614-98f7-b6393e512623",
+                "code": "other"
+              }
+            }
+          ],
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,425 @@
+{
+  "resourceType": "StructureMap",
+  "id": "idSample",
+  "url": "https://fhir.labs.smartregister.org/fhir/StructureMap/idSample",
+  "name": "afya yangu Family Registration",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Group",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "eCBISFamilyRegistration",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_bundle_type",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_bundle_entries",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "group",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Group"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractGroup",
+              "variable": [
+                "src",
+                "group"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractGroup",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "group",
+          "type": "Group",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_group_id_generation",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "group",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            }
+          ]
+        },
+        {
+          "name": "rule_group_name",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "group",
+              "contextType": "variable",
+              "element": "name",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.item.where(linkId = 'abb75057-f186-40bb-ddaf-da72043f5dae').answer.value"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_group_identifier_national_id",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "group",
+              "contextType": "variable",
+              "element": "identifier",
+              "variable": "groupIdentifierHouseholdId",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Identifier"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_group_identifier_national_id_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "groupIdentifierHouseholdId",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "$this.item.where(linkId = 'ce49bde4-6ef9-423e-c747-efab250cd770').answer.value"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_group_identifier_national_id_use",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "groupIdentifierHouseholdId",
+                  "contextType": "variable",
+                  "element": "use",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "official"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_group_identifier",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "group",
+              "contextType": "variable",
+              "element": "identifier",
+              "variable": "groupIdentifier",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Identifier"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_group_identifier_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "groupIdentifier",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "rule_group_identifier_use",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "groupIdentifier",
+                  "contextType": "variable",
+                  "element": "use",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "secondary"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_grp_status_data",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "group",
+              "contextType": "variable",
+              "element": "active",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueBoolean": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_grp_type_data",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "group",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "person"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_grp_code_data",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "group",
+              "contextType": "variable",
+              "element": "code",
+              "variable": "concept",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "CodeableConcept"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractFamilyCode",
+              "variable": [
+                "src",
+                "concept"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractFamilyCode",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "Group",
+          "mode": "source"
+        },
+        {
+          "name": "concept",
+          "type": "CodeableConcept",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_cp_cc_cod",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "concept",
+              "contextType": "variable",
+              "element": "coding",
+              "variable": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "https://www.snomed.org"
+                },
+                {
+                  "valueString": "35359004"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_cp_cod_disp",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "coding",
+                  "contextType": "variable",
+                  "element": "display",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Family"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

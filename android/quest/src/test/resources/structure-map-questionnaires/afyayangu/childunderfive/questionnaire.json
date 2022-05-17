@@ -1,0 +1,326 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "128805",
+  "meta": {
+    "versionId": "2",
+    "lastUpdated": "2022-05-11T08:57:11.797+00:00",
+    "source": "#9ab6f5ad455ebe1f",
+    "profile": [ "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire" ],
+    "tag": [ {
+      "system": "urn:ietf:bcp:47",
+      "code": "nb-NO",
+      "display": "Norsk Bokmål"
+    } ]
+  },
+  "language": "nb-NO",
+  "extension": [ {
+    "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-sidebar",
+    "valueCoding": {
+      "system": "http://helsenorge.no/fhir/ValueSet/sdf-sidebar",
+      "code": "1"
+    }
+  }, {
+    "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-information-message",
+    "valueCoding": {
+      "system": "http://helsenorge.no/fhir/ValueSet/sdf-information-message",
+      "code": "1"
+    }
+  } ],
+  "version": "1",
+  "title": "under-5-register",
+  "status": "active",
+  "subjectType": [ "Patient" ],
+  "publisher": "afyayangu",
+  "useContext": [ {
+    "code": {
+      "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+      "code": "focus"
+    },
+    "valueCodeableConcept": {
+      "coding": [ {
+        "system": "http://fhir.ona.io",
+        "code": "000005",
+        "display": "Afya 2"
+      } ]
+    }
+  } ],
+  "item": [ {
+    "linkId": "397d4e72-0990-45ed-866b-fab3dd27f758",
+    "text": "Surname",
+    "_text": {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/rendering-markdown",
+        "valueMarkdown": "Surname"
+      } ]
+    },
+    "type": "string",
+    "required": true
+  }, {
+    "linkId": "6bb3b09d-6f19-4aba-815c-5e36bea96dbc",
+    "text": "First name",
+    "type": "string",
+    "required": true
+  }, {
+    "linkId": "fd734513-ba6f-4cf2-922f-0d1054e9353c",
+    "text": "Middle name",
+    "type": "string",
+    "required": true
+  }, {
+    "linkId": "6c2d4f74-84d5-49cd-81dd-a53e101a6899",
+    "text": "Date of birth (DOB)",
+    "type": "date",
+    "required": true
+  }, {
+    "linkId": "5f06debf-721a-457d-8540-65cac95be9a1",
+    "text": "Age",
+    "type": "integer",
+    "required": true
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "d14a20ef-1a5b-4438-82aa-6ce7337e8998",
+        "display": "Community Health Fund (CHF)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "060a639e-a7aa-4444-debf-412b763d63de",
+        "display": "iCHF"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "db71da14-0fba-421e-c7c2-429fd79d819c",
+        "display": "National Social Security Fund - Social Health Insurance Benefit (SHIB)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "b3eb440b-408b-452d-8fde-567bdb67b547",
+        "display": "Tiba Kwa Kadi (TIKA)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "d376735a-5c91-4091-998e-d37b9f70a2c0",
+        "display": "AAR Healthcare"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "318cd58b-664a-4cc6-eaa7-b16a3fae219d",
+        "display": "Strategies Insurance"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "be22a0b6-5d5d-42c9-e168-4786016e5b37",
+        "display": "Milvik Tanzania Ltd (BIMA Mkononi)"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "c7bdba91-fc4d-4b64-8928-79c446211dac",
+        "display": "Britam Insurance Tanzania"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "8423085a-3b0a-4b4c-aba8-75cb69383014",
+        "display": "Jubilee Insurance"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "1007dbb2-5dbc-4466-8f39-79099a27ad22",
+        "display": "Resolutions Insurance"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "d9ba2af0-b3e3-42d4-b81e-8ba9d2e97953",
+        "display": "Reliance Insurance"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "b1583b8b-2b7a-4373-e9a1-86424cffba8e",
+        "display": "Other"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "84032099-3d67-4b8e-8777-a3113d83a376",
+        "display": "None"
+      }
+    } ],
+    "linkId": "3303624e-fea6-455b-8806-08283f907b22",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Health insurance provider",
+    "type": "choice",
+    "required": true
+  }, {
+    "linkId": "45ecb72b-8af1-4a68-8f29-6fae12144175",
+    "text": "Health insurance provider number",
+    "type": "string",
+    "required": false
+  }, {
+    "linkId": "dd0baf02-9927-4224-ce73-4e2b1f7c494c",
+    "text": "Sex",
+    "type": "string",
+    "required": true
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "2e0bcfad-694b-477a-f91b-29cc3f69eb28",
+        "display": "Yes"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "80b1c0a1-a7c8-4a8d-898d-0da871ed42b2",
+        "display": "No"
+      }
+    } ],
+    "linkId": "cb1b26a2-a4bd-4e6a-8024-7c46301857a9",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Physical disabilities",
+    "type": "choice",
+    "required": true
+  }, {
+    "linkId": "87672d27-e285-4662-9837-0e7bc8cecffa",
+    "text": "Type of physical disabilities",
+    "type": "string",
+    "required": true
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "154e7b7b-545d-4259-8f4f-ac52eca3cb15",
+        "display": "Yes"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "a3a27a97-e7dc-4a22-bbe8-db7a855ba6a3",
+        "display": "No"
+      }
+    } ],
+    "linkId": "0951348a-2b29-4b49-fb38-ccc30f2fd1a1",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Birth registration / certificate",
+    "type": "choice",
+    "required": true
+  }, {
+    "linkId": "7cb06ccc-ad90-4117-df30-fa44a60849af",
+    "text": "Birth Registration Number",
+    "type": "integer",
+    "required": true
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "e43226af-302c-4620-841b-4afdf8cddb3f",
+        "display": "Green"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "f3e9f1d7-6c36-424e-e1f7-fbf126779def",
+        "display": "Grey/Yellow"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "89379562-4eed-43ed-8641-ca272afdf6aa",
+        "display": "Red"
+      }
+    } ],
+    "linkId": "ccab70a6-6116-49c4-8565-8623e7058890",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Nutrition status\n",
+    "type": "choice",
+    "required": true
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+          "code": "drop-down"
+        } ]
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "28b1c85e-9a63-438d-86ba-de1662933d1c",
+        "display": "Yes"
+      }
+    }, {
+      "url": "http://ehelse.no/fhir/StructureDefinition/sdf-optionReference",
+      "valueReference": {
+        "id": "c2c15786-79b8-47c7-c368-d748024f7abe",
+        "display": "No"
+      }
+    } ],
+    "linkId": "1a83b671-8ec2-4526-e06e-2b29da5b8ce9",
+    "code": [ {
+      "system": "http://ehelse.no/fhir/ValueSet/TQQC",
+      "code": "1",
+      "display": "Technical endpoint for receiving QuestionnaireResponse"
+    } ],
+    "text": "Does the child have RCH card 1/child growth booklet?",
+    "type": "choice",
+    "required": true
+  } ]
+}
