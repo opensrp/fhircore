@@ -79,7 +79,6 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
     coEvery { pinViewModel.enterUserLoginMessage } returns "demo"
     coEvery { pinViewModel.pin } returns testPin
     every { pinViewModel.appName } returns "Anc"
-    every { pinViewModel.appLogoResFile } returns "ic_launcher"
 
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     pinLoginActivity =

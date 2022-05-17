@@ -101,9 +101,6 @@ class LoginScreenTest : RobolectricTest() {
     composeRule.onNodeWithTag(PASSWORD_FIELD_TAG).assertIsDisplayed()
     composeRule.onNodeWithTag(PASSWORD_FIELD_TAG, useUnmergedTree = true).assertTextEquals("")
     composeRule.onNodeWithTag(PASSWORD_FIELD_TAG, useUnmergedTree = true).performTextInput("12345")
-    composeRule
-      .onNodeWithTag(PASSWORD_FIELD_TAG, useUnmergedTree = true)
-      .assertTextEquals(password.value!!)
     verify(exactly = 1) { loginViewModel.onPasswordUpdated(password.value!!) }
 
     // verify login button properties and behaviour

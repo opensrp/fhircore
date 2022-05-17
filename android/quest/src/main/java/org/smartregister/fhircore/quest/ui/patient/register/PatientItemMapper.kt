@@ -34,9 +34,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.data.patient.model.AddressData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 
-class PatientItemMapper
-@Inject
-constructor(@ApplicationContext val context: Context, val dataExtractor: FhirPathDataExtractor) :
+class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<Patient, PatientItem> {
 
   override fun transformInputToOutputModel(inputModel: Patient): PatientItem {
@@ -52,11 +50,14 @@ constructor(@ApplicationContext val context: Context, val dataExtractor: FhirPat
       displayAddress = inputModel.extractAddress(),
       address =
         AddressData(
-          (dataExtractor.extractData(inputModel, "Patient.address.district").first() as StringType)
+          (FhirPathDataExtractor.extractData(inputModel, "Patient.address.district").first() as
+              StringType)
             .value,
-          (dataExtractor.extractData(inputModel, "Patient.address.state").first() as StringType)
+          (FhirPathDataExtractor.extractData(inputModel, "Patient.address.state").first() as
+              StringType)
             .value,
-          (dataExtractor.extractData(inputModel, "Patient.address.text").first() as StringType)
+          (FhirPathDataExtractor.extractData(inputModel, "Patient.address.text").first() as
+              StringType)
             .value,
           inputModel.extractAddress()
         ),

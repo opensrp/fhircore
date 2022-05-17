@@ -53,7 +53,9 @@ class AppSettingActivity : AppCompatActivity() {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
 
-    val isLoggedIn = sharedPreferencesHelper.read(IS_LOGGED_IN, false)
+    val isLoggedIn =
+      sharedPreferencesHelper.read(IS_LOGGED_IN, false) && accountAuthenticator.hasActiveSession()
+
     appSettingViewModel.loadConfigs.observe(this) { loadConfigs ->
       if (loadConfigs == true) {
         val applicationId = appSettingViewModel.appId.value!!
@@ -127,9 +129,7 @@ class AppSettingActivity : AppCompatActivity() {
             val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
             AppSettingScreen(
               appId = appId,
-              rememberApp = rememberApp ?: false,
               onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
-              onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
               onLoadConfigurations = appSettingViewModel::fetchConfigurations,
               showProgressBar = showProgressBar
             )

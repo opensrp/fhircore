@@ -16,25 +16,15 @@
 
 package org.smartregister.fhircore.engine.util.fhirpath
 
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
-import javax.inject.Inject
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-@HiltAndroidTest
 class FhirPathDataExtractorTest : RobolectricTest() {
-
-  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
-
-  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   private val patientDeceased = "patientDeceased"
 
@@ -46,11 +36,6 @@ class FhirPathDataExtractorTest : RobolectricTest() {
       Pair(familyName, "Patient.name.family & ' Family'")
     )
 
-  @Before
-  fun setUp() {
-    hiltAndroidRule.inject()
-  }
-
   @Test
   fun testExtractDataShouldReturnMap() {
     val patient =
@@ -59,7 +44,7 @@ class FhirPathDataExtractorTest : RobolectricTest() {
         addName().family = "Doe"
       }
     val extractedData: Map<String, List<Base>> =
-      fhirPathDataExtractor.extractData(patient, expressions)
+      FhirPathDataExtractor.extractData(patient, expressions)
     Assert.assertTrue(extractedData.isNotEmpty())
 
     Assert.assertTrue(extractedData.containsKey(patientDeceased))

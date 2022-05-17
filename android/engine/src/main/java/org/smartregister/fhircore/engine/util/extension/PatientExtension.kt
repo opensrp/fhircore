@@ -136,17 +136,14 @@ fun Patient.extractAddress(): String {
 }
 
 fun Patient.extractAddressDistrict(): String {
-  if (!hasAddress()) return ""
   return with(addressFirstRep) { this.district ?: "" }
 }
 
 fun Patient.extractAddressState(): String {
-  if (!hasAddress()) return ""
   return with(addressFirstRep) { this.state ?: "" }
 }
 
 fun Patient.extractAddressText(): String {
-  if (!hasAddress()) return ""
   return with(addressFirstRep) { this.text ?: "" }
 }
 

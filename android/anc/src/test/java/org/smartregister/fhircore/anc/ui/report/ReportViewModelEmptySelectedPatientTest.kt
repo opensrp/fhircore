@@ -20,11 +20,13 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
@@ -65,7 +67,7 @@ internal class ReportViewModelEmptySelectedPatientTest : RobolectricTest() {
     MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
   private val resultForPopulation =
     MutableLiveData(listOf(ResultItemPopulation(title = "resultForPopulation")))
-  private val fhirOperatorDecorator = mockk<FhirOperatorDecorator>()
+  private val fhirOperator = mockk<FhirOperator>()
 
   @Before
   fun setUp() {
@@ -86,7 +88,7 @@ internal class ReportViewModelEmptySelectedPatientTest : RobolectricTest() {
           dispatcher = coroutinesTestRule.testDispatcherProvider,
           patientRepository = ancPatientRepository,
           fhirEngine = fhirEngine,
-          fhirOperatorDecorator = fhirOperatorDecorator,
+          fhirOperator = fhirOperator,
           sharedPreferencesHelper = sharedPreferencesHelper
         )
       )
@@ -105,8 +107,8 @@ internal class ReportViewModelEmptySelectedPatientTest : RobolectricTest() {
 
   @Test
   fun testEvaluateMeasureForPopulation() {
-    coEvery { fhirOperatorDecorator.loadLib(any()) } just runs
-    coEvery { fhirEngine.create(any()) } returns Unit
+    coEvery { fhirOperator.loadLib(any()) } just runs
+    coEvery { fhirEngine.create(any()) } returns emptyList()
 
     reportViewModel.evaluateMeasure(
       context = ApplicationProvider.getApplicationContext(),
