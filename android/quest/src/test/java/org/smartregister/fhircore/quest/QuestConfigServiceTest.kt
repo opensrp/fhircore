@@ -20,12 +20,8 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.mockk
-import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -36,6 +32,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -45,7 +42,9 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("g6pd", mockk())
 
   private lateinit var configService: ConfigService
 
@@ -53,34 +52,7 @@ class QuestConfigServiceTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { repository.searchCompositionByIdentifier(any()) } returns
-      "/configs/quest/config_composition.json".parseSampleResourceFromFile() as Composition
-
-    coEvery { repository.getBinary(any()) } returns Binary()
-    coEvery { repository.getBinary(any()) } answers
-      {
-        val idArg = this.args.first().toString()
-        val valueArg =
-          when (idArg) {
-            "62938" -> "application"
-            "62940" -> "login"
-            "62952" -> "patient_register"
-            "87021" -> "patient_task_register"
-            "63003" -> "pin"
-            "63011" -> "patient_details_view"
-            "63007" -> "result_details_navigation"
-            "56181" -> "sync"
-            else -> null
-          }
-        Binary().apply { content = "/configs/quest/config_$valueArg.json".readFile().toByteArray() }
-      }
-
-    runBlocking { configurationRegistry.loadConfigurations("quest", {}) }
-
-    configService =
-      QuestConfigService(
-        context = ApplicationProvider.getApplicationContext(),
-      )
+    configService = QuestConfigService(context = ApplicationProvider.getApplicationContext())
   }
 
   @Test

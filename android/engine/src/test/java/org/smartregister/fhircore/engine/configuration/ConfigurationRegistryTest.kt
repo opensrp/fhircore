@@ -24,6 +24,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coVerify
 import io.mockk.mockk
 import javax.inject.Inject
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -47,7 +48,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
-  private val testAppId = "appId"
+  private val testAppId = "default"
 
   lateinit var configurationRegistry: ConfigurationRegistry
   val defaultRepository: DefaultRepository = mockk()
@@ -65,7 +66,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     Assert.assertEquals(testAppId, configurationRegistry.appId)
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
-    Assert.assertTrue(configurationRegistry.workflowPointsMap.containsKey("appId|application"))
+    Assert.assertTrue(configurationRegistry.workflowPointsMap.containsKey("default|application"))
   }
 
   @Test
@@ -80,12 +81,12 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
     val configurationsMap = configurationRegistry.configurationsMap
     Assert.assertTrue(configurationsMap.isNotEmpty())
-    Assert.assertTrue(configurationsMap.containsKey("appId|login"))
-    Assert.assertTrue(configurationsMap["appId|login"]!! is LoginViewConfiguration)
+    Assert.assertTrue(configurationsMap.containsKey("default|login"))
+    Assert.assertTrue(configurationsMap["default|login"]!! is LoginViewConfiguration)
 
     Assert.assertFalse(retrievedConfiguration.darkMode)
     Assert.assertFalse(retrievedConfiguration.showLogo)
-    Assert.assertEquals("appId", retrievedConfiguration.appId)
+    Assert.assertEquals("default", retrievedConfiguration.appId)
     Assert.assertEquals("login", retrievedConfiguration.classification)
     Assert.assertEquals("Sample App", retrievedConfiguration.applicationName)
     Assert.assertEquals("0.0.1", retrievedConfiguration.applicationVersion)
@@ -101,10 +102,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
     val configurationsMap = configurationRegistry.configurationsMap
     Assert.assertTrue(configurationsMap.isNotEmpty())
-    Assert.assertTrue(configurationsMap.containsKey("appId|pin"))
-    Assert.assertTrue(configurationsMap["appId|pin"]!! is PinViewConfiguration)
+    Assert.assertTrue(configurationsMap.containsKey("default|pin"))
+    Assert.assertTrue(configurationsMap["default|pin"]!! is PinViewConfiguration)
 
-    Assert.assertEquals("appId", retrievedConfiguration.appId)
+    Assert.assertEquals("default", retrievedConfiguration.appId)
     Assert.assertEquals("pin", retrievedConfiguration.classification)
     Assert.assertEquals("Sample App", retrievedConfiguration.applicationName)
     Assert.assertEquals("ic_launcher", retrievedConfiguration.appLogoIconResourceFile)
@@ -130,11 +131,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
 
     coVerify { defaultRepository.searchCompositionByIdentifier(testAppId) }
-    coVerify { defaultRepository.getBinary("b_application") }
-    coVerify { defaultRepository.getBinary("b_login") }
-    coVerify { defaultRepository.getBinary("b_pin_view") }
-    coVerify { defaultRepository.getBinary("b_patient_register") }
-    coVerify { defaultRepository.getBinary("b_sync") }
+    coVerify { defaultRepository.getBinary("62938") }
+    coVerify { defaultRepository.getBinary("62940") }
+    coVerify { defaultRepository.getBinary("62952") }
+    coVerify { defaultRepository.getBinary("87021") }
+    coVerify { defaultRepository.getBinary("63003") }
+    coVerify { defaultRepository.getBinary("63011") }
+    coVerify { defaultRepository.getBinary("63007") }
+    coVerify { defaultRepository.getBinary("56181") }
   }
 
   @Test
@@ -152,5 +156,33 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     Assert.assertEquals("$testAppId|123", configurationRegistry.workflowPointName("123"))
     Assert.assertEquals("$testAppId|abbb", configurationRegistry.workflowPointName("abbb"))
+  }
+
+  @Test
+  fun testLoadConfigurationsLocally_shouldReturn_8_workflows() {
+    runBlockingTest {
+      Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
+      configurationRegistry.loadConfigurationsLocally("$testAppId/debug") { Assert.assertTrue(it) }
+      Assert.assertEquals(8, configurationRegistry.workflowPointsMap.size)
+
+      val workflows = configurationRegistry.workflowPointsMap
+      Assert.assertTrue(workflows.containsKey("default|application"))
+      Assert.assertTrue(workflows.containsKey("default|login"))
+      Assert.assertTrue(workflows.containsKey("default|patient_register"))
+      Assert.assertTrue(workflows.containsKey("default|patient_task_register"))
+      Assert.assertTrue(workflows.containsKey("default|pin"))
+      Assert.assertTrue(workflows.containsKey("default|patient_details_view"))
+      Assert.assertTrue(workflows.containsKey("default|result_details_navigation"))
+      Assert.assertTrue(workflows.containsKey("default|sync"))
+    }
+  }
+
+  @Test
+  fun testLoadConfigurationsLocally_shouldReturn_empty_workflows() {
+    runBlockingTest {
+      Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
+      configurationRegistry.loadConfigurationsLocally("") { Assert.assertFalse(it) }
+      Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
+    }
   }
 }

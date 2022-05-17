@@ -1,5 +1,5 @@
 {
-  "appId": "appId",
+  "appId": "default",
   "classification": "pin",
   "applicationName": "Sample App",
   "appLogoIconResourceFile": "ic_launcher",
