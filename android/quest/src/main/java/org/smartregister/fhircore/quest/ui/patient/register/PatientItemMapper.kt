@@ -67,8 +67,3 @@ class PatientItemMapper @Inject constructor(@ApplicationContext val context: Con
     )
   }
 }
-
-// replaced below on line 53-56, to use FhirPathDataExtractor util
-// inputModel.extractAddressDistrict(),
-// inputModel.extractAddressState(),
-// inputModel.extractAddressText(),
