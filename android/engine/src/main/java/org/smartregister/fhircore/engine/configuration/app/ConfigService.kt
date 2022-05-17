@@ -53,7 +53,7 @@ interface ConfigService {
     syncJob: SyncJob,
     configurationRegistry: ConfigurationRegistry,
     syncBroadcaster: SyncBroadcaster,
-    syncInterval: Long = 30,
+    syncInterval: Long = DEFAULT_SYNC_INTERVAL,
   ) {
     CoroutineScope(Dispatchers.Main).launch {
       syncBroadcaster.sharedSyncStatus.emitAll(syncJob.stateFlow())
@@ -143,5 +143,9 @@ interface ConfigService {
     Timber.i("SYNC CONFIG $pairs")
 
     return mapOf(*pairs.toTypedArray())
+  }
+
+  companion object {
+    const val DEFAULT_SYNC_INTERVAL: Long = 30
   }
 }
