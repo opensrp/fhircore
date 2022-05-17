@@ -30,6 +30,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
@@ -47,6 +48,7 @@ import org.smartregister.fhircore.quest.ui.patient.register.components.PATIENT_B
 import org.smartregister.fhircore.quest.ui.patient.register.components.dummyPatientPagingList
 
 @HiltAndroidTest
+@Ignore("To be deleted test class; new test to be written after refactor")
 class PatientRegisterFragmentTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)

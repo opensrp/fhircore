@@ -61,7 +61,7 @@ class PatientTaskRepositoryTest : RobolectricTest() {
       PatientTaskRepository(
         context = ApplicationProvider.getApplicationContext(),
         fhirEngine = fhirEngine,
-        domainMapper = patientTaskItemMapper,
+        dataMapper = patientTaskItemMapper,
         dispatcherProvider = dispatcherProvider
       )
   }

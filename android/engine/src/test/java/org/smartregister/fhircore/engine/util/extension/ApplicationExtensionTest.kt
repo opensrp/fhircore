@@ -26,6 +26,7 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.StringParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
+import com.google.android.fhir.workflow.FhirOperator
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -46,8 +47,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -204,7 +204,7 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Patient>(any()) }
     val search = captureSlot.captured
-    Assert.assertEquals(PaginationUtil.DEFAULT_PAGE_SIZE, search.count)
+    Assert.assertEquals(PaginationConstant.DEFAULT_PAGE_SIZE, search.count)
     Assert.assertEquals(0, search.from)
   }
 
@@ -219,8 +219,8 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Patient>(any()) }
     val search = captureSlot.captured
-    Assert.assertEquals(PaginationUtil.DEFAULT_PAGE_SIZE, search.count)
-    Assert.assertEquals(PaginationUtil.DEFAULT_PAGE_SIZE * 3, search.from)
+    Assert.assertEquals(PaginationConstant.DEFAULT_PAGE_SIZE, search.count)
+    Assert.assertEquals(PaginationConstant.DEFAULT_PAGE_SIZE * 3, search.from)
   }
 
   @Test
@@ -306,20 +306,20 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     val context = ApplicationProvider.getApplicationContext<Application>()
     val fhirEngine = mockk<FhirEngine>()
-    val fhirOperatorDecorator: FhirOperatorDecorator = mockk()
+    val fhirOperator: FhirOperator = mockk()
     val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
     val measureResourceBundleUrl = "measure/ANCIND01-bundle.json"
 
     val prefsDataKey = SharedPreferencesHelper.MEASURE_RESOURCES_LOADED
     every { sharedPreferencesHelper.read(prefsDataKey, any<String>()) } returns ""
     every { sharedPreferencesHelper.write(prefsDataKey, any<String>()) } returns Unit
-    coEvery { fhirOperatorDecorator.loadLib(any()) } returns Unit
+    coEvery { fhirOperator.loadLib(any()) } returns Unit
     coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking {
       fhirEngine.loadCqlLibraryBundle(
         context = context,
-        fhirOperator = fhirOperatorDecorator,
+        fhirOperator = fhirOperator,
         sharedPreferencesHelper = sharedPreferencesHelper,
         resourcesBundlePath = measureResourceBundleUrl
       )

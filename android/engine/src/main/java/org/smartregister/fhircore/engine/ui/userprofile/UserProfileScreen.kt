@@ -56,13 +56,17 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 
 @Composable
-fun UserProfileScreen(userProfileViewModel: UserProfileViewModel, modifier: Modifier = Modifier) {
+fun UserProfileScreen(
+  modifier: Modifier = Modifier,
+  userProfileViewModel: UserProfileViewModel = hiltViewModel()
+) {
 
   val username by remember { mutableStateOf(userProfileViewModel.retrieveUsername()) }
   var expanded by remember { mutableStateOf(false) }

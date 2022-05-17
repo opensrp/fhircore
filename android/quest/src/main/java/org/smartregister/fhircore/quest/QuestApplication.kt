@@ -67,7 +67,6 @@ class QuestApplication : Application(), DataCaptureConfig.Provider {
       ResourceMapper.run {
         val validationSupport = extractResourceMapperValidationSupport()
         fhirContext.validationSupport = validationSupport
-
         Timber.i("Loading ResourceMapper on application init")
       }
     }

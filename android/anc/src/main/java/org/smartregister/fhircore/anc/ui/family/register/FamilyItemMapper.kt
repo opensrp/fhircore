@@ -25,7 +25,7 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractDeathDate
@@ -45,11 +45,11 @@ class FamilyItemMapper
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-) : DomainMapper<Family, FamilyItem> {
+) : DataMapper<Family, FamilyItem> {
 
-  override fun mapToDomainModel(dto: Family): FamilyItem {
-    val family = dto.family
-    val members = dto.members
+  override fun transformInputToOutputModel(inputModel: Family): FamilyItem {
+    val family = inputModel.family
+    val members = inputModel.members
 
     return FamilyItem(
       id = family.logicalId,

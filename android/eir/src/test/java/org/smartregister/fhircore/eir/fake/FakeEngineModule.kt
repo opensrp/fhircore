@@ -31,12 +31,12 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.di.EngineModule
+import org.smartregister.fhircore.engine.di.CoreModule
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @Module
-@TestInstallIn(components = [SingletonComponent::class], replaces = [EngineModule::class])
+@TestInstallIn(components = [SingletonComponent::class], replaces = [CoreModule::class])
 class FakeEngineModule {
 
   @Provides

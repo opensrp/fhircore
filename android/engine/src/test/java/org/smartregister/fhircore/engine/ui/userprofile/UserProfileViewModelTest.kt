@@ -43,10 +43,10 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -176,7 +176,7 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() = runBlockingTest {
-    val languages = userProfileViewModel.fetchLanguages()
+    val languages = userProfileViewModel.languages
     Assert.assertEquals("English", languages[0].displayName)
     Assert.assertEquals("en", languages[0].tag)
     Assert.assertEquals("Swahili", languages[1].displayName)

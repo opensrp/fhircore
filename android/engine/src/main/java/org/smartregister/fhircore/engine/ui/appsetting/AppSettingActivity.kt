@@ -31,9 +31,11 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -44,12 +46,16 @@ class AppSettingActivity : AppCompatActivity() {
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+  @Inject lateinit var loginService: LoginService
 
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
+
+    val isLoggedIn =
+      sharedPreferencesHelper.read(IS_LOGGED_IN, false) && accountAuthenticator.hasActiveSession()
 
     with(appSettingViewModel) {
       loadConfigs.observe(this@AppSettingActivity) { loadConfigs ->
@@ -67,7 +73,12 @@ class AppSettingActivity : AppCompatActivity() {
             configurationRegistry.loadConfigurationsLocally(appId) { loadSuccessful: Boolean ->
               if (loadSuccessful) {
                 sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
-                accountAuthenticator.launchLoginScreen()
+                if (!isLoggedIn) {
+                  accountAuthenticator.launchLoginScreen()
+                } else {
+                  loginService.loginActivity = this@AppSettingActivity
+                  loginService.navigateToHome()
+                }
                 finish()
               } else {
                 launch(dispatcherProvider.main()) {
@@ -93,12 +104,17 @@ class AppSettingActivity : AppCompatActivity() {
       }
 
       fetchConfigs.observe(this@AppSettingActivity) { fetchConfigs ->
-        if (fetchConfigs == false || appId.value.isNullOrBlank()) return@observe
+        if (fetchConfigs == false) {
+          loadConfigurations(true)
+          return@observe
+        }
 
         if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
           loadConfigurations(true)
           return@observe
         }
+
+        if (appId.value.isNullOrBlank()) return@observe
 
         lifecycleScope.launch(dispatcherProvider.io()) {
           fetchConfigurations(appId.value!!, this@AppSettingActivity)
@@ -110,40 +126,23 @@ class AppSettingActivity : AppCompatActivity() {
       }
     }
 
-    /* will require in future enhancement
-    appSettingViewModel.rememberApp.observe(
-      this,
-      { doRememberApp ->
-        doRememberApp?.let {
-          if (doRememberApp) {
-            if (!appSettingViewModel.appId.value.isNullOrEmpty()) {
-              sharedPreferencesHelper.write(APP_ID_CONFIG, appSettingViewModel.appId.value ?: "")
-            }
-          } else {
-            sharedPreferencesHelper.remove(APP_ID_CONFIG)
-          }
-        }
-      }
-    )
-    */
-
     val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
     lastAppId?.let {
-      appSettingViewModel.onApplicationIdChanged(it)
-      appSettingViewModel.fetchConfigurations(true)
-      appSettingViewModel.loadConfigurations(true)
+      with(appSettingViewModel) {
+        onApplicationIdChanged(it)
+        fetchConfigurations(!isLoggedIn)
+      }
     }
       ?: run {
         setContent {
           AppTheme {
             val appId by appSettingViewModel.appId.observeAsState("")
-            val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
+            val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
             AppSettingScreen(
               appId = appId,
-              rememberApp = rememberApp ?: false,
               onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
-              onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
-              onLoadConfigurations = appSettingViewModel::fetchConfigurations
+              onLoadConfigurations = appSettingViewModel::fetchConfigurations,
+              showProgressBar = showProgressBar
             )
           }
         }

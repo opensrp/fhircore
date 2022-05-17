@@ -25,10 +25,10 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 class PinViewConfiguration(
   override val appId: String = "",
   override val classification: String = "",
-  var applicationName: String = "",
-  var appLogoIconResourceFile: String = "",
-  var enablePin: Boolean = false,
-  var showLogo: Boolean = true
+  val applicationName: String = "",
+  val appLogoIconResourceFile: String = "",
+  val enablePin: Boolean = false,
+  val showLogo: Boolean = true
 ) : Configuration
 /**
  * A function providing a DSL for configuring [PinViewConfiguration]. The configurations provided by

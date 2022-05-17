@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
@@ -36,7 +38,7 @@ fun Patient.extractName(): String {
   val humanName = this.name.firstOrNull()
   return if (humanName != null) {
     (humanName.given + humanName.family).filterNotNull().joinToString(" ") {
-      it.toString().trim().toTitleCase()
+      it.toString().trim().capitalizeFirstLetter()
     }
   } else ""
 }
@@ -45,13 +47,11 @@ fun Patient.extractFamilyName(): String {
   if (!hasName()) return ""
   val humanName = this.name.firstOrNull()
   return if (humanName != null) {
-    humanName.family?.toTitleCase()?.plus(" Family") ?: ""
+    humanName.family?.capitalizeFirstLetter()?.plus(" Family") ?: ""
   } else ""
 }
 
-private fun String.toTitleCase() = replaceFirstChar {
-  if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-}
+fun String.capitalizeFirstLetter() = replaceFirstChar { it.titlecase(Locale.getDefault()) }
 
 fun Patient.extractGender(context: Context): String? =
   if (hasGender()) {
@@ -114,7 +114,7 @@ fun Patient.getLastSeen(immunizations: List<Immunization>): String {
     ?: this.meta?.lastUpdated.lastSeenFormat()
 }
 
-private fun Date?.lastSeenFormat(): String {
+fun Date?.lastSeenFormat(): String {
   return if (this != null) {
     SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH).run { format(this@lastSeenFormat) }
   } else ""
@@ -176,11 +176,11 @@ fun Patient.extractFamilyTag() =
 fun Patient.isFamilyHead() = this.extractFamilyTag() != null
 
 fun List<Condition>.hasActivePregnancy() =
-  this.any {
+  this.any { condition ->
     // is active and any of the display / text into code is pregnant
-    val active = it.clinicalStatus.coding.any { it.code == "active" }
+    val active = condition.clinicalStatus.coding.any { it.code == "active" }
     val pregnancy =
-      it.code.coding.map { it.display }.plus(it.code.text).any {
+      condition.code.coding.map { it.display }.plus(condition.code.text).any {
         it.contentEquals("pregnant", true)
       }
 
@@ -199,3 +199,15 @@ fun List<Condition>.pregnancyCondition(): Condition {
 
   return pregnancyCondition
 }
+
+fun Enumerations.AdministrativeGender.translateGender(context: Context) =
+  when (this) {
+    Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
+    Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
+    else -> context.getString(R.string.unknown)
+  }
+
+fun Patient.extractOfficialIdentifier(): String? =
+  if (this.hasIdentifier())
+    this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
+  else null

@@ -104,13 +104,11 @@ object Faker {
     coEvery { patientRepository.fetchTestForms(any()) } returns
       listOf(
         QuestionnaireConfig(
-          appId = "quest",
           form = "sample-order-result",
           title = "Sample Order Result",
           identifier = "12345"
         ),
         QuestionnaireConfig(
-          appId = "quest",
           form = "sample-test-result",
           title = "Sample Test Result",
           identifier = "67890"
