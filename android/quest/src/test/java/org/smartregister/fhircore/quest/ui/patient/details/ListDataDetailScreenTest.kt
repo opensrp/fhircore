@@ -105,7 +105,7 @@ class ListDataDetailScreenTest : RobolectricTest() {
       )
 
     patientDetailsViewConfig =
-      "configs/g6pd/config_patient_details_view.json".readFile().decodeJson()
+      "configs/g6pd/config_patient_details_view.json".readFile(Faker.systemPath).decodeJson()
   }
 
   @Test

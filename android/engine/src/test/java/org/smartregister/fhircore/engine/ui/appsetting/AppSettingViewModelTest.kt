@@ -80,4 +80,22 @@ class AppSettingViewModelTest : RobolectricTest() {
     coVerify { appSettingViewModel.fhirResourceDataSource.loadData(any()) }
     coVerify { appSettingViewModel.defaultRepository.save(any()) }
   }
+
+  @Test
+  fun testHasDebugSuffix_withSuffix_shouldReturn_true() {
+    appSettingViewModel.appId.value = "default/debug"
+    Assert.assertTrue(appSettingViewModel.hasDebugSuffix()!!)
+  }
+
+  @Test
+  fun testHasDebugSuffix_noSuffix_shouldReturn_false() {
+    appSettingViewModel.appId.value = "default"
+    Assert.assertFalse(appSettingViewModel.hasDebugSuffix()!!)
+  }
+
+  @Test
+  fun testHasDebugSuffix_emptyAppId_shouldReturn_null() {
+    appSettingViewModel.appId.value = ""
+    Assert.assertNull(appSettingViewModel.hasDebugSuffix())
+  }
 }
