@@ -33,7 +33,7 @@ object Faker {
     configurationRegistry: ConfigurationRegistry
   ) {
     coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns
-      "/configs/config_composition.json".readFile().decodeResourceFromString() as Composition
+      "/configs/default/config_composition.json".readFile().decodeResourceFromString() as Composition
 
     coEvery { defaultRepository.getBinary(any()) } answers
       {
