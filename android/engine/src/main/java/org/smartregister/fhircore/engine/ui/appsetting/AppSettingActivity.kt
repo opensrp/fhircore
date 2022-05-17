@@ -126,23 +126,6 @@ class AppSettingActivity : AppCompatActivity() {
       }
     }
 
-    /* Todo: Enhancement remember appId by explicitly opting to via a checkbox
-    appSettingViewModel.rememberApp.observe(
-      this,
-      { doRememberApp ->
-        doRememberApp?.let {
-          if (doRememberApp) {
-            if (!appSettingViewModel.appId.value.isNullOrEmpty()) {
-              sharedPreferencesHelper.write(APP_ID_CONFIG, appSettingViewModel.appId.value ?: "")
-            }
-          } else {
-            sharedPreferencesHelper.remove(APP_ID_CONFIG)
-          }
-        }
-      }
-    )
-    */
-
     val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
     lastAppId?.let {
       with(appSettingViewModel) {
@@ -154,7 +137,6 @@ class AppSettingActivity : AppCompatActivity() {
         setContent {
           AppTheme {
             val appId by appSettingViewModel.appId.observeAsState("")
-            val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
             val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
             AppSettingScreen(
               appId = appId,

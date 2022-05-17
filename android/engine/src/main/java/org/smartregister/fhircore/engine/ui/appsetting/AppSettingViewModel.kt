@@ -39,8 +39,6 @@ constructor(
   val defaultRepository: DefaultRepository
 ) : ViewModel() {
 
-  val rememberApp: MutableLiveData<Boolean?> = MutableLiveData(null)
-
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   val fetchConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
@@ -59,10 +57,6 @@ constructor(
 
   fun onApplicationIdChanged(appId: String) {
     _appId.value = appId
-  }
-
-  fun onRememberAppChecked(rememberMe: Boolean) {
-    rememberApp.postValue(rememberMe)
   }
 
   fun loadConfigurations(loadConfigs: Boolean) {
