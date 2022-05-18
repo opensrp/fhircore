@@ -6,7 +6,8 @@
       "feature": "PatientManagement",
       "active": true,
       "settings": {
-        "registerTitle" : "HIV"
+        "registerTitle" : "HIV",
+        "registerFormId" : "12mmmm"
       },
       "target": "CHW",
       "healthModule": "HIV"
@@ -18,7 +19,7 @@
         "registerTitle" : "Tracing"
       },
       "target": "CHW",
-      "healthModule": "TRACING_AND_APPOINTMENT"
+      "healthModule": "TRACING"
     },
     {
       "feature": "PatientManagement",
@@ -27,7 +28,7 @@
         "registerTitle" : "Appointment"
       },
       "target": "CHW",
-      "healthModule": "TRACING_AND_APPOINTMENT"
+      "healthModule": "APPOINTMENT"
     },
     {
       "feature": "InAppReporting",

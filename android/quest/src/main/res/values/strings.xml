@@ -45,7 +45,9 @@
     <string name="anc_clients">ANC Clients</string>
     <string name="all_clients">All Clients</string>
     <string name="pnc_clients">PNC Clients</string>
-    <string name="hiv_clients">HIV Clients</string>
+    <string name="hiv_clients">HIV</string>
+    <string name="tracing_clients">Tracing</string>
+    <string name="appointment_clients">Appointment</string>
     <string name="family_planning_clients">Family Planning Clients</string>
     <string name="households">Households</string>
     <string name="children">Children</string>

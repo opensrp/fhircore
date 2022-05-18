@@ -41,9 +41,7 @@ class AppFeatureManager @Inject constructor(val configurationRegistry: Configura
     loadAndActivateFeatures()
     return activatedFeatures().filter {
       it.feature.equals(AppFeature.PatientManagement.name, true) ||
-        it.feature.equals(AppFeature.HouseholdManagement.name, true) ||
-        it.feature.equals(AppFeature.Hiv.name, true) ||
-        it.feature.equals(AppFeature.TracingAndAppointment.name, true)
+        it.feature.equals(AppFeature.HouseholdManagement.name, true)
     }
   }
 
@@ -52,4 +50,10 @@ class AppFeatureManager @Inject constructor(val configurationRegistry: Configura
 
   fun appFeatureSettings(appFeature: AppFeature) =
     activatedFeatures().find { appFeature.name.equals(it.feature, true) }?.settings ?: mapOf()
+
+  fun appFeatureSettings(appFeatureName: String) =
+    activatedFeatures().find { appFeatureName.equals(it.feature, true) }?.settings ?: mapOf()
+
+  fun appFeatureHasSetting(settingName: String) =
+    activatedFeatures().any { appFeatureSettings(it.feature).contains(settingName) }
 }

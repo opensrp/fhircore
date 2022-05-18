@@ -37,7 +37,8 @@ constructor(
       Pair(HealthModule.ANC, ancPatientRegisterDao),
       Pair(HealthModule.FAMILY, familyRegisterDao),
       Pair(HealthModule.HIV, hivRegisterDao),
-      Pair(HealthModule.TRACING_AND_APPOINTMENT, tracingAndAppointmentRegisterDao),
+      Pair(HealthModule.TRACING, tracingAndAppointmentRegisterDao),
+      Pair(HealthModule.APPOINTMENT, tracingAndAppointmentRegisterDao),
       Pair(HealthModule.DEFAULT, defaultPatientRegisterDao)
     )
   }
