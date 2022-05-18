@@ -25,6 +25,7 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -37,8 +38,6 @@ constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository
 ) : ViewModel() {
-
-  val rememberApp: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
@@ -58,10 +57,6 @@ constructor(
 
   fun onApplicationIdChanged(appId: String) {
     _appId.value = appId
-  }
-
-  fun onRememberAppChecked(rememberMe: Boolean) {
-    rememberApp.postValue(rememberMe)
   }
 
   fun loadConfigurations(loadConfigs: Boolean) {
@@ -109,5 +104,11 @@ constructor(
         _showProgressBar.postValue(false)
         _error.postValue("${it.message}")
       }
+  }
+
+  fun hasDebugSuffix(): Boolean? {
+    return if (!appId.value.isNullOrBlank())
+      appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
+    else null
   }
 }

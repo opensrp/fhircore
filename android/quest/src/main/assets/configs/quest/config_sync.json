@@ -19,10 +19,37 @@
         "name": "organization",
         "code": "subject.organization",
         "base": [
-          "Encounter","Observation","Condition","CarePlan","QuestionnaireResponse"
+          "Encounter",
+          "Condition",
+          "MedicationRequest",
+          "Task"
         ],
         "type": "token",
         "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "_filter",
+        "base": [
+          "Observation"
+        ],
+        "type": "token",
+        "expression": "patient.organization eq #organization or focus.subject eq Organization/#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "_filter",
+        "base": [
+          "QuestionnaireResponse"
+        ],
+        "type": "token",
+        "expression": "patient.organization eq #organization or subject eq Organization/#organization"
       }
     },
     {
@@ -53,18 +80,10 @@
         "name": "_id",
         "code": "_id",
         "base": [
-          "Binary"
-        ]
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
-        "base": [
-          "Task"
-        ]
+          "Library"
+        ],
+        "type": "token",
+        "expression": "1753,32883,46841,46831,46823"
       }
     },
     {
@@ -75,14 +94,14 @@
         "base": [
           "Patient",
           "Encounter",
-          "Observation",
           "Condition",
-          "CarePlan",
+          "MedicationRequest",
+          "Task",
+          "Observation",
           "QuestionnaireResponse",
           "Questionnaire",
           "StructureMap",
-          "Binary",
-          "Task"
+          "Library"
         ],
         "type": "token",
         "expression": "#count"

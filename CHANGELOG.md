@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Add tasking abstraction
 - Engine | Integrate Group resource for family representation
 - Engine | Performance improvement when openning questionnaires and saving QRs
+- Engine | Add debug mode to optionally load local config
 
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected

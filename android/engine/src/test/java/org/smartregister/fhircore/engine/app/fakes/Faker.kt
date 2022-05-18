@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.app.fakes
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
@@ -28,22 +29,40 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.r
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 
 object Faker {
+
+  private val systemPath =
+    (System.getProperty("user.dir") +
+      File.separator +
+      "src" +
+      File.separator +
+      "main" +
+      File.separator +
+      "assets" +
+      File.separator)
+
   fun loadTestConfigurationRegistryData(
     defaultRepository: DefaultRepository,
     configurationRegistry: ConfigurationRegistry
   ) {
-    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns
-      "/configs/config_composition.json".readFile().decodeResourceFromString() as Composition
+    val composition =
+      getBasePath("composition").readFile(systemPath).decodeResourceFromString() as Composition
+    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns composition
 
     coEvery { defaultRepository.getBinary(any()) } answers
       {
-        val idArg = this.args.first().toString().replace("b_", "")
-        Binary().apply {
-          content = "/configs/${idArg}_configurations.json".readFile().toByteArray()
-        }
+        val sectionComponent =
+          composition.section.find {
+            this.args.first().toString() == it.focus.reference.substringAfter("Binary/")
+          }
+        val configName = sectionComponent!!.focus.identifier.value
+        Binary().apply { content = getBasePath(configName).readFile(systemPath).toByteArray() }
       }
 
-    runBlocking { configurationRegistry.loadConfigurations(appId = "appId") {} }
+    runBlocking { configurationRegistry.loadConfigurations(appId = "default") {} }
+  }
+
+  private fun getBasePath(configName: String): String {
+    return "/configs/default/config_$configName.json"
   }
 
   fun buildTestConfigurationRegistry(defaultRepository: DefaultRepository): ConfigurationRegistry {
