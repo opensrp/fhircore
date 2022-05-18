@@ -38,13 +38,12 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
  */
 class StructureMapTestUtilities : RobolectricTest() {
 
-
   @Test
   fun `perform extraction from family registration  metric Questionnaire`() {
     val vitalSignQuestionnaireResponse =
-    "structure-map-questionnaires/afyayangu/household/questionnaire-response.json".readFile()
+      "structure-map-questionnaires/afyayangu/household/questionnaire-response.json".readFile()
     val vitalSignStructureMap =
-    "structure-map-questionnaires/afyayangu/household/structure-map.txt".readFile()
+      "structure-map-questionnaires/afyayangu/household/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -68,11 +67,10 @@ class StructureMapTestUtilities : RobolectricTest() {
     val targetResource = Bundle()
 
     val baseElement =
-    iParser.parseResource(QuestionnaireResponse::class.java, vitalSignQuestionnaireResponse)
+      iParser.parseResource(QuestionnaireResponse::class.java, vitalSignQuestionnaireResponse)
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
     System.out.println(iParser.encodeResourceToString(targetResource))
   }
-
 }
