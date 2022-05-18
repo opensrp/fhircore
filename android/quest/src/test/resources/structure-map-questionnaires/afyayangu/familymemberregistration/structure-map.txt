@@ -52,11 +52,15 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
        src -> patient.active = evaluate(src, $this.item.where(linkId = '66e8c2d2-b7df-4c03-bc85-383659b4bed8').answer.value)
        "rule_patient_active";
 
-       src -> patient.address = create('Address') as patientAddress then {
-          src -> patientAddress.district = evaluate(src, $this.item.where(linkId ='7d9dba4c-7407-4eb2-d791-2d1834b6afcc').answer.value) "rule_patient_address_district";
-          src -> patientAddress.use = "home" "rule_patient_address_use";
-          src -> patientAddress.type = "physical" "rule_patient_address_type";
-       } "rule_patient_address";
+       src -> patient.telecom = create('ContactPoint') as patientContact then {
+           src -> patientContact.value = evaluate(item_tele, $this.item.where(linkId = '7cb06ccc-ad90-4117-df30-fa44a60849af').answer.value) "rule_patient_tel_num";
+           src -> patientContact.system = "phone" "rule_patient_tel_sys";
+        } "rule_patient_tel";
+
+        src -> patient.telecom = create('ContactPoint') as patientContact then {
+            src -> patientContact.value = evaluate(item_tele, $this.item.where(linkId = 'be74f432-ca13-4ac8-db17-455127b4ec1c').answer.value) "rule_patient_tel_num";
+            src -> patientContact.system = "phone" "rule_patient_tel_sys";
+        } "rule_patient_tel";
 
        src.item as calculate_new_date_today -> evaluate(src, today() - 15 'years') as new_date then {
            calculate_new_date_today as patient_date_of_birth where(linkId = '6c2d4f74-84d5-49cd-81dd-a53e101a6899' and answer.value.count() > 0) then {
