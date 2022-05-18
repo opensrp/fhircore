@@ -16,7 +16,7 @@ class CodaRegistration {
 
     @Before
     fun successfulLogin() {
-        composeTestRule.onNodeWithText("Enter username").performTextInput("demo")
+        composeTestRule.onNodeWithText("Enter username").performTextInput("ecbis")
         composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
         composeTestRule.onNodeWithText("LOGIN").performClick()
         Thread.sleep(10000)

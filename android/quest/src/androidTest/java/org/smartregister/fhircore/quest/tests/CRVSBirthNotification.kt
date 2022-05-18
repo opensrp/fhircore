@@ -41,15 +41,14 @@ class CRVSBirthNotification {
         composeTestRule.onNodeWithText("Mother's Birth Place").performTextInput("xyz")
         composeTestRule.onNodeWithText("Father's Name").performTextInput("abc")
         composeTestRule.onNodeWithText("Father's National ID number").performTextInput("4557664867")
-        composeTestRule.onNodeWithText("Father's Marital Status").performTextInput("Mariied")
+        composeTestRule.onNodeWithText("Father's Marital Status").performTextInput("Married")
         composeTestRule.onNodeWithText("Father's Residence").performTextInput("ghiuse ggdki")
         composeTestRule.onNodeWithText("Father's Birth Place").performTextInput("xyz")
         composeTestRule.onNodeWithText("Mother's Name").performTextInput("abc")
         composeTestRule.onNodeWithText("Mother's National ID number").performTextInput("4557664867")
-        composeTestRule.onNodeWithText("Mother's Marital Status").performTextInput("Mariied")
+        composeTestRule.onNodeWithText("Mother's Marital Status").performTextInput("Married")
         composeTestRule.onNodeWithText("Mother's Residence").performTextInput("ghiuse ggdki")
         composeTestRule.onNodeWithText("Yes").performClick()
         composeTestRule.onNodeWithText("SAVE").performClick()
-
     }
 }

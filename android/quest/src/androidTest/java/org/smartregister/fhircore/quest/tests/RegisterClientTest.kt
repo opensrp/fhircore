@@ -14,7 +14,7 @@ class RegisterClientTest {
     @Before
     fun successfulLogin() {
         Thread.sleep(5000)
-        composeTestRule.onNodeWithText("Enter username").performTextInput("demo")
+        composeTestRule.onNodeWithText("Enter username").performTextInput("ecbis")
         composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
         composeTestRule.onNodeWithText("LOGIN").performClick()
         Thread.sleep(10000)

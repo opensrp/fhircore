@@ -16,7 +16,7 @@ class CodaAssessmentTest {
 
     @Before
     fun successfulLogin() {
-        composeTestRule.onNodeWithText("Enter username").performTextInput("demo")
+        composeTestRule.onNodeWithText("Enter username").performTextInput("ecbis")
         composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
         composeTestRule.onNodeWithText("LOGIN").performClick()
         Thread.sleep(10000)
@@ -26,9 +26,6 @@ class CodaAssessmentTest {
     fun registerCodaTest(){
         Thread.sleep(5000)
         composeTestRule.onNodeWithText("").performClick()
-        composeTestRule.onNodeWithText("CODA ASSESSMENT").performClick()
-        composeTestRule.onNodeWithText("CODA ASSESSMENT").performClick()
-        composeTestRule.onNodeWithText("CODA ASSESSMENT").performClick()
         composeTestRule.onNodeWithText("CODA ASSESSMENT").performClick()
         composeTestRule.onNodeWithText("Date of Birth")
             .performTextInput("03/12/2021")
