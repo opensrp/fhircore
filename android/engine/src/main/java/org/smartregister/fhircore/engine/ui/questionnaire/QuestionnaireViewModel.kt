@@ -187,29 +187,32 @@ constructor(
     }
   }
 
-  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, resourceId: String) {
-    val family = defaultRepository.loadResource<Group>(resourceId)!!
-    if (resource.resourceType == ResourceType.Patient) {
-      family.member.add(
-        Group.GroupMemberComponent().apply {
-          entity =
-            Reference().apply { reference = "${ResourceType.Patient.name}/${resource.logicalId}" }
-        }
-      )
-    } else {
-      family.managingEntity =
-        Reference().apply { reference = "${ResourceType.RelatedPerson.name}/${resource.logicalId}" }
+  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, groupResourceId: String) {
+    defaultRepository.loadResource<Group>(groupResourceId)?.run {
+      if (resource.resourceType == ResourceType.Patient) {
+        this.member?.add(
+          Group.GroupMemberComponent().apply {
+            entity =
+              Reference().apply { reference = "${ResourceType.Patient.name}/${resource.logicalId}" }
+          }
+        )
+      } else {
+        this.managingEntity =
+          Reference().apply {
+            reference = "${ResourceType.RelatedPerson.name}/${resource.logicalId}"
+          }
+      }
+      defaultRepository.addOrUpdate(this)
     }
-
-    defaultRepository.addOrUpdate(family)
   }
 
   fun extractAndSaveResources(
     context: Context,
     resourceId: String?,
-    questionnaire: Questionnaire,
+    groupResourceId: String? = null,
     questionnaireResponse: QuestionnaireResponse,
-    questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT
+    questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+    questionnaire: Questionnaire
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
       // important to set response subject so that structure map can handle subject for all entities
@@ -238,10 +241,10 @@ constructor(
                 ResourceType.RelatedPerson
               )
           ) {
-            resourceId?.let {
+            groupResourceId?.let {
               appendPatientsAndRelatedPersonsToGroups(
                 resource = bundleEntry.resource,
-                resourceId = it
+                groupResourceId = it
               )
             }
           }
@@ -339,7 +342,7 @@ constructor(
     questionnaireResponse.subject =
       when (subjectType) {
         ResourceType.Organization.name ->
-          authenticatedUserInfo!!.organization!!.asReference(ResourceType.Organization)
+          authenticatedUserInfo?.organization?.asReference(ResourceType.Organization)
         else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
       }
   }

@@ -384,10 +384,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val questionnaireResponse = QuestionnaireResponse()
 
       questionnaireViewModel.extractAndSaveResources(
-        context,
-        "12345",
-        questionnaire,
-        questionnaireResponse
+        context = context,
+        resourceId = "12345",
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire
       )
 
       coVerify { defaultRepo.addOrUpdate(patient) }
@@ -421,10 +421,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
 
     questionnaireViewModel.extractAndSaveResources(
-      context,
-      null,
-      questionnaire,
-      questionnaireResponse
+      context = context,
+      resourceId = null,
+      questionnaireResponse = questionnaireResponse,
+      questionnaire = questionnaire
     )
 
     coVerify { defaultRepo.addOrUpdate(any()) }
@@ -446,10 +446,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     questionnaireViewModel.extractAndSaveResources(
-      context,
-      "12345",
-      questionnaire,
-      QuestionnaireResponse()
+      context = context,
+      resourceId = "12345",
+      questionnaireResponse = QuestionnaireResponse(),
+      questionnaire = questionnaire
     )
 
     coVerify(timeout = 2000) { defaultRepo.addOrUpdate(capture(questionnaireResponseSlot)) }
@@ -482,11 +482,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     questionnaireViewModel.extractAndSaveResources(
-      context,
-      "12345",
-      questionnaire,
-      QuestionnaireResponse(),
-      QuestionnaireType.EDIT
+      context = context,
+      resourceId = "12345",
+      questionnaireResponse = QuestionnaireResponse(),
+      questionnaireType = QuestionnaireType.EDIT,
+      questionnaire = questionnaire
     )
 
     coVerifyOrder {
@@ -628,10 +628,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     runBlocking {
       questionnaireViewModel.extractAndSaveResources(
-        ApplicationProvider.getApplicationContext(),
-        null,
-        questionnaire,
-        questionnaireResponse
+        context = ApplicationProvider.getApplicationContext(),
+        resourceId = null,
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire
       )
     }
 
@@ -720,10 +720,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     questionnaireViewModel.editQuestionnaireResponse = oldQuestionnaireResponse
     questionnaireViewModel.extractAndSaveResources(
       context,
-      "12345",
-      questionnaire,
-      questionnaireResponse,
-      QuestionnaireType.EDIT
+      resourceId = "12345",
+      questionnaireResponse = questionnaireResponse,
+      questionnaireType = QuestionnaireType.EDIT,
+      questionnaire = questionnaire
     )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
@@ -866,10 +866,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any()) } just runs
 
     questionnaireViewModel.extractAndSaveResources(
-      context,
-      "0993ldsfkaljlsnldm",
-      questionnaire,
-      questionnaireResponse
+      context = context,
+      resourceId = "0993ldsfkaljlsnldm",
+      questionnaireResponse = questionnaireResponse,
+      questionnaire = questionnaire
     )
 
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
@@ -913,10 +913,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf()
 
     questionnaireViewModel.extractAndSaveResources(
-      context,
-      "0993ldsfkaljlsnldm",
-      questionnaire,
-      questionnaireResponse
+      context = context,
+      resourceId = "0993ldsfkaljlsnldm",
+      questionnaireResponse = questionnaireResponse,
+      questionnaire = questionnaire
     )
 
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
