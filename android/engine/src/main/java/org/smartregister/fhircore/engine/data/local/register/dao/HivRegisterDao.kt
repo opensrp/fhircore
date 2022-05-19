@@ -111,6 +111,5 @@ constructor(
       .toLong()
   }
 
-  private fun getRegisterDataFilters(id: String) =
-    configurationRegistry.retrieveDataFilterConfiguration(id)
+  fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
 }

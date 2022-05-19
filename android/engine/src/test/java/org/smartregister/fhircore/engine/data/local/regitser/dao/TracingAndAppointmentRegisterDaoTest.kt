@@ -23,8 +23,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -35,14 +33,13 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
-import org.smartregister.fhircore.engine.domain.model.ProfileData
+import org.smartregister.fhircore.engine.data.local.register.dao.TracingAndAppointmentRegisterDao
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 @HiltAndroidTest
-internal class HivRegisterDaoTest : RobolectricTest() {
+internal class TracingAndAppointmentRegisterDaoTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -50,7 +47,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
 
   @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
 
-  private lateinit var hivRegisterDao: HivRegisterDao
+  private lateinit var tracingAndAppointmentRegisterDao: TracingAndAppointmentRegisterDao
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -66,49 +63,32 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns
       buildPatient("1", "doe", "john", 50)
 
-    coEvery { fhirEngine.search<Condition>(any()) } returns emptyList()
-
     coEvery { fhirEngine.search<Group>(any()) } returns emptyList()
 
     coEvery { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
 
-    hivRegisterDao =
-      HivRegisterDao(
+    tracingAndAppointmentRegisterDao =
+      TracingAndAppointmentRegisterDao(
         fhirEngine = fhirEngine,
         defaultRepository = defaultRepository,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
+        dispatcherProvider = DefaultDispatcherProvider()
       )
-  }
-
-  @Test
-  fun testLoadRegisterData() {
-    val data = runBlocking {
-      hivRegisterDao.loadRegisterData(currentPage = 0, loadAll = true, appFeatureName = "HIV")
-    }
-    Assert.assertNotNull(data)
   }
 
   @Test
   fun testLoadProfileData() {
     val data = runBlocking {
-      hivRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1234")
+      tracingAndAppointmentRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1234")
     }
-    Assert.assertNotNull(data)
-    val hivProfileData = data as ProfileData.HivProfileData
-    Assert.assertEquals("50y", hivProfileData.age)
-    Assert.assertEquals("Dist 1 City 1", hivProfileData.address)
-    Assert.assertEquals("John Doe", hivProfileData.name)
-    Assert.assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
-  }
-
-  @Test
-  fun testGetRegisterDataFilters() {
-    Assert.assertNotNull(hivRegisterDao.getRegisterDataFilters("1234"))
+    // TODO update this test once TracingAndAppointmentRegisterDao
+    //  implements load Patient and Profile Data
+    Assert.assertNull(data)
   }
 
   @Test
   fun testCountRegisterData() {
-    val count = runBlocking { hivRegisterDao.countRegisterData("1234") }
+    val count = runBlocking { tracingAndAppointmentRegisterDao.countRegisterData("1234") }
     Assert.assertTrue(count >= 0)
   }
 }
