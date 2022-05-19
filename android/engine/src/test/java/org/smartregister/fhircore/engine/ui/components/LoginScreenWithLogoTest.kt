@@ -28,6 +28,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
+import org.smartregister.fhircore.engine.ui.login.LoginErrorState
 import org.smartregister.fhircore.engine.ui.login.LoginScreen
 import org.smartregister.fhircore.engine.ui.login.LoginViewModel
 
@@ -38,7 +39,7 @@ class LoginScreenWithLogoTest : RobolectricTest() {
   private lateinit var loginViewModelWithLogo: LoginViewModel
   private val username = MutableLiveData("")
   private val password = MutableLiveData("")
-  private val loginError = MutableLiveData("")
+  private val loginErrorState = MutableLiveData(LoginErrorState.NO_ERROR)
   private val showProgressBar = MutableLiveData(false)
   private val loginConfig = loginViewConfigurationOf(showLogo = true)
 
@@ -49,7 +50,7 @@ class LoginScreenWithLogoTest : RobolectricTest() {
         every { loginViewConfiguration } returns MutableLiveData(loginConfig)
         every { username } returns this@LoginScreenWithLogoTest.username
         every { password } returns this@LoginScreenWithLogoTest.password
-        every { loginError } returns this@LoginScreenWithLogoTest.loginError
+        every { loginErrorState } returns this@LoginScreenWithLogoTest.loginErrorState
         every { showProgressBar } returns this@LoginScreenWithLogoTest.showProgressBar
         every { onUsernameUpdated(any()) } answers
           {

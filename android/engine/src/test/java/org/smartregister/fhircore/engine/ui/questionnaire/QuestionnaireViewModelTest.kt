@@ -58,6 +58,7 @@ import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -80,9 +81,11 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 
 @HiltAndroidTest
@@ -114,6 +117,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
       getUserInfo().encodeJson()
+
+    every { sharedPreferencesHelper.read(LOGGED_IN_PRACTITIONER, null) } returns
+      Practitioner().apply { id = "123" }.encodeResourceToString()
 
     defaultRepo = spyk(DefaultRepository(fhirEngine, TestDispatcher()))
     val configurationRegistry = mockk<ConfigurationRegistry>()
@@ -983,7 +989,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       UserInfo().apply {
         questionnairePublisher = "ab"
         organization = "1111"
-        keyclockuuid = "123"
+        keycloakUuid = "123"
       }
     return userInfo
   }

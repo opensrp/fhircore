@@ -17,11 +17,11 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
@@ -36,9 +36,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -72,18 +73,24 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   private lateinit var accountAuthenticatorSpy: AccountAuthenticator
 
+  private val resourceService: FhirResourceService = mockk()
+
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
+
   @Before
   fun setUp() {
     hiltRule.inject()
     // Spy needed to control interaction with the real injected dependency
     accountAuthenticatorSpy = spyk(accountAuthenticator)
 
+    fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
+
     loginViewModel =
       LoginViewModel(
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = dispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        app = ApplicationProvider.getApplicationContext()
+        fhirResourceDataSource = fhirResourceDataSource
       )
   }
 
@@ -140,8 +147,8 @@ internal class LoginViewModelTest : RobolectricTest() {
     loginViewModel.attemptRemoteLogin()
 
     // Login error is reset
-    Assert.assertNotNull(loginViewModel.loginError.value)
-    Assert.assertTrue(loginViewModel.loginError.value!!.isEmpty())
+    Assert.assertNotNull(loginViewModel.loginErrorState.value)
+    Assert.assertEquals(LoginErrorState.NO_ERROR, loginViewModel.loginErrorState.value!!)
 
     // Show progress bar active
     Assert.assertNotNull(loginViewModel.showProgressBar.value)
@@ -201,7 +208,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel.attemptRemoteLogin()
 
-    Assert.assertEquals("", loginViewModel.loginError.value)
+    Assert.assertEquals(LoginErrorState.NO_ERROR, loginViewModel.loginErrorState.value)
     loginViewModel.showProgressBar.value?.let { Assert.assertTrue(it) }
     verify { accountAuthenticatorSpy.fetchToken("testUser", "51r1K4l1".toCharArray()) }
   }
@@ -214,19 +221,13 @@ internal class LoginViewModelTest : RobolectricTest() {
       "handleErrorMessage",
       ReflectionHelpers.ClassParameter(Throwable::class.java, UnknownHostException())
     )
-    Assert.assertEquals(
-      loginViewModel.app.getString(R.string.login_call_fail_error_message),
-      loginViewModel.loginError.value
-    )
+    Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value)
 
     ReflectionHelpers.callInstanceMethod<Any>(
       loginViewModel,
       "handleErrorMessage",
       ReflectionHelpers.ClassParameter(Throwable::class.java, IOException())
     )
-    Assert.assertEquals(
-      loginViewModel.app.getString(R.string.invalid_login_credentials),
-      loginViewModel.loginError.value
-    )
+    Assert.assertEquals(LoginErrorState.INVALID_CREDENTIALS, loginViewModel.loginErrorState.value)
   }
 }

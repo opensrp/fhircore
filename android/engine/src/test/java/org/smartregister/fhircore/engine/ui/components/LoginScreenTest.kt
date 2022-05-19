@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.ui.login.APP_NAME_TEXT_TAG
 import org.smartregister.fhircore.engine.ui.login.ForgotPasswordDialog
 import org.smartregister.fhircore.engine.ui.login.LOGIN_BUTTON_TAG
 import org.smartregister.fhircore.engine.ui.login.LOGIN_FOOTER
+import org.smartregister.fhircore.engine.ui.login.LoginErrorState
 import org.smartregister.fhircore.engine.ui.login.LoginScreen
 import org.smartregister.fhircore.engine.ui.login.LoginViewModel
 import org.smartregister.fhircore.engine.ui.login.PASSWORD_FIELD_TAG
@@ -51,7 +52,7 @@ class LoginScreenTest : RobolectricTest() {
   private val app = ApplicationProvider.getApplicationContext<Application>()
   private val username = MutableLiveData("")
   private val password = MutableLiveData("")
-  private val loginError = MutableLiveData("")
+  private val loginError = MutableLiveData(LoginErrorState.NO_ERROR)
   private val showProgressBar = MutableLiveData(false)
   private val loginConfig = loginViewConfigurationOf()
 
@@ -62,7 +63,7 @@ class LoginScreenTest : RobolectricTest() {
         every { loginViewConfiguration } returns MutableLiveData(loginConfig)
         every { username } returns this@LoginScreenTest.username
         every { password } returns this@LoginScreenTest.password
-        every { loginError } returns this@LoginScreenTest.loginError
+        every { loginErrorState } returns this@LoginScreenTest.loginError
         every { showProgressBar } returns this@LoginScreenTest.showProgressBar
         every { onUsernameUpdated(any()) } answers
           {

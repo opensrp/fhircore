@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.remote.model.response
+package org.smartregister.fhircore.engine.ui.login
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class UserInfo(
-  @SerialName("questionnaire_publisher") var questionnairePublisher: String? = null,
-  @SerialName("organization") var organization: String? = null,
-  @SerialName("location") var location: String? = null,
-  @SerialName("sub") var keyclockuuid: String? = null
-)
+enum class LoginErrorState {
+  NO_ERROR,
+  UNKNOWN_HOST,
+  INVALID_CREDENTIALS
+}

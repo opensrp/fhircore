@@ -40,6 +40,8 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -48,7 +50,6 @@ import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
-// @UninstallModules(EngineModule::class)
 class LoginActivityTest : ActivityRobolectricTest() {
 
   private lateinit var loginActivity: LoginActivity
@@ -60,19 +61,24 @@ class LoginActivityTest : ActivityRobolectricTest() {
   lateinit var loginService: LoginService
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
   @BindValue val repository: DefaultRepository = mockk()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
   val defaultRepository: DefaultRepository = mockk()
+
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+
+  private val resourceService: FhirResourceService = mockk()
+
   @BindValue
   val loginViewModel =
     LoginViewModel(
-      accountAuthenticator,
-      DefaultDispatcherProvider(),
-      sharedPreferencesHelper,
-      ApplicationProvider.getApplicationContext()
+      accountAuthenticator = accountAuthenticator,
+      dispatcher = DefaultDispatcherProvider(),
+      sharedPreferences = sharedPreferencesHelper,
+      fhirResourceDataSource = FhirResourceDataSource(resourceService)
     )
 
   @Before

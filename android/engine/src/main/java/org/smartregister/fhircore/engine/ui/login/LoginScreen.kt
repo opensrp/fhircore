@@ -98,7 +98,7 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
   )
   val username by loginViewModel.username.observeAsState("")
   val password by loginViewModel.password.observeAsState("")
-  val loginError by loginViewModel.loginError.observeAsState("")
+  val loginErrorState by loginViewModel.loginErrorState.observeAsState(LoginErrorState.NO_ERROR)
   val showProgressBar by loginViewModel.showProgressBar.observeAsState(false)
 
   LoginPage(
@@ -109,7 +109,7 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
     onPasswordChanged = { loginViewModel.onPasswordUpdated(it) },
     forgotPassword = { loginViewModel.forgotPassword() },
     onLoginButtonClicked = { loginViewModel.attemptRemoteLogin() },
-    loginError = loginError,
+    loginErrorState = loginErrorState,
     showProgressBar = showProgressBar,
   )
 }
@@ -124,7 +124,7 @@ fun LoginPage(
   forgotPassword: () -> Unit,
   onLoginButtonClicked: () -> Unit,
   modifier: Modifier = Modifier,
-  loginError: String = "",
+  loginErrorState: LoginErrorState = LoginErrorState.NO_ERROR,
   showProgressBar: Boolean = false,
 ) {
   var showPassword by remember { mutableStateOf(false) }
@@ -181,7 +181,7 @@ fun LoginPage(
               .align(Alignment.CenterHorizontally)
               .testTag(APP_NAME_TEXT_TAG)
         )
-        Spacer(modifier = modifier.height(60.dp))
+        Spacer(modifier = modifier.height(40.dp))
         Text(
           text = stringResource(R.string.username),
           color = contentColor,
@@ -251,20 +251,31 @@ fun LoginPage(
           }
         )
         Spacer(modifier = modifier.height(10.dp))
-        if (loginError.isNotEmpty()) {
-          Text(
-            fontSize = 14.sp,
-            color = MaterialTheme.colors.error,
-            text = stringResource(id = R.string.login_error, loginError),
-            modifier =
-              modifier
-                .wrapContentWidth()
-                .padding(0.dp)
-                .align(Alignment.Start)
-                .testTag(LOGIN_ERROR_TEXT_TAG)
-          )
-        }
-        Spacer(modifier = modifier.height(40.dp))
+        Text(
+          fontSize = 14.sp,
+          color = MaterialTheme.colors.error,
+          text =
+            when (loginErrorState) {
+              LoginErrorState.NO_ERROR -> ""
+              LoginErrorState.UNKNOWN_HOST ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.login_call_fail_error_message)
+                )
+              LoginErrorState.INVALID_CREDENTIALS ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.invalid_login_credentials)
+                )
+            },
+          modifier =
+            modifier
+              .wrapContentWidth()
+              .padding(0.dp)
+              .align(Alignment.Start)
+              .testTag(LOGIN_ERROR_TEXT_TAG)
+        )
+        Spacer(modifier = modifier.height(30.dp))
         Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
           Button(
             enabled = !showProgressBar && username.isNotEmpty() && password.isNotEmpty(),
