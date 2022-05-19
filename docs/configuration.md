@@ -5,8 +5,28 @@ The configurations in Single APK Approach is using the combination of a single C
 ## Composition
 Composition represents a single appId and is the entry point to access all the Binary configs associated with that appId.
 
+Example of appId: anc, ecbis, quest, etc.
+
 ### Defining your own Composition
-There are 2 attributes in Composition that differ from other Compositions. It is the `identifier` and `section` attributes.
+To define a Composition config, there are 2 attributes to be highlighted. It is the `identifier` and `section` attributes.
+
+These attributes are the common differences that developers need to change.
+
+* `identifier`
+
+   The `identifier` is a unique value that represents an appId and will differentiate a Composition config from one another.
+   ```json
+   {
+     "identifier": {
+       "use": "official",
+       "value": "appId"
+     }
+   }
+   ```
+
+* `section`
+
+   TODO
 
 ## Binary
 
