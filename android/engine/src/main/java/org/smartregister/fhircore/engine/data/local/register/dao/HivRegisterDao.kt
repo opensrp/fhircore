@@ -20,42 +20,27 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.RelatedPerson
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.FamilyMemberProfileData
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
-import org.smartregister.fhircore.engine.util.extension.daysPassed
-import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
-import org.smartregister.fhircore.engine.util.extension.extractAge
-import org.smartregister.fhircore.engine.util.extension.extractDeathDate
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.filterBy
-import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
-import org.smartregister.fhircore.engine.util.extension.isFamilyHead
-import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
-import org.smartregister.fhircore.engine.util.extension.toCoding
 
 @Singleton
 class HivRegisterDao
@@ -89,12 +74,6 @@ constructor(
       }
 
     return patients.map { patient ->
-      val carePlans =
-        defaultRepository.searchResourceFor<CarePlan>(
-          subjectId = patient.logicalId,
-          subjectParam = CarePlan.SUBJECT
-        )
-
       RegisterData.HivRegisterData(
         logicalId = patient.logicalId,
         name = patient.extractName(),
@@ -108,35 +87,18 @@ constructor(
     }
   }
 
-  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
-    val family = defaultRepository.loadResource<Group>(resourceId)!!
-    val familyHead = loadFamilyHead(family)
+  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
+    val patient = defaultRepository.loadResource<Patient>(resourceId)!!
 
-    return ProfileData.FamilyProfileData(
-      logicalId = family.logicalId,
-      name = family.name,
-      identifier = family.extractOfficialIdentifier(),
-      address = familyHead?.extractAddress() ?: "",
-      age = familyHead?.extractAge() ?: "",
-      head = familyHead?.let { loadFamilyMemberProfileData(familyHead.logicalId) },
-      members =
-        family.member?.filter { it.hasEntity() && it.entity.hasReference() }?.mapNotNull {
-          loadFamilyMemberProfileData(it.entity.extractId())
-        }
-          ?: listOf(),
-      services =
-        defaultRepository.searchResourceFor(
-          subjectId = family.logicalId,
-          subjectParam = CarePlan.SUBJECT,
-          filters = getRegisterDataFilters(FAMILY_CARE_PLAN)
-        ),
-      tasks =
-        defaultRepository.searchResourceFor<Task>(
-            subjectId = family.logicalId,
-            subjectParam = Task.SUBJECT,
-            subjectType = ResourceType.Group
-          )
-          .let { it.sortedBy { it.executionPeriod.start.time } }
+    return ProfileData.HivProfileData(
+      logicalId = patient.logicalId,
+      birthdate = patient.birthDate,
+      name = patient.extractName(),
+      identifier = patient.extractOfficialIdentifier(),
+      gender = patient.gender,
+      age = patient.birthDate.toAgeDisplay(),
+      address = patient.extractAddress(),
+      chwAssigned = patient.generalPractitionerFirstRep
     )
   }
 
@@ -149,87 +111,6 @@ constructor(
       .toLong()
   }
 
-  private suspend fun loadFamilyHead(family: Group) =
-    family.managingEntity?.let { reference ->
-      defaultRepository
-        .searchResourceFor<RelatedPerson>(
-          token = RelatedPerson.RES_ID,
-          subjectType = ResourceType.RelatedPerson,
-          subjectId = reference.extractId()
-        )
-        .firstOrNull()
-        ?.let { relatedPerson ->
-          defaultRepository
-            .searchResourceFor<Patient>(
-              token = Patient.RES_ID,
-              subjectType = ResourceType.Patient,
-              subjectId = relatedPerson.patient.extractId()
-            )
-            .firstOrNull()
-        }
-    }
-
-  private suspend fun loadFamilyMemberRegisterData(
-    memberId: String
-  ): RegisterData.FamilyMemberRegisterData? {
-    return defaultRepository.loadResource<Patient>(memberId)?.let { patient ->
-      if (!patient.active) return null
-      // val conditions = loadMemberCondition(patient.logicalId)
-      val carePlans = loadMemberCarePlan(patient.logicalId)
-      RegisterData.FamilyMemberRegisterData(
-        logicalId = patient.logicalId,
-        name = patient.extractName(),
-        age = (patient.birthDate.daysPassed() / DAYS_IN_YEAR).toString(),
-        birthdate = patient.birthDate,
-        gender = patient.gender.display.first().toString(),
-        // pregnant = conditions.hasActivePregnancy(),
-        isHead = patient.isFamilyHead(),
-        deathDate = patient.extractDeathDate(),
-        servicesDue = carePlans.filter { it.due() }.flatMap { it.activity }.size,
-        servicesOverdue = carePlans.filter { it.overdue() }.flatMap { it.activity }.size
-      )
-    }
-  }
-
-  private suspend fun loadFamilyMemberProfileData(memberId: String): FamilyMemberProfileData? =
-    defaultRepository.loadResource<Patient>(memberId)?.let { patient ->
-      if (!patient.active) return null
-      // val conditions = loadMemberCondition(patient.logicalId)
-      val carePlans = loadMemberCarePlan(patient.logicalId)
-      // val tasks = loadMemberTask(patient.logicalId)
-      // val flags = loadMemberFlags(patient.logicalId)
-
-      FamilyMemberProfileData(
-        id = patient.logicalId,
-        name = patient.extractName(),
-        age = patient.birthDate.toAgeDisplay(),
-        birthdate = patient.birthDate,
-        gender = patient.gender,
-        // pregnant = conditions.hasActivePregnancy(),
-        isHead = patient.isFamilyHead(),
-        deathDate = patient.extractDeathDate(),
-        // conditions = conditions,
-        // flags = flags,
-        services = carePlans,
-        // tasks = tasks
-        )
-    }
-
-  private suspend fun loadMemberCarePlan(patientId: String) =
-    fhirEngine.search<CarePlan> {
-      filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
-      filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
-    }
-
-  private fun Group.extractOfficialIdentifier(): String? =
-    if (this.hasIdentifier())
-      this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
-    else null
-
   private fun getRegisterDataFilters(id: String) =
     configurationRegistry.retrieveDataFilterConfiguration(id)
-
-  companion object {
-    const val FAMILY_CARE_PLAN = "family_care_plan"
-  }
 }
