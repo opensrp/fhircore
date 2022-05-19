@@ -16,21 +16,21 @@
 
 package org.smartregister.fhircore.engine.data.local.regitser.dao
 
-import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.spyk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.*
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Ignore
+import org.junit.Rule
+import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -38,7 +38,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 @HiltAndroidTest
 internal class HivRegisterDaoTest : RobolectricTest() {
@@ -49,11 +48,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
 
   @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
 
-  private val application = ApplicationProvider.getApplicationContext<Application>()
-
   private lateinit var hivRegisterDao: HivRegisterDao
-
-  private val dispatcherProvider = spyk(DefaultDispatcherProvider())
 
   @BindValue var defaultRepository: DefaultRepository = mockk()
 
@@ -67,6 +62,12 @@ internal class HivRegisterDaoTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
+    coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns
+      buildPatient("1", "doe", "john", 0)
+
+    coEvery { defaultRepository.loadResource<Patient>(any()) } returns
+      buildPatient("1", "doe", "john", 0)
+
     hivRegisterDao =
       HivRegisterDao(
         fhirEngine = fhirEngine,
@@ -78,18 +79,9 @@ internal class HivRegisterDaoTest : RobolectricTest() {
   @Ignore("need to fix as failing")
   @Test
   fun testLoadProfileData() {
-
-    coroutineTestRule.runBlockingTest {
-      coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns
-        buildPatient("1", "doe", "john", 0)
-
-      coEvery { defaultRepository.loadResource<Patient>(any()) } returns
-        buildPatient("1", "doe", "john", 0)
-
-      val data =
-        hivRegisterDao.loadProfileData(appFeatureName = "anyStringKey", resourceId = "1234")
-
-      Assert.assertNotNull(data)
+    val data = runBlocking {
+      hivRegisterDao.loadProfileData(appFeatureName = "anyStringKey", resourceId = "1234")
     }
+    Assert.assertNotNull(data)
   }
 }
