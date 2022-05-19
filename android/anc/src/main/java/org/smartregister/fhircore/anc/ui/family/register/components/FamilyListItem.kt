@@ -50,7 +50,7 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.family.register.FamilyListenerIntent
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
-import org.smartregister.fhircore.engine.ui.components.Dot
+import org.smartregister.fhircore.engine.ui.components.Separator
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
@@ -90,9 +90,9 @@ fun FamilyRow(
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
-        Dot(
+        Separator(
           modifier = modifier,
-          showDot =
+          showSeparator =
             familyItem.address.isNotEmpty() && familyItem.members.any { it.pregnant == true }
         )
         familyItem.members.filter { it.pregnant == true }.forEach { _ ->

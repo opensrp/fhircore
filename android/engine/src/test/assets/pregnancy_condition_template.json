@@ -1,45 +1,45 @@
 {
-  "resourceType" : "Condition",
+  "resourceType": "Condition",
   "id": "#Id",
-  "clinicalStatus" : {
-    "coding" : [
+  "clinicalStatus": {
+    "coding": [
       {
-        "system" : "http://terminology.hl7.org/CodeSystem/condition-clinical",
-        "code" : "active"
+        "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+        "code": "active"
       }
     ]
   },
-  "verificationStatus" : {
-    "coding" : [
+  "verificationStatus": {
+    "coding": [
       {
-        "system" : "http://terminology.hl7.org/CodeSystem/condition-ver-status",
-        "code" : "confirmed"
+        "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+        "code": "confirmed"
       }
     ]
   },
-  "category" : [
+  "category": [
     {
-      "coding" : [
+      "coding": [
         {
-          "system" : "http://terminology.hl7.org/CodeSystem/condition-category",
-          "code" : "problem-list-item",
-          "display" : "Problem List Item"
+          "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+          "code": "problem-list-item",
+          "display": "Problem List Item"
         }
       ]
     }
   ],
-  "code" : {
-    "coding" : [
+  "code": {
+    "coding": [
       {
         "system": "http://loinc.org",
         "code": "LA15173-0",
         "display": "Pregnant"
       }
     ],
-    "text" : "Pregnant"
+    "text": "Pregnant"
   },
-  "subject" : {
-    "reference" : "#RefPatient"
+  "subject": {
+    "reference": "#RefPatient"
   },
-  "onsetDateTime" : "#RefDateOnset"
+  "onsetDateTime": "#RefDateOnset"
 }

@@ -1,0 +1,16 @@
+{
+  "appId": "deafult",
+  "classification": "result_details_navigation",
+  "navigationOptions": [
+    {
+      "id": "open_questionnaire",
+      "title": "Questionnaire",
+      "icon": "",
+      "action": {
+        "type": "questionnaire",
+        "form": "",
+        "readOnly": true
+      }
+    }
+  ]
+}

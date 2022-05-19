@@ -45,7 +45,8 @@ class AncItemMapperTest : RobolectricTest() {
 
   @Test
   fun testMapToDomainModel() {
-    val patientItem = ancItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf(), listOf()))
+    val patientItem =
+      ancItemMapper.transformInputToOutputModel(inputModel = Anc(patient, null, listOf(), listOf()))
     verifyPatientDemographics(patientItem, VisitStatus.PLANNED)
   }
 
@@ -53,8 +54,8 @@ class AncItemMapperTest : RobolectricTest() {
   fun testMapToDomainModelShouldVerifyRegisterWithOverdueStatusPatient() {
 
     val patientItem =
-      ancItemMapper.mapToDomainModel(
-        dto =
+      ancItemMapper.transformInputToOutputModel(
+        inputModel =
           Anc(
             patient,
             null,
@@ -82,8 +83,8 @@ class AncItemMapperTest : RobolectricTest() {
   fun testMapToDomainModelShouldVerifyRegisterWithDueStatusPatient() {
 
     val patientItem =
-      ancItemMapper.mapToDomainModel(
-        dto =
+      ancItemMapper.transformInputToOutputModel(
+        inputModel =
           Anc(
             patient,
             Patient().apply {
@@ -117,7 +118,8 @@ class AncItemMapperTest : RobolectricTest() {
   @Test
   fun testMapToDomainModelShouldVerifyDetailTypePatient() {
     ancItemMapper.setAncItemMapperType(AncItemMapper.AncItemMapperType.DETAILS)
-    val patientItem = ancItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf()))
+    val patientItem =
+      ancItemMapper.transformInputToOutputModel(inputModel = Anc(patient, null, listOf()))
     verifyPatientDemographics(patientItem, VisitStatus.PLANNED)
     Assert.assertFalse(patientItem.isPregnant!!)
   }

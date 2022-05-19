@@ -29,7 +29,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -73,12 +72,12 @@ constructor(
   suspend fun getPopulationResources(intent: Intent): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
-    intent.getStringExtra(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)?.let {
-      immunizationId ->
-      defaultRepository.loadImmunization(immunizationId).run {
-        resourcesList.add(this as Immunization)
+    intent.getStringExtra(AdverseEventQuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
+      ?.let { immunizationId ->
+        defaultRepository.loadImmunization(immunizationId).run {
+          resourcesList.add(this as Immunization)
+        }
       }
-    }
 
     return resourcesList.toTypedArray()
   }

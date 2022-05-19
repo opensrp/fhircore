@@ -27,6 +27,7 @@ import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -44,6 +45,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @HiltAndroidTest
+@Ignore("To be deleted test class; new test to be written after refactor")
 class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -101,7 +103,7 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @Test
   fun testOnFormItemClickListenerShouldStartQuestionnaireActivity() {
     questDetailActivity.viewModel.onFormItemClickListener(
-      QuestionnaireConfig(appId = "g6pd", form = "test-form", title = "Title", identifier = "1234")
+      QuestionnaireConfig(form = "test-form", title = "Title", identifier = "1234")
     )
 
     val expectedIntent = Intent(questDetailActivity, QuestionnaireActivity::class.java)

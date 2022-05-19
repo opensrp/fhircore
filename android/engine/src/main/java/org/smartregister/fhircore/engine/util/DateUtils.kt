@@ -25,8 +25,14 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
+import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
 
 object DateUtils {
+  fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.value
+
+  fun today(): Date = DateTimeType.today().value
+
+  fun Date.isToday() = this.asYyyyMmDd() == today().asYyyyMmDd()
 
   fun addDays(
     initialDate: String,

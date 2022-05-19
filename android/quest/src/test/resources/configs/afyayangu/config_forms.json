@@ -1,0 +1,27 @@
+{
+  "appId": "afyayangu",
+  "classification": "forms",
+  "forms": [
+    {
+      "form": "family-member-registration",
+      "title": "Add Family Member",
+      "identifier": "82953",
+      "saveButtonText": "ADD FAMILY MEMBER",
+      "setPractitionerDetails" : true,
+      "setOrganizationDetails" : true
+    },
+    {
+      "form": "family-registration",
+      "title": "Add Family",
+      "identifier": "82952",
+      "saveButtonText": "ADD FAMILY",
+      "setPractitionerDetails" : true,
+      "setOrganizationDetails" : true
+    },
+    {
+      "form": "remove-family",
+      "title": "Remove Family",
+      "identifier": "101644"
+    }
+  ]
+}
