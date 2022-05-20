@@ -27,12 +27,12 @@ import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import java.nio.charset.StandardCharsets
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import timber.log.Timber
-import java.nio.charset.StandardCharsets
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
   Toast.makeText(this, message, toastLength).show()
