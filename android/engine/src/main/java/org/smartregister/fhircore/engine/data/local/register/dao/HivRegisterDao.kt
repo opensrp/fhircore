@@ -23,7 +23,6 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
@@ -35,7 +34,6 @@ import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
-import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
@@ -56,21 +54,14 @@ constructor(
     loadAll: Boolean,
     appFeatureName: String?
   ): List<RegisterData> {
-    val pregnancies =
-      fhirEngine
-        .search<Condition> {
-          getRegisterDataFilters(appFeatureName!!).forEach { filterBy(it) }
-          sort(Patient.NAME, Order.ASCENDING)
-          count =
-            if (loadAll) countRegisterData(appFeatureName).toInt()
-            else PaginationConstant.DEFAULT_PAGE_SIZE
-          from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
-        }
-        .distinctBy { it.subject.reference }
-
     val patients =
-      pregnancies.map { fhirEngine.get<Patient>(it.subject.extractId()) }.sortedBy {
-        it.nameFirstRep.family
+      fhirEngine.search<Patient> {
+        filter(Patient.ACTIVE, { value = of(true) })
+        sort(Patient.NAME, Order.ASCENDING)
+        count =
+          if (loadAll) countRegisterData(appFeatureName).toInt()
+          else PaginationConstant.DEFAULT_PAGE_SIZE
+        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
     return patients.map { patient ->
