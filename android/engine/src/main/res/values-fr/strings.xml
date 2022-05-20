@@ -102,4 +102,18 @@
     <string name="pin_menu_login">Connexion</string>
     <string name="forgot_pin">Épingle oubliée ?</string>
     <string name="please_contact_supervisor">Veuillez contacter votre superviseur.</string>
+    <string name="logging_out">Veuillez patienter... Déconnexion</string>
+    <string name="session_expired">Votre session a expiré. Veuillez vous reconnecter.</string>
+    <string name="sex">Sexe</string>
+    <string name="age">Âge</string>
+    <string name="see_all">VOIR TOUT</string>
+    <string name="forms">FORMES</string>
+    <string name="medical_history">ANTÉCÉDENTS MÉDICAUX</string>
+    <string name="upcoming_services">PRESTATIONS À VENIR</string>
+    <string name="service_card">CARTE DE SERVICES</string>
+    <string name="dob">DDN</string>
+    <string name="invalid_form_id">ID de formulaire joint non valide</string>
+    <string name="error_loading_config">Erreur lors du chargement de la configuration. Descriptif : %$1s</string>
+    <string name="error_contacting_server">Erreur de contact avec le serveur. Code d\'erreur %1$s</string>
+    <string name="date_last_visited">Dernière visite %1$s</string>
 </resources>
