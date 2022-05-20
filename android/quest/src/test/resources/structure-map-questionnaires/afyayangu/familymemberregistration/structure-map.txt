@@ -53,12 +53,12 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
        "rule_patient_active";
 
        src -> patient.telecom = create('ContactPoint') as patientContact then {
-           src -> patientContact.value = evaluate(item_tele, $this.item.where(linkId = '7cb06ccc-ad90-4117-df30-fa44a60849af').answer.value) "rule_patient_tel_num";
+           src -> patientContact.value = evaluate(src, $this.item.where(linkId = '7cb06ccc-ad90-4117-df30-fa44a60849af').answer.value) "rule_patient_tel_num";
            src -> patientContact.system = "phone" "rule_patient_tel_sys";
         } "rule_patient_tel";
 
         src -> patient.telecom = create('ContactPoint') as patientContact then {
-            src -> patientContact.value = evaluate(item_tele, $this.item.where(linkId = 'be74f432-ca13-4ac8-db17-455127b4ec1c').answer.value) "rule_patient_tel_num";
+            src -> patientContact.value = evaluate(src, $this.item.where(linkId = 'be74f432-ca13-4ac8-db17-455127b4ec1c').answer.value) "rule_patient_tel_num";
             src -> patientContact.system = "phone" "rule_patient_tel_sys";
         } "rule_patient_tel";
 
