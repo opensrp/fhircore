@@ -59,4 +59,4 @@ These attributes are the common differences that developers need to specifically
    ```
 
 ## Binary
-
+TODO
