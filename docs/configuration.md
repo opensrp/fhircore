@@ -29,9 +29,9 @@ These attributes are the common differences that developers need to specifically
    
    Each `section` contains:
    
-   * `reference` of the config's Binary resource associated with the Composition's appId
+   * `reference` to the Binary config associated with the Composition appId
    
-   * `identifier` that represents a config's name
+   * `identifier` that represents a config classification name
    
    ```json
    "section": [
