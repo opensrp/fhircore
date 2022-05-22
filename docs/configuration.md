@@ -59,7 +59,13 @@ These attributes are the common differences that developers need to specifically
    ```
 
 ## Binary
+
 TODO:
+
 what binary represents
+
 quick list of all configs classification
-details of each config classification: what is it in general, what each attribute does
+
+details of each config classification: what is it in general, what each attribute does (or used in-app)
+
+how a config is interpreted, code wise
