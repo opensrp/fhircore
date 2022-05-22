@@ -66,6 +66,6 @@ what binary represents
 
 quick list of all configs classification
 
-details of each config classification: what is it in general, what each attribute does (or used in-app)
+structure / details of each config classification: what is it in general, what each attribute does (or used in-app)
 
 how a config is interpreted, code wise
