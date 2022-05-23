@@ -23,7 +23,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
 
-/** Implementation of the [DataSource] that communicates with hapi fhir. */
+/** Interact with HAPI FHIR server */
 class FhirResourceDataSource @Inject constructor(private val resourceService: FhirResourceService) {
 
   suspend fun loadData(path: String): Bundle {
@@ -49,4 +49,7 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
   suspend fun delete(resourceType: String, resourceId: String): OperationOutcome {
     return resourceService.deleteResource(resourceType, resourceId)
   }
+
+  suspend fun search(resourceType: String, searchParameters: Map<String, String>): Bundle =
+    resourceService.searchResource(resourceType, searchParameters)
 }
