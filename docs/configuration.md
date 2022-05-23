@@ -70,8 +70,8 @@ List of common Binary configs `classfication`:
 | login                 | Configure the login page                             |
 | app_feature           | Configure the available feature                             |
 | pin                   | Configure the pin page                             |
-| data_filters          | Configure the all filters the app will uses e.g patient register, family register                           |
-| forms                 | Configure the all Questionnaires that the app will uses                           |
+| data_filters          | Configure the filters that the app will uses e.g patient register, family register                           |
+| forms                 | Configure the Questionnaires that the app will uses                           |
 | patient_register      | Configure the patient register page                             |
 | sync                  | Configure the resource that will be synced                             |
 
