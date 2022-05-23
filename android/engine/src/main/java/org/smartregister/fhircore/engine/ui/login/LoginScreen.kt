@@ -98,7 +98,7 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
   )
   val username by loginViewModel.username.observeAsState("")
   val password by loginViewModel.password.observeAsState("")
-  val loginErrorState by loginViewModel.loginErrorState.observeAsState(LoginErrorState.NO_ERROR)
+  val loginErrorState by loginViewModel.loginErrorState.observeAsState(null)
   val showProgressBar by loginViewModel.showProgressBar.observeAsState(false)
 
   LoginPage(
@@ -124,7 +124,7 @@ fun LoginPage(
   forgotPassword: () -> Unit,
   onLoginButtonClicked: () -> Unit,
   modifier: Modifier = Modifier,
-  loginErrorState: LoginErrorState = LoginErrorState.NO_ERROR,
+  loginErrorState: LoginErrorState? = null,
   showProgressBar: Boolean = false,
 ) {
   var showPassword by remember { mutableStateOf(false) }
@@ -256,7 +256,6 @@ fun LoginPage(
           color = MaterialTheme.colors.error,
           text =
             when (loginErrorState) {
-              LoginErrorState.NO_ERROR -> ""
               LoginErrorState.UNKNOWN_HOST ->
                 stringResource(
                   id = R.string.login_error,
@@ -267,6 +266,7 @@ fun LoginPage(
                   id = R.string.login_error,
                   stringResource(R.string.invalid_login_credentials)
                 )
+              null -> ""
             },
           modifier =
             modifier

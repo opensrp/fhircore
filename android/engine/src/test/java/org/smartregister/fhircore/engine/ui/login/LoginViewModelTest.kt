@@ -151,9 +151,8 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel.attemptRemoteLogin()
 
-    // Login error is reset
-    Assert.assertNotNull(loginViewModel.loginErrorState.value)
-    Assert.assertEquals(LoginErrorState.NO_ERROR, loginViewModel.loginErrorState.value!!)
+    // Login error is reset to null
+    Assert.assertNull(loginViewModel.loginErrorState.value)
 
     // Show progress bar active
     Assert.assertNotNull(loginViewModel.showProgressBar.value)
@@ -213,7 +212,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel.attemptRemoteLogin()
 
-    Assert.assertEquals(LoginErrorState.NO_ERROR, loginViewModel.loginErrorState.value)
+    Assert.assertEquals(null, loginViewModel.loginErrorState.value)
     loginViewModel.showProgressBar.value?.let { Assert.assertTrue(it) }
     verify { accountAuthenticatorSpy.fetchToken("testUser", "51r1K4l1".toCharArray()) }
   }

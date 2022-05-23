@@ -151,8 +151,8 @@ constructor(
   val password: LiveData<String>
     get() = _password
 
-  private val _loginErrorState = MutableLiveData<LoginErrorState>()
-  val loginErrorState: LiveData<LoginErrorState>
+  private val _loginErrorState = MutableLiveData<LoginErrorState?>()
+  val loginErrorState: LiveData<LoginErrorState?>
     get() = _loginErrorState
 
   private val _showProgressBar = MutableLiveData(false)
@@ -214,12 +214,12 @@ constructor(
   }
 
   fun onUsernameUpdated(username: String) {
-    _loginErrorState.postValue(LoginErrorState.NO_ERROR)
+    _loginErrorState.postValue(null)
     _username.postValue(username)
   }
 
   fun onPasswordUpdated(password: String) {
-    _loginErrorState.postValue(LoginErrorState.NO_ERROR)
+    _loginErrorState.postValue(null)
     _password.postValue(password)
   }
 
@@ -234,7 +234,7 @@ constructor(
 
   fun attemptRemoteLogin() {
     if (!username.value.isNullOrBlank() && !password.value.isNullOrBlank()) {
-      _loginErrorState.postValue(LoginErrorState.NO_ERROR)
+      _loginErrorState.postValue(null)
       _showProgressBar.postValue(true)
       accountAuthenticator
         .fetchToken(username.value!!.trim(), password.value!!.trim().toCharArray())

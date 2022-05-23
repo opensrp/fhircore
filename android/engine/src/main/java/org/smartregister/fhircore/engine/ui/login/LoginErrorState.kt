@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.ui.login
 
 enum class LoginErrorState {
-  NO_ERROR,
   UNKNOWN_HOST,
   INVALID_CREDENTIALS
 }

@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.ui.components
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import io.mockk.every
 import io.mockk.mockk
@@ -39,7 +40,7 @@ class LoginScreenWithLogoTest : RobolectricTest() {
   private lateinit var loginViewModelWithLogo: LoginViewModel
   private val username = MutableLiveData("")
   private val password = MutableLiveData("")
-  private val loginErrorState = MutableLiveData(LoginErrorState.NO_ERROR)
+  private val loginErrorState: LiveData<LoginErrorState?> = MutableLiveData(null)
   private val showProgressBar = MutableLiveData(false)
   private val loginConfig = loginViewConfigurationOf(showLogo = true)
 
