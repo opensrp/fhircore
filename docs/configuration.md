@@ -85,8 +85,6 @@ Common attributes:
 
 TODO:
 
-quick list of all configs classification and what it does.
-
 structure / details of each config classification: what is it in general, what each attribute does (or used in-app)
 
 how a config is interpreted, code wise
