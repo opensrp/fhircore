@@ -64,7 +64,6 @@ class LoginScreenTest : RobolectricTest() {
         every { password } returns this@LoginScreenTest.password
         every { loginError } returns this@LoginScreenTest.loginError
         every { showProgressBar } returns this@LoginScreenTest.showProgressBar
-        every { appLogoResourceFile } returns "ic_launcher"
         every { onUsernameUpdated(any()) } answers
           {
             this@LoginScreenTest.username.value = firstArg()
@@ -102,9 +101,6 @@ class LoginScreenTest : RobolectricTest() {
     composeRule.onNodeWithTag(PASSWORD_FIELD_TAG).assertIsDisplayed()
     composeRule.onNodeWithTag(PASSWORD_FIELD_TAG, useUnmergedTree = true).assertTextEquals("")
     composeRule.onNodeWithTag(PASSWORD_FIELD_TAG, useUnmergedTree = true).performTextInput("12345")
-    composeRule
-      .onNodeWithTag(PASSWORD_FIELD_TAG, useUnmergedTree = true)
-      .assertTextEquals(password.value!!)
     verify(exactly = 1) { loginViewModel.onPasswordUpdated(password.value!!) }
 
     // verify login button properties and behaviour

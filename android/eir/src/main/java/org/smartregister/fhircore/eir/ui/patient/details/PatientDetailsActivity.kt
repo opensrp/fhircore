@@ -21,9 +21,10 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.core.os.bundleOf
+import androidx.databinding.DataBindingUtil
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_patient_details.patientDetailsToolbar
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.databinding.ActivityPatientDetailsBinding
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventActivity
 import org.smartregister.fhircore.eir.util.PATIENT_REGISTRATION
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -34,10 +35,13 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var patientId: String
 
+  private lateinit var patientDetailsActivityBinding: ActivityPatientDetailsBinding
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_patient_details)
-    setSupportActionBar(patientDetailsToolbar)
+    patientDetailsActivityBinding =
+      DataBindingUtil.setContentView(this, R.layout.activity_patient_details)
+    setSupportActionBar(patientDetailsActivityBinding.patientDetailsToolbar)
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     supportFragmentManager
@@ -51,7 +55,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       .commitNow()
   }
 
-  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+  override fun onCreateOptionsMenu(menu: Menu): Boolean {
     menuInflater.inflate(R.menu.profile_menu, menu)
     return true
   }

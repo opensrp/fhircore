@@ -24,6 +24,7 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import org.smartregister.fhircore.engine.configuration.view.NavigationAction
 import org.smartregister.fhircore.quest.configuration.view.ActionSwitchFragment
+import org.smartregister.fhircore.quest.configuration.view.P2PSyncNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDetailsNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
 import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
@@ -38,6 +39,7 @@ class QuestJsonSpecificationProvider @Inject constructor() {
         subclass(QuestionnaireDataDetailsNavigationAction::class)
         subclass(QuestionnaireNavigationAction::class)
         subclass(TestDetailsNavigationAction::class)
+        subclass(P2PSyncNavigationAction::class)
       }
     }
 

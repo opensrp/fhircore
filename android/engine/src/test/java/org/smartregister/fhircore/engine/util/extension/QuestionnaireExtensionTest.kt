@@ -114,4 +114,46 @@ class QuestionnaireExtensionTest : RobolectricTest() {
 
     Assert.assertEquals("My test link: ", item.asLabel())
   }
+
+  @Test
+  fun testShouldFindMatchingItemsByFieldType() {
+
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.CHOICE
+              linkId = "q1-gender"
+              definition = "some-element-definition-identifier"
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.CHOICE
+              linkId = "q2-marital-status"
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.DATE
+              linkId = "q3-date"
+            }
+          )
+      }
+
+    Assert.assertEquals(3, questionnaire.item.size)
+
+    val filtered =
+      questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.CHOICE.name)
+
+    Assert.assertEquals(2, filtered.size)
+
+    val filteredDates =
+      questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.DATE.name)
+
+    Assert.assertEquals(1, filteredDates.size)
+
+    val filteredDefinitions =
+      questionnaire.find(FieldType.DEFINITION, "some-element-definition-identifier")
+
+    Assert.assertEquals(1, filteredDefinitions.size)
+  }
 }

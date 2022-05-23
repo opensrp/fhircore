@@ -45,12 +45,16 @@ class RemoveFamilyViewModelTest : RobolectricTest() {
 
   private val familyDetailRepository: FamilyDetailRepository = mockk(relaxed = true)
 
-  private lateinit var removeFamilyViewModel: RemoveFamilyViewModel
+  private lateinit var removeFamilyViewModel:
+    org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyViewModel
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    removeFamilyViewModel = RemoveFamilyViewModel(familyDetailRepository)
+    removeFamilyViewModel =
+      org.smartregister.fhircore.quest.ui.family.removefamily.RemoveFamilyViewModel(
+        familyDetailRepository
+      )
 
     coEvery { familyDetailRepository.fetchDemographics("111") } returns getPatient()
   }

@@ -28,9 +28,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -58,16 +56,13 @@ import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildCarePlan
-import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildPatient
-import org.smartregister.fhircore.anc.app.fakes.FakeModel.getEncounter
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
@@ -101,7 +96,7 @@ class PatientRepositoryTest : RobolectricTest() {
         PatientRepository(
           context = ApplicationProvider.getApplicationContext(),
           fhirEngine = fhirEngine,
-          domainMapper = ancItemMapper,
+          dataMapper = ancItemMapper,
           dispatcherProvider = dispatcherProvider
         )
       )
@@ -109,7 +104,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testFetchDemographicsShouldReturnMergedPatient() {
-    coEvery { fhirEngine.load(any<Class<Resource>>(), any()) } answers
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } answers
       {
         when (secondArg<String>()) {
           PATIENT_ID_1 -> getPatient()
@@ -279,9 +274,9 @@ class PatientRepositoryTest : RobolectricTest() {
   fun testLoadAllShouldReturnListOfFamilyItem() {
     coEvery { fhirEngine.search<Condition>(any()) } returns listOf(buildCondition("1111"))
     coEvery { repository.searchCarePlan(any()) } returns listOf(buildCarePlan("1111"))
-    coEvery { fhirEngine.load(Patient::class.java, "1111") } returns
+    coEvery { fhirEngine.get(ResourceType.Patient, "1111") } returns
       buildPatient(id = "1111", family = "Test", given = "Abc")
-    coEvery { fhirEngine.load(Patient::class.java, "1110") } returns
+    coEvery { fhirEngine.get(ResourceType.Patient, "1110") } returns
       buildPatient(id = "1110", family = "Test0", given = "Abc0")
     coEvery { fhirEngine.count(any()) } returns 10
 
@@ -471,7 +466,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testRecordComputedBmiShouldExtractAndSaveResources() {
-    coEvery { fhirEngine.save(any()) } returns Unit
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking {
       val result =
@@ -484,14 +479,14 @@ class PatientRepositoryTest : RobolectricTest() {
           isUnitModeMetric = true
         )
 
-      coVerify(exactly = 4) { fhirEngine.save(any()) }
+      coVerify(exactly = 4) { fhirEngine.create(any()) }
       Assert.assertTrue(result)
     }
   }
 
   @Test
   fun testRecordComputedBmiShouldExtractAndSaveResourcesInner() {
-    coEvery { fhirEngine.save(any()) } returns Unit
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking {
       val result =
@@ -504,7 +499,7 @@ class PatientRepositoryTest : RobolectricTest() {
           isUnitModeMetric = true
         )
 
-      coVerify(exactly = 4) { fhirEngine.save(any()) }
+      coVerify(exactly = 4) { fhirEngine.create(any()) }
       Assert.assertTrue(result)
     }
   }
@@ -541,13 +536,13 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testRevokeCarePlansShouldUpdateCareplanStatus() {
     coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf(buildCarePlan("99"))
-    coEvery { fhirEngine.save(any()) } just runs
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking { repository.revokeCarePlans("99") }
 
     val saveSlot = slot<CarePlan>()
 
-    coVerify { fhirEngine.save(capture(saveSlot)) }
+    coVerify { fhirEngine.create(capture(saveSlot)) }
 
     Assert.assertEquals(CarePlan.CarePlanStatus.REVOKED, saveSlot.captured.status)
     Assert.assertEquals(Date().makeItReadable(), saveSlot.captured.period.end.makeItReadable())
@@ -557,13 +552,13 @@ class PatientRepositoryTest : RobolectricTest() {
   fun testRevokeFlagsShouldUpdateFlagStatus() {
     coEvery { fhirEngine.search<Flag>(any()) } returns
       listOf(Flag().apply { status = Flag.FlagStatus.ACTIVE })
-    coEvery { fhirEngine.save(any()) } just runs
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking { repository.revokeFlags("99") }
 
     val saveSlot = slot<Flag>()
 
-    coVerify { fhirEngine.save(capture(saveSlot)) }
+    coVerify { fhirEngine.create(capture(saveSlot)) }
 
     Assert.assertEquals(Flag.FlagStatus.INACTIVE, saveSlot.captured.status)
     Assert.assertEquals(Date().makeItReadable(), saveSlot.captured.period.end.makeItReadable())
@@ -573,13 +568,13 @@ class PatientRepositoryTest : RobolectricTest() {
   fun testRevokeConditionsShouldUpdateConditionStatus() {
     coEvery { fhirEngine.search<Condition>(any()) } returns
       listOf(Condition().apply { clinicalStatus = Coding("", "active", "").asCodeableConcept() })
-    coEvery { fhirEngine.save(any()) } just runs
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking { repository.revokeConditions("99") }
 
     val saveSlot = slot<Condition>()
 
-    coVerify { fhirEngine.save(capture(saveSlot)) }
+    coVerify { fhirEngine.create(capture(saveSlot)) }
 
     Assert.assertEquals("inactive", saveSlot.captured.clinicalStatus.codingFirstRep.code)
     Assert.assertEquals(
@@ -590,17 +585,17 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testMarkDeceasedShouldUpdatePatientData() {
-    coEvery { fhirEngine.load(Patient::class.java, any()) } returns
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns
       Patient().apply { active = true }
     coEvery { repository.revokeCarePlans(any(), any()) } answers {}
     coEvery { repository.revokeActiveStatusData(any()) } answers {}
-    coEvery { fhirEngine.save(any()) } just runs
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking { repository.markDeceased("99", Date()) }
 
     val saveSlot = slot<Patient>()
 
-    coVerify { fhirEngine.save(capture(saveSlot)) }
+    coVerify { fhirEngine.create(capture(saveSlot)) }
 
     Assert.assertEquals(
       Date().asYyyyMmDd(),
@@ -610,20 +605,20 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testDeletePatientWithEntryInErrorShouldMarkPatientInactive() {
-    coEvery { fhirEngine.load(Patient::class.java, any()) } returns
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns
       Patient().apply {
         active = true
         addLink().other.reference = "ref"
       }
     coEvery { repository.revokeCarePlans(any(), any()) } answers {}
     coEvery { repository.revokeActiveStatusData(any()) } answers {}
-    coEvery { fhirEngine.save(any()) } just runs
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking { repository.deletePatient("99", DeletionReason.ENTRY_IN_ERROR) }
 
     val saveSlot = slot<Patient>()
 
-    coVerify { fhirEngine.save(capture(saveSlot)) }
+    coVerify { fhirEngine.create(capture(saveSlot)) }
 
     Assert.assertFalse(saveSlot.captured.active)
     Assert.assertEquals(0, saveSlot.captured.link.size)
@@ -631,20 +626,20 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testDeletePatientWithMovedOutShouldRemovePatientLink() {
-    coEvery { fhirEngine.load(Patient::class.java, any()) } returns
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns
       Patient().apply {
         active = true
         addLink().other.reference = "ref"
       }
     coEvery { repository.revokeCarePlans(any(), any()) } answers {}
     coEvery { repository.revokeActiveStatusData(any()) } answers {}
-    coEvery { fhirEngine.save(any()) } just runs
+    coEvery { fhirEngine.create(any()) } returns listOf()
 
     runBlocking { repository.deletePatient("99", DeletionReason.MOVED_OUT) }
 
     val saveSlot = slot<Patient>()
 
-    coVerify { fhirEngine.save(capture(saveSlot)) }
+    coVerify { fhirEngine.create(capture(saveSlot)) }
 
     Assert.assertTrue(saveSlot.captured.active)
     Assert.assertEquals(0, saveSlot.captured.link.size)
@@ -652,7 +647,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test(expected = IllegalStateException::class)
   fun testDeletePatientWithFamilyHeadShouldThrowException() {
-    coEvery { fhirEngine.load(Patient::class.java, any()) } returns
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns
       Patient().apply {
         active = true
         addLink().other.reference = "ref"

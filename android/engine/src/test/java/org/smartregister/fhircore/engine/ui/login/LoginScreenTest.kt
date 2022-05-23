@@ -64,7 +64,6 @@ class LoginScreenTest : RobolectricTest() {
         every { loginError } returns MutableLiveData("login error")
         every { showProgressBar } returns MutableLiveData(false)
         every { loginViewConfiguration } returns MutableLiveData(loginConfig)
-        every { appLogoResourceFile } returns "ic_launcher"
       }
   }
 

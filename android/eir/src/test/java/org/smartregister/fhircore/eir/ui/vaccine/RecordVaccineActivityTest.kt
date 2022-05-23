@@ -41,6 +41,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -75,31 +76,32 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   private lateinit var recordVaccineActivity: RecordVaccineActivity
 
-  @BindValue
-  val recordVaccineViewModel =
-    spyk(
-      RecordVaccineViewModel(
-        fhirEngine = fhirEngine,
-        defaultRepository = mockk(),
-        configurationRegistry = mockk(),
-        transformSupportServices = mockk(),
-        patientRepository = mockk(),
-        dispatcherProvider = DefaultDispatcherProvider(),
-        sharedPreferencesHelper = mockk(),
-        libraryEvaluator = mockk()
-      )
-    )
+  @BindValue lateinit var recordVaccineViewModel: RecordVaccineViewModel
 
   @Before
   fun setUp() {
+    recordVaccineViewModel =
+      spyk(
+        RecordVaccineViewModel(
+          fhirEngine = fhirEngine,
+          defaultRepository = mockk(),
+          configurationRegistry = mockk(),
+          transformSupportServices = mockk(),
+          patientRepository = mockk(),
+          dispatcherProvider = DefaultDispatcherProvider(),
+          sharedPreferencesHelper = mockk(),
+          libraryEvaluator = mockk()
+        )
+      )
+
     hiltRule.inject()
 
-    coEvery { fhirEngine.load(Patient::class.java, "test_patient_id") } returns
+    coEvery { fhirEngine.get(ResourceType.Patient, "test_patient_id") } returns
       TestUtils.TEST_PATIENT_1
     coEvery { fhirEngine.search<Immunization>(any()) } returns listOf()
-    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
-    coEvery { fhirEngine.load(Immunization::class.java, any()) } returns Immunization()
-    coEvery { fhirEngine.save(any()) } answers {}
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, any()) } returns Questionnaire()
+    coEvery { fhirEngine.get(ResourceType.Immunization, any()) } returns Immunization()
+    coEvery { fhirEngine.create(any()) } answers { listOf() }
 
     val intent =
       Intent().apply {

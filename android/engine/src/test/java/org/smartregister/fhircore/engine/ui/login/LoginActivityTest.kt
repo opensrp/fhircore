@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
+// @UninstallModules(EngineModule::class)
 class LoginActivityTest : ActivityRobolectricTest() {
 
   private lateinit var loginActivity: LoginActivity

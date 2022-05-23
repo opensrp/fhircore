@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data.task
 
 import android.content.Context
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -38,7 +39,7 @@ class PatientTaskRepository
 constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: PatientTaskItemMapper,
+  override val dataMapper: PatientTaskItemMapper,
   private val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<PatientTask, PatientTaskItem> {
 
@@ -59,9 +60,9 @@ constructor(
 
       tasks.map { task ->
         val patientId = task.`for`.reference.replace("Patient/", "")
-        val patient = fhirEngine.load(Patient::class.java, patientId)
+        val patient = fhirEngine.get<Patient>(patientId)
 
-        domainMapper.mapToDomainModel(PatientTask(patient, task))
+        dataMapper.transformInputToOutputModel(PatientTask(patient, task))
       }
     }
   }

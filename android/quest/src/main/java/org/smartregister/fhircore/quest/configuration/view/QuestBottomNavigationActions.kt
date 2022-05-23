@@ -37,3 +37,7 @@ data class ActionSwitchFragment(
   val isFilterVisible: Boolean,
   val toolbarTitle: String?
 ) : NavigationAction
+
+@Serializable
+@SerialName("p2p-sync")
+data class P2PSyncNavigationAction(val tag: String) : NavigationAction

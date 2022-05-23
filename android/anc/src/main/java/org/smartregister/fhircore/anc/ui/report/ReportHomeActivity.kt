@@ -72,7 +72,7 @@ class ReportHomeActivity :
 
     registerDataViewModel =
       initializeRegisterDataViewModel().also { dataViewModel ->
-        dataViewModel.currentPage.observe(currentActivity, { dataViewModel.loadPageData(it) })
+        dataViewModel.currentPage.observe(currentActivity) { dataViewModel.loadPageData(it) }
       }
 
     configureViews(registerViewConfiguration)
@@ -126,7 +126,6 @@ class ReportHomeActivity :
               ignoreCase = true
             )
           ) {
-
             val reportName = selectedMeasureReportItem.value?.name!!
             Timber.d(message = "This is the measure name => ".plus(reportName))
             reportViewModel.evaluateMeasure(
