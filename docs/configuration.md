@@ -64,16 +64,16 @@ Binary config contains attributes that will be used in the app.
 
 List of common Binary configs `classfication`:
 
-| `classification`                     | What it does                                                             |
+| `classification`               | What it configures                                                              |
 | :----------------------------- | :------------------------------------------------------------------------ |
-| application      | ...                               |
-| login           | ...                             |
-| app_feature           | ...                             |
-| pin           | ...                             |
-| data_filters           | ...                             |
-| forms           | ...                             |
-| patient_register           | ...                             |
-| sync           | ...                             |
+| application           | Configure the app globally                             |
+| login                 | Configure the login page                             |
+| app_feature           | Configure the available feature                             |
+| pin                   | Configure the pin page                             |
+| data_filters          | Configure the all filters the app will uses e.g patient register, family register                           |
+| forms                 | Configure the all Questionnaires that the app will uses                           |
+| patient_register      | Configure the patient register page                             |
+| sync                  | Configure the resource that will be synced                             |
 
 ### Structure of Binary Config
 
