@@ -64,21 +64,16 @@ Binary config contains attributes that will be used in the app.
 
 List of common Binary configs `classfication`:
 
-* application
-
-* login
-
-* app_feature
-
-* pin
-
-* data_filters
-
-* forms
-
-* patient_register
-
-* sync
+| `classification`                     | What it does                                                             |
+| :----------------------------- | :------------------------------------------------------------------------ |
+| application      | ...                               |
+| login           | ...                             |
+| app_feature           | ...                             |
+| pin           | ...                             |
+| data_filters           | ...                             |
+| forms           | ...                             |
+| patient_register           | ...                             |
+| sync           | ...                             |
 
 ### Structure of Binary Config
 
