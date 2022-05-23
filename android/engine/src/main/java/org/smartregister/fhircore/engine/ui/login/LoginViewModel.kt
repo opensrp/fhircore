@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.ui.login
 import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
 import android.accounts.AccountManagerFuture
-import android.app.Application
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
@@ -32,20 +31,24 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -57,7 +60,7 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
   val sharedPreferences: SharedPreferencesHelper,
-  val app: Application
+  val fhirResourceDataSource: FhirResourceDataSource
 ) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -72,13 +75,14 @@ constructor(
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-        if (response.isSuccessful)
-          response.body()!!.run {
-            storeUserPreferences(this)
-            _showProgressBar.postValue(false)
-            _navigateToHome.value = true
+        if (response.isSuccessful) {
+          response.body()?.let {
+            with(it.string().decodeJson<UserInfo>()) {
+              sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, this.encodeJson())
+              fetchLoggedInPractitioner(this)
+            }
           }
-        else {
+        } else {
           handleFailure(call, IOException("Network call failed with $response"))
         }
         Timber.i(response.errorBody()?.toString() ?: "No error")
@@ -90,13 +94,6 @@ constructor(
         _showProgressBar.postValue(false)
       }
     }
-
-  private fun storeUserPreferences(responseBody: ResponseBody) {
-    val responseBodyString = responseBody.string()
-    Timber.d(responseBodyString)
-    val userResponse = responseBodyString.decodeJson<UserInfo>()
-    sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userResponse.encodeJson())
-  }
 
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
@@ -142,13 +139,6 @@ constructor(
       }
     }
 
-  fun attemptLocalLogin(): Boolean {
-    return accountAuthenticator.validLocalCredentials(
-      username.value!!.trim(),
-      password.value!!.trim().toCharArray()
-    )
-  }
-
   private val _navigateToHome = MutableLiveData<Boolean>()
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
@@ -161,9 +151,9 @@ constructor(
   val password: LiveData<String>
     get() = _password
 
-  private val _loginError = MutableLiveData<String>()
-  val loginError: LiveData<String>
-    get() = _loginError
+  private val _loginErrorState = MutableLiveData<LoginErrorState?>()
+  val loginErrorState: LiveData<LoginErrorState?>
+    get() = _loginErrorState
 
   private val _showProgressBar = MutableLiveData(false)
   val showProgressBar
@@ -172,6 +162,41 @@ constructor(
   private val _loginViewConfiguration = MutableLiveData(loginViewConfigurationOf())
   val loginViewConfiguration: LiveData<LoginViewConfiguration>
     get() = _loginViewConfiguration
+
+  fun fetchLoggedInPractitioner(userInfo: UserInfo) {
+    if (!userInfo.keycloakUuid.isNullOrEmpty() &&
+        sharedPreferences.read(LOGGED_IN_PRACTITIONER, null) == null
+    ) {
+      viewModelScope.launch(dispatcher.io()) {
+        try {
+          fhirResourceDataSource.search(
+              ResourceType.Practitioner.name,
+              mapOf(IDENTIFIER to userInfo.keycloakUuid!!)
+            )
+            .run {
+              if (!this.entry.isNullOrEmpty()) {
+                sharedPreferences.write(
+                  LOGGED_IN_PRACTITIONER,
+                  (this.entryFirstRep.resource as Practitioner).encodeResourceToString()
+                )
+              }
+            }
+        } catch (throwable: Throwable) {
+          Timber.e("Error fetching practitioner details", throwable)
+        } finally {
+          _showProgressBar.postValue(false)
+          _navigateToHome.postValue(true)
+        }
+      }
+    }
+  }
+
+  fun attemptLocalLogin(): Boolean {
+    return accountAuthenticator.validLocalCredentials(
+      username.value!!.trim(),
+      password.value!!.trim().toCharArray()
+    )
+  }
 
   fun loginUser() {
     viewModelScope.launch(dispatcher.io()) {
@@ -189,12 +214,12 @@ constructor(
   }
 
   fun onUsernameUpdated(username: String) {
-    _loginError.postValue("")
+    _loginErrorState.postValue(null)
     _username.postValue(username)
   }
 
   fun onPasswordUpdated(password: String) {
-    _loginError.postValue("")
+    _loginErrorState.postValue(null)
     _password.postValue(password)
   }
 
@@ -209,7 +234,7 @@ constructor(
 
   fun attemptRemoteLogin() {
     if (!username.value.isNullOrBlank() && !password.value.isNullOrBlank()) {
-      _loginError.postValue("")
+      _loginErrorState.postValue(null)
       _showProgressBar.postValue(true)
       accountAuthenticator
         .fetchToken(username.value!!.trim(), password.value!!.trim().toCharArray())
@@ -229,10 +254,11 @@ constructor(
   }
 
   private fun handleErrorMessage(throwable: Throwable) {
-    if (throwable is UnknownHostException) {
-      _loginError.postValue(app.getString(R.string.login_call_fail_error_message))
-    } else {
-      _loginError.postValue(app.getString(R.string.invalid_login_credentials))
-    }
+    if (throwable is UnknownHostException) _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
+    else _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+  }
+
+  companion object {
+    const val IDENTIFIER = "identifier"
   }
 }

@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.data.remote.model.response
 
-const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
-const val USER_INFO_SHARED_PREFERENCE_KEY = "user_info"
-const val LOGGED_IN_PRACTITIONER = "logged_in_practitioner"
-const val APP_ID_CONFIG = "app_id_config"
-const val FORCE_LOGIN_VIA_USERNAME = "force_login_with_username"
-const val FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP = "force_login_with_username_from_pin_setup"
-const val IS_LOGGED_IN = "is_logged_in"
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class UserInfo(
+  @SerialName("questionnaire_publisher") var questionnairePublisher: String? = null,
+  @SerialName("organization") var organization: String? = null,
+  @SerialName("location") var location: String? = null,
+  @SerialName("sub") var keycloakUuid: String? = null
+)

@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Practitioner
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
@@ -49,14 +50,12 @@ import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 
 @HiltViewModel
@@ -101,10 +100,6 @@ constructor(
 
   private val measureReportDateFormatter =
     SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
-
-  private val authenticatedUserInfo by lazy {
-    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
-  }
 
   private val _dateRange =
     MutableLiveData(
@@ -198,6 +193,11 @@ constructor(
         )
       }
 
+      val loggedInPractitioner =
+        sharedPreferencesHelper.read<Practitioner>(
+          key = LOGGED_IN_PRACTITIONER,
+          decodeFhirResource = true
+        )
       if (selectedPatientItem.value != null && individualEvaluation) {
         val measureReport =
           withContext(dispatcher.io()) {
@@ -207,8 +207,8 @@ constructor(
               end = endDateFormatted,
               reportType = SUBJECT,
               subject = selectedPatientItem.value!!.patientIdentifier,
-              practitioner = authenticatedUserInfo?.keyclockuuid!!,
-              lastReceivedOn = null // Non-null value not supported yet
+              practitioner = loggedInPractitioner?.id,
+              lastReceivedOn = null
             )
           }
 
@@ -230,7 +230,7 @@ constructor(
               end = endDateFormatted,
               reportType = POPULATION,
               subject = null,
-              practitioner = authenticatedUserInfo?.keyclockuuid!!,
+              practitioner = loggedInPractitioner?.id,
               lastReceivedOn = null // Non-null value not supported yet
             )
           }

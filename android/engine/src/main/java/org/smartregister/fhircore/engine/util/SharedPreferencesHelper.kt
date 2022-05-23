@@ -21,6 +21,8 @@ import android.content.SharedPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 
 @Singleton
 class SharedPreferencesHelper @Inject constructor(@ApplicationContext val context: Context) {
@@ -65,6 +67,10 @@ class SharedPreferencesHelper @Inject constructor(@ApplicationContext val contex
   fun remove(key: String) {
     prefs.edit().remove(key).apply()
   }
+
+  inline fun <reified T> read(key: String, decodeFhirResource: Boolean = false): T? =
+    if (decodeFhirResource) this.read(key, null)?.decodeResourceFromString()
+    else this.read(key, null)?.decodeJson<T>()
 
   companion object {
     const val LANG = "shared_pref_lang"
