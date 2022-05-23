@@ -66,7 +66,7 @@ List of common Binary configs `classfication`:
 
 | `classification`               | What it configures                                                              |
 | :----------------------------- | :------------------------------------------------------------------------ |
-| application           | Configure the app globally                             |
+| application           | Configure the app level                             |
 | login                 | Configure the login page                             |
 | app_feature           | Configure the available feature                             |
 | pin                   | Configure the pin page                             |
@@ -83,8 +83,24 @@ Common attributes:
   
 * `classification` as config name e.g application, login, sync, etc
 
+Structure of each classification:
+
+1. application
+
+* `theme`
+
+* `language`
+
+* `syncInterval`
+
+* `applicationName`
+
+* `appLogoIconResourceFile`
+
+* `count`
+
 TODO:
 
-structure / details of each config classification: what is it in general, what each attribute does (or used in-app)
+structure of each config classification: what each attribute does (or used in-app)
 
 how a config is interpreted, code wise
