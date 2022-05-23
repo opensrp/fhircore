@@ -110,6 +110,18 @@ Structure of each `classification`:
 * `count`
 
    Sets the application maximum records when downloading resource drawable folder
+   
+   ```json
+   {
+     "appId": "ecbis-saa",
+     "classification": "application",
+     "theme": "AppTheme",
+     "languages": ["en", "sw"],
+     "applicationName": "eCBIS",
+     "appLogoIconResourceFile": "ic_liberia",
+     "count": "100"
+   }
+   ```
 
 TODO:
 
