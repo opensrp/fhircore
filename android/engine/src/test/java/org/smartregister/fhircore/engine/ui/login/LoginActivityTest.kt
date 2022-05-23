@@ -29,6 +29,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -45,7 +46,6 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -56,41 +56,37 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  val accountAuthenticator = mockk<AccountAuthenticator>()
-
-  lateinit var loginService: LoginService
-
-  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @BindValue val repository: DefaultRepository = mockk()
 
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+
+  @BindValue lateinit var loginViewModel: LoginViewModel
+
+  private val accountAuthenticator: AccountAuthenticator = mockk()
+
   private val application = ApplicationProvider.getApplicationContext<Application>()
-
-  val defaultRepository: DefaultRepository = mockk()
-
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
 
   private val resourceService: FhirResourceService = mockk()
 
-  @BindValue
-  val loginViewModel =
-    LoginViewModel(
-      accountAuthenticator = accountAuthenticator,
-      dispatcher = DefaultDispatcherProvider(),
-      sharedPreferences = sharedPreferencesHelper,
-      fhirResourceDataSource = FhirResourceDataSource(resourceService)
-    )
+  private lateinit var loginService: LoginService
 
   @Before
   fun setUp() {
     hiltRule.inject()
+
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+
     coEvery { accountAuthenticator.hasActivePin() } returns false
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false) } returns
-      false
-    coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
-    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
+
+    loginViewModel =
+      LoginViewModel(
+        accountAuthenticator = accountAuthenticator,
+        dispatcher = DefaultDispatcherProvider(),
+        sharedPreferences = sharedPreferencesHelper,
+        fhirResourceDataSource = FhirResourceDataSource(resourceService)
+      )
 
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
@@ -100,35 +96,22 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
     loginViewModel.navigateToHome()
-
     verify { loginService.navigateToHome() }
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenPinExists() {
     coEvery { accountAuthenticator.hasActivePin() } returns true
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns true
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false) } returns
-      false
-    coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
-    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false) } returns Unit
     val loginConfig = loginViewConfigurationOf(enablePin = true)
     loginViewModel.updateViewConfigurations(loginConfig)
     loginViewModel.navigateToHome()
-
     verify { loginService.navigateToHome() }
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenForcedLogin() {
     coEvery { accountAuthenticator.hasActivePin() } returns false
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false) } returns false
-    coEvery { sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false) } returns
-      true
-    coEvery { sharedPreferencesHelper.read("shared_pref_theme", "") } returns ""
-    coEvery {
-      sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
-    } returns Unit
+    sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, true)
     val loginConfig = loginViewConfigurationOf(enablePin = true)
     loginViewModel.updateViewConfigurations(loginConfig)
     loginViewModel.navigateToHome()
@@ -157,6 +140,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   class TestLoginService : LoginService {
     override lateinit var loginActivity: AppCompatActivity
+
     override fun navigateToHome() {}
   }
 }

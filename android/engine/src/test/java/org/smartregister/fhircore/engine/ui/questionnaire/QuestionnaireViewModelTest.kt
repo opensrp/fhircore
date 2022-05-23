@@ -25,6 +25,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -43,7 +44,6 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -80,7 +80,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -121,9 +120,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     every { sharedPreferencesHelper.read(LOGGED_IN_PRACTITIONER, null) } returns
       Practitioner().apply { id = "123" }.encodeResourceToString()
 
-    defaultRepo = spyk(DefaultRepository(fhirEngine, TestDispatcher()))
+    defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider))
+
     val configurationRegistry = mockk<ConfigurationRegistry>()
     every { configurationRegistry.appId } returns "appId"
+
     questionnaireViewModel =
       spyk(
         QuestionnaireViewModel(
@@ -1018,13 +1019,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("Practitioner/123", encounter.participant[0].individual.reference)
   }
 
-  class TestDispatcher : DispatcherProvider {
-    override fun main() = Dispatchers.Main
-
-    override fun default() = Dispatchers.Main
-
-    override fun io() = Dispatchers.Main
-
-    override fun unconfined() = Dispatchers.Main
+  @Test
+  fun testAppendPatientsAndRelatedPersonsToGroupsShouldAddMembersToGroup() {
+    coroutineRule.runBlockingTest {
+      val patient = samplePatient()
+      val groupId = "grp1"
+      val familyGroup =
+        Group().apply {
+          id = groupId
+          name = "Mandela Family"
+        }
+      coEvery { fhirEngine.get<Group>(groupId) } returns familyGroup
+      questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(patient, groupId)
+      Assert.assertEquals(1, familyGroup.member.size)
+    }
   }
 }
