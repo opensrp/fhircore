@@ -3,7 +3,7 @@
 The configurations in Single APK Approach is using the combination of a single Composition and multiple Binary resource.
 
 ## Composition
-Composition is identified using an appId and is the entry point to access all the Binary configs associated with that appId.
+Composition config is identified using an appId and is the entry point to access all the Binary configs associated with that appId.
 
 Example of appId would be: anc, ecbis, quest, etc.
 
@@ -60,9 +60,17 @@ These attributes are the common differences that developers need to specifically
 
 ## Binary
 
+Binary config contains attributes that will be used in the app.
+
+Default attributes:
+
+* `appId` e.g anc, ecbis, quest, etc
+  
+* `classification` as config name e.g application, login, sync, etc
+
 TODO:
 
-what binary represents
+default attribute
 
 quick list of all configs classification
 
