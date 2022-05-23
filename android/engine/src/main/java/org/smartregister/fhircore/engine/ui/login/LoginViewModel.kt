@@ -163,7 +163,7 @@ constructor(
   val loginViewConfiguration: LiveData<LoginViewConfiguration>
     get() = _loginViewConfiguration
 
-  private fun fetchLoggedInPractitioner(userInfo: UserInfo) {
+  fun fetchLoggedInPractitioner(userInfo: UserInfo) {
     if (!userInfo.keycloakUuid.isNullOrEmpty() &&
         sharedPreferences.read(LOGGED_IN_PRACTITIONER, null) == null
     ) {

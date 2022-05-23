@@ -1023,15 +1023,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testAppendPatientsAndRelatedPersonsToGroupsShouldAddMembersToGroup() {
     coroutineRule.runBlockingTest {
       val patient = samplePatient()
-      val groupId = "grp1"
       val familyGroup =
         Group().apply {
-          id = groupId
+          id = "grp1"
           name = "Mandela Family"
         }
-      coEvery { fhirEngine.get<Group>(groupId) } returns familyGroup
-      questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(patient, groupId)
+      coEvery { fhirEngine.get<Group>(familyGroup.id) } returns familyGroup
+      questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(patient, familyGroup.id)
       Assert.assertEquals(1, familyGroup.member.size)
+
+      val familyGroup2 = Group().apply { id = "grp2" }
+      coEvery { fhirEngine.get<Group>(familyGroup2.id) } returns familyGroup2
+      // Sets the managing entity
+      questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(
+        RelatedPerson().apply { id = "rel1" },
+        familyGroup2.id
+      )
+      Assert.assertNotNull(familyGroup2.managingEntity)
     }
   }
 }
