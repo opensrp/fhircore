@@ -83,7 +83,7 @@ Common attributes:
   
 * `classification` as config name e.g application, login, sync, etc
 
-Structure of each classification:
+Structure of each `classification`:
 
 1. application
 
