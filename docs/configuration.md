@@ -89,15 +89,27 @@ Structure of each `classification`:
 
 * `theme`
 
+   Sets the theme for the app
+
 * `language`
+
+   Sets the languages for the app
 
 * `syncInterval`
 
+   Sets the periodic sync interval in seconds. Default 30.
+
 * `applicationName`
+
+   Sets the application display name
 
 * `appLogoIconResourceFile`
 
+   Sets the application logo thumb icon, there must be png file inside
+
 * `count`
+
+   Sets the application maximum records when downloading resource drawable folder
 
 TODO:
 
