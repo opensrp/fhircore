@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.tests
 
-
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -28,35 +27,33 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
-import org.smartregister.fhircore.engine.ui.login.LoginActivity
 
 class LaunchActivityTest {
-    @get:Rule
-    val composeTestRule = createEmptyComposeRule()
-    //@get:Rule val composeTestRule2 = createAndroidCocmposeRule(LoginActivity::class.java)
-    private lateinit var scenario: ActivityScenario<AppSettingActivity>
+  @get:Rule val composeTestRule = createEmptyComposeRule()
+  // @get:Rule val composeTestRule2 = createAndroidCocmposeRule(LoginActivity::class.java)
+  private lateinit var scenario: ActivityScenario<AppSettingActivity>
 
-    @Before
-    fun setup() {
-        scenario = ActivityScenario.launch(AppSettingActivity::class.java)
-        scenario.moveToState(Lifecycle.State.RESUMED)
-        composeTestRule.onNodeWithText("Enter Application ID").performTextInput("anc")
-        composeTestRule.onNodeWithText("LOAD CONFIGURATIONS").performClick()
-//        composeTestRule.onNodeWithText("Enter username").performTextInput("demo")
-//        composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
-//        composeTestRule.onNodeWithText("LOGIN").performClick()
-        Thread.sleep(5000)
-    }
-    @After
-    fun tearDown() {
-        scenario.close()
-    }
+  @Before
+  fun setup() {
+    scenario = ActivityScenario.launch(AppSettingActivity::class.java)
+    scenario.moveToState(Lifecycle.State.RESUMED)
+    composeTestRule.onNodeWithText("Enter Application ID").performTextInput("anc")
+    composeTestRule.onNodeWithText("LOAD CONFIGURATIONS").performClick()
+    //        composeTestRule.onNodeWithText("Enter username").performTextInput("demo")
+    //        composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
+    //        composeTestRule.onNodeWithText("LOGIN").performClick()
+    Thread.sleep(5000)
+  }
+  @After
+  fun tearDown() {
+    scenario.close()
+  }
 
-//  @Test
-//  fun applicationId() {
-//    composeTestAppScreen.onNodeWithText("Enter Application ID").performTextInput("demo")
-//    composeTestAppScreen.onNodeWithText("LOAD CONFIGURATIONS").performClick()
-//  }
+  //  @Test
+  //  fun applicationId() {
+  //    composeTestAppScreen.onNodeWithText("Enter Application ID").performTextInput("demo")
+  //    composeTestAppScreen.onNodeWithText("LOAD CONFIGURATIONS").performClick()
+  //  }
   @Test
   fun successfulLogin() {
     composeTestRule.onNodeWithText("Enter username").performTextInput("demo")

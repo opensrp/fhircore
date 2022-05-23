@@ -16,20 +16,20 @@
 
 package org.smartregister.fhircore.quest.tests
 
-import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso
-import androidx.test.espresso.action.ViewActions
-import androidx.test.espresso.matcher.ViewMatchers
-import org.junit.*
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 
 class LaunchActivityTest {
-  @get:Rule
-  val composeTestRule = createEmptyComposeRule()
-  //@get:Rule val composeTestRule2 = createAndroidCocmposeRule(LoginActivity::class.java)
+  @get:Rule val composeTestRule = createEmptyComposeRule()
+  // @get:Rule val composeTestRule2 = createAndroidCocmposeRule(LoginActivity::class.java)
   private lateinit var scenario: ActivityScenario<AppSettingActivity>
 
   @Before
@@ -51,5 +51,4 @@ class LaunchActivityTest {
     composeTestRule.onNodeWithText("LOGIN").performClick()
     Thread.sleep(5000)
   }
-
 }
