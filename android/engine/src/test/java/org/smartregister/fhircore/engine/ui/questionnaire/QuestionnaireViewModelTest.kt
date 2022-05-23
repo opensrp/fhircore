@@ -995,6 +995,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     return userInfo
   }
 
+  private fun samplePatient() =
+    Patient().apply {
+      Patient@ this.id = "123456"
+      this.birthDate = questionnaireViewModel.calculateDobFromAge(25)
+    }
+
   @Test
   fun testAddPractitionerInfoShouldSetGeneralPractitionerReferenceToPatientResource() {
     val patient = samplePatient()
@@ -1004,18 +1010,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("Practitioner/123", patient.generalPractitioner[0].reference)
   }
 
-  private fun samplePatient() =
-    Patient().apply {
-      Patient@ this.id = "123456"
-      this.birthDate = questionnaireViewModel.calculateDobFromAge(25)
-    }
+  @Test
+  fun testAddOrganizationInfoShouldSetOrganizationToQuestionnaireResponse() {
+    // For patient
+    val patient = samplePatient()
+    questionnaireViewModel.appendOrganizationInfo(patient)
+    Assert.assertNotNull("Organization/1111", patient.managingOrganization.reference)
+
+    // For group
+    val group = Group().apply { id = "123" }
+    questionnaireViewModel.appendOrganizationInfo(group)
+    Assert.assertEquals("Organization/1111", group.managingEntity.reference)
+  }
 
   @Test
   fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
-
     questionnaireViewModel.appendPractitionerInfo(encounter)
-
     Assert.assertEquals("Practitioner/123", encounter.participant[0].individual.reference)
   }
 
