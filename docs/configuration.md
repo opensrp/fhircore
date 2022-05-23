@@ -97,7 +97,7 @@ Structure of each `classification`:
 
 * `syncInterval`
 
-   Sets the periodic sync interval in seconds. Default 30.
+   Sets the periodic sync interval in seconds. Default 30
 
 * `applicationName`
 
