@@ -89,27 +89,27 @@ Common attributes:
 
 * `theme`
 
-   Sets the theme for the app
+   Sets the theme for the app.
 
 * `language`
 
-   Sets the languages for the app
+   Sets the languages for the app.
 
 * `syncInterval`
 
-   Sets the periodic sync interval in seconds. Default 30
+   Sets the periodic sync interval in seconds. Default 30.
 
 * `applicationName`
 
-   Sets the application display name
+   Sets the application display name.
 
 * `appLogoIconResourceFile`
 
-   Sets the application logo thumb icon, there must be png file inside
+   Sets the application logo thumb icon, there must be png file inside.
 
 * `count`
 
-   Sets the application maximum records when downloading resource drawable folder
+   Sets the application maximum records when downloading resource.
    
    ```json
    {
