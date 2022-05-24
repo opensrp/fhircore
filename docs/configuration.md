@@ -68,7 +68,7 @@ List of common Binary configs `classfication`:
 | :----------------------------- | :------------------------------------------------------------------------ |
 | application           | Configure the app level                             |
 | login                 | Configure the login page                             |
-| app_feature           | Configure the available feature                             |
+| app_feature           | Configure the available features                             |
 | pin                   | Configure the pin page                             |
 | data_filters          | Configure the filters that the app will uses e.g patient register, family register                           |
 | forms                 | Configure the Questionnaires that the app will uses                           |
@@ -139,6 +139,8 @@ Common attributes:
    | appFeatures           | Sets the list of features in the app                           | List&lt;FeatureConfig&gt; |
    
    FeatureConfig
+   
+   Represents a single feature available in the app
    
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
