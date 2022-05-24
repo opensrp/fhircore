@@ -64,7 +64,7 @@ Binary config contains attributes that will be used in the app.
 
 List of common Binary configs `classfication`:
 
-| `classification`               | What it configures                                                              |
+| classification               | What it configures                                                              |
 | :----------------------------- | :------------------------------------------------------------------------ |
 | application           | Configure the app level                             |
 | login                 | Configure the login page                             |
@@ -138,7 +138,7 @@ Common attributes:
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | appFeatures           | Sets the list of features in the app                           | List&lt;FeatureConfig&gt; |
    
-   FeatureConfig
+   `FeatureConfig`
    
    Represents a single feature available in the app
    
