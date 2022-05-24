@@ -40,11 +40,5 @@ class AppFeatureTest {
     Assert.assertTrue(
       appFeatureDeviceToDeviceSync.name.equals("DeviceToDeviceSync", ignoreCase = true)
     )
-
-    val appFeatureHiv = AppFeature.HivWorkflow
-    Assert.assertTrue(appFeatureHiv.name.equals("HivWorkflow", ignoreCase = true))
-
-    val appFeatureAppointments = AppFeature.Appointments
-    Assert.assertTrue(appFeatureAppointments.name.equals("Appointments", ignoreCase = true))
   }
 }

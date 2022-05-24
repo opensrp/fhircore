@@ -6,36 +6,26 @@
       "feature": "PatientManagement",
       "active": true,
       "settings": {
-        "registerTitle" : "Test-anc",
-        "registerFormId" : "128888"
-      },
-      "target": "CHW",
-      "healthModule": "ANC"
-    },
-    {
-      "feature": "HivWorkflow",
-      "active": true,
-      "settings": {
-        "registerTitle" : "HIV",
-        "registerFormId" : "12mmmm"
+        "registerTitle": "HIV",
+        "registerFormId": "131335"
       },
       "target": "CHW",
       "healthModule": "HIV"
     },
     {
-      "feature": "Appointments",
+      "feature": "PatientManagement",
       "active": true,
       "settings": {
-        "registerTitle" : "Tracing"
+        "registerTitle": "Tracing"
       },
       "target": "CHW",
       "healthModule": "TRACING"
     },
     {
-      "feature": "Appointments",
+      "feature": "PatientManagement",
       "active": true,
       "settings": {
-        "registerTitle" : "Appointment"
+        "registerTitle": "Appointment"
       },
       "target": "CHW",
       "healthModule": "APPOINTMENT"
