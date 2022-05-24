@@ -3,9 +3,9 @@
 The configurations in Single APK Approach is using the combination of a single Composition and multiple Binary resource.
 
 ## Composition
-Composition config is identified using an appId and is the entry point to access all the Binary configs associated with that appId.
+Composition config is identified using an `appId` and is the entry point to access all the Binary configs associated with that `appId`.
 
-Example of appId would be: anc, ecbis, quest, etc.
+Example of an `appId`: anc, ecbis, quest, etc.
 
 ### Structure of Composition Config
 There are 2 attributes to be highlighted. It is the `identifier` and `section` attributes.
@@ -29,7 +29,7 @@ These are the only attributes that developers need to specifically fill, the oth
    
    Each `section` contains:
    
-   * `reference` to the Binary config associated with the Composition appId
+   * `reference` to the Binary config associated with the Composition `appId`
    
    * `identifier` that represents a config classification name
    
@@ -84,9 +84,9 @@ Common attributes:
    | appId           | Sets the config identifier e.g anc, ecbis, quest, etc                            | 
    | classification                 | Sets the config classification name e.g application, login, sync, etc         |
 
-#### Structure of each classification:
+#### Structure of each `classification`
 
-1. application
+1. `application`
 
    | Attributes               | Description                                 | Type |
    | :----------------------------- | :------------------------------------------ | :---- |
@@ -109,7 +109,7 @@ Common attributes:
    }
    ```
 
-2. login
+2. `login`
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | applicationName           | Sets the application display name                            | String |
@@ -132,13 +132,13 @@ Common attributes:
    }
    ```
    
-3. app_feature
+3. `app_feature`
 
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | appFeatures           | Sets the list of features in the app                           | List&lt;FeatureConfig&gt; |
    
-   #### Structure of FeatureConfig
+   #### Structure of `FeatureConfig`
    
    `FeatureConfig` represents a single feature available in the app.
    
