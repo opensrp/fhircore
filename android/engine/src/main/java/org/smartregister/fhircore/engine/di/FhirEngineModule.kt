@@ -29,6 +29,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 
@@ -48,7 +49,7 @@ class FhirEngineModule {
   ): FhirEngine {
     FhirEngineProvider.init(
       FhirEngineConfiguration(
-        enableEncryptionIfSupported = true,
+        enableEncryptionIfSupported = !BuildConfig.DEBUG,
         DatabaseErrorStrategy.UNSPECIFIED,
         ServerConfiguration(
           baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,

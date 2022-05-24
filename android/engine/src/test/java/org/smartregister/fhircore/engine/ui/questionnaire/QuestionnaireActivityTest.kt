@@ -145,10 +145,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     populationResources.add(patient)
     val result =
       QuestionnaireActivity.intentArgs(
-        "1234",
-        "my-form",
-        QuestionnaireType.READ_ONLY,
-        questionnaireResponse,
+        clientIdentifier = "1234",
+        formName = "my-form",
+        questionnaireType = QuestionnaireType.READ_ONLY,
+        questionnaireResponse = questionnaireResponse,
         populationResources = populationResources
       )
     Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
@@ -252,7 +252,16 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     questionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
 
-    verify { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any()) }
+    verify {
+      questionnaireViewModel.extractAndSaveResources(
+        any(),
+        any(),
+        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+        any(),
+        any(),
+        any()
+      )
+    }
   }
 
   @Test
@@ -269,7 +278,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(timeout = 2000) {
-      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(
+        any(),
+        any(),
+        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+        any(),
+        any(),
+        any()
+      )
     }
   }
 
@@ -289,7 +305,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(inverse = true) {
-      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(
+        any(),
+        any(),
+        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+        any(),
+        any(),
+        any()
+      )
     }
   }
 
