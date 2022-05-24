@@ -20,7 +20,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -44,7 +43,7 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @Singleton
-class TracingAndAppointmentRegisterDao
+class AppointmentRegisterDao
 @Inject
 constructor(
   val fhirEngine: FhirEngine,
@@ -82,7 +81,7 @@ constructor(
           subjectParam = CarePlan.SUBJECT
         )
 
-      RegisterData.TracingAndAppointmentRegisterData(
+      RegisterData.AppointmentRegisterData(
         logicalId = patient.logicalId,
         name = patient.extractName(),
         identifier = patient.extractOfficialIdentifier(),

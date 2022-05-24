@@ -44,9 +44,7 @@ class AppFeatureTest {
     val appFeatureHiv = AppFeature.HivWorkflow
     Assert.assertTrue(appFeatureHiv.name.equals("HivWorkflow", ignoreCase = true))
 
-    val appFeatureTracingAndAppointment = AppFeature.Appointments
-    Assert.assertTrue(
-      appFeatureTracingAndAppointment.name.equals("Appointments", ignoreCase = true)
-    )
+    val appFeatureAppointments = AppFeature.Appointments
+    Assert.assertTrue(appFeatureAppointments.name.equals("Appointments", ignoreCase = true))
   }
 }

@@ -21,7 +21,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import java.text.SimpleDateFormat
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -57,7 +56,7 @@ class ProfileDataTest : RobolectricTest() {
   @Test
   fun testMapToDomainModelTracing() {
     val tracingProfileDto =
-      buildProfileData(HealthModule.TRACING) as ProfileData.TracingAndAppointmentProfileData
+      buildProfileData(HealthModule.TRACING) as ProfileData.AppointmentProfileData
     with(tracingProfileDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -119,7 +118,7 @@ class ProfileDataTest : RobolectricTest() {
           chwAssigned = Reference("referenceKey")
         )
       HealthModule.TRACING ->
-        ProfileData.TracingAndAppointmentProfileData(
+        ProfileData.AppointmentProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
@@ -130,7 +129,7 @@ class ProfileDataTest : RobolectricTest() {
           chwAssigned = Reference("referenceKey")
         )
       HealthModule.APPOINTMENT ->
-        ProfileData.TracingAndAppointmentProfileData(
+        ProfileData.AppointmentProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",

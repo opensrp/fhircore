@@ -29,7 +29,7 @@ constructor(
   val defaultPatientRegisterDao: DefaultPatientRegisterDao,
   val familyRegisterDao: FamilyRegisterDao,
   val hivRegisterDao: HivRegisterDao,
-  val tracingAndAppointmentRegisterDao: TracingAndAppointmentRegisterDao
+  val appointmentRegisterDao: AppointmentRegisterDao
 ) {
 
   val registerDaoMap: MutableMap<HealthModule, RegisterDao> by lazy {
@@ -37,8 +37,8 @@ constructor(
       Pair(HealthModule.ANC, ancPatientRegisterDao),
       Pair(HealthModule.FAMILY, familyRegisterDao),
       Pair(HealthModule.HIV, hivRegisterDao),
-      Pair(HealthModule.TRACING, tracingAndAppointmentRegisterDao),
-      Pair(HealthModule.APPOINTMENT, tracingAndAppointmentRegisterDao),
+      Pair(HealthModule.TRACING, appointmentRegisterDao),
+      Pair(HealthModule.APPOINTMENT, appointmentRegisterDao),
       Pair(HealthModule.DEFAULT, defaultPatientRegisterDao)
     )
   }

@@ -55,7 +55,7 @@ sealed class ProfileViewData(
     val artNumber: String = ""
   ) : ProfileViewData(logicalId = logicalId, name = name)
 
-  data class TracingAndAppointmentProfileViewData(
+  data class AppointmentProfileViewData(
     override val logicalId: String = "",
     override val name: String = "",
     val address: String = "",

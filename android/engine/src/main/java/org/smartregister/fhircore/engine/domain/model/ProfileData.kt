@@ -89,7 +89,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val chwAssigned: Reference
   ) : ProfileData(logicalId = logicalId, name = name)
 
-  data class TracingAndAppointmentProfileData(
+  data class AppointmentProfileData(
     override val logicalId: String,
     override val name: String,
     val identifier: String? = null,

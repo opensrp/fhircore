@@ -54,7 +54,7 @@ class RegisterDataTest : RobolectricTest() {
   @Test
   fun testMapToDomainModelTracing() {
     val tracingRegisterDto =
-      buildRegisterData(HealthModule.TRACING) as RegisterData.TracingAndAppointmentRegisterData
+      buildRegisterData(HealthModule.TRACING) as RegisterData.AppointmentRegisterData
     with(tracingRegisterDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -109,7 +109,7 @@ class RegisterDataTest : RobolectricTest() {
           phoneContacts = emptyList()
         )
       HealthModule.TRACING ->
-        RegisterData.TracingAndAppointmentRegisterData(
+        RegisterData.AppointmentRegisterData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
@@ -119,7 +119,7 @@ class RegisterDataTest : RobolectricTest() {
           chwAssigned = "reference/Key"
         )
       HealthModule.APPOINTMENT ->
-        RegisterData.TracingAndAppointmentRegisterData(
+        RegisterData.AppointmentRegisterData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",

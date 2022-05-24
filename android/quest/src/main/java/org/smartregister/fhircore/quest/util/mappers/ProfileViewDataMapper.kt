@@ -68,8 +68,8 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           age = inputModel.age,
           artNumber = inputModel.identifier.toString(),
         )
-      is ProfileData.TracingAndAppointmentProfileData ->
-        ProfileViewData.TracingAndAppointmentProfileViewData(
+      is ProfileData.AppointmentProfileData ->
+        ProfileViewData.AppointmentProfileViewData(
           logicalId = inputModel.logicalId,
           name = inputModel.name,
           address = inputModel.address,

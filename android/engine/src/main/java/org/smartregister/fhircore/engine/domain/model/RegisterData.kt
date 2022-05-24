@@ -78,7 +78,7 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val chwAssigned: String
   ) : RegisterData(logicalId = logicalId, name = name)
 
-  data class TracingAndAppointmentRegisterData(
+  data class AppointmentRegisterData(
     override val logicalId: String,
     override val name: String,
     val identifier: String? = null,

@@ -81,7 +81,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     val dto = buildProfileData(HealthModule.TRACING)
     val profileViewDataHiv =
       profileViewDataMapper.transformInputToOutputModel(dto) as
-        ProfileViewData.TracingAndAppointmentProfileViewData
+        ProfileViewData.AppointmentProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -149,7 +149,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           chwAssigned = Reference("referenceKey")
         )
       HealthModule.TRACING ->
-        ProfileData.TracingAndAppointmentProfileData(
+        ProfileData.AppointmentProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
@@ -160,7 +160,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           chwAssigned = Reference("referenceKey")
         )
       HealthModule.APPOINTMENT ->
-        ProfileData.TracingAndAppointmentProfileData(
+        ProfileData.AppointmentProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
