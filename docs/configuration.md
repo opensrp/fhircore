@@ -79,37 +79,23 @@ List of common Binary configs `classfication`:
 
 Common attributes:
 
-* `appId` e.g anc, ecbis, quest, etc
-  
-* `classification` as config name e.g application, login, sync, etc
+| Attributes               | Description                                 |
+   | :----------------------------- | :------------------------------------------ |
+   | appId           | Sets the config identifier e.g anc, ecbis, quest, etc                            | 
+   | classification                 | Sets the config classification name e.g application, login, sync, etc         |
 
-#### Structure of each `classification`:
+#### Structure of each classification:
 
 1. application
 
-* `theme`
-
-   Sets the theme for the app.
-
-* `language`
-
-   Sets the languages for the app.
-
-* `syncInterval`
-
-   Sets the periodic sync interval in seconds. Default 30.
-
-* `applicationName`
-
-   Sets the application display name.
-
-* `appLogoIconResourceFile`
-
-   Sets the application logo thumb icon, there must be png file inside.
-
-* `count`
-
-   Sets the application maximum records when downloading resource.
+   | Attributes               | Description                                 | Type |
+   | :----------------------------- | :------------------------------------------ | :---- |
+   | theme           | Sets the theme for the app                            | String |
+   | language                 | Sets the languages for the app                          | List&lt;String&gt; |
+   | syncInterval           | Sets the periodic sync interval in seconds. Default 30            | Long |
+   | applicationName                   | Sets the application display name                      | String |
+   | appLogoIconResourceFile          | Sets the application logo thumb icon, there must be png file inside  | String       |
+   | count                 | Sets the application maximum records when downloading resource                  | String      |
    
    ```json
    {
@@ -121,6 +107,50 @@ Common attributes:
      "appLogoIconResourceFile": "ic_liberia",
      "count": "100"
    }
+   ```
+
+2. login
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | applicationName           | Sets the application display name                            | String |
+   | applicationVersion                 | Set the application display version                        | String |
+   | applicationVersionCode           | Set the application version code                 | Int |
+   | darkMode                   | Sets the login theme to use dark mode                             | Boolean |
+   | showLogo          | Sets the login logo visibility        | Boolean |
+   | enablePin                 | Sets the use of pin login feature                         | Boolean |
+   
+   ```json
+   {
+     "appId": "ecbis-saa",
+     "classification": "login",
+     "applicationName": "eCBIS",
+     "applicationVersion": "0.0.1",
+     "applicationVersionCode": 1,
+     "darkMode": false,
+     "showLogo": true,
+     "enablePin": true
+   }
+   ```
+   
+3. app_feature
+
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | appFeatures           | Sets the list of features in the app                           | List&lt;FeatureConfig&gt; |
+   
+   FeatureConfig
+   
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | feature           | Sets the feature name                            | String |
+   | active                 | Sets the feature active status                       | Boolean |
+   | settings           | Sets the custom settings of this feature, when needed                 | Map&lt;String, String&gt; |
+   | target                   | Sets the user that will use this feature e.g CHW, HF         | String |
+   | healthModule          | Sets the health module of this feature e.g DEFAULT, ANC, RDT, PNC, CHILD, FAMILY, FAMILY PLANNING       | String |
+   | useCases                 | Sets the use cases / what this feature can do e.g PATIENT_REGISTRATION, ANC_VISITS, etc | List&lt;String&gt; |
+   
+   ```json
+   TODO
    ```
 
 TODO:
