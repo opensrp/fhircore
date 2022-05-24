@@ -150,11 +150,41 @@ Common attributes:
    | useCases                 | Sets the use cases / what this feature can do e.g PATIENT_REGISTRATION, ANC_VISITS, etc | List&lt;String&gt; |
    
    ```json
-   TODO
+   {
+     "appId": "ecbis-saa",
+     "classification": "app_feature",
+     "appFeatures": [
+       {
+         "feature": "PatientManagement",
+         "active": true,
+         "settings": {},
+         "target": "CHW",
+         "healthModule": "ANC",
+         "useCases": [
+           "PATIENT_REGISTRATION",
+           "ANC_VISITS",
+           "PREGNANCY_OUTCOME"
+         ]
+       },
+       {
+         "feature": "HouseHoldManagement",
+         "active": true,
+         "settings": {
+           "deactivateMembers": "true"
+         },
+         "target": "CHW",
+         "healthModule": "FAMILY",
+         "useCases": [
+           "HOUSEHOLD_REGISTRATION",
+           "REMOVE_HOUSEHOLD",
+           "HOUSEHOLD_VISITS",
+           "REMOVE_HOUSEHOLD_MEMBER"
+         ]
+       }
+     ]
+   }
    ```
 
 TODO:
 
 structure of each config classification: what each attribute does (or used in-app)
-
-how a config is interpreted, code wise
