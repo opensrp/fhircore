@@ -2,9 +2,9 @@
   "resourceType": "Questionnaire",
   "id": "128806",
   "meta": {
-    "versionId": "4",
-    "lastUpdated": "2022-05-17T08:08:51.603+00:00",
-    "source": "#b083fc4325745dd8",
+    "versionId": "8",
+    "lastUpdated": "2022-05-24T10:36:11.162+00:00",
+    "source": "#cbc1f5f7568ea901",
     "profile": [
       "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
     ],
@@ -98,31 +98,25 @@
           "valueCodeableConcept": {
             "coding": [
               {
-                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                "code": "check-box"
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box"
               }
-            ]
+            ],
+            "text": "Check-box"
           }
         }
       ],
       "linkId": "0740ed31-554a-4069-81d9-08f9f1697a03",
       "type": "choice",
       "required": false,
+      "repeats": true,
       "answerOption": [
         {
           "valueCoding": {
-            "id": "aa4c3a96-cd8a-4c3a-fea0-d35db33d8fbd",
             "system": "urn:uuid:0c09753f-7b49-4127-df51-0d64095480b7",
             "code": "date-of-birth-unknown",
             "display": "Date of Birth Unknown"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "cce2da30-453c-4f03-88ce-c85c4bcc3a36",
-            "system": "urn:uuid:0c09753f-7b49-4127-df51-0d64095480b7",
-            "code": "remove",
-            "display": "remove"
           }
         }
       ]
@@ -142,6 +136,7 @@
     },
     {
       "linkId": "5f06debf-721a-457d-8540-65cac95be9a1",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
       "text": "Age",
       "type": "integer",
       "enableWhen": [

@@ -39,15 +39,14 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
 
        src -> patient.gender = evaluate(src, $this.item.where(linkId = 'e5bb0db6-82a0-4200-b421-334da8a916a4').answer.value.code) "rule_patient_gender";
 
-        src.item as patient_dob where(linkId = '6c2d4f74-84d5-49cd-81dd-a53e101a6899') then {
+        src.item as patient_dob where(linkId = '6c2d4f74-84d5-49cd-81dd-a53e101a6899' and answer.count() > 0) then {
                  patient_dob.answer first as patientBirthDateAnswer then {
                          patientBirthDateAnswer.value as val -> patient.birthDate = val "rule_patient_dob_answer";
                  } "rule__first_patient_dob";
         } "rule_patient_dob";
 
-        src.item as patient_age where(linkId = '5f06debf-721a-457d-8540-65cac95be9a1' and answer.count() > 0) -> patient
-               .birthDate = evaluate(patient_age, today() - ($this.answer.value.toString() + 'years').toQuantity())
-               "rule_patient_age";
+        src.item as patient_age where(linkId = '5f06debf-721a-457d-8540-65cac95be9a1' and answer.count() > 0) ->
+        patient.birthDate = evaluate(patient_age, today() - ($this.answer.value.toString() + " 'years' ").toQuantity()) "rule_patient_age";
 
        src -> patient.active = evaluate(src, $this.item.where(linkId = '66e8c2d2-b7df-4c03-bc85-383659b4bed8').answer.value)
        "rule_patient_active";
