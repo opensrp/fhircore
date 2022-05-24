@@ -138,7 +138,7 @@ Common attributes:
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | appFeatures           | Sets the list of features in the app                           | List&lt;FeatureConfig&gt; |
    
-   `FeatureConfig`
+   ##### FeatureConfig
    
    Represents a single feature available in the app
    
