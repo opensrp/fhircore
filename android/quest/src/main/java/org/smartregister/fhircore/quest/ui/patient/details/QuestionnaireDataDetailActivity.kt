@@ -31,7 +31,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
@@ -46,8 +45,9 @@ class QuestionnaireDataDetailActivity :
   val viewModel by viewModels<ListDataDetailViewModel>()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   private val authenticatedUserInfo by lazy {
-    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+    sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY)
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {

@@ -16,13 +16,10 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
-import android.app.Application
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.lifecycle.MutableLiveData
-import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -49,8 +46,6 @@ class LoginScreenTest : RobolectricTest() {
       }
     )
 
-  private val application = ApplicationProvider.getApplicationContext<Application>()
-
   private lateinit var loginViewModel: LoginViewModel
 
   val loginConfig = loginViewConfigurationOf(showLogo = true)
@@ -61,7 +56,7 @@ class LoginScreenTest : RobolectricTest() {
       mockk {
         every { username } returns MutableLiveData("demo")
         every { password } returns MutableLiveData("1234")
-        every { loginError } returns MutableLiveData("login error")
+        every { loginErrorState } returns MutableLiveData(null)
         every { showProgressBar } returns MutableLiveData(false)
         every { loginViewConfiguration } returns MutableLiveData(loginConfig)
       }

@@ -349,6 +349,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
+      groupResourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_GROUP_KEY),
       questionnaireType = questionnaireType
     )
   }
@@ -384,6 +385,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
+    const val QUESTIONNAIRE_ARG_GROUP_KEY = "questionnaire_group_item_id"
     const val FORM_CONFIGURATIONS = "configurations/form/form_configurations.json"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
     const val QUESTIONNAIRE_ARG_TYPE = "questionnaire-type"
@@ -399,6 +401,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     fun intentArgs(
       clientIdentifier: String? = null,
+      groupIdentifier: String? = null,
       formName: String,
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
@@ -407,6 +410,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
+        Pair(QUESTIONNAIRE_ARG_GROUP_KEY, groupIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, formName),
         Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
         Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)

@@ -41,6 +41,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -57,12 +58,12 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirTaskGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
@@ -103,7 +104,14 @@ constructor(
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private val authenticatedUserInfo by lazy {
-    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+    sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY)
+  }
+
+  private val loggedInPractitioner by lazy {
+    sharedPreferencesHelper.read<Practitioner>(
+      key = LOGGED_IN_PRACTITIONER,
+      decodeFhirResource = true
+    )
   }
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
@@ -158,7 +166,8 @@ constructor(
 
   fun appendOrganizationInfo(resource: Resource) {
     authenticatedUserInfo?.organization?.let { org ->
-      val organizationRef = Reference().apply { reference = "Organization/$org" }
+      val organizationRef =
+        Reference().apply { reference = "${ResourceType.Organization.name}/$org" }
 
       if (resource is Patient) resource.managingOrganization = organizationRef
       else if (resource is Group) resource.managingEntity = organizationRef
@@ -166,8 +175,8 @@ constructor(
   }
 
   fun appendPractitionerInfo(resource: Resource) {
-    authenticatedUserInfo?.keyclockuuid?.let { uuid ->
-      val practitionerRef = Reference().apply { reference = "Practitioner/$uuid" }
+    loggedInPractitioner?.id?.let {
+      val practitionerRef = Reference().apply { reference = it }
 
       if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
       else if (resource is Encounter)
@@ -178,28 +187,32 @@ constructor(
     }
   }
 
-  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, resourceId: String) {
-    val family = defaultRepository.loadResource<Group>(resourceId)!!
-    if (resource.resourceType == ResourceType.Patient) {
-      family.member.add(
-        Group.GroupMemberComponent().apply {
-          entity = Reference().apply { reference = "Patient/${resource.logicalId}" }
-        }
-      )
-    } else {
-      family.managingEntity =
-        Reference().apply { reference = "RelatedPerson/${resource.logicalId}" }
+  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, groupResourceId: String) {
+    defaultRepository.loadResource<Group>(groupResourceId)?.run {
+      if (resource.resourceType == ResourceType.Patient) {
+        this.member?.add(
+          Group.GroupMemberComponent().apply {
+            entity =
+              Reference().apply { reference = "${ResourceType.Patient.name}/${resource.logicalId}" }
+          }
+        )
+      } else {
+        this.managingEntity =
+          Reference().apply {
+            reference = "${ResourceType.RelatedPerson.name}/${resource.logicalId}"
+          }
+      }
+      defaultRepository.addOrUpdate(this)
     }
-
-    defaultRepository.addOrUpdate(family)
   }
 
   fun extractAndSaveResources(
     context: Context,
     resourceId: String?,
-    questionnaire: Questionnaire,
+    groupResourceId: String? = null,
     questionnaireResponse: QuestionnaireResponse,
-    questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT
+    questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+    questionnaire: Questionnaire
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
       // important to set response subject so that structure map can handle subject for all entities
@@ -228,10 +241,10 @@ constructor(
                 ResourceType.RelatedPerson
               )
           ) {
-            resourceId?.let {
+            groupResourceId?.let {
               appendPatientsAndRelatedPersonsToGroups(
                 resource = bundleEntry.resource,
-                resourceId = it
+                groupResourceId = it
               )
             }
           }
@@ -329,7 +342,7 @@ constructor(
     questionnaireResponse.subject =
       when (subjectType) {
         ResourceType.Organization.name ->
-          authenticatedUserInfo!!.organization!!.asReference(ResourceType.Organization)
+          authenticatedUserInfo?.organization?.asReference(ResourceType.Organization)
         else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
       }
   }
