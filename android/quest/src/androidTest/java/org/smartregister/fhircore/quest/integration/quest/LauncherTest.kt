@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.tests
+package org.smartregister.fhircore.quest.integration.quest
 
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -22,33 +22,45 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import kotlin.time.ExperimentalTime
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 
-class LaunchActivityTest {
+@HiltAndroidTest
+class LauncherTest : BaseIntegrationTest() {
+
+  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
+
   @get:Rule val composeTestRule = createEmptyComposeRule()
-  // @get:Rule val composeTestRule2 = createAndroidCocmposeRule(LoginActivity::class.java)
+
   private lateinit var scenario: ActivityScenario<AppSettingActivity>
 
   @Before
   fun setup() {
+    hiltAndroidRule.inject()
     scenario = ActivityScenario.launch(AppSettingActivity::class.java)
     scenario.moveToState(Lifecycle.State.RESUMED)
-    Thread.sleep(5000)
-    composeTestRule.onNodeWithText("Enter Application ID").performTextInput("quest")
-    composeTestRule.onNodeWithText("LOAD CONFIGURATIONS").performClick()
-    Thread.sleep(15000)
-    composeTestRule.waitForIdle()
   }
 
+  @OptIn(ExperimentalTime::class)
   @Test
-  fun successfulLogin() {
-    Thread.sleep(5000)
-    composeTestRule.onNodeWithText("Enter username").performTextInput("ecbis")
-    composeTestRule.onNodeWithText("Enter password").performTextInput("Amani123")
-    composeTestRule.onNodeWithText("LOGIN").performClick()
-    Thread.sleep(5000)
+  fun testConfigurationsAreLoaded() {
+    runForDuration(30) {
+      composeTestRule
+        .onNodeWithText("Enter Application ID")
+        .assertExists()
+        .performTextInput("quest")
+      composeTestRule.onNodeWithText("LOAD CONFIGURATIONS").assertExists().performClick()
+    }
+  }
+
+  @After
+  fun tearDown() {
+    scenario.close()
   }
 }

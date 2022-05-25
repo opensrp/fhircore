@@ -67,8 +67,9 @@ constructor(
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
-  private val applicationConfiguration: ApplicationConfiguration =
+  private val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+  }
 
   fun retrieveAppMainUiState() {
     appMainUiState.value =

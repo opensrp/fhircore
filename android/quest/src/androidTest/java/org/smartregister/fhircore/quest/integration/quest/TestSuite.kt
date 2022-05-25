@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.tests
+package org.smartregister.fhircore.quest.integration.quest
 
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
 
 @RunWith(Suite::class)
-@Suite.SuiteClasses(*[LaunchActivityTest::class, SettingTest::class])
+@Suite.SuiteClasses(*[LauncherTest::class, LoginTest::class])
 class TestSuite

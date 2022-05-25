@@ -34,7 +34,7 @@ android {
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "org.smartregister.fhircore.quest.HiltTestRunner"
     }
 
     signingConfigs {
@@ -43,7 +43,7 @@ android {
             v1SigningEnabled false
             v2SigningEnabled true
 
-            keyAlias System.getenv("KEYSTORE_ALIAS")?: project.KEYSTORE_ALIAS
+            keyAlias System.getenv("KEYSTORE_ALIAS") ?: project.KEYSTORE_ALIAS
             keyPassword System.getenv("KEY_PASSWORD") ?: project.KEY_PASSWORD
             storePassword System.getenv("KEYSTORE_PASSWORD") ?: project.KEYSTORE_PASSWORD
             storeFile file(System.getProperty("user.home") + "/fhircore.keystore.jks")
@@ -189,6 +189,9 @@ dependencies {
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
     kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
 
+    androidTestImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kaptAndroidTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
+
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
     def composeVersion = "1.1.1"
@@ -210,8 +213,6 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.31"
 
     testImplementation 'info.cqframework:cql-to-elm:1.5.0'
-
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
 }
