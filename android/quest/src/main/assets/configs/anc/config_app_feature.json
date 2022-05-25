@@ -65,6 +65,11 @@
       ]
     },
     {
+      "feature": "InAppReporting",
+      "settings": {},
+      "active": true
+    },
+    {
       "feature": "DeviceToDeviceSync",
       "settings": {},
       "active": true

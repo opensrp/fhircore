@@ -1,7 +1,6 @@
 task jacocoTestReport(type: JacocoReport, dependsOn: [
         "testDebugUnitTest",
-//       Uncomment to include instrumentation tests coverage
-//       "createDebugCoverageReport"
+        "createQuestDebugCoverageReport"
 ]) {
 
     reports {
@@ -58,8 +57,8 @@ task jacocoTestReport(type: JacocoReport, dependsOn: [
     executionData.setFrom(
             fileTree(dir: project.buildDir, includes: [
                     "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
-                    // Uncomment to include instrumentation test coverage
-                    // "outputs/code_coverage/debugAndroidTest/connected/**/*.ec"
+                    "outputs/code_coverage/debugAndroidTest/connected/**/*.ec",
+                    "outputs/code_coverage/questDebugAndroidTest/connected/**/*.ec"
             ])
     )
 }

@@ -54,7 +54,7 @@ class LauncherTest : BaseIntegrationTest() {
       composeTestRule
         .onNodeWithText("Enter Application ID")
         .assertExists()
-        .performTextInput("quest")
+        .performTextInput("quest/debug")
       composeTestRule.onNodeWithText("LOAD CONFIGURATIONS").assertExists().performClick()
     }
   }
