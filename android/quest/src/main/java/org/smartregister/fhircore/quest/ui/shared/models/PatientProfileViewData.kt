@@ -46,4 +46,20 @@ sealed class ProfileViewData(
     val age: String = "",
     val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
   ) : ProfileViewData(logicalId = logicalId, name = name)
+
+  data class HivProfileViewData(
+    override val logicalId: String = "",
+    override val name: String = "",
+    val address: String = "",
+    val age: String = "",
+    val artNumber: String = ""
+  ) : ProfileViewData(logicalId = logicalId, name = name)
+
+  data class AppointmentProfileViewData(
+    override val logicalId: String = "",
+    override val name: String = "",
+    val address: String = "",
+    val age: String = "",
+    val artNumber: String = ""
+  ) : ProfileViewData(logicalId = logicalId, name = name)
 }

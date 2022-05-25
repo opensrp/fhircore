@@ -14,17 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.appfeature.model
+package org.smartregister.fhircore.quest.util
 
-enum class HealthModule {
-  ANC,
-  RDT,
-  PNC,
-  FAMILY,
-  CHILD,
-  FAMILY_PLANNING,
-  HIV,
-  TRACING,
-  APPOINTMENT,
-  DEFAULT
-}
+const val REGISTER_TITLE = "registerTitle"
+const val REGISTER_FORM_ID_KEY = "registerFormId"

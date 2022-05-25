@@ -60,6 +60,22 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           dob = inputModel.birthdate.formatDob(),
           identifier = inputModel.identifier
         )
+      is ProfileData.HivProfileData ->
+        ProfileViewData.HivProfileViewData(
+          logicalId = inputModel.logicalId,
+          name = inputModel.name,
+          address = inputModel.address,
+          age = inputModel.age,
+          artNumber = inputModel.identifier.toString(),
+        )
+      is ProfileData.AppointmentProfileData ->
+        ProfileViewData.AppointmentProfileViewData(
+          logicalId = inputModel.logicalId,
+          name = inputModel.name,
+          address = inputModel.address,
+          age = inputModel.age,
+          artNumber = inputModel.identifier.toString(),
+        )
       is ProfileData.DefaultProfileData ->
         ProfileViewData.PatientProfileViewData(
           logicalId = inputModel.logicalId,
