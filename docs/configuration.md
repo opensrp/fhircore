@@ -70,7 +70,7 @@ List of common Binary configs `classfication`:
 | login                 | Configure the login page                             |
 | app_feature           | Configure the available features                             |
 | pin                   | Configure the pin page                             |
-| data_filters          | Configure the filters that the app will uses e.g patient register, family register                           |
+| data_filters          | Configure the filters when retrieving resource from FHIR local database                       |
 | forms                 | Configure the Questionnaires that the app will uses                           |
 | patient_register      | Configure the patient register page                             |
 | sync                  | Configure the resource that will be synced                             |
@@ -141,16 +141,14 @@ Common attributes:
    
    #### Structure of `FeatureConfig`
    
-   `FeatureConfig` represents a single feature available in the app.
-   
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | feature           | Sets the feature name                            | String |
    | active                 | Sets the feature active status                       | Boolean |
    | settings           | Sets the custom settings of this feature, when needed                 | Map&lt;String, String&gt; |
-   | target                   | Sets the user that will use this feature e.g CHW, HF         | String |
-   | healthModule          | Sets the health module of this feature e.g DEFAULT, ANC, RDT, PNC, CHILD, FAMILY, FAMILY PLANNING       | String |
-   | useCases                 | Sets the use cases / what this feature can do e.g PATIENT_REGISTRATION, ANC_VISITS, etc | List&lt;String&gt; |
+   | target                   | Sets the user that will use this feature e.g CHW, HF         | String? |
+   | healthModule          | Sets the health module of this feature e.g DEFAULT, ANC, RDT, PNC, CHILD, FAMILY, FAMILY PLANNING       | String? |
+   | useCases                 | Sets the use cases / what this feature can do e.g PATIENT_REGISTRATION, ANC_VISITS, etc | List&lt;String&gt;? |
    
    ```json
    {
@@ -207,6 +205,41 @@ Common attributes:
      "showLogo": true
    }
    ```
+
+4. `data_filters`
+
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | filters           | Sets the list of filters in the app                           | List&lt;SearchFilter&gt; |
+   
+   #### Structure of `SearchFilter`
+   
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | id           | Sets the identifier that is related to the feature or resource that will be filtered e.g family, family_care_plan, task          | List&lt;SearchFilter&gt; |
+   | key           | Sets the filter key                       | String |
+   | filterType           | Sets the filter type                    | String |
+   | valueType           | Sets the value type of the filter                       | String |
+   | valueBoolean           | Sets the value if it's a Boolean                       | Boolean? |
+   | valueCoding           | Sets the value if it's a Coding                        | Code? |
+   | valueString           | Sets the value if it's a String                       | String? |
+   
+   #### Structure of `Code`
+   
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | system           | Sets the system as url of an org that provides this Code        | String? |
+   | code           | Sets the unique code in numeric                     | String? |
+   | display           | Sets the human readable meaning of this Code e.g Family              | String? |
+   
+   #### Currently Supported `filterType` and `valueType`
+   
+   | filterType               | valueType                                                          |
+   | :----------------------------- | :----------------------------------------------------- |
+   | TOKEN           | CODING |
+   | TOKEN           | CODEABLECONCEPT                       |
+   | STRING           | STRING                   |
+   | STRING           | BOOLEAN                         |
 
 TODO:
 
