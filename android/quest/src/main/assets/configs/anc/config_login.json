@@ -1,7 +1,7 @@
 {
-  "appId": "ecbis-saa",
+  "appId": "anc",
   "classification": "login",
-  "applicationName": "eCBIS",
+  "applicationName": "ANC",
   "applicationVersion": "0.0.1",
   "darkMode": false,
   "showLogo": true,

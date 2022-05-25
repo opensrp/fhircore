@@ -40,6 +40,36 @@
       }
     },
     {
+      "title": "App Feature configuration",
+      "focus": {
+        "reference": "Binary/131367",
+        "identifier": {
+          "value": "app_feature"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Data Filters configuration",
+      "focus": {
+        "reference": "Binary/131368",
+        "identifier": {
+          "value": "data_filters"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Forms configuration",
+      "focus": {
+        "reference": "Binary/131369",
+        "identifier": {
+          "value": "forms"
+        }
+      },
+      "mode": "working"
+    },
+    {
       "title": "Patient Register configuration",
       "mode": "working",
       "focus": {
