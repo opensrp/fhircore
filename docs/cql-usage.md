@@ -1,16 +1,20 @@
-Add documetation on 
-1. What is CQL 
-2. How to use CQL  - sample usecase 
-3. CQL for measure reporting 
-
-Add Documentation on how to use CQL
-1. Author the CQL script
-2. Convert to EML
-3. Convert ELM to base64
-4. Append to a Library FHIR Resource
-5. Sync and Excute on app
+**Introduction** 
+This Documentation on CQL is to give some insights on
+1. How to author the CQL script
+2. How to load and execute CQL scripts
+3. Some sample use cases where we have used CQL 
 
 
+**What is CQL** 
+CQL­ is a Health Level Seven International® (HL7®) authoring language standard that’s intended to be human readable. It is part of the effort to harmonize standards used for electronic clinical quality measures (eCQMs) and clinical decision support (CDS). CQL provides the ability to express logic that is human readable yet structured enough for processing a query electronically. CQL is the expression logic used in Health Quality Measure Format (HQMF) beginning with the eCQMs implemented in calendar year 2019. CQL replaces the logic expressions previously defined in the Quality Data Model (QDM). Beginning with v5.3, QDM includes only the conceptual model for defining the data elements (the data model). Measure authors with access to the Measure Authoring Tool (MAT) can use the tool to author measures using CQL­. Visit the MAT webpage for more information.  
+
+CQL allows for a more modular, flexible, and robust expression of the logic. It allows logic to be shared between measures and with clinical decision support.
+
+**How are we using CQL?**
+
+**G6PD**
+1. Threshold management 
+2. G6PD Test Device Calibration   
 
 **Sample G6PD Threshold Evaluation CQL**
 
@@ -216,7 +220,6 @@ define "diagnosticReport": if "g6pdTestResultCode" is not null
 define "OUTPUT": List { "condition", "serviceRequest", "diagnosticReport" }
 ````
 
-
 **Sample G6PD RDT Calibration (Control mode) CQL** 
 
 ````
@@ -289,8 +292,6 @@ define "Conclusion Details": '\nDetails:\n'+ "G6PD Conclusion" + '\n' + "Haemogl
 define "OUTPUT": List { "Conclusion" , "Conclusion Details"}
 ````
 
-
-
 **Sample Measure Reporting CQL (Household count)** 
 
 ````
@@ -329,3 +330,8 @@ define "Age Stratifier":
   end
 
 ````
+
+
+**In app reporting of Indicators**
+1. Notice D - mADX 
+2. eCBIS  - Measure Reporting of Indicators
