@@ -1,8 +1,0 @@
-{
-  "appId": "mwcore",
-  "classification": "pin",
-  "applicationName": "MalawiCore",
-  "appLogoIconResourceFile": "ic_liberia",
-  "enablePin": true,
-  "showLogo": true
-}

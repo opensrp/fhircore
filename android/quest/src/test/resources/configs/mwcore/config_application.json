@@ -1,9 +1,0 @@
-{
-  "appId": "mwcore",
-  "classification": "application",
-  "theme": "AppTheme",
-  "languages": ["en", "sw"],
-  "applicationName": "Malawi Core",
-  "appLogoIconResourceFile": "ic_liberia",
-  "count": "100"
-}
