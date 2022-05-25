@@ -50,7 +50,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
   quest-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout 🛎️
@@ -74,6 +74,14 @@ jobs:
       - name: Run Quest unit tests with Gradle
         run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReportQuestDebug -x :quest:testQuestReleaseUnitTest --stacktrace
         working-directory: android
+
+      - name: Run UI tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with: 
+          api-level: 29
+          ndk: 21.0.6113669
+          cmake: 3.10.2.4988404
+          script: ./gradlew :quest:connectedQuestDebugAndroidTest
 
       - name: Upload Quest Test Report to codecov
         working-directory: android
