@@ -110,6 +110,7 @@ Common attributes:
    ```
 
 2. `login`
+
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | applicationName           | Sets the application display name                            | String |
@@ -184,6 +185,26 @@ Common attributes:
          ]
        }
      ]
+   }
+   ```
+   
+3. `pin`
+   
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | applicationName           | Sets the application display name                            | String |
+   | appLogoIconResourceFile          | Sets the application logo thumb icon, there must be png file inside  | String       |
+   | enablePin                 | Sets the use of pin login feature                         | Boolean |
+   | showLogo          | Sets the login logo visibility        | Boolean |
+   
+   ```json
+   {
+     "appId": "ecbis-saa",
+     "classification": "pin",
+     "applicationName": "eCBIS",
+     "appLogoIconResourceFile": "ic_liberia",
+     "enablePin": true,
+     "showLogo": true
    }
    ```
 
