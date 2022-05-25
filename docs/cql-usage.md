@@ -292,6 +292,20 @@ define "Conclusion Details": '\nDetails:\n'+ "G6PD Conclusion" + '\n' + "Haemogl
 define "OUTPUT": List { "Conclusion" , "Conclusion Details"}
 ````
 
+**In app reporting of Indicators**
+1. Notice D - mADX 
+
+Based on the WHO Implementation Guide (IG) for ANC http://build.fhir.org/ig/WorldHealthOrganization/smart-anc/ and SMART ANC Indicators  - https://github.com/WorldHealthOrganization/smart-anc/tree/master/input/cql. These indicators are based on the Global ANC monitoring framework (25) and the WHO–UNICEF guidance for RMNCAH programme managers on the analysis and use of health facility data (10). These indicators may be aggregated automatically from the digital tracking tool to populate a digital HMIS, such as DHIS2.
+
+Indicator definitions are represented using the FHIR Measure resource (CPGMetric profile) and is available here These indicators are based on the Global ANC monitoring framework (25) and the WHO–UNICEF guidance for RMNCAH programme managers on the analysis and use of health facility data (10). These indicators may be aggregated automatically from the digital tracking tool to populate a digital HMIS, such as DHIS2.
+
+Indicator definitions are represented using the FHIR Measure resource (CPGMetric profile) listed here http://build.fhir.org/ig/WorldHealthOrganization/smart-anc/documentation.html#indicators
+
+2. eCBIS  - Measure Reporting of Indicators
+
+Indicators listed here  - https://docs.google.com/spreadsheets/d/1Kfp0rRYlksrBoSIecAuovZ8Y3k8yH9mkmgHcpQbMtXI/edit#gid=446158820 
+
+
 **Sample Measure Reporting CQL (Household count)** 
 
 ````
@@ -330,8 +344,3 @@ define "Age Stratifier":
   end
 
 ````
-
-
-**In app reporting of Indicators**
-1. Notice D - mADX 
-2. eCBIS  - Measure Reporting of Indicators
