@@ -1,7 +1,7 @@
 {
-  "appId": "afyayangu",
+  "appId": "anc",
   "classification": "patient_register",
-  "appTitle": "Afya Yangu",
+  "appTitle": "ANC",
   "filterText": "Show overdue",
   "searchBarHint": "Search name or ID",
   "newClientButtonText": "ADD FAMILY",
