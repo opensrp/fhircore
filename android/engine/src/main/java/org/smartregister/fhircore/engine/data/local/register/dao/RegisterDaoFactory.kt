@@ -27,13 +27,18 @@ class RegisterDaoFactory
 constructor(
   val ancPatientRegisterDao: AncPatientRegisterDao,
   val defaultPatientRegisterDao: DefaultPatientRegisterDao,
-  val familyRegisterDao: FamilyRegisterDao
+  val familyRegisterDao: FamilyRegisterDao,
+  val hivRegisterDao: HivRegisterDao,
+  val appointmentRegisterDao: AppointmentRegisterDao
 ) {
 
   val registerDaoMap: MutableMap<HealthModule, RegisterDao> by lazy {
     mutableMapOf(
       Pair(HealthModule.ANC, ancPatientRegisterDao),
       Pair(HealthModule.FAMILY, familyRegisterDao),
+      Pair(HealthModule.HIV, hivRegisterDao),
+      Pair(HealthModule.TRACING, appointmentRegisterDao),
+      Pair(HealthModule.APPOINTMENT, appointmentRegisterDao),
       Pair(HealthModule.DEFAULT, defaultPatientRegisterDao)
     )
   }
