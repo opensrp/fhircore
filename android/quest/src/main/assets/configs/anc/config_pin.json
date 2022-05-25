@@ -1,7 +1,7 @@
 {
-  "appId": "ecbis-saa",
+  "appId": "anc",
   "classification": "pin",
-  "applicationName": "eCBIS",
+  "applicationName": "ANC",
   "appLogoIconResourceFile": "ic_liberia",
   "enablePin": true,
   "showLogo": true
