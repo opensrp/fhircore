@@ -78,6 +78,7 @@ jobs:
       - name: Run UI tests
         uses: reactivecircus/android-emulator-runner@v2
         with: 
+          working-directory: android
           api-level: 29
           ndk: 21.0.6113669
           cmake: 3.10.2.4988404
