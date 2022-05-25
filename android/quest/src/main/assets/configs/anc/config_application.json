@@ -1,9 +1,9 @@
 {
-  "appId": "ecbis-saa",
+  "appId": "anc",
   "classification": "application",
   "theme": "AppTheme",
   "languages": ["en", "sw"],
-  "applicationName": "eCBIS",
+  "applicationName": "ANC",
   "appLogoIconResourceFile": "ic_liberia",
   "count": "100"
 }
