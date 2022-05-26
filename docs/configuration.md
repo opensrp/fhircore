@@ -356,7 +356,7 @@ Common attributes:
    
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
-   | type           | Sets the switch action type. Always set it as "switch_fragment"      | String |
+   | type           | Sets the switch action type. Always set it as switch_fragment      | String |
    | tag           | Sets the switch destination name      | String |
    | isRegisterFragment           | Sets whether the switch destination is the Home register     | Boolean |
    | isFilterVisible           | Sets whether to show the filter button when using bottom menu mode      | Boolean |
@@ -428,6 +428,13 @@ Common attributes:
      ]
    }
    ```
+8. `sync`
+   
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | resourceType           | Sets the resource type. Always set it as Parameter      | String |
+   | parameter           | Sets the list of search parameter and resources to be synced      | List&lt;Parameter&gt; |
+   
    
 TODO:
 
