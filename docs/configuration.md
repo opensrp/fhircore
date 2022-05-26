@@ -309,7 +309,39 @@ Common attributes:
      ]
    }
    ```
+   
+5. `forms`
 
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | forms           | Sets the list of Questionnaire to be used in the app                           | List&lt;QuestionnaireConfig&gt; |
+   
+   #### Structure of `QuestionnaireConfig`
+   
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | form           | Sets the unique name of this Questionnaire form      | String |
+   | title           | Sets the display title                       | String |
+   | identifier           | Sets the actual id of the Questionnaire resource                | String |
+   | saveButtonText           | Sets the text of the Questionnaire save button                      | String? |
+   | setPractitionerDetails        | Sets whether to append Practitioner details when saving QuestionnaireResponse                   | Boolean |
+   | setOrganizationDetails        | Sets whether to append Organization details when saving QuestionnaireResponse                        | Boolean |
+   
+   ```json
+   [
+     {
+       "form": "anc-patient-registration",
+       "title": "Enroll as ANC Patient",
+       "identifier": "1924"
+     },
+     {
+       "form": "family-member-registration",
+       "title": "Add Family Member",
+       "identifier": "32821"
+     }
+   ]
+   ```
+   
 TODO:
 
 structure of each config classification: what each attribute does (or used in-app)
