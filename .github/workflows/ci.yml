@@ -13,6 +13,7 @@ env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
  FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+ GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError"
 
 jobs:
   engine-tests:
@@ -51,7 +52,6 @@ jobs:
 
   quest-tests:
     runs-on: macos-latest
-
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2
@@ -82,7 +82,7 @@ jobs:
           api-level: 29
           ndk: 21.0.6113669
           cmake: 3.10.2.4988404
-          script: ./gradlew :quest:connectedQuestDebugAndroidTest
+          script: ./gradlew :quest:connectedQuestDebugAndroidTest --stacktrace
 
       - name: Upload Quest Test Report to codecov
         working-directory: android
