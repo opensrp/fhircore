@@ -57,13 +57,6 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
 class FhirTaskGeneratorTest : RobolectricTest() {
-  // TODO
-  // title, subtitle, subjectType, jurisdiction, useContext
-  // goal -> start
-  // action -> priority, code, reason, subjectTYpe, trigger.condition vs condition, input, output,
-  // type, definition[x], dynamicValue
-  // resolveReference
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   val fhirEngine: FhirEngine = mockk()
