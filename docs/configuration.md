@@ -322,6 +322,27 @@ Common attributes:
    ]
    ```
    
+7. `patient_register`
+   
+   | Attributes               | Description                                                          | Type |
+   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
+   | appTitle           | Sets the app display title on the side menu      | String |
+   | filterText           | Sets the text on the filter button at the top bar     | String |
+   | searchBarHint           | Sets the hint text on the search bar               | String |
+   | newClientButtonText           | Sets the text on the register client button                      | String |
+   | newClientButtonStyle        | Sets the background style name of register client button that is available in the drawable package e.g rounded_corner           | String |
+   | showNewClientButton        | Sets whether to show the register client button                      | Boolean |
+   | registrationForm        | Sets the Questionnaire form name for client registration            | String |
+   | showSearchBar        | Sets whether to show the search bar                       | Boolean |
+   | showFilter        | Sets whether to show the filter button at the top bar             | Boolean |
+   | showScanQRCode        | Sets whether to show QR scanner button             | Boolean |
+   | showSideMenu        | Sets whether to show side menu            | Boolean |
+   | showBottomMenu        | Sets whether to show side bottom menu            | Boolean |
+   | useLabel        | Sets whether to use label for all the row items. Will use icon if it's false        | Boolean |
+   | showHeader        | Sets whether to show to header / top bar        | Boolean |
+   | showFooter        | Sets whether to show to footer / the bottom side of the layout        | Boolean |
+   | bottomNavigationOptions        | Sets the bottom navigation options      | List&lt;NavigationAction&gt; |
+   
 TODO:
 
 structure of each config classification: what each attribute does (or used in-app)
