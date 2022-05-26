@@ -249,31 +249,11 @@ Common attributes:
        {
          "id": "anc",
          "filterType": "TOKEN",
-         "key": "code",
-         "valueType": "CODEABLECONCEPT",
-         "valueCoding": {
-           "system": "http://loinc.org",
-           "code": "LA15173-0"
-         }
-       },
-       {
-         "id": "anc",
-         "filterType": "TOKEN",
          "key": "clinical-status",
          "valueType": "CODEABLECONCEPT",
          "valueCoding": {
            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
            "code": "active"
-         }
-       },
-       {
-         "id": "family",
-         "filterType": "TOKEN",
-         "key": "code",
-         "valueType": "CODEABLECONCEPT",
-         "valueCoding": {
-           "system": "https://www.snomed.org",
-           "code": "35359004"
          }
        },
        {
