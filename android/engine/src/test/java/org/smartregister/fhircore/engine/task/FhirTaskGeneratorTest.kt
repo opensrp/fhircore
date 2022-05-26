@@ -22,6 +22,7 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -29,10 +30,13 @@ import io.mockk.unmockkStatic
 import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.PlanDefinition
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
@@ -53,6 +57,13 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
 class FhirTaskGeneratorTest : RobolectricTest() {
+  // TODO
+  // title, subtitle, subjectType, jurisdiction, useContext
+  // goal -> start
+  // action -> priority, code, reason, subjectTYpe, trigger.condition vs condition, input, output,
+  // type, definition[x], dynamicValue
+  // resolveReference
+
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   val fhirEngine: FhirEngine = mockk()
@@ -86,12 +97,16 @@ class FhirTaskGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun testGenerateCarePlan() = runBlockingTest {
-    val structureMapScript = "plans/child-routine-visit/structure-map.txt".readFile()
+  fun testGenerateCarePlan() = runTest {
+    val plandefinition =
+      "plans/child-routine-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
 
     val patient =
       "plans/child-routine-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
 
+    val structureMapScript = "plans/child-routine-visit/structure-map.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "ChildRoutineCarePlan").also {
         // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
@@ -100,17 +115,20 @@ class FhirTaskGeneratorTest : RobolectricTest() {
       }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
-    coEvery { fhirEngine.get<StructureMap>("ChildRoutineCarePlan") } returns structureMap
+    coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
 
-    fhirTaskGenerator
-      .generateCarePlan("ChildRoutineCarePlan", patient)
+    fhirTaskGenerator.generateCarePlan(
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+      )!!
       .also { println(it.encodeResourceToString()) }
       .also {
-        val carePlan = it.entryFirstRep.resource as CarePlan
+        val carePlan = it
         Assert.assertNotNull(UUID.fromString(carePlan.id))
         Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
         Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
-        Assert.assertEquals("Child Routine visit CarePlan", carePlan.title)
+        Assert.assertEquals("Child Routine visit Plan", carePlan.title)
         Assert.assertEquals(
           "This defines the schedule of care for patients under 5 years old",
           carePlan.description
@@ -135,10 +153,13 @@ class FhirTaskGeneratorTest : RobolectricTest() {
         // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
-        it
-          .entry
-          .filter { entryComponent -> entryComponent.resource.resourceType == ResourceType.Task }
-          .map { component -> component.resource as Task }
+        val resourcesSlot = mutableListOf<Resource>()
+
+        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
           .also { list -> Assert.assertTrue(list.isNotEmpty()) }
           .all { task ->
             // TODO
@@ -148,7 +169,7 @@ class FhirTaskGeneratorTest : RobolectricTest() {
               }
           }
 
-        val task1 = it.entry[1].resource as Task
+        val task1 = resourcesSlot[1] as Task
         Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
         // TODO Fix issue with task start date updating relative to today's date
         Assert.assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())

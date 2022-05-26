@@ -27,6 +27,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
@@ -41,6 +42,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -67,13 +69,13 @@ import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
-import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -249,10 +251,6 @@ constructor(
             }
           }
 
-          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient)) {
-            generateCarePlanForUnder5(bundleEntry.resource as Patient)
-          }
-
           // response MUST have subject by far otherwise flow has issues
           if (!questionnaire.experimental) questionnaireResponse.assertSubject()
 
@@ -290,6 +288,7 @@ constructor(
         }
 
         extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+        extractCarePlan(questionnaireResponse, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
@@ -299,11 +298,17 @@ constructor(
     }
   }
 
-  // TODO Update the structure map id to be dynamic
-  suspend fun generateCarePlanForUnder5(patient: Patient) {
-    val age = patient.birthDate!!.yearsPassed()
-    if (age < 5) {
-      fhirTaskGenerator.generateCarePlan("105121", patient)
+  suspend fun extractCarePlan(questionnaireResponse: QuestionnaireResponse, bundle: Bundle) {
+    val subject =
+      questionnaireResponse.findSubject(bundle)
+        ?: defaultRepository.loadResource(questionnaireResponse.subject)
+
+    // TODO ensure its not unlimited or lagging; associate with workflow or config
+    // https://github.com/opensrp/fhircore/issues/1288
+    fhirEngine.search<PlanDefinition> {}.forEach {
+      kotlin.runCatching { fhirTaskGenerator.generateCarePlan(it, subject, bundle) }.onFailure {
+        Timber.e(it)
+      }
     }
   }
 

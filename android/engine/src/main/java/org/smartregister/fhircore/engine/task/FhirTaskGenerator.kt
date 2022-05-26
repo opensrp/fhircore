@@ -22,9 +22,15 @@ import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.PlanDefinition
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -37,21 +43,75 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
   }
+  val fhirPathEngine = FHIRPathEngine(transformSupportServices.simpleWorkerContext)
 
-  suspend fun generateCarePlan(structureMapId: String, patient: Patient): Bundle {
-    val structureMap = fhirEngine.get<StructureMap>(structureMapId)
+  suspend fun generateCarePlan(
+    planDefinition: PlanDefinition,
+    subject: Resource,
+    data: Bundle? = null
+  ): CarePlan? {
+    val output =
+      CarePlan().apply {
+        this.title = planDefinition.title
+        this.description = planDefinition.description
+      }
 
-    return Bundle()
-      .apply {
+    planDefinition.action.forEach { action ->
+      val input = Bundle().apply { entry.addAll(data?.entry ?: listOf()) }
+
+      if (action.condition.all {
+          if (it.kind != PlanDefinition.ActionConditionKind.APPLICABILITY)
+            throw UnsupportedOperationException(
+              "PlanDefinition.action.kind=${it.kind} not supported"
+            )
+
+          if (it.expression.language != Expression.ExpressionLanguage.TEXT_FHIRPATH.toCode())
+            throw UnsupportedOperationException(
+              "PlanDefinition.expression.language=${it.expression.language} not supported"
+            )
+
+          fhirPathEngine.evaluateToBoolean(input, null, subject, it.expression.expression)
+        }
+      ) {
+        val source =
+          Parameters().apply {
+            addParameter(
+              Parameters.ParametersParameterComponent().apply {
+                this.name = CarePlan.SP_SUBJECT
+                this.resource = subject
+              }
+            )
+
+            addParameter(
+              Parameters.ParametersParameterComponent().apply {
+                this.name = PlanDefinition.SP_DEFINITION
+                this.resource =
+                  planDefinition.contained.first { it.id == action.definitionCanonicalType.value }
+              }
+            )
+          }
+
+        val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
         structureMapUtilities.transform(
           transformSupportServices.simpleWorkerContext,
-          patient,
+          source,
           structureMap,
-          this
+          output
         )
       }
-      .also { it.entry.forEach { entryComponent -> fhirEngine.create(entryComponent.resource) } }
-      .also { Timber.i(it.encodeResourceToString()) }
+    }
+
+    if (!output.hasActivity()) return null
+
+    return output.also { Timber.d(it.encodeResourceToString()) }.also { careplan ->
+      // save embedded resources inside as independent entries, clear embedded and save careplan
+      val dependents = careplan.contained.map { it.copy() }
+
+      careplan.contained.clear()
+      fhirEngine.create(careplan)
+
+      dependents.forEach { fhirEngine.create(it) }
+    }
   }
 
   suspend fun completeTask(id: String) {
