@@ -1,4 +1,5 @@
 **Introduction** 
+
 This Documentation on CQL is to give some insights on
 1. How to author the CQL script
 2. How to load and execute CQL scripts
@@ -6,15 +7,21 @@ This Documentation on CQL is to give some insights on
 
 
 **What is CQL** 
+
 CQL­ is a Health Level Seven International® (HL7®) authoring language standard that’s intended to be human readable. It is part of the effort to harmonize standards used for electronic clinical quality measures (eCQMs) and clinical decision support (CDS). CQL provides the ability to express logic that is human readable yet structured enough for processing a query electronically. CQL is the expression logic used in Health Quality Measure Format (HQMF) beginning with the eCQMs implemented in calendar year 2019. CQL replaces the logic expressions previously defined in the Quality Data Model (QDM). Beginning with v5.3, QDM includes only the conceptual model for defining the data elements (the data model). Measure authors with access to the Measure Authoring Tool (MAT) can use the tool to author measures using CQL­. Visit the MAT webpage for more information.  
 
 CQL allows for a more modular, flexible, and robust expression of the logic. It allows logic to be shared between measures and with clinical decision support.
 
 **How are we using CQL?**
 
-**G6PD**
+**Use Case 1 : G6PD**
 1. Threshold management 
 2. G6PD Test Device Calibration   
+
+**Additional context**
+![456](https://user-images.githubusercontent.com/69383347/149340339-10a723d2-707f-4ef8-b18e-ffc638c21ed7.png)
+
+<img width="200" height="400" src ="https://user-images.githubusercontent.com/4829880/150296890-9ee0ef91-3158-4c90-8b4d-10a83e2f3f1d.jpg"/> <img width="200" height="400" src ="https://user-images.githubusercontent.com/4829880/150296898-cfa97ad8-eee4-4cb2-9552-46f67b9765b2.jpg"/> <img width="200" height="400" src ="https://user-images.githubusercontent.com/4829880/150296901-ebc17aa2-b8d4-4695-88a1-d6ec8e6d7ab9.jpg"/>
 
 **Sample G6PD Threshold Evaluation CQL**
 
@@ -220,6 +227,12 @@ define "diagnosticReport": if "g6pdTestResultCode" is not null
 define "OUTPUT": List { "condition", "serviceRequest", "diagnosticReport" }
 ````
 
+
+`
+{ "resourceType":"MedicationRequest", "status":"active", "intent":"proposal", "subject":{ "reference":"Patient/P1" }, "encounter":{ "reference":"Encounter/E1" }, "authoredOn":"#NOW", "category":[ { "coding":[ { "system":"http://snomed.info/sct", "code":"86859003", "display":"Glucose-6-phosphatedehydrogenasedeficiencyanaemia" } ] } ], "medicationCodeableConcept":{ "coding":[ { "system":"http://snomed.info/sct", "code":"429663004", "display":"Primaquine(substance)" } ] }, "dosageInstruction":[ { "timing":{ "repeat":{ "frequency":1, "period":8.0, "periodUnit":"wk" } }, "route":{"coding":[{"system":"http://snomed.info/sct","code":"26643006","display":"Oraluse"}]}, "doseAndRate":[ { "type":{ "coding":[ { "system":"http://terminology.hl7.org/CodeSystem/dose-rate-type", "code":"ordered", "display":"Ordered" } ] }, "doseQuantity":{ "value":0.75, "unit":"mg/kg", "system":"http://unitsofmeasure.org" } } ] } ] }
+`
+
+
 **Sample G6PD RDT Calibration (Control mode) CQL** 
 
 ````
@@ -292,8 +305,47 @@ define "Conclusion Details": '\nDetails:\n'+ "G6PD Conclusion" + '\n' + "Haemogl
 define "OUTPUT": List { "Conclusion" , "Conclusion Details"}
 ````
 
-**In app reporting of Indicators**
-1. Notice D - mADX 
+
+**Name of feature to enhance**
+As a G6PD app user, I would like to check if the device is properly recalibrated  in either Control Mode 1 or Control Mode 2
+
+**Description of feature**
+Add both UI/UX for control mode user journey and leverage current CQL evaluation that can allow us to reuse the current CQL implementation for G6PD evaluation 
+Based on a Quest approach added a Questionnaire for test calibration that is independent of the Patient/Clinical workflow.
+
+**Control mode  table** 
+<img width="634" alt="Screen Shot 2022-01-13 at 10 19 06 PM" src="https://user-images.githubusercontent.com/4540684/149395158-22a99428-dd1c-4904-a0f2-dd12ffc93945.png">
+
+**Test Kit in normal mode**
+<img width="260" alt="Screen Shot 2022-01-13 at 10 23 20 PM" src="https://user-images.githubusercontent.com/4540684/149396047-9c0a51c3-ddd5-4e69-9809-2281396ddac6.png">
+
+**Test kit in control mode** 
+<img width="611" alt="Screen Shot 2022-01-13 at 10 25 36 PM" src="https://user-images.githubusercontent.com/4540684/149396063-5b5e8b8d-cf2c-421d-9dfa-e7d3b99a3ae5.png">
+
+More details on testing and control mode can be found here https://www.finddx.org/wp-content/uploads/2020/09/STANDARD-G6PD-test_Training_Bangladesh-FIND-icddr-Menzies_FINAL_26Nov19.pdf 
+
+**Describe the enhancement**
+
+1. Add a menu item to initiate the control mode test 
+2. Add a Questionnaire to be able to conduct control mode, similar to the Test Questionnaire, an image of control mode and the 2 entry points for G6PD and Haemoglobin level. This should have the following fields 
+> Chip No
+> Device Serial number
+> G6PD level
+> Haemoglobin level 
+3. Author and load  a CQL Library evaluation for control mode evaluation 
+4. Initiate the control mode evaluation on press submit 
+4. Add a test result page for Control mode level 1 or control mode level 2 
+5. Terminate control mode flow once the user has calibrated the device 
+
+
+
+<img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816294-00760977-20c5-4cfd-83ac-5e2b79b30184.jpg"/> <img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816315-6f7ebaa1-d7cd-445b-8622-54f52d51780a.jpg"/> <img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816323-0afb2558-35a4-47fd-9da5-88cb668f0d14.jpg"/> <img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816328-b2841f26-4560-4613-8fd0-cd1bfe707967.jpg"/>
+
+
+
+**Use Case 2 : In app reporting of Indicators**
+
+**1. Notice D - mADX**
 
 Based on the WHO Implementation Guide (IG) for ANC http://build.fhir.org/ig/WorldHealthOrganization/smart-anc/ and SMART ANC Indicators  - https://github.com/WorldHealthOrganization/smart-anc/tree/master/input/cql. These indicators are based on the Global ANC monitoring framework (25) and the WHO–UNICEF guidance for RMNCAH programme managers on the analysis and use of health facility data (10). These indicators may be aggregated automatically from the digital tracking tool to populate a digital HMIS, such as DHIS2.
 
@@ -301,12 +353,63 @@ Indicator definitions are represented using the FHIR Measure resource (CPGMetric
 
 Indicator definitions are represented using the FHIR Measure resource (CPGMetric profile) listed here http://build.fhir.org/ig/WorldHealthOrganization/smart-anc/documentation.html#indicators
 
-2. eCBIS  - Measure Reporting of Indicators
+**2. eCBIS  - Measure Reporting of Indicators**
+
 
 Indicators listed here  - https://docs.google.com/spreadsheets/d/1Kfp0rRYlksrBoSIecAuovZ8Y3k8yH9mkmgHcpQbMtXI/edit#gid=446158820 
 
 
 **Sample Measure Reporting CQL (Household count)** 
+
+**Family Group**
+
+````
+{
+  "resourceType": "Group",
+  "id": "107759",
+  "meta": {
+    "versionId": "3",
+    "lastUpdated": "2022-04-14T13:54:41.656+00:00",
+    "source": "#2f77c0c4a5d11f1e"
+  },
+  "identifier": [ {
+    "use": "official",
+    "value": "7bb7fa82-59e4-4744-a6d2-96722afca23b"
+  }, {
+    "use": "secondary",
+    "value": "656766"
+  } ],
+  "active": true,
+  "type": "person",
+  "code": {
+    "coding": [ {
+      "system": "https://www.snomed.org",
+      "code": "35359004",
+      "display": "Family"
+    } ]
+  },
+  "name": "Kamwana Rao",
+  "managingEntity": {
+    "reference": "RelatedPerson/2e2c9d4e-b67f-4673-8e83-e3f576046296"
+  },
+  "member": [ {
+    "entity": {
+      "reference": "Patient/c535f2e6-a17a-4b2a-913e-30e8b42553d0",
+      "display": "Rao Kamwana"
+    },
+    "inactive": false
+  }, {
+    "entity": {
+      "reference": "Patient/d0612f01-01c3-467e-9fbc-4e6ebe8bf9e6",
+      "display": "Magarita Rao"
+    },
+    "inactive": false
+  } ]
+}
+````
+
+
+**Measure Reporting CQL Expression**
 
 ````
 //Declare name and version of lib
@@ -344,3 +447,651 @@ define "Age Stratifier":
   end
 
 ````
+
+
+**Measure Report Generated**
+
+````
+{
+  "resourceType": "MeasureReport",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/5.0/StructureDefinition/extension-MeasureReport.population.description",
+      "valueString": "???????????"
+    }
+  ],
+  "status": "complete",
+  "type": "summary",
+  "measure": "Measure/group-measure",
+  "date": "2022-05-20T14:17:20+03:00",
+  "period": {
+    "start": "2019-01-01T00:00:00+03:00",
+    "end": "2022-12-31T23:59:59+03:00"
+  },
+  "improvementNotation": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/measure-improvement-notation",
+        "code": "increase"
+      }
+    ]
+  },
+  "group": [
+    {
+      "id": "groups",
+      "population": [
+        {
+          "id": "initial-population",
+          "code": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                "code": "initial-population"
+              }
+            ]
+          },
+          "count": 17
+        },
+        {
+          "id": "denominator",
+          "code": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                "code": "denominator"
+              }
+            ]
+          },
+          "count": 17
+        },
+        {
+          "id": "numerator",
+          "code": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                "code": "numerator"
+              }
+            ]
+          },
+          "count": 17
+        }
+      ],
+      "measureScore": {
+        "value": 1
+      }
+    },
+    {
+      "id": "males",
+      "population": [
+        {
+          "id": "initial-population",
+          "code": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                "code": "initial-population"
+              }
+            ]
+          },
+          "count": 17
+        },
+        {
+          "id": "denominator",
+          "code": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                "code": "denominator"
+              }
+            ]
+          },
+          "count": 17
+        },
+        {
+          "id": "numerator",
+          "code": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                "code": "numerator"
+              }
+            ]
+          },
+          "count": 7
+        }
+      ],
+      "measureScore": {
+        "value": 0.4117647058823529
+      },
+      "stratifier": [
+        {
+          "id": "by-age",
+          "stratum": [
+            {
+              "value": {
+                "text": "P0Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 1
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 1
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 1
+                }
+              ],
+              "measureScore": {
+                "value": 1
+              }
+            },
+            {
+              "value": {
+                "text": "P50Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 1
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 1
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 0
+                }
+              ],
+              "measureScore": {
+                "value": 0
+              }
+            },
+            {
+              "value": {
+                "text": "P15-49Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 2
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 2
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 1
+                }
+              ],
+              "measureScore": {
+                "value": 0.5
+              }
+            },
+            {
+              "value": {
+                "text": "P6-14Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 2
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 2
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 0
+                }
+              ],
+              "measureScore": {
+                "value": 0
+              }
+            },
+            {
+              "value": {
+                "text": "P1-5Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 11
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 11
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 5
+                }
+              ],
+              "measureScore": {
+                "value": 0.45454545454545453
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "females",
+      "population": [
+        {
+          "id": "initial-population",
+          "code": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                "code": "initial-population"
+              }
+            ]
+          },
+          "count": 17
+        },
+        {
+          "id": "denominator",
+          "code": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                "code": "denominator"
+              }
+            ]
+          },
+          "count": 17
+        },
+        {
+          "id": "numerator",
+          "code": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                "code": "numerator"
+              }
+            ]
+          },
+          "count": 10
+        }
+      ],
+      "measureScore": {
+        "value": 0.5882352941176471
+      },
+      "stratifier": [
+        {
+          "id": "by-age",
+          "stratum": [
+            {
+              "value": {
+                "text": "P0Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 1
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 1
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 0
+                }
+              ],
+              "measureScore": {
+                "value": 0
+              }
+            },
+            {
+              "value": {
+                "text": "P50Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 1
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 1
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 1
+                }
+              ],
+              "measureScore": {
+                "value": 1
+              }
+            },
+            {
+              "value": {
+                "text": "P15-49Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 2
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 2
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 1
+                }
+              ],
+              "measureScore": {
+                "value": 0.5
+              }
+            },
+            {
+              "value": {
+                "text": "P6-14Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 2
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 2
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 2
+                }
+              ],
+              "measureScore": {
+                "value": 1
+              }
+            },
+            {
+              "value": {
+                "text": "P1-5Y"
+              },
+              "population": [
+                {
+                  "id": "initial-population",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "initial-population"
+                      }
+                    ]
+                  },
+                  "count": 11
+                },
+                {
+                  "id": "denominator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "denominator"
+                      }
+                    ]
+                  },
+                  "count": 11
+                },
+                {
+                  "id": "numerator",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                        "code": "numerator"
+                      }
+                    ]
+                  },
+                  "count": 6
+                }
+              ],
+              "measureScore": {
+                "value": 0.5454545454545454
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+````
+**NB.**
+
+**Issues Identified when executing CQL**
+CQL scripts when run first time take too long to run. Look into libraries or classes it loads first time and move those to Application startup
+
+**Solution**
+
+Pre-load libraries
+
