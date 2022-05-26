@@ -13,7 +13,7 @@ env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
  FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
- GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx5120m -XX:+HeapDumpOnOutOfMemoryError"
+ GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx5120m -XX:+HeapDumpOnOutOfMemoryError" -Dorg.gradle.daemon=false
 
 jobs:
   engine-tests:
