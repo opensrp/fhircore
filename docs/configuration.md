@@ -433,7 +433,7 @@ Common attributes:
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | resourceType           | Sets the resource type. Always set it as Parameters      | String |
-   | parameter           | Sets the list of search parameter and resources to be synced      | List&lt;Parameters&gt; |
+   | parameter           | Sets the list of SearchParameter and resources to be synced      | List&lt;SearchParameter&gt; |
    
    
 TODO:
