@@ -228,9 +228,80 @@ define "OUTPUT": List { "condition", "serviceRequest", "diagnosticReport" }
 ````
 
 
-`
-{ "resourceType":"MedicationRequest", "status":"active", "intent":"proposal", "subject":{ "reference":"Patient/P1" }, "encounter":{ "reference":"Encounter/E1" }, "authoredOn":"#NOW", "category":[ { "coding":[ { "system":"http://snomed.info/sct", "code":"86859003", "display":"Glucose-6-phosphatedehydrogenasedeficiencyanaemia" } ] } ], "medicationCodeableConcept":{ "coding":[ { "system":"http://snomed.info/sct", "code":"429663004", "display":"Primaquine(substance)" } ] }, "dosageInstruction":[ { "timing":{ "repeat":{ "frequency":1, "period":8.0, "periodUnit":"wk" } }, "route":{"coding":[{"system":"http://snomed.info/sct","code":"26643006","display":"Oraluse"}]}, "doseAndRate":[ { "type":{ "coding":[ { "system":"http://terminology.hl7.org/CodeSystem/dose-rate-type", "code":"ordered", "display":"Ordered" } ] }, "doseQuantity":{ "value":0.75, "unit":"mg/kg", "system":"http://unitsofmeasure.org" } } ] } ] }
-`
+MedicationRequest Output from above CQL evaluation 
+
+````
+{
+  "resourceType": "MedicationRequest",
+  "status": "active",
+  "intent": "proposal",
+  "subject": {
+    "reference": "Patient/P1"
+  },
+  "encounter": {
+    "reference": "Encounter/E1"
+  },
+  "authoredOn": "#NOW",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "86859003",
+          "display": "Glucose-6-phosphatedehydrogenasedeficiencyanaemia"
+        }
+      ]
+    }
+  ],
+  "medicationCodeableConcept": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "429663004",
+        "display": "Primaquine(substance)"
+      }
+    ]
+  },
+  "dosageInstruction": [
+    {
+      "timing": {
+        "repeat": {
+          "frequency": 1,
+          "period": 8,
+          "periodUnit": "wk"
+        }
+      },
+      "route": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "26643006",
+            "display": "Oraluse"
+          }
+        ]
+      },
+      "doseAndRate": [
+        {
+          "type": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/dose-rate-type",
+                "code": "ordered",
+                "display": "Ordered"
+              }
+            ]
+          },
+          "doseQuantity": {
+            "value": 0.75,
+            "unit": "mg/kg",
+            "system": "http://unitsofmeasure.org"
+          }
+        }
+      ]
+    }
+  ]
+}
+````
 
 
 **Sample G6PD RDT Calibration (Control mode) CQL** 
