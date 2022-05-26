@@ -16,15 +16,21 @@
 
 package org.smartregister.fhircore.engine.appfeature.model
 
-enum class HealthModule {
-  ANC,
-  RDT,
-  PNC,
-  FAMILY,
-  CHILD,
-  FAMILY_PLANNING,
-  HIV,
-  TRACING,
-  APPOINTMENT,
-  DEFAULT
+import org.junit.Assert
+import org.junit.Test
+
+class HealthModuleTest {
+
+  @Test
+  fun testAppFeatures() {
+    Assert.assertNotNull(HealthModule.valueOf("ANC"))
+    Assert.assertNotNull(HealthModule.valueOf("RDT"))
+    Assert.assertNotNull(HealthModule.valueOf("PNC"))
+    Assert.assertNotNull(HealthModule.valueOf("FAMILY"))
+    Assert.assertNotNull(HealthModule.valueOf("CHILD"))
+    Assert.assertNotNull(HealthModule.valueOf("FAMILY_PLANNING"))
+    Assert.assertNotNull(HealthModule.valueOf("HIV"))
+    Assert.assertNotNull(HealthModule.valueOf("TRACING"))
+    Assert.assertNotNull(HealthModule.valueOf("APPOINTMENT"))
+  }
 }
