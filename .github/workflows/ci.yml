@@ -41,7 +41,7 @@ jobs:
         working-directory: android
       
       - name: Copy CI gradle.properties
-        run: mkdir -p ~/.gradle ; cp .github/gradle.properties ~/.gradle/gradle.properties
+        run: mkdir -p ~/.gradle ; cp ../.github/gradle.properties ~/.gradle/gradle.properties
         working-directory: android
 
       - name: Setup Gradle cache
