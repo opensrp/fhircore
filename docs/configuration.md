@@ -471,6 +471,4 @@ Common attributes:
    }
    ```
    
-TODO:
-
-structure of each config classification: what each attribute does (or used in-app)
+   
