@@ -82,7 +82,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew :quest:connectedCheck --stacktrace
+          script: ./gradlew :engine:connectedDebugAndroidTest --stacktrace
 
       - name: Upload Engine Test Report to codecov
         working-directory: android
