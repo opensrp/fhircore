@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -51,7 +52,7 @@ constructor(
   val profileViewDataMapper: ProfileViewDataMapper
 ) : ViewModel() {
 
-  val patientProfileUiState: MutableState<PatientProfileUiState> =
+  var patientProfileUiState: MutableState<PatientProfileUiState> =
     mutableStateOf(
       PatientProfileUiState(
         overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.PATIENT_PROFILE)
@@ -74,7 +75,41 @@ constructor(
               profileViewDataMapper.transformInputToOutputModel(it) as
                 ProfileViewData.PatientProfileViewData
             // TODO only display some overflow menu items when certain conditions are met
+            refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
           }
+      }
+    }
+  }
+
+  fun refreshOverFlowMenu(healthModule: HealthModule, patientProfile: ProfileData) {
+    if (healthModule == HealthModule.HIV ||
+        healthModule == HealthModule.TRACING ||
+        healthModule == HealthModule.APPOINTMENT
+    ) {
+      val patientMetaFilterType = (patientProfile as ProfileData.DefaultProfileData).filterType
+      when {
+        patientMetaFilterType.equals("exposed-infant", true) ||
+          patientMetaFilterType.equals("child-contact", true) -> {
+
+          patientProfileUiState =
+            mutableStateOf(
+              PatientProfileUiState(
+                overflowMenuFactory.retrieveOverflowMenuItems(
+                  OverflowMenuHost.HIV_PROFILE_EXPOSED_INFANT
+                )
+              )
+            )
+        }
+        else -> {
+          patientProfileUiState =
+            mutableStateOf(
+              PatientProfileUiState(
+                overflowMenuFactory.retrieveOverflowMenuItems(
+                  OverflowMenuHost.HIV_PROFILE_CLINIC_VISIT
+                )
+              )
+            )
+        }
       }
     }
   }

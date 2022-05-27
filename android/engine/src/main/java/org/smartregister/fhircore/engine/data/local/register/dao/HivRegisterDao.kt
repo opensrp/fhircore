@@ -89,7 +89,8 @@ constructor(
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
-      chwAssigned = patient.generalPractitionerFirstRep
+      chwAssigned = patient.generalPractitionerFirstRep,
+      filterType = patient.meta?.tagFirstRep?.code ?: ""
     )
   }
 

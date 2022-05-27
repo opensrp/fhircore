@@ -67,5 +67,28 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
         confirmAction = true
       )
     )
+  ),
+  HIV_PROFILE_CLINIC_VISIT(
+    listOf(
+      OverflowMenuItem(R.id.individual_details, R.string.individual_details),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(
+        R.id.sample_collect_and_lab_results,
+        R.string.sample_collect_and_lab_results
+      ),
+      OverflowMenuItem(R.id.client_clinic_visit, R.string.client_clinic_visit),
+      OverflowMenuItem(R.id.guardian_visit, R.string.guardian_visit)
+    )
+  ),
+  HIV_PROFILE_EXPOSED_INFANT(
+    listOf(
+      OverflowMenuItem(R.id.individual_details, R.string.individual_details),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(
+        R.id.sample_collect_and_lab_results,
+        R.string.sample_collect_and_lab_results
+      ),
+      OverflowMenuItem(R.id.exposed_infant_clinic_visit, R.string.exposed_infant_clinic_visit)
+    )
   )
 }

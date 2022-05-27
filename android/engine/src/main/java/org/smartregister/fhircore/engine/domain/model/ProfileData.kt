@@ -46,7 +46,8 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val tasks: List<Task> = listOf(),
     val visits: List<Encounter> = listOf(),
     val forms: List<QuestionnaireConfig> = listOf(),
-    val responses: List<QuestionnaireResponse> = listOf()
+    val responses: List<QuestionnaireResponse> = listOf(),
+    val filterType: String
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class FamilyProfileData(
@@ -86,7 +87,8 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val gender: Enumerations.AdministrativeGender,
     val address: String,
     val phoneContacts: List<ContactPoint> = listOf(),
-    val chwAssigned: Reference
+    val chwAssigned: Reference,
+    val filterType: String
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class AppointmentProfileData(

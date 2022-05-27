@@ -12,4 +12,9 @@
     <item name="individual_details" type="id"/>
     <item name="view_family" type="id"/>
     <item name="record_as_anc" type="id" />
+    <item name="clinic_history"  type="id"/>
+    <item name="sample_collect_and_lab_results" type="id"/>
+    <item name="guardian_visit"  type="id"/>
+    <item name="exposed_infant_clinic_visit"  type="id"/>
+    <item name="client_clinic_visit"  type="id"/>
 </resources>
