@@ -308,18 +308,22 @@ Common attributes:
    | setOrganizationDetails        | Sets whether to append Organization details when saving QuestionnaireResponse                        | Boolean |
    
    ```json
-   [
-     {
-       "form": "anc-patient-registration",
-       "title": "Enroll as ANC Patient",
-       "identifier": "1924"
-     },
-     {
-       "form": "family-member-registration",
-       "title": "Add Family Member",
-       "identifier": "32821"
-     }
-   ]
+   {
+     "appId": "ecbis-saa",
+     "classification": "forms",
+     "forms": [
+       {
+         "form": "anc-patient-registration",
+         "title": "Enroll as ANC Patient",
+         "identifier": "1924"
+       },
+       {
+         "form": "family-member-registration",
+         "title": "Add Family Member",
+         "identifier": "32821"
+       }
+     ]
+   }
    ```
    
 7. `patient_register`
@@ -402,18 +406,6 @@ Common attributes:
          }
        },
        {
-         "id": "menu_item_tasks",
-         "title": "Tasks",
-         "icon" : "ic_tasks",
-         "action": {
-           "type": "switch_fragment",
-           "tag": "PatientTaskFragment",
-           "isRegisterFragment": false,
-           "isFilterVisible": false,
-           "toolbarTitle": "Tasks"
-         }
-       },
-       {
          "id": "menu_item_settings",
          "title": "Settings",
          "icon" : "ic_settings",
@@ -435,6 +427,49 @@ Common attributes:
    | resourceType           | Sets the resource type. Always set it as Parameters      | String |
    | parameter           | Sets the list of SearchParameter and resources to be synced      | List&lt;SearchParameter&gt; |
    
+   #### Structure of `SearchParameter`
+   
+   Each `SearchParameter` is nested with `resource` attribute.
+      
+   | Attributes               | Description                                            | Type |
+   | :----------------------- | :----------------------------------------------------- | :--- |
+   | resourceType   | Sets the resource type. Always set it as SearchParameter         | String |
+   | name           | Sets the parameter name, that decides which value to get for the key   | String |
+   | code           | Sets the parameter key, that will be used in API request url    | String |
+   | base           | Sets the list of Resource to be synced      | List&lt;String&gt; |
+   | expression     | Sets the parameter expression, that helps to append the value of that key by matching it with the parameter name  | String |
+   
+   ```json
+   {
+     "appId": "ecbis-saa",
+     "classification": "sync",
+     "resourceType": "Parameters",
+     "parameter": [
+       {
+         "resource": {
+           "resourceType": "SearchParameter",
+           "name": "organization",
+           "code": "organization",
+           "base": [
+             "Patient"
+           ],
+           "expression": "#organization"
+         }
+       },
+       {
+         "resource": {
+           "resourceType": "SearchParameter",
+           "name": "organization",
+           "code": "subject.organization",
+           "base": [
+             "Encounter","Observation","Condition","CarePlan","QuestionnaireResponse", "Task"
+           ],
+           "expression": "#organization"
+         }
+       }
+     ]
+   }
+   ```
    
 TODO:
 
