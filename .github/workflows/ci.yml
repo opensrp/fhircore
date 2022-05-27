@@ -41,13 +41,13 @@ jobs:
         working-directory: android
       
       - name: Copy CI gradle.properties
-        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
       - name: Setup Gradle cache
         uses: gradle/gradle-build-action@v2
 
       - name: Spotless check engine module
-        run: ./gradlew :engine:spotlessCheck
+        run: ./gradlew :engine:spotlessCheck --stacktrace
         working-directory: android
          
       - name: Run Engine unit tests with Gradle
