@@ -146,7 +146,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          chwAssigned = Reference("referenceKey")
+          chwAssigned = Reference("referenceKey"),
+          filterType = "exposed-infant"
         )
       HealthModule.TRACING ->
         ProfileData.AppointmentProfileData(
@@ -259,7 +260,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList()
+          visits = emptyList(),
+          filterType = "exposed-infant"
         )
     }
   }
