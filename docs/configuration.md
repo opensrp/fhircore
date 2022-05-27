@@ -471,4 +471,11 @@ Common attributes:
    }
    ```
    
-   
+TODO
+
+How to create a new set of configs.
+By providing a default templates for all classification.
+The json samples above is NOT the template. It's lines was intentionally reduced for learning purposes.
+
+
+
