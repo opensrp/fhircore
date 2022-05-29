@@ -71,9 +71,9 @@ List of common Binary configs `classfication`:
 | app_feature           | Configure the available features                             |
 | pin                   | Configure the pin page                             |
 | data_filters          | Configure the filters when retrieving resource from FHIR local database                       |
-| forms                 | Configure the Questionnaires that the app will uses                           |
+| forms                 | Configure the Questionnaire forms that the app will uses                           |
 | patient_register      | Configure the patient register page                             |
-| sync                  | Configure the resource that will be synced                             |
+| sync                  | Configure the resources that will be synced                             |
 
 ### Structure of Binary Config
 
@@ -87,6 +87,8 @@ Common attributes:
 #### Structure of each `classification`
 
 1. `application`
+
+   Configure the app level.
 
    | Attributes               | Description                                 | Type |
    | :----------------------------- | :------------------------------------------ | :---- |
@@ -111,6 +113,8 @@ Common attributes:
 
 2. `login`
 
+   Configure the login page.
+
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | applicationName           | Sets the application display name                            | String |
@@ -134,6 +138,8 @@ Common attributes:
    ```
    
 3. `app_feature`
+
+   Configure the available features.
 
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
@@ -187,6 +193,8 @@ Common attributes:
    ```
    
 3. `pin`
+
+   Configure the pin page.
    
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
@@ -207,6 +215,8 @@ Common attributes:
    ```
 
 4. `data_filters`
+
+   Configure the filters when retrieving resource from FHIR local database.
 
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
@@ -292,6 +302,8 @@ Common attributes:
    
 5. `forms`
 
+   Configure the Questionnaire forms that the app will uses.
+
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | forms           | Sets the list of Questionnaire to be used in the app                           | List&lt;QuestionnaireConfig&gt; |
@@ -327,6 +339,8 @@ Common attributes:
    ```
    
 7. `patient_register`
+
+   Configure the patient register page.
    
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
@@ -412,6 +426,8 @@ Common attributes:
    }
    ```
 8. `sync`
+
+   Configure the resources that will be synced.
    
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
