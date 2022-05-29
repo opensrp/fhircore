@@ -429,7 +429,7 @@ Common attributes:
    
    #### Structure of `SearchParameter`
    
-   Each `SearchParameter` is nested with `resource` attribute.
+   For code reasons, each `SearchParameter` is nested with `resource` attribute.
       
    | Attributes               | Description                                            | Type |
    | :----------------------- | :----------------------------------------------------- | :--- |
