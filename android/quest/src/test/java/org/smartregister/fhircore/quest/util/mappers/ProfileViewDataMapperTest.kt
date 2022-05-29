@@ -32,6 +32,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.domain.model.PatientType
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.VisitStatus
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -147,7 +148,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
           chwAssigned = Reference("referenceKey"),
-          filterType = "exposed-infant"
+          patientType = PatientType.EXPOSED_INFANT
         )
       HealthModule.TRACING ->
         ProfileData.AppointmentProfileData(
@@ -260,8 +261,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList(),
-          filterType = "exposed-infant"
+          visits = emptyList()
         )
     }
   }

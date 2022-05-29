@@ -75,7 +75,8 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val address: String,
     val familyName: String? = null,
     val phoneContacts: List<String>? = null,
-    val chwAssigned: String
+    val chwAssigned: String,
+    val patientType: PatientType
   ) : RegisterData(logicalId = logicalId, name = name)
 
   data class AppointmentRegisterData(

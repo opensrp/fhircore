@@ -21,6 +21,7 @@ import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Group
@@ -28,6 +29,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.PatientType
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
@@ -73,7 +75,11 @@ constructor(
         address = patient.extractAddress(),
         familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
         phoneContacts = patient.extractTelecom(),
-        chwAssigned = patient.extractGeneralPractitionerReference()
+        chwAssigned = patient.extractGeneralPractitionerReference(),
+        patientType =
+          PatientType.valueOf(
+            patient.meta?.tagFirstRep?.code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: ""
+          )
       )
     }
   }
@@ -90,7 +96,10 @@ constructor(
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
       chwAssigned = patient.generalPractitionerFirstRep,
-      filterType = patient.meta?.tagFirstRep?.code ?: ""
+      patientType =
+        PatientType.valueOf(
+          patient.meta?.tagFirstRep?.code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: ""
+        )
     )
   }
 

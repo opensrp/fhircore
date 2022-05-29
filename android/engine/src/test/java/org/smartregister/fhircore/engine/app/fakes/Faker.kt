@@ -24,6 +24,7 @@ import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
@@ -84,7 +85,8 @@ object Faker {
     family: String = "Mandela",
     given: String = "Nelson",
     age: Int = 78,
-    gender: Enumerations.AdministrativeGender = Enumerations.AdministrativeGender.MALE
+    gender: Enumerations.AdministrativeGender = Enumerations.AdministrativeGender.MALE,
+    patientType: String = ""
   ): Patient {
     return Patient().apply {
       this.id = id
@@ -100,6 +102,14 @@ object Faker {
         district = "Dist 1"
         city = "City 1"
       }
+
+      this.meta.addTag(
+        Coding().apply {
+          system = "https://d-tree.org"
+          code = patientType
+          display = "Exposed Infant"
+        }
+      )
     }
   }
 }

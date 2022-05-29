@@ -125,8 +125,7 @@ constructor(
           defaultRepository.searchResourceFor(
             subjectId = resourceId,
             subjectParam = QuestionnaireResponse.SUBJECT
-          ),
-        filterType = patient.meta?.tagFirstRep?.code ?: ""
+          )
       )
     }
 

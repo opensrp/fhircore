@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
+import org.smartregister.fhircore.engine.domain.model.PatientType
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -64,7 +65,13 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns
-      buildPatient("1", "doe", "john", 50)
+      buildPatient(
+        id = "1",
+        family = "doe",
+        given = "john",
+        age = 50,
+        patientType = "exposed-infant"
+      )
 
     coEvery { fhirEngine.search<Condition>(any()) } returns emptyList()
 
@@ -98,6 +105,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     Assert.assertEquals("50y", hivProfileData.age)
     Assert.assertEquals("Dist 1 City 1", hivProfileData.address)
     Assert.assertEquals("John Doe", hivProfileData.name)
+    Assert.assertEquals(PatientType.EXPOSED_INFANT, hivProfileData.patientType)
     Assert.assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
   }
 

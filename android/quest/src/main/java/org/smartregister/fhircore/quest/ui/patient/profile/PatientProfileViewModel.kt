@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.domain.model.PatientType
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -86,10 +87,8 @@ constructor(
         healthModule == HealthModule.TRACING ||
         healthModule == HealthModule.APPOINTMENT
     ) {
-      val patientMetaFilterType = (patientProfile as ProfileData.DefaultProfileData).filterType
-      when {
-        patientMetaFilterType.equals("exposed-infant", true) ||
-          patientMetaFilterType.equals("child-contact", true) -> {
+      when ((patientProfile as ProfileData.HivProfileData).patientType) {
+        PatientType.EXPOSED_INFANT, PatientType.CHILD_CONTACT -> {
 
           patientProfileUiState =
             mutableStateOf(
