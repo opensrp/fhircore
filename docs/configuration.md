@@ -383,15 +383,6 @@ Common attributes:
      "showSideMenu": false,
      "showBottomMenu": true,
      "registrationForm": "3435",
-     "primaryFilter": {
-       "key": "_tag",
-       "filterType": "TOKEN",
-       "valueType": "CODING",
-       "valueConding": {
-         "system": "http://fhir.ona.io",
-         "code": "000003"
-       }
-     },
      "bottomNavigationOptions": [
        {
          "id": "menu_item_clients",
