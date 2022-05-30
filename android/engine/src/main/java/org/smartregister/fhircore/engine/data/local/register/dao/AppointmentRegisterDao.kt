@@ -17,12 +17,16 @@
 package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -31,9 +35,11 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
+import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @Singleton
@@ -51,17 +57,30 @@ constructor(
     loadAll: Boolean,
     appFeatureName: String?
   ): List<RegisterData> {
+    val pregnancies =
+      fhirEngine
+        .search<Condition> {
+          getRegisterDataFilters().forEach { filterBy(it) }
+          sort(Patient.NAME, Order.ASCENDING)
+          count =
+            if (loadAll) countRegisterData(appFeatureName).toInt()
+            else PaginationConstant.DEFAULT_PAGE_SIZE
+          from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+        }
+        .distinctBy { it.subject.reference }
+
     val patients =
-      fhirEngine.search<Patient> {
-        filter(Patient.ACTIVE, { value = of(true) })
-        sort(Patient.NAME, Order.ASCENDING)
-        count =
-          if (loadAll) countRegisterData(appFeatureName).toInt()
-          else PaginationConstant.DEFAULT_PAGE_SIZE
-        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+      pregnancies.map { fhirEngine.get<Patient>(it.subject.extractId()) }.sortedBy {
+        it.nameFirstRep.family
       }
 
     return patients.map { patient ->
+      val carePlans =
+        defaultRepository.searchResourceFor<CarePlan>(
+          subjectId = patient.logicalId,
+          subjectParam = CarePlan.SUBJECT
+        )
+
       RegisterData.AppointmentRegisterData(
         logicalId = patient.logicalId,
         name = patient.extractName(),
@@ -75,4 +94,7 @@ constructor(
       )
     }
   }
+
+  private fun getRegisterDataFilters() =
+    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.ANC.name)
 }

@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import java.util.Calendar
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
@@ -30,6 +31,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.PatientType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class PatientExtensionTest : RobolectricTest() {
@@ -429,5 +431,22 @@ class PatientExtensionTest : RobolectricTest() {
       )
 
     Assert.assertEquals(DateTimeType(timeNow).toDisplay(), Patient().getLastSeen(immunizations))
+  }
+
+  @Test
+  fun testExtractTypeViaMeta() {
+    val patient =
+      Patient().apply {
+        meta.addTag(
+          Coding().apply {
+            system = "https://d-tree.org"
+            code = "exposed-infant"
+            display = "Exposed Infant"
+          }
+        )
+      }
+
+    Assert.assertNotNull(patient.extractTypeViaDTreeMeta())
+    Assert.assertEquals(PatientType.EXPOSED_INFANT, patient.extractTypeViaDTreeMeta())
   }
 }

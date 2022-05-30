@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
+import java.lang.IllegalArgumentException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -27,6 +28,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.PatientType
 
 private const val RISK = "risk"
 const val DAYS_IN_YEAR = 365
@@ -211,3 +213,14 @@ fun Patient.extractOfficialIdentifier(): String? =
   if (this.hasIdentifier())
     this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
   else null
+
+fun Patient.extractTypeViaDTreeMeta(): PatientType {
+  return try {
+    val tagList = this.meta.tag.filter { it.system.equals("https://d-tree.org", true) }
+
+    PatientType.valueOf(tagList[0].code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: "")
+  } catch (e: IllegalArgumentException) {
+    e.printStackTrace()
+    PatientType.DEFAULT
+  }
+}

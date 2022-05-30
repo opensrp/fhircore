@@ -17,12 +17,9 @@
 package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
-import java.lang.IllegalArgumentException
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Group
@@ -30,7 +27,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.PatientType
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
@@ -40,6 +36,7 @@ import org.smartregister.fhircore.engine.util.extension.extractGeneralPractition
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
+import org.smartregister.fhircore.engine.util.extension.extractTypeViaDTreeMeta
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
@@ -68,16 +65,6 @@ constructor(
       }
 
     return patients.map { patient ->
-      var patientTypeViaMeta = PatientType.DEFAULT
-      try {
-        patientTypeViaMeta =
-          PatientType.valueOf(
-            patient.meta?.tagFirstRep?.code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: ""
-          )
-      } catch (e: IllegalArgumentException) {
-        e.printStackTrace()
-      }
-
       RegisterData.HivRegisterData(
         logicalId = patient.logicalId,
         name = patient.extractName(),
@@ -87,7 +74,7 @@ constructor(
         familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
         phoneContacts = patient.extractTelecom(),
         chwAssigned = patient.extractGeneralPractitionerReference(),
-        patientType = patientTypeViaMeta
+        patientType = patient.extractTypeViaDTreeMeta()
       )
     }
   }
@@ -104,10 +91,7 @@ constructor(
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
       chwAssigned = patient.generalPractitionerFirstRep,
-      patientType =
-        PatientType.valueOf(
-          patient.meta?.tagFirstRep?.code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: ""
-        )
+      patientType = patient.extractTypeViaDTreeMeta()
     )
   }
 
