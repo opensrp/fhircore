@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
-import java.lang.IllegalArgumentException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -219,7 +218,7 @@ fun Patient.extractTypeViaDTreeMeta(): PatientType {
     val tagList = this.meta.tag.filter { it.system.equals("https://d-tree.org", true) }
 
     PatientType.valueOf(tagList[0].code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: "")
-  } catch (e: IllegalArgumentException) {
+  } catch (e: Exception) {
     e.printStackTrace()
     PatientType.DEFAULT
   }
