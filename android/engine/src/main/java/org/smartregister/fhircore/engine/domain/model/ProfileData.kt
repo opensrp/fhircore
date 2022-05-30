@@ -27,15 +27,14 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 sealed class ProfileData(open val logicalId: String, open val name: String) {
   data class DefaultProfileData(
     override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
-    val birthdate: Date,
-    val age: String = birthdate.toAgeDisplay(),
+    val birthdate: Date? = null,
+    val age: String,
     val address: String,
     val gender: Enumerations.AdministrativeGender,
     val deathDate: Date? = null,

@@ -52,27 +52,25 @@ class LoginActivity :
     loginService.loginActivity = this
     loginViewModel.apply {
       navigateToHome.observe(this@LoginActivity) {
-        if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
-          val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
-          val forceLoginViaUsernamePinSetup =
-            loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
+        if (it && loginViewConfiguration.value?.enablePin == true) {
+          val lastPinExist = accountAuthenticator.hasActivePin()
+          val forceLoginViaPin =
+            sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
           when {
-            lastPinExist -> {
-              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME, false)
-            }
-            forceLoginViaUsernamePinSetup -> {
-              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
-            }
-            else -> {
-              loginService.navigateToPinLogin(goForSetup = true)
-            }
+            lastPinExist -> goToHomeScreen(FORCE_LOGIN_VIA_USERNAME, false)
+            forceLoginViaPin -> goToHomeScreen(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
+            else -> loginService.navigateToPinLogin(goForSetup = true)
           }
-        } else {
+        } else if (it) {
           syncBroadcaster.get().runSync()
           loginService.navigateToHome()
         }
       }
+
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
+
+      // Navigate directly to home activity if session is active
+      if (accountAuthenticator.hasActiveSession()) loginService.navigateToHome()
     }
 
     if (configurationRegistry.isAppIdInitialized()) {

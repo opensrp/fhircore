@@ -249,7 +249,6 @@ constructor(
 
   @TestOnly
   fun navigateToHome(navigateHome: Boolean = true) {
-    _navigateToHome.value = navigateHome
     _navigateToHome.postValue(navigateHome)
   }
 

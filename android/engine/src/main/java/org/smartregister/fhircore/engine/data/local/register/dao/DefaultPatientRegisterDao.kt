@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @Singleton
 class DefaultPatientRegisterDao
@@ -91,6 +92,7 @@ constructor(
         address = patient.extractAge(),
         gender = patient.gender,
         birthdate = patient.birthDate,
+        age = patient.birthDate.toAgeDisplay(),
         deathDate =
           if (patient.hasDeceasedDateTimeType()) patient.deceasedDateTimeType.value else null,
         deceased =

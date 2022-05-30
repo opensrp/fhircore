@@ -28,6 +28,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.domain.model.FormButtonData
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -83,7 +84,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           identifier = inputModel.identifier,
           age = inputModel.age,
           sex = inputModel.gender.translateGender(context),
-          dob = inputModel.birthdate.formatDob(),
+          dob = inputModel.birthdate?.formatDob() ?: "",
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
@@ -105,7 +106,8 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
               )
-            }
+            },
+          forms = inputModel.forms.map { FormButtonData(it.title, it.identifier) }
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(

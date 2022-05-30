@@ -20,7 +20,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -181,6 +183,7 @@ fun PatientProfileScreen(
             onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.FORMS
           ) {
+            Spacer(modifier.height(16.dp))
             profileViewData.forms.forEach {
               FormButton(
                 formButtonData = it,
@@ -191,6 +194,7 @@ fun PatientProfileScreen(
                 }
               )
             }
+            Spacer(modifier.height(16.dp))
           }
         }
 

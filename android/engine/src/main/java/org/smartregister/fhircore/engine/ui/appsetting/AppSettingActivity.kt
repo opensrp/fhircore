@@ -35,7 +35,6 @@ import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -54,8 +53,7 @@ class AppSettingActivity : AppCompatActivity() {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
 
-    val isLoggedIn =
-      sharedPreferencesHelper.read(IS_LOGGED_IN, false) && accountAuthenticator.hasActiveSession()
+    val isLoggedIn = accountAuthenticator.hasActiveSession()
 
     with(appSettingViewModel) {
       loadConfigs.observe(this@AppSettingActivity) { loadConfigs ->
