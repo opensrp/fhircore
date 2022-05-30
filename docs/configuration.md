@@ -69,7 +69,7 @@ List of common Binary configs `classfication`:
 | application           | Configure the app level                             |
 | login                 | Configure the login page                             |
 | app_feature           | Configure the available features                             |
-| pin                   | Configure the pin page                             |
+| pin                   | Configure the pin setup and pin login page                             |
 | data_filters          | Configure the filters when retrieving resource from FHIR local database                       |
 | forms                 | Configure the Questionnaire forms that the app will uses                           |
 | patient_register      | Configure the patient register page                             |
@@ -96,7 +96,7 @@ Common attributes:
    | language                 | Sets the languages for the app                          | List&lt;String&gt; |
    | syncInterval           | Sets the periodic sync interval in seconds. Default 30            | Long |
    | applicationName                   | Sets the application display name                      | String |
-   | appLogoIconResourceFile          | Sets the application logo thumb icon, there must be png file inside  | String       |
+   | appLogoIconResourceFile          | Sets the application logo icon, there must be png file inside  | String       |
    | count                 | Sets the application maximum records when downloading resource                  | String      |
    
    ```json
@@ -194,14 +194,13 @@ Common attributes:
    
 3. `pin`
 
-   Configure the pin page.
+   Configure the pin setup and pin login page.
    
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
    | applicationName           | Sets the application display name                            | String |
-   | appLogoIconResourceFile          | Sets the application logo thumb icon, there must be png file inside  | String       |
-   | enablePin                 | Sets the use of pin login feature                         | Boolean |
-   | showLogo          | Sets the login logo visibility        | Boolean |
+   | appLogoIconResourceFile          | Sets the application logo icon, there must be png file inside  | String       |
+   | showLogo          | Sets the logo visibility        | Boolean |
    
    ```json
    {
@@ -209,7 +208,6 @@ Common attributes:
      "classification": "pin",
      "applicationName": "eCBIS",
      "appLogoIconResourceFile": "ic_liberia",
-     "enablePin": true,
      "showLogo": true
    }
    ```
@@ -344,85 +342,16 @@ Common attributes:
    
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
-   | appTitle           | Sets the app display title on the side menu      | String |
-   | filterText           | Sets the text on the filter button at the top bar     | String |
-   | showFilter        | Sets whether to show the filter button at the top bar when using the side menu mode            | Boolean |
-   | newClientButtonText           | Sets the text on the register client button                      | String |
-   | newClientButtonStyle        | Sets the background style name of register client button that is available in the drawable e.g rounded_corner           | String |
-   | showNewClientButton        | Sets whether to show the register client button                      | Boolean |
-   | registrationForm        | Sets the Questionnaire form name for client registration            | String |
-   | searchBarHint           | Sets the hint text on the search bar               | String |
-   | showSearchBar        | Sets whether to show the search bar                       | Boolean |
-   | showScanQRCode        | Sets whether to show QR scanner button             | Boolean |
-   | showSideMenu        | Sets whether to show side menu            | Boolean |
-   | showBottomMenu        | Sets whether to show side bottom menu            | Boolean |
-   | useLabel        | Sets whether to use label for all the row items. Will use icon if it's false        | Boolean |
-   | showHeader        | Sets whether to show to header / top bar        | Boolean |
-   | showFooter        | Sets whether to show to footer / the bottom side of the layout        | Boolean |
-   | bottomNavigationOptions        | Sets the bottom navigation options      | List&lt;NavigationAction&gt; |
-   
-   #### Structure of `NavigationAction`
-   
-   | Attributes               | Description                                                          | Type |
-   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
-   | id           | Sets menu options id      | String |
-   | title           | Sets the display title of the menu option                      | String |
-   | icon           | Sets the icon name that is available in the drawable                      | String |
-   | action           | Sets the action to switch fragment when clicked   | ActionSwitchFragment |
-   
-   #### Structure of `ActionSwitchFragment`
-   
-   | Attributes               | Description                                                          | Type |
-   | :----------------------------- | :------------------------------------------------------------------------ | :--- |
-   | type           | Sets the switch action type. Always set it as switch_fragment      | String |
-   | tag           | Sets the switch destination name      | String |
-   | isRegisterFragment           | Sets whether the switch destination is the Home register     | Boolean |
-   | isFilterVisible           | Sets whether to show the filter button when using bottom menu mode      | Boolean |
-   | toolbarTitle           | Sets the toolbar title when using bottom menu mode     | String? |
+   | newClientButtonText           | Sets the text on the add new client button                      | String |
+   | registrationForm        | Sets the Questionnaire form id for client registration            | String |
    
    
    ```json
    {
      "appId": "quest",
      "classification": "patient_register",
-     "appTitle": "Clients",
-     "filterText": "Show overdue",
-     "searchBarHint": "Search for ID or client name",
      "newClientButtonText": "Register new client",
-     "newClientButtonStyle": "rounded_corner",
-     "showSearchBar": true,
-     "showFilter": false,
-     "showScanQRCode": false,
-     "showNewClientButton": true,
-     "showSideMenu": false,
-     "showBottomMenu": true,
-     "registrationForm": "3435",
-     "bottomNavigationOptions": [
-       {
-         "id": "menu_item_clients",
-         "title": "Clients",
-         "icon" : "ic_users",
-         "action": {
-           "type": "switch_fragment",
-           "tag": "PatientRegisterFragment",
-           "isRegisterFragment": true,
-           "isFilterVisible": false,
-           "toolbarTitle": null
-         }
-       },
-       {
-         "id": "menu_item_settings",
-         "title": "Settings",
-         "icon" : "ic_settings",
-         "action": {
-           "type": "switch_fragment",
-           "tag": "UserProfileFragment",
-           "isRegisterFragment": false,
-           "isFilterVisible": false,
-           "toolbarTitle": "Settings"
-         }
-       }
-     ]
+     "registrationForm": "3435"
    }
    ```
 8. `sync`
