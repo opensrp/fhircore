@@ -698,9 +698,14 @@ Use these templates as a base. Just always remember to modify everything that ma
    }
    ```
    
-TODO
+## Adding Configs to the Server
 
-How to add configs to the server.
+You can simply add the configs by opening these links below then go to the CRUD Operations tab.
+
+* For Binary: https://fhir.labs.smartregister.org/resource?serverId=global&pretty=true&_summary=&resource=Binary
+* For Composition: https://fhir.labs.smartregister.org/resource?serverId=global&pretty=true&_summary=&resource=Composition
+   
+TODO
 
 How to properly add those configs to local and use them with /debug suffix.
 
