@@ -34,7 +34,7 @@ android {
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "org.smartregister.fhircore.quest.ui.QuestTestRunner"
     }
 
     signingConfigs {
@@ -167,6 +167,8 @@ dependencies {
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
+    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine
