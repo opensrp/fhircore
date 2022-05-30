@@ -700,8 +700,9 @@ Use these templates as a base. Just always remember to modify everything that ma
    
 TODO
 
-How to add configs to the server
-How to properly add those configs to local and use them with /debug suffix
+How to add configs to the server.
+
+How to properly add those configs to local and use them with /debug suffix.
 
 
 
