@@ -407,11 +407,301 @@ Common attributes:
    }
    ```
    
+## Default Templates
+
+Use these templates as a base. Just always remember to modify everything that marked as `xxx`. You can get the Binary reference id after adding each Binary to the server. The recommended approach is first to add the Binary resource configs to the server, get each of it's id, then append it to the Composition resource's Binary references and finally add the Composition to the server.
+
+1. Composition config
+
+   ```json
+   {
+     "resourceType": "Composition",
+     "status": "final",
+     "date": "2022-05-30",
+     "type": {
+       "coding": [
+         {
+           "system": "http://snomed.info/sct",
+           "code": "1156600005",
+           "display": "Device setting parameter"
+         }
+       ]
+     },
+     "identifier": {
+       "use": "official",
+       "value": "xxx"
+     },
+     "title": "Device configurations",
+     "confidentiality": "L",
+     "section": [
+       {
+         "title": "App configuration",
+         "mode": "working",
+         "focus": {
+           "reference": "Binary/xxx",
+           "identifier": { "value": "application" }
+         }
+       },
+       {
+         "title": "App Feature configuration",
+         "mode": "working",
+         "focus": {
+           "reference": "Binary/xxx",
+           "identifier": { "value": "app_feature" }
+         }
+       },
+       {
+         "title": "Login configuration",
+         "mode": "working",
+         "focus": {
+           "reference": "Binary/xxx",
+           "identifier": { "value": "login" }
+         }
+       },
+       {
+         "title": "Pin View configuration",
+         "mode": "working",
+         "focus": {
+           "reference": "Binary/xxx",
+           "identifier": { "value": "pin" }
+         }
+       },
+       {
+         "title": "Patient Register configuration",
+         "mode": "working",
+         "focus": {
+           "reference": "Binary/xxx",
+           "identifier": { "value": "patient_register" }
+         }
+       },
+       {
+         "title": "Patient Register configuration",
+         "mode": "working",
+         "focus": {
+           "reference": "Binary/xxx",
+           "identifier": { "value": "data_filters" }
+         }
+       },
+       {
+         "title": "Forms configuration",
+         "mode": "working",
+         "focus": {
+           "reference": "Binary/xxx",
+           "identifier": { "value": "forms" }
+         }
+       },
+       {
+         "title": "Sync configuration",
+         "mode": "working",
+         "focus": {
+           "reference": "Binary/xxx",
+           "identifier": { "value": "sync" }
+         }
+       }
+     ]
+   }
+   ```
+   
+2. Application config
+   
+   ```json
+   {
+     "appId": "xxx",
+     "classification": "application",
+     "theme": "AppTheme",
+     "languages": ["en", "sw"],
+     "applicationName": "App Name",
+     "appLogoIconResourceFile": "ic_default_logo",
+     "count": "100"
+   }
+   ```
+   
+3. Login config
+
+   ```json
+   {
+     "appId": "xxx",
+     "classification": "login",
+     "applicationName": "App Name",
+     "applicationVersion": "0.0.1",
+     "darkMode": false,
+     "showLogo": true,
+     "enablePin": true
+   }
+   ```
+
+4. App Feature config
+
+   ```json
+   {
+     "appId": "xxx",
+     "classification": "app_feature",
+     "appFeatures": [
+       {
+         "feature": "PatientManagement",
+         "active": true,
+         "settings": {},
+         "target": "CHW",
+         "healthModule": "DEFAULT",
+         "useCases": [
+           "PATIENT_REGISTRATION"
+         ]
+       }
+     ]
+   }
+   ```
+
+5. Pin config
+
+   ```json
+   {
+     "appId": "xxx",
+     "classification": "pin",
+     "applicationName": "App Name",
+     "appLogoIconResourceFile": "ic_default_logo",
+     "showLogo": true
+   }
+   ```
+
+6. Data Filters config
+
+   ```json
+   {
+     "appId": "xxx",
+     "classification": "data_filters",
+     "filters": [
+       {
+         "id": "forms_list",
+         "filterType": "TOKEN",
+         "key": "context",
+         "valueType": "CODING",
+         "valueCoding": {
+           "system": "http://fhir.ona.io",
+           "code": "000002"
+         }
+       }
+     ]
+   }
+   ```
+
+7. Forms config
+
+   ```json
+   {
+     "appId": "xxx",
+     "classification": "forms",
+     "forms": [
+       {
+         "form": "family-registration",
+         "title": "Add Family",
+         "identifier": "82952",
+         "saveButtonText": "ADD FAMILY",
+         "setPractitionerDetails" : true,
+         "setOrganizationDetails" : true
+       }
+     ]
+   }
+   ```
+
+8. Patient Register config
+
+   ```json
+   {
+     "appId": "xxx",
+     "classification": "patient_register",
+     "newClientButtonText": "ADD FAMILY",
+     "registrationForm": "family-registration"
+   }
+   ```
+
+9. Sync config
+
+   ```json
+   {
+     "appId": "xxx",
+     "classification": "sync",
+     "resourceType": "Parameters",
+     "parameter": [
+       {
+         "resource": {
+           "resourceType": "SearchParameter",
+           "name": "organization",
+           "code": "organization",
+           "base": [
+             "Patient"
+           ],
+           "type": "token",
+           "expression": "#organization"
+         }
+       },
+       {
+         "resource": {
+           "resourceType": "SearchParameter",
+           "name": "organization",
+           "code": "subject.organization",
+           "base": [
+             "Encounter",
+             "Observation",
+             "Condition",
+             "CarePlan",
+             "QuestionnaireResponse",
+             "Task"
+           ],
+           "type": "token",
+           "expression": "#organization"
+         }
+       },
+       {
+         "resource": {
+           "resourceType": "SearchParameter",
+           "name": "publisher",
+           "code": "publisher",
+           "base": [
+             "Questionnaire"
+           ],
+           "type": "token",
+           "expression": "#publisher"
+         }
+       },
+       {
+         "resource": {
+           "resourceType": "SearchParameter",
+           "name": "_id",
+           "code": "_id",
+           "base": [
+             "StructureMap"
+           ]
+         }
+       },
+       {
+         "resource": {
+           "resourceType": "SearchParameter",
+           "name": "count",
+           "code": "_count",
+           "base": [
+             "Patient",
+             "Encounter",
+             "Observation",
+             "Condition",
+             "CarePlan",
+             "QuestionnaireResponse",
+             "Questionnaire",
+             "StructureMap",
+             "Task",
+             "Group"
+           ],
+           "type": "token",
+           "expression": "#count"
+         }
+       }
+     ]
+   }
+   ```
+   
 TODO
 
-How to create a new set of configs.
-By providing a default templates for all classification.
-The json samples above is NOT the template. It's lines was intentionally reduced for learning purposes.
+How to add configs to the server
+How to properly add those configs to local and use them with /debug suffix
 
 
 
