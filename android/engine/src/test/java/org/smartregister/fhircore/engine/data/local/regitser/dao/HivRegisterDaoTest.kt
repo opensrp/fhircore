@@ -23,9 +23,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -64,7 +64,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns
+    val testPatient: Patient =
       buildPatient(
         id = "1",
         family = "doe",
@@ -73,7 +73,9 @@ internal class HivRegisterDaoTest : RobolectricTest() {
         patientType = "exposed-infant"
       )
 
-    coEvery { fhirEngine.search<Condition>(any()) } returns emptyList()
+    coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns testPatient
+
+    coEvery { fhirEngine.search<Patient>(any()) } returns listOf(testPatient)
 
     coEvery { fhirEngine.search<Group>(any()) } returns emptyList()
 
@@ -93,6 +95,14 @@ internal class HivRegisterDaoTest : RobolectricTest() {
       hivRegisterDao.loadRegisterData(currentPage = 0, loadAll = true, appFeatureName = "HIV")
     }
     Assert.assertNotNull(data)
+    /* Todo fix this test for coverage
+    val hivRegisterData = data[0] as RegisterData.HivRegisterData
+    Assert.assertEquals("50y", hivRegisterData.age)
+    Assert.assertEquals("Dist 1 City 1", hivRegisterData.address)
+    Assert.assertEquals("John Doe", hivRegisterData.name)
+    Assert.assertEquals(PatientType.EXPOSED_INFANT, hivRegisterData.patientType)
+    Assert.assertEquals(Enumerations.AdministrativeGender.MALE, hivRegisterData.gender)
+     */
   }
 
   @Test

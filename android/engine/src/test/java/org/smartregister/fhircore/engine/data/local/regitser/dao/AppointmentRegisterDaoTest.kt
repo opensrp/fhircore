@@ -24,6 +24,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -60,8 +61,18 @@ internal class AppointmentRegisterDaoTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns
-      buildPatient("1", "doe", "john", 50)
+    val testPatient: Patient =
+      buildPatient(
+        id = "1",
+        family = "doe",
+        given = "john",
+        age = 50,
+        patientType = "exposed-infant"
+      )
+
+    coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns testPatient
+
+    coEvery { fhirEngine.search<Patient>(any()) } returns listOf(testPatient)
 
     coEvery { fhirEngine.search<Group>(any()) } returns emptyList()
 

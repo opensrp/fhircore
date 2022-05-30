@@ -21,6 +21,7 @@ import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
+import java.lang.IllegalArgumentException
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -67,6 +68,16 @@ constructor(
       }
 
     return patients.map { patient ->
+      var patientTypeViaMeta = PatientType.DEFAULT
+      try {
+        patientTypeViaMeta =
+          PatientType.valueOf(
+            patient.meta?.tagFirstRep?.code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: ""
+          )
+      } catch (e: IllegalArgumentException) {
+        e.printStackTrace()
+      }
+
       RegisterData.HivRegisterData(
         logicalId = patient.logicalId,
         name = patient.extractName(),
@@ -76,10 +87,7 @@ constructor(
         familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
         phoneContacts = patient.extractTelecom(),
         chwAssigned = patient.extractGeneralPractitionerReference(),
-        patientType =
-          PatientType.valueOf(
-            patient.meta?.tagFirstRep?.code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: ""
-          )
+        patientType = patientTypeViaMeta
       )
     }
   }
