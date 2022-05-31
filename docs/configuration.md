@@ -707,12 +707,12 @@ You can simply add the configs by opening these links below then go to the CRUD 
    
 ## Adding Configs to the Local
 
-Having local configs is useful in a situation that you don't want to rely on the server configs or when you want to test out configs without the worry of of messing the server configs which may block other engineer's work.
+Having local configs is useful in a situation that you don't want to rely on the server configs or when you want to test out configs without the worry of messing the server configs which may block other engineer's work.
 
 Steps to add local configs:
 
 1. Create a new Directory using this path `android/quest/src/main/assets/configs/[APP_ID]`
-2. Under that newly created Directory, create `json` files for Composition and Binary configs with this format `config_[CLASSIFICATION].json`
+2. Under that newly created Directory, create `json` files for Composition and Binary configs using this format `config_[CLASSIFICATION].json`
 
 Here's an example of the file structure and naming:
 
