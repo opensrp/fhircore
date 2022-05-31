@@ -96,16 +96,13 @@ class AppFeatureManagerTest : RobolectricTest() {
   @Test
   fun testAppFeatureSettings_withStringName_shouldReturn_1() {
     appFeatureManager.loadAndActivateFeatures()
-    Assert.assertEquals(
-      appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement).size,
-      1
-    )
+    Assert.assertEquals(appFeatureManager.appFeatureSettings("HouseholdManagement").size, 1)
   }
 
   @Test
   fun testAppFeatureSettings_withStringName_shouldReturn_empty() {
     appFeatureManager.loadAndActivateFeatures()
-    Assert.assertEquals(appFeatureManager.appFeatureSettings(AppFeature.PatientManagement).size, 0)
+    Assert.assertEquals(appFeatureManager.appFeatureSettings("PatientManagement").size, 0)
   }
 
   @Test
