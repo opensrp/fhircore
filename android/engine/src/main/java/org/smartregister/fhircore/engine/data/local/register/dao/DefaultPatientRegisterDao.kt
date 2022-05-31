@@ -21,7 +21,6 @@ import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
-import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
@@ -91,7 +90,7 @@ constructor(
         identifier = patient.identifierFirstRep.value,
         address = patient.extractAge(),
         gender = patient.gender,
-        birthdate = patient.birthDate ?: Date(),
+        birthdate = patient.birthDate,
         deathDate =
           if (patient.hasDeceasedDateTimeType()) patient.deceasedDateTimeType.value else null,
         deceased =

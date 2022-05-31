@@ -25,22 +25,3 @@ enum class PatientType {
   SEXUAL_CONTACT,
   DEFAULT
 }
-
-// enum class PatientType(value: String, display: String = "") {
-//  NEWLY_DIAGNOSED(value = "newly-diagnosed-client", display = "Newly Diagnosed Client"),
-//  ALREADY_ON_ART(value = "client-already-on-art", display = "Client Already On ART"),
-//  EXPOSED_INFANT(value = "exposed-infant", display = "Exposed Infant"),
-//  COMMUNITY_POSITIVE(value = "community-positive", display = "Community Positive"),
-//  CHILD_CONTACT(value = "child-contact", display = "Child Contact"),
-//  SEXUAL_CONTACT(value = "sexual-contact", display = "Sexual Contact"),
-//  DEFAULT(value = "", "Unknown")
-// }
-
-
-
-//                code: "newly-diagnosed-client", display: "Newly Diagnosed Client"
-//                code: "client-already-on-art", display: "Client Already On ART"
-//                code: "exposed-infant", display: "Exposed Infant"
-//                code: "community-positive", display: "Community Positive"
-//                code: "child-contact", display: "Child Contact"
-//                code: "sexual-contact", display: "Sexual Contact"

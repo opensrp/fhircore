@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.PatientType
+import timber.log.Timber
 
 private const val RISK = "risk"
 const val DAYS_IN_YEAR = 365
@@ -216,10 +217,10 @@ fun Patient.extractOfficialIdentifier(): String? =
 fun Patient.extractTypeViaDTreeMeta(): PatientType {
   return try {
     val tagList = this.meta.tag.filter { it.system.equals("https://d-tree.org", true) }
-
+    if (tagList[0].code.isEmpty()) return PatientType.DEFAULT
     PatientType.valueOf(tagList[0].code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: "")
   } catch (e: Exception) {
-    e.printStackTrace()
+    Timber.e(e)
     PatientType.DEFAULT
   }
 }
