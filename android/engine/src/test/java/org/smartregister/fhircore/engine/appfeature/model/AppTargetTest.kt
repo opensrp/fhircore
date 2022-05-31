@@ -22,12 +22,12 @@ import org.junit.Test
 class AppTargetTest {
 
   @Test
-  fun appTarget_shouldReturn_2() {
+  fun testAppTarget_shouldReturn_2() {
     Assert.assertEquals(AppTarget.values().size, 2)
   }
 
   @Test
-  fun appTarget_shouldContain_allTargets() {
+  fun testAppTarget_shouldContain_allTargets() {
     Assert.assertNotNull(AppTarget.valueOf("CHW"))
     Assert.assertNotNull(AppTarget.valueOf("HF"))
   }

@@ -51,35 +51,35 @@ class AppFeatureManagerTest : RobolectricTest() {
   }
 
   @Test
-  fun activatedFeatures_shouldReturn_empty() {
+  fun testActivatedFeatures_shouldReturn_empty() {
     Assert.assertEquals(appFeatureManager.activatedFeatures().size, 0)
   }
 
   @Test
-  fun activatedFeatures_shouldReturn_2() {
+  fun testActivatedFeatures_shouldReturn_2() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(appFeatureManager.activatedFeatures().size, 2)
   }
 
   @Test
-  fun activeRegisterFeatures_shouldReturn_2() {
+  fun testActiveRegisterFeatures_shouldReturn_2() {
     Assert.assertEquals(appFeatureManager.activeRegisterFeatures().size, 2)
   }
 
   @Test
-  fun isFeatureActive_shouldReturn_true() {
+  fun testIsFeatureActive_shouldReturn_true() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(true, appFeatureManager.isFeatureActive(AppFeature.HouseholdManagement))
   }
 
   @Test
-  fun isFeatureActive_shouldReturn_false() {
+  fun testIsFeatureActive_shouldReturn_false() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(false, appFeatureManager.isFeatureActive(AppFeature.InAppReporting))
   }
 
   @Test
-  fun appFeatureSettings_shouldReturn_1() {
+  fun testAppFeatureSettings_shouldReturn_1() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(
       appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement).size,
@@ -88,13 +88,13 @@ class AppFeatureManagerTest : RobolectricTest() {
   }
 
   @Test
-  fun appFeatureSettings_shouldReturn_empty() {
+  fun testAppFeatureSettings_shouldReturn_empty() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(appFeatureManager.appFeatureSettings(AppFeature.PatientManagement).size, 0)
   }
 
   @Test
-  fun appFeatureSettings_withStringName_shouldReturn_1() {
+  fun testAppFeatureSettings_withStringName_shouldReturn_1() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(
       appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement).size,
@@ -103,13 +103,13 @@ class AppFeatureManagerTest : RobolectricTest() {
   }
 
   @Test
-  fun appFeatureSettings_withStringName_shouldReturn_empty() {
+  fun testAppFeatureSettings_withStringName_shouldReturn_empty() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(appFeatureManager.appFeatureSettings(AppFeature.PatientManagement).size, 0)
   }
 
   @Test
-  fun appFeatureHasSetting_shouldReturn_true() {
+  fun testAppFeatureHasSetting_shouldReturn_true() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(appFeatureManager.appFeatureHasSetting("deactivateMembers"), true)
   }

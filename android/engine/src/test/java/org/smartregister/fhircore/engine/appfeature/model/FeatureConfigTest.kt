@@ -45,43 +45,43 @@ class FeatureConfigTest {
   }
 
   @Test
-  fun getFeature_shouldReturn_HouseHoldManagement() {
+  fun testGetFeature_shouldReturn_HouseHoldManagement() {
     Assert.assertEquals(featureConfig.feature, "HouseHoldManagement")
   }
 
   @Test
-  fun getActive_shouldReturn_true() {
+  fun testGetActive_shouldReturn_true() {
     Assert.assertEquals(featureConfig.active, true)
   }
 
   @Test
-  fun getSettings_shouldReturn_1() {
+  fun testGetSettings_shouldReturn_1() {
     Assert.assertEquals(featureConfig.settings.size, 1)
   }
 
   @Test
-  fun getSettings_deactivateMembers_shouldContain_deactivateMembers() {
+  fun testGetSettings_deactivateMembers_shouldContain_deactivateMembers() {
     Assert.assertEquals(featureConfig.settings.containsKey("deactivateMembers"), true)
   }
 
   @Test
-  fun getTarget_shouldReturn_CHW() {
+  fun testGetTarget_shouldReturn_CHW() {
     Assert.assertEquals(featureConfig.target.toStr(), "CHW")
   }
 
   @Test
-  fun getHealthModule_shouldReturn_FAMILY() {
+  fun testGetHealthModule_shouldReturn_FAMILY() {
     Assert.assertEquals(featureConfig.healthModule.toStr(), "FAMILY")
   }
 
   @Test
-  fun getUseCases_shouldReturn_4() {
+  fun testGetUseCases_shouldReturn_4() {
     Assert.assertNotNull(featureConfig.useCases)
     Assert.assertEquals(featureConfig.useCases!!.size, 4)
   }
 
   @Test
-  fun getUseCases_shouldContain_allUseCases() {
+  fun testGetUseCases_shouldContain_allUseCases() {
     Assert.assertNotNull(featureConfig.useCases)
     Assert.assertEquals(featureConfig.useCases!!.contains("HOUSEHOLD_REGISTRATION"), true)
     Assert.assertEquals(featureConfig.useCases!!.contains("REMOVE_HOUSEHOLD"), true)
