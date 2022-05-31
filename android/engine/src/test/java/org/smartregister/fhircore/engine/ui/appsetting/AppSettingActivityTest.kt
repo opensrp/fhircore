@@ -111,11 +111,12 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
 
     Assert.assertTrue(appSettingActivity.appSettingViewModel.hasDebugSuffix() == true)
     Assert.assertEquals("default/debug", appSettingActivity.appSettingViewModel.appId.value)
-    Assert.assertEquals(8, appSettingActivity.configurationRegistry.workflowPointsMap.size)
+    Assert.assertEquals(9, appSettingActivity.configurationRegistry.workflowPointsMap.size)
 
     val workflows = appSettingActivity.configurationRegistry.workflowPointsMap
     Assert.assertTrue(workflows.containsKey("default|application"))
     Assert.assertTrue(workflows.containsKey("default|login"))
+    Assert.assertTrue(workflows.containsKey("default|app_feature"))
     Assert.assertTrue(workflows.containsKey("default|patient_register"))
     Assert.assertTrue(workflows.containsKey("default|patient_task_register"))
     Assert.assertTrue(workflows.containsKey("default|pin"))
