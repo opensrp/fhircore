@@ -26,8 +26,8 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
@@ -303,11 +303,11 @@ constructor(
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
 
-    // TODO ensure its not unlimited or lagging; associate with workflow or config
-    // https://github.com/opensrp/fhircore/issues/1288
-    fhirEngine.search<PlanDefinition> {}.forEach {
-      kotlin.runCatching { fhirTaskGenerator.generateCarePlan(it, subject, bundle) }.onFailure {
+    questionnaireConfig.planDefinitions.forEach {
+      val plan = fhirEngine.get<PlanDefinition>(it)
+      kotlin.runCatching { fhirTaskGenerator.generateCarePlan(plan, subject, bundle) }.onFailure {
         Timber.e(it)
+        extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
       }
     }
   }

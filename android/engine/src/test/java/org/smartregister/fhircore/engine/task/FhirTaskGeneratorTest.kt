@@ -34,6 +34,8 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Resource
@@ -90,7 +92,7 @@ class FhirTaskGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun testGenerateCarePlan() = runTest {
+  fun testGenerateCarePlanForPatient() = runTest {
     val plandefinition =
       "plans/child-routine-visit/plandefinition.json"
         .readFile()
@@ -168,6 +170,73 @@ class FhirTaskGeneratorTest : RobolectricTest() {
         Assert.assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
         // Assert.assertEquals("01-Apr-2022", task1.executionPeriod.start.makeItReadable())
         // Assert.assertEquals("30-Apr-2022", task1.executionPeriod.end.makeItReadable())
+      }
+  }
+
+  @Test
+  fun testGenerateCarePlanForGroup() = runTest {
+    val plandefinition =
+      "plans/household-routine-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val group =
+      "plans/household-routine-visit/sample/group.json".readFile().decodeResourceFromString<Group>()
+
+    val structureMapScript = "plans/household-routine-visit/structure-map.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "HHRoutineCarePlan").also {
+        // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
+        //  so use only months and that would have the unit replaced with 'months'
+        println(it.encodeResourceToString().replace("''", "'month'"))
+      }
+
+    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
+
+    fhirTaskGenerator.generateCarePlan(
+        plandefinition,
+        group,
+        Bundle()
+          .addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
+            }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        Assert.assertEquals("HH Routine visit Plan", carePlan.title)
+        Assert.assertEquals("sample plan", carePlan.description)
+        Assert.assertEquals(group.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertNotNull(carePlan.period.start)
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+
+        val resourcesSlot = mutableListOf<Resource>()
+
+        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.isNotEmpty()) }
+          .all { task ->
+            task.status == Task.TaskStatus.REQUESTED &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
+          }
+
+        val task1 = resourcesSlot[1] as Task
+        Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
       }
   }
 }
