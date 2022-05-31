@@ -27,6 +27,17 @@
     <string name="add_memeber">ADD MEMBER</string>
     <string name="what_to_do">What do you want to do?</string>
 
+    <string name="compute_bmi">Compute BMI</string>
+    <string name="your_bmi">Your BMI = </string>
+    <string name="re_compute">Re-Compute</string>
+    <string name="bmi_categories_text">\n\n%1$s\n%2$s\n%3$s\n%4$s\n%5$s</string>
+    <string name="bmi_categories_label">BMI Categories : </string>
+    <string name="bmi_category_underweight">Underweight = bmi below 18.5</string>
+    <string name="bmi_category_normal">Normal weight = 18.5 – 24.9</string>
+    <string name="bmi_category_overweight">Overweight = 25 – 29.9</string>
+    <string name="bmi_category_obesity">Obesity = BMI of 30 or greater</string>
+    <string name="bmi_widget">BMI Widget</string>
+
     <!--Overflow menu strings -->
     <string name="view_profile">View profile</string>
     <string name="family_details">Family details</string>

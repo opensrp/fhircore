@@ -39,7 +39,10 @@
     {
       "form": "family-patient_bmi_compute",
       "title": "Compute BMI",
-      "identifier": "1999"
+      "identifier": "1999",
+      "saveButtonText": "COMPUTE BMI",
+      "setPractitionerDetails" : true,
+      "setOrganizationDetails" : true
     },
     {
       "form": "remove-family",

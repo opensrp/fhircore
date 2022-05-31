@@ -15,7 +15,9 @@
 
         android:theme="@style/AppTheme.NoActionBar"
         tools:ignore="UnusedAttribute">
-
+        <activity
+            android:name=".ui.patient.details.BmiQuestionnaireActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity"
             android:exported="false" />
