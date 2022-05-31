@@ -538,13 +538,13 @@ Use these templates as a base. Just always remember to modify everything that ma
      "classification": "app_feature",
      "appFeatures": [
        {
-         "feature": "PatientManagement",
+         "feature": "HouseholdManagement",
          "active": true,
          "settings": {},
          "target": "CHW",
-         "healthModule": "DEFAULT",
+         "healthModule": "FAMILY",
          "useCases": [
-           "PATIENT_REGISTRATION"
+           "HOUSEHOLD_REGISTRATION"
          ]
        }
      ]
