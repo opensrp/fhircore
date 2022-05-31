@@ -62,7 +62,7 @@ class LibraryEvaluatorTest {
       libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
       helperData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")
       valueSetData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/valueSet.json")
-      testData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/group.json")
+      testData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/patient.json")
       result = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/result.json")
       evaluator = LibraryEvaluator()
     } catch (e: IOException) {
@@ -149,7 +149,7 @@ class LibraryEvaluatorTest {
 
     val dataBundle =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/group.json")
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json")
       ) as
         Bundle
 
