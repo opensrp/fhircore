@@ -705,11 +705,19 @@ You can simply add the configs by opening these links below then go to the CRUD 
 * For Binary: https://fhir.labs.smartregister.org/resource?serverId=global&pretty=true&_summary=&resource=Binary
 * For Composition: https://fhir.labs.smartregister.org/resource?serverId=global&pretty=true&_summary=&resource=Composition
    
+## Adding Configs to the Local
 
+Having local configs is useful in a situation that you don't want to rely on the server configs or when you want to test out configs without the worry of of messing the server configs which may blocks someone work.
 
-TODO
+Steps to add local configs:
 
-How to properly add those configs to local and use them with /debug suffix.
+1. Create a Directory under `android/quest/src/main/assets/configs/[APP_ID]`
+2. Under that newly created Directory, create `json` files with the format of `config_[CLASSIFICATION]`
 
+Here's an example of the file structure and naming:
 
+<img width="305" alt="Screen Shot 2022-05-31 at 16 08 42" src="https://user-images.githubusercontent.com/62053304/171137504-0742f5b6-4602-4222-be4f-47367a25f9d5.png">
 
+To use that local configs, you just need to add `/debug` suffix when you input the appId in the AppSettingActivity.
+
+<img src="https://user-images.githubusercontent.com/62053304/171139363-956a55fb-9e7f-494f-8081-5c9a2e418eb1.png" width="256">
