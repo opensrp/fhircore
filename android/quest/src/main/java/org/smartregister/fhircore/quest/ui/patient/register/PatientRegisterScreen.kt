@@ -138,7 +138,9 @@ fun PatientRegisterScreen(
             }
           )
           // TODO activate this button action via config; now only activated for family register
-          if (appFeatureName.equals(AppFeature.HouseholdManagement.name, true)) {
+          if (appFeatureName.equals(AppFeature.HouseholdManagement.name, true) ||
+              patientRegisterViewModel.isRegisterFormViaSettingExists()
+          ) {
             Button(
               modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
               onClick = {

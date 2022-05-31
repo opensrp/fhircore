@@ -14,7 +14,7 @@
   },
   "identifier": {
     "use": "official",
-    "value": "ecbis-saa"
+    "value": "anc"
   },
   "title": "Device configurations",
   "confidentiality": "L",

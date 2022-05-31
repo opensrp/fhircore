@@ -72,7 +72,7 @@ constructor(
       is FamilyProfileEvent.AddMember ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
-          clientIdentifier = event.familyId
+          groupIdentifier = event.familyId
         )
       is FamilyProfileEvent.OpenMemberProfile -> {
         val urlParams =

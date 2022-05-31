@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
+import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -47,6 +48,7 @@ import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceSt
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
+import org.smartregister.fhircore.quest.util.REGISTER_FORM_ID_KEY
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
@@ -55,7 +57,8 @@ class PatientRegisterViewModel
 constructor(
   val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val registerViewDataMapper: RegisterViewDataMapper
+  val registerViewDataMapper: RegisterViewDataMapper,
+  val appFeatureManager: AppFeatureManager
 ) : ViewModel() {
 
   private val _currentPage = MutableLiveData(0)
@@ -168,5 +171,9 @@ constructor(
             it.logicalId.contentEquals(event.searchText, ignoreCase = true)
         }
       }
+  }
+
+  fun isRegisterFormViaSettingExists(): Boolean {
+    return appFeatureManager.appFeatureHasSetting(REGISTER_FORM_ID_KEY)
   }
 }
