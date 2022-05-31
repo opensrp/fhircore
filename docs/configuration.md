@@ -707,7 +707,7 @@ You can simply add the configs by opening these links below then go to the CRUD 
    
 ## Adding Configs to the Local
 
-Having local configs is useful in a situation that you don't want to rely on the server configs or when you want to test out configs without the worry of of messing the server configs which may block the other developer's work.
+Having local configs is useful in a situation that you don't want to rely on the server configs or when you want to test out configs without the worry of of messing the server configs which may block other engineer's work.
 
 Steps to add local configs:
 
