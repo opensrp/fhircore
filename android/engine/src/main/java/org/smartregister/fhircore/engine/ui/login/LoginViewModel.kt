@@ -188,6 +188,9 @@ constructor(
           _navigateToHome.postValue(true)
         }
       }
+    } else {
+      _showProgressBar.postValue(false)
+      _navigateToHome.postValue(true)
     }
   }
 
@@ -227,7 +230,7 @@ constructor(
     val bundle = future?.result ?: bundleOf()
     bundle.getString(AccountManager.KEY_AUTHTOKEN)?.run {
       if (this.isNotEmpty() && accountAuthenticator.tokenManagerService.isTokenActive(this)) {
-        _navigateToHome.value = true
+        _navigateToHome.postValue(true)
       }
     }
   }

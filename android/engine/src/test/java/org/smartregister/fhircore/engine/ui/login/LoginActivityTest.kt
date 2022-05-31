@@ -79,6 +79,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 
     coEvery { accountAuthenticator.hasActivePin() } returns false
+    coEvery { accountAuthenticator.hasActiveSession() } returns false
 
     loginViewModel =
       LoginViewModel(

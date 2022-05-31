@@ -139,8 +139,7 @@ constructor(
     }
   }
 
-  fun onMenuLoginClicked(sharedPreferencesKey: String) {
-    sharedPreferences.write(sharedPreferencesKey, true)
+  fun onMenuLoginClicked() {
     _navigateToLogin.value = true
   }
 
