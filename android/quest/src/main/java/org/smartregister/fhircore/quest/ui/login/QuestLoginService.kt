@@ -55,7 +55,7 @@ constructor(
     // Initialize P2P after login only when username is provided
     val username = secureSharedPreference.retrieveSessionUsername()
     if (!username.isNullOrEmpty()) {
-      P2PLibrary()
+      P2PLibrary
         .init(
           P2PLibrary.Options(
             context = loginActivity.applicationContext,
