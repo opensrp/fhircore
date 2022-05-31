@@ -41,7 +41,6 @@ class ConfigServiceTest : RobolectricTest() {
 
     val resourceTypes =
       arrayOf(
-          ResourceType.Binary,
           ResourceType.Library,
           ResourceType.StructureMap,
           ResourceType.MedicationRequest,

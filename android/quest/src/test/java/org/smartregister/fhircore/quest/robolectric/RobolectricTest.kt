@@ -22,6 +22,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
@@ -97,10 +98,10 @@ abstract class RobolectricTest {
     content
       .replace("#TODAY", Date().asYyyyMmDd())
       .replace("#NOW", DateTimeType.now().valueAsString)
-      .let { FhirContext.forR4Cached().newJsonParser().parseResource(it) }
+      .let { FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().parseResource(it) }
 
   fun IBaseResource.convertToString(trimTime: Boolean) =
-    FhirContext.forR4Cached().newJsonParser().encodeResourceToString(this).let {
+    FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(this).let {
       // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
       if (trimTime) it.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
       else it
@@ -136,7 +137,7 @@ abstract class RobolectricTest {
   ): Bundle {
     val map = scu.parse(structureMapJson, sourceGroup)
 
-    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
     println(iParser.encodeResourceToString(map))
 
@@ -169,8 +170,8 @@ abstract class RobolectricTest {
         "resources" +
         File.separator)
 
-    fun String.readFile(): String {
-      val file = File("$ASSET_BASE_PATH/$this")
+    fun String.readFile(systemPath: String = ASSET_BASE_PATH): String {
+      val file = File("$systemPath/$this")
       val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
       return String(charArray)
     }

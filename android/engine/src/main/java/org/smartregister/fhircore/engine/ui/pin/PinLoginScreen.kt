@@ -49,10 +49,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +60,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.components.PinView
@@ -70,7 +68,6 @@ import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.engine.util.extension.getDrawable
 
 const val PIN_TOOLBAR_MENU = "toolbarMenuTag"
 const val PIN_TOOLBAR_MENU_BUTTON = "toolbarMenuButtonTag"
@@ -94,7 +91,6 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     onMenuLoginClicked = { viewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
     forgotPin = viewModel::forgotPin,
     appName = viewModel.appName,
-    appLogoResFile = viewModel.appLogoResFile
   )
 }
 
@@ -108,7 +104,6 @@ fun PinLoginPage(
   enterUserPinMessage: String = "",
   forgotPin: () -> Unit,
   appName: String = "",
-  appLogoResFile: String
 ) {
 
   var showMenu by remember { mutableStateOf(false) }
@@ -158,7 +153,7 @@ fun PinLoginPage(
           .wrapContentWidth(Alignment.CenterHorizontally)
     ) {
       Image(
-        bitmap = LocalContext.current.getDrawable(appLogoResFile).toBitmap().asImageBitmap(),
+        painter = painterResource(id = R.drawable.ic_app_logo),
         contentDescription = stringResource(id = R.string.app_logo),
         modifier =
           modifier
@@ -166,7 +161,7 @@ fun PinLoginPage(
             .align(Alignment.CenterHorizontally)
             .requiredHeight(120.dp)
             .requiredWidth(140.dp)
-            .testTag(APP_LOGO_TAG),
+            .testTag(APP_LOGO_TAG)
       )
       Text(
         text = appName,
@@ -266,8 +261,7 @@ fun PinLoginPreview() {
     showError = false,
     onMenuLoginClicked = {},
     forgotPin = {},
-    appName = "anc",
-    appLogoResFile = "ic_launcher"
+    appName = "anc"
   )
 }
 
@@ -280,7 +274,6 @@ fun PinLoginErrorPreview() {
     showError = true,
     onMenuLoginClicked = {},
     forgotPin = {},
-    appName = "ecbis",
-    appLogoResFile = "ic_launcher"
+    appName = "ecbis"
   )
 }

@@ -88,4 +88,19 @@ class FhirResourceDataSourceTest {
       )
     }
   }
+
+  @Test
+  fun testSearchResourceShouldReturnBundle() {
+    coroutineTestRule.runBlockingTest {
+      val bundle = Bundle()
+      coEvery { resourceService.searchResource(any(), any()) } returns bundle
+      Assert.assertEquals(
+        bundle,
+        fhirResourceDataSource.search(
+          ResourceType.Practitioner.name,
+          mapOf("identifier" to "19292929")
+        )
+      )
+    }
+  }
 }

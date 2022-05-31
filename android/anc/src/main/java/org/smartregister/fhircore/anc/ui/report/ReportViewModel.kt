@@ -29,6 +29,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -40,6 +41,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Practitioner
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
@@ -48,15 +50,12 @@ import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
-import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 
 @HiltViewModel
@@ -67,7 +66,7 @@ constructor(
   val dispatcher: DispatcherProvider,
   val patientRepository: PatientRepository,
   val fhirEngine: FhirEngine,
-  val fhirOperatorDecorator: FhirOperatorDecorator,
+  val fhirOperator: FhirOperator,
   val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
@@ -102,10 +101,6 @@ constructor(
   private val measureReportDateFormatter =
     SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
 
-  private val authenticatedUserInfo by lazy {
-    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
-  }
-
   private val _dateRange =
     MutableLiveData(
       androidx.core.util.Pair(
@@ -136,13 +131,11 @@ constructor(
     if (selectedPatientItem.value != null) selectedPatientItem else MutableLiveData(null)
 
   fun getReportsTypeList(): Flow<PagingData<ReportItem>> =
-    Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
+    Pager(PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE)) { repository }.flow
 
   fun onPatientItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
     if (listenerIntent is AncRowClickListenerIntent) {
-      when (listenerIntent) {
-        OpenPatientProfile -> updateSelectedPatient(data)
-      }
+      if (listenerIntent == OpenPatientProfile) updateSelectedPatient(data)
     }
   }
 
@@ -194,22 +187,28 @@ constructor(
       withContext(dispatcher.io()) {
         fhirEngine.loadCqlLibraryBundle(
           context = context,
-          fhirOperator = fhirOperatorDecorator,
+          fhirOperator = fhirOperator,
           sharedPreferencesHelper = sharedPreferencesHelper,
           resourcesBundlePath = measureResourceBundleUrl
         )
       }
 
+      val loggedInPractitioner =
+        sharedPreferencesHelper.read<Practitioner>(
+          key = LOGGED_IN_PRACTITIONER,
+          decodeFhirResource = true
+        )
       if (selectedPatientItem.value != null && individualEvaluation) {
         val measureReport =
           withContext(dispatcher.io()) {
-            fhirOperatorDecorator.evaluateMeasure(
-              url = measureUrl,
+            fhirOperator.evaluateMeasure(
+              measureUrl = measureUrl,
               start = startDateFormatted,
               end = endDateFormatted,
               reportType = SUBJECT,
               subject = selectedPatientItem.value!!.patientIdentifier,
-              practitioner = authenticatedUserInfo?.keyclockuuid!!
+              practitioner = loggedInPractitioner?.id,
+              lastReceivedOn = null
             )
           }
 
@@ -225,13 +224,14 @@ constructor(
       } else if (selectedPatientItem.value == null && !individualEvaluation) {
         val measureReport =
           withContext(dispatcher.io()) {
-            fhirOperatorDecorator.evaluateMeasure(
-              url = measureUrl,
+            fhirOperator.evaluateMeasure(
+              measureUrl = measureUrl,
               start = startDateFormatted,
               end = endDateFormatted,
               reportType = POPULATION,
               subject = null,
-              practitioner = authenticatedUserInfo?.keyclockuuid!!
+              practitioner = loggedInPractitioner?.id,
+              lastReceivedOn = null // Non-null value not supported yet
             )
           }
 
@@ -274,7 +274,7 @@ constructor(
     return this.population.find { it.hasId() && it.id.equals(id, ignoreCase = true) }
   }
 
-  fun String.replaceDashes() = this.replace("-", " ").uppercase(Locale.getDefault())
+  private fun String.replaceDashes() = this.replace("-", " ").uppercase(Locale.getDefault())
 
   fun onReportTypeSelected(reportType: String, launchPatientList: Boolean = false) {
     this.currentReportType.value = reportType

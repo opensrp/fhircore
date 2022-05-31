@@ -59,7 +59,7 @@ class CustomPhotoCaptureFactory(
   lateinit var btnTakePhoto: MaterialButton
   lateinit var tvError: TextView
   var context: Context = fragment.requireContext()
-  var cameraLauncher: ActivityResultLauncher<Void>
+  var cameraLauncher: ActivityResultLauncher<Void?>
   var answers: MutableList<QuestionnaireResponseItemAnswerComponent> = mutableListOf()
   lateinit var onAnswerChanged: () -> Unit
 
@@ -67,7 +67,7 @@ class CustomPhotoCaptureFactory(
     cameraLauncher = registerCameraLauncher()
   }
 
-  internal fun registerCameraLauncher(): ActivityResultLauncher<Void> {
+  internal fun registerCameraLauncher(): ActivityResultLauncher<Void?> {
     return fragment.registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap
       ->
       if (bitmap != null) {

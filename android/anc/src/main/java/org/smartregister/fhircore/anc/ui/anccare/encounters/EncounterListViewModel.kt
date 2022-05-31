@@ -26,7 +26,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.anc.data.EncounterRepository
 import org.smartregister.fhircore.anc.data.model.EncounterItem
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 
 @HiltViewModel
 class EncounterListViewModel @Inject constructor(val repository: EncounterRepository) :
@@ -35,7 +35,7 @@ class EncounterListViewModel @Inject constructor(val repository: EncounterReposi
   val onBackClick = MutableLiveData(false)
 
   fun getEncounterList(): Flow<PagingData<EncounterItem>> {
-    return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
+    return Pager(PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE)) { repository }.flow
   }
 
   fun onAppBackClick() {

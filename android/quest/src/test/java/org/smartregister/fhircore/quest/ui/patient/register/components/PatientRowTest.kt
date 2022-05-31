@@ -47,7 +47,7 @@ class PatientRowTest : RobolectricTest() {
         name = "John Doe",
         gender = "Male",
         age = "27",
-        address = "Nairobi",
+        displayAddress = "Nairobi",
         additionalData =
           listOf(
             AdditionalData(

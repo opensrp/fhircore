@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data.patient
 
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
@@ -38,8 +39,9 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import org.smartregister.fhircore.engine.configuration.view.asCoding
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
@@ -73,7 +75,7 @@ class PatientRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val domainMapper: PatientItemMapper,
+  override val dataMapper: PatientItemMapper,
   private val dispatcherProvider: DispatcherProvider,
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterRepository<Patient, PatientItem> {
@@ -97,12 +99,12 @@ constructor(
             )
           }
           sort(Patient.NAME, Order.ASCENDING)
-          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+          count = if (loadAll) countAll().toInt() else PaginationConstant.DEFAULT_PAGE_SIZE
+          from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
         }
 
       patients.map {
-        val patientItem = domainMapper.mapToDomainModel(it)
+        val patientItem = dataMapper.transformInputToOutputModel(it)
         patientItem.additionalData =
           loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
         patientItem
@@ -114,7 +116,7 @@ constructor(
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 
   suspend fun fetchDemographics(patientId: String): Patient =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
+    withContext(dispatcherProvider.io()) { fhirEngine.get<Patient>(patientId) }
 
   suspend fun fetchTestResults(
     subjectId: String,
@@ -291,12 +293,10 @@ constructor(
   }
 
   private suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.load(Questionnaire::class.java, questionnaireId)
-    }
+    withContext(dispatcherProvider.io()) { fhirEngine.get(questionnaireId) }
 
   suspend fun loadEncounter(id: String): Encounter =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Encounter::class.java, id) }
+    withContext(dispatcherProvider.io()) { fhirEngine.get(id) }
 
   private suspend fun searchQuestionnaireResponses(
     subjectId: String,
@@ -323,23 +323,12 @@ constructor(
         fhirEngine.search<Questionnaire> {
           filter(
             Questionnaire.CONTEXT,
-            {
-              value =
-                of(
-                  CodeableConcept().apply {
-                    addCoding().apply {
-                      this.code = filter.code
-                      this.system = filter.system
-                    }
-                  }
-                )
-            }
+            { value = of(CodeableConcept().apply { addCoding(filter.valueCoding!!.asCoding()) }) }
           )
         }
 
       result.map {
         QuestionnaireConfig(
-          appId = configurationRegistry.appId,
           form = it.nameElement.getLocalizedText() ?: it.logicalId,
           title = it.titleElement.getLocalizedText()
               ?: it.nameElement.getLocalizedText() ?: it.logicalId,
@@ -350,7 +339,7 @@ constructor(
 
   suspend fun fetchDemographicsWithAdditionalData(patientId: String): PatientItem {
     return withContext(dispatcherProvider.io()) {
-      val patientItem = domainMapper.mapToDomainModel(fetchDemographics(patientId))
+      val patientItem = dataMapper.transformInputToOutputModel(fetchDemographics(patientId))
       patientItem.additionalData =
         loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
       patientItem

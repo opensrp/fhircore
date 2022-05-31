@@ -16,156 +16,28 @@
 
 package org.smartregister.fhircore.engine.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.paging.LoadState
-import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
+import org.smartregister.fhircore.engine.ui.components.register.DEFAULT_MAX_PAGE_COUNT
+import org.smartregister.fhircore.engine.ui.components.register.NoResults
+import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
+import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-const val DEFAULT_MAX_PAGE_COUNT = 20
 const val DEFAULT_MAX_HEIGHT = 0.5f
-const val SEARCH_HEADER_TEXT_TAG = "searchHeaderTestTag"
-const val SEARCH_FOOTER_TAG = "searchFooterTag"
-const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
-const val SEARCH_FOOTER_NEXT_BUTTON_TAG = "searchFooterNextButtonTag"
-const val SEARCH_FOOTER_PAGINATION_TAG = "searchFooterPaginationTag"
-
-@Composable
-fun SearchHeader(resultCount: Int, modifier: Modifier = Modifier) {
-  Text(
-    text = stringResource(id = R.string.search_result, resultCount),
-    color = GreyTextColor,
-    modifier =
-      modifier
-        .testTag(SEARCH_HEADER_TEXT_TAG)
-        .padding(horizontal = 16.dp, vertical = 8.dp)
-        .fillMaxWidth()
-  )
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun SearchHeaderPreview() {
-  SearchHeader(resultCount = 2)
-}
-
-@Composable
-fun SearchFooter(
-  resultCount: Int,
-  currentPage: Int,
-  pageNumbers: Int,
-  previousButtonClickListener: () -> Unit,
-  nextButtonClickListener: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  if (resultCount > 0)
-    Row(modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG)) {
-      Box(
-        modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
-      ) {
-        if (currentPage > 1) {
-          TextButton(
-            onClick = previousButtonClickListener,
-            modifier = modifier.testTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG)
-          ) {
-            Icon(
-              painter = painterResource(id = R.drawable.ic_chevron_left),
-              contentDescription = stringResource(R.string.str_next)
-            )
-            Text(
-              fontSize = 14.sp,
-              color = MaterialTheme.colors.primary,
-              text = stringResource(id = R.string.str_previous),
-            )
-          }
-        }
-      }
-      Text(
-        fontSize = 14.sp,
-        color = GreyTextColor,
-        text = stringResource(id = R.string.str_page_info, currentPage, pageNumbers),
-        modifier =
-          modifier
-            .testTag(SEARCH_FOOTER_PAGINATION_TAG)
-            .padding(4.dp)
-            .align(Alignment.CenterVertically)
-      )
-      Box(
-        modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.End),
-      ) {
-        if (currentPage < pageNumbers) {
-          TextButton(
-            onClick = nextButtonClickListener,
-            modifier = modifier.testTag(SEARCH_FOOTER_NEXT_BUTTON_TAG)
-          ) {
-            Text(
-              fontSize = 14.sp,
-              color = MaterialTheme.colors.primary,
-              text = stringResource(id = R.string.str_next),
-            )
-            Icon(
-              painter = painterResource(id = R.drawable.ic_chevron_right),
-              contentDescription = stringResource(R.string.str_next)
-            )
-          }
-        }
-      }
-    }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun SearchFooterPreviewNoPreviousButton() {
-  SearchFooter(10, 1, DEFAULT_MAX_PAGE_COUNT, {}, {})
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun SearchFooterPreviewNoNextButton() {
-  SearchFooter(10, 20, DEFAULT_MAX_PAGE_COUNT, {}, {})
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
-  SearchFooter(10, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun SearchFooterPreviewWithZeroResults() {
-  SearchFooter(0, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
-}
 
 /**
  * TODO fix issue with ktfmt formatting annotated high order functions. Current workaround below:
@@ -200,7 +72,7 @@ fun PaginatedRegister(
     ) {
       if (showHeader) {
         if (showResultsCount) {
-          SearchHeader(resultCount = resultCount)
+          RegisterHeader(resultCount = resultCount)
         }
       }
       Box(
@@ -221,10 +93,10 @@ fun PaginatedRegister(
     if (showFooter) {
       if (!showResultsCount) {
         Box(modifier = Modifier.constrainAs(searchFooterRef) { bottom.linkTo(parent.bottom) }) {
-          SearchFooter(
+          RegisterFooter(
             resultCount = resultCount,
             currentPage = currentPage,
-            pageNumbers = pagesCount,
+            pagesCount = pagesCount,
             previousButtonClickListener = previousButtonClickListener,
             nextButtonClickListener = nextButtonClickListener
           )
@@ -232,34 +104,6 @@ fun PaginatedRegister(
       }
     }
   }
-}
-
-@Composable
-fun NoResults(modifier: Modifier = Modifier) {
-  Column(
-    verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    Text(
-      fontWeight = FontWeight.Bold,
-      text = stringResource(R.string.no_results),
-      modifier = modifier.padding(8.dp),
-      textAlign = TextAlign.Center
-    )
-    Text(
-      color = GreyTextColor,
-      text = stringResource(id = R.string.no_results_message),
-      modifier = modifier.padding(8.dp),
-      textAlign = TextAlign.Center
-    )
-  }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun NoResultsPreview() {
-  NoResults(modifier = Modifier)
 }
 
 @Composable

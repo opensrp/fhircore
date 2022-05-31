@@ -66,19 +66,19 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
-  @BindValue
-  val questionnaireViewModel: QuestionnaireViewModel =
-    spyk(QuestionnaireViewModel(mockk(), mockk(), mockk(), mockk(), mockk(), mockk(), mockk()))
+  @BindValue lateinit var questionnaireViewModel: QuestionnaireViewModel
 
-  @BindValue
-  val configurationRegistry: ConfigurationRegistry =
-    spyk(ConfigurationRegistry(mockk(), mockk(), mockk()))
+  @BindValue lateinit var configurationRegistry: ConfigurationRegistry
 
   private lateinit var familyQuestionnaireActivity: FamilyQuestionnaireActivity
   private val patientId = "123"
 
   @Before
   fun setUp() {
+    questionnaireViewModel =
+      spyk(QuestionnaireViewModel(mockk(), mockk(), mockk(), mockk(), mockk(), mockk(), mockk()))
+    configurationRegistry = spyk(ConfigurationRegistry(mockk(), mockk(), mockk()))
+
     hiltRule.inject()
 
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs

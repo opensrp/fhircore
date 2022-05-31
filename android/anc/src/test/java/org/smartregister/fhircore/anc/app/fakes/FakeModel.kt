@@ -193,7 +193,7 @@ object FakeModel {
       UserInfo().apply {
         questionnairePublisher = "ab"
         organization = "1111"
-        keyclockuuid = "123"
+        keycloakUuid = "123"
       }
     return userInfo
   }

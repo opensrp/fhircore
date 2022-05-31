@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.appsetting
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +25,7 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -38,25 +40,24 @@ constructor(
 ) : ViewModel() {
 
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
+
   val fetchConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   private val _appId = MutableLiveData("")
   val appId
     get() = _appId
 
-  val rememberApp: MutableLiveData<Boolean?> = MutableLiveData(null)
+  private val _showProgressBar = MutableLiveData(false)
+  val showProgressBar
+    get() = _showProgressBar
+
+  private val _error = MutableLiveData("")
+  val error: LiveData<String>
+    get() = _error
 
   fun onApplicationIdChanged(appId: String) {
     _appId.value = appId
   }
-
-  fun onRememberAppChecked(rememberMe: Boolean) {
-    rememberApp.postValue(rememberMe)
-  }
-
-  private val _error = MutableLiveData("")
-  val error
-    get() = _error
 
   fun loadConfigurations(loadConfigs: Boolean) {
     this.loadConfigs.postValue(loadConfigs)
@@ -69,12 +70,16 @@ constructor(
   suspend fun fetchConfigurations(appId: String, context: Context) {
     kotlin
       .runCatching {
+        Timber.i("Fetching configs for app $appId")
+
+        this._showProgressBar.postValue(true)
         val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
         val data =
           fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
             if (!it.hasResource()) {
-              Timber.w("Empty data on path $cPath")
-              error.postValue(context.getString(R.string.application_not_supported, appId))
+              Timber.w("No response for composition resource on path $cPath")
+              _showProgressBar.postValue(false)
+              _error.postValue(context.getString(R.string.application_not_supported, appId))
               return
             }
           }
@@ -83,18 +88,27 @@ constructor(
         defaultRepository.save(composition)
 
         composition.section.groupBy { it.focus.reference.split("/")[0] }.entries.forEach {
-          val ids = it.value.map { it.focus.extractId() }.joinToString(",")
-          val rPath = it.key + "?${Composition.SP_RES_ID}=$ids"
+          entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+          val ids = entry.value.joinToString(",") { it.focus.extractId() }
+          val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
           fhirResourceDataSource.loadData(rPath).entry.forEach {
             defaultRepository.save(it.resource)
           }
         }
 
         loadConfigurations(true)
+        _showProgressBar.postValue(false)
       }
       .onFailure {
         Timber.w(it)
-        error.postValue("${it.message}")
+        _showProgressBar.postValue(false)
+        _error.postValue("${it.message}")
       }
+  }
+
+  fun hasDebugSuffix(): Boolean? {
+    return if (!appId.value.isNullOrBlank())
+      appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
+    else null
   }
 }

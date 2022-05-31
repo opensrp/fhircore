@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -59,8 +60,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -73,7 +72,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
@@ -83,7 +81,6 @@ import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.engine.util.extension.getDrawable
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
 const val USERNAME_FIELD_TAG = "usernameFieldTag"
@@ -101,7 +98,7 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
   )
   val username by loginViewModel.username.observeAsState("")
   val password by loginViewModel.password.observeAsState("")
-  val loginError by loginViewModel.loginError.observeAsState("")
+  val loginErrorState by loginViewModel.loginErrorState.observeAsState(null)
   val showProgressBar by loginViewModel.showProgressBar.observeAsState(false)
 
   LoginPage(
@@ -112,9 +109,8 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
     onPasswordChanged = { loginViewModel.onPasswordUpdated(it) },
     forgotPassword = { loginViewModel.forgotPassword() },
     onLoginButtonClicked = { loginViewModel.attemptRemoteLogin() },
-    loginError = loginError,
+    loginErrorState = loginErrorState,
     showProgressBar = showProgressBar,
-    appLogoResFile = loginViewModel.appLogoResourceFile
   )
 }
 
@@ -128,15 +124,14 @@ fun LoginPage(
   forgotPassword: () -> Unit,
   onLoginButtonClicked: () -> Unit,
   modifier: Modifier = Modifier,
-  loginError: String = "",
+  loginErrorState: LoginErrorState? = null,
   showProgressBar: Boolean = false,
-  appLogoResFile: String = ""
 ) {
   var showPassword by remember { mutableStateOf(false) }
   val backgroundColor = if (viewConfiguration.darkMode) LoginBackgroundColor else Color.White
   val contentColor = if (viewConfiguration.darkMode) Color.White else LoginDarkColor
   val textFieldBackgroundColor =
-    if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.Transparent
+    if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.Unspecified
   val forgotPasswordColor = if (viewConfiguration.darkMode) Color.White else LoginButtonColor
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
 
@@ -155,15 +150,16 @@ fun LoginPage(
       )
     }
     Column(
-      modifier = modifier.padding(horizontal = 16.dp).fillMaxHeight(),
-      verticalArrangement = Arrangement.SpaceBetween
+      modifier =
+        modifier.padding(horizontal = 16.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
+      verticalArrangement = Arrangement.SpaceBetween,
     ) {
       Spacer(modifier = modifier.height(20.dp))
       Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
         // TODO Add configurable logo. Images to be downloaded from server
         if (viewConfiguration.showLogo) {
           Image(
-            bitmap = LocalContext.current.getDrawable(appLogoResFile).toBitmap().asImageBitmap(),
+            painter = painterResource(R.drawable.ic_app_logo),
             contentDescription = stringResource(id = R.string.app_logo),
             modifier =
               modifier
@@ -185,14 +181,14 @@ fun LoginPage(
               .align(Alignment.CenterHorizontally)
               .testTag(APP_NAME_TEXT_TAG)
         )
-        Spacer(modifier = modifier.height(60.dp))
+        Spacer(modifier = modifier.height(40.dp))
         Text(
           text = stringResource(R.string.username),
           color = contentColor,
           modifier = modifier.padding(vertical = 8.dp)
         )
         OutlinedTextField(
-          colors = TextFieldDefaults.textFieldColors(textColor = contentColor),
+          colors = TextFieldDefaults.outlinedTextFieldColors(textColor = contentColor),
           value = username,
           onValueChange = onUsernameChanged,
           maxLines = 1,
@@ -228,7 +224,7 @@ fun LoginPage(
         }
         OutlinedTextField(
           value = password,
-          colors = TextFieldDefaults.textFieldColors(textColor = contentColor),
+          colors = TextFieldDefaults.outlinedTextFieldColors(textColor = contentColor),
           onValueChange = onPasswordChanged,
           maxLines = 1,
           singleLine = true,
@@ -255,20 +251,31 @@ fun LoginPage(
           }
         )
         Spacer(modifier = modifier.height(10.dp))
-        if (loginError.isNotEmpty()) {
-          Text(
-            fontSize = 14.sp,
-            color = MaterialTheme.colors.error,
-            text = stringResource(id = R.string.login_error, loginError),
-            modifier =
-              modifier
-                .wrapContentWidth()
-                .padding(0.dp)
-                .align(Alignment.Start)
-                .testTag(LOGIN_ERROR_TEXT_TAG)
-          )
-        }
-        Spacer(modifier = modifier.height(40.dp))
+        Text(
+          fontSize = 14.sp,
+          color = MaterialTheme.colors.error,
+          text =
+            when (loginErrorState) {
+              LoginErrorState.UNKNOWN_HOST ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.login_call_fail_error_message)
+                )
+              LoginErrorState.INVALID_CREDENTIALS ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.invalid_login_credentials)
+                )
+              null -> ""
+            },
+          modifier =
+            modifier
+              .wrapContentWidth()
+              .padding(0.dp)
+              .align(Alignment.Start)
+              .testTag(LOGIN_ERROR_TEXT_TAG)
+        )
+        Spacer(modifier = modifier.height(30.dp))
         Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
           Button(
             enabled = !showProgressBar && username.isNotEmpty() && password.isNotEmpty(),
@@ -377,8 +384,7 @@ fun LoginScreenPreview() {
     password = "",
     onPasswordChanged = {},
     forgotPassword = {},
-    onLoginButtonClicked = {},
-    appLogoResFile = "ic_launcher"
+    onLoginButtonClicked = {}
   )
 }
 
@@ -387,17 +393,12 @@ fun LoginScreenPreview() {
 @Composable
 fun LoginScreenPreviewDarkMode() {
   LoginPage(
-    viewConfiguration =
-      loginViewConfigurationOf().apply {
-        darkMode = true
-        showLogo = true
-      },
+    viewConfiguration = loginViewConfigurationOf(darkMode = true, showLogo = true),
     username = "",
     onUsernameChanged = {},
     password = "",
     onPasswordChanged = {},
     forgotPassword = {},
-    onLoginButtonClicked = {},
-    appLogoResFile = "ic_launcher"
+    onLoginButtonClicked = {}
   )
 }

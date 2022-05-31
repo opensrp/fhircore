@@ -31,8 +31,8 @@ import org.smartregister.fhircore.engine.util.FileUtil
 @Singleton
 class CqlLibraryHelper @Inject constructor(@ApplicationContext private val context: Context) {
 
-  private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
-  private val parser = fhirContext.newJsonParser()
+  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
   private var libraryMeasure: SoftReference<IBaseBundle> = SoftReference(null)
 
   fun loadMeasureEvaluateLibrary(

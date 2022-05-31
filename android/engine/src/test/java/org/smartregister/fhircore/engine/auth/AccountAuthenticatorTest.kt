@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -415,7 +416,9 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val startedIntent: Intent =
       shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>()).nextStartedActivity
     val shadowIntent: ShadowIntent = shadowOf(startedIntent)
-    Assert.assertEquals(LoginActivity::class.java, shadowIntent.intentClass)
+
+    // User will be prompted with AppSettings screen to provide appId to redownload config
+    Assert.assertEquals(AppSettingActivity::class.java, shadowIntent.intentClass)
 
     verify { oAuthService.logout(any(), any(), any()) }
   }

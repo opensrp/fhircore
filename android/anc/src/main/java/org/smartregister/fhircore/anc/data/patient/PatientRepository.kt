@@ -19,9 +19,9 @@ package org.smartregister.fhircore.anc.data.patient
 import android.content.Context
 import androidx.annotation.StringRes
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.count
-import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
@@ -57,8 +57,8 @@ import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -84,7 +84,7 @@ class PatientRepository
 constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: AncItemMapper,
+  override val dataMapper: AncItemMapper,
   val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Anc, PatientItem> {
 
@@ -105,28 +105,26 @@ constructor(
             filterBy(registerConfig.primaryFilter!!)
             registerConfig.secondaryFilter?.let { filterBy(it) }
 
-            count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-            from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+            count = if (loadAll) countAll().toInt() else PaginationConstant.DEFAULT_PAGE_SIZE
+            from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
           }
           .distinctBy { it.subject.extractId() }
 
       val patients =
         pregnancies
-          .map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }
+          .map { fhirEngine.get<Patient>(it.subject.extractId()) }
           .filter { it.active }
           .sortedBy { it.nameFirstRep.family }
 
       patients.map {
         val head =
           kotlin
-            .runCatching {
-              fhirEngine.load(Patient::class.java, it.link[0].id.replace("Patient/", ""))
-            }
+            .runCatching { fhirEngine.get<Patient>(it.link[0].id.replace("Patient/", "")) }
             .getOrNull()
 
         val carePlans = searchCarePlan(it.logicalId)
         val conditions = searchCondition(it.logicalId)
-        domainMapper.mapToDomainModel(Anc(it, head, conditions, carePlans))
+        dataMapper.transformInputToOutputModel(Anc(it, head, conditions, carePlans))
       }
     }
   }
@@ -170,7 +168,7 @@ constructor(
         it.status = CarePlan.CarePlanStatus.REVOKED
         it.period.end = Date()
 
-        fhirEngine.save(it)
+        fhirEngine.create(it)
       }
     }
   }
@@ -188,7 +186,7 @@ constructor(
         it.status = Flag.FlagStatus.INACTIVE
         it.period.end = Date()
 
-        fhirEngine.save(it)
+        fhirEngine.create(it)
       }
   }
 
@@ -202,7 +200,7 @@ constructor(
         it.clinicalStatus.codingFirstRep.code = "inactive"
         it.abatement = DateTimeType(Date())
 
-        fhirEngine.save(it)
+        fhirEngine.create(it)
       }
   }
 
@@ -218,14 +216,11 @@ constructor(
     var ancPatientDetailItem = PatientDetailItem()
     if (patientId.isNotEmpty())
       withContext(dispatcherProvider.io()) {
-        val patient = fhirEngine.load(Patient::class.java, patientId)
+        val patient = fhirEngine.get<Patient>(patientId)
         var ancPatientItemHead = PatientItem()
         if (patient.link.isNotEmpty()) {
           val patientHead =
-            fhirEngine.load(
-              Patient::class.java,
-              patient.linkFirstRep.other.reference.replace("Patient/", "")
-            )
+            fhirEngine.get<Patient>(patient.linkFirstRep.other.reference.replace("Patient/", ""))
 
           ancPatientItemHead =
             PatientItem(
@@ -263,7 +258,9 @@ constructor(
   }
 
   fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> =
-    carePlan.filter { it.due() || it.overdue() }.map { CarePlanItemMapper.mapToDomainModel(it) }
+    carePlan.filter { it.due() || it.overdue() }.map {
+      CarePlanItemMapper.transformInputToOutputModel(it)
+    }
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
@@ -331,7 +328,7 @@ constructor(
 
   suspend fun markDeceased(patientId: String, deathDate: Date) {
     withContext(dispatcherProvider.io()) {
-      val patient = fhirEngine.load(Patient::class.java, patientId)
+      val patient = fhirEngine.get<Patient>(patientId)
 
       if (!patient.active) throw IllegalStateException("Patient already deleted")
 
@@ -342,13 +339,13 @@ constructor(
       revokeCarePlans(patientId)
       revokeActiveStatusData(patientId)
 
-      fhirEngine.save(patient)
+      fhirEngine.create(patient)
     }
   }
 
   suspend fun deletePatient(patientId: String, reason: DeletionReason) {
     withContext(dispatcherProvider.io()) {
-      val patient = fhirEngine.load(Patient::class.java, patientId)
+      val patient = fhirEngine.get<Patient>(patientId)
 
       if (!patient.active) throw IllegalStateException("Patient already deleted")
 
@@ -367,7 +364,7 @@ constructor(
         }
       }
 
-      fhirEngine.save(patient)
+      fhirEngine.create(patient)
     }
   }
 
@@ -389,10 +386,8 @@ constructor(
         withContext(dispatcherProvider.io()) {
           val carePlanId = it.logicalId
           val tasks =
-            fhirEngine.search<Task> {
-              apply { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }.getQuery()
-            }
-          if (!tasks.isNullOrEmpty()) {
+            fhirEngine.search<Task> { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }
+          if (tasks.isNotEmpty()) {
             task = tasks[0]
             listCarePlan.add(
               UpcomingServiceItem(
@@ -412,7 +407,7 @@ constructor(
     val listCarePlan = arrayListOf<EncounterItem>()
     if (encounters.isNotEmpty()) {
       for (i in encounters.indices) {
-        listCarePlan.add(EncounterItemMapper.mapToDomainModel(encounters[i]))
+        listCarePlan.add(EncounterItemMapper.transformInputToOutputModel(encounters[i]))
       }
     }
     return listCarePlan
@@ -459,9 +454,9 @@ constructor(
 
     val bmiEncounterData = buildBmiConfigData(patientId = patientId, recordId = formEncounterId)
     val bmiEncounter = loadConfig(Template.BMI_ENCOUNTER, Encounter::class.java, bmiEncounterData)
-    fhirEngine.save(bmiEncounter)
+    fhirEngine.create(bmiEncounter)
 
-    val bmiWeightObservationRecordId = ResourceType.Observation.generateUniqueId()
+    val bmiWeightObservationRecordId = generateUniqueId()
     val bmiWeightObservationData =
       buildBmiConfigData(
         patientId = patientId,
@@ -473,9 +468,9 @@ constructor(
       )
     val bmiWeightObservation =
       loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
-    fhirEngine.save(bmiWeightObservation)
+    fhirEngine.create(bmiWeightObservation)
 
-    val bmiHeightObservationRecordId = ResourceType.Observation.generateUniqueId()
+    val bmiHeightObservationRecordId = generateUniqueId()
     val bmiHeightObservationData =
       buildBmiConfigData(
         patientId = patientId,
@@ -487,9 +482,9 @@ constructor(
       )
     val bmiHeightObservation =
       loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
-    fhirEngine.save(bmiHeightObservation)
+    fhirEngine.create(bmiHeightObservation)
 
-    val bmiObservationRecordId = ResourceType.Observation.generateUniqueId()
+    val bmiObservationRecordId = generateUniqueId()
     val bmiObservationData =
       buildBmiConfigData(
         patientId = patientId,
@@ -502,7 +497,7 @@ constructor(
       )
     val bmiObservation =
       loadConfig(Template.BMI_PATIENT_BMI, Observation::class.java, bmiObservationData)
-    fhirEngine.save(bmiObservation)
+    fhirEngine.create(bmiObservation)
     return bmiObservationData.isNotEmpty()
   }
 
@@ -542,7 +537,7 @@ constructor(
   }
 
   fun setAncItemMapperType(ancItemMapperType: AncItemMapper.AncItemMapperType) {
-    domainMapper.setAncItemMapperType(ancItemMapperType)
+    dataMapper.setAncItemMapperType(ancItemMapperType)
   }
 
   companion object {

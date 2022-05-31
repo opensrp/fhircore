@@ -56,7 +56,7 @@ class PatientTaskItemMapperTest : RobolectricTest() {
           }
       )
 
-    val patientTaskItem = mapper.mapToDomainModel(patientTask)
+    val patientTaskItem = mapper.transformInputToOutputModel(patientTask)
     Assert.assertEquals("1", patientTaskItem.id)
     Assert.assertEquals("Name Surname", patientTaskItem.name)
     Assert.assertEquals("M", patientTaskItem.gender)
