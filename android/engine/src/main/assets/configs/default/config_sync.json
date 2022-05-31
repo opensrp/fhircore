@@ -70,7 +70,7 @@
         "name": "_id",
         "code": "_id",
         "base": [
-          "StructureMap"
+          "StructureMap", "PlanDefinition"
         ]
       }
     },

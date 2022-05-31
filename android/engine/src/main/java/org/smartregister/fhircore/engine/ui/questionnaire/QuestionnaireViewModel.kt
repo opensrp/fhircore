@@ -42,7 +42,6 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -57,7 +56,7 @@ import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.task.FhirTaskGenerator
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
@@ -91,7 +90,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator
 ) : ViewModel() {
-  @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
+  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   val extractionProgress = MutableLiveData<Boolean>()
 
@@ -303,12 +302,20 @@ constructor(
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
 
-    questionnaireConfig.planDefinitions.forEach {
-      val plan = fhirEngine.get<PlanDefinition>(it)
-      kotlin.runCatching { fhirTaskGenerator.generateCarePlan(plan, subject, bundle) }.onFailure {
-        Timber.e(it)
-        extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
-      }
+    questionnaireConfig.planDefinitions.forEach { planId ->
+      val data =
+        Bundle().apply {
+          bundle.entry.map { this.addEntry(it) }
+
+          addEntry().resource = questionnaireResponse
+        }
+
+      kotlin
+        .runCatching { fhirCarePlanGenerator.generateCarePlan(planId, subject, data) }
+        .onFailure {
+          Timber.e(it)
+          extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
+        }
     }
   }
 

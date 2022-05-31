@@ -58,13 +58,13 @@ import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
-class FhirTaskGeneratorTest : RobolectricTest() {
+class FhirCarePlanGeneratorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   val fhirEngine: FhirEngine = mockk()
   val now = DateTimeType("2022-03-14") // 3 months ahead patient birthdate in sample
 
-  lateinit var fhirTaskGenerator: FhirTaskGenerator
+  lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   @Inject lateinit var transformSupportServices: TransformSupportServices
 
@@ -76,8 +76,8 @@ class FhirTaskGeneratorTest : RobolectricTest() {
 
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
 
-    fhirTaskGenerator =
-      FhirTaskGenerator(
+    fhirCarePlanGenerator =
+      FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
         transformSupportServices = transformSupportServices
       )
@@ -112,7 +112,7 @@ class FhirTaskGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
 
-    fhirTaskGenerator.generateCarePlan(
+    fhirCarePlanGenerator.generateCarePlan(
         plandefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
@@ -194,7 +194,7 @@ class FhirTaskGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
 
-    fhirTaskGenerator.generateCarePlan(
+    fhirCarePlanGenerator.generateCarePlan(
         plandefinition,
         group,
         Bundle()

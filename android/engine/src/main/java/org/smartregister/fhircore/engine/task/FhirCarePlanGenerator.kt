@@ -37,13 +37,21 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
 @Singleton
-class FhirTaskGenerator
+class FhirCarePlanGenerator
 @Inject
 constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformSupportServices) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
   }
   val fhirPathEngine = FHIRPathEngine(transformSupportServices.simpleWorkerContext)
+
+  suspend fun generateCarePlan(
+    planDefinitionId: String,
+    subject: Resource,
+    data: Bundle? = null
+  ): CarePlan? {
+    return generateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
+  }
 
   suspend fun generateCarePlan(
     planDefinition: PlanDefinition,
