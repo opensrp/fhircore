@@ -711,7 +711,7 @@ Having local configs is useful in a situation that you don't want to rely on the
 
 Steps to add local configs:
 
-1. Create a Directory under `android/quest/src/main/assets/configs/[APP_ID]`
+1. Create a new Directory under `android/quest/src/main/assets/configs/[APP_ID]`
 2. Under that newly created Directory, create `json` files for Composition and Binary configs with this format `config_[CLASSIFICATION].json`
 
 Here's an example of the file structure and naming:
