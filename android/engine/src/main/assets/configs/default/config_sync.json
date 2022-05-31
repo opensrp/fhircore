@@ -101,6 +101,7 @@
           "QuestionnaireResponse",
           "Questionnaire",
           "StructureMap",
+          "PlanDefinition",
           "Library"
         ],
         "type": "token",
