@@ -1,0 +1,42 @@
+{
+  "appId": "default",
+  "classification": "app_feature",
+  "appFeatures": [
+    {
+      "feature": "PatientManagement",
+      "active": true,
+      "settings": {},
+      "target": "CHW",
+      "healthModule": "DEFAULT",
+      "useCases": [
+        "PATIENT_REGISTRATION"
+      ]
+    },
+    {
+      "feature": "PatientManagement",
+      "active": false,
+      "settings": {},
+      "target": "HF",
+      "healthModule": "CHILD",
+      "useCases": [
+        "PATIENT_REGISTRATION",
+        "CHILD_IMMUNIZATION"
+      ]
+    },
+    {
+      "feature": "HouseholdManagement",
+      "active": true,
+      "settings": {
+        "deactivateMembers": "true"
+      },
+      "target": "CHW",
+      "healthModule": "FAMILY",
+      "useCases": [
+        "HOUSEHOLD_REGISTRATION",
+        "REMOVE_HOUSEHOLD",
+        "HOUSEHOLD_VISITS",
+        "REMOVE_HOUSEHOLD_MEMBER"
+      ]
+    }
+  ]
+}
