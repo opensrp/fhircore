@@ -30,3 +30,16 @@ This repository contains the folders
 * **[docs](docs)**: a library of documents describing the FHIR Core solution.
 
 We recommend reviewing the [docs](docs) before setting up the Android Studio Project in the [android](android) folder.
+
+For starter resources on the FHIR specification:
+
+1. Good [Intro to FHIR](https://youtu.be/YbQcJj1GqH0) - By James Agnew of Smile CDR
+1. [FHIR resource list](http://hl7.org/fhir/resourcelist.html)
+
+For starter resources on the Android FHIR SDK and this repo:
+
+1. Google FHIR Demo from Jing - Lead Architect Android FHIR SDK - [Link](https://drive.google.com/file/d/1ORjk3pNOKjGyZlbayAViPy4xkI8p-aFB/view?usp=sharing)
+1. Android FHIR SDK Intro Slide deck - [Link](https://docs.google.com/presentation/d/1oc6EBJAcXsBwyBgtnra61xoM7naBF0aj8WbfrUT7Y2A)
+1. FHIR Core Intro slide deck - [Link](https://docs.google.com/presentation/d/1eFsf9a5dcNqKXlfsEWyNZyoVooIbK3jq6694xarARr8)
+1. General FHIR Modelling for LMIC resource mapping- [Link](https://docs.google.com/drawings/d/1mRESJI_YywQG-YjhBy4zvVik28gBj2n_YscWKZZ_wOc)
+1. List of commonly used [acronyms](https://docs.google.com/document/d/13FG5QLCcNZEaQGX_9IYcIJc_UbbmllrwQwcp3TMG9Tk/edit?usp=sharing)
