@@ -32,6 +32,7 @@ class ApplicationConfigurationTest {
         syncInterval = 15,
         applicationName = "Test App",
         appLogoIconResourceFile = "ic_launcher",
+        patientTypeFilterTagViaMetaCodingSystem = "test-filter-tag",
         count = "100"
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
@@ -40,6 +41,10 @@ class ApplicationConfigurationTest {
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
     Assert.assertEquals("Test App", applicationConfiguration.applicationName)
     Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
+    Assert.assertEquals(
+      "test-filter-tag",
+      applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem
+    )
     Assert.assertEquals("100", applicationConfiguration.count)
   }
 
@@ -54,6 +59,7 @@ class ApplicationConfigurationTest {
         syncInterval = 15,
         applicationName = "Test App",
         appLogoIconResourceFile = "ic_launcher",
+        patientTypeFilterTagViaMetaCodingSystem = "test-filter-tag",
         count = "100"
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
@@ -62,6 +68,10 @@ class ApplicationConfigurationTest {
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
     Assert.assertEquals("Test App", applicationConfiguration.applicationName)
     Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
+    Assert.assertEquals(
+      "test-filter-tag",
+      applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem
+    )
     Assert.assertEquals("100", applicationConfiguration.count)
   }
 }

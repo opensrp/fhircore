@@ -95,6 +95,6 @@ constructor(
     }
   }
 
-  private fun getRegisterDataFilters() =
+  fun getRegisterDataFilters() =
     configurationRegistry.retrieveDataFilterConfiguration(HealthModule.APPOINTMENT.name)
 }

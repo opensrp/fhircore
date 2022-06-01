@@ -74,7 +74,8 @@ internal class HivRegisterDaoTest : RobolectricTest() {
         family = "doe",
         given = "john",
         age = 50,
-        patientType = "exposed-infant"
+        patientType = "exposed-infant",
+        practitionerReference = "practitioner/1234"
       )
 
     coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns testPatient
@@ -129,6 +130,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     Assert.assertEquals("50y", hivProfileData.age)
     Assert.assertEquals("Dist 1 City 1", hivProfileData.address)
     Assert.assertEquals("John Doe", hivProfileData.name)
+    Assert.assertEquals("practitioner/1234", hivProfileData.chwAssigned)
     Assert.assertEquals(PatientType.EXPOSED_INFANT, hivProfileData.patientType)
     Assert.assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
   }

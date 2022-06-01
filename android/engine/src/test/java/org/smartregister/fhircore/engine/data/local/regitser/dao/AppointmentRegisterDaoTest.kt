@@ -91,4 +91,9 @@ internal class AppointmentRegisterDaoTest : RobolectricTest() {
     val count = runBlocking { appointmentRegisterDao.countRegisterData("1234") }
     Assert.assertTrue(count >= 0)
   }
+
+  @Test
+  fun testGetRegisterDataFilters() {
+    Assert.assertNotNull(appointmentRegisterDao.getRegisterDataFilters())
+  }
 }
