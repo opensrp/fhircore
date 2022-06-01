@@ -65,4 +65,28 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val servicesOverdue: Int? = null,
     val familyName: String? = null
   ) : RegisterData(logicalId = logicalId, name = name)
+
+  data class HivRegisterData(
+    override val logicalId: String,
+    override val name: String,
+    val identifier: String? = null,
+    val gender: Enumerations.AdministrativeGender,
+    val age: String,
+    val address: String,
+    val familyName: String? = null,
+    val phoneContacts: List<String>? = null,
+    val chwAssigned: String
+  ) : RegisterData(logicalId = logicalId, name = name)
+
+  data class AppointmentRegisterData(
+    override val logicalId: String,
+    override val name: String,
+    val identifier: String? = null,
+    val gender: Enumerations.AdministrativeGender,
+    val age: String,
+    val address: String,
+    val familyName: String? = null,
+    val phoneContacts: List<String>? = null,
+    val chwAssigned: String
+  ) : RegisterData(logicalId = logicalId, name = name)
 }
