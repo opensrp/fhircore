@@ -8,20 +8,59 @@ This Documentation on CQL is to give some insights on
 
 **What is CQL** 
 
-CQL­ is a Health Level Seven International® (HL7®) authoring language standard that’s intended to be human readable. It is part of the effort to harmonize standards used for electronic clinical quality measures (eCQMs) and clinical decision support (CDS). CQL provides the ability to express logic that is human readable yet structured enough for processing a query electronically. CQL is the expression logic used in Health Quality Measure Format (HQMF) beginning with the eCQMs implemented in calendar year 2019. CQL replaces the logic expressions previously defined in the Quality Data Model (QDM). Beginning with v5.3, QDM includes only the conceptual model for defining the data elements (the data model). Measure authors with access to the Measure Authoring Tool (MAT) can use the tool to author measures using CQL­. Visit the MAT webpage for more information.  
+CQL­ is a Health Level Seven International® (HL7®) authoring language standard that’s intended to be human readable. It is part of the effort to harmonize standards used for electronic clinical quality measures (eCQMs) and clinical decision support (CDS). 
+
+CQL provides the ability to express logic that is human readable yet structured enough for processing a query electronically. CQL is the expression logic used in Health Quality Measure Format (HQMF) beginning with the eCQMs implemented in calendar year 2019. 
+
+CQL replaces the logic expressions previously defined in the Quality Data Model (QDM). Beginning with v5.3, QDM includes only the conceptual model for defining the data elements (the data model). Measure authors with access to the Measure Authoring Tool (MAT) can use the tool to author measures using CQL­. Visit the MAT webpage for more information.  
 
 CQL allows for a more modular, flexible, and robust expression of the logic. It allows logic to be shared between measures and with clinical decision support.
+
+
 
 **How are we using CQL?**
 
 **Use Case 1 : G6PD**
 1. Threshold management 
-2. G6PD Test Device Calibration   
+
+Plasmodium (P.) vivax is the most common species of malaria in countries close to eliminating the disease. The two commercially available drugs that can cure P. vivax are contraindicated for individuals with low levels of an enzyme called glucose-6-phosphate dehydrogenase (G6PD). G6PD deficiency is a genetic condition shared by 400 million people globally. Patients with G6PD deficiency are at risk of severe hemolysis upon exposure to tafenoquine or high primaquine doses required for cure of P. vivax malaria. PATH and our partners have advanced a point-of-care diagnostic device to measure G6PD activity. This test device, known as the STANDARD™ G6PD Test, is manufactured by SD Biosensor (South Korea) and is now commercially available in several malaria-endemic countries. This product could be enhanced through digital connectivity to improve its use and workflow including patient data management, accurate results interpretation, quality control, and patient referral and monitoring. 
+
+We developed a digital solution to successfully transfer and interpret data from the STANDARD G6PD Test device into a digital solution. Successful data transfer and interpretation is defined as user-friendly, accurate, and comprehensive. The digital solution will improve the test’s use and workflow and support clinical case management of malaria. 
+
+We implemented the following workflows for G6PD 
+
+ 1. Manual based input approach : The first workflow entails using a
+    FHIR questionnaire and extracting it to multiple FHIR resources
+    (Patient, Practitioner, Location, Observation, ServiceRequest,
+    Diagnostic report).
+    
+ 2. CQL Workflow : The second workflow supports the full request,
+    evaluation, and response workflow using FHIR standards. This
+    workflow provides native FHIR support on the Android device where
+    available. The FHIR workflow will utilize the ServiceRequest and
+    DiagnosticReport resources, as well as Clinical Quality Language
+    (CQL) evaluation.
+
+The following feature and modules were implemented 
+
+1.  Authentication & Authorization
+2.  Patient Registration
+3.  Patient Search 
+4.  Offline Support 
+5.  Multi-language support 
+
 
 **Additional context**
+
+For patient Diagnosis we used the following table to map the threshold evaluation 
+
 ![456](https://user-images.githubusercontent.com/69383347/149340339-10a723d2-707f-4ef8-b18e-ffc638c21ed7.png)
 
+Post evaluation you get a results page with diagnosis and  Medication regimen recommendation 
+
 <img width="200" height="400" src ="https://user-images.githubusercontent.com/4829880/150296890-9ee0ef91-3158-4c90-8b4d-10a83e2f3f1d.jpg"/> <img width="200" height="400" src ="https://user-images.githubusercontent.com/4829880/150296898-cfa97ad8-eee4-4cb2-9552-46f67b9765b2.jpg"/> <img width="200" height="400" src ="https://user-images.githubusercontent.com/4829880/150296901-ebc17aa2-b8d4-4695-88a1-d6ec8e6d7ab9.jpg"/>
+
+
 
 **Sample G6PD Threshold Evaluation CQL**
 
@@ -303,6 +342,46 @@ MedicationRequest Output from above CQL evaluation
 }
 ````
 
+2. G6PD Test Device Calibration   
+
+**Sample G6PD RDT Calibration (Control mode) CQL** 
+
+In the second use case, as  a G6PD app user, I would like to check if the device is properly calibrated  in either Control Mode 1 or Control Mode 2
+
+
+First we added  both UI/UX for control mode user journey and leverage current CQL evaluation that can allow us to reuse the current CQL implementation for G6PD evaluation. 
+
+We then added a Questionnaire for test calibration that is independent of the Patient/Clinical workflow.
+
+**Control mode  table** 
+<img width="634" alt="Screen Shot 2022-01-13 at 10 19 06 PM" src="https://user-images.githubusercontent.com/4540684/149395158-22a99428-dd1c-4904-a0f2-dd12ffc93945.png">
+
+**Test Kit in normal mode**
+<img width="260" alt="Screen Shot 2022-01-13 at 10 23 20 PM" src="https://user-images.githubusercontent.com/4540684/149396047-9c0a51c3-ddd5-4e69-9809-2281396ddac6.png">
+
+**Test kit in control mode** 
+<img width="611" alt="Screen Shot 2022-01-13 at 10 25 36 PM" src="https://user-images.githubusercontent.com/4540684/149396063-5b5e8b8d-cf2c-421d-9dfa-e7d3b99a3ae5.png">
+
+More details on testing and control mode can be found here https://www.finddx.org/wp-content/uploads/2020/09/STANDARD-G6PD-test_Training_Bangladesh-FIND-icddr-Menzies_FINAL_26Nov19.pdf 
+
+**User Journey Description**
+
+1. Add a menu item to initiate the control mode test 
+2. Add a Questionnaire to be able to conduct control mode, similar to the Test Questionnaire, an image of control mode and the 2 entry points for G6PD and Haemoglobin level. This should have the following fields 
+        > Chip No
+        > Device Serial number
+        > G6PD level
+        > Haemoglobin level 
+3. Author and load  a CQL Library evaluation for control mode evaluation 
+4. Initiate the control mode evaluation on press submit 
+5. Add a test result page for Control mode level 1 or control mode level 2 
+6. Terminate control mode flow once the user has calibrated the device 
+
+
+
+<img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816294-00760977-20c5-4cfd-83ac-5e2b79b30184.jpg"/> <img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816315-6f7ebaa1-d7cd-445b-8622-54f52d51780a.jpg"/> <img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816323-0afb2558-35a4-47fd-9da5-88cb668f0d14.jpg"/> <img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816328-b2841f26-4560-4613-8fd0-cd1bfe707967.jpg"/>
+
+
 
 **Sample G6PD RDT Calibration (Control mode) CQL** 
 
@@ -375,42 +454,6 @@ define "Conclusion Details": '\nDetails:\n'+ "G6PD Conclusion" + '\n' + "Haemogl
 
 define "OUTPUT": List { "Conclusion" , "Conclusion Details"}
 ````
-
-
-**Name of feature to enhance**
-As a G6PD app user, I would like to check if the device is properly recalibrated  in either Control Mode 1 or Control Mode 2
-
-**Description of feature**
-Add both UI/UX for control mode user journey and leverage current CQL evaluation that can allow us to reuse the current CQL implementation for G6PD evaluation 
-Based on a Quest approach added a Questionnaire for test calibration that is independent of the Patient/Clinical workflow.
-
-**Control mode  table** 
-<img width="634" alt="Screen Shot 2022-01-13 at 10 19 06 PM" src="https://user-images.githubusercontent.com/4540684/149395158-22a99428-dd1c-4904-a0f2-dd12ffc93945.png">
-
-**Test Kit in normal mode**
-<img width="260" alt="Screen Shot 2022-01-13 at 10 23 20 PM" src="https://user-images.githubusercontent.com/4540684/149396047-9c0a51c3-ddd5-4e69-9809-2281396ddac6.png">
-
-**Test kit in control mode** 
-<img width="611" alt="Screen Shot 2022-01-13 at 10 25 36 PM" src="https://user-images.githubusercontent.com/4540684/149396063-5b5e8b8d-cf2c-421d-9dfa-e7d3b99a3ae5.png">
-
-More details on testing and control mode can be found here https://www.finddx.org/wp-content/uploads/2020/09/STANDARD-G6PD-test_Training_Bangladesh-FIND-icddr-Menzies_FINAL_26Nov19.pdf 
-
-**Describe the enhancement**
-
-1. Add a menu item to initiate the control mode test 
-2. Add a Questionnaire to be able to conduct control mode, similar to the Test Questionnaire, an image of control mode and the 2 entry points for G6PD and Haemoglobin level. This should have the following fields 
-> Chip No
-> Device Serial number
-> G6PD level
-> Haemoglobin level 
-3. Author and load  a CQL Library evaluation for control mode evaluation 
-4. Initiate the control mode evaluation on press submit 
-4. Add a test result page for Control mode level 1 or control mode level 2 
-5. Terminate control mode flow once the user has calibrated the device 
-
-
-
-<img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816294-00760977-20c5-4cfd-83ac-5e2b79b30184.jpg"/> <img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816315-6f7ebaa1-d7cd-445b-8622-54f52d51780a.jpg"/> <img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816323-0afb2558-35a4-47fd-9da5-88cb668f0d14.jpg"/> <img width=200 height=400 src="https://user-images.githubusercontent.com/4829880/149816328-b2841f26-4560-4613-8fd0-cd1bfe707967.jpg"/>
 
 
 
@@ -1157,12 +1200,14 @@ define "Age Stratifier":
   ]
 }
 ````
-**NB.**
+
+
+
 
 **Issues Identified when executing CQL**
+
 CQL scripts when run first time take too long to run. Look into libraries or classes it loads first time and move those to Application startup
 
 **Solution**
 
 Pre-load libraries
-
