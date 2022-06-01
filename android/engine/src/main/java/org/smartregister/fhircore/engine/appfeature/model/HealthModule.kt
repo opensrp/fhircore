@@ -23,5 +23,8 @@ enum class HealthModule {
   FAMILY,
   CHILD,
   FAMILY_PLANNING,
+  HIV,
+  TRACING,
+  APPOINTMENT,
   DEFAULT
 }
