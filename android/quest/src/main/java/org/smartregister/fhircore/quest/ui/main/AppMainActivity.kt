@@ -33,7 +33,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.task.FhirTaskGenerator
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BACK_REFERENCE_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -48,7 +48,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
-  @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
+  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   @Inject lateinit var configService: ConfigService
 
@@ -139,7 +139,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         lifecycleScope.launch(Dispatchers.IO) {
           when {
             it.startsWith(ResourceType.Task.name) ->
-              fhirTaskGenerator.completeTask(it.asReference(ResourceType.Task).extractId())
+              fhirCarePlanGenerator.completeTask(it.asReference(ResourceType.Task).extractId())
           }
         }
       }
