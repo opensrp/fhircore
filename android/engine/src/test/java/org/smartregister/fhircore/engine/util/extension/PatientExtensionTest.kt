@@ -446,7 +446,27 @@ class PatientExtensionTest : RobolectricTest() {
         )
       }
 
-    Assert.assertNotNull(patient.extractTypeViaDTreeMeta())
-    Assert.assertEquals(PatientType.EXPOSED_INFANT, patient.extractTypeViaDTreeMeta())
+    Assert.assertNotNull(patient.extractTypeViaMeta("https://d-tree.org"))
+    Assert.assertEquals(
+      PatientType.EXPOSED_INFANT,
+      patient.extractTypeViaMeta("https://d-tree.org")
+    )
+  }
+
+  @Test
+  fun testExtractTypeViaMetaEmptyFilter() {
+    val patient =
+      Patient().apply {
+        meta.addTag(
+          Coding().apply {
+            system = "https://d-tree.org"
+            code = "exposed-infant"
+            display = "Exposed Infant"
+          }
+        )
+      }
+
+    Assert.assertNotNull(patient.extractTypeViaMeta(""))
+    Assert.assertEquals(PatientType.DEFAULT, patient.extractTypeViaMeta(""))
   }
 }

@@ -30,6 +30,7 @@ data class ApplicationConfiguration(
   var scheduleDefaultPlanWorker: Boolean = true,
   var applicationName: String = "",
   var appLogoIconResourceFile: String = "ic_default_logo",
+  var patientTypeFilterTagViaMetaCodingSystem: String = "",
   var count: String = ConfigurationRegistry.DEFAULT_COUNT
 ) : Configuration
 
@@ -42,6 +43,8 @@ data class ApplicationConfiguration(
  * @param syncInterval Sets the periodic sync interval in seconds. Default 30.
  * @param applicationName Sets the application display name
  * @param appLogoIconResourceFile Sets the application logo thumb icon, this must be png file inside
+ * @param patientTypeFilterTagViaMetaCodingSystem sets code in Patient meta, and will use for
+ * filtering patient
  * @param count Sets the application maximum records when downloading resource drawable folder
  */
 fun applicationConfigurationOf(
@@ -53,6 +56,7 @@ fun applicationConfigurationOf(
   scheduleDefaultPlanWorker: Boolean = true,
   applicationName: String = "",
   appLogoIconResourceFile: String = "",
+  patientTypeFilterTagViaMetaCodingSystem: String = "",
   count: String = ConfigurationRegistry.DEFAULT_COUNT
 ): ApplicationConfiguration =
   ApplicationConfiguration(
@@ -64,5 +68,6 @@ fun applicationConfigurationOf(
     scheduleDefaultPlanWorker = scheduleDefaultPlanWorker,
     applicationName = applicationName,
     appLogoIconResourceFile = appLogoIconResourceFile,
+    patientTypeFilterTagViaMetaCodingSystem = patientTypeFilterTagViaMetaCodingSystem,
     count = count
   )

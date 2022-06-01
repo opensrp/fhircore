@@ -214,10 +214,11 @@ fun Patient.extractOfficialIdentifier(): String? =
     this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
   else null
 
-fun Patient.extractTypeViaDTreeMeta(): PatientType {
+fun Patient.extractTypeViaMeta(filterTag: String): PatientType {
   return try {
-    val tagList = this.meta.tag.filter { it.system.equals("https://d-tree.org", true) }
-    if (tagList[0].code.isEmpty()) return PatientType.DEFAULT
+    val tagList = this.meta.tag.filter { it.system.equals(filterTag, true) }
+    if (filterTag.isEmpty() || tagList.isEmpty() || tagList[0].code.isEmpty())
+      return PatientType.DEFAULT
     PatientType.valueOf(tagList[0].code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: "")
   } catch (e: Exception) {
     Timber.e(e)

@@ -26,6 +26,8 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -36,7 +38,7 @@ import org.smartregister.fhircore.engine.util.extension.extractGeneralPractition
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
-import org.smartregister.fhircore.engine.util.extension.extractTypeViaDTreeMeta
+import org.smartregister.fhircore.engine.util.extension.extractTypeViaMeta
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
@@ -74,7 +76,10 @@ constructor(
         familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
         phoneContacts = patient.extractTelecom(),
         chwAssigned = patient.extractGeneralPractitionerReference(),
-        patientType = patient.extractTypeViaDTreeMeta()
+        patientType =
+          patient.extractTypeViaMeta(
+            getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+          )
       )
     }
   }
@@ -91,7 +96,10 @@ constructor(
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
       chwAssigned = patient.generalPractitionerFirstRep,
-      patientType = patient.extractTypeViaDTreeMeta()
+      patientType =
+        patient.extractTypeViaMeta(
+          getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+        )
     )
   }
 
@@ -105,4 +113,8 @@ constructor(
   }
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
+
+  fun getApplicationConfiguration(): ApplicationConfiguration {
+    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+  }
 }

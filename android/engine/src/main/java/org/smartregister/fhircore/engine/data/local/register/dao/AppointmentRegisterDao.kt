@@ -96,5 +96,5 @@ constructor(
   }
 
   private fun getRegisterDataFilters() =
-    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.ANC.name)
+    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.APPOINTMENT.name)
 }
