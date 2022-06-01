@@ -16,7 +16,8 @@
       "identifier": "82953",
       "saveButtonText": "ADD FAMILY MEMBER",
       "setPractitionerDetails" : true,
-      "setOrganizationDetails" : true
+      "setOrganizationDetails" : true,
+      "planDefinitions": ["131372"]
     },
     {
       "form": "non-anc-patient-vital-signs_metric",
