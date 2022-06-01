@@ -78,8 +78,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
   }
 
   @Test
-  fun testMapToDomainModelTracing() {
-    val dto = buildProfileData(HealthModule.TRACING)
+  fun testMapToDomainModelHomeTracing() {
+    val dto = buildProfileData(HealthModule.HOME_TRACING)
     val profileViewDataHiv =
       profileViewDataMapper.transformInputToOutputModel(dto) as
         ProfileViewData.AppointmentProfileViewData
@@ -150,7 +150,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           chwAssigned = Reference("referenceKey"),
           patientType = PatientType.EXPOSED_INFANT
         )
-      HealthModule.TRACING ->
+      HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
         ProfileData.AppointmentProfileData(
           logicalId = "logicalId",
           name = "testName",

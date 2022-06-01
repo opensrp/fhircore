@@ -50,7 +50,7 @@
     <string name="anc_clients">ANC Clients</string>
     <string name="all_clients">All Clients</string>
     <string name="pnc_clients">PNC Clients</string>
-    <string name="hiv_clients">Clients List</string>
+    <string name="hiv_clients">Client List</string>
     <string name="phone_tracing_clients">Phone Tracing</string>
     <string name="home_tracing_clients">Home Tracing</string>
     <string name="appointment_clients">Appointments</string>

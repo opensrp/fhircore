@@ -30,7 +30,8 @@ class HealthModuleTest {
     Assert.assertNotNull(HealthModule.valueOf("CHILD"))
     Assert.assertNotNull(HealthModule.valueOf("FAMILY_PLANNING"))
     Assert.assertNotNull(HealthModule.valueOf("HIV"))
-    Assert.assertNotNull(HealthModule.valueOf("TRACING"))
+    Assert.assertNotNull(HealthModule.valueOf("HOME_TRACING"))
+    Assert.assertNotNull(HealthModule.valueOf("PHONE_TRACING"))
     Assert.assertNotNull(HealthModule.valueOf("APPOINTMENT"))
   }
 }

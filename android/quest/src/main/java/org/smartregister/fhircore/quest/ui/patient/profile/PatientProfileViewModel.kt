@@ -84,7 +84,8 @@ constructor(
 
   fun refreshOverFlowMenu(healthModule: HealthModule, patientProfile: ProfileData) {
     if (healthModule == HealthModule.HIV ||
-        healthModule == HealthModule.TRACING ||
+        healthModule == HealthModule.HOME_TRACING ||
+        healthModule == HealthModule.PHONE_TRACING ||
         healthModule == HealthModule.APPOINTMENT
     ) {
       when ((patientProfile as ProfileData.HivProfileData).patientType) {

@@ -59,8 +59,8 @@ constructor(
             when (it.healthModule) {
               HealthModule.FAMILY -> R.drawable.ic_households
               HealthModule.ANC -> R.drawable.ic_baby_mother
-              HealthModule.HIV -> R.drawable.ic_home_tracings
-              HealthModule.TRACING -> R.drawable.ic_phone_tracings
+              HealthModule.HOME_TRACING -> R.drawable.ic_home_tracings
+              HealthModule.PHONE_TRACING -> R.drawable.ic_phone_tracings
               HealthModule.APPOINTMENT -> R.drawable.ic_appointments
               else -> R.drawable.ic_user
             },
@@ -73,7 +73,8 @@ constructor(
               HealthModule.FAMILY -> R.string.households
               HealthModule.CHILD -> R.string.children
               HealthModule.HIV -> R.string.hiv_clients
-              HealthModule.TRACING -> R.string.phone_tracing_clients
+              HealthModule.HOME_TRACING -> R.string.home_tracing_clients
+              HealthModule.PHONE_TRACING -> R.string.phone_tracing_clients
               HealthModule.APPOINTMENT -> R.string.appointment_clients
               HealthModule.FAMILY_PLANNING -> R.string.family_planning_clients
               else -> 0

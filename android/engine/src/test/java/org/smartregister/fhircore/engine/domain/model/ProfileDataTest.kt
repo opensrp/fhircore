@@ -54,9 +54,9 @@ class ProfileDataTest : RobolectricTest() {
   }
 
   @Test
-  fun testMapToDomainModelTracing() {
+  fun testMapToDomainModelHomeTracing() {
     val tracingProfileDto =
-      buildProfileData(HealthModule.TRACING) as ProfileData.AppointmentProfileData
+      buildProfileData(HealthModule.HOME_TRACING) as ProfileData.AppointmentProfileData
     with(tracingProfileDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -118,7 +118,7 @@ class ProfileDataTest : RobolectricTest() {
           chwAssigned = Reference("referenceKey"),
           patientType = PatientType.EXPOSED_INFANT
         )
-      HealthModule.TRACING ->
+      HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
         ProfileData.AppointmentProfileData(
           logicalId = "logicalId",
           name = "testName",
