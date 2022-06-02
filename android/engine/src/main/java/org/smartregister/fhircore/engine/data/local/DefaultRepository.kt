@@ -33,10 +33,12 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -60,6 +62,13 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
   }
+
+  suspend fun loadResource(reference: Reference) =
+    withContext(dispatcherProvider.io()) {
+      IdType(reference.reference).let {
+        fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
+      }
+    }
 
   suspend fun loadRelatedPersons(patientId: String): List<RelatedPerson>? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadRelatedPersons(patientId) }
