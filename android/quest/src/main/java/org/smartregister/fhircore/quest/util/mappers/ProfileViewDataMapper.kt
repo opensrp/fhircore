@@ -67,6 +67,28 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           address = inputModel.address,
           age = inputModel.age,
           artNumber = inputModel.identifier.toString(),
+          tasks =
+            inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
+              PatientProfileRowItem(
+                id = it.logicalId,
+                actionFormId =
+                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                    it.reasonReference.extractId()
+                  else null,
+                title = it.description,
+                subtitle =
+                  context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
+                profileViewSection = PatientProfileViewSection.TASKS,
+                actionButtonIcon =
+                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+                  else Icons.Filled.Add,
+                actionIconColor =
+                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
+                  else it.status.retrieveColorCode(),
+                actionButtonColor = it.status.retrieveColorCode(),
+                actionButtonText = it.description,
+              )
+            }
         )
       is ProfileData.AppointmentProfileData ->
         ProfileViewData.PatientProfileViewData(

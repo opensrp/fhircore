@@ -149,7 +149,9 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
           chwAssigned = Reference("referenceKey"),
-          patientType = PatientType.EXPOSED_INFANT
+          patientType = PatientType.EXPOSED_INFANT,
+          services = emptyList(),
+          tasks = emptyList()
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
         ProfileData.AppointmentProfileData(

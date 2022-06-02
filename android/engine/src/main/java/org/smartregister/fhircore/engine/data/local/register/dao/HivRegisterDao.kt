@@ -22,8 +22,10 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -99,7 +101,15 @@ constructor(
       patientType =
         patient.extractTypeViaMeta(
           getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
-        )
+        ),
+      tasks =
+        defaultRepository.searchResourceFor<Task>(
+            subjectId = resourceId,
+            subjectParam = Task.SUBJECT
+          )
+          .sortedBy { it.executionPeriod.start.time },
+      services =
+        defaultRepository.searchResourceFor(subjectId = resourceId, subjectParam = CarePlan.SUBJECT)
     )
   }
 

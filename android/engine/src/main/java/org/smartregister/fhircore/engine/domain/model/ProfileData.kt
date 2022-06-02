@@ -82,12 +82,14 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     override val name: String,
     val identifier: String? = null,
     val birthdate: Date,
-    val age: String,
+    val age: String = birthdate.toAgeDisplay(),
     val gender: Enumerations.AdministrativeGender,
     val address: String,
     val phoneContacts: List<ContactPoint> = listOf(),
     val chwAssigned: Reference,
-    val patientType: PatientType
+    val patientType: PatientType,
+    val services: List<CarePlan> = listOf(),
+    val tasks: List<Task> = listOf()
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class AppointmentProfileData(
