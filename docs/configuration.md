@@ -356,7 +356,7 @@ Common attributes:
    ```
 8. `sync`
 
-   Configure the resources that will be synced.
+   Configure the resources that will be synced. It contains a list of SearchParameter that could sync each resource with it's own request parameter or could also be shared with other resources.
    
    | Attributes               | Description                                                          | Type |
    | :----------------------------- | :------------------------------------------------------------------------ | :--- |
@@ -398,14 +398,40 @@ Common attributes:
            "name": "organization",
            "code": "subject.organization",
            "base": [
-             "Encounter","Observation","Condition","CarePlan","QuestionnaireResponse", "Task"
+             "Encounter",
+             "Condition",
+             "CarePlan",
+             "QuestionnaireResponse",
+             "Task"
            ],
            "expression": "#organization"
+         }
+       },
+       {
+         "resource": {
+           "resourceType": "SearchParameter",
+           "name": "organization",
+           "code": "_filter",
+           "base": [
+             "Observation"
+           ],
+           "type": "token",
+           "expression": "patient.organization eq #organization or focus.subject eq Organization/#organization"
          }
        }
      ]
    }
    ```
+   
+   For deeper information about `SearchParameter`, please refer to these FHIR documentations:
+   
+   * List of all `SearchParameter` in FHIR resources: https://hl7.org/fhir/searchparameter-registry.html
+   
+   * FHIR Searching: https://hl7.org/fhir/search.html
+   
+   * Advanced Filtering: https://hl7.org/fhir/search.html#_filter
+   
+   * Parameters chaining: https://hl7.org/fhir/search.html#chaining
    
 ## Default Templates
 
