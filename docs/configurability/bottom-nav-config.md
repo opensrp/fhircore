@@ -1,7 +1,5 @@
 
-# App Configurability
-
-- #### Bottom Navigation Configuration
+#### Bottom Navigation Configuration
   - **Navigation Item**
   - **Action Configuration**
   - **Handle Navigation Action**
