@@ -26,7 +26,7 @@ class PatientTypeTest {
     Assert.assertNotNull(PatientType.valueOf("NEWLY_DIAGNOSED_CLIENT"))
     Assert.assertNotNull(PatientType.valueOf("CLIENT_ALREADY_ON_ART"))
     Assert.assertNotNull(PatientType.valueOf("EXPOSED_INFANT"))
-    Assert.assertNotNull(PatientType.valueOf("COMMUNITY_POSITIVE"))
+    Assert.assertNotNull(PatientType.valueOf("HIV_POSITIVE"))
     Assert.assertNotNull(PatientType.valueOf("CHILD_CONTACT"))
     Assert.assertNotNull(PatientType.valueOf("SEXUAL_CONTACT"))
   }

@@ -39,15 +39,35 @@ class OverflowMenuFactoryTest : RobolectricTest() {
 
   @Test
   fun testRetrieveOverflowMenuItems() {
-    val uiProfileExposedInfant =
-      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.HIV_PROFILE_EXPOSED_INFANT)
-    Assert.assertNotNull(uiProfileExposedInfant)
-    Assert.assertEquals(4, uiProfileExposedInfant.size)
+    val uiProfileNewlyDiagnosed =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE)
+    Assert.assertNotNull(uiProfileNewlyDiagnosed)
+    Assert.assertEquals(6, uiProfileNewlyDiagnosed.size)
 
-    val uiProfileClinicVisit =
-      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.HIV_PROFILE_CLINIC_VISIT)
-    Assert.assertNotNull(uiProfileClinicVisit)
-    Assert.assertEquals(5, uiProfileClinicVisit.size)
+    val uiProfileAlreadyOnART =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.ART_CLIENT_PROFILE)
+    Assert.assertNotNull(uiProfileAlreadyOnART)
+    Assert.assertEquals(6, uiProfileAlreadyOnART.size)
+
+    val uiProfileExposedInfant =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.EXPOSED_INFANT_PROFILE)
+    Assert.assertNotNull(uiProfileExposedInfant)
+    Assert.assertEquals(5, uiProfileExposedInfant.size)
+
+    val uiProfileChildContact =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.CHILD_CONTACT_PROFILE)
+    Assert.assertNotNull(uiProfileChildContact)
+    Assert.assertEquals(4, uiProfileChildContact.size)
+
+    val uiProfileSexualContact =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.SEXUAL_CONTACT_PROFILE)
+    Assert.assertNotNull(uiProfileSexualContact)
+    Assert.assertEquals(3, uiProfileSexualContact.size)
+
+    val uiProfileHivPositive =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.HIV_POSITIVE_PROFILE)
+    Assert.assertNotNull(uiProfileHivPositive)
+    Assert.assertEquals(4, uiProfileHivPositive.size)
 
     val uiProfileFamily =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)

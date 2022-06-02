@@ -82,35 +82,34 @@ constructor(
     }
   }
 
+  fun getOverflowMenuHostByPatientType(patientType: PatientType): OverflowMenuHost {
+    return when (patientType) {
+      PatientType.NEWLY_DIAGNOSED_CLIENT -> OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE
+      PatientType.CLIENT_ALREADY_ON_ART -> OverflowMenuHost.ART_CLIENT_PROFILE
+      PatientType.EXPOSED_INFANT -> OverflowMenuHost.EXPOSED_INFANT_PROFILE
+      PatientType.HIV_POSITIVE -> OverflowMenuHost.HIV_POSITIVE_PROFILE
+      PatientType.CHILD_CONTACT -> OverflowMenuHost.CHILD_CONTACT_PROFILE
+      PatientType.SEXUAL_CONTACT -> OverflowMenuHost.SEXUAL_CONTACT_PROFILE
+      else -> OverflowMenuHost.PATIENT_PROFILE
+    }
+  }
+
   fun refreshOverFlowMenu(healthModule: HealthModule, patientProfile: ProfileData) {
     if (healthModule == HealthModule.HIV ||
         healthModule == HealthModule.HOME_TRACING ||
         healthModule == HealthModule.PHONE_TRACING ||
         healthModule == HealthModule.APPOINTMENT
     ) {
-      when ((patientProfile as ProfileData.HivProfileData).patientType) {
-        PatientType.EXPOSED_INFANT, PatientType.CHILD_CONTACT -> {
-
-          patientProfileUiState =
-            mutableStateOf(
-              PatientProfileUiState(
-                overflowMenuFactory.retrieveOverflowMenuItems(
-                  OverflowMenuHost.HIV_PROFILE_EXPOSED_INFANT
-                )
+      patientProfileUiState =
+        mutableStateOf(
+          PatientProfileUiState(
+            overflowMenuFactory.retrieveOverflowMenuItems(
+              getOverflowMenuHostByPatientType(
+                (patientProfile as ProfileData.HivProfileData).patientType
               )
             )
-        }
-        else -> {
-          patientProfileUiState =
-            mutableStateOf(
-              PatientProfileUiState(
-                overflowMenuFactory.retrieveOverflowMenuItems(
-                  OverflowMenuHost.HIV_PROFILE_CLINIC_VISIT
-                )
-              )
-            )
-        }
-      }
+          )
+        )
     }
   }
 

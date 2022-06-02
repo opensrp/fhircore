@@ -68,27 +68,56 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       )
     )
   ),
-  HIV_PROFILE_CLINIC_VISIT(
+  NEWLY_DIAGNOSED_PROFILE(
     listOf(
-      OverflowMenuItem(R.id.individual_details, R.string.individual_details),
-      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
-      OverflowMenuItem(
-        R.id.sample_collect_and_lab_results,
-        R.string.sample_collect_and_lab_results
-      ),
       OverflowMenuItem(R.id.client_clinic_visit, R.string.client_clinic_visit),
-      OverflowMenuItem(R.id.guardian_visit, R.string.guardian_visit)
+      OverflowMenuItem(R.id.guardian_visit, R.string.guardian_visit),
+      OverflowMenuItem(R.id.viral_load_results, R.string.viral_load_results),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
     )
   ),
-  HIV_PROFILE_EXPOSED_INFANT(
+  ART_CLIENT_PROFILE(
     listOf(
-      OverflowMenuItem(R.id.individual_details, R.string.individual_details),
-      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
-      OverflowMenuItem(
-        R.id.sample_collect_and_lab_results,
-        R.string.sample_collect_and_lab_results
-      ),
-      OverflowMenuItem(R.id.exposed_infant_clinic_visit, R.string.exposed_infant_clinic_visit)
+      OverflowMenuItem(R.id.client_clinic_visit, R.string.client_clinic_visit),
+      OverflowMenuItem(R.id.guardian_visit, R.string.guardian_visit),
+      OverflowMenuItem(R.id.viral_load_results, R.string.viral_load_results),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+    )
+  ),
+  EXPOSED_INFANT_PROFILE(
+    listOf(
+      OverflowMenuItem(R.id.exposed_infant_clinic_visit, R.string.exposed_infant_clinic_visit),
+      OverflowMenuItem(R.id.hiv_test_and_results, R.string.hiv_test_and_results),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+    )
+  ),
+  CHILD_CONTACT_PROFILE(
+    listOf(
+      OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+    )
+  ),
+  SEXUAL_CONTACT_PROFILE(
+    listOf(
+      OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+    )
+  ),
+  HIV_POSITIVE_PROFILE(
+    listOf(
+      OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
     )
   )
 }
