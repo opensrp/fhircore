@@ -82,6 +82,21 @@ fun PersonalData(
         OtherDetailsItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
         OtherDetailsItem(title = stringResource(R.string.dob), value = patientProfileViewData.dob)
       }
+      if (patientProfileViewData.identifierValue.isNotEmpty() &&
+          patientProfileViewData.identifierKey.isNotEmpty()
+      ) {
+        Spacer(modifier = modifier.height(16.dp))
+        Row(
+          horizontalArrangement = Arrangement.SpaceBetween,
+          modifier =
+            modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
+        ) {
+          OtherDetailsItem(
+            title = patientProfileViewData.identifierKey,
+            value = patientProfileViewData.identifierValue
+          )
+        }
+      }
     }
   }
 }
@@ -106,6 +121,24 @@ fun PersonalDataPreview() {
       age = "48y",
       dob = "08 Dec",
       identifier = "123455"
+    )
+  PersonalData(patientProfileViewData = patientProfileData)
+}
+
+@Composable
+@Preview(showBackground = true)
+fun PersonalDataPreviewWithARTNumber() {
+  val patientProfileData =
+    ProfileViewData.PatientProfileViewData(
+      logicalId = "99358357",
+      name = "Kim Panny",
+      status = "Family Head",
+      sex = "Female",
+      age = "48y",
+      dob = "08 Dec",
+      identifier = "123455",
+      identifierKey = "HCC Number",
+      identifierValue = "123123"
     )
   PersonalData(patientProfileViewData = patientProfileData)
 }

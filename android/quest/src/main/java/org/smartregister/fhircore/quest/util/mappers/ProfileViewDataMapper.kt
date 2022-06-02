@@ -28,6 +28,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.domain.model.PatientType
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -66,7 +67,8 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           name = inputModel.name,
           address = inputModel.address,
           age = inputModel.age,
-          artNumber = inputModel.identifier.toString(),
+          identifierValue = inputModel.identifier.toString(),
+          identifierKey = inputModel.patientType.retrieveDisplayIdentifierKey(),
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
@@ -96,7 +98,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           name = inputModel.name,
           address = inputModel.address,
           age = inputModel.age,
-          artNumber = inputModel.identifier.toString(),
+          identifierValue = inputModel.identifier.toString(),
         )
       is ProfileData.DefaultProfileData ->
         ProfileViewData.PatientProfileViewData(
@@ -173,6 +175,14 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       Task.TaskStatus.FAILED -> OverdueColor
       Task.TaskStatus.COMPLETED -> DefaultColor
       else -> DefaultColor
+    }
+
+  fun PatientType.retrieveDisplayIdentifierKey(): String =
+    when (this) {
+      PatientType.EXPOSED_INFANT -> "HCC Number"
+      PatientType.CHILD_CONTACT, PatientType.SEXUAL_CONTACT, PatientType.HIV_POSITIVE ->
+        "HTS Number"
+      else -> "ART Number"
     }
 
   private fun Date.formatDob(): String = simpleDateFormat.format(this)

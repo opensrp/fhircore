@@ -69,7 +69,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
-      //      Assert.assertEquals("testIdentifier()", identifier)
+      Assert.assertEquals("testIdentifier()", identifierValue)
+      Assert.assertEquals("HCC Number", identifierKey)
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
       //      Assert.assertEquals(AdministrativeGender.MALE, gender)
