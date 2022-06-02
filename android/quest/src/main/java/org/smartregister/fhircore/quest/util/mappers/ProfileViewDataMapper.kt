@@ -61,7 +61,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           identifier = inputModel.identifier
         )
       is ProfileData.HivProfileData ->
-        ProfileViewData.HivProfileViewData(
+        ProfileViewData.PatientProfileViewData(
           logicalId = inputModel.logicalId,
           name = inputModel.name,
           address = inputModel.address,
@@ -69,7 +69,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           artNumber = inputModel.identifier.toString(),
         )
       is ProfileData.AppointmentProfileData ->
-        ProfileViewData.AppointmentProfileViewData(
+        ProfileViewData.PatientProfileViewData(
           logicalId = inputModel.logicalId,
           name = inputModel.name,
           address = inputModel.address,

@@ -37,6 +37,8 @@ sealed class ProfileViewData(
     val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
     val upcomingServices: List<PatientProfileRowItem> = emptyList(),
     val ancCardData: List<PatientProfileRowItem> = emptyList(),
+    val address: String = "",
+    val artNumber: String = ""
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier)
 
   data class FamilyProfileViewData(
@@ -45,21 +47,5 @@ sealed class ProfileViewData(
     val address: String = "",
     val age: String = "",
     val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
-  ) : ProfileViewData(logicalId = logicalId, name = name)
-
-  data class HivProfileViewData(
-    override val logicalId: String = "",
-    override val name: String = "",
-    val address: String = "",
-    val age: String = "",
-    val artNumber: String = ""
-  ) : ProfileViewData(logicalId = logicalId, name = name)
-
-  data class AppointmentProfileViewData(
-    override val logicalId: String = "",
-    override val name: String = "",
-    val address: String = "",
-    val age: String = "",
-    val artNumber: String = ""
   ) : ProfileViewData(logicalId = logicalId, name = name)
 }

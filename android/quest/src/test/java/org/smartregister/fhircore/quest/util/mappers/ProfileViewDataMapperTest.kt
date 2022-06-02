@@ -64,7 +64,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
   fun testMapToDomainModelHiv() {
     val dto = buildProfileData(HealthModule.HIV)
     val profileViewDataHiv =
-      profileViewDataMapper.transformInputToOutputModel(dto) as ProfileViewData.HivProfileViewData
+      profileViewDataMapper.transformInputToOutputModel(dto) as
+        ProfileViewData.PatientProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -82,7 +83,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     val dto = buildProfileData(HealthModule.HOME_TRACING)
     val profileViewDataHiv =
       profileViewDataMapper.transformInputToOutputModel(dto) as
-        ProfileViewData.AppointmentProfileViewData
+        ProfileViewData.PatientProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
