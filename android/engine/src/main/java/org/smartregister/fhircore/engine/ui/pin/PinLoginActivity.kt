@@ -64,6 +64,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   }
 
   private fun moveToHome() {
+    configurationRegistry.fetchNonWorkflowConfigResources()
     syncBroadcaster.get().runSync()
     loginService.navigateToHome()
   }

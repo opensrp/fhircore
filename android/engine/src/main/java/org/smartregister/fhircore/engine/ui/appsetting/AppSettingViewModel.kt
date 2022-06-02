@@ -35,80 +35,89 @@ import timber.log.Timber
 class AppSettingViewModel
 @Inject
 constructor(
-  val fhirResourceDataSource: FhirResourceDataSource,
-  val defaultRepository: DefaultRepository
+    val fhirResourceDataSource: FhirResourceDataSource,
+    val defaultRepository: DefaultRepository
 ) : ViewModel() {
 
-  val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
+    val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
-  val fetchConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
+    val fetchConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
-  private val _appId = MutableLiveData("")
-  val appId
-    get() = _appId
+    private val _appId = MutableLiveData("")
+    val appId
+        get() = _appId
 
-  private val _showProgressBar = MutableLiveData(false)
-  val showProgressBar
-    get() = _showProgressBar
+    private val _showProgressBar = MutableLiveData(false)
+    val showProgressBar
+        get() = _showProgressBar
 
-  private val _error = MutableLiveData("")
-  val error: LiveData<String>
-    get() = _error
+    private val _error = MutableLiveData("")
+    val error: LiveData<String>
+        get() = _error
 
-  fun onApplicationIdChanged(appId: String) {
-    _appId.value = appId
-  }
+    fun onApplicationIdChanged(appId: String) {
+        _appId.value = appId
+    }
 
-  fun loadConfigurations(loadConfigs: Boolean) {
-    this.loadConfigs.postValue(loadConfigs)
-  }
+    fun loadConfigurations(loadConfigs: Boolean) {
+        this.loadConfigs.postValue(loadConfigs)
+    }
 
-  fun fetchConfigurations(fetchConfigs: Boolean) {
-    this.fetchConfigs.postValue(fetchConfigs)
-  }
+    fun fetchConfigurations(fetchConfigs: Boolean) {
+        this.fetchConfigs.postValue(fetchConfigs)
+    }
 
-  suspend fun fetchConfigurations(appId: String, context: Context) {
-    kotlin
-      .runCatching {
-        Timber.i("Fetching configs for app $appId")
+    suspend fun fetchConfigurations(appId: String, context: Context) {
+        kotlin
+            .runCatching {
+                Timber.i("Fetching configs for app $appId")
 
-        this._showProgressBar.postValue(true)
-        val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
-        val data =
-          fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
-            if (!it.hasResource()) {
-              Timber.w("No response for composition resource on path $cPath")
-              _showProgressBar.postValue(false)
-              _error.postValue(context.getString(R.string.application_not_supported, appId))
-              return
+                this._showProgressBar.postValue(true)
+                val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
+                val data =
+                    fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
+                        if (!it.hasResource()) {
+                            Timber.w("No response for composition resource on path $cPath")
+                            _showProgressBar.postValue(false)
+                            _error.postValue(
+                                context.getString(
+                                    R.string.application_not_supported,
+                                    appId
+                                )
+                            )
+                            return
+                        }
+                    }
+
+                val composition = data.resource as Composition
+                defaultRepository.save(composition)
+
+                composition.section
+                  .groupBy { it.focus.reference.split("/")[0] }.entries
+                  .filter {
+                        it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name
+                    }
+                  .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+                        val ids = entry.value.joinToString(",") { it.focus.extractId() }
+                        val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
+                        fhirResourceDataSource.loadData(rPath).entry.forEach {
+                            defaultRepository.save(it.resource)
+                        }
+                    }
+
+                loadConfigurations(true)
+                _showProgressBar.postValue(false)
             }
-          }
+            .onFailure {
+                Timber.w(it)
+                _showProgressBar.postValue(false)
+                _error.postValue("${it.message}")
+            }
+    }
 
-        val composition = data.resource as Composition
-        defaultRepository.save(composition)
-
-        composition.section.groupBy { it.focus.reference.split("/")[0] }.entries.forEach {
-          entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-          val ids = entry.value.joinToString(",") { it.focus.extractId() }
-          val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
-          fhirResourceDataSource.loadData(rPath).entry.forEach {
-            defaultRepository.save(it.resource)
-          }
-        }
-
-        loadConfigurations(true)
-        _showProgressBar.postValue(false)
-      }
-      .onFailure {
-        Timber.w(it)
-        _showProgressBar.postValue(false)
-        _error.postValue("${it.message}")
-      }
-  }
-
-  fun hasDebugSuffix(): Boolean? {
-    return if (!appId.value.isNullOrBlank())
-      appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
-    else null
-  }
+    fun hasDebugSuffix(): Boolean? {
+        return if (!appId.value.isNullOrBlank())
+            appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
+        else null
+    }
 }

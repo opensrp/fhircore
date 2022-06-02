@@ -18,14 +18,19 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.DataFiltersConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -44,7 +49,9 @@ class ConfigurationRegistry
 @Inject
 constructor(
   @ApplicationContext val context: Context,
+  val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val dispatcherProvider: DispatcherProvider,
   val repository: DefaultRepository
 ) {
 
@@ -96,6 +103,13 @@ constructor(
       .searchCompositionByIdentifier(appId)
       .also { if (it == null) configsLoadedCallback(false) }
       ?.section
+      ?.filter {
+        it.focus.reference.split("/")[0]
+          .let {
+            resourceType ->
+          resourceType == ResourceType.Parameters.name || resourceType == ResourceType.Binary.name
+        }
+      }
       ?.forEach {
         // each section in composition represents workflow
         // { "title": "register configuration",
@@ -122,7 +136,7 @@ constructor(
       ?.also { configsLoadedCallback(true) }
   }
 
-  suspend fun loadConfigurationsLocally(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
+  suspend fun loadWorkflowConfigurationsLocally(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     val parsedAppId = appId.substringBefore("/$DEBUG_SUFFIX")
     this.appId = parsedAppId
 
@@ -136,6 +150,13 @@ constructor(
         .use { it.readText() }
         .decodeResourceFromString<Composition>()
         .section
+        .filter {
+          it.focus.reference.split("/")[0]
+            .let {
+                resourceType ->
+              resourceType == ResourceType.Parameters.name || resourceType == ResourceType.Binary.name
+            }
+        }
         .forEach { sectionComponent ->
           val binaryConfigPath =
             BINARY_CONFIG_PATH.run {
@@ -167,6 +188,31 @@ constructor(
       .getOrNull()
       .also { if (it == null) configsLoadedCallback(false) }
       ?.also { configsLoadedCallback(true) }
+  }
+
+  fun fetchNonWorkflowConfigResources() {
+    CoroutineScope(dispatcherProvider.io()).launch {
+      try {
+        Timber.i("Fetching non-workflow resources for app $appId")
+        repository.searchCompositionByIdentifier(appId)?.section
+          ?.groupBy { it.focus.reference.split("/")[0] }?.entries
+          ?.filterNot {
+            it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name
+          }
+          ?.forEach {
+            entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+            val ids = entry.value.joinToString(",") { it.focus.extractId() }
+            val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
+            fhirResourceDataSource.loadData(rPath).entry.forEach {
+              repository.addOrUpdate(it.resource)
+            }
+          }
+
+      } catch (exception: Exception) {
+        Timber.e("Error fetching non-workflow resources for app $appId")
+        Timber.e(exception)
+      }
+    }
   }
 
   fun workflowPointName(key: String) = "$appId|$key"

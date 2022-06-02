@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 
 @AndroidEntryPoint
@@ -66,6 +67,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
 
   private fun moveToHome() {
     sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false)
+    configurationRegistry.fetchNonWorkflowConfigResources()
     syncBroadcaster.get().runSync()
     loginService.navigateToHome()
   }
