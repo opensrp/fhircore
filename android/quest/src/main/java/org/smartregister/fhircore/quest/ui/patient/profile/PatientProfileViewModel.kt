@@ -28,7 +28,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
-import org.smartregister.fhircore.engine.domain.model.PatientType
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -82,14 +82,14 @@ constructor(
     }
   }
 
-  fun getOverflowMenuHostByPatientType(patientType: PatientType): OverflowMenuHost {
-    return when (patientType) {
-      PatientType.NEWLY_DIAGNOSED_CLIENT -> OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE
-      PatientType.CLIENT_ALREADY_ON_ART -> OverflowMenuHost.ART_CLIENT_PROFILE
-      PatientType.EXPOSED_INFANT -> OverflowMenuHost.EXPOSED_INFANT_PROFILE
-      PatientType.HIV_POSITIVE -> OverflowMenuHost.HIV_POSITIVE_PROFILE
-      PatientType.CHILD_CONTACT -> OverflowMenuHost.CHILD_CONTACT_PROFILE
-      PatientType.SEXUAL_CONTACT -> OverflowMenuHost.SEXUAL_CONTACT_PROFILE
+  fun getOverflowMenuHostByPatientType(healthStatus: HealthStatus): OverflowMenuHost {
+    return when (healthStatus) {
+      HealthStatus.NEWLY_DIAGNOSED_CLIENT -> OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE
+      HealthStatus.CLIENT_ALREADY_ON_ART -> OverflowMenuHost.ART_CLIENT_PROFILE
+      HealthStatus.EXPOSED_INFANT -> OverflowMenuHost.EXPOSED_INFANT_PROFILE
+      HealthStatus.HIV_POSITIVE -> OverflowMenuHost.HIV_POSITIVE_PROFILE
+      HealthStatus.CHILD_CONTACT -> OverflowMenuHost.CHILD_CONTACT_PROFILE
+      HealthStatus.SEXUAL_CONTACT -> OverflowMenuHost.SEXUAL_CONTACT_PROFILE
       else -> OverflowMenuHost.PATIENT_PROFILE
     }
   }
@@ -105,7 +105,7 @@ constructor(
           PatientProfileUiState(
             overflowMenuFactory.retrieveOverflowMenuItems(
               getOverflowMenuHostByPatientType(
-                (patientProfile as ProfileData.HivProfileData).patientType
+                (patientProfile as ProfileData.HivProfileData).healthStatus
               )
             )
           )

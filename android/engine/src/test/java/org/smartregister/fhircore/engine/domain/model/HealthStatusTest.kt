@@ -19,15 +19,15 @@ package org.smartregister.fhircore.engine.domain.model
 import org.junit.Assert
 import org.junit.Test
 
-class PatientTypeTest {
+class HealthStatusTest {
 
   @Test
   fun testPatientTypes() {
-    Assert.assertNotNull(PatientType.valueOf("NEWLY_DIAGNOSED_CLIENT"))
-    Assert.assertNotNull(PatientType.valueOf("CLIENT_ALREADY_ON_ART"))
-    Assert.assertNotNull(PatientType.valueOf("EXPOSED_INFANT"))
-    Assert.assertNotNull(PatientType.valueOf("HIV_POSITIVE"))
-    Assert.assertNotNull(PatientType.valueOf("CHILD_CONTACT"))
-    Assert.assertNotNull(PatientType.valueOf("SEXUAL_CONTACT"))
+    Assert.assertNotNull(HealthStatus.valueOf("NEWLY_DIAGNOSED_CLIENT"))
+    Assert.assertNotNull(HealthStatus.valueOf("CLIENT_ALREADY_ON_ART"))
+    Assert.assertNotNull(HealthStatus.valueOf("EXPOSED_INFANT"))
+    Assert.assertNotNull(HealthStatus.valueOf("HIV_POSITIVE"))
+    Assert.assertNotNull(HealthStatus.valueOf("CHILD_CONTACT"))
+    Assert.assertNotNull(HealthStatus.valueOf("SEXUAL_CONTACT"))
   }
 }

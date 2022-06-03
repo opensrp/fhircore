@@ -116,7 +116,7 @@ class ProfileDataTest : RobolectricTest() {
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
           chwAssigned = Reference("referenceKey"),
-          patientType = PatientType.EXPOSED_INFANT
+          healthStatus = HealthStatus.EXPOSED_INFANT
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
         ProfileData.AppointmentProfileData(

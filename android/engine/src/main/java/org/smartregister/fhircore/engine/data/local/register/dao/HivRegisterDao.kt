@@ -37,10 +37,10 @@ import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
+import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
-import org.smartregister.fhircore.engine.util.extension.extractTypeViaMeta
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
@@ -78,8 +78,8 @@ constructor(
         familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
         phoneContacts = patient.extractTelecom(),
         chwAssigned = patient.extractGeneralPractitionerReference(),
-        patientType =
-          patient.extractTypeViaMeta(
+        healthStatus =
+          patient.extractHealthStatusFromMeta(
             getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
           )
       )
@@ -98,8 +98,8 @@ constructor(
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
       chwAssigned = patient.generalPractitionerFirstRep,
-      patientType =
-        patient.extractTypeViaMeta(
+      healthStatus =
+        patient.extractHealthStatusFromMeta(
           getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
         ),
       tasks =

@@ -32,10 +32,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.domain.model.PatientType
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.VisitStatus
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileRowItem
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 @HiltAndroidTest
@@ -73,9 +74,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
       Assert.assertEquals("HCC Number", identifierKey)
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
-      //      Assert.assertEquals(AdministrativeGender.MALE, gender)
-      //      Assert.assertEquals(Date("12345678"), birthdate)
-      //      Assert.assertEquals("referenceKey", chwAssigned.reference)
+      Assert.assertEquals(emptyList<PatientProfileRowItem>(), upcomingServices)
+      Assert.assertEquals(emptyList<PatientProfileRowItem>(), tasks)
     }
   }
 
@@ -88,12 +88,11 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
-      //      Assert.assertEquals("testIdentifier()", identifier)
+      Assert.assertEquals("testIdentifier()", identifierValue)
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
-      //      Assert.assertEquals(AdministrativeGender.MALE, gender)
-      //      Assert.assertEquals(Date("12345678"), birthdate)
-      //      Assert.assertEquals("referenceKey", chwAssigned.reference)
+      Assert.assertEquals(emptyList<PatientProfileRowItem>(), upcomingServices)
+      Assert.assertEquals(emptyList<PatientProfileRowItem>(), tasks)
     }
   }
 
@@ -107,16 +106,10 @@ class ProfileViewDataMapperTest : RobolectricTest() {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
       Assert.assertEquals("testIdentifier()", identifier)
-      //      Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
-      //      Assert.assertEquals(Date("12345678"), birthdate)
-      //      Assert.assertEquals(AdministrativeGender.MALE, gender)
-      //      Assert.assertEquals(VisitStatus.DUE, visitStatus)
-      //      Assert.assertEquals(true, services.isEmpty())
       Assert.assertEquals(true, tasks.isEmpty())
-      //      Assert.assertEquals(true, conditions.isEmpty())
-      //      Assert.assertEquals(true, flags.isEmpty())
-      //      Assert.assertEquals(true, visits.isEmpty())
+      Assert.assertEquals(true, upcomingServices.isEmpty())
+      Assert.assertEquals(emptyList<PatientProfileRowItem>(), tasks)
     }
   }
 
@@ -129,12 +122,9 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName Family", name)
-      //      Assert.assertEquals("testIdentifier()", identifier)
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
-      //      Assert.assertEquals(true, services.isEmpty())
-      //      Assert.assertEquals(true, tasks.isEmpty())
-      //      Assert.assertEquals(true, members.isEmpty())
+      Assert.assertEquals(true, familyMemberViewStates.isEmpty())
     }
   }
 
@@ -150,7 +140,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
           chwAssigned = Reference("referenceKey"),
-          patientType = PatientType.EXPOSED_INFANT,
+          healthStatus = HealthStatus.EXPOSED_INFANT,
           services = emptyList(),
           tasks = emptyList()
         )

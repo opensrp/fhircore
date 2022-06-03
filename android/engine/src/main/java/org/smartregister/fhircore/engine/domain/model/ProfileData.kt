@@ -87,7 +87,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val address: String,
     val phoneContacts: List<ContactPoint> = listOf(),
     val chwAssigned: Reference,
-    val patientType: PatientType,
+    val healthStatus: HealthStatus,
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf()
   ) : ProfileData(logicalId = logicalId, name = name)

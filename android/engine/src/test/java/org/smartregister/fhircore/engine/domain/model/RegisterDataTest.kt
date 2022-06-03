@@ -107,7 +107,7 @@ class RegisterDataTest : RobolectricTest() {
           gender = Enumerations.AdministrativeGender.MALE,
           chwAssigned = "reference/Key",
           phoneContacts = emptyList(),
-          patientType = PatientType.EXPOSED_INFANT
+          healthStatus = HealthStatus.EXPOSED_INFANT
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
         RegisterData.AppointmentRegisterData(

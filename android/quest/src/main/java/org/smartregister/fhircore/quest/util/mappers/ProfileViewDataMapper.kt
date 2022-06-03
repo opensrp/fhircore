@@ -28,7 +28,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.domain.model.PatientType
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -68,7 +68,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           address = inputModel.address,
           age = inputModel.age,
           identifierValue = inputModel.identifier.toString(),
-          identifierKey = inputModel.patientType.retrieveDisplayIdentifierKey(),
+          identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
@@ -177,10 +177,10 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       else -> DefaultColor
     }
 
-  fun PatientType.retrieveDisplayIdentifierKey(): String =
+  fun HealthStatus.retrieveDisplayIdentifierKey(): String =
     when (this) {
-      PatientType.EXPOSED_INFANT -> "HCC Number"
-      PatientType.CHILD_CONTACT, PatientType.SEXUAL_CONTACT, PatientType.HIV_POSITIVE ->
+      HealthStatus.EXPOSED_INFANT -> "HCC Number"
+      HealthStatus.CHILD_CONTACT, HealthStatus.SEXUAL_CONTACT, HealthStatus.HIV_POSITIVE ->
         "HTS Number"
       else -> "ART Number"
     }

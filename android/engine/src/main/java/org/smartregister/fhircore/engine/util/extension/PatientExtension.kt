@@ -27,7 +27,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.domain.model.PatientType
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import timber.log.Timber
 
 private const val RISK = "risk"
@@ -214,14 +214,14 @@ fun Patient.extractOfficialIdentifier(): String? =
     this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
   else null
 
-fun Patient.extractTypeViaMeta(filterTag: String): PatientType {
+fun Patient.extractHealthStatusFromMeta(filterTag: String): HealthStatus {
   return try {
     val tagList = this.meta.tag.filter { it.system.equals(filterTag, true) }
     if (filterTag.isEmpty() || tagList.isEmpty() || tagList[0].code.isEmpty())
-      return PatientType.DEFAULT
-    PatientType.valueOf(tagList[0].code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: "")
+      return HealthStatus.DEFAULT
+    HealthStatus.valueOf(tagList[0].code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: "")
   } catch (e: Exception) {
     Timber.e(e)
-    PatientType.DEFAULT
+    HealthStatus.DEFAULT
   }
 }

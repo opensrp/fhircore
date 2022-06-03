@@ -40,7 +40,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
-import org.smartregister.fhircore.engine.domain.model.PatientType
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -131,7 +131,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     Assert.assertEquals("Dist 1 City 1", hivProfileData.address)
     Assert.assertEquals("John Doe", hivProfileData.name)
     Assert.assertEquals("practitioner/1234", hivProfileData.chwAssigned)
-    Assert.assertEquals(PatientType.EXPOSED_INFANT, hivProfileData.patientType)
+    Assert.assertEquals(HealthStatus.EXPOSED_INFANT, hivProfileData.healthStatus)
     Assert.assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
   }
 

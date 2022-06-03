@@ -31,7 +31,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.domain.model.PatientType
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class PatientExtensionTest : RobolectricTest() {
@@ -434,7 +434,7 @@ class PatientExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testExtractTypeViaMeta() {
+  fun testExtractHealthStatusFromMeta() {
     val patient =
       Patient().apply {
         meta.addTag(
@@ -446,15 +446,15 @@ class PatientExtensionTest : RobolectricTest() {
         )
       }
 
-    Assert.assertNotNull(patient.extractTypeViaMeta("https://d-tree.org"))
+    Assert.assertNotNull(patient.extractHealthStatusFromMeta("https://d-tree.org"))
     Assert.assertEquals(
-      PatientType.EXPOSED_INFANT,
-      patient.extractTypeViaMeta("https://d-tree.org")
+      HealthStatus.EXPOSED_INFANT,
+      patient.extractHealthStatusFromMeta("https://d-tree.org")
     )
   }
 
   @Test
-  fun testExtractTypeViaMetaEmptyFilter() {
+  fun testExtractHealthStatusFromMetaEmptyFilter() {
     val patient =
       Patient().apply {
         meta.addTag(
@@ -466,7 +466,7 @@ class PatientExtensionTest : RobolectricTest() {
         )
       }
 
-    Assert.assertNotNull(patient.extractTypeViaMeta(""))
-    Assert.assertEquals(PatientType.DEFAULT, patient.extractTypeViaMeta(""))
+    Assert.assertNotNull(patient.extractHealthStatusFromMeta(""))
+    Assert.assertEquals(HealthStatus.DEFAULT, patient.extractHealthStatusFromMeta(""))
   }
 }
