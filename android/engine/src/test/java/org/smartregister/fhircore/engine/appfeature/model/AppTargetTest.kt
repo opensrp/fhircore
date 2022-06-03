@@ -16,12 +16,19 @@
 
 package org.smartregister.fhircore.engine.appfeature.model
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.Configuration
+import org.junit.Assert
+import org.junit.Test
 
-@Serializable
-data class AppFeatureConfig(
-  override val appId: String = "",
-  override val classification: String = "",
-  val appFeatures: List<FeatureConfig> = listOf()
-) : Configuration
+class AppTargetTest {
+
+  @Test
+  fun testAppTarget_shouldReturn_2() {
+    Assert.assertEquals(AppTarget.values().size, 2)
+  }
+
+  @Test
+  fun testAppTarget_shouldContain_allTargets() {
+    Assert.assertNotNull(AppTarget.valueOf("CHW"))
+    Assert.assertNotNull(AppTarget.valueOf("HF"))
+  }
+}

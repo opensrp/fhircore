@@ -52,6 +52,14 @@
       }
     },
     {
+      "title": "Forms configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/105307",
+        "identifier": { "value": "forms" }
+      }
+    },
+    {
       "title": "Sync configuration",
       "mode": "working",
       "focus": {

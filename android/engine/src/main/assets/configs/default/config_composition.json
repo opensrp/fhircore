@@ -36,6 +36,14 @@
       }
     },
     {
+      "title": "App Feature configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/70385",
+        "identifier": { "value": "app_feature" }
+      }
+    },
+    {
       "title": "Patient Register configuration",
       "mode": "working",
       "focus": {
