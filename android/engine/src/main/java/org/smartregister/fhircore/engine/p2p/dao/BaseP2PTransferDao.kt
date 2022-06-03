@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.updateFrom
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao
@@ -65,10 +66,13 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         }
     )
 
-  suspend inline fun <reified R : Resource> addOrUpdate(resource: R) {
+  suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
       try {
-        fhirEngine.get<R>(resource.logicalId).run { fhirEngine.update(updateFrom(resource)) }
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
+          fhirEngine.update(updateFrom(resource))
+        }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
         fhirEngine.create(resource)
@@ -105,7 +109,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
           DateClientParam("_lastUpdated"),
           {
             value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+            prefix = ParamPrefixEnum.GREATERTHAN
           }
         )
 
@@ -149,7 +153,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
             DateClientParam("_lastUpdated"),
             {
               value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+              prefix = ParamPrefixEnum.GREATERTHAN
             }
           )
 
