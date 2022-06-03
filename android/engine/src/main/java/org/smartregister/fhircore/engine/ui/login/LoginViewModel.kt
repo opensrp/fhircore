@@ -164,8 +164,8 @@ constructor(
     get() = _loginViewConfiguration
 
   fun fetchLoggedInPractitioner(userInfo: UserInfo) {
-    if (!userInfo.keycloakUuid.isNullOrEmpty() &&
-        sharedPreferences.read(LOGGED_IN_PRACTITIONER, null) == null
+    if (!userInfo.keycloakUuid.isNullOrEmpty()
+    //      && sharedPreferences.read(LOGGED_IN_PRACTITIONER, null) == null
     ) {
       viewModelScope.launch(dispatcher.io()) {
         try {
