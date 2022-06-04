@@ -24,7 +24,8 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coVerify
 import io.mockk.mockk
 import javax.inject.Inject
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -158,16 +159,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertEquals("$testAppId|abbb", configurationRegistry.workflowPointName("abbb"))
   }
 
+  @ExperimentalCoroutinesApi
   @Test
   fun testLoadConfigurationsLocally_shouldReturn_8_workflows() {
-    runBlockingTest {
+    runTest {
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
       configurationRegistry.loadConfigurationsLocally("$testAppId/debug") { Assert.assertTrue(it) }
-      Assert.assertEquals(8, configurationRegistry.workflowPointsMap.size)
+      Assert.assertEquals(9, configurationRegistry.workflowPointsMap.size)
 
       val workflows = configurationRegistry.workflowPointsMap
       Assert.assertTrue(workflows.containsKey("default|application"))
       Assert.assertTrue(workflows.containsKey("default|login"))
+      Assert.assertTrue(workflows.containsKey("default|app_feature"))
       Assert.assertTrue(workflows.containsKey("default|patient_register"))
       Assert.assertTrue(workflows.containsKey("default|patient_task_register"))
       Assert.assertTrue(workflows.containsKey("default|pin"))
@@ -177,9 +180,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     }
   }
 
+  @ExperimentalCoroutinesApi
   @Test
   fun testLoadConfigurationsLocally_shouldReturn_empty_workflows() {
-    runBlockingTest {
+    runTest {
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
       configurationRegistry.loadConfigurationsLocally("") { Assert.assertFalse(it) }
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
