@@ -97,7 +97,9 @@ class AppSettingActivity : AppCompatActivity() {
               accountAuthenticator.launchLoginScreen()
               finish()
             } else {
-              showToast(getString(R.string.application_not_supported, appId))
+              launch(dispatcherProvider.main()) {
+                showToast(getString(R.string.application_not_supported, appId))
+              }
             }
           }
         }
