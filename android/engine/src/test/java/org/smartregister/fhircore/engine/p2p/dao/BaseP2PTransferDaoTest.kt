@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.filter.DateParamFilterCriterion
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -28,10 +31,15 @@ import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ContactPoint
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Meta
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -39,6 +47,7 @@ import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.p2p.sync.DataType
@@ -119,6 +128,70 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     Assert.assertEquals(expectedPatient.address[0].country, actualPatient.address[0].country)
     Assert.assertEquals(expectedPatient.name[0].family, actualPatient.name[0].family)
     Assert.assertEquals(expectedPatient.meta.lastUpdated, actualPatient.meta.lastUpdated)
+  }
+
+  @Test
+  fun `loadResources() calls fhirEngine#search()`() {
+
+    runBlocking {
+      baseP2PTransferDao.loadResources(
+        lastRecordUpdatedAt = 0,
+        batchSize = 25,
+        classType = Patient::class.java
+      )
+    }
+
+    val searchSlot = slot<Search>()
+    coVerify { fhirEngine.search<Patient>(capture(searchSlot)) }
+    Assert.assertEquals(25, searchSlot.captured.count)
+    Assert.assertEquals(ResourceType.Patient, searchSlot.captured.type)
+
+    val dateTimeFilterCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(searchSlot.captured, "dateTimeFilterCriteria")
+    val tokenFilters: MutableList<DateParamFilterCriterion> =
+      ReflectionHelpers.getField(dateTimeFilterCriterion[0], "filters")
+    Assert.assertEquals("_lastUpdated", tokenFilters[0].parameter.paramName)
+    Assert.assertEquals(ParamPrefixEnum.GREATERTHAN, tokenFilters[0].prefix)
+  }
+
+  @Test
+  fun `resourceClassType() returns correct resource class type for data type`() {
+    Assert.assertEquals(
+      Group::class.java,
+      baseP2PTransferDao.resourceClassType(
+        DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)
+      )
+    )
+    Assert.assertEquals(
+      Encounter::class.java,
+      baseP2PTransferDao.resourceClassType(
+        DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 0)
+      )
+    )
+    Assert.assertEquals(
+      Observation::class.java,
+      baseP2PTransferDao.resourceClassType(
+        DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 0)
+      )
+    )
+    Assert.assertEquals(
+      Patient::class.java,
+      baseP2PTransferDao.resourceClassType(
+        DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 0)
+      )
+    )
+    Assert.assertEquals(
+      Questionnaire::class.java,
+      baseP2PTransferDao.resourceClassType(
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 0)
+      )
+    )
+    Assert.assertEquals(
+      QuestionnaireResponse::class.java,
+      baseP2PTransferDao.resourceClassType(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 0)
+      )
+    )
   }
 
   private fun populateTestPatient(): Patient {
