@@ -66,7 +66,7 @@ class AppSettingActivity : AppCompatActivity() {
 
         if (appId.value.isNullOrBlank()) return@observe
 
-        val appId = appId.value!!
+        val appId = appId.value!!.trimEnd()
 
         if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
           lifecycleScope.launch(dispatcherProvider.io()) {
@@ -126,7 +126,7 @@ class AppSettingActivity : AppCompatActivity() {
       }
     }
 
-    val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
+    val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.trimEnd()
     lastAppId?.let {
       with(appSettingViewModel) {
         onApplicationIdChanged(it)
