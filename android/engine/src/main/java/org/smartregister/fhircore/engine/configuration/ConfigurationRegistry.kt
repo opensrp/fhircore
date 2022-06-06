@@ -134,10 +134,7 @@ constructor(
       ?.also { configsLoadedCallback(true) }
   }
 
-  suspend fun loadWorkflowConfigurationsLocally(
-    appId: String,
-    configsLoadedCallback: (Boolean) -> Unit
-  ) {
+  suspend fun loadConfigurationsLocally(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     val parsedAppId = appId.substringBefore("/$DEBUG_SUFFIX")
     this.appId = parsedAppId
 

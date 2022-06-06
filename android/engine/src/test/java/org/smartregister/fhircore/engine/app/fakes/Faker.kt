@@ -72,7 +72,8 @@ object Faker {
   }
 
   fun buildTestConfigurationRegistry(defaultRepository: DefaultRepository): ConfigurationRegistry {
-    val configurationRegistry = spyk(ConfigurationRegistry(mockk(), mockk(), defaultRepository))
+    val configurationRegistry =
+      spyk(ConfigurationRegistry(mockk(), mockk(), mockk(), mockk(), defaultRepository))
 
     loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
 

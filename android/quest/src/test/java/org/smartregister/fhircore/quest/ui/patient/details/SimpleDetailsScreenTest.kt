@@ -69,7 +69,13 @@ class SimpleDetailsScreenTest : RobolectricTest() {
     Faker.initPatientRepositoryMocks(patientRepository)
 
     coEvery { patientRepository.configurationRegistry } returns
-      ConfigurationRegistry(ApplicationProvider.getApplicationContext(), mockk(), mockk())
+      ConfigurationRegistry(
+        ApplicationProvider.getApplicationContext(),
+        mockk(),
+        mockk(),
+        mockk(),
+        defaultRepository
+      )
 
     viewModel = spyk(SimpleDetailsViewModel(patientRepository = patientRepository))
   }

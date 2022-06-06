@@ -70,8 +70,7 @@ class AppSettingActivity : AppCompatActivity() {
 
         if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
           lifecycleScope.launch(dispatcherProvider.io()) {
-            configurationRegistry.loadWorkflowConfigurationsLocally(appId) { loadSuccessful: Boolean
-              ->
+            configurationRegistry.loadConfigurationsLocally(appId) { loadSuccessful: Boolean ->
               if (loadSuccessful) {
                 sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
                 if (!isLoggedIn) {

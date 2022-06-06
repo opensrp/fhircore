@@ -21,10 +21,15 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.spyk
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -34,7 +39,9 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -44,20 +51,28 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   val context = ApplicationProvider.getApplicationContext<Context>()
 
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   private val testAppId = "default"
-
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
   lateinit var configurationRegistry: ConfigurationRegistry
   val defaultRepository: DefaultRepository = mockk()
 
   @Before
   fun setUp() {
     hiltRule.inject()
-
-    configurationRegistry = ConfigurationRegistry(context, mockk(), defaultRepository)
+    fhirResourceDataSource = spyk(FhirResourceDataSource(mockk()))
+    configurationRegistry =
+      ConfigurationRegistry(
+        context,
+        fhirResourceDataSource,
+        sharedPreferencesHelper,
+        dispatcherProvider,
+        defaultRepository
+      )
   }
 
   @Test
@@ -67,6 +82,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertEquals(testAppId, configurationRegistry.appId)
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
     Assert.assertTrue(configurationRegistry.workflowPointsMap.containsKey("default|application"))
+    Assert.assertFalse(
+      configurationRegistry.workflowPointsMap.containsKey("default|family-registration")
+    )
   }
 
   @Test
@@ -174,6 +192,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Assert.assertTrue(workflows.containsKey("default|patient_details_view"))
       Assert.assertTrue(workflows.containsKey("default|result_details_navigation"))
       Assert.assertTrue(workflows.containsKey("default|sync"))
+
+      Assert.assertFalse(workflows.containsKey("default|family-registration"))
     }
   }
 
@@ -184,5 +204,34 @@ class ConfigurationRegistryTest : RobolectricTest() {
       configurationRegistry.loadConfigurationsLocally("") { Assert.assertFalse(it) }
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
     }
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigResources() {
+    coEvery { configurationRegistry.repository.searchCompositionByIdentifier(testAppId) } returns
+      Composition().apply {
+        addSection().apply { this.focus = Reference().apply { reference = "Questionnaire/123" } }
+      }
+
+    runBlocking {
+      configurationRegistry.appId = testAppId
+      configurationRegistry.fetchNonWorkflowConfigResources()
+    }
+
+    coVerify { configurationRegistry.repository.searchCompositionByIdentifier(any()) }
+    coVerify { configurationRegistry.fhirResourceDataSource.loadData(any()) }
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigResourcesWithNoEntry() {
+    configurationRegistry.appId = "testApp"
+    Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
+
+    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns null
+
+    runBlocking { configurationRegistry.fetchNonWorkflowConfigResources() }
+
+    coVerify { defaultRepository.searchCompositionByIdentifier("testApp") }
+    coVerify(inverse = true) { fhirResourceDataSource.loadData(any()) }
   }
 }
