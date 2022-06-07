@@ -97,18 +97,12 @@ constructor(
 
   /**
    *
-   * each section in composition represents workflow
-   * { "title": "register configuration",
-   * "mode": "working",
-   * "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } }
-   * }
+   * each section in composition represents workflow { "title": "register configuration", "mode":
+   * "working", "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } } }
    *
-   * A workflow point would be mapped like
-   * "workflowPoint": "registration",
-   * "resource": "RegisterViewConfiguration",
-   * "classification": "patient_register",
-   * "description": "register configuration"
-   *
+   * A workflow point would be mapped like "workflowPoint": "registration", "resource":
+   * "RegisterViewConfiguration", "classification": "patient_register", "description": "register
+   * configuration"
    */
   suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     this.appId = appId
@@ -152,8 +146,7 @@ constructor(
         .section
         .filter {
           it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0).let { resourceType ->
-            resourceType == ResourceType.Parameters.name
-                    || resourceType == ResourceType.Binary.name
+            resourceType == ResourceType.Parameters.name || resourceType == ResourceType.Binary.name
           }
         }
         .forEach { sectionComponent ->
@@ -199,9 +192,9 @@ constructor(
           ?.groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0) ?: "" }
           ?.entries
           ?.filterNot { sectionEntry ->
-            sectionEntry.key == ResourceType.Binary.name
-                    || sectionEntry.key == ResourceType.Parameters.name
-                    || sectionEntry.key == ""
+            sectionEntry.key == ResourceType.Binary.name ||
+              sectionEntry.key == ResourceType.Parameters.name ||
+              sectionEntry.key == ""
           }
           ?.forEach { sectionEntry ->
             val resourceIds = sectionEntry.value.joinToString(",") { it.focus.extractId() }
