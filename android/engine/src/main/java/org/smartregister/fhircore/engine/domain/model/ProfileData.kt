@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.domain.model
 import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
@@ -46,7 +45,9 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val tasks: List<Task> = listOf(),
     val visits: List<Encounter> = listOf(),
     val forms: List<QuestionnaireConfig> = listOf(),
-    val responses: List<QuestionnaireResponse> = listOf()
+    val responses: List<QuestionnaireResponse> = listOf(),
+    val chwAssigned: Reference,
+    val healthStatus: HealthStatus
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class FamilyProfileData(
@@ -77,30 +78,30 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val visits: List<Encounter> = listOf()
   ) : ProfileData(logicalId = logicalId, name = name)
 
-  data class HivProfileData(
-    override val logicalId: String,
-    override val name: String,
-    val identifier: String? = null,
-    val birthdate: Date,
-    val age: String = birthdate.toAgeDisplay(),
-    val gender: Enumerations.AdministrativeGender,
-    val address: String,
-    val phoneContacts: List<ContactPoint> = listOf(),
-    val chwAssigned: Reference,
-    val healthStatus: HealthStatus,
-    val services: List<CarePlan> = listOf(),
-    val tasks: List<Task> = listOf()
-  ) : ProfileData(logicalId = logicalId, name = name)
+  //  data class HivProfileData(
+  //    override val logicalId: String,
+  //    override val name: String,
+  //    val identifier: String? = null,
+  //    val birthdate: Date,
+  //    val age: String = birthdate.toAgeDisplay(),
+  //    val gender: Enumerations.AdministrativeGender,
+  //    val address: String,
+  //    val phoneContacts: List<ContactPoint> = listOf(),
+  //    val chwAssigned: Reference,
+  //    val healthStatus: HealthStatus,
+  //    val services: List<CarePlan> = listOf(),
+  //    val tasks: List<Task> = listOf()
+  //  ) : ProfileData(logicalId = logicalId, name = name)
 
-  data class AppointmentProfileData(
-    override val logicalId: String,
-    override val name: String,
-    val identifier: String? = null,
-    val birthdate: Date,
-    val age: String,
-    val gender: Enumerations.AdministrativeGender,
-    val address: String,
-    val phoneContacts: List<String> = listOf(),
-    val chwAssigned: Reference
-  ) : ProfileData(logicalId = logicalId, name = name)
+  //  data class AppointmentProfileData(
+  //    override val logicalId: String,
+  //    override val name: String,
+  //    val identifier: String? = null,
+  //    val birthdate: Date,
+  //    val age: String,
+  //    val gender: Enumerations.AdministrativeGender,
+  //    val address: String,
+  //    val phoneContacts: List<String> = listOf(),
+  //    val chwAssigned: Reference
+  //  ) : ProfileData(logicalId = logicalId, name = name)
 }

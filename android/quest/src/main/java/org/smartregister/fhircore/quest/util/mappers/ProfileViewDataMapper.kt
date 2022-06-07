@@ -61,53 +61,57 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           dob = inputModel.birthdate.formatDob(),
           identifier = inputModel.identifier
         )
-      is ProfileData.HivProfileData ->
-        ProfileViewData.PatientProfileViewData(
-          logicalId = inputModel.logicalId,
-          name = inputModel.name,
-          address = inputModel.address,
-          age = inputModel.age,
-          identifierValue = inputModel.identifier.toString(),
-          identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
-          tasks =
-            inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
-              PatientProfileRowItem(
-                id = it.logicalId,
-                actionFormId =
-                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                    it.reasonReference.extractId()
-                  else null,
-                title = it.description,
-                subtitle =
-                  context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
-                profileViewSection = PatientProfileViewSection.TASKS,
-                actionButtonIcon =
-                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-                  else Icons.Filled.Add,
-                actionIconColor =
-                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
-                  else it.status.retrieveColorCode(),
-                actionButtonColor = it.status.retrieveColorCode(),
-                actionButtonText = it.description,
-              )
-            }
-        )
-      is ProfileData.AppointmentProfileData ->
-        ProfileViewData.PatientProfileViewData(
-          logicalId = inputModel.logicalId,
-          name = inputModel.name,
-          address = inputModel.address,
-          age = inputModel.age,
-          identifierValue = inputModel.identifier.toString(),
-        )
+      //      is ProfileData.HivProfileData ->
+      //        ProfileViewData.PatientProfileViewData(
+      //          logicalId = inputModel.logicalId,
+      //          name = inputModel.name,
+      //          address = inputModel.address,
+      //          age = inputModel.age,
+      //          identifierValue = inputModel.identifier.toString(),
+      //          identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
+      //          tasks =
+      //            inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
+      //              PatientProfileRowItem(
+      //                id = it.logicalId,
+      //                actionFormId =
+      //                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+      //                    it.reasonReference.extractId()
+      //                  else null,
+      //                title = it.description,
+      //                subtitle =
+      //                  context.getString(R.string.due_on,
+      // it.executionPeriod.start.makeItReadable()),
+      //                profileViewSection = PatientProfileViewSection.TASKS,
+      //                actionButtonIcon =
+      //                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+      //                  else Icons.Filled.Add,
+      //                actionIconColor =
+      //                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
+      //                  else it.status.retrieveColorCode(),
+      //                actionButtonColor = it.status.retrieveColorCode(),
+      //                actionButtonText = it.description,
+      //              )
+      //            }
+      //        )
+      //      is ProfileData.HivProfileData ->
+      //        ProfileViewData.PatientProfileViewData(
+      //          logicalId = inputModel.logicalId,
+      //          name = inputModel.name,
+      //          address = inputModel.address,
+      //          age = inputModel.age,
+      //
+      //        )
       is ProfileData.DefaultProfileData ->
         ProfileViewData.PatientProfileViewData(
           logicalId = inputModel.logicalId,
           name = inputModel.name,
           identifier = inputModel.identifier,
+          identifierValue = inputModel.identifier ?: inputModel.logicalId,
+          identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           age = inputModel.age,
           sex = inputModel.gender.translateGender(context),
           dob = inputModel.birthdate.formatDob(),
+          address = inputModel.address,
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
@@ -129,7 +133,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
               )
-            }
+            },
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(

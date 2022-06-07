@@ -126,7 +126,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
       hivRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1234")
     }
     Assert.assertNotNull(data)
-    val hivProfileData = data as ProfileData.HivProfileData
+    val hivProfileData = data as ProfileData.DefaultProfileData
     Assert.assertEquals("50y", hivProfileData.age)
     Assert.assertEquals("Dist 1 City 1", hivProfileData.address)
     Assert.assertEquals("John Doe", hivProfileData.name)

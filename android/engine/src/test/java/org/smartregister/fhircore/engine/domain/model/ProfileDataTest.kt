@@ -40,7 +40,7 @@ class ProfileDataTest : RobolectricTest() {
 
   @Test
   fun testMapToDomainModelHiv() {
-    val hivProfileDto = buildProfileData(HealthModule.HIV) as ProfileData.HivProfileData
+    val hivProfileDto = buildProfileData(HealthModule.HIV) as ProfileData.DefaultProfileData
     with(hivProfileDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -56,7 +56,7 @@ class ProfileDataTest : RobolectricTest() {
   @Test
   fun testMapToDomainModelHomeTracing() {
     val tracingProfileDto =
-      buildProfileData(HealthModule.HOME_TRACING) as ProfileData.AppointmentProfileData
+      buildProfileData(HealthModule.HOME_TRACING) as ProfileData.DefaultProfileData
     with(tracingProfileDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -107,7 +107,7 @@ class ProfileDataTest : RobolectricTest() {
   private fun buildProfileData(healthModule: HealthModule): ProfileData {
     return when (healthModule) {
       HealthModule.HIV ->
-        ProfileData.HivProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
@@ -119,7 +119,7 @@ class ProfileDataTest : RobolectricTest() {
           healthStatus = HealthStatus.EXPOSED_INFANT
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
-        ProfileData.AppointmentProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
@@ -127,10 +127,11 @@ class ProfileDataTest : RobolectricTest() {
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          chwAssigned = Reference("referenceKey")
+          chwAssigned = Reference("referenceKey"),
+          healthStatus = HealthStatus.EXPOSED_INFANT
         )
       HealthModule.APPOINTMENT ->
-        ProfileData.AppointmentProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
@@ -138,7 +139,8 @@ class ProfileDataTest : RobolectricTest() {
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          chwAssigned = Reference("referenceKey")
+          chwAssigned = Reference("referenceKey"),
+          healthStatus = HealthStatus.EXPOSED_INFANT
         )
       HealthModule.ANC ->
         ProfileData.AncProfileData(
@@ -229,7 +231,9 @@ class ProfileDataTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList()
+          visits = emptyList(),
+          chwAssigned = Reference("referenceKey"),
+          healthStatus = HealthStatus.EXPOSED_INFANT
         )
     }
   }

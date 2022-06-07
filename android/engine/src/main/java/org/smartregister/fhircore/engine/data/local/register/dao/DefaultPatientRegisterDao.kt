@@ -32,6 +32,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -40,6 +42,7 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant.DEFAULT_
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
 
 @Singleton
@@ -124,11 +127,20 @@ constructor(
           defaultRepository.searchResourceFor(
             subjectId = resourceId,
             subjectParam = QuestionnaireResponse.SUBJECT
+          ),
+        chwAssigned = patient.generalPractitionerFirstRep,
+        healthStatus =
+          patient.extractHealthStatusFromMeta(
+            getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
           )
       )
     }
 
   companion object {
     const val FORMS_LIST_FILTER_KEY = "forms_list"
+  }
+
+  fun getApplicationConfiguration(): ApplicationConfiguration {
+    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
   }
 }

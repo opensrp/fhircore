@@ -131,7 +131,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
   private fun buildProfileData(healthModule: HealthModule): ProfileData {
     return when (healthModule) {
       HealthModule.HIV ->
-        ProfileData.HivProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
@@ -145,7 +145,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           tasks = emptyList()
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
-        ProfileData.AppointmentProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
@@ -153,10 +153,11 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          chwAssigned = Reference("referenceKey")
+          chwAssigned = Reference("referenceKey"),
+          healthStatus = HealthStatus.EXPOSED_INFANT
         )
       HealthModule.APPOINTMENT ->
-        ProfileData.AppointmentProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
@@ -164,7 +165,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          chwAssigned = Reference("referenceKey")
+          chwAssigned = Reference("referenceKey"),
+          healthStatus = HealthStatus.EXPOSED_INFANT
         )
       HealthModule.ANC ->
         ProfileData.AncProfileData(
@@ -255,7 +257,9 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList()
+          visits = emptyList(),
+          chwAssigned = Reference("referenceKey"),
+          healthStatus = HealthStatus.EXPOSED_INFANT
         )
     }
   }

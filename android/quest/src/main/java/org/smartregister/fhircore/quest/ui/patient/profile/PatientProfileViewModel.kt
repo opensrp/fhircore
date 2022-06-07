@@ -105,7 +105,7 @@ constructor(
           PatientProfileUiState(
             overflowMenuFactory.retrieveOverflowMenuItems(
               getOverflowMenuHostByPatientType(
-                (patientProfile as ProfileData.HivProfileData).healthStatus
+                (patientProfile as ProfileData.DefaultProfileData).healthStatus
               )
             )
           )

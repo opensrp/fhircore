@@ -89,7 +89,7 @@ constructor(
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
     val patient = defaultRepository.loadResource<Patient>(resourceId)!!
 
-    return ProfileData.HivProfileData(
+    return ProfileData.DefaultProfileData(
       logicalId = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
