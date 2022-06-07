@@ -95,32 +95,34 @@ constructor(
       .filters
       .filter { it.id.contentEquals(id, ignoreCase = true) }
 
+  /**
+   *
+   * each section in composition represents workflow
+   * { "title": "register configuration",
+   * "mode": "working",
+   * "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } }
+   * }
+   *
+   * A workflow point would be mapped like
+   * "workflowPoint": "registration",
+   * "resource": "RegisterViewConfiguration",
+   * "classification": "patient_register",
+   * "description": "register configuration"
+   *
+   */
   suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     this.appId = appId
 
-    // appId is identifier of Composition
     repository
       .searchCompositionByIdentifier(appId)
       .also { if (it == null) configsLoadedCallback(false) }
       ?.section
       ?.filter {
-        it.focus.reference.split("/")[0].let { resourceType ->
+        it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0).let { resourceType ->
           resourceType == ResourceType.Parameters.name || resourceType == ResourceType.Binary.name
         }
       }
       ?.forEach {
-        // each section in composition represents workflow
-        // { "title": "register configuration",
-        //   "mode": "working",
-        //   "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } }
-        // }
-
-        // A workflow point would be mapped like
-        //   "workflowPoint": "registration",
-        //   "resource": "RegisterViewConfiguration",
-        //   "classification": "patient_register",
-        //   "description": "register configuration"
-
         val workflowPointName = workflowPointName(it.focus.identifier.value)
         val workflowPoint =
           WorkflowPoint(
@@ -134,7 +136,7 @@ constructor(
       ?.also { configsLoadedCallback(true) }
   }
 
-  suspend fun loadConfigurationsLocally(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
+  fun loadConfigurationsLocally(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     val parsedAppId = appId.substringBefore("/$DEBUG_SUFFIX")
     this.appId = parsedAppId
 
@@ -149,8 +151,9 @@ constructor(
         .decodeResourceFromString<Composition>()
         .section
         .filter {
-          it.focus.reference.split("/")[0].let { resourceType ->
-            resourceType == ResourceType.Parameters.name || resourceType == ResourceType.Binary.name
+          it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0).let { resourceType ->
+            resourceType == ResourceType.Parameters.name
+                    || resourceType == ResourceType.Binary.name
           }
         }
         .forEach { sectionComponent ->
@@ -193,15 +196,17 @@ constructor(
         repository
           .searchCompositionByIdentifier(appId)
           ?.section
-          ?.groupBy { it.focus.reference.split("/")[0] }
+          ?.groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0) ?: "" }
           ?.entries
-          ?.filterNot {
-            it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name
+          ?.filterNot { sectionEntry ->
+            sectionEntry.key == ResourceType.Binary.name
+                    || sectionEntry.key == ResourceType.Parameters.name
+                    || sectionEntry.key == ""
           }
-          ?.forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            val ids = entry.value.joinToString(",") { it.focus.extractId() }
-            val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
-            fhirResourceDataSource.loadData(rPath).entry.forEach {
+          ?.forEach { sectionEntry ->
+            val resourceIds = sectionEntry.value.joinToString(",") { it.focus.extractId() }
+            val resourcePath = sectionEntry.key + "?${Composition.SP_RES_ID}=$resourceIds"
+            fhirResourceDataSource.loadData(resourcePath).entry.forEach {
               repository.addOrUpdate(it.resource)
             }
           }
@@ -229,5 +234,6 @@ constructor(
     const val ID = "_id"
     const val COUNT = "count"
     const val DEFAULT_COUNT = "100"
+    const val TYPE_REFERENCE_DELIMITER = "/"
   }
 }
