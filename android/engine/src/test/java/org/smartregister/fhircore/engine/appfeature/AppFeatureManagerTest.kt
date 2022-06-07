@@ -61,18 +61,18 @@ class AppFeatureManagerTest : RobolectricTest() {
 
   @Test
   fun testActivatedFeatures_shouldReturn_empty() {
-    Assert.assertEquals(appFeatureManager.activatedFeatures().size, 0)
+    Assert.assertEquals(0, appFeatureManager.activatedFeatures().size)
   }
 
   @Test
   fun testActivatedFeatures_shouldReturn_2() {
     appFeatureManager.loadAndActivateFeatures()
-    Assert.assertEquals(appFeatureManager.activatedFeatures().size, 2)
+    Assert.assertEquals(2, appFeatureManager.activatedFeatures().size)
   }
 
   @Test
   fun testActiveRegisterFeatures_shouldReturn_2() {
-    Assert.assertEquals(appFeatureManager.activeRegisterFeatures().size, 2)
+    Assert.assertEquals(2, appFeatureManager.activeRegisterFeatures().size)
   }
 
   @Test
@@ -91,32 +91,32 @@ class AppFeatureManagerTest : RobolectricTest() {
   fun testAppFeatureSettings_shouldReturn_1() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(
-      appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement).size,
-      1
+      1,
+      appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement).size
     )
   }
 
   @Test
   fun testAppFeatureSettings_shouldReturn_empty() {
     appFeatureManager.loadAndActivateFeatures()
-    Assert.assertEquals(appFeatureManager.appFeatureSettings(AppFeature.PatientManagement).size, 0)
+    Assert.assertEquals(0, appFeatureManager.appFeatureSettings(AppFeature.PatientManagement).size)
   }
 
   @Test
   fun testAppFeatureSettings_withStringName_shouldReturn_1() {
     appFeatureManager.loadAndActivateFeatures()
-    Assert.assertEquals(appFeatureManager.appFeatureSettings("HouseholdManagement").size, 1)
+    Assert.assertEquals(1, appFeatureManager.appFeatureSettings("HouseholdManagement").size)
   }
 
   @Test
   fun testAppFeatureSettings_withStringName_shouldReturn_empty() {
     appFeatureManager.loadAndActivateFeatures()
-    Assert.assertEquals(appFeatureManager.appFeatureSettings("PatientManagement").size, 0)
+    Assert.assertEquals(0, appFeatureManager.appFeatureSettings("PatientManagement").size)
   }
 
   @Test
   fun testAppFeatureHasSetting_shouldReturn_true() {
     appFeatureManager.loadAndActivateFeatures()
-    Assert.assertEquals(appFeatureManager.appFeatureHasSetting("deactivateMembers"), true)
+    Assert.assertEquals(true, appFeatureManager.appFeatureHasSetting("deactivateMembers"))
   }
 }

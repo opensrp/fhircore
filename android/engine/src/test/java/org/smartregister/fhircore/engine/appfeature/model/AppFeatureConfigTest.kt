@@ -37,16 +37,16 @@ class AppFeatureConfigTest {
 
   @Test
   fun testGetAppId_shouldReturn_test() {
-    Assert.assertEquals(appFeatureConfig.appId, "quest")
+    Assert.assertEquals("quest", appFeatureConfig.appId)
   }
 
   @Test
   fun testGetClassification_shouldReturn_test_configuration() {
-    Assert.assertEquals(appFeatureConfig.classification, "app_feature")
+    Assert.assertEquals("app_feature", appFeatureConfig.classification)
   }
 
   @Test
   fun testGetAppFeatures_shouldReturn_3() {
-    Assert.assertEquals(appFeatureConfig.appFeatures.size, 3)
+    Assert.assertEquals(3, appFeatureConfig.appFeatures.size)
   }
 }

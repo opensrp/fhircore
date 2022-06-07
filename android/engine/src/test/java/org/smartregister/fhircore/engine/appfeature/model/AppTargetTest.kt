@@ -23,7 +23,7 @@ class AppTargetTest {
 
   @Test
   fun testAppTarget_shouldReturn_2() {
-    Assert.assertEquals(AppTarget.values().size, 2)
+    Assert.assertEquals(2, AppTarget.values().size)
   }
 
   @Test
