@@ -26,8 +26,9 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
@@ -176,9 +177,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertEquals("$testAppId|abbb", configurationRegistry.workflowPointName("abbb"))
   }
 
+  @ExperimentalCoroutinesApi
   @Test
   fun testLoadConfigurationsLocally_shouldReturn_8_workflows() {
-    runBlockingTest {
+    runTest {
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
       configurationRegistry.loadConfigurationsLocally("$testAppId/debug") { Assert.assertTrue(it) }
       Assert.assertEquals(8, configurationRegistry.workflowPointsMap.size)
@@ -197,9 +199,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     }
   }
 
+  @ExperimentalCoroutinesApi
   @Test
   fun testLoadConfigurationsLocally_shouldReturn_empty_workflows() {
-    runBlockingTest {
+    runTest {
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
       configurationRegistry.loadConfigurationsLocally("") { Assert.assertFalse(it) }
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
