@@ -34,6 +34,7 @@ sealed class ProfileViewData(
     val dob: String = "",
     val tasks: List<PatientProfileRowItem> = emptyList(),
     val forms: List<FormButtonData> = emptyList(),
+    val formResponses: List<PatientProfileRowItem> = emptyList(),
     val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
     val upcomingServices: List<PatientProfileRowItem> = emptyList(),
     val ancCardData: List<PatientProfileRowItem> = emptyList(),

@@ -51,10 +51,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
@@ -195,6 +195,20 @@ fun PatientProfileScreen(
               )
             }
             Spacer(modifier.height(16.dp))
+          }
+        }
+
+        // Form responses: load questionnaire responses
+        if (profileViewData.formResponses.isNotEmpty()) {
+          ProfileCard(
+            title =
+              stringResource(R.string.responses, profileViewData.formResponses.size).uppercase(),
+            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+            profileViewSection = PatientProfileViewSection.FORM_RESPONSES
+          ) {
+            profileViewData.formResponses.forEach {
+              ProfileActionableItem(it, onActionClick = { _, _ -> })
+            }
           }
         }
 

@@ -97,7 +97,7 @@ private fun PatientProfileSectionPreview() {
     Column {
       ProfileActionableItem(
         PatientProfileRowItem(
-          id = "1",
+          logicalId = "1",
           title = "ANC",
           titleIcon = R.drawable.ic_pregnant,
           subtitle = "due date",
@@ -110,7 +110,7 @@ private fun PatientProfileSectionPreview() {
       Divider()
       ProfileActionableItem(
         PatientProfileRowItem(
-          id = "2",
+          logicalId = "2",
           title = "Sick",
           titleIcon = R.drawable.ic_pregnant,
           subtitle = "due date",

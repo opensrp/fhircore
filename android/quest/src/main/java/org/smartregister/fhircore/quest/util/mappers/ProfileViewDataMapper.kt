@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.translateGender
@@ -89,7 +90,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
-                id = it.logicalId,
+                logicalId = it.logicalId,
                 actionFormId =
                   if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
                     it.reasonReference.extractId()
@@ -106,6 +107,25 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                   else it.status.retrieveColorCode(),
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
+              )
+            },
+          formResponses =
+            inputModel.responses.map {
+              val (questionnaire, questionnaireResponse) = it
+              PatientProfileRowItem(
+                logicalId = inputModel.logicalId,
+                title =
+                  context.getString(
+                    R.string.questionnaire_response_name,
+                    questionnaire.name,
+                    questionnaireResponse.authored?.asDdMmmYyyy() ?: ""
+                  ),
+                subtitle = "", // TODO display configured content here and below
+                subtitleStatus = null,
+                profileViewSection = PatientProfileViewSection.TEST_RESULTS,
+                showDot = false,
+                showAngleRightIcon = true,
+                actionFormId = questionnaire.logicalId
               )
             }
         )

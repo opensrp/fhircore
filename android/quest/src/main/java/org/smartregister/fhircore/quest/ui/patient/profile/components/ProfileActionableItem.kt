@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.patient.profile.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,45 +64,48 @@ fun ProfileActionableItem(
   modifier: Modifier = Modifier,
   onActionClick: (String, String) -> Unit,
 ) {
-  Row(
-    modifier = modifier.fillMaxWidth().padding(16.dp),
-    horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      if (patientProfileRowItem.profileViewSection == PatientProfileViewSection.UPCOMING_SERVICES &&
-          patientProfileRowItem.startIcon != null
-      ) {
-        Box(
-          contentAlignment = Alignment.Center,
-          modifier =
-            modifier
-              .padding(end = 8.dp)
-              .clip(RoundedCornerShape(6.dp))
-              .background(
-                patientProfileRowItem.startIconBackgroundColor ?: DefaultColor.copy(alpha = 0.3f),
-              )
-              .padding(8.dp)
+  Column(modifier.clickable {}) {
+    Row(
+      modifier = modifier.fillMaxWidth().padding(16.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        if (patientProfileRowItem.profileViewSection ==
+            PatientProfileViewSection.UPCOMING_SERVICES && patientProfileRowItem.startIcon != null
         ) {
-          Image(
-            painter = painterResource(patientProfileRowItem.startIcon),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            colorFilter =
-              ColorFilter.tint(
-                if (patientProfileRowItem.startIconBackgroundColor != null) Color.White
-                else Color.Black.copy(alpha = 0.5f)
-              )
-          )
+          Box(
+            contentAlignment = Alignment.Center,
+            modifier =
+              modifier
+                .padding(end = 8.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(
+                  patientProfileRowItem.startIconBackgroundColor ?: DefaultColor.copy(alpha = 0.3f),
+                )
+                .padding(8.dp)
+          ) {
+            Image(
+              painter = painterResource(patientProfileRowItem.startIcon),
+              contentDescription = null,
+              contentScale = ContentScale.FillBounds,
+              colorFilter =
+                ColorFilter.tint(
+                  if (patientProfileRowItem.startIconBackgroundColor != null) Color.White
+                  else Color.Black.copy(alpha = 0.5f)
+                )
+            )
+          }
+        }
+        Column {
+          TitleRow(patientProfileRowItem = patientProfileRowItem, modifier = modifier)
+          Spacer(modifier = modifier.height(8.dp))
+          SubtitleRow(patientProfileRowItem = patientProfileRowItem, modifier = modifier)
         }
       }
-      Column {
-        TitleRow(patientProfileRowItem = patientProfileRowItem, modifier = modifier)
-        Spacer(modifier = modifier.height(8.dp))
-        SubtitleRow(patientProfileRowItem = patientProfileRowItem, modifier = modifier)
-      }
+      ActionButton(patientProfileRowItem, modifier, onActionClick)
     }
-    ActionButton(patientProfileRowItem, modifier, onActionClick)
+    Divider(modifier = modifier.height(0.75.dp))
   }
 }
 
@@ -118,7 +122,7 @@ private fun ActionButton(
     OutlinedButton(
       onClick = {
         patientProfileRowItem.actionFormId?.let { taskFormId ->
-          onActionClick(taskFormId, patientProfileRowItem.id)
+          onActionClick(taskFormId, patientProfileRowItem.logicalId)
         }
       },
       colors =
@@ -192,7 +196,7 @@ fun ProfileActionableItemForTasksPreview() {
   Column {
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "1",
+        logicalId = "1",
         title = "ANC",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "due date",
@@ -202,10 +206,10 @@ fun ProfileActionableItemForTasksPreview() {
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
+
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "2",
+        logicalId = "2",
         title = "Sick",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "due date",
@@ -224,17 +228,16 @@ fun ProfileActionableItemForAncCardPreview() {
   Column {
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "1",
+        logicalId = "1",
         title = "Granuloma Annulare",
         subtitle = "23 weeks (EDD: 20-Jun-2021)",
         profileViewSection = PatientProfileViewSection.SERVICE_CARD
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "2",
+        logicalId = "2",
         title = "Blood pressure",
         subtitle = "111/80",
         subtitleStatus = "at risk",
@@ -243,10 +246,9 @@ fun ProfileActionableItemForAncCardPreview() {
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "3",
+        logicalId = "3",
         title = "Heart rate",
         subtitle = "186",
         subtitleStatus = "danger",
@@ -255,10 +257,9 @@ fun ProfileActionableItemForAncCardPreview() {
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "4",
+        logicalId = "4",
         title = "Weight gain",
         subtitle = "+ 6.7kg",
         subtitleStatus = "good",
@@ -276,27 +277,25 @@ fun ProfileActionableItemForMedicalHistoryPreview() {
   Column {
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "1",
+        logicalId = "1",
         title = "Diarrhoea",
         subtitle = "Stomach ache, with painful running stomach",
         profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "2",
+        logicalId = "2",
         title = "Malaria",
         subtitle = "High temperatures and loss of appetite, long sleepless nights",
         profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "3",
+        logicalId = "3",
         title = "Health issue",
         subtitle = "Description of symptoms",
         profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
@@ -312,7 +311,7 @@ fun ProfileActionableItemForTestResultsPreview() {
   Column {
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "1",
+        logicalId = "1",
         title = "Deficient (5-Oct-2021)",
         subtitle = "G6PD: 4.4",
         subtitleStatus = "Hb: 2.2",
@@ -322,10 +321,9 @@ fun ProfileActionableItemForTestResultsPreview() {
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "2",
+        logicalId = "2",
         title = "Normal (30-Aug-2020)",
         subtitle = "G6PD: 6.0",
         subtitleStatus = "Hb: 9.0",
@@ -335,10 +333,9 @@ fun ProfileActionableItemForTestResultsPreview() {
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "3",
+        logicalId = "3",
         title = "Deficient (11-Mar-2020)",
         subtitle = "G6PD: 4.3",
         subtitleStatus = "Hb: 2.0",
@@ -357,7 +354,7 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
   Column {
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "1",
+        logicalId = "1",
         title = "ANC facility visit",
         subtitle = "22-May-2021",
         profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
@@ -366,10 +363,9 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "2",
+        logicalId = "2",
         title = "Sick check in",
         subtitle = "25-Aug-2021",
         profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
@@ -378,10 +374,9 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
       ),
       onActionClick = { _, _ -> }
     )
-    Divider()
     ProfileActionableItem(
       PatientProfileRowItem(
-        id = "3",
+        logicalId = "3",
         title = "Vaccination",
         subtitle = "03-Sept-2021",
         profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,

@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
 data class PatientProfileRowItem(
-  val id: String,
+  val logicalId: String,
   val actionFormId: String? = null,
   val startIcon: Int? = null,
   val startIconBackgroundColor: Color? = null,

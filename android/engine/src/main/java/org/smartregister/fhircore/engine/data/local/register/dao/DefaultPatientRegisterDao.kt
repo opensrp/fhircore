@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.register.dao
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
@@ -29,6 +30,7 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -42,6 +44,7 @@ import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
+import timber.log.Timber
 
 @Singleton
 class DefaultPatientRegisterDao
@@ -123,12 +126,38 @@ constructor(
           ),
         forms = defaultRepository.searchQuestionnaireConfig(formsFilter),
         responses =
-          defaultRepository.searchResourceFor(
-            subjectId = resourceId,
-            subjectParam = QuestionnaireResponse.SUBJECT
-          )
+          defaultRepository.searchResourceFor<QuestionnaireResponse>(
+              subjectId = resourceId,
+              subjectParam = QuestionnaireResponse.SUBJECT
+            )
+            .mapNotNull {
+              val questionnaire = retrieveQuestionnaire(it)
+              if (questionnaire != null) Pair(questionnaire, it) else null
+            }
       )
     }
+
+  suspend fun retrieveQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire? {
+    return if (questionnaireResponse.questionnaire.isNullOrBlank() ||
+        !questionnaireResponse.questionnaire.contains("/")
+    ) {
+      Timber.e(
+        Exception(
+          "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+        )
+      )
+      null
+    } else {
+      try {
+        defaultRepository.loadQuestionnaire(
+          questionnaireId = questionnaireResponse.questionnaire.substringAfterLast("/")
+        )
+      } catch (resourceNotFound: ResourceNotFoundException) {
+        Timber.e(resourceNotFound)
+        null
+      }
+    }
+  }
 
   companion object {
     const val FORMS_LIST_FILTER_KEY = "forms_list"
