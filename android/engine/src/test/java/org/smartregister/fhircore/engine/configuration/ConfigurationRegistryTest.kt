@@ -183,11 +183,12 @@ class ConfigurationRegistryTest : RobolectricTest() {
     runTest {
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
       configurationRegistry.loadConfigurationsLocally("$testAppId/debug") { Assert.assertTrue(it) }
-      Assert.assertEquals(8, configurationRegistry.workflowPointsMap.size)
+      Assert.assertEquals(9, configurationRegistry.workflowPointsMap.size)
 
       val workflows = configurationRegistry.workflowPointsMap
       Assert.assertTrue(workflows.containsKey("default|application"))
       Assert.assertTrue(workflows.containsKey("default|login"))
+      Assert.assertTrue(workflows.containsKey("default|app_feature"))
       Assert.assertTrue(workflows.containsKey("default|patient_register"))
       Assert.assertTrue(workflows.containsKey("default|patient_task_register"))
       Assert.assertTrue(workflows.containsKey("default|pin"))

@@ -25,7 +25,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import java.util.Date
@@ -43,6 +42,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.updateFrom
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao
@@ -65,52 +65,16 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         }
     )
 
-  suspend inline fun <reified R : Resource> addOrUpdate(resource: R) {
+  suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
       try {
-        fhirEngine.get<R>(resource.logicalId).run { fhirEngine.update(updateFrom(resource)) }
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
+          fhirEngine.update(updateFrom(resource))
+        }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
         fhirEngine.create(resource)
-      }
-    }
-  }
-
-  suspend fun loadResources(lastRecordUpdatedAt: Long, batchSize: Int): List<Patient>? {
-    return withContext(dispatcherProvider.io()) {
-      // TODO FIX search order by _lastUpdated; SearchQuery no longer allowed in search API
-      /* val searchQuery =
-        SearchQuery(
-          """
-      SELECT a.serializedResource, b.index_to
-      FROM ResourceEntity a
-      LEFT JOIN DateTimeIndexEntity b
-      ON a.resourceType = b.resourceType AND a.resourceId = b.resourceId AND b.index_name = '_lastUpdated'
-      WHERE a.resourceType = 'Patient'
-      AND a.resourceId IN (
-      SELECT resourceId FROM DateTimeIndexEntity
-      WHERE resourceType = 'Patient' AND index_name = '_lastUpdated' AND index_to > ?
-      )
-      ORDER BY b.index_from ASC
-      LIMIT ?
-          """.trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize)
-        )
-          fhirEngine.search(searchQuery)
-        */
-
-      fhirEngine.search {
-        sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
-        filter(
-          DateClientParam("_lastUpdated"),
-          {
-            value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-          }
-        )
-
-        // sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
-        count = batchSize
       }
     }
   }
@@ -149,7 +113,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
             DateClientParam("_lastUpdated"),
             {
               value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+              prefix = ParamPrefixEnum.GREATERTHAN
             }
           )
 
@@ -160,7 +124,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     }
   }
 
-  protected fun resourceClassType(type: DataType) =
+  fun resourceClassType(type: DataType) =
     when (ResourceType.valueOf(type.name)) {
       ResourceType.Group -> Group::class.java
       ResourceType.Encounter -> Encounter::class.java
