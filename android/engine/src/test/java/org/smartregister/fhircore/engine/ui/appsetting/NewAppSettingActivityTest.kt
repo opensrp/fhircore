@@ -65,6 +65,7 @@ class NewAppSettingActivityTest {
   fun testAppSettingActivity_withAppId_hasNotBeenSubmitted() {
     every { accountAuthenticator.hasActiveSession() } returns false
 
+    activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
       Assert.assertEquals(null, activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
@@ -77,6 +78,7 @@ class NewAppSettingActivityTest {
     sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
     every { accountAuthenticator.hasActiveSession() } returns false
 
+    activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
       Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
@@ -90,6 +92,7 @@ class NewAppSettingActivityTest {
     sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
     every { accountAuthenticator.hasActiveSession() } returns true
 
+    activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
       Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
@@ -103,6 +106,7 @@ class NewAppSettingActivityTest {
     sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
     every { accountAuthenticator.hasActiveSession() } returns false
 
+    activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
       Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
@@ -115,6 +119,7 @@ class NewAppSettingActivityTest {
     sharedPreferencesHelper.write(APP_ID_CONFIG, "default/debug")
     every { accountAuthenticator.hasActiveSession() } returns true
 
+    activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       activity.configurationRegistry.workflowPointsMap.let { workflows ->
         Assert.assertEquals(9, workflows.size)
