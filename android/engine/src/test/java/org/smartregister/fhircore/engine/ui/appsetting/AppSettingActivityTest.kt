@@ -43,7 +43,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 @HiltAndroidTest
 @Config(application = HiltTestApplication::class)
 @RunWith(AndroidJUnit4::class)
-class NewAppSettingActivityTest {
+class AppSettingActivityTest {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) var activityScenarioRule = activityScenarioRule<AppSettingActivity>()
