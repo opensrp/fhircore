@@ -19,31 +19,41 @@ package org.smartregister.fhircore.engine.appfeature
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.mockk
+import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import javax.inject.Inject
 
 class AppFeatureManagerTest : RobolectricTest() {
 
   val context: Context = ApplicationProvider.getApplicationContext()
+  lateinit var dispatcherProvider: DispatcherProvider
   lateinit var appFeatureManager: AppFeatureManager
   lateinit var configurationRegistry: ConfigurationRegistry
   lateinit var defaultRepository: DefaultRepository
   lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  lateinit var fhirResourceDataSource: FhirResourceDataSource
 
   @Before
   fun setUp() {
     defaultRepository = mockk()
     sharedPreferencesHelper = mockk()
+    dispatcherProvider = mockk()
+    fhirResourceDataSource = spyk(FhirResourceDataSource(mockk()))
     configurationRegistry =
       ConfigurationRegistry(
         context = context,
+        fhirResourceDataSource = fhirResourceDataSource,
         sharedPreferencesHelper = sharedPreferencesHelper,
+        dispatcherProvider = dispatcherProvider,
         repository = defaultRepository
       )
     Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
