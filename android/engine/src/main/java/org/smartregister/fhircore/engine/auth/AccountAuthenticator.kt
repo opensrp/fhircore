@@ -221,11 +221,11 @@ constructor(
 
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
     Timber.v("Validating credentials with local storage")
-    return secureSharedPreference.retrieveCredentials()?.let {
-      it.username.contentEquals(username) &&
-        it.password.contentEquals(password.concatToString().toSha1())
-    }
-      ?: false
+    return if (accountExists(username)) {
+      val credentials = secureSharedPreference.retrieveCredentials()
+      credentials?.username.contentEquals(username, true) &&
+        credentials?.password.contentEquals(password.concatToString().toSha1())
+    } else false
   }
 
   fun updateSession(successResponse: OAuthResponse) {
@@ -327,6 +327,16 @@ constructor(
   fun clientId(): String = configService.provideAuthConfiguration().clientId
 
   fun providerScope(): String = configService.provideAuthConfiguration().scope
+
+  fun validatePreviousLogin(username: String): Boolean {
+    if (secureSharedPreference.retrieveCredentials() == null) return true
+    return accountExists(username)
+  }
+
+  private fun accountExists(username: String) =
+    accountManager.accounts.find {
+      it.name.equals(username, true) && it.type == getAccountType()
+    } != null && secureSharedPreference.retrieveCredentials()?.username.equals(username, true)
 
   companion object {
     const val AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE"

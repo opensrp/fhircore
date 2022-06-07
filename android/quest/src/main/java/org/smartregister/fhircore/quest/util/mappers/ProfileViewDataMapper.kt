@@ -85,6 +85,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           age = inputModel.age,
           sex = inputModel.gender.translateGender(context),
           dob = inputModel.birthdate?.formatDob() ?: "",
+          forms = inputModel.forms.map { FormButtonData(it.title, it.identifier) },
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
@@ -106,8 +107,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
               )
-            },
-          forms = inputModel.forms.map { FormButtonData(it.title, it.identifier) }
+            }
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(

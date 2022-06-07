@@ -117,7 +117,7 @@ constructor(
         if (!response.isSuccessful) {
           handleFailure(call, IOException("Network call failed with $response"))
         } else {
-          with(accountAuthenticator) {
+          accountAuthenticator.run {
             addAuthenticatedAccount(
               response,
               username.value!!.trim(),
@@ -132,6 +132,7 @@ constructor(
         Timber.e(throwable.stackTraceToString())
         if (attemptLocalLogin()) {
           _navigateToHome.value = true
+          _showProgressBar.postValue(false)
           return
         }
         handleErrorMessage(throwable)
@@ -239,9 +240,18 @@ constructor(
     if (!username.value.isNullOrBlank() && !password.value.isNullOrBlank()) {
       _loginErrorState.postValue(null)
       _showProgressBar.postValue(true)
-      accountAuthenticator
-        .fetchToken(username.value!!.trim(), password.value!!.trim().toCharArray())
-        .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})
+
+      // For subsequent logins only allow previously logged in accounts
+      accountAuthenticator.run {
+        val trimmedUsername = username.value!!.trim()
+        if (validatePreviousLogin(trimmedUsername)) {
+          fetchToken(trimmedUsername, password.value!!.trim().toCharArray())
+            .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})
+        } else {
+          _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+          _showProgressBar.postValue(false)
+        }
+      }
     }
   }
 

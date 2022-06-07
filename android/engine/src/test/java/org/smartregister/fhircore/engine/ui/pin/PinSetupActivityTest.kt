@@ -38,12 +38,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -111,12 +109,6 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     val expectedIntent = Intent(pinSetupActivity, LoginActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  }
-
-  @Test
-  fun testMoveToHome() {
-    ReflectionHelpers.callInstanceMethod<Any>(pinSetupActivity, "moveToHome")
-    Assert.assertNotNull(sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false))
   }
 
   override fun getActivity(): Activity {

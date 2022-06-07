@@ -397,7 +397,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testLaunchLoginScreenShouldStartLoginActivity() {
-    accountAuthenticator.launchLoginScreen()
+    accountAuthenticator.launchScreen(LoginActivity::class.java)
     val startedIntent: Intent =
       shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>()).nextStartedActivity
     val shadowIntent: ShadowIntent = shadowOf(startedIntent)

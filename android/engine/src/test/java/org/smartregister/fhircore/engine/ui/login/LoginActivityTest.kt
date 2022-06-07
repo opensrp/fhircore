@@ -46,7 +46,6 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -112,7 +111,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenForcedLogin() {
     coEvery { accountAuthenticator.hasActivePin() } returns false
-    sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, true)
     val loginConfig = loginViewConfigurationOf(enablePin = true)
     loginViewModel.updateViewConfigurations(loginConfig)
     loginViewModel.navigateToHome()
