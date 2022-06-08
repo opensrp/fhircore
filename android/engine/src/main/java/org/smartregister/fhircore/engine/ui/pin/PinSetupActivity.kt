@@ -66,6 +66,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
 
   private fun moveToHome() {
     sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false)
+    configurationRegistry.fetchNonWorkflowConfigResources()
     syncBroadcaster.get().runSync()
     loginService.navigateToHome()
   }
