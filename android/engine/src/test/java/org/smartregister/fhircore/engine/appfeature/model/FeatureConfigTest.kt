@@ -46,46 +46,46 @@ class FeatureConfigTest {
 
   @Test
   fun testGetFeature_shouldReturn_HouseHoldManagement() {
-    Assert.assertEquals(featureConfig.feature, "HouseHoldManagement")
+    Assert.assertEquals("HouseHoldManagement", featureConfig.feature)
   }
 
   @Test
   fun testGetActive_shouldReturn_true() {
-    Assert.assertEquals(featureConfig.active, true)
+    Assert.assertEquals(true, featureConfig.active)
   }
 
   @Test
   fun testGetSettings_shouldReturn_1() {
-    Assert.assertEquals(featureConfig.settings.size, 1)
+    Assert.assertEquals(1, featureConfig.settings.size)
   }
 
   @Test
   fun testGetSettings_deactivateMembers_shouldContain_deactivateMembers() {
-    Assert.assertEquals(featureConfig.settings.containsKey("deactivateMembers"), true)
+    Assert.assertEquals(true, featureConfig.settings.containsKey("deactivateMembers"))
   }
 
   @Test
   fun testGetTarget_shouldReturn_CHW() {
-    Assert.assertEquals(featureConfig.target.toStr(), "CHW")
+    Assert.assertEquals("CHW", featureConfig.target.toStr())
   }
 
   @Test
   fun testGetHealthModule_shouldReturn_FAMILY() {
-    Assert.assertEquals(featureConfig.healthModule.toStr(), "FAMILY")
+    Assert.assertEquals("FAMILY", featureConfig.healthModule.toStr())
   }
 
   @Test
   fun testGetUseCases_shouldReturn_4() {
     Assert.assertNotNull(featureConfig.useCases)
-    Assert.assertEquals(featureConfig.useCases!!.size, 4)
+    Assert.assertEquals(4, featureConfig.useCases!!.size)
   }
 
   @Test
   fun testGetUseCases_shouldContain_allUseCases() {
     Assert.assertNotNull(featureConfig.useCases)
-    Assert.assertEquals(featureConfig.useCases!!.contains("HOUSEHOLD_REGISTRATION"), true)
-    Assert.assertEquals(featureConfig.useCases!!.contains("REMOVE_HOUSEHOLD"), true)
-    Assert.assertEquals(featureConfig.useCases!!.contains("HOUSEHOLD_VISITS"), true)
-    Assert.assertEquals(featureConfig.useCases!!.contains("REMOVE_HOUSEHOLD_MEMBER"), true)
+    Assert.assertEquals(true, featureConfig.useCases!!.contains("HOUSEHOLD_REGISTRATION"))
+    Assert.assertEquals(true, featureConfig.useCases!!.contains("REMOVE_HOUSEHOLD"))
+    Assert.assertEquals(true, featureConfig.useCases!!.contains("HOUSEHOLD_VISITS"))
+    Assert.assertEquals(true, featureConfig.useCases!!.contains("REMOVE_HOUSEHOLD_MEMBER"))
   }
 }

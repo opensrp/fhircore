@@ -68,6 +68,7 @@ class LoginActivity :
             }
           }
         } else {
+          configurationRegistry.fetchNonWorkflowConfigResources()
           syncBroadcaster.get().runSync()
           loginService.navigateToHome()
         }
@@ -94,6 +95,7 @@ class LoginActivity :
 
   private fun goToHomeScreen(sharedPreferencesKey: String, sharedPreferencesValue: Boolean) {
     loginViewModel.sharedPreferences.write(sharedPreferencesKey, sharedPreferencesValue)
+    configurationRegistry.fetchNonWorkflowConfigResources()
     syncBroadcaster.get().runSync()
     loginService.navigateToHome()
   }
