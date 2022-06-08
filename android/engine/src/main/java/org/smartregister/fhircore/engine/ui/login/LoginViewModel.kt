@@ -117,7 +117,7 @@ constructor(
         if (!response.isSuccessful) {
           handleFailure(call, IOException("Network call failed with $response"))
         } else {
-          with(accountAuthenticator) {
+          accountAuthenticator.run {
             addAuthenticatedAccount(
               response,
               username.value!!.trim(),
@@ -131,7 +131,8 @@ constructor(
       override fun handleFailure(call: Call<OAuthResponse>, throwable: Throwable) {
         Timber.e(throwable.stackTraceToString())
         if (attemptLocalLogin()) {
-          _navigateToHome.value = true
+          _navigateToHome.postValue(true)
+          _showProgressBar.postValue(false)
           return
         }
         handleErrorMessage(throwable)
@@ -188,6 +189,9 @@ constructor(
           _navigateToHome.postValue(true)
         }
       }
+    } else {
+      _showProgressBar.postValue(false)
+      _navigateToHome.postValue(true)
     }
   }
 
@@ -227,7 +231,7 @@ constructor(
     val bundle = future?.result ?: bundleOf()
     bundle.getString(AccountManager.KEY_AUTHTOKEN)?.run {
       if (this.isNotEmpty() && accountAuthenticator.tokenManagerService.isTokenActive(this)) {
-        _navigateToHome.value = true
+        _navigateToHome.postValue(true)
       }
     }
   }
