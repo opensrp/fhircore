@@ -275,4 +275,35 @@ internal class LoginViewModelTest : RobolectricTest() {
       Assert.assertTrue(loginViewModel.navigateToHome.value!!)
     }
   }
+  @Test
+  fun testFetchLoggedInPractitionerWithNullKeycloakUuid() {
+    coroutineTestRule.runBlockingTest {
+      val userInfo =
+        UserInfo(
+          questionnairePublisher = "quesP1",
+          keycloakUuid = null,
+          organization = "org",
+          location = "Nairobi"
+        )
+
+      val practitionerId = "12123"
+
+      coEvery { resourceService.searchResource(ResourceType.Practitioner.name, any()) } returns
+        Bundle().apply {
+          entry.add(
+            Bundle.BundleEntryComponent().apply {
+              resource = Practitioner().apply { id = practitionerId }
+            }
+          )
+        }
+
+      loginViewModel.fetchLoggedInPractitioner(userInfo)
+
+      // Eventually dismisses the progress dialog and navigates home
+      Assert.assertNotNull(loginViewModel.showProgressBar.value)
+      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+      Assert.assertNotNull(loginViewModel.navigateToHome.value)
+      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+    }
+  }
 }
