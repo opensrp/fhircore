@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">Malawi Core</string>
+    <string name="sex">Gender</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.mwcore</string>
 </resources>
