@@ -154,6 +154,8 @@ android {
             dimension "apps"
             applicationIdSuffix ".afyayangu"
             versionNameSuffix "-afyayangu"
+            versionCode 1
+            versionName "0.0.1"
         }
     }
 }
