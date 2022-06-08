@@ -96,13 +96,29 @@ constructor(
       .filter { it.id.contentEquals(id, ignoreCase = true) }
 
   /**
+   * Populate application's workflow points from the composition resource. Only Binary and Parameter
+   * Resources are used to represent workflow point configurations.
    *
-   * each section in composition represents workflow { "title": "register configuration", "mode":
-   * "working", "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } } }
+   * Sections in Composition with Binary or Parameter represents a workflow { "title": "register
+   * configuration",
+   * ```
+   *    "mode": "working",
+   *    "focus": {
+   *      "reference": "Binary/11111",
+   *      "identifier: {
+   *      "value": "registration"
+   *      }
+   *    }
+   * ```
+   * }
    *
    * A workflow point would be mapped like "workflowPoint": "registration", "resource":
    * "RegisterViewConfiguration", "classification": "patient_register", "description": "register
    * configuration"
+   *
+   * @param appId application's unique identifier
+   * @param configsLoadedCallback function for use as trailing lambda that provides Boolean
+   * indicating whether configurations were loaded successfully or not
    */
   suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     this.appId = appId
@@ -111,11 +127,7 @@ constructor(
       .searchCompositionByIdentifier(appId)
       .also { if (it == null) configsLoadedCallback(false) }
       ?.section
-      ?.filter {
-        it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0).let { resourceType ->
-          resourceType == ResourceType.Parameters.name || resourceType == ResourceType.Binary.name
-        }
-      }
+      ?.filter { isWorkflowPoint(it) }
       ?.forEach {
         val workflowPointName = workflowPointName(it.focus.identifier.value)
         val workflowPoint =
@@ -144,11 +156,7 @@ constructor(
         .use { it.readText() }
         .decodeResourceFromString<Composition>()
         .section
-        .filter {
-          it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0).let { resourceType ->
-            resourceType == ResourceType.Parameters.name || resourceType == ResourceType.Binary.name
-          }
-        }
+        .filter { isWorkflowPoint(it) }
         .forEach { sectionComponent ->
           val binaryConfigPath =
             BINARY_CONFIG_PATH.run {
@@ -182,6 +190,18 @@ constructor(
       ?.also { configsLoadedCallback(true) }
   }
 
+  /**
+   * Fetch non-patient Resources for the application that are not workflow point configurations such
+   * as Questionnaire and StructureMap These are section components of the Composition
+   *
+   * This function retrieves the composition based on the appId and groups the non workflow sections
+   * (not Binary or Parameter) based on their resource types
+   *
+   * To enable searching of the non workflow (not Binary or Parameter) resources represented in the
+   * composition in a single search query by resource type using the _id search parameter, the
+   * section components are grouped by resource type ,ids concatenated (with comma separator), and a
+   * search query path generated in the format 'Resource Type'?_id='comma separated list of ids'
+   */
   fun fetchNonWorkflowConfigResources() {
     CoroutineScope(dispatcherProvider.io()).launch {
       try {
@@ -191,15 +211,16 @@ constructor(
           ?.section
           ?.groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0) ?: "" }
           ?.entries
-          ?.filterNot { sectionEntry ->
-            sectionEntry.key == ResourceType.Binary.name ||
-              sectionEntry.key == ResourceType.Parameters.name ||
-              sectionEntry.key == ""
+          ?.filterNot {
+            it.key in arrayOf(ResourceType.Binary.name, ResourceType.Parameters.name, "")
           }
-          ?.forEach { sectionEntry ->
-            val resourceIds = sectionEntry.value.joinToString(",") { it.focus.extractId() }
-            val resourcePath = sectionEntry.key + "?${Composition.SP_RES_ID}=$resourceIds"
-            fhirResourceDataSource.loadData(resourcePath).entry.forEach {
+          ?.forEach { resourceGroup ->
+            val resourceIds =
+              resourceGroup.value.joinToString(",") { sectionComponent ->
+                sectionComponent.focus.extractId()
+              }
+            val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
+            fhirResourceDataSource.loadData(searchPath).entry.forEach {
               repository.addOrUpdate(it.resource)
             }
           }
@@ -213,6 +234,12 @@ constructor(
   fun workflowPointName(key: String) = "$appId|$key"
 
   fun isAppIdInitialized() = this::appId.isInitialized
+
+  fun isWorkflowPoint(sectionComponent: Composition.SectionComponent): Boolean {
+    sectionComponent.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0).let { resourceType ->
+      return resourceType in arrayOf(ResourceType.Parameters.name, ResourceType.Binary.name)
+    }
+  }
 
   companion object {
     const val DEFAULT_APP_ID = "appId"

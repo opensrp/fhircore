@@ -238,4 +238,22 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coVerify { defaultRepository.searchCompositionByIdentifier("testApp") }
     coVerify(inverse = true) { fhirResourceDataSource.loadData(any()) }
   }
+
+  @Test
+  fun testIsWorkflowPointReturnsTrueWithBinarySectionComponent() {
+    val sectionComponent =
+      Composition.SectionComponent().apply {
+        this.focus = Reference().apply { reference = "Binary/123" }
+      }
+    Assert.assertTrue(configurationRegistry.isWorkflowPoint(sectionComponent))
+  }
+
+  @Test
+  fun testIsWorkflowPointReturnsFalseWithQuestionnaireSectionComponent() {
+    val sectionComponent =
+      Composition.SectionComponent().apply {
+        this.focus = Reference().apply { reference = "Questionnaire/123" }
+      }
+    Assert.assertFalse(configurationRegistry.isWorkflowPoint(sectionComponent))
+  }
 }
