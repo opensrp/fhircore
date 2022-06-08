@@ -97,7 +97,10 @@ constructor(
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
+      phoneContacts = patient.extractTelecom(),
       chwAssigned = patient.generalPractitionerFirstRep,
+      showIdentifierInProfile = true,
+      showDOBInProfile = false,
       healthStatus =
         patient.extractHealthStatusFromMeta(
           getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem

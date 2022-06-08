@@ -70,8 +70,10 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
-      Assert.assertEquals("testIdentifier()", identifierValue)
+      Assert.assertEquals("testIdentifier()", identifier)
       Assert.assertEquals("HCC Number", identifierKey)
+      Assert.assertEquals(true, showDOBInProfile)
+      Assert.assertEquals(true, showIdentifierInProfile)
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
       Assert.assertEquals(emptyList<PatientProfileRowItem>(), upcomingServices)
@@ -88,8 +90,6 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
-      Assert.assertEquals("testIdentifier()", identifierValue)
-      Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
       Assert.assertEquals(emptyList<PatientProfileRowItem>(), upcomingServices)
       Assert.assertEquals(emptyList<PatientProfileRowItem>(), tasks)
@@ -128,6 +128,23 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     }
   }
 
+  @Test
+  fun testMapToDomainModelDefault() {
+    val dto = buildProfileData(HealthModule.DEFAULT)
+    val profileViewDataHiv =
+      profileViewDataMapper.transformInputToOutputModel(dto) as
+        ProfileViewData.PatientProfileViewData
+    with(profileViewDataHiv) {
+      Assert.assertEquals("logicalId", logicalId)
+      Assert.assertEquals("testName", name)
+      Assert.assertEquals("testIdentifier()", identifier)
+      Assert.assertEquals("5y", age)
+      Assert.assertEquals(Enumerations.AdministrativeGender.MALE.display, sex)
+      Assert.assertEquals(true, upcomingServices.isEmpty())
+      Assert.assertEquals(true, tasks.isEmpty())
+    }
+  }
+
   private fun buildProfileData(healthModule: HealthModule): ProfileData {
     return when (healthModule) {
       HealthModule.HIV ->
@@ -142,29 +159,29 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           chwAssigned = Reference("referenceKey"),
           healthStatus = HealthStatus.EXPOSED_INFANT,
           services = emptyList(),
-          tasks = emptyList()
+          tasks = emptyList(),
+          showDOBInProfile = true,
+          showIdentifierInProfile = true
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
-        ProfileData.AppointmentProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          chwAssigned = Reference("referenceKey")
+          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25")
         )
       HealthModule.APPOINTMENT ->
-        ProfileData.AppointmentProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          chwAssigned = Reference("referenceKey")
+          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25")
         )
       HealthModule.ANC ->
         ProfileData.AncProfileData(

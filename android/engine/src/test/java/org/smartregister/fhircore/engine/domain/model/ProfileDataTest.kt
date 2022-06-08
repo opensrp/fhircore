@@ -56,7 +56,7 @@ class ProfileDataTest : RobolectricTest() {
   @Test
   fun testMapToDomainModelHomeTracing() {
     val tracingProfileDto =
-      buildProfileData(HealthModule.HOME_TRACING) as ProfileData.AppointmentProfileData
+      buildProfileData(HealthModule.HOME_TRACING) as ProfileData.DefaultProfileData
     with(tracingProfileDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -64,8 +64,6 @@ class ProfileDataTest : RobolectricTest() {
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
       Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
-      //      Assert.assertEquals(Date("12345678"), birthdate)
-      Assert.assertEquals("referenceKey", chwAssigned.reference)
     }
   }
 
@@ -119,26 +117,24 @@ class ProfileDataTest : RobolectricTest() {
           healthStatus = HealthStatus.EXPOSED_INFANT
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
-        ProfileData.AppointmentProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          chwAssigned = Reference("referenceKey")
+          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25")
         )
       HealthModule.APPOINTMENT ->
-        ProfileData.AppointmentProfileData(
+        ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          chwAssigned = Reference("referenceKey")
+          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25")
         )
       HealthModule.ANC ->
         ProfileData.AncProfileData(

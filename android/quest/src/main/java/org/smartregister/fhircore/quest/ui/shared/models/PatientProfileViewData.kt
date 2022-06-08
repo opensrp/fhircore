@@ -38,8 +38,9 @@ sealed class ProfileViewData(
     val upcomingServices: List<PatientProfileRowItem> = emptyList(),
     val ancCardData: List<PatientProfileRowItem> = emptyList(),
     val address: String = "",
-    val identifierValue: String = "",
-    val identifierKey: String = ""
+    val identifierKey: String = "",
+    val showIdentifierInProfile: Boolean = false,
+    val showDOBInProfile: Boolean = true
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier)
 
   data class FamilyProfileViewData(

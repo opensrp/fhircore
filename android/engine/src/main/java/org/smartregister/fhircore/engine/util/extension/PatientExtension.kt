@@ -149,8 +149,8 @@ fun Patient.extractAddressText(): String {
   return with(addressFirstRep) { this.text ?: "" }
 }
 
-fun Patient.extractTelecom(): List<String>? {
-  if (!hasTelecom()) return null
+fun Patient.extractTelecom(): List<String> {
+  if (!hasTelecom()) return emptyList()
   return telecom.map { it.value }
 }
 

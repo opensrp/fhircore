@@ -80,20 +80,14 @@ fun PersonalData(
       ) {
         OtherDetailsItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
         OtherDetailsItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
-        OtherDetailsItem(title = stringResource(R.string.dob), value = patientProfileViewData.dob)
-      }
-      if (patientProfileViewData.identifierValue.isNotEmpty() &&
-          patientProfileViewData.identifierKey.isNotEmpty()
-      ) {
-        Spacer(modifier = modifier.height(16.dp))
-        Row(
-          horizontalArrangement = Arrangement.SpaceBetween,
-          modifier =
-            modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
+        if (patientProfileViewData.showDOBInProfile)
+          OtherDetailsItem(title = stringResource(R.string.dob), value = patientProfileViewData.dob)
+        if (patientProfileViewData.showIdentifierInProfile &&
+            patientProfileViewData.identifier != null
         ) {
           OtherDetailsItem(
             title = patientProfileViewData.identifierKey,
-            value = patientProfileViewData.identifierValue
+            value = patientProfileViewData.identifier
           )
         }
       }
@@ -138,7 +132,8 @@ fun PersonalDataPreviewWithARTNumber() {
       dob = "08 Dec",
       identifier = "123455",
       identifierKey = "HCC Number",
-      identifierValue = "123123"
+      showIdentifierInProfile = true,
+      showDOBInProfile = false
     )
   PersonalData(patientProfileViewData = patientProfileData)
 }

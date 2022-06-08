@@ -93,7 +93,7 @@ class PatientExtensionTest : RobolectricTest() {
       Patient().apply { addGeneralPractitioner().apply { this.reference = "practitioner/1234" } }
     Assert.assertEquals("practitioner/1234", patient.extractGeneralPractitionerReference())
     if (!patient.hasTelecom()) {
-      Assert.assertEquals(null, patient.extractTelecom())
+      Assert.assertEquals(true, patient.extractTelecom().isEmpty())
     }
   }
 

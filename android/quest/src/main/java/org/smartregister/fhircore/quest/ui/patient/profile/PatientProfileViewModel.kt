@@ -95,11 +95,7 @@ constructor(
   }
 
   fun refreshOverFlowMenu(healthModule: HealthModule, patientProfile: ProfileData) {
-    if (healthModule == HealthModule.HIV ||
-        healthModule == HealthModule.HOME_TRACING ||
-        healthModule == HealthModule.PHONE_TRACING ||
-        healthModule == HealthModule.APPOINTMENT
-    ) {
+    if (healthModule == HealthModule.HIV) {
       patientProfileUiState =
         mutableStateOf(
           PatientProfileUiState(

@@ -65,10 +65,14 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
         ProfileViewData.PatientProfileViewData(
           logicalId = inputModel.logicalId,
           name = inputModel.name,
-          address = inputModel.address,
+          sex = inputModel.gender.translateGender(context),
           age = inputModel.age,
-          identifierValue = inputModel.identifier ?: inputModel.logicalId,
+          dob = inputModel.birthdate.formatDob(),
+          identifier = inputModel.identifier,
+          address = inputModel.address,
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
+          showIdentifierInProfile = inputModel.showIdentifierInProfile,
+          showDOBInProfile = inputModel.showDOBInProfile,
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
@@ -91,14 +95,6 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 actionButtonText = it.description,
               )
             }
-        )
-      is ProfileData.AppointmentProfileData ->
-        ProfileViewData.PatientProfileViewData(
-          logicalId = inputModel.logicalId,
-          name = inputModel.name,
-          address = inputModel.address,
-          age = inputModel.age,
-          identifierValue = inputModel.identifier.toString(),
         )
       is ProfileData.DefaultProfileData ->
         ProfileViewData.PatientProfileViewData(
@@ -129,7 +125,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
               )
-            }
+            },
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(
