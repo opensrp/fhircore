@@ -26,7 +26,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -43,7 +42,7 @@ class LoginActivity :
 
   @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
-  private val loginViewModel by viewModels<LoginViewModel>()
+  val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -80,10 +79,6 @@ class LoginActivity :
   private fun runSyncAndNavigateHome() {
     loginService.navigateToHome()
     syncBroadcaster.get().runSync()
-  }
-
-  fun getApplicationConfiguration(): ApplicationConfiguration {
-    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
   }
 
   override fun configureViews(viewConfiguration: LoginViewConfiguration) {

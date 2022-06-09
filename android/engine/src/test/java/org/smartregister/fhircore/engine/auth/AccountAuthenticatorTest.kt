@@ -41,6 +41,7 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import okhttp3.ResponseBody
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -55,7 +56,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -360,6 +360,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testValidLocalCredentials() {
+    every { accountManager.accounts } returns
+      arrayOf(Account("demo", configService.provideAuthConfiguration().accountType))
     every { secureSharedPreference.retrieveCredentials() } returns
       AuthCredentials("demo", "51r1K4l1".toSha1())
 
@@ -409,16 +411,10 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { tokenManagerService.isTokenActive(any()) } returns true
     every { secureSharedPreference.retrieveCredentials() } returns
       AuthCredentials("abc", "111", "mystoken", "myrtoken")
-    every { oAuthService.logout(any(), any(), any()) } returns mockk()
+    val callResponse = mockk<Call<ResponseBody>>(relaxed = true)
+    every { oAuthService.logout(any(), any(), any()) } returns callResponse
 
     accountAuthenticator.logout()
-
-    val startedIntent: Intent =
-      shadowOf(ApplicationProvider.getApplicationContext<HiltTestApplication>()).nextStartedActivity
-    val shadowIntent: ShadowIntent = shadowOf(startedIntent)
-
-    // User will be prompted with AppSettings screen to provide appId to redownload config
-    Assert.assertEquals(AppSettingActivity::class.java, shadowIntent.intentClass)
 
     verify { oAuthService.logout(any(), any(), any()) }
   }
