@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import android.content.Context
+import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
@@ -59,6 +60,7 @@ class LoginActivityTest : RobolectricTest() {
 
   @After
   fun tearDown() {
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
     loginActivityController.destroy()
   }
 
