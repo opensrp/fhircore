@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Task
@@ -57,7 +56,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           name = inputModel.name,
           sex = inputModel.gender.translateGender(context),
           age = inputModel.age,
-          dob = inputModel.birthdate.formatDob(),
+          dob = inputModel.birthdate,
           identifier = inputModel.identifier
         )
       is ProfileData.HivProfileData ->
@@ -83,7 +82,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           identifier = inputModel.identifier,
           age = inputModel.age,
           sex = inputModel.gender.translateGender(context),
-          dob = inputModel.birthdate.formatDob(),
+          dob = inputModel.birthdate,
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
@@ -152,8 +151,6 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       Task.TaskStatus.COMPLETED -> DefaultColor
       else -> DefaultColor
     }
-
-  private fun Date.formatDob(): String = simpleDateFormat.format(this)
 
   companion object {
     const val DEFAULT_TASKS_COUNT = 5 // TODO Configure tasks to display

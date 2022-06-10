@@ -27,10 +27,16 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
+val SDF_DD_MMM = SimpleDateFormat("dd MMM")
 val SDF_YYYY_MM_DD = SimpleDateFormat("yyyy-MM-dd")
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
+}
+
+fun Date?.asDdMmm(): String {
+  if (this == null) return ""
+  return SDF_DD_MMM.format(this)
 }
 
 fun Date.asDdMmmYyyy(): String {
@@ -55,6 +61,8 @@ fun Date.daysPassed() =
   TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)
 
 fun Date.yearsPassed() = this.daysPassed().div(365).toInt()
+
+fun Date.monthsPassed() = this.daysPassed().div(30.5).toInt()
 
 fun Date?.toAgeDisplay() = if (this == null) "" else getAgeStringFromDays(this.daysPassed())
 

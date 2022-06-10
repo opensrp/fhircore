@@ -46,6 +46,16 @@
       "form": "remove-family",
       "title": "Remove Family",
       "identifier": "101644"
+    },
+    {
+      "form": "sick-child-under-2m",
+      "title": "Sick child under 2 months",
+      "identifier": "131880"
+    },
+    {
+      "form": "sick-child-above-2m",
+      "title": "Sick child above 2 months",
+      "identifier": "131879"
     }
   ]
 }
