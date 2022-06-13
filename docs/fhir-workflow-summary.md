@@ -2,7 +2,7 @@ _Below is a brief summary of the FHIR R4 docs review_. This is the foundation on
 
 ## FHIR Resources and Workflow Summary
 
-FHIR categorises resources in a clinical workflow as:
+FHIR categorizes resources in a clinical workflow as:
 
 1. Definition - Resources that define something that can potentially happen in a patient and time-independent manner
 2. Request - Resources that ask for or express a desire/intention for something to be done
@@ -14,7 +14,7 @@ This [link](https://www.hl7.org/fhir/workflow.html#list) provides a list of FHIR
 
 ### Task
 
-The `Task` is categorised as a `Request` and `Event` . A `Task` keeps track of a request and contains a link to the request. A Task can be generated but not initially assigned to any entity. This task can be picked(self-assigned) and its status can start changing. The implementation details for the Task are contained inside the attached `Request`.
+The `Task` is categorized as a `Request` and `Event` . A `Task` keeps track of a request and contains a link to the request. A Task can be generated but not initially assigned to any entity. This task can be picked(self-assigned) and its status can start changing. The implementation details for the Task are contained inside the attached `Request`.
 
 ### PlanDefinition
 
@@ -36,7 +36,7 @@ Ideally, there should always be a task for every clinical `Request` that request
 
 ### CareTeam
 
-CareTeam is a group of practitioners, care takers, patients and organisations who plan to participate in the coordination and delivery of care for a patient(group of patients). CareTeam can be used in different contexts where there can be a subject such as a a patient or within context such as emergency services, type of service provided. The `CareTeam.category`, an optional property, describes the type of care and can be one of the following:
+CareTeam is a group of practitioners, care takers, patients and organizations who plan to participate in the coordination and delivery of care for a patient(group of patients). CareTeam can be used in different contexts where there can be a subject such as a a patient or within context such as emergency services, type of service provided. The `CareTeam.category`, an optional property, describes the type of care and can be one of the following:
 
 - Event-focused care team
 - Encounter-focused care team
@@ -48,11 +48,11 @@ CareTeam is a group of practitioners, care takers, patients and organisations wh
 - Public health-focused care team
 - Longitudinal care-coordination focused care team
 
-In my opinion, CareTeam can be used to limit access to care details within a domain in cases where we have a global patient directory and global patient history in a country eg. HIV details, PHI(Protected Health Information) and also limit access for different healthcare modules  eg. a practitioner might have access to a location and not be part of a CareTeam in that Location. Therefore, this pracititioner should not have access to certain records, health modules. Read HIPAA for US on such laws
+In my opinion, CareTeam can be used to limit access to care details within a domain in cases where we have a global patient directory and global patient history in a country eg. HIV details, PHI(Protected Health Information) and also limit access for different healthcare modules  eg. a practitioner might have access to a location and not be part of a CareTeam in that Location. Therefore, this practitioner should not have access to certain records, health modules. Read HIPAA for US on such laws
 
 ### Location
 
-Location enables us to define a jurisdiction or HealthCenter [https://www.hl7.org/fhir/location.html](https://www.hl7.org/fhir/location.html) . The GeoJSON is described as a location boundary extension to the location here [http://build.fhir.org/extension-location-boundary-geojson.html](http://build.fhir.org/extension-location-boundary-geojson.html). The extension is a draft with little information but it enables representing the geojson as a base64 string in the `Attachment.data` or the link to the geojson on the `Attatchment.url`
+Location enables us to define a jurisdiction or HealthCenter [https://www.hl7.org/fhir/location.html](https://www.hl7.org/fhir/location.html) . The GeoJSON is described as a location boundary extension to the location here [http://build.fhir.org/extension-location-boundary-geojson.html](http://build.fhir.org/extension-location-boundary-geojson.html). The extension is a draft with little information but it enables representing the geojson as a base64 string in the `Attachment.data` or the link to the geojson on the `Attachment.url`
 
 Example 1
 
@@ -105,7 +105,7 @@ The workflow between multiple systems is out-of-scope for now.
 
 For FHIR request placers and fillers working within the same system, below is the proposed strategy
 
-![workflow-optionh](https://user-images.githubusercontent.com/31766075/114738651-d582dd80-9d50-11eb-832c-174ae708a3b8.png)
+![workflow-option](https://user-images.githubusercontent.com/31766075/114738651-d582dd80-9d50-11eb-832c-174ae708a3b8.png)
 
 
 ### Notes
