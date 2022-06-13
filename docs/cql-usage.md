@@ -1,14 +1,20 @@
 **Introduction** 
 
 This Documentation on CQL is to give some insights on
-1. How to author the CQL script
-2. How to load and execute CQL scripts
-3. Some sample use cases where we have used CQL 
+1. What is CQL?
+2. Background on CQL
+3. CQL Tools for Implementers
+4. How to author the CQL script
+5. How to load and execute CQL scripts
+6. Some sample use cases where we have used CQL 
+7. Issues Identified when executing CQL
 
 
-**What is CQL** 
 
-CQL­ is a Health Level Seven International® (HL7®) authoring language standard that’s intended to be human readable. It is part of the effort to harmonize standards used for electronic clinical quality measures (eCQMs) and clinical decision support (CDS). 
+**What is CQL?** 
+
+**Clinical Quality Language**
+Clinical Quality Language (CQL) is a Health Level 7 (HL7) standard for the expression of clinical knowledge that can be used within a broad range of clinical domains, including Clinical Decision Support (CDS), and Clinical Quality Measurement (CQM). It's intended to be human readable. It is part of the effort to harmonize standards used for electronic clinical quality measures (eCQMs) and clinical decision support (CDS). 
 
 CQL provides the ability to express logic that is human readable yet structured enough for processing a query electronically. CQL is the expression logic used in Health Quality Measure Format (HQMF) beginning with the eCQMs implemented in calendar year 2019. 
 
@@ -18,7 +24,44 @@ CQL allows for a more modular, flexible, and robust expression of the logic. It 
 
 
 
-**How are we using CQL?**
+**Background on CQL**
+CQL was developed as part of the Clinical Quality Framework (CQF) initiative, a public-private partnership sponsored by the Centers for Medicare & Medicaid Services (CMS) and the U.S. Office of the National Coordinator for Health Information Technology (ONC) to identify, develop, and harmonize standards for clinical decision support and electronic clinical quality measurement.
+
+The Clinical Quality Language specification is maintained by the HL7 Clinical Decision Support (CDS) Work Group with co-sponsorship from the HL7 Clinical Quality Information (CQI) Work Group.
+
+
+
+**CQL Tools for Implementers**
+
+Access these tools to support your use of CQL.
+
+1. [GitHub Tools Repository](https://github.com/cqframework/clinical_quality_language) - Find tools in support of CQL, such as the CQL-to-Expression Logical Model (ELM) Translator used by implementation vendors.
+
+2. Explore the [eCQI Tools & Key Resources Library](https://ecqi.healthit.gov/cql?qt-tabs_cql=1#:~:text=eCQI%20Tools%20%26%20Key%20Resources%20Library) for a complete list of tools and resources used with electronic clinical quality measures (eCQMs) and eCQI. 
+3. [CQL-to-ELM Translator Reference Implementation](https://github.com/cqframework/clinical_quality_language/blob/master/Src/java/cql-to-elm/OVERVIEW.md) - The Health Level Seven International CQL specification defines both a high-level, author friendly syntax for expressing clinical knowledge, as well as a machine friendly, syntax-independent canonical representation of clinical knowledge called ELM. The design of the high-level ELM syntax is to support measure and decision support authors, while the design of the canonical representation is to support point-to-point sharing and machine processing applications.
+4. [CQL Runner](https://cql-runner.dataphoria.org/)  - To test your CQL Expressions 
+
+**CQL Resources for Authors**
+View these resources to learn about CQL formatting, usage, and standards.
+
+[CQL Formatting and Usage Wiki](https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki) - Visit this wiki which serves as a collaborative workspace for the development of CQL formatting conventions and usage patterns for the representation of logic within [quality measures](https://ecqi.healthit.gov/glossary/quality-measure). A selection of resources found on the wiki are
+1. [Formatting and Usage Topics](https://ecqi.healthit.gov/cql?qt-tabs_cql=1#:~:text=Formatting%20and%20Usage%20Topics)
+2. [Cooking with CQL Examples and CQL Questions and Answers (Q&As)](https://github.com/cqframework/CQL-Formatting-and-Usage-Wiki/wiki/Cooking-with-CQL-Examples)
+3. [CQL Standard](http://www.hl7.org/implement/standards/product_brief.cfm?product_id=400) - Visit the HL7 Website to access the CQL Specification.
+
+
+[CQL Style Guide (v6) (PDF)](https://ecqi.healthit.gov/sites/default/files/CQL-Style-Guide-v6.pdf) provides guidance to [measure developers](https://ecqi.healthit.gov/glossary/measure-developer) for authoring measure expressions and using functions, libraries and definitions for calendar year 2023 reporting. Modifications to the Style Guide include references to the HL7 CQL standard, the HL7 [CQL-based Health Quality Measure Format (HQMF)](https://ecqi.healthit.gov/tool/hqmf) implementation guide, and input from standards owners and measure developers to refine CQL expression. 
+
+
+**How to author the CQL script**
+
+TODO
+
+**How to load and execute CQL scripts**
+
+TODO
+
+**Some sample use cases where we have used CQL**
 
 **Use Case 1 : G6PD**
 1. Threshold management 
@@ -1202,12 +1245,9 @@ define "Age Stratifier":
 ````
 
 
-
-
 **Issues Identified when executing CQL**
 
-CQL scripts when run first time take too long to run. Look into libraries or classes it loads first time and move those to Application startup
 
-**Solution**
+**Issue 1 :** CQL scripts when run first time take too long to run. Look into libraries or classes it loads first time and move those to Application startup
 
-Pre-load libraries
+**Solution :** Pre-load libraries
