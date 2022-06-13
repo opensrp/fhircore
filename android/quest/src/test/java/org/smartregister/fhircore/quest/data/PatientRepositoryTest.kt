@@ -70,8 +70,8 @@ import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.details.filterOf
-import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.loadAdditionalData
+import org.smartregister.fhircore.quest.util.mappers.PatientItemMapper
 
 @HiltAndroidTest
 @Ignore("To be deleted test class; new test to be written after refactor")

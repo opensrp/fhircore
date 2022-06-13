@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register
+package org.smartregister.fhircore.quest.util.mappers
 
 import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -33,6 +34,8 @@ import org.smartregister.fhircore.engine.util.extension.extractWithFhirPath
 import org.smartregister.fhircore.quest.data.patient.model.AddressData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 
+// TODO To be deleted with org.smartregister.fhircore.quest.data.patient.PatientRepository
+@Singleton
 class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<Patient, PatientItem> {
 
