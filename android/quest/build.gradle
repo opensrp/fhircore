@@ -93,7 +93,7 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
-        freeCompilerArgs = ['-Xjvm-default=compatibility']
+        freeCompilerArgs = ['-Xjvm-default=compatibility', '-opt-in=kotlin.RequiresOptIn']
     }
 
     buildFeatures {
@@ -186,6 +186,7 @@ dependencies {
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
+    testImplementation deps.kotlin.test
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0'
 
     // Hilt test dependencies
