@@ -69,8 +69,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
-  lateinit var questionnaireConfig: QuestionnaireConfig
-
   var questionnaireType = QuestionnaireType.DEFAULT
 
   protected lateinit var questionnaire: Questionnaire
@@ -133,14 +131,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       } else if (questionnaireType.isEditMode()) {
         // setting the save button text from Questionnaire Config
         text =
-          questionnaireConfig.saveButtonText
+          questionnaireViewModel.questionnaireConfig.saveButtonText
             ?: getString(R.string.questionnaire_alert_submit_button_title)
       }
     }
 
     supportActionBar?.apply {
       setDisplayHomeAsUpEnabled(true)
-      title = questionnaireConfig.title
+      title = questionnaireViewModel.questionnaireConfig.title
     }
   }
 
@@ -184,7 +182,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     // load from assets and get questionnaire or if not found build it from questionnaire
     kotlin
       .runCatching {
-        questionnaireConfig =
+        val questionnaireConfig =
           questionnaireViewModel.getQuestionnaireConfig(formName, this@QuestionnaireActivity)
         questionnaire =
           questionnaireViewModel.loadQuestionnaire(
@@ -195,7 +193,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       .onFailure {
         // load questionnaire from db and build config
         questionnaire = questionnaireViewModel.loadQuestionnaire(formName, questionnaireType)!!
-        questionnaireConfig =
+        questionnaireViewModel.questionnaireConfig =
           QuestionnaireConfig(
             form = questionnaire.name ?: "",
             title = questionnaire.title ?: "",
@@ -224,7 +222,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
-        loadQuestionnaireAndConfig(questionnaireConfig.identifier)
+        loadQuestionnaireAndConfig(questionnaireViewModel.questionnaireConfig.identifier)
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
         withContext(dispatcherProvider.main()) {

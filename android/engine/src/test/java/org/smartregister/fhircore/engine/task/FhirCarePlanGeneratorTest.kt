@@ -19,25 +19,31 @@ package org.smartregister.fhircore.engine.task
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.unmockkStatic
 import java.time.LocalDate
+import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
@@ -49,11 +55,14 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
+import org.smartregister.fhircore.engine.util.extension.plusDays
+import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
@@ -111,8 +120,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator.generateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         patient,
         Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
@@ -193,8 +203,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator.generateCarePlan(
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
         group,
         Bundle()
@@ -237,6 +248,343 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
         val task1 = resourcesSlot[1] as Task
         Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
+      }
+  }
+
+  @Test
+  fun testGenerateCarePlanForSickChildOver2m() = runTest {
+    val plandefinition =
+      "plans/sick-child-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/sick-child-visit/sample/patient.json"
+        .readFile()
+        .decodeResourceFromString<Patient>()
+        .apply { this.birthDate = Date().plusMonths(-3) }
+    val questionnaireResponse =
+      "plans/sick-child-visit/sample/questionnaire-response-register-over2m.json"
+        .readFile()
+        .decodeResourceFromString<QuestionnaireResponse>()
+
+    val structureMapRegister =
+      structureMapUtilities.parse(
+          "plans/sick-child-visit/structure-map-register.txt".readFile(),
+          "SickChildCarePlan"
+        )
+        .also {
+          // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
+          //  so use only single unit like 'days' in a map and that would have the unit replaced
+          // with
+          // 'days'
+          println(it.encodeResourceToString().replace("''", "'day'"))
+        }
+
+    val structureMapReferral =
+      structureMapUtilities.parse(
+          "plans/sick-child-visit/structure-map-referral.txt".readFile(),
+          "ReferralTask"
+        )
+        .also {
+          // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
+          //  so use only single unit like 'days' in a map and that would have the unit replaced
+          // with
+          // 'days'
+          println(it.encodeResourceToString().replace("''", "'months'"))
+        }
+
+    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+    coEvery { fhirEngine.get<StructureMap>("131900") } returns structureMapRegister
+    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertNotNull(UUID.fromString(carePlan.id))
+        Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        Assert.assertEquals("Sick Child Follow Up Plan", carePlan.title)
+        Assert.assertEquals(
+          "This defines the schedule of care for sick patients under 5 years old",
+          carePlan.description
+        )
+        Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
+        Assert.assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable()
+        )
+        Assert.assertEquals(
+          patient.generalPractitionerFirstRep.extractId(),
+          carePlan.author.extractId()
+        )
+        Assert.assertEquals(Date().makeItReadable(), carePlan.period.start.makeItReadable())
+        Assert.assertEquals(
+          Date().plusDays(7).makeItReadable(),
+          carePlan.period.end.makeItReadable()
+        )
+        Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+        Assert.assertEquals(3, carePlan.activityFirstRep.outcomeReference.size)
+
+        val resourcesSlot = mutableListOf<Resource>()
+
+        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+
+        resourcesSlot.forEach { println(it.encodeResourceToString()) }
+
+        val careplan = resourcesSlot.first() as CarePlan
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { Assert.assertEquals(4, it.size) } // 4 tasks generated, 3 followup 1 referral
+          .also {
+            Assert.assertTrue(it.all { it.status == Task.TaskStatus.READY })
+            Assert.assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
+          }
+          .also { tasks ->
+            tasks.take(3).run {
+              Assert.assertTrue(this.all { it.reasonReference.reference == "Questionnaire/131898" })
+              Assert.assertTrue(
+                this.all { it.executionPeriod.end.asYyyyMmDd() == Date().plusDays(7).asYyyyMmDd() }
+              )
+              Assert.assertTrue(
+                this.all { it.basedOn.first().reference == careplan.asReference().reference }
+              )
+            }
+          }
+          .also {
+            it.last().let { task ->
+              Assert.assertTrue(task.reasonReference.reference == "Questionnaire/132049")
+              Assert.assertTrue(
+                task.executionPeriod.end.asYyyyMmDd() == Date().plusMonths(1).asYyyyMmDd()
+              )
+            }
+          }
+          .also {
+            it.elementAt(0).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() == Date().plusDays(1).asYyyyMmDd()
+              )
+            }
+            it.elementAt(1).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() == Date().plusDays(2).asYyyyMmDd()
+              )
+            }
+            it.elementAt(2).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() == Date().plusDays(3).asYyyyMmDd()
+              )
+            }
+            it.elementAt(3).let {
+              Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
+            }
+          }
+      }
+  }
+
+  @Test
+  fun testGenerateCarePlanForSickChildUnder2m() = runTest {
+    val plandefinition =
+      "plans/sick-child-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/sick-child-visit/sample/patient.json"
+        .readFile()
+        .decodeResourceFromString<Patient>()
+        .apply { this.birthDate = Date() }
+    val questionnaireResponse =
+      "plans/sick-child-visit/sample/questionnaire-response-register-under2m.json"
+        .readFile()
+        .decodeResourceFromString<QuestionnaireResponse>()
+
+    val structureMapReferral =
+      structureMapUtilities.parse(
+          "plans/sick-child-visit/structure-map-referral.txt".readFile(),
+          "ReferralTask"
+        )
+        .also {
+          // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
+          //  so use only single unit like 'days' in a map and that would have the unit replaced
+          // with
+          // 'days'
+          println(it.encodeResourceToString().replace("''", "'months'"))
+        }
+
+    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )
+      .also {
+        Assert.assertNull(it)
+
+        val resourcesSlot = mutableListOf<Resource>()
+
+        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+
+        resourcesSlot.forEach { println(it.encodeResourceToString()) }
+
+        resourcesSlot.map { it as Task }.also { Assert.assertEquals(1, it.size) }.first().let {
+          Assert.assertTrue(it.status == Task.TaskStatus.READY)
+          Assert.assertTrue(it.basedOn.first().reference == plandefinition.asReference().reference)
+          Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
+          Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
+        }
+      }
+  }
+
+  @Test
+  fun testCompleteCarePlanForSickChildFollowup() = runTest {
+    val plandefinition =
+      "plans/sick-child-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/sick-child-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
+    val questionnaireResponse =
+      "plans/sick-child-visit/sample/questionnaire-response-followup.json"
+        .readFile()
+        .decodeResourceFromString<QuestionnaireResponse>()
+
+    val structureMapReferral =
+      structureMapUtilities.parse(
+          "plans/sick-child-visit/structure-map-referral.txt".readFile(),
+          "ReferralTask"
+        )
+        .also {
+          // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
+          //  so use only single unit like 'days' in a map and that would have the unit replaced
+          // with
+          // 'days'
+          println(it.encodeResourceToString().replace("''", "'months'"))
+        }
+
+    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { fhirEngine.update(any()) } just runs
+    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
+
+    coEvery { fhirEngine.search<CarePlan>(any()) } returns
+      listOf(
+        CarePlan().apply {
+          instantiatesCanonical = listOf(CanonicalType(plandefinition.asReference().reference))
+          addActivity().apply { this.addOutcomeReference().apply { this.reference = "Task/1111" } }
+        }
+      )
+    coEvery { fhirEngine.get<Task>(any()) } returns
+      Task().apply {
+        id = "1111"
+        status = Task.TaskStatus.READY
+      }
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also {
+        val carePlan = it
+        Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
+
+        val resourcesSlot = mutableListOf<Resource>()
+        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+
+        resourcesSlot.forEach { println(it.encodeResourceToString()) }
+
+        resourcesSlot
+          .filter { it.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.size == 2) }
+          .also {
+            it.first().let {
+              Assert.assertTrue(it.status == Task.TaskStatus.READY)
+              Assert.assertTrue(
+                it.basedOn.first().reference == plandefinition.asReference().reference
+              )
+              Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
+              Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
+            }
+          }
+          .also {
+            it.elementAt(1).let {
+              Assert.assertTrue(it.status == Task.TaskStatus.CANCELLED)
+              Assert.assertTrue(it.lastModified.asYyyyMmDd() == Date().asYyyyMmDd())
+            }
+          }
+      }
+  }
+
+  @Test
+  fun testUpdateCarePlanForSickChildReferral() = runTest {
+    val plandefinition =
+      "plans/sick-child-visit/plandefinition.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "plans/sick-child-visit/sample/patient.json"
+        .readFile()
+        .decodeResourceFromString<Patient>()
+        .apply { this.birthDate = Date() }
+    val questionnaireResponse =
+      "plans/sick-child-visit/sample/questionnaire-response-register-under2m.json"
+        .readFile()
+        .decodeResourceFromString<QuestionnaireResponse>()
+
+    val structureMapScript = "plans/sick-child-visit/structure-map-referral.txt".readFile()
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "ReferralTask").also {
+        // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
+        //  so use only single unit like 'days' in a map and that would have the unit replaced with
+        // 'days'
+        println(it.encodeResourceToString().replace("''", "'months'"))
+      }
+
+    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMap
+
+    coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf()
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )
+      .also {
+        val resourcesSlot = mutableListOf<Resource>()
+
+        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+        resourcesSlot.forEach { println(it.encodeResourceToString()) }
+
+        resourcesSlot
+          .filter { it.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> Assert.assertTrue(list.size == 1) }
+          .also {
+            it.first().let {
+              Assert.assertTrue(it.status == Task.TaskStatus.READY)
+              Assert.assertTrue(
+                it.basedOn.first().reference == plandefinition.asReference().reference
+              )
+              Assert.assertTrue(it.`for`.reference == patient.asReference().reference)
+              Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
+            }
+          }
       }
   }
 }

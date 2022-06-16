@@ -18,21 +18,31 @@ package org.smartregister.fhircore.engine.task
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
+import com.google.android.fhir.search.search
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.ActivityDefinition
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -45,24 +55,33 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
   }
   val fhirPathEngine = FHIRPathEngine(transformSupportServices.simpleWorkerContext)
 
-  suspend fun generateCarePlan(
+  suspend fun generateOrUpdateCarePlan(
     planDefinitionId: String,
     subject: Resource,
     data: Bundle? = null
   ): CarePlan? {
-    return generateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
+    return generateOrUpdateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
   }
 
-  suspend fun generateCarePlan(
+  suspend fun generateOrUpdateCarePlan(
     planDefinition: PlanDefinition,
     subject: Resource,
     data: Bundle? = null
   ): CarePlan? {
+    // only one careplan per plan , update or init a new one if not exists
     val output =
-      CarePlan().apply {
-        this.title = planDefinition.title
-        this.description = planDefinition.description
-      }
+      fhirEngine
+        .search<CarePlan> {
+          filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
+        }
+        .firstOrNull()
+        ?: CarePlan().apply {
+          this.title = planDefinition.title
+          this.description = planDefinition.description
+          this.instantiatesCanonical = listOf(CanonicalType(planDefinition.asReference().reference))
+        }
+
+    var careplanModified = false
 
     planDefinition.action.forEach { action ->
       val input = Bundle().apply { entry.addAll(data?.entry ?: listOf()) }
@@ -81,6 +100,10 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
           fhirPathEngine.evaluateToBoolean(input, null, subject, it.expression.expression)
         }
       ) {
+        val definition =
+          planDefinition.contained.first { it.id == action.definitionCanonicalType.value } as
+            ActivityDefinition
+
         val source =
           Parameters().apply {
             addParameter(
@@ -93,43 +116,98 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
             addParameter(
               Parameters.ParametersParameterComponent().apply {
                 this.name = PlanDefinition.SP_DEFINITION
-                this.resource =
-                  planDefinition.contained.first { it.id == action.definitionCanonicalType.value }
+                this.resource = definition
               }
             )
           }
 
-        val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
-        structureMapUtilities.transform(
-          transformSupportServices.simpleWorkerContext,
-          source,
-          structureMap,
-          output
-        )
+        if (action.hasTransform()) {
+          val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
+          structureMapUtilities.transform(
+            transformSupportServices.simpleWorkerContext,
+            source,
+            structureMap,
+            output
+          )
+        }
+
+        if (definition.hasDynamicValue()) {
+          definition.dynamicValue.forEach { dynamicValue ->
+            if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN)
+              dynamicValue.expression.expression
+                .let { fhirPathEngine.evaluate(null, source, null, subject, it).firstOrNull() }
+                ?.run {
+                  output.setPropertySafely(
+                    dynamicValue.path.removePrefix("${definition.kind.toCode()}."),
+                    this
+                  )
+                }
+            else throw UnsupportedOperationException("${definition.kind} not supported")
+          }
+        }
+        careplanModified = true
       }
     }
 
-    if (!output.hasActivity()) return null
+    if (careplanModified) saveCarePlan(output)
 
-    return output.also { Timber.d(it.encodeResourceToString()) }.also { careplan ->
+    return if (output.hasActivity()) output else null
+  }
+
+  suspend fun saveCarePlan(output: CarePlan) {
+    output.also { Timber.d(it.encodeResourceToString()) }.also { careplan ->
       // save embedded resources inside as independent entries, clear embedded and save careplan
       val dependents = careplan.contained.map { it.copy() }
 
       careplan.contained.clear()
-      fhirEngine.create(careplan)
+
+      // save careplan only if it has activity, otherwise just save contained/dependent resources
+      if (output.hasActivity()) fhirEngine.create(careplan)
 
       dependents.forEach { fhirEngine.create(it) }
+
+      if (careplan.status == CarePlan.CarePlanStatus.COMPLETED)
+        careplan
+          .activity
+          .flatMap { it.outcomeReference }
+          .filter { it.reference.startsWith(ResourceType.Task.name) }
+          .map { getTask(it.extractId())!! }
+          .forEach {
+            if (it.status.isIn(
+                Task.TaskStatus.REQUESTED,
+                Task.TaskStatus.READY,
+                Task.TaskStatus.INPROGRESS
+              )
+            ) {
+              cancelTask(it.id, "${careplan.fhirType()} ${careplan.status}")
+            }
+          }
     }
   }
 
   suspend fun completeTask(id: String) {
     fhirEngine.run {
       create(
-        get<Task>(id).apply {
+        getTask(id).apply {
           this.status = Task.TaskStatus.COMPLETED
           this.lastModified = Date()
         }
       )
     }
   }
+
+  suspend fun cancelTask(id: String, reason: String) {
+    fhirEngine.run {
+      create(
+        getTask(id).apply {
+          this.status = Task.TaskStatus.CANCELLED
+          this.lastModified = Date()
+          this.statusReason = CodeableConcept().apply { text = reason }
+        }
+      )
+    }
+  }
+
+  suspend fun getTask(id: String) =
+    kotlin.runCatching { fhirEngine.get<Task>(id) }.getOrNull() ?: fhirEngine.get<Task>("#$id")
 }

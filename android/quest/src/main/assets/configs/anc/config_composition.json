@@ -195,12 +195,36 @@
       "mode": "working"
     },
     {
-      "title": "eCBIS Family Registration",
+      "title": "eCBIS Sick Child Follow Up",
       "focus": {
-        "reference": "StructureMap/5667cfbd-13c4-4111-b952-7cee58bdb9d5",
+        "reference": "Questionnaire/131898",
         "identifier": {
-          "value": "eCBISFamilyRegistration"
+          "value": "sick-child-followup"
         }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "eCBIS Sick Child Follow Up",
+      "focus": {
+        "reference": "StructureMap/131900"
+      },
+      "mode": "working"
+    },
+    {
+      "title": "eCBIS Sick Child Referral",
+      "focus": {
+        "reference": "Questionnaire/132049",
+        "identifier": {
+          "value": "sick-child-referral"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "eCBIS Sick Child Referral",
+      "focus": {
+        "reference": "StructureMap/132067"
       },
       "mode": "working"
     },
