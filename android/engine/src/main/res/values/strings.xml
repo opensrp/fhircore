@@ -117,6 +117,7 @@
     <string name="age">Age</string>
     <string name="dob">DOB</string>
     <string name="id">ID: %1$s</string>
+    <string name="idKeyValue">%1$s: %2$s</string>
     <string name="see_all">SEE ALL</string>
     <string name="forms">FORMS</string>
     <string name="medical_history">MEDICAL HISTORY</string>

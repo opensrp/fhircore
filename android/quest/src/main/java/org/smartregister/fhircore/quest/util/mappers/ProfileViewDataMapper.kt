@@ -72,7 +72,6 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           address = inputModel.address,
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = inputModel.showIdentifierInProfile,
-          showDOBInProfile = inputModel.showDOBInProfile,
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
