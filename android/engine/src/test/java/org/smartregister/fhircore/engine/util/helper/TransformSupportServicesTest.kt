@@ -21,6 +21,7 @@ import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RiskAssessment
@@ -107,6 +108,14 @@ class TransformSupportServicesTest : RobolectricTest() {
   fun `createType() should return PatientLink when given Patient_Link`() {
     Assert.assertTrue(
       transformSupportServices.createType("", "Patient_Link") is Patient.PatientLinkComponent
+    )
+  }
+
+  @Test
+  fun `createType() should return GroupCharacteristicComponent when given Group_Characteristic`() {
+    Assert.assertTrue(
+      transformSupportServices.createType("", "Group_Characteristic") is
+        Group.GroupCharacteristicComponent
     )
   }
 
