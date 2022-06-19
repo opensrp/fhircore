@@ -245,3 +245,12 @@ fun generateUniqueId() = UUID.randomUUID().toString()
 
 fun Base.extractWithFhirPath(expression: String) =
   FhirPathDataExtractor.extractData(this, expression).firstOrNull()?.primitiveValue() ?: ""
+
+fun isValidResourceType(resourceCode: String): Boolean {
+  return try {
+    ResourceType.fromCode(resourceCode)
+    true
+  } catch (exception: Exception) {
+    false
+  }
+}

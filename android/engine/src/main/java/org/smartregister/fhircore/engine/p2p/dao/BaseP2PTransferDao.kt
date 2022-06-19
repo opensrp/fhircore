@@ -39,18 +39,42 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao
-constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
+constructor(
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider,
+  open val configurationRegistry: ConfigurationRegistry
+) {
 
   protected val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
-  open fun getDataTypes(): TreeSet<DataType> =
+  open fun getDataTypes(): TreeSet<DataType> {
+    val appRegistry =
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        AppConfigClassification.APPLICATION
+      )
+    val deviceToDeviceSyncConfigs = appRegistry.deviceToDeviceSync
+
+    return if (deviceToDeviceSyncConfigs?.resourcesToSync != null &&
+        deviceToDeviceSyncConfigs.resourcesToSync.isNotEmpty()
+    ) {
+      getDynamicDataTypes(deviceToDeviceSyncConfigs.resourcesToSync)
+    } else {
+      getDefaultDataTypes()
+    }
+  }
+
+  open fun getDefaultDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf(
         ResourceType.Group,
@@ -63,6 +87,13 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         .mapIndexed { index, resourceType ->
           DataType(name = resourceType.name, DataType.Filetype.JSON, index)
         }
+    )
+
+  open fun getDynamicDataTypes(resourceList: List<String>): TreeSet<DataType> =
+    TreeSet<DataType>(
+      resourceList.filter { isValidResourceType(it) }.mapIndexed { index, resource ->
+        DataType(name = resource, DataType.Filetype.JSON, index)
+      }
     )
 
   suspend fun <R : Resource> addOrUpdate(resource: R) {

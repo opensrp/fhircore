@@ -23,6 +23,7 @@ import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.sync.DataType
@@ -30,8 +31,11 @@ import timber.log.Timber
 
 open class P2PReceiverTransferDao
 @Inject
-constructor(fhirEngine: FhirEngine, dispatcherProvider: DispatcherProvider) :
-  BaseP2PTransferDao(fhirEngine, dispatcherProvider), ReceiverTransferDao {
+constructor(
+  fhirEngine: FhirEngine,
+  dispatcherProvider: DispatcherProvider,
+  configurationRegistry: ConfigurationRegistry
+) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, configurationRegistry), ReceiverTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 
