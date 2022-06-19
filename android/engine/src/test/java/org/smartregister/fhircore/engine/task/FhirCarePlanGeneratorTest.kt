@@ -273,26 +273,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           "plans/sick-child-visit/structure-map-register.txt".readFile(),
           "SickChildCarePlan"
         )
-        .also {
-          // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
-          //  so use only single unit like 'days' in a map and that would have the unit replaced
-          // with
-          // 'days'
-          println(it.encodeResourceToString().replace("''", "'day'"))
-        }
+        .also { println(it.encodeResourceToString()) }
 
     val structureMapReferral =
       structureMapUtilities.parse(
           "plans/sick-child-visit/structure-map-referral.txt".readFile(),
           "ReferralTask"
         )
-        .also {
-          // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
-          //  so use only single unit like 'days' in a map and that would have the unit replaced
-          // with
-          // 'days'
-          println(it.encodeResourceToString().replace("''", "'months'"))
-        }
+        .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
@@ -412,13 +400,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           "plans/sick-child-visit/structure-map-referral.txt".readFile(),
           "ReferralTask"
         )
-        .also {
-          // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
-          //  so use only single unit like 'days' in a map and that would have the unit replaced
-          // with
-          // 'days'
-          println(it.encodeResourceToString().replace("''", "'months'"))
-        }
+        .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
@@ -466,13 +448,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           "plans/sick-child-visit/structure-map-referral.txt".readFile(),
           "ReferralTask"
         )
-        .also {
-          // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
-          //  so use only single unit like 'days' in a map and that would have the unit replaced
-          // with
-          // 'days'
-          println(it.encodeResourceToString().replace("''", "'months'"))
-        }
+        .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.update(any()) } just runs
@@ -549,10 +525,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val structureMapScript = "plans/sick-child-visit/structure-map-referral.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "ReferralTask").also {
-        // TODO: IMP - The parser does not recognize the time unit i.e. days and prints as ''
-        //  so use only single unit like 'days' in a map and that would have the unit replaced with
-        // 'days'
-        println(it.encodeResourceToString().replace("''", "'months'"))
+        println(it.encodeResourceToString())
       }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()

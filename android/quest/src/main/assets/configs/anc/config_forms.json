@@ -50,7 +50,8 @@
     {
       "form": "sick-child-under-2m",
       "title": "Sick child under 2 months",
-      "identifier": "131880"
+      "identifier": "131880",
+      "planDefinitions": ["131901"]
     },
     {
       "form": "sick-child-above-2m",

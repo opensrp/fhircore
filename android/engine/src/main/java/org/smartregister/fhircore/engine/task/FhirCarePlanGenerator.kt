@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.task
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import java.util.Date
 import javax.inject.Inject
@@ -101,7 +102,9 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
         }
       ) {
         val definition =
-          planDefinition.contained.first { it.id == action.definitionCanonicalType.value } as
+          planDefinition.contained.first {
+            it.id.substringBefore("/_history") == action.definitionCanonicalType.value
+          } as
             ActivityDefinition
 
         val source =
@@ -179,7 +182,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
                 Task.TaskStatus.INPROGRESS
               )
             ) {
-              cancelTask(it.id, "${careplan.fhirType()} ${careplan.status}")
+              cancelTask(it.logicalId, "${careplan.fhirType()} ${careplan.status}")
             }
           }
     }

@@ -16,7 +16,7 @@ group ExtractTasks(
     target careplan: CarePlan){
 
     subject -> dueDate as start,
-                evaluate(subject, today() + 1 'months') as end,
+                evaluate(subject, today() + '1 \'months\''.toQuantity()) as end,
                 create('Period') as period,
                 careplan.contained = create('Task') as task then {
 
@@ -29,7 +29,7 @@ group ExtractTasks(
                task.executionPeriod = period,
                task.priority = 'routine',
                task.description = 'Sick Child Referral Task',
-               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id),
+               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
                // should refer to plandefinition since referral has no careplan
                task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, $this.instantiatesCanonical.first()),
                task.authoredOn = evaluate(subject, now()),
