@@ -43,6 +43,7 @@ import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.p2p.sync.DataType
@@ -51,13 +52,16 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
 
   private val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
   private lateinit var p2PReceiverTransferDao: P2PReceiverTransferDao
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
   private val currentDate = Date()
 
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    p2PReceiverTransferDao = spyk(P2PReceiverTransferDao(fhirEngine, DefaultDispatcherProvider()))
+    configurationRegistry = mockk()
+    p2PReceiverTransferDao =
+      spyk(P2PReceiverTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
   }
 
   @Test

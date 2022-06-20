@@ -48,6 +48,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.p2p.sync.DataType
@@ -55,17 +58,24 @@ import org.smartregister.p2p.sync.DataType
 class BaseP2PTransferDaoTest : RobolectricTest() {
 
   private lateinit var baseP2PTransferDao: BaseP2PTransferDao
+  lateinit var configurationRegistry: ConfigurationRegistry
+  private lateinit var defaultRepository: DefaultRepository
   private lateinit var fhirEngine: FhirEngine
   private val currentDate = Date()
 
   @Before
   fun setUp() {
     fhirEngine = mockk(relaxed = true)
-    baseP2PTransferDao = spyk(P2PReceiverTransferDao(fhirEngine, DefaultDispatcherProvider()))
+    defaultRepository = mockk()
+    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    baseP2PTransferDao =
+      spyk(P2PReceiverTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
   }
 
   @Test
   fun `getDataTypes() returns correct list of datatypes`() {
+    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+
     val actualDataTypes = baseP2PTransferDao.getDataTypes()
     Assert.assertEquals(6, actualDataTypes.size)
     Assert.assertTrue(
