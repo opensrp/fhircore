@@ -576,6 +576,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
 
+    // start of plan is lmp date i.e.
+    val lmp =
+            questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
+                    .valueDateType
+                    .value
+
+    questionnaireResponse.find()
+
     val structureMapRegister =
       structureMapUtilities.parse(
           "plans/anc-visit/structure-map-register.txt".readFile(),
@@ -620,18 +628,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient.generalPractitionerFirstRep.extractId(),
           carePlan.author.extractId()
         )
-        // start of plan is lmp date
-        val lmp =
-          questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
-            .valueDateType
-            .value
-        Assert.assertEquals("04-May-2022", lmp.makeItReadable())
+
+        Assert.assertEquals("04-Feb-2022", lmp.makeItReadable())
         Assert.assertEquals(
           lmp.plusMonths(9).makeItReadable(),
           carePlan.period.end.makeItReadable()
         )
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
-        Assert.assertEquals(8, carePlan.activityFirstRep.outcomeReference.size)
+        Assert.assertEquals(5, carePlan.activityFirstRep.outcomeReference.size)
 
         val resourcesSlot = mutableListOf<Resource>()
 
@@ -644,16 +648,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
-          .also { Assert.assertEquals(4, it.size) } // 4 tasks generated, 3 followup 1 referral
+          .also { Assert.assertEquals(6, it.size) } // 4 tasks generated, 3 followup 1 referral
           .also {
             Assert.assertTrue(it.all { it.status == Task.TaskStatus.READY })
             Assert.assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
           }
           .also { tasks ->
-            tasks.take(3).run {
-              Assert.assertTrue(this.all { it.reasonReference.reference == "Questionnaire/131898" })
+            tasks.take(5).run {
+              Assert.assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
               Assert.assertTrue(
-                this.all { it.executionPeriod.end.asYyyyMmDd() == Date().plusDays(7).asYyyyMmDd() }
+                this.all { it.executionPeriod.end.asYyyyMmDd() == it.executionPeriod.start.plusMonths(1).asYyyyMmDd() }
               )
               Assert.assertTrue(
                 this.all { it.basedOn.first().reference == careplan.asReference().reference }
@@ -671,7 +675,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .also {
             it.elementAt(0).let {
               Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() == Date().plusDays(1).asYyyyMmDd()
+                it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd() // first task is today
               )
             }
             it.elementAt(1).let {
