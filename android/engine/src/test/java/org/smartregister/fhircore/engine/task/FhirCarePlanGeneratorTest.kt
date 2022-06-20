@@ -304,10 +304,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.description
         )
         Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
-        Assert.assertEquals(
-          DateTimeType.now().value.makeItReadable(),
-          carePlan.created.makeItReadable()
-        )
+        Assert.assertEquals(Date().makeItReadable(), carePlan.created.makeItReadable())
         Assert.assertEquals(
           patient.generalPractitionerFirstRep.extractId(),
           carePlan.author.extractId()
