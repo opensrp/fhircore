@@ -37,6 +37,7 @@ import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -53,7 +54,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    configurationRegistry = mockk()
+    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
     p2PSenderTransferDao =
       spyk(P2PSenderTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
   }

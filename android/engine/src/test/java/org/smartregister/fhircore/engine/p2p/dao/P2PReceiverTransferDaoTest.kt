@@ -43,6 +43,7 @@ import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -59,7 +60,7 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    configurationRegistry = mockk()
+    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
     p2PReceiverTransferDao =
       spyk(P2PReceiverTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
   }
