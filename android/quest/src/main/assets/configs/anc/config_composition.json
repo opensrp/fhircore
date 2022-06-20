@@ -137,9 +137,19 @@
     {
       "title": "Enroll as ANC Patient",
       "focus": {
-        "reference": "Questionnaire/1924",
+        "reference": "Questionnaire/132152",
         "identifier": {
           "value": "anc-patient-registration"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "ANC Visit",
+      "focus": {
+        "reference": "Questionnaire/132155",
+        "identifier": {
+          "value": "anc-visit"
         }
       },
       "mode": "working"

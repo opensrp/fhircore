@@ -5,10 +5,18 @@
     {
       "form": "anc-patient-registration",
       "title": "Enroll as ANC Patient",
-      "identifier": "1924",
+      "identifier": "132152",
       "saveButtonText": "Mark as ANC client",
       "setPractitionerDetails" : true,
-      "setOrganizationDetails" : true
+      "setOrganizationDetails" : true,
+      "planDefinitions": ["?????????"]
+    },
+    {
+      "form": "anc-visit",
+      "title": "ANC Visit",
+      "identifier": "132155",
+      "saveButtonText": "ANC Visit",
+      "planDefinitions": ["???????????"]
     },
     {
       "form": "family-member-registration",

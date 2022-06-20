@@ -1,0 +1,50 @@
+map "http://hl7.org/fhir/StructureMap/111111" = 'ReferralTask'
+
+uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
+uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
+
+group ReferralTask(source src : Parameters, target tgt: CarePlan) {
+    src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
+            evaluate(src, $this.parameter.where(name='definition').resource) as definition,
+            evaluate(subject, today()) as dueDate
+            then ExtractTasks(dueDate, subject, tgt) "r_careplan";
+}
+
+group ExtractTasks(
+    source dueDate: DateType,
+    source subject : Patient,
+    target careplan: CarePlan){
+
+    subject -> dueDate as start,
+                evaluate(subject, today() + '1 \'months\''.toQuantity()) as end,
+                create('Period') as period,
+                careplan.contained = create('Task') as task then {
+
+        subject then ExtractPeriod(start, end, period) "r_task_period_extr";
+
+        subject -> task.id = uuid(),
+               task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+               task.status = 'ready',
+               task.intent = 'plan',
+               task.executionPeriod = period,
+               task.priority = 'routine',
+               task.description = 'ANC Referral Task',
+               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+               // should refer to plandefinition since referral has no careplan
+               task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, $this.instantiatesCanonical.first()),
+               task.authoredOn = evaluate(subject, now()),
+               task.requester = evaluate(subject, $this.generalPractitioner.first()),
+               task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
+
+        // sick child referral form
+        subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/132049' "r_task_reason_ref";
+    } "r_cp_acti_outcome";
+}
+
+group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00') "r_per_end";
+}
