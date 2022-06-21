@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/22222" = 'ANCCarePlan'
+map "http://hl7.org/fhir/StructureMap/132156" = 'ANCCarePlan'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
@@ -59,8 +59,11 @@ group ExtractTasks(
     target timing: Timing){
 
     // today + total * gap
-    repeat where(dueDate <= maxDate and (today() + ((countMax.toDecimal() * period).toString()+' \'months\'').toQuantity()) >= dueDate) -> dueDate as start,
-                evaluate(dueDate, $this + '1 \'months\''.toQuantity()) as end,
+    repeat where(dueDate <= maxDate and (today() + ((countMax.toDecimal() * period).toString()+' \'months\'').toQuantity()) >= dueDate) ->
+    // start of task is today OR first date of every month if future month | end is last day of given month
+                create('date') as startOfMonth, startOfMonth.value = evaluate(dueDate, $this.value.substring(0,7) + '-01'),
+                create('date') as start, start.value = evaluate(dueDate, iif($this = today(), $this, startOfMonth).value ),
+                evaluate(startOfMonth, ($this + '1 \'months\''.toQuantity()) - '1 \'days\''.toQuantity()) as end,
                 create('Period') as period,
                 careplan.contained = create('Task') as task then {
 

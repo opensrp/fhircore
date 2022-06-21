@@ -148,7 +148,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().where(resource is QuestionnaireResponse).resource.descendants().where((linkId='f3836465-adca-4cc8-8710-c392ee85f739' or linkId='4d87ea34-04a8-42bd-8c5c-e1c4b90d69fb' or linkId='6edf0853-bb17-466e-80ec-0e0aacec4cb3' or linkId='04491c90-6f5a-4005-e604-64775f23345e') and answer.value.code='yes').exists()"
+            "expression": "$this is Patient and $this.birthDate < today() - 5 'years' and %resource.entry.first().where(resource is QuestionnaireResponse).resource.descendants().where((linkId='f3836465-adca-4cc8-8710-c392ee85f739' or linkId='4d87ea34-04a8-42bd-8c5c-e1c4b90d69fb' or linkId='6edf0853-bb17-466e-80ec-0e0aacec4cb3' or linkId='04491c90-6f5a-4005-e604-64775f23345e') and answer.value.code='yes').exists()"
           }
         }
       ],

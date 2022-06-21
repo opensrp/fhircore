@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.hasStarted
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
@@ -88,7 +89,10 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
               PatientProfileRowItem(
                 id = it.logicalId,
                 actionFormId =
-                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                  if (it.status == Task.TaskStatus.READY &&
+                      it.hasStarted() &&
+                      it.hasReasonReference()
+                  )
                     it.reasonReference.extractId()
                   else null,
                 title = it.description,
@@ -100,9 +104,10 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                   else Icons.Filled.Add,
                 actionIconColor =
                   if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
-                  else it.status.retrieveColorCode(),
-                actionButtonColor = it.status.retrieveColorCode(),
+                  else it.status.retrieveColorCode(it.hasStarted()),
+                actionButtonColor = it.status.retrieveColorCode(it.hasStarted()),
                 actionButtonText = it.description,
+                task = it
               )
             }
         )
@@ -130,9 +135,12 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                         taskId = it.logicalId,
                         task = it.description,
                         taskStatus = it.status,
-                        colorCode = it.status.retrieveColorCode(),
+                        colorCode = it.status.retrieveColorCode(it.hasStarted()),
                         taskFormId =
-                          if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                          if (it.status == Task.TaskStatus.READY &&
+                              it.hasStarted() &&
+                              it.hasReasonReference()
+                          )
                             it.reasonReference.extractId()
                           else null
                       )
@@ -143,10 +151,10 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
     }
   }
 
-  private fun Task.TaskStatus.retrieveColorCode(): Color =
+  private fun Task.TaskStatus.retrieveColorCode(hasStarted: Boolean): Color =
     when (this) {
-      Task.TaskStatus.READY -> InfoColor
-      Task.TaskStatus.CANCELLED -> OverdueColor
+      Task.TaskStatus.READY -> if (hasStarted) InfoColor else DefaultColor
+      Task.TaskStatus.CANCELLED -> DefaultColor
       Task.TaskStatus.FAILED -> OverdueColor
       Task.TaskStatus.COMPLETED -> DefaultColor
       else -> DefaultColor

@@ -1,9 +1,9 @@
 {
   "resourceType": "PlanDefinition",
-  "id": "131901",
+  "id": "132157",
   "meta": {
     "versionId": "1",
-    "lastUpdated": "2022-06-10T17:22:13.742+00:00"
+    "lastUpdated": "2022-06-20T22:30:39.217+00:00"
   },
   "contained": [
     {
@@ -124,7 +124,7 @@
         ]
       },
       "definitionCanonical": "#careplan-activity",
-      "transform": "http://hl7.org/fhir/StructureMap/22222"
+      "transform": "http://hl7.org/fhir/StructureMap/132156"
     },
     {
       "prefix": "1",
@@ -134,7 +134,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().where(resource is QuestionnaireResponse).resource.repeat(item).where(linkId='0e2d8659-22ee-44ca-8c26-bf81cca6b366' and answer.value.code='fully-recovered').exists()"
+            "expression": "$this is Patient and %resource.entry.first().where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/132170'"
           }
         }
       ],
@@ -148,12 +148,12 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().where(resource is QuestionnaireResponse).resource.descendants().where((linkId='1b625d5c-d0bc-44d5-8eed-3efc37c51f84' or linkId='9b486fa3-5323-47db-c8eb-f725fb50e8d6') and answer.value.code='yes').exists()"
+            "expression": "$this is Patient and $this.birthDate < today() - 5 'years' and %resource.entry.first().where(resource is QuestionnaireResponse).resource.descendants().where((linkId='1b625d5c-d0bc-44d5-8eed-3efc37c51f84' or linkId='9b486fa3-5323-47db-c8eb-f725fb50e8d6') and answer.value.code='yes').exists()"
           }
         }
       ],
       "definitionCanonical": "#careplan-referral-activity",
-      "transform": "http://hl7.org/fhir/StructureMap/111111"
+      "transform": "http://hl7.org/fhir/StructureMap/132067"
     }
   ]
 }

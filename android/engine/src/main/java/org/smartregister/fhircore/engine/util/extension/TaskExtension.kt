@@ -33,3 +33,9 @@ fun Task.hasStarted() =
     with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
 
 fun Task.TaskStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
+
+fun Task.isActiveAnc() =
+  this.status.isIn(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED, Task.TaskStatus.INPROGRESS) &&
+    this.description.contains("ANC ") ||
+    this.description.contains("pregnancy ", true) ||
+    this.description.contains("pregnant ", true)

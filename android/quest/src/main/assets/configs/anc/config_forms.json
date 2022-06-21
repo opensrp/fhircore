@@ -7,25 +7,40 @@
       "title": "Enroll as ANC Patient",
       "identifier": "132152",
       "saveButtonText": "Mark as ANC client",
-      "setPractitionerDetails" : true,
-      "setOrganizationDetails" : true,
-      "planDefinitions": ["?????????"]
+      "setPractitionerDetails": true,
+      "setOrganizationDetails": true,
+      "planDefinitions": [
+        "132157"
+      ]
     },
     {
       "form": "anc-visit",
       "title": "ANC Visit",
       "identifier": "132155",
       "saveButtonText": "ANC Visit",
-      "planDefinitions": ["???????????"]
+      "planDefinitions": [
+        "132157"
+      ]
+    },
+    {
+      "form": "pregnancy-outcome",
+      "title": "Pregnancy Outcome",
+      "identifier": "132170",
+      "saveButtonText": "Pregnancy Outcome",
+      "planDefinitions": [
+        "132157"
+      ]
     },
     {
       "form": "family-member-registration",
       "title": "Add Family Member",
       "identifier": "82953",
       "saveButtonText": "ADD FAMILY MEMBER",
-      "setPractitionerDetails" : true,
-      "setOrganizationDetails" : true,
-      "planDefinitions": ["131372"]
+      "setPractitionerDetails": true,
+      "setOrganizationDetails": true,
+      "planDefinitions": [
+        "131372"
+      ]
     },
     {
       "form": "non-anc-patient-vital-signs_metric",
@@ -42,8 +57,8 @@
       "title": "Add Family",
       "identifier": "82952",
       "saveButtonText": "ADD FAMILY",
-      "setPractitionerDetails" : true,
-      "setOrganizationDetails" : true
+      "setPractitionerDetails": true,
+      "setOrganizationDetails": true
     },
     {
       "form": "family-patient_bmi_compute",
@@ -59,25 +74,34 @@
       "form": "sick-child-under-2m",
       "title": "Sick child under 2 months",
       "identifier": "131880",
-      "planDefinitions": ["131901"]
+      "planDefinitions": [
+        "131901"
+      ]
     },
     {
       "form": "sick-child-above-2m",
       "title": "Sick child above 2 months",
       "identifier": "131879",
-      "planDefinitions": ["131901"]
+      "planDefinitions": [
+        "131901"
+      ]
     },
     {
       "form": "sick-child-followup",
       "title": "Sick child follow up",
       "identifier": "131898",
-      "planDefinitions": ["131901"]
+      "planDefinitions": [
+        "131901"
+      ]
     },
     {
-      "form": "sick-child-referral",
-      "title": "Sick child referral",
+      "form": "referral",
+      "title": "Referral",
       "identifier": "132049",
-      "planDefinitions": ["131901"]
+      "planDefinitions": [
+        "131901",
+        "132157"
+      ]
     }
   ]
 }

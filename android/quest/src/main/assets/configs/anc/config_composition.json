@@ -155,6 +155,16 @@
       "mode": "working"
     },
     {
+      "title": "Pregnancy Outcome",
+      "focus": {
+        "reference": "Questionnaire/132170",
+        "identifier": {
+          "value": "pregnancy-outcome"
+        }
+      },
+      "mode": "working"
+    },
+    {
       "title": "Add Vital Signs - Metric",
       "focus": {
         "reference": "Questionnaire/1921",
@@ -215,6 +225,16 @@
       "mode": "working"
     },
     {
+      "title": "eCBIS Referral",
+      "focus": {
+        "reference": "Questionnaire/132049",
+        "identifier": {
+          "value": "referral"
+        }
+      },
+      "mode": "working"
+    },
+    {
       "title": "eCBIS Sick Child Follow Up",
       "focus": {
         "reference": "StructureMap/131900"
@@ -222,17 +242,7 @@
       "mode": "working"
     },
     {
-      "title": "eCBIS Sick Child Referral",
-      "focus": {
-        "reference": "Questionnaire/132049",
-        "identifier": {
-          "value": "sick-child-referral"
-        }
-      },
-      "mode": "working"
-    },
-    {
-      "title": "eCBIS Sick Child Referral",
+      "title": "eCBIS Referral",
       "focus": {
         "reference": "StructureMap/132067"
       },
@@ -255,6 +265,13 @@
         "identifier": {
           "value": "ChildRoutineCarePlan"
         }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "eCBIS ANC Visit",
+      "focus": {
+        "reference": "StructureMap/132156"
       },
       "mode": "working"
     }

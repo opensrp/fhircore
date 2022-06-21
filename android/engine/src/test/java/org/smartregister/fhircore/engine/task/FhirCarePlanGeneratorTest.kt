@@ -39,6 +39,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
@@ -61,6 +62,7 @@ import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
@@ -277,10 +279,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .also { println(it.encodeResourceToString()) }
 
     val structureMapReferral =
-      structureMapUtilities.parse(
-          "plans/sick-child-visit/structure-map-referral.txt".readFile(),
-          "ReferralTask"
-        )
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
@@ -397,10 +396,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapReferral =
-      structureMapUtilities.parse(
-          "plans/sick-child-visit/structure-map-referral.txt".readFile(),
-          "ReferralTask"
-        )
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
@@ -445,10 +441,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapReferral =
-      structureMapUtilities.parse(
-          "plans/sick-child-visit/structure-map-referral.txt".readFile(),
-          "ReferralTask"
-        )
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
@@ -523,7 +516,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
 
-    val structureMapScript = "plans/sick-child-visit/structure-map-referral.txt".readFile()
+    val structureMapScript = "plans/structure-map-referral.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "ReferralTask").also {
         println(it.encodeResourceToString())
@@ -568,21 +561,18 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "plans/anc-visit/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
 
     val patient =
-      "plans/anc-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>().apply {
-        this.birthDate = Date().plusMonths(-3)
-      }
+      "plans/anc-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
+
     val questionnaireResponse =
       "plans/anc-visit/sample/questionnaire-response-register.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
 
-    // start of plan is lmp date i.e.
-    val lmp =
-            questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
-                    .valueDateType
-                    .value
+    // start of plan is lmp date | set lmp date to 4 months , and 15th of month
+    val lmp = Date().plusMonths(-4).apply { date = 15 }
 
-    questionnaireResponse.find()
+    questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
+      DateType(lmp)
 
     val structureMapRegister =
       structureMapUtilities.parse(
@@ -592,16 +582,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .also { println(it.encodeResourceToString()) }
 
     val structureMapReferral =
-      structureMapUtilities.parse(
-          "plans/anc-visit/structure-map-referral.txt".readFile(),
-          "ReferralTask"
-        )
+      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
-    coEvery { fhirEngine.get<StructureMap>("22222") } returns structureMapRegister
-    coEvery { fhirEngine.get<StructureMap>("111111") } returns structureMapReferral
+    coEvery { fhirEngine.get<StructureMap>("132156") } returns structureMapRegister
+    coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         plandefinition,
@@ -629,13 +616,24 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.author.extractId()
         )
 
-        Assert.assertEquals("04-Feb-2022", lmp.makeItReadable())
+        Assert.assertEquals(
+          questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!
+            .answer
+            .first()
+            .valueDateType
+            .value
+            .makeItReadable(),
+          lmp.makeItReadable()
+        )
         Assert.assertEquals(
           lmp.plusMonths(9).makeItReadable(),
           carePlan.period.end.makeItReadable()
         )
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
-        Assert.assertEquals(5, carePlan.activityFirstRep.outcomeReference.size)
+        Assert.assertEquals(
+          6,
+          carePlan.activityFirstRep.outcomeReference.size
+        ) // 6 visits as 4th month is passing (15th day) as per lmp
 
         val resourcesSlot = mutableListOf<Resource>()
 
@@ -648,16 +646,19 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
-          .also { Assert.assertEquals(6, it.size) } // 4 tasks generated, 3 followup 1 referral
+          .also { Assert.assertEquals(7, it.size) } // 6 for visit, 1 for referral
           .also {
             Assert.assertTrue(it.all { it.status == Task.TaskStatus.READY })
             Assert.assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
           }
           .also { tasks ->
-            tasks.take(5).run {
+            tasks.take(6).run {
               Assert.assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
               Assert.assertTrue(
-                this.all { it.executionPeriod.end.asYyyyMmDd() == it.executionPeriod.start.plusMonths(1).asYyyyMmDd() }
+                this.all {
+                  it.executionPeriod.end.asYyyyMmDd() ==
+                    it.executionPeriod.start.lastDayOfMonth().asYyyyMmDd()
+                }
               )
               Assert.assertTrue(
                 this.all { it.basedOn.first().reference == careplan.asReference().reference }
@@ -675,21 +676,36 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .also {
             it.elementAt(0).let {
               Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd() // first task is today
+                it.executionPeriod.start.asYyyyMmDd() ==
+                  Date().asYyyyMmDd() // first task is today | 4th month
               )
             }
             it.elementAt(1).let {
               Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() == Date().plusDays(2).asYyyyMmDd()
+                it.executionPeriod.start.asYyyyMmDd() ==
+                  lmp.plusMonths(5, true).asYyyyMmDd() // 5th month
               )
             }
             it.elementAt(2).let {
               Assert.assertTrue(
-                it.executionPeriod.start.asYyyyMmDd() == Date().plusDays(3).asYyyyMmDd()
+                it.executionPeriod.start.asYyyyMmDd() ==
+                  lmp.plusMonths(6, true).asYyyyMmDd() // 6th month
               )
             }
             it.elementAt(3).let {
-              Assert.assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() == lmp.plusMonths(7, true).asYyyyMmDd()
+              ) // 7th month
+            }
+            it.elementAt(4).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() == lmp.plusMonths(8, true).asYyyyMmDd()
+              ) // 8th month
+            }
+            it.elementAt(5).let {
+              Assert.assertTrue(
+                it.executionPeriod.start.asYyyyMmDd() == lmp.plusMonths(9, true).asYyyyMmDd()
+              ) // 9th month
             }
           }
       }
