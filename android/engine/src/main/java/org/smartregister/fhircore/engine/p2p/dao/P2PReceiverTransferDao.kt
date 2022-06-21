@@ -22,6 +22,7 @@ import com.google.android.fhir.logicalId
 import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -42,6 +43,7 @@ constructor(
   override fun receiveJson(@NonNull type: DataType, @NonNull jsonArray: JSONArray): Long {
     var maxLastUpdated = 0L
     Timber.e("saving resources from base dai")
+    val resourceTypes = ResourceType.values()
     (0 until jsonArray.length()).forEach {
       runBlocking {
         val resource =

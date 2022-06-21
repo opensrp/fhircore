@@ -143,11 +143,13 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
   @Test
   fun `loadResources() calls fhirEngine#search()`() {
 
+    val patientDataType = DataType("Patient", DataType.Filetype.JSON, 1)
+    val classType = baseP2PTransferDao.resourceClassType(patientDataType)
     runBlocking {
       baseP2PTransferDao.loadResources(
         lastRecordUpdatedAt = 0,
         batchSize = 25,
-        classType = Patient::class.java
+        classType = classType
       )
     }
 

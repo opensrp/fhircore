@@ -155,14 +155,7 @@ constructor(
     }
   }
 
-  fun resourceClassType(type: DataType) =
-    when (ResourceType.valueOf(type.name)) {
-      ResourceType.Group -> Group::class.java
-      ResourceType.Encounter -> Encounter::class.java
-      ResourceType.Observation -> Observation::class.java
-      ResourceType.Patient -> Patient::class.java
-      ResourceType.Questionnaire -> Questionnaire::class.java
-      ResourceType.QuestionnaireResponse -> QuestionnaireResponse::class.java
-      else -> null /*TODO support other resource types*/
-    }
+  fun resourceClassType(dataType: DataType): Class<out Resource> {
+    return Class.forName("org.hl7.fhir.r4.model.${dataType.name}") as Class<out Resource>
+  }
 }
