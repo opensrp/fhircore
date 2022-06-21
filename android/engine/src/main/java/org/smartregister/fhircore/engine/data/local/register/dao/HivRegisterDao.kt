@@ -20,13 +20,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
+import javax.inject.Inject
+import javax.inject.Singleton
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -41,7 +39,6 @@ import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromM
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
-import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @Singleton
@@ -68,25 +65,25 @@ constructor(
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return patients.map { patient ->
+    return patients.filterNot { it.gender == null }.map { patient ->
       RegisterData.HivRegisterData(
-        logicalId = patient.logicalId,
-        name = patient.extractName(),
-        gender = patient.gender,
-        age = patient.birthDate.toAgeDisplay(),
-        address = patient.extractAddress(),
-        familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
-        phoneContacts = patient.extractTelecom(),
-        chwAssigned = patient.extractGeneralPractitionerReference(),
-        healthStatus =
+          logicalId = patient.logicalId,
+          name = patient.extractName(),
+          gender = patient.gender,
+          age = patient.birthDate.toAgeDisplay(),
+          address = patient.extractAddress(),
+          familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+          phoneContacts = patient.extractTelecom(),
+          chwAssigned = patient.extractGeneralPractitionerReference(),
+          healthStatus =
           patient.extractHealthStatusFromMeta(
-            getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
           )
       )
     }
   }
 
-  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
+  override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
     val patient = defaultRepository.loadResource<Patient>(resourceId)!!
 
     return ProfileData.HivProfileData(
@@ -117,12 +114,13 @@ constructor(
   }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
-    // TODO fix this workaround for groups count
     return fhirEngine
-      .search<Group> { getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) } }
-      .filter { it.active && !it.name.isNullOrEmpty() }
-      .size
-      .toLong()
+        .search<Patient> {
+          filter(Patient.ACTIVE, { value = of(true) })
+        }
+        .filter { it.gender != null && it.active && !it.name.isNullOrEmpty() }
+        .size
+        .toLong()
   }
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
