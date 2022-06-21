@@ -119,7 +119,8 @@ fun PatientProfileScreen(
                       context,
                       it.id,
                       profileViewData.logicalId,
-                      familyId
+                      familyId,
+                      profileViewData
                     )
                   )
                 },

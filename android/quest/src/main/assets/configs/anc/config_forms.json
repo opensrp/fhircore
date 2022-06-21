@@ -46,6 +46,30 @@
       "form": "remove-family",
       "title": "Remove Family",
       "identifier": "101644"
+    },
+    {
+      "form": "sick-child-under-2m",
+      "title": "Sick child under 2 months",
+      "identifier": "131880",
+      "planDefinitions": ["131901"]
+    },
+    {
+      "form": "sick-child-above-2m",
+      "title": "Sick child above 2 months",
+      "identifier": "131879",
+      "planDefinitions": ["131901"]
+    },
+    {
+      "form": "sick-child-followup",
+      "title": "Sick child follow up",
+      "identifier": "131898",
+      "planDefinitions": ["131901"]
+    },
+    {
+      "form": "sick-child-referral",
+      "title": "Sick child referral",
+      "identifier": "132049",
+      "planDefinitions": ["131901"]
     }
   ]
 }
