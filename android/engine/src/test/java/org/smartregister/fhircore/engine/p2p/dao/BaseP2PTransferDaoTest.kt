@@ -101,6 +101,41 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
   }
 
   @Test
+  fun `getDynamicDataTypes() returns correct list of datatypes`() {
+    val resourceList =
+      listOf(
+        ResourceType.Group.name,
+        ResourceType.Patient.name,
+        ResourceType.Questionnaire.name,
+        ResourceType.QuestionnaireResponse.name,
+        ResourceType.Observation.name,
+        ResourceType.Encounter.name
+      )
+    val actualDataTypes = baseP2PTransferDao.getDynamicDataTypes(resourceList)
+    Assert.assertEquals(6, actualDataTypes.size)
+    Assert.assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+    )
+    Assert.assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
+    )
+    Assert.assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
+    )
+    Assert.assertTrue(
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
+      )
+    )
+    Assert.assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+    )
+    Assert.assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+    )
+  }
+
+  @Test
   fun `addOrUpdate() calls fhirEngine#update() when resource already exists`() {
     val expectedPatient = populateTestPatient()
 
