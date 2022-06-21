@@ -39,6 +39,7 @@
     <string name="remove_this_person">Remove this person</string>
     <string name="individual_details">Individual details</string>
     <string name="view_family">View family</string>
+    <string name="record_sick_child">Record sick child</string>
 
     <!-- SideMenu option strings-->
     <string name="device_to_device_sync">Device to device sync</string>

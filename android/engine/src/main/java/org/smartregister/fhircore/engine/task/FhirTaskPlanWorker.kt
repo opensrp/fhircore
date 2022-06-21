@@ -68,7 +68,7 @@ class FhirTaskPlanWorker(val appContext: Context, workerParams: WorkerParameters
                 fhirEngine.update(carePlan)
               }
             }
-        } else if (task.hasStarted()) {
+        } else if (task.hasStarted() && task.status == Task.TaskStatus.REQUESTED) {
           task.status = Task.TaskStatus.READY
           fhirEngine.update(task)
         }
