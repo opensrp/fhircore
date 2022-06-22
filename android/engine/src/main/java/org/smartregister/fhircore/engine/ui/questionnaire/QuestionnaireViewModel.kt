@@ -26,7 +26,6 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
-import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
@@ -130,6 +129,28 @@ constructor(
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
     questionnaireConfig = loadConfig!!.first { it.form == form }
     return questionnaireConfig
+  }
+
+  suspend fun getQuestionnaireConfigPair(
+    context: Context,
+    formName: String,
+    type: QuestionnaireType
+  ): Pair<QuestionnaireConfig, Questionnaire> {
+    return try {
+      val config = getQuestionnaireConfig(formName, context)
+      val questionnaire = loadQuestionnaire(config.identifier, type)!!
+      Pair(config, questionnaire)
+    } catch (e: Exception) {
+      // load questionnaire from db and build config
+      val questionnaire = loadQuestionnaire(formName, type)!!
+      questionnaireConfig =
+        QuestionnaireConfig(
+          form = questionnaire.name ?: "",
+          title = questionnaire.title ?: "",
+          identifier = questionnaire.logicalId
+        )
+      Pair(questionnaireConfig, questionnaire)
+    }
   }
 
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
