@@ -39,6 +39,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
@@ -75,7 +76,15 @@ fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
 fun Resource.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
-  parser.encodeResourceToString(this)
+  parser.encodeResourceToString(this.copy())
+
+fun StructureMap.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
+  parser
+    .encodeResourceToString(this)
+    .replace("'months'", "\\\\'months\\\\'")
+    .replace("'days'", "\\\\'days\\\\'")
+    .replace("'years'", "\\\\'years\\\\'")
+    .replace("'weeks'", "\\\\'weeks\\\\'")
 
 fun <T> String.decodeResourceFromString(parser: IParser = fhirR4JsonParser): T =
   parser.parseResource(this) as T

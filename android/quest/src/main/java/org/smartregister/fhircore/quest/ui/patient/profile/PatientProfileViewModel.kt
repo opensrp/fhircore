@@ -33,6 +33,8 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
+import org.smartregister.fhircore.engine.util.extension.monthsPassed
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -52,11 +54,7 @@ constructor(
 ) : ViewModel() {
 
   val patientProfileUiState: MutableState<PatientProfileUiState> =
-    mutableStateOf(
-      PatientProfileUiState(
-        overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.PATIENT_PROFILE)
-      )
-    )
+    mutableStateOf(getProfileUiState())
 
   val patientProfileViewData: MutableState<ProfileViewData.PatientProfileViewData> =
     mutableStateOf(ProfileViewData.PatientProfileViewData())
@@ -73,11 +71,24 @@ constructor(
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
                 ProfileViewData.PatientProfileViewData
+
             // TODO only display some overflow menu items when certain conditions are met
+            // dynamically from config
+            patientProfileUiState.value = getProfileUiState(patientProfileViewData.value)
           }
       }
     }
   }
+
+  fun getProfileUiState(profileData: ProfileViewData.PatientProfileViewData? = null) =
+    PatientProfileUiState(
+      overflowMenuFactory.retrieveOverflowMenuItems(
+        OverflowMenuHost.PATIENT_PROFILE,
+        listOfNotNull(
+          Pair(R.id.record_sick_child, profileData?.dob?.let { it.yearsPassed() >= 5 } ?: false)
+        )
+      )
+    )
 
   fun onEvent(event: PatientProfileEvent) =
     when (event) {
@@ -119,6 +130,14 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
+          R.id.record_sick_child ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId =
+                if (event.patient.dob!!.monthsPassed() < 2) SICK_CHILD_UNDER_2M_FORM
+                else SICK_CHILD_ABOVE_2M_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
           else -> {}
         }
       }
@@ -134,5 +153,7 @@ constructor(
     const val REMOVE_FAMILY_FORM = "remove-family"
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
     const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
+    const val SICK_CHILD_UNDER_2M_FORM = "sick-child-under-2m"
+    const val SICK_CHILD_ABOVE_2M_FORM = "sick-child-above-2m"
   }
 }
