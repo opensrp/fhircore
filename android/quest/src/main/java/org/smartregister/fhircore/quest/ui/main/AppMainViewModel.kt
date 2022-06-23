@@ -124,7 +124,7 @@ constructor(
     }
   }
 
-  private fun loadCurrentLanguage() =
+  fun loadCurrentLanguage() =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
           ?: Locale.ENGLISH.toLanguageTag()
