@@ -20,11 +20,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
+import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Task
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -67,17 +67,17 @@ constructor(
 
     return patients.filterNot { it.gender == null }.map { patient ->
       RegisterData.HivRegisterData(
-          logicalId = patient.logicalId,
-          name = patient.extractName(),
-          gender = patient.gender,
-          age = patient.birthDate.toAgeDisplay(),
-          address = patient.extractAddress(),
-          familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
-          phoneContacts = patient.extractTelecom(),
-          chwAssigned = patient.extractGeneralPractitionerReference(),
-          healthStatus =
+        logicalId = patient.logicalId,
+        name = patient.extractName(),
+        gender = patient.gender,
+        age = patient.birthDate.toAgeDisplay(),
+        address = patient.extractAddress(),
+        familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+        phoneContacts = patient.extractTelecom(),
+        chwAssigned = patient.extractGeneralPractitionerReference(),
+        healthStatus =
           patient.extractHealthStatusFromMeta(
-              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+            getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
           )
       )
     }
@@ -114,12 +114,10 @@ constructor(
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     return fhirEngine
-        .search<Patient> {
-          filter(Patient.ACTIVE, { value = of(true) })
-        }
-        .filter { it.gender != null && it.active && !it.name.isNullOrEmpty() }
-        .size
-        .toLong()
+      .search<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
+      .filter { it.gender != null && it.active && !it.name.isNullOrEmpty() }
+      .size
+      .toLong()
   }
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
