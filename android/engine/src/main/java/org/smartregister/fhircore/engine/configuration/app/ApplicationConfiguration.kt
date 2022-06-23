@@ -30,7 +30,8 @@ data class ApplicationConfiguration(
   var scheduleDefaultPlanWorker: Boolean = true,
   var applicationName: String = "",
   var appLogoIconResourceFile: String = "ic_default_logo",
-  var count: String = ConfigurationRegistry.DEFAULT_COUNT
+  var count: String = ConfigurationRegistry.DEFAULT_COUNT,
+  var deviceToDeviceSync: DeviceToDeviceSyncConfiguration? = null
 ) : Configuration
 
 /**
