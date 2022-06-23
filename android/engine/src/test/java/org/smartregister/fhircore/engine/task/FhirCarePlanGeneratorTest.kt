@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.task
 
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.datacapture.enablement.fhirPathEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
@@ -513,13 +512,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "plans/sick-child-visit/sample/patient.json"
         .readFile()
         .decodeResourceFromString<Patient>()
-        .apply { this.birthDate = Date().plusMonths(-4).plusDays(-15) }
-
-    fhirPathEngine.evaluate(
-        patient,
-        "(( (today().toString().substring(0, 4).toInteger() - \$this.birthDate.toString().substring(0, 4).toInteger()) * 365 ) + ( (today().toString().substring(5, 2).toInteger() - \$this.birthDate.toString().substring(5, 2).toInteger()) * 30.5) + (today().toString().substring(8, 2).toInteger() - \$this.birthDate.toString().substring(8, 2).toInteger()) )/7"
-      )
-      .let { it.size }
+        .apply { this.birthDate = Date().plusMonths(-1).plusDays(-15) }
 
     val questionnaireResponse =
       "plans/sick-child-visit/sample/questionnaire-response-register-under2m.json"
