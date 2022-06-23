@@ -154,6 +154,14 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
+          R.id.record_sick_child ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId =
+                if (event.patient.dob!!.monthsPassed() < 2) SICK_CHILD_UNDER_2M_FORM
+                else SICK_CHILD_ABOVE_2M_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
           else -> {}
         }
       }
