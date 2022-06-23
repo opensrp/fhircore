@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui
+package org.smartregister.fhircore.quest
 
 import android.app.Application
 import android.content.Context
