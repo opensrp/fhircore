@@ -23,6 +23,7 @@ import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -254,3 +255,12 @@ fun generateUniqueId() = UUID.randomUUID().toString()
 
 fun Base.extractWithFhirPath(expression: String) =
   FhirPathDataExtractor.extractData(this, expression).firstOrNull()?.primitiveValue() ?: ""
+
+fun isValidResourceType(resourceCode: String): Boolean {
+  return try {
+    ResourceType.fromCode(resourceCode)
+    true
+  } catch (exception: FHIRException) {
+    false
+  }
+}
