@@ -26,7 +26,6 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
-import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
@@ -100,7 +99,7 @@ constructor(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  private lateinit var questionnaireConfig: QuestionnaireConfig
+  lateinit var questionnaireConfig: QuestionnaireConfig
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -128,7 +127,7 @@ constructor(
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    questionnaireConfig = loadConfig!!.first { it.form == form }
+    questionnaireConfig = loadConfig!!.first { it.form == form || it.identifier == form }
     return questionnaireConfig
   }
 
@@ -291,13 +290,14 @@ constructor(
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
+        extractCarePlan(questionnaireResponse, null)
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
-  suspend fun extractCarePlan(questionnaireResponse: QuestionnaireResponse, bundle: Bundle) {
+  suspend fun extractCarePlan(questionnaireResponse: QuestionnaireResponse, bundle: Bundle?) {
     val subject =
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
@@ -305,13 +305,13 @@ constructor(
     questionnaireConfig.planDefinitions.forEach { planId ->
       val data =
         Bundle().apply {
-          bundle.entry.map { this.addEntry(it) }
+          bundle?.entry?.map { this.addEntry(it) }
 
           addEntry().resource = questionnaireResponse
         }
 
       kotlin
-        .runCatching { fhirCarePlanGenerator.generateCarePlan(planId, subject, data) }
+        .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
         .onFailure {
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")

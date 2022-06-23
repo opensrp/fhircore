@@ -27,10 +27,16 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
+val SDF_DD_MMM = SimpleDateFormat("dd MMM")
 val SDF_YYYY_MM_DD = SimpleDateFormat("yyyy-MM-dd")
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
+}
+
+fun Date?.asDdMmm(): String {
+  if (this == null) return ""
+  return SDF_DD_MMM.format(this)
 }
 
 fun Date.asDdMmmYyyy(): String {
@@ -56,6 +62,8 @@ fun Date.daysPassed() =
 
 fun Date.yearsPassed() = this.daysPassed().div(365).toInt()
 
+fun Date.monthsPassed() = this.daysPassed().div(30.5).toInt()
+
 fun Date?.toAgeDisplay() = if (this == null) "" else getAgeStringFromDays(this.daysPassed())
 
 fun DateType.plusWeeksAsString(weeks: Int): String {
@@ -74,6 +82,20 @@ fun Date.plusYears(years: Int): Date {
   val date = this
   val clone = Calendar.getInstance().apply { time = date }
   clone.add(Calendar.YEAR, years)
+  return clone.time
+}
+
+fun Date.plusDays(days: Int): Date {
+  val date = this
+  val clone = Calendar.getInstance().apply { time = date }
+  clone.add(Calendar.DATE, days)
+  return clone.time
+}
+
+fun Date.plusMonths(months: Int): Date {
+  val date = this
+  val clone = Calendar.getInstance().apply { time = date }
+  clone.add(Calendar.MONTH, months)
   return clone.time
 }
 
