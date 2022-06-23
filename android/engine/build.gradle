@@ -129,7 +129,7 @@ dependencies {
     implementation 'org.opencds.cqf.cql:evaluator.activitydefinition:1.4.2-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.plandefinition:1.4.2-SNAPSHOT'
     implementation ('org.opencds.cqf.cql:evaluator.dagger:1.4.2-SNAPSHOT'){}
-    api('org.smartregister:workflow:0.1.0-alpha01-preview5-SNAPSHOT') {
+    api('org.smartregister:workflow:0.1.0-alpha01-preview6-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'
         exclude group: 'com.github.java-json-tools'
@@ -171,7 +171,9 @@ dependencies {
     def coroutineVersion = '1.6.0'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api('org.smartregister:data-capture:0.1.0-beta03-preview4-SNAPSHOT') {
+    api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
+
+    api('org.smartregister:data-capture:0.1.0-beta03-preview5-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -180,11 +182,16 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api('org.smartregister:common:0.1.0-alpha03-preview-SNAPSHOT') {
+    api('org.smartregister:common:0.1.0-alpha03-preview2-SNAPSHOT') {
         transitive = true
     }
 
-    api('org.smartregister:engine:0.1.0-beta01-preview9-SNAPSHOT') {
+    api('org.smartregister:contrib-barcode:0.1.0-beta3-preview-SNAPSHOT') {
+        transitive = true
+        exclude group: 'com.google.android.fhir', module: 'common'
+    }
+
+    api('org.smartregister:engine:0.1.0-beta01-preview10-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -235,4 +242,8 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+
+    runtimeOnly ("androidx.core:core:1.8.0-alpha05") {
+        exclude group: 'com.android.support', module: 'support-compat'
+    }
 }
