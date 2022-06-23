@@ -691,5 +691,6 @@ class ResourceExtensionTest : RobolectricTest() {
   fun `isValidResourceType() should return false if resource type is not valid`() {
     Assert.assertFalse(isValidResourceType("Client"))
     Assert.assertFalse(isValidResourceType("Manufacturer"))
+    Assert.assertFalse(isValidResourceType(""))
   }
 }
