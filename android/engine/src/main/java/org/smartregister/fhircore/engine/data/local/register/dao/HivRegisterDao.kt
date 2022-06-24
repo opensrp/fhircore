@@ -68,6 +68,7 @@ constructor(
     return patients.filterNot { it.gender == null }.map { patient ->
       RegisterData.HivRegisterData(
         logicalId = patient.logicalId,
+        identifier = patient.identifierFirstRep.value,
         name = patient.extractName(),
         gender = patient.gender,
         age = patient.birthDate.toAgeDisplay(),
@@ -90,7 +91,7 @@ constructor(
       logicalId = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
-      identifier = patient.extractOfficialIdentifier(),
+      identifier = patient.identifierFirstRep.value,
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
