@@ -80,9 +80,9 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                   if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
                     it.reasonReference.extractId()
                   else null,
-                title = it.description,
-                subtitle =
-                  context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
+                title = "", // it.description,
+                subtitle = "", // context.getString(R.string.due_on,
+                // it.executionPeriod.start.makeItReadable()),
                 profileViewSection = PatientProfileViewSection.TASKS,
                 actionButtonIcon =
                   if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
