@@ -26,7 +26,7 @@ class HealthStatusTest {
     Assert.assertNotNull(HealthStatus.valueOf("NEWLY_DIAGNOSED_CLIENT"))
     Assert.assertNotNull(HealthStatus.valueOf("CLIENT_ALREADY_ON_ART"))
     Assert.assertNotNull(HealthStatus.valueOf("EXPOSED_INFANT"))
-    Assert.assertNotNull(HealthStatus.valueOf("HIV_POSITIVE"))
+    Assert.assertNotNull(HealthStatus.valueOf("COMMUNITY_POSITIVE"))
     Assert.assertNotNull(HealthStatus.valueOf("CHILD_CONTACT"))
     Assert.assertNotNull(HealthStatus.valueOf("SEXUAL_CONTACT"))
   }
