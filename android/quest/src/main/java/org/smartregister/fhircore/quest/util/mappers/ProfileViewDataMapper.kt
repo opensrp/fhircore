@@ -72,7 +72,6 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           address = inputModel.address,
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = inputModel.showIdentifierInProfile,
-          showDOBInProfile = inputModel.showDOBInProfile,
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               PatientProfileRowItem(
@@ -81,9 +80,9 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                   if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
                     it.reasonReference.extractId()
                   else null,
-                title = it.description,
-                subtitle =
-                  context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
+                title = "", // it.description,
+                subtitle = "", // context.getString(R.string.due_on,
+                // it.executionPeriod.start.makeItReadable()),
                 profileViewSection = PatientProfileViewSection.TASKS,
                 actionButtonIcon =
                   if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
@@ -176,7 +175,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
   fun HealthStatus.retrieveDisplayIdentifierKey(): String =
     when (this) {
       HealthStatus.EXPOSED_INFANT -> "HCC Number"
-      HealthStatus.CHILD_CONTACT, HealthStatus.SEXUAL_CONTACT, HealthStatus.HIV_POSITIVE ->
+      HealthStatus.CHILD_CONTACT, HealthStatus.SEXUAL_CONTACT, HealthStatus.COMMUNITY_POSITIVE ->
         "HTS Number"
       else -> "ART Number"
     }

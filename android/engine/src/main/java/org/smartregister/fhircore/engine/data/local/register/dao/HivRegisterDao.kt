@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
@@ -68,6 +67,7 @@ constructor(
     return patients.filterNot { it.gender == null }.map { patient ->
       RegisterData.HivRegisterData(
         logicalId = patient.logicalId,
+        identifier = patient.identifierFirstRep.value,
         name = patient.extractName(),
         gender = patient.gender,
         age = patient.birthDate.toAgeDisplay(),
@@ -90,14 +90,13 @@ constructor(
       logicalId = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
-      identifier = patient.extractOfficialIdentifier(),
+      identifier = patient.identifierFirstRep.value,
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
       phoneContacts = patient.extractTelecom(),
       chwAssigned = patient.generalPractitionerFirstRep,
       showIdentifierInProfile = true,
-      showDOBInProfile = false,
       healthStatus =
         patient.extractHealthStatusFromMeta(
           getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem

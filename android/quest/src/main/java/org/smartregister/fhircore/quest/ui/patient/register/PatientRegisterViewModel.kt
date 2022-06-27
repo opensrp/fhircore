@@ -168,7 +168,7 @@ constructor(
         pagingData: PagingData<RegisterViewData> ->
         pagingData.filter {
           it.title.contains(event.searchText, ignoreCase = true) ||
-            it.logicalId.contentEquals(event.searchText, ignoreCase = true)
+            it.logicalId.contains(event.searchText, ignoreCase = true)
         }
       }
   }

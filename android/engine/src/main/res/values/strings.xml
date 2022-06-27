@@ -78,6 +78,7 @@
     <string name="dial_number">DIAL NUMBER</string>
     <string name="register">Register</string>
     <string name="tasks">Tasks</string>
+    <string name="visits">Visits</string>
     <string name="reports">Reports</string>
     <string name="profile">Profile</string>
     <string name="settings">Settings</string>
@@ -117,6 +118,7 @@
     <string name="age">Age</string>
     <string name="dob">DOB</string>
     <string name="id">ID: %1$s</string>
+    <string name="idKeyValue">%1$s: %2$s</string>
     <string name="see_all">SEE ALL</string>
     <string name="forms">FORMS</string>
     <string name="medical_history">MEDICAL HISTORY</string>
