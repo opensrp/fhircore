@@ -86,7 +86,7 @@ object Faker {
     family: String = "Mandela",
     given: String = "Nelson",
     age: Int = 78,
-    gender: Enumerations.AdministrativeGender = Enumerations.AdministrativeGender.MALE,
+    gender: Enumerations.AdministrativeGender? = Enumerations.AdministrativeGender.MALE,
     patientType: String = "",
     practitionerReference: String = ""
   ): Patient {
