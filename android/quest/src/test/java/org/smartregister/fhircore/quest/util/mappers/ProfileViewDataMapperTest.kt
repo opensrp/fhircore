@@ -72,7 +72,6 @@ class ProfileViewDataMapperTest : RobolectricTest() {
       Assert.assertEquals("testName", name)
       Assert.assertEquals("testIdentifier()", identifier)
       Assert.assertEquals("HCC Number", identifierKey)
-      Assert.assertEquals(true, showDOBInProfile)
       Assert.assertEquals(true, showIdentifierInProfile)
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
@@ -160,7 +159,6 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           healthStatus = HealthStatus.EXPOSED_INFANT,
           services = emptyList(),
           tasks = emptyList(),
-          showDOBInProfile = true,
           showIdentifierInProfile = true
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->

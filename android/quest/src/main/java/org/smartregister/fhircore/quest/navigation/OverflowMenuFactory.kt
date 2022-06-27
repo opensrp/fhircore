@@ -112,7 +112,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
     )
   ),
-  HIV_POSITIVE_PROFILE(
+  COMMUNITY_POSITIVE_PROFILE(
     listOf(
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),

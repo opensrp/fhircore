@@ -68,40 +68,44 @@ fun ProfileActionableItem(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically
   ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      if (patientProfileRowItem.profileViewSection == PatientProfileViewSection.UPCOMING_SERVICES &&
-          patientProfileRowItem.startIcon != null
-      ) {
-        Box(
-          contentAlignment = Alignment.Center,
-          modifier =
-            modifier
-              .padding(end = 8.dp)
-              .clip(RoundedCornerShape(6.dp))
-              .background(
-                patientProfileRowItem.startIconBackgroundColor ?: DefaultColor.copy(alpha = 0.3f),
-              )
-              .padding(8.dp)
+    if (patientProfileRowItem.title.isEmpty() && patientProfileRowItem.subtitle.isEmpty()) {
+      ActionButton(patientProfileRowItem, modifier = modifier.fillMaxWidth(1f), onActionClick)
+    } else {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        if (patientProfileRowItem.profileViewSection ==
+            PatientProfileViewSection.UPCOMING_SERVICES && patientProfileRowItem.startIcon != null
         ) {
-          Image(
-            painter = painterResource(patientProfileRowItem.startIcon),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            colorFilter =
-              ColorFilter.tint(
-                if (patientProfileRowItem.startIconBackgroundColor != null) Color.White
-                else Color.Black.copy(alpha = 0.5f)
-              )
-          )
+          Box(
+            contentAlignment = Alignment.Center,
+            modifier =
+              modifier
+                .padding(end = 8.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(
+                  patientProfileRowItem.startIconBackgroundColor ?: DefaultColor.copy(alpha = 0.3f),
+                )
+                .padding(8.dp)
+          ) {
+            Image(
+              painter = painterResource(patientProfileRowItem.startIcon),
+              contentDescription = null,
+              contentScale = ContentScale.FillBounds,
+              colorFilter =
+                ColorFilter.tint(
+                  if (patientProfileRowItem.startIconBackgroundColor != null) Color.White
+                  else Color.Black.copy(alpha = 0.5f)
+                )
+            )
+          }
+        }
+        Column {
+          TitleRow(patientProfileRowItem = patientProfileRowItem, modifier = modifier)
+          Spacer(modifier = modifier.height(8.dp))
+          SubtitleRow(patientProfileRowItem = patientProfileRowItem, modifier = modifier)
         }
       }
-      Column {
-        TitleRow(patientProfileRowItem = patientProfileRowItem, modifier = modifier)
-        Spacer(modifier = modifier.height(8.dp))
-        SubtitleRow(patientProfileRowItem = patientProfileRowItem, modifier = modifier)
-      }
+      ActionButton(patientProfileRowItem, modifier, onActionClick)
     }
-    ActionButton(patientProfileRowItem, modifier, onActionClick)
   }
 }
 
@@ -116,6 +120,7 @@ private fun ActionButton(
       patientProfileRowItem.actionButtonText != null
   ) {
     OutlinedButton(
+      modifier = modifier,
       onClick = {
         patientProfileRowItem.actionFormId?.let { taskFormId ->
           onActionClick(taskFormId, patientProfileRowItem.id)
@@ -209,6 +214,38 @@ fun ProfileActionableItemForTasksPreview() {
         title = "Sick",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "due date",
+        profileViewSection = PatientProfileViewSection.TASKS,
+        actionButtonColor = OverdueColor,
+        actionButtonText = "Malaria medicine"
+      ),
+      onActionClick = { _, _ -> }
+    )
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun ProfileActionableItemForVisitPreview() {
+  Column {
+    ProfileActionableItem(
+      PatientProfileRowItem(
+        id = "1",
+        title = "",
+        titleIcon = R.drawable.ic_pregnant,
+        subtitle = "",
+        profileViewSection = PatientProfileViewSection.TASKS,
+        actionButtonColor = InfoColor,
+        actionButtonText = "ANC visit"
+      ),
+      onActionClick = { _, _ -> }
+    )
+    Divider()
+    ProfileActionableItem(
+      PatientProfileRowItem(
+        id = "2",
+        title = "",
+        titleIcon = R.drawable.ic_pregnant,
+        subtitle = "",
         profileViewSection = PatientProfileViewSection.TASKS,
         actionButtonColor = OverdueColor,
         actionButtonText = "Malaria medicine"

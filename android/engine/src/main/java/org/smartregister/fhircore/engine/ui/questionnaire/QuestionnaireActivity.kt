@@ -109,7 +109,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       withContext(dispatcherProvider.io()) { questionnaireViewModel.libraryEvaluator.initialize() }
 
       // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null) {
+      if (savedInstanceState == null || !this@QuestionnaireActivity::fragment.isInitialized) {
         renderFragment()
       }
 
@@ -184,24 +184,17 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     // load from assets and get questionnaire or if not found build it from questionnaire
     kotlin
       .runCatching {
-        questionnaireConfig =
-          questionnaireViewModel.getQuestionnaireConfig(formName, this@QuestionnaireActivity)
-        questionnaire =
-          questionnaireViewModel.loadQuestionnaire(
-            questionnaireConfig.identifier,
+        val resultPair =
+          questionnaireViewModel.getQuestionnaireConfigPair(
+            this@QuestionnaireActivity,
+            formName,
             questionnaireType
-          )!!
-      }
-      .onFailure {
-        // load questionnaire from db and build config
-        questionnaire = questionnaireViewModel.loadQuestionnaire(formName, questionnaireType)!!
-        questionnaireConfig =
-          QuestionnaireConfig(
-            form = questionnaire.name ?: "",
-            title = questionnaire.title ?: "",
-            identifier = questionnaire.logicalId
           )
+
+        questionnaireConfig = resultPair.first
+        questionnaire = resultPair.second
       }
+      .onFailure { Timber.e(it) }
       .also { populateInitialValues(questionnaire) }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
