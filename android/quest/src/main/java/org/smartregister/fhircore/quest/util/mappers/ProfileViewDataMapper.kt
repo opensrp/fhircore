@@ -175,7 +175,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
   fun HealthStatus.retrieveDisplayIdentifierKey(): String =
     when (this) {
       HealthStatus.EXPOSED_INFANT -> "HCC Number"
-      HealthStatus.CHILD_CONTACT, HealthStatus.SEXUAL_CONTACT, HealthStatus.HIV_POSITIVE ->
+      HealthStatus.CHILD_CONTACT, HealthStatus.SEXUAL_CONTACT, HealthStatus.COMMUNITY_POSITIVE ->
         "HTS Number"
       else -> "ART Number"
     }
