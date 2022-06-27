@@ -97,6 +97,7 @@ class HivRegisterDaoTest : RobolectricTest() {
 
     every { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
 
+    // TODO: fix and remove comment or delete
     //    coEvery { fhirEngine.search<Task>(any()) } returns emptyList()
     //
     //    coEvery { defaultRepository.searchResourceFor<Task>(subjectId = any(),
@@ -147,7 +148,8 @@ class HivRegisterDaoTest : RobolectricTest() {
     }
   }
 
-  @Ignore(value = "ignore failing for to check PR")
+  // TODO: get test passing or delete
+  @Ignore(value = "will need to fix mocking appConfigRegistration in HivRegisterDao")
   @Test
   fun testLoadProfileData() {
     val data = runBlocking {
