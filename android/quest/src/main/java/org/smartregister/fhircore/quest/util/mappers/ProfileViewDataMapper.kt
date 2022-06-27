@@ -23,8 +23,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.graphics.Color
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.text.SimpleDateFormat
-import java.util.Locale
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -38,6 +36,7 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.hasStarted
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
@@ -47,8 +46,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<ProfileData, ProfileViewData> {
-
-  private val simpleDateFormat = SimpleDateFormat("dd MMM", Locale.getDefault())
 
   override fun transformInputToOutputModel(inputModel: ProfileData): ProfileViewData {
     return when (inputModel) {
@@ -88,7 +85,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               ActionableButtonData(
-                questionnaire =
+                action =
                   when (it.status) {
                     Task.TaskStatus.CANCELLED, Task.TaskStatus.FAILED ->
                       context.getString(
@@ -114,17 +111,15 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                     it.reasonReference.extractId()
                   else null,
                 backReference = it.logicalId.asReference(ResourceType.Task),
-                contentColor = it.status.retrieveColorCode(),
+                contentColor = it.status.retrieveColorCode(it.hasStarted()),
                 iconStart =
                   if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
                   else Icons.Filled.Add,
                 iconColor =
-                  when (it.status) {
-                    Task.TaskStatus.COMPLETED -> SuccessColor
-                    Task.TaskStatus.CANCELLED, Task.TaskStatus.FAILED -> OverdueColor
-                    Task.TaskStatus.READY -> InfoColor
-                    else -> DefaultColor
-                  },
+                  it.status.retrieveColorCode(
+                    hasStarted = it.hasStarted(),
+                    changeCompleteStatusColor = true
+                  ),
               )
             }
         )
@@ -152,9 +147,12 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                         taskId = it.logicalId,
                         task = it.description,
                         taskStatus = it.status,
-                        colorCode = it.status.retrieveColorCode(),
+                        colorCode = it.status.retrieveColorCode(it.hasStarted()),
                         taskFormId =
-                          if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                          if (it.status == Task.TaskStatus.READY &&
+                              it.hasStarted() &&
+                              it.hasReasonReference()
+                          )
                             it.reasonReference.extractId()
                           else null
                       )
@@ -165,12 +163,15 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
     }
   }
 
-  private fun Task.TaskStatus.retrieveColorCode(): Color =
+  private fun Task.TaskStatus.retrieveColorCode(
+    hasStarted: Boolean,
+    changeCompleteStatusColor: Boolean = false
+  ): Color =
     when (this) {
-      Task.TaskStatus.READY -> InfoColor
-      Task.TaskStatus.CANCELLED -> OverdueColor
+      Task.TaskStatus.READY -> if (hasStarted) InfoColor else DefaultColor
+      Task.TaskStatus.CANCELLED -> DefaultColor
       Task.TaskStatus.FAILED -> OverdueColor
-      Task.TaskStatus.COMPLETED -> DefaultColor
+      Task.TaskStatus.COMPLETED -> if (changeCompleteStatusColor) SuccessColor else DefaultColor
       else -> DefaultColor
     }
 

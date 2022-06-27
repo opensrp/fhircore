@@ -24,7 +24,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 
 data class ActionableButtonData(
-  val questionnaire: String,
+  val action: String,
   val questionnaireId: String?,
   val backReference: Reference? = null,
   val contentColor: Color = InfoColor,

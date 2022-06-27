@@ -310,7 +310,7 @@ fun FamilyProfileScreen(
                 actionableButtonData =
                   memberViewState.memberTasks.map {
                     ActionableButtonData(
-                      questionnaire = it.task,
+                      action = it.task,
                       questionnaireId = it.taskFormId,
                       backReference = it.taskId.asReference(ResourceType.Task),
                       contentColor = it.colorCode

@@ -64,7 +64,7 @@ fun ActionableButton(
         contentDescription = null,
         tint = actionableButtonData.iconColor.copy(alpha = 0.9f)
       )
-      Text(text = actionableButtonData.questionnaire, fontWeight = FontWeight.Medium)
+      Text(text = actionableButtonData.action, fontWeight = FontWeight.Medium)
     }
   }
 }
