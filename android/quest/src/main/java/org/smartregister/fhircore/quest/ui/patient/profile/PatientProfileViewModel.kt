@@ -145,7 +145,7 @@ constructor(
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,
-          backReference = event.taskId.asReference(ResourceType.Task).reference
+          backReference = event.taskId?.asReference(ResourceType.Task)?.reference
         )
     }
 

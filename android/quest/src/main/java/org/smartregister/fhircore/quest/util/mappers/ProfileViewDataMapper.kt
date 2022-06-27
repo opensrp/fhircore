@@ -26,21 +26,23 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.domain.model.ActionableButtonData
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.makeItReadable
+import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberTask
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
-import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileRowItem
-import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
@@ -85,24 +87,44 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           dob = inputModel.birthdate,
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
-              PatientProfileRowItem(
-                id = it.logicalId,
-                actionFormId =
+              ActionableButtonData(
+                questionnaire =
+                  when (it.status) {
+                    Task.TaskStatus.CANCELLED, Task.TaskStatus.FAILED ->
+                      context.getString(
+                        R.string.visit_overdue,
+                        it.description.capitalizeFirstLetter(),
+                        it.executionPeriod.start.prettifyDate()
+                      )
+                    Task.TaskStatus.READY ->
+                      context.getString(
+                        R.string.visit_due_today,
+                        it.description.capitalizeFirstLetter()
+                      )
+                    Task.TaskStatus.COMPLETED -> it.description.capitalizeFirstLetter()
+                    else ->
+                      context.getString(
+                        R.string.visit_due_on,
+                        it.description.capitalizeFirstLetter(),
+                        it.executionPeriod.start.prettifyDate()
+                      )
+                  },
+                questionnaireId =
                   if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
                     it.reasonReference.extractId()
                   else null,
-                title = it.description,
-                subtitle =
-                  context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
-                profileViewSection = PatientProfileViewSection.TASKS,
-                actionButtonIcon =
+                backReference = it.logicalId.asReference(ResourceType.Task),
+                contentColor = it.status.retrieveColorCode(),
+                iconStart =
                   if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
                   else Icons.Filled.Add,
-                actionIconColor =
-                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
-                  else it.status.retrieveColorCode(),
-                actionButtonColor = it.status.retrieveColorCode(),
-                actionButtonText = it.description,
+                iconColor =
+                  when (it.status) {
+                    Task.TaskStatus.COMPLETED -> SuccessColor
+                    Task.TaskStatus.CANCELLED, Task.TaskStatus.FAILED -> OverdueColor
+                    Task.TaskStatus.READY -> InfoColor
+                    else -> DefaultColor
+                  },
               )
             }
         )

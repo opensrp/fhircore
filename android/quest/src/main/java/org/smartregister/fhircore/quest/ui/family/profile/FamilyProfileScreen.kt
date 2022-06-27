@@ -69,7 +69,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.domain.model.FormButtonData
+import org.smartregister.fhircore.engine.domain.model.ActionableButtonData
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
@@ -113,7 +113,7 @@ fun FamilyProfileScreen(
   val coroutineScope = rememberCoroutineScope()
   var currentMemberPatientId by remember { mutableStateOf("") }
   var bottomSheetTitle by remember { mutableStateOf("") }
-  var formButtonData by remember { mutableStateOf<List<FormButtonData>>(emptyList()) }
+  var actionableButtonData by remember { mutableStateOf<List<ActionableButtonData>>(emptyList()) }
   var familyList by remember { mutableStateOf(EligibleFamilyHeadMember(emptyList())) }
   var familyBottomSheetAction by remember {
     mutableStateOf(FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS)
@@ -144,7 +144,7 @@ fun FamilyProfileScreen(
             coroutineScope = coroutineScope,
             bottomSheetScaffoldState = bottomSheetScaffoldState,
             title = bottomSheetTitle,
-            formButtonData = formButtonData,
+            actionableButtonData = actionableButtonData,
             onFormClick = { taskFormId, taskId ->
               familyProfileViewModel.onEvent(
                 FamilyProfileEvent.OpenTaskForm(
@@ -307,13 +307,13 @@ fun FamilyProfileScreen(
                     .joinToString(", ")
 
                 // Set form button data
-                formButtonData =
+                actionableButtonData =
                   memberViewState.memberTasks.map {
-                    FormButtonData(
+                    ActionableButtonData(
                       questionnaire = it.task,
                       questionnaireId = it.taskFormId,
                       backReference = it.taskId.asReference(ResourceType.Task),
-                      color = it.colorCode
+                      contentColor = it.colorCode
                     )
                   }
 
