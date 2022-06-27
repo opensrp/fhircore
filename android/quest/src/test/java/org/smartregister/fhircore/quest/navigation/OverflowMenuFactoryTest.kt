@@ -65,7 +65,7 @@ class OverflowMenuFactoryTest : RobolectricTest() {
     Assert.assertEquals(3, uiProfileSexualContact.size)
 
     val uiProfileHivPositive =
-      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.HIV_POSITIVE_PROFILE)
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.COMMUNITY_POSITIVE_PROFILE)
     Assert.assertNotNull(uiProfileHivPositive)
     Assert.assertEquals(4, uiProfileHivPositive.size)
 
