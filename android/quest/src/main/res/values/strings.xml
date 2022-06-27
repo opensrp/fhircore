@@ -87,6 +87,7 @@
     <string name="unsaved_changes_message_alert">If you leave before saving, your edits or changes will be lost</string>
     <string name="due_on">Due on %1$s</string>
     <string name="record_as_anc">Record as ANC</string>
+    <string name="pregnancy_outcome">Pregnancy Outcome</string>
 
 
 </resources>

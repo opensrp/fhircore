@@ -25,12 +25,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.isActiveAnc
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.monthsPassed
@@ -85,7 +87,15 @@ constructor(
       overflowMenuFactory.retrieveOverflowMenuItems(
         OverflowMenuHost.PATIENT_PROFILE,
         listOfNotNull(
-          Pair(R.id.record_sick_child, profileData?.dob?.let { it.yearsPassed() >= 5 } ?: false)
+          Pair(R.id.record_sick_child, profileData?.dob?.let { it.yearsPassed() >= 5 } ?: false),
+          Pair(
+            R.id.record_as_anc,
+            profileData?.tasks?.any { it.task?.isActiveAnc() == true } ?: false
+          ),
+          Pair(
+            R.id.pregnancy_outcome,
+            profileData?.tasks?.none { it.task?.isActiveAnc() == true } ?: false
+          )
         )
       )
     )
@@ -130,6 +140,20 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
+          R.id.pregnancy_outcome ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = PREGNANCY_OUTCOME_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
+          R.id.record_sick_child ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId =
+                if (event.patient.dob!!.monthsPassed() < 2) SICK_CHILD_UNDER_2M_FORM
+                else SICK_CHILD_ABOVE_2M_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
           R.id.record_sick_child ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId =
@@ -153,6 +177,7 @@ constructor(
     const val REMOVE_FAMILY_FORM = "remove-family"
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
     const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
+    const val PREGNANCY_OUTCOME_FORM = "pregnancy-outcome"
     const val SICK_CHILD_UNDER_2M_FORM = "sick-child-under-2m"
     const val SICK_CHILD_ABOVE_2M_FORM = "sick-child-above-2m"
   }
