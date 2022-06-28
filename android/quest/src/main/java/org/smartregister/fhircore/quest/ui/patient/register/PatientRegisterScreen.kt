@@ -30,6 +30,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -42,6 +43,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
@@ -60,6 +62,7 @@ fun PatientRegisterScreen(
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val context = LocalContext.current
+  val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
   val currentSetTotalRecordCount by rememberUpdatedState(
@@ -80,6 +83,7 @@ fun PatientRegisterScreen(
     if (refreshDataStateValue) {
       currentSetTotalRecordCount(appFeatureName, healthModule)
       currentPaginateRegisterData(appFeatureName, healthModule, false)
+      firstTimeSync.value = patientRegisterViewModel.isFirstTimeSync()
       refreshDataState.value = false
     }
   }
@@ -145,7 +149,8 @@ fun PatientRegisterScreen(
               modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
               onClick = {
                 patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
-              }
+              },
+              enabled = !firstTimeSync.value
             ) {
               Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp))
             }
@@ -155,6 +160,7 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
+      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
       RegisterList(
         pagingItems = pagingItems,
         onRowClick = { patientId: String ->

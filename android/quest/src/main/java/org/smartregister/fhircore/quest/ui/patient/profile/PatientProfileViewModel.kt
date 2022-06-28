@@ -31,8 +31,8 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.extension.ACTIVE_ANC_REGEX
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.isActiveAnc
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.monthsPassed
@@ -82,6 +82,7 @@ constructor(
     }
   }
 
+  // TODO handle dynamic profile menu with configurations; avoid string comparison
   fun getProfileUiState(profileData: ProfileViewData.PatientProfileViewData? = null) =
     PatientProfileUiState(
       overflowMenuFactory.retrieveOverflowMenuItems(
@@ -90,11 +91,11 @@ constructor(
           Pair(R.id.record_sick_child, profileData?.dob?.let { it.yearsPassed() >= 5 } ?: false),
           Pair(
             R.id.record_as_anc,
-            profileData?.tasks?.any { it.task?.isActiveAnc() == true } ?: false
+            profileData?.tasks?.any { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } ?: false
           ),
           Pair(
             R.id.pregnancy_outcome,
-            profileData?.tasks?.none { it.task?.isActiveAnc() == true } ?: false
+            profileData?.tasks?.none { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } ?: false
           )
         )
       )
@@ -154,14 +155,6 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
-          R.id.record_sick_child ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId =
-                if (event.patient.dob!!.monthsPassed() < 2) SICK_CHILD_UNDER_2M_FORM
-                else SICK_CHILD_ABOVE_2M_FORM,
-              clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
-            )
           else -> {}
         }
       }
@@ -169,7 +162,7 @@ constructor(
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,
-          backReference = event.taskId.asReference(ResourceType.Task).reference
+          backReference = event.taskId?.asReference(ResourceType.Task)?.reference
         )
     }
 
