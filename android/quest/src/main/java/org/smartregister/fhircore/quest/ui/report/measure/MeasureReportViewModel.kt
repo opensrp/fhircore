@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Practitioner
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -50,6 +51,7 @@ import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.data.report.measure.models.MeasureReportRowData
@@ -286,56 +288,69 @@ constructor(
   fun formatPopulationMeasureReport(
     measureReport: MeasureReport
   ): List<MeasureReportPopulationResult> {
-    return measureReport.also { Timber.w(it.encodeResourceToString()) }.group.flatMap {
-      reportGroup: MeasureReport.MeasureReportGroupComponent ->
-      reportGroup.stratifier.map { stratifier ->
-        val resultItems: List<MeasureReportIndividualResult> =
-          stratifier.stratum.filter { it.hasValue() }.map { stratum ->
-            val text =
-              when {
-                stratum.value.hasText() -> stratum.value.text
-                stratum.value.hasCoding() -> stratum.value.coding.last().display
-                else -> "N/A"
-              }
+    return measureReport
+      .also { Timber.w(it.encodeResourceToString()) }
+      .group
+      .flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
+        reportGroup.stratifier.map { stratifier ->
+          val resultItems: List<MeasureReportIndividualResult> =
+            stratifier.stratum.filter { it.hasValue() }.map { stratum ->
+              val text =
+                when {
+                  stratum.value.hasText() -> stratum.value.text
+                  stratum.value.hasCoding() -> stratum.value.coding.last().display
+                  else -> "N/A"
+                }
 
-            val numerator = stratum.findPopulation(NUMERATOR)?.count ?: 0
-            val denominator = reportGroup.findPopulation(NUMERATOR)?.count ?: 0
-            val percentage =
-              numerator.toDouble().div(if (denominator == 0) 1 else denominator) * 100.0
-            val count = "$numerator/$denominator"
-            MeasureReportIndividualResult(
-              title = text,
-              percentage = percentage.roundToInt().toString(),
-              count = count
+              val numerator = stratum.findPopulation(NUMERATOR)?.count ?: 0
+              val denominator = reportGroup.findPopulation(NUMERATOR)?.count ?: 0
+              val percentage =
+                numerator.toDouble().div(if (denominator == 0) 1 else denominator) * 100.0
+              val count = "$numerator/$denominator"
+              MeasureReportIndividualResult(
+                title = text,
+                percentage = percentage.roundToInt().toString(),
+                count = count
+              )
+            }
+
+          MeasureReportPopulationResult(
+            title =
+              "${reportGroup.id} - ${stratifier.id.replace("-", " ").uppercase(Locale.getDefault())}",
+            count = reportGroup.findRatio(),
+            dataList = resultItems
+          )
+        }
+      }
+      .toMutableList()
+      .apply {
+        measureReport
+          .contained
+          .groupBy {
+            it as Observation
+            it.extension
+              .flatMap { it.extension }
+              .firstOrNull { it.url == POPULATION_OBS_URL }
+              ?.value
+              ?.valueToString()
+          }
+          .map { it.key to it.value.map { it as Observation } }
+          .map { group ->
+            group
+              .second
+              .distinctBy { it.code.codingFirstRep.code }
+              .count { it.code.codingFirstRep.code.isNotBlank() }
+              .let { group.first to it }
+          }
+          .filter { it.first?.isNotBlank() == true }
+          .distinctBy { it.first }
+          .forEach {
+            this.add(
+              0,
+              MeasureReportPopulationResult(title = it.first ?: "", count = it.second.toString())
             )
           }
-
-        MeasureReportPopulationResult(
-          title =
-            "${reportGroup.id} - ${stratifier.id.replace("-", " ").uppercase(Locale.getDefault())}",
-          count = reportGroup.findRatio(),
-          dataList = resultItems
-        )
-      } /*.toMutableList().apply {
-            measureReport.contained.groupBy {
-                it as Observation
-                it.extension.flatMap { it.extension }.firstOrNull { it.url ==  POPULATION_OBS_URL}?.value.valueToString()
-            }.map { it.key to it.value.map { it as Observation } }.map { group ->
-                group.second.distinctBy { it.code.codingFirstRep.code }.count {
-                    it.code.codingFirstRep.code.isNotBlank()
-                }.let {
-                    group.first to it
-                }
-            }.filter { it.first.isNotBlank() }.distinctBy { it.first }.forEach {
-                this.add(0,
-                        MeasureReportPopulationResult(
-                                title = "- "+it.first,
-                                count = it.second.toString()
-                        )
-                )
-            }
-        }*/
-    }
+      }
   }
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
