@@ -48,8 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.domain.model.FormButtonData
-import org.smartregister.fhircore.engine.ui.components.FormButton
+import org.smartregister.fhircore.engine.domain.model.ActionableButtonData
+import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
@@ -61,7 +61,7 @@ fun FamilyMemberBottomSheet(
   coroutineScope: CoroutineScope,
   bottomSheetScaffoldState: BottomSheetScaffoldState,
   title: String,
-  formButtonData: List<FormButtonData>,
+  actionableButtonData: List<ActionableButtonData>,
   onFormClick: (String, String?) -> Unit,
   onViewProfile: () -> Unit,
   modifier: Modifier = Modifier
@@ -99,13 +99,12 @@ fun FamilyMemberBottomSheet(
     Spacer(modifier = modifier.height(8.dp))
     Divider(color = DividerColor)
 
-    // Display tasks for member
-    if (formButtonData.isNotEmpty()) {
+    if (actionableButtonData.isNotEmpty()) {
       Spacer(modifier = modifier.height(8.dp))
-      formButtonData.forEach {
-        FormButton(
-          formButtonData = it,
-          onFormClick = { questionnaireId, taskId ->
+      actionableButtonData.forEach {
+        ActionableButton(
+          actionableButtonData = it,
+          onAction = { questionnaireId, taskId ->
             if (it.questionnaireId != null) onFormClick(questionnaireId, taskId)
           }
         )
@@ -135,7 +134,7 @@ private fun FamilyMemberBottomSheetWithoutFormDataPreview() {
     coroutineScope = rememberCoroutineScope(),
     bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     title = "John Doe, M, 35y",
-    formButtonData = emptyList(),
+    actionableButtonData = emptyList(),
     onFormClick = { _, _ -> /*Do nothing*/ },
     onViewProfile = { /*Do nothing*/}
   )
@@ -148,11 +147,11 @@ private fun FamilyMemberBottomSheetWithFormDataPreview() {
     coroutineScope = rememberCoroutineScope(),
     bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     title = "John Doe, M, 35y",
-    formButtonData =
+    actionableButtonData =
       listOf(
-        FormButtonData("Issue bednet", "12344", null, OverdueColor),
-        FormButtonData("Sick child", "12345", null, OverdueColor),
-        FormButtonData("Pregnancy visit", "12008")
+        ActionableButtonData("Issue bednet", "12344", null, OverdueColor),
+        ActionableButtonData("Sick child", "12345", null, OverdueColor),
+        ActionableButtonData("Pregnancy visit", "12008")
       ),
     onFormClick = { _, _ -> /*Do nothing*/ },
     onViewProfile = { /*Do nothing*/}
