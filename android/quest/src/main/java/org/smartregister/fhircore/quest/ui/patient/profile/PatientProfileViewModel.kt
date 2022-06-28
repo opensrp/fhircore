@@ -33,7 +33,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.ACTIVE_ANC_REGEX
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.isActiveAnc
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.monthsPassed
@@ -92,7 +91,6 @@ constructor(
           Pair(R.id.record_sick_child, profileData?.dob?.let { it.yearsPassed() >= 5 } ?: false),
           Pair(
             R.id.record_as_anc,
-
             profileData?.tasks?.any { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } ?: false
           ),
           Pair(
@@ -157,7 +155,6 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
-
           R.id.record_sick_child ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId =
