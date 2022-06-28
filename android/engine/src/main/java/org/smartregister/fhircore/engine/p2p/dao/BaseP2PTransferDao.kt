@@ -27,8 +27,8 @@ import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.count
-import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
 import java.util.TreeSet
 import kotlinx.coroutines.withContext
@@ -143,7 +143,7 @@ constructor(
       val search =
         Search(type = classType.newInstance().resourceType).apply {
           filter(
-            DateClientParam("_lastUpdated"),
+            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
             {
               value = of(DateTimeType(Date(lastRecordUpdatedAt)))
               prefix = ParamPrefixEnum.GREATERTHAN
@@ -161,23 +161,23 @@ constructor(
     return Class.forName("org.hl7.fhir.r4.model.${dataType.name}") as Class<out Resource>
   }
 
-  suspend fun countTotalRecordsForSync(): Long {
-    var recordCount:Long = 0
+  suspend fun countTotalRecordsForSync(highestRecordIdMap: HashMap<String, Long>): Long {
+    var recordCount: Long = 0
 
     getDataTypes().forEach {
       resourceClassType(it)?.let { classType ->
-        var search =  getSearchObjectForCount(0L,classType)
+        val lastRecordId = highestRecordIdMap[it.name] ?: 0L
+        var search = getSearchObjectForCount(lastRecordId, classType)
         recordCount += fhirEngine.count(search)
       }
     }
     return recordCount
   }
 
-  fun getSearchObjectForCount(lastRecordUpdatedAt: Long,
-                              classType: Class<out Resource>): Search {
+  fun getSearchObjectForCount(lastRecordUpdatedAt: Long, classType: Class<out Resource>): Search {
     return Search(type = classType.newInstance().resourceType).apply {
       filter(
-        DateClientParam("_lastUpdated"),
+        DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
         {
           value = of(DateTimeType(Date(lastRecordUpdatedAt)))
           prefix = ParamPrefixEnum.GREATERTHAN
@@ -185,5 +185,4 @@ constructor(
       )
     }
   }
-
 }

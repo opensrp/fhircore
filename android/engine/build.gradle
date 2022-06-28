@@ -149,7 +149,7 @@ dependencies {
     api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
 
     // P2P dependency
-    implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
+    implementation('org.smartregister:p2p-lib:0.4.0-SNAPSHOT')
 
     //Configure Jetpack Compose
     def composeVersion = "1.1.1"
