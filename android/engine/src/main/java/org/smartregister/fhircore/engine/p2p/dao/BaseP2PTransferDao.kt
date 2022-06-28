@@ -26,6 +26,8 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.count
+import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import java.util.Date
 import java.util.TreeSet
@@ -158,4 +160,30 @@ constructor(
   fun resourceClassType(dataType: DataType): Class<out Resource> {
     return Class.forName("org.hl7.fhir.r4.model.${dataType.name}") as Class<out Resource>
   }
+
+  suspend fun countTotalRecordsForSync(): Long {
+    var recordCount:Long = 0
+
+    getDataTypes().forEach {
+      resourceClassType(it)?.let { classType ->
+        var search =  getSearchObjectForCount(0L,classType)
+        recordCount += fhirEngine.count(search)
+      }
+    }
+    return recordCount
+  }
+
+  fun getSearchObjectForCount(lastRecordUpdatedAt: Long,
+                              classType: Class<out Resource>): Search {
+    return Search(type = classType.newInstance().resourceType).apply {
+      filter(
+        DateClientParam("_lastUpdated"),
+        {
+          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
+          prefix = ParamPrefixEnum.GREATERTHAN
+        }
+      )
+    }
+  }
+
 }

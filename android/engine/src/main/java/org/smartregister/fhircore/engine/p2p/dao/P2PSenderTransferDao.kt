@@ -39,6 +39,10 @@ constructor(
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 
+  override fun getTotalRecordCount(): Long {
+    return runBlocking { countTotalRecordsForSync() }
+  }
+
   override fun getJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int): JsonData? {
     // TODO: complete  retrieval of data implementation
     Timber.e("Last updated at value is $lastUpdated")
