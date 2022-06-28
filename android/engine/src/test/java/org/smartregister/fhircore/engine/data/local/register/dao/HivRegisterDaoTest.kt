@@ -14,25 +14,28 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.regitser.dao
+package org.smartregister.fhircore.engine.data.local.register.dao
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.Assert
+import org.hl7.fhir.r4.model.Task
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
@@ -43,7 +46,6 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -93,15 +95,18 @@ class HivRegisterDaoTest : RobolectricTest() {
 
     coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns testPatient
 
-    coEvery { fhirEngine.search<Patient>(any()) } returns listOf(testPatient, testPatientGenderNull)
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val search = firstArg<Search>()
+        when (search.type) {
+          ResourceType.Patient -> listOf<Patient>(testPatient, testPatientGenderNull)
+          ResourceType.Task -> emptyList<Task>()
+          ResourceType.CarePlan -> emptyList<CarePlan>()
+          else -> emptyList()
+        }
+      }
 
     every { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
-
-    // TODO: fix and remove comment or delete
-    //    coEvery { fhirEngine.search<Task>(any()) } returns emptyList()
-    //
-    //    coEvery { defaultRepository.searchResourceFor<Task>(subjectId = any(),
-    //            subjectType = any(), subjectParam = Task.SUBJECT ) } returns emptyList<Task>()
 
     val workflowPoint = mockk<WorkflowPoint>()
     every { configurationRegistry.workflowPointsMap[any()] } returns workflowPoint
@@ -127,7 +132,8 @@ class HivRegisterDaoTest : RobolectricTest() {
   fun testLoadRegisterData() = runTest {
     val data =
       hivRegisterDao.loadRegisterData(currentPage = 0, loadAll = true, appFeatureName = "HIV")
-    Assert.assertNotNull(data)
+
+    assertNotNull(data)
     val hivRegisterData = data[0] as RegisterData.HivRegisterData
     assertEquals(expected = "50y", actual = hivRegisterData.age)
     assertEquals(expected = "Dist 1 City 1", actual = hivRegisterData.address)
@@ -148,26 +154,24 @@ class HivRegisterDaoTest : RobolectricTest() {
     }
   }
 
-  // TODO: get test passing or delete
-  @Ignore(value = "will need to fix mocking appConfigRegistration in HivRegisterDao")
   @Test
   fun testLoadProfileData() {
     val data = runBlocking {
       hivRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1")
     }
-    Assert.assertNotNull(data)
+    assertNotNull(data)
     val hivProfileData = data as ProfileData.HivProfileData
-    Assert.assertEquals("50y", hivProfileData.age)
-    Assert.assertEquals("Dist 1 City 1", hivProfileData.address)
-    Assert.assertEquals("John Doe", hivProfileData.name)
-    Assert.assertEquals("practitioner/1234", hivProfileData.chwAssigned.reference)
-    Assert.assertEquals(HealthStatus.EXPOSED_INFANT, hivProfileData.healthStatus)
-    Assert.assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
+    assertEquals("50y", hivProfileData.age)
+    assertEquals("Dist 1 City 1", hivProfileData.address)
+    assertEquals("John Doe", hivProfileData.name)
+    assertEquals("practitioner/1234", hivProfileData.chwAssigned.reference)
+    assertEquals(HealthStatus.EXPOSED_INFANT, hivProfileData.healthStatus)
+    assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
   }
 
   @Test
   fun testGetRegisterDataFilters() {
-    Assert.assertNotNull(hivRegisterDao.getRegisterDataFilters("1234"))
+    assertNotNull(hivRegisterDao.getRegisterDataFilters("1234"))
   }
 
   @Test

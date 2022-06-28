@@ -24,6 +24,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -104,11 +105,16 @@ constructor(
       tasks =
         defaultRepository.searchResourceFor<Task>(
             subjectId = resourceId,
+            subjectType = ResourceType.Task,
             subjectParam = Task.SUBJECT
           )
           .sortedBy { it.executionPeriod.start.time },
       services =
-        defaultRepository.searchResourceFor(subjectId = resourceId, subjectParam = CarePlan.SUBJECT)
+        defaultRepository.searchResourceFor<CarePlan>(
+          subjectId = resourceId,
+          subjectType = ResourceType.CarePlan,
+          subjectParam = CarePlan.SUBJECT
+        )
     )
   }
 
