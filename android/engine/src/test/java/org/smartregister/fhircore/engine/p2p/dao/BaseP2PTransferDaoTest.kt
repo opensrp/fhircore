@@ -24,10 +24,13 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.DateParamFilterCriterion
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import java.util.Date
+import java.util.TreeSet
+import kotlin.collections.HashMap
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ContactPoint
@@ -267,5 +270,37 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
         meta = Meta().apply { lastUpdated = currentDate }
       }
     return patient
+  }
+
+  @Test
+  fun `getSearchObjectForCount() returns correct search object`() {
+    val search = baseP2PTransferDao.getSearchObjectForCount(25L, Group::class.java)
+
+    Assert.assertEquals(ResourceType.Patient, search.type)
+    val dateTimeFilterCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "dateTimeFilterCriteria")
+    val tokenFilters: MutableList<DateParamFilterCriterion> =
+      ReflectionHelpers.getField(dateTimeFilterCriterion[0], "filters")
+    Assert.assertEquals("_lastUpdated", tokenFilters[0].parameter.paramName)
+    Assert.assertEquals(ParamPrefixEnum.GREATERTHAN, tokenFilters[0].prefix)
+  }
+
+  @Test
+  fun `countTotalRecordsForSync() calls getSearchObjectForCount()`() {
+    var highestRecordIdMap: HashMap<String, Long> = HashMap()
+    highestRecordIdMap.put("Patient", 25)
+    highestRecordIdMap.put("Group", 25)
+
+    var dataTypes = TreeSet<DataType>()
+    dataTypes.add(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+    dataTypes.add(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
+    every { baseP2PTransferDao.getDataTypes() } returns dataTypes
+    coEvery { fhirEngine.count(any()) } returns 20
+    var totalRecordCount: Long
+    runBlocking {
+      totalRecordCount = baseP2PTransferDao.countTotalRecordsForSync(highestRecordIdMap)
+    }
+
+    Assert.assertEquals(40L, totalRecordCount)
   }
 }

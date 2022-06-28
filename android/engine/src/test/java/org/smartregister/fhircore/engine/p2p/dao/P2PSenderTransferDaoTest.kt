@@ -142,9 +142,11 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
     return patient
   }
 
+  @Test
   fun `getTotalRecordCount() calls countTotalRecordsForSync()`() {
     var highestRecordIdMap: HashMap<String, Long> = HashMap()
     highestRecordIdMap.put("Patient", 25)
+    coEvery { p2PSenderTransferDao.countTotalRecordsForSync(any()) } returns 5L
 
     runBlocking { p2PSenderTransferDao.countTotalRecordsForSync(highestRecordIdMap) }
     coVerify { p2PSenderTransferDao.countTotalRecordsForSync(highestRecordIdMap) }
