@@ -92,7 +92,7 @@ private fun PatientProfileSectionPreview() {
   ProfileCard(
     title = "TASKS",
     onActionClick = {},
-    profileViewSection = PatientProfileViewSection.TASKS
+    profileViewSection = PatientProfileViewSection.VISITS
   ) {
     Column {
       ProfileActionableItem(
@@ -101,7 +101,7 @@ private fun PatientProfileSectionPreview() {
           title = "ANC",
           titleIcon = R.drawable.ic_pregnant,
           subtitle = "due date",
-          profileViewSection = PatientProfileViewSection.TASKS,
+          profileViewSection = PatientProfileViewSection.VISITS,
           actionButtonColor = InfoColor,
           actionButtonText = "ANC visit"
         ),
@@ -114,7 +114,7 @@ private fun PatientProfileSectionPreview() {
           title = "Sick",
           titleIcon = R.drawable.ic_pregnant,
           subtitle = "due date",
-          profileViewSection = PatientProfileViewSection.TASKS,
+          profileViewSection = PatientProfileViewSection.VISITS,
           actionButtonColor = OverdueColor,
           actionButtonText = "Malaria medicine"
         ),
