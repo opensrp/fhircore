@@ -137,7 +137,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
         if (entry.resource.resourceType == ResourceType.Library) {
           fhirOperator.loadLib(entry.resource as Library)
         } else {
-          if (!savedResources!!.contains(resourcesBundlePath)) {
+          if (true /*!savedResources!!.contains(resourcesBundlePath)*/) {
             create(entry.resource)
             sharedPreferencesHelper.write(
               SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,

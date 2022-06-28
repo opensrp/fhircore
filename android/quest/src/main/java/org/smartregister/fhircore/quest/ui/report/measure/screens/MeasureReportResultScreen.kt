@@ -214,10 +214,12 @@ private fun MeasureReportResultScreenForPopulationPreview() {
       listOf(
         MeasureReportPopulationResult(
           title = "Age Range",
+          count = "1/2",
           listOf(testResultItem1, testResultItem2)
         ),
         MeasureReportPopulationResult(
           title = "Education Level",
+          count = "2/3",
           listOf(testResultItem1, testResultItem2)
         )
       )

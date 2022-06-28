@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.components.CircularPercentageIndicator
@@ -63,12 +64,22 @@ private fun PopulationResultCard(
           .fillMaxWidth()
     ) {
       Column {
-        Text(
-          text = resultItem.title.uppercase(),
-          color = colorResource(id = R.color.darkGrayText),
-          fontSize = 16.sp,
-          modifier = modifier.wrapContentWidth()
-        )
+        Row(modifier = modifier.fillMaxWidth()) {
+          Text(
+            text = resultItem.title.uppercase(),
+            color = colorResource(id = R.color.black),
+            fontSize = 16.sp,
+            modifier = modifier.weight(1.0f),
+            textAlign = TextAlign.Start
+          )
+          Text(
+            text = resultItem.count.toString().uppercase(),
+            color = colorResource(id = R.color.black),
+            fontSize = 16.sp,
+            modifier = modifier.weight(1.0f),
+            textAlign = TextAlign.End
+          )
+        }
         Divider(color = DividerColor, modifier = modifier.padding(vertical = 20.dp))
         resultItem.dataList.forEach { item -> PopulationResultItem(item) }
       }
