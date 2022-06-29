@@ -50,14 +50,6 @@ android {
         kotlinCompilerExtensionVersion '1.1.1'
     }
 
-    //CQL
-    configurations {
-        all*.exclude group: 'org.eclipse.persistence'
-        all*.exclude group: 'javax.activation', module: 'activation'
-        all*.exclude group: 'javax', module: 'javaee-api'
-        all*.exclude group: 'xml-apis'
-    }
-
     packagingOptions {
         exclude 'license.html'
         exclude 'readme.html'
@@ -96,6 +88,14 @@ android {
     }
 }
 
+//CQL
+configurations {
+    all*.exclude group: 'org.eclipse.persistence'
+    all*.exclude group: 'javax.activation', module: 'activation'
+    all*.exclude group: 'javax', module: 'javaee-api'
+    all*.exclude group: 'xml-apis'
+}
+
 dependencies {
 
     implementation 'androidx.preference:preference-ktx:1.2.0'
@@ -122,13 +122,14 @@ dependencies {
     implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
     implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
     implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
-    implementation 'org.opencds.cqf.cql:engine:1.5.4-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.builder:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.activitydefinition:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.plandefinition:1.4.2-SNAPSHOT'
-    implementation ('org.opencds.cqf.cql:evaluator.dagger:1.4.2-SNAPSHOT'){}
+    implementation 'org.opencds.cqf.cql:engine:1.5.4'
+    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4'
+    implementation 'org.opencds.cqf.cql:evaluator:1.4.2'
+    implementation 'org.opencds.cqf.cql:evaluator.builder:1.4.2'
+    implementation 'org.opencds.cqf.cql:evaluator.activitydefinition:1.4.2'
+    implementation 'org.opencds.cqf.cql:evaluator.plandefinition:1.4.2'
+    implementation ('org.opencds.cqf.cql:evaluator.dagger:1.4.2'){}
+
     api('org.smartregister:workflow:0.1.0-alpha01-preview6-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'

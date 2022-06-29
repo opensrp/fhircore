@@ -109,6 +109,8 @@ constructor(
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
       is PatientProfileEvent.OverflowMenuClick -> {
+        // TODO use navigation items from config and handle these actions dynamically
+        // https://github.com/opensrp/fhircore/issues/1371
         when (event.menuId) {
           R.id.individual_details ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
