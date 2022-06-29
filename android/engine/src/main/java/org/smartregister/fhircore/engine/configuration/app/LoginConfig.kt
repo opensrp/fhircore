@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.appfeature.model
+package org.smartregister.fhircore.engine.configuration.app
 
-import org.smartregister.fhircore.engine.configuration.Configuration
+import kotlinx.serialization.Serializable
 
-data class AppFeatureConfig(
-  override var appId: String = "",
-  override var configType: String = "",
-  val appFeatures: List<FeatureConfig> = listOf()
-) : Configuration()
+@Serializable
+data class LoginConfig(
+  val showLogo: Boolean = true,
+  val enablePin: Boolean? = false,
+  val darkMode: Boolean = false
+)

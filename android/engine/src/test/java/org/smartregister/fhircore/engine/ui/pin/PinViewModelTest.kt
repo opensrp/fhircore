@@ -71,7 +71,7 @@ internal class PinViewModelTest : RobolectricTest() {
   private val testPinViewConfiguration =
     PinViewConfiguration(
       appId = "appId",
-      classification = "classification",
+      configType = "classification",
       applicationName = "Test App",
       appLogoIconResourceFile = "ic_launcher",
       enablePin = true,
@@ -107,7 +107,7 @@ internal class PinViewModelTest : RobolectricTest() {
       isSetupPage = true
       appName = "demo"
       onPinChanged("1234")
-      pinViewConfiguration = testPinViewConfiguration
+      applicationConfiguration = testPinViewConfiguration
     }
   }
 
@@ -123,7 +123,7 @@ internal class PinViewModelTest : RobolectricTest() {
         showLogo = true
       )
     Assert.assertEquals(expectedPinConfig.appId, testPinViewConfiguration.appId)
-    Assert.assertEquals(expectedPinConfig.classification, testPinViewConfiguration.classification)
+    Assert.assertEquals(expectedPinConfig.configType, testPinViewConfiguration.configType)
     Assert.assertEquals(expectedPinConfig.applicationName, testPinViewConfiguration.applicationName)
     Assert.assertEquals(
       expectedPinConfig.appLogoIconResourceFile,
@@ -174,7 +174,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testLoadData() {
-    pinViewModel.loadData(isSetup = true)
+    pinViewModel.setPinUiState(isSetup = true)
     Assert.assertEquals(pinViewModel.isSetupPage, true)
     Assert.assertNotNull(pinViewModel.savedPin)
     Assert.assertNotNull(pinViewModel.enterUserLoginMessage)
@@ -182,7 +182,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testLoadDataForLoginScreen() {
-    pinViewModel.loadData(isSetup = false)
+    pinViewModel.setPinUiState(isSetup = false)
     Assert.assertEquals(pinViewModel.isSetupPage, false)
     Assert.assertNotNull(pinViewModel.savedPin)
     Assert.assertEquals("demo", pinViewModel.retrieveUsername())

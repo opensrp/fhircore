@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -185,10 +186,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         val questionnaireConfig =
           questionnaireViewModel.getQuestionnaireConfig(formName, this@QuestionnaireActivity)
         questionnaire =
-          questionnaireViewModel.loadQuestionnaire(
-            questionnaireConfig.identifier,
-            questionnaireType
-          )!!
+          questionnaireViewModel.loadQuestionnaire(questionnaireConfig.id, questionnaireType)!!
       }
       .onFailure {
         // load questionnaire from db and build config
@@ -197,7 +195,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           QuestionnaireConfig(
             form = questionnaire.name ?: "",
             title = questionnaire.title ?: "",
-            identifier = questionnaire.logicalId
+            id = questionnaire.logicalId
           )
       }
       .also { populateInitialValues(questionnaire) }
@@ -222,7 +220,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
-        loadQuestionnaireAndConfig(questionnaireViewModel.questionnaireConfig.identifier)
+        loadQuestionnaireAndConfig(questionnaireViewModel.questionnaireConfig.id)
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
         withContext(dispatcherProvider.main()) {

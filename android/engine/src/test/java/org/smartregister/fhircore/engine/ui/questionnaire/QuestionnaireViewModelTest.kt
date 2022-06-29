@@ -353,7 +353,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
     Assert.assertEquals("patient-registration", result.form)
     Assert.assertEquals("Add Patient", result.title)
-    Assert.assertEquals("207", result.identifier)
+    Assert.assertEquals("207", result.id)
   }
 
   @Test

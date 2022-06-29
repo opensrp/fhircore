@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.base
+package org.smartregister.fhircore.engine.configuration.navigation
 
-import android.view.View
-import androidx.recyclerview.widget.RecyclerView
+import kotlinx.serialization.Serializable
 
-/**
- * This subclass of [RecyclerView.ViewHolder] provides implementation on how to bind [Data] to the
- * view that is used to display items in [RecyclerView.Adapter]
- */
-abstract class BaseSimpleRecyclerViewHolder<Data>(itemView: View) :
-  RecyclerView.ViewHolder(itemView) {
-
-  /**
-   * Implement functionality to bind the [data] to the [RecyclerView.ViewHolder] views e.g. setting
-   * text to a TextView
-   */
-  abstract fun bindTo(data: Data)
-}
+@Serializable
+data class NavigationRegisterConfig(
+  val id: String,
+  val display: String,
+  val icon: String? = null,
+  val showCount: Boolean = false,
+  val actions: List<NavigationActionConfig>? = null
+)

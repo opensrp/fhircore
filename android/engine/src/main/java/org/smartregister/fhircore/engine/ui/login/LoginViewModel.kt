@@ -35,8 +35,9 @@ import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -60,7 +61,8 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
   val sharedPreferences: SharedPreferencesHelper,
-  val fhirResourceDataSource: FhirResourceDataSource
+  val fhirResourceDataSource: FhirResourceDataSource,
+  val configurationRegistry: ConfigurationRegistry
 ) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -160,9 +162,9 @@ constructor(
   val showProgressBar
     get() = _showProgressBar
 
-  private val _loginViewConfiguration = MutableLiveData(loginViewConfigurationOf())
-  val loginViewConfiguration: LiveData<LoginViewConfiguration>
-    get() = _loginViewConfiguration
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
 
   fun fetchLoggedInPractitioner(userInfo: UserInfo) {
     if (!userInfo.keycloakUuid.isNullOrEmpty() &&
@@ -211,10 +213,6 @@ constructor(
         accountAuthenticator.loadActiveAccount(this@LoginViewModel)
       }
     }
-  }
-
-  fun updateViewConfigurations(registerViewConfiguration: LoginViewConfiguration) {
-    _loginViewConfiguration.value = registerViewConfiguration
   }
 
   fun onUsernameUpdated(username: String) {

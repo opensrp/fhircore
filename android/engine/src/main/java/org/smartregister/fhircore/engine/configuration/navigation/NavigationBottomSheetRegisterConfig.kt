@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.register.model
+package org.smartregister.fhircore.engine.configuration.navigation
 
-import android.graphics.drawable.Drawable
+import kotlinx.serialization.Serializable
 
-data class NavigationMenuOption(val id: Int, val title: String, val iconResource: Drawable)
+@Serializable
+data class NavigationBottomSheetRegisterConfig(
+  val visible: Boolean = true,
+  val display: String = "Other Patients",
+  val registers: List<NavigationRegisterConfig> = emptyList()
+)

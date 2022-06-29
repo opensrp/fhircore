@@ -29,7 +29,7 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     val registerViewConfiguration =
       RegisterViewConfiguration(
         appId = "anc",
-        classification = "clasification",
+        configType = "clasification",
         appTitle = "appTitle",
         filterText = "filterText",
         searchBarHint = "searchBarHint",
@@ -110,7 +110,7 @@ class RegisterViewConfigurationTest : RobolectricTest() {
           showFooter = false
         )
     Assert.assertEquals("anc", registerViewConfigurationOf.appId)
-    Assert.assertEquals("clasification", registerViewConfigurationOf.classification)
+    Assert.assertEquals("clasification", registerViewConfigurationOf.configType)
     Assert.assertEquals("appTitle", registerViewConfigurationOf.appTitle)
     Assert.assertEquals("filterText", registerViewConfigurationOf.filterText)
     Assert.assertEquals("searchBarHint", registerViewConfigurationOf.searchBarHint)
@@ -132,7 +132,7 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     val registerViewConfigurationOf =
       ApplicationProvider.getApplicationContext<Application>().registerViewConfigurationOf()
     Assert.assertEquals("", registerViewConfigurationOf.appId)
-    Assert.assertEquals("", registerViewConfigurationOf.classification)
+    Assert.assertEquals("", registerViewConfigurationOf.configType)
     Assert.assertEquals("Fhir App", registerViewConfigurationOf.appTitle)
     Assert.assertEquals("Show overdue", registerViewConfigurationOf.filterText)
     Assert.assertEquals("Search name or ID", registerViewConfigurationOf.searchBarHint)

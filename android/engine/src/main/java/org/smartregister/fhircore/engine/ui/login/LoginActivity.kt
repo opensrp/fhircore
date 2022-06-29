@@ -27,8 +27,6 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
-import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -36,8 +34,7 @@ import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 
 @AndroidEntryPoint
-class LoginActivity :
-  BaseMultiLanguageActivity(), ConfigurableComposableView<LoginViewConfiguration> {
+class LoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
 
@@ -52,7 +49,7 @@ class LoginActivity :
     loginService.loginActivity = this
     loginViewModel.apply {
       navigateToHome.observe(this@LoginActivity) {
-        if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
+        if (loginViewModel.applicationConfiguration.loginConfig.enablePin == true) {
           val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
           val forceLoginViaUsernamePinSetup =
             loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
@@ -76,11 +73,8 @@ class LoginActivity :
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
     }
 
-    // TODO login configurations now in app config update this
-    configureViews(configurationRegistry.retrieveConfiguration(ConfigType.Application))
-
     // Check if Pin enabled and stored then move to Pin login
-    val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
+    val isPinEnabled = loginViewModel.applicationConfiguration.loginConfig.enablePin ?: false
     val forceLoginViaUsername =
       loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
     val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
@@ -101,10 +95,6 @@ class LoginActivity :
 
   fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.retrieveConfiguration(ConfigType.Application)
-  }
-
-  override fun configureViews(viewConfiguration: LoginViewConfiguration) {
-    loginViewModel.updateViewConfigurations(viewConfiguration)
   }
 
   private fun launchDialPad(phone: String) {

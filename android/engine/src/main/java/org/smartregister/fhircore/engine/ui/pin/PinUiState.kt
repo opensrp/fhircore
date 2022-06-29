@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.app
+package org.smartregister.fhircore.engine.ui.pin
 
-import kotlinx.serialization.Serializable
-
-@Serializable data class DeviceToDeviceSyncConfiguration(val resourcesToSync: List<String>? = null)
+data class PinUiState(
+  val savedPin: String = "",
+  val enterUserLoginMessage: String = "",
+  val appId: String = "",
+  val appName: String = "",
+  val isSetupPage: Boolean = false
+)

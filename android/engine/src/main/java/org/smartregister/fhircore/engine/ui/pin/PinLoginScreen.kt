@@ -83,14 +83,15 @@ const val PIN_SET_PIN_CONFIRM_BUTTON = "setPinConfirmButton"
 fun PinLoginScreen(viewModel: PinViewModel) {
 
   val showError by viewModel.showError.observeAsState(initial = false)
+  val pinUiState by remember { mutableStateOf(viewModel.pinUiState.value) }
 
   PinLoginPage(
     onPinChanged = viewModel::onPinChanged,
     showError = showError,
-    enterUserPinMessage = viewModel.enterUserLoginMessage,
+    enterUserPinMessage = pinUiState.enterUserLoginMessage,
     onMenuLoginClicked = { viewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
     forgotPin = viewModel::forgotPin,
-    appName = viewModel.appName,
+    appName = pinUiState.appName,
   )
 }
 

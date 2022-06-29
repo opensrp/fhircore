@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.appfeature.model
+package org.smartregister.fhircore.engine.configuration.navigation
 
-import org.smartregister.fhircore.engine.configuration.Configuration
+import kotlinx.serialization.Serializable
 
-data class AppFeatureConfig(
-  override var appId: String = "",
-  override var configType: String = "",
-  val appFeatures: List<FeatureConfig> = listOf()
-) : Configuration()
+@Serializable
+data class NavigationActionRuleConfig(
+  val name: String,
+  val condition: String,
+  val action: List<String>
+)

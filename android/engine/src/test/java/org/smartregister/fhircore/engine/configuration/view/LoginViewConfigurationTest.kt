@@ -26,7 +26,7 @@ class LoginViewConfigurationTest {
     val loginViewConfiguration =
       LoginViewConfiguration(
         appId = "anc",
-        classification = "classification",
+        configType = "classification",
         applicationName = "app",
         applicationVersion = "1.0.0",
         applicationVersionCode = 2,
@@ -35,7 +35,7 @@ class LoginViewConfigurationTest {
         enablePin = true
       )
     Assert.assertEquals("anc", loginViewConfiguration.appId)
-    Assert.assertEquals("classification", loginViewConfiguration.classification)
+    Assert.assertEquals("classification", loginViewConfiguration.configType)
     Assert.assertEquals("1.0.0", loginViewConfiguration.applicationVersion)
     Assert.assertEquals(2, loginViewConfiguration.applicationVersionCode)
     Assert.assertTrue(loginViewConfiguration.darkMode)
@@ -48,7 +48,7 @@ class LoginViewConfigurationTest {
     val loginViewConfigurationOf =
       LoginViewConfiguration(
         appId = "anc",
-        classification = "classification",
+        configType = "classification",
         applicationName = "app",
         applicationVersion = "1.0.0",
         applicationVersionCode = 2,
@@ -57,7 +57,7 @@ class LoginViewConfigurationTest {
         enablePin = false
       )
     Assert.assertEquals("anc", loginViewConfigurationOf.appId)
-    Assert.assertEquals("classification", loginViewConfigurationOf.classification)
+    Assert.assertEquals("classification", loginViewConfigurationOf.configType)
     Assert.assertEquals("1.0.0", loginViewConfigurationOf.applicationVersion)
     Assert.assertEquals(2, loginViewConfigurationOf.applicationVersionCode)
     Assert.assertTrue(loginViewConfigurationOf.darkMode)

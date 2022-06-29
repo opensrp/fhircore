@@ -21,12 +21,13 @@ import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.view.SearchFilter
-import org.smartregister.fhircore.engine.configuration.view.asCodeableConcept
-import org.smartregister.fhircore.engine.configuration.view.asCoding
+import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.SearchFilter
 
 fun Search.filterByResourceTypeId(
   reference: ReferenceClientParam,
@@ -100,3 +101,13 @@ fun Search.filterString(filter: SearchFilter) {
       throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
   }
 }
+
+fun Code.asCoding() = Coding(this.system, this.code, this.display)
+
+fun Coding.asCode() = Code(this.system, this.code, this.display)
+
+fun Code.asCodeableConcept() =
+  CodeableConcept().apply {
+    addCoding(this@asCodeableConcept.asCoding())
+    text = this@asCodeableConcept.display
+  }

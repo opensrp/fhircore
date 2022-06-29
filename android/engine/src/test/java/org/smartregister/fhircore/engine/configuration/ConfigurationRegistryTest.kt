@@ -103,7 +103,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertFalse(retrievedConfiguration.darkMode)
     Assert.assertFalse(retrievedConfiguration.showLogo)
     Assert.assertEquals("default", retrievedConfiguration.appId)
-    Assert.assertEquals("login", retrievedConfiguration.classification)
+    Assert.assertEquals("login", retrievedConfiguration.configType)
     Assert.assertEquals("Sample App", retrievedConfiguration.applicationName)
     Assert.assertEquals("0.0.1", retrievedConfiguration.applicationVersion)
   }
@@ -122,7 +122,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertTrue(configurationsMap["default|pin"]!! is PinViewConfiguration)
 
     Assert.assertEquals("default", retrievedConfiguration.appId)
-    Assert.assertEquals("pin", retrievedConfiguration.classification)
+    Assert.assertEquals("pin", retrievedConfiguration.configType)
     Assert.assertEquals("Sample App", retrievedConfiguration.applicationName)
     Assert.assertEquals("ic_launcher", retrievedConfiguration.appLogoIconResourceFile)
     Assert.assertTrue(retrievedConfiguration.enablePin)

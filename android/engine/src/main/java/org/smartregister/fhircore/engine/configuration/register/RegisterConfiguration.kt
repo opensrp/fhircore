@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.view
+package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 
-interface NavigationAction
-
 @Serializable
-class NavigationConfiguration(
-  override val appId: String = "",
-  override val classification: String = "",
-  val navigationOptions: List<NavigationOption> = listOf()
-) : Configuration
-
-@Serializable
-data class NavigationOption(
-  val id: String,
-  val title: String,
-  val icon: String,
-  val action: NavigationAction
-)
+data class RegisterConfiguration(
+  override var appId: String,
+  override var configType: String = ConfigType.Register.name,
+) : Configuration() {
+  // TODO remove these properties and use the new ones when updating this model
+  val registrationForm: String = ""
+  val newClientButtonText: String = ""
+}

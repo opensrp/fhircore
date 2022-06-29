@@ -58,7 +58,7 @@ class LoginScreenTest : RobolectricTest() {
         every { password } returns MutableLiveData("1234")
         every { loginErrorState } returns MutableLiveData(null)
         every { showProgressBar } returns MutableLiveData(false)
-        every { loginViewConfiguration } returns MutableLiveData(loginConfig)
+        every { applicationConfiguration } returns MutableLiveData(loginConfig)
       }
   }
 
@@ -78,7 +78,7 @@ class LoginScreenTest : RobolectricTest() {
   fun testLoginPage() {
     composeRule.setContent {
       LoginPage(
-        viewConfiguration = loginConfig,
+        applicationConfiguration = loginConfig,
         username = "user",
         onUsernameChanged = { listenerObjectSpy.onUsernameUpdated("test") },
         password = "password",

@@ -37,7 +37,7 @@ import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
@@ -76,11 +76,8 @@ constructor(
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
-  var registerViewConfiguration: RegisterViewConfiguration
-    private set
-
-  init {
-    registerViewConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Register)
+  val registerConfiguration: RegisterConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Register)
   }
 
   fun paginateRegisterData(
@@ -144,7 +141,8 @@ constructor(
       }
       is PatientRegisterEvent.RegisterNewClient ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(
-          registerViewConfiguration.registrationForm
+          // TODO use appropriate property from the register configuration
+          registerConfiguration.registrationForm
         )
       is PatientRegisterEvent.OpenProfile -> {
         val urlParams =

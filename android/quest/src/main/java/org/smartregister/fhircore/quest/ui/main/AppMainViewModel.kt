@@ -71,7 +71,7 @@ constructor(
   fun retrieveAppMainUiState() {
     appMainUiState.value =
       appMainUiStateOf(
-        appTitle = applicationConfiguration.applicationName,
+        appTitle = applicationConfiguration.appTitle,
         currentLanguage = loadCurrentLanguage(),
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
         sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),

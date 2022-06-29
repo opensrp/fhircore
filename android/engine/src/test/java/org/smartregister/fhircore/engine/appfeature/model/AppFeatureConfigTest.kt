@@ -30,7 +30,7 @@ class AppFeatureConfigTest {
     appFeatureConfig =
       AppFeatureConfig(
         appId = "quest",
-        classification = "app_feature",
+        configType = "app_feature",
         appFeatures = listOf(mockk(), mockk(), mockk())
       )
   }
@@ -42,7 +42,7 @@ class AppFeatureConfigTest {
 
   @Test
   fun testGetClassification_shouldReturn_test_configuration() {
-    Assert.assertEquals("app_feature", appFeatureConfig.classification)
+    Assert.assertEquals("app_feature", appFeatureConfig.configType)
   }
 
   @Test

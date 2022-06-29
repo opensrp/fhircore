@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Application
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -25,7 +27,7 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -72,49 +74,28 @@ constructor(
   val enableSetPin
     get() = _enableSetPin
 
-  lateinit var savedPin: String
+  val pinUiState: MutableState<PinUiState> = mutableStateOf(PinUiState())
 
-  lateinit var enterUserLoginMessage: String
-
-  lateinit var appId: String
-
-  lateinit var appName: String
-
-  lateinit var pinViewConfiguration: PinViewConfiguration
-
-  var isSetupPage: Boolean = false
-
-  val onBackClick = MutableLiveData(false)
-
-  fun onAppBackClick() {
-    onBackClick.value = true
-  }
-
-  fun loadData(isSetup: Boolean = false) {
-    appId = retrieveAppId()
-    pinViewConfiguration = getPinConfiguration()
-    appName = retrieveAppName()
-    savedPin = secureSharedPreference.retrieveSessionPin() ?: ""
-    isSetupPage = isSetup
-    enterUserLoginMessage =
-      retrieveUsername().let {
-        if (it.isNullOrEmpty()) {
-          app.getString(R.string.enter_login_pin)
-        } else {
-          app.getString(R.string.enter_pin_for_user, it)
-        }
-      }
-  }
-
-  // TODO pin configurations now loaded via ApplicationConfigs fix this
-  fun getPinConfiguration(): PinViewConfiguration =
+  val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
 
-  fun retrieveAppId(): String = sharedPreferences.read(APP_ID_KEY, "")!!
-
-  fun retrieveAppName(): String = pinViewConfiguration.applicationName
-
-  fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+  fun setPinUiState(isSetup: Boolean = false) {
+    PinUiState(
+      appId = sharedPreferences.read(APP_ID_KEY, "")!!,
+      appName = applicationConfiguration.appTitle,
+      savedPin = secureSharedPreference.retrieveSessionPin() ?: "",
+      isSetupPage = isSetup,
+      enterUserLoginMessage =
+        secureSharedPreference.retrieveSessionUsername().let {
+          if (it.isNullOrEmpty()) {
+            app.getString(R.string.enter_login_pin)
+          } else {
+            app.getString(R.string.enter_pin_for_user, it)
+          }
+        }
+    )
+  }
 
   fun onPinConfirmed() {
     val newPin = pin.value ?: ""
@@ -130,13 +111,12 @@ constructor(
   }
 
   fun onPinChanged(newPin: String) {
-
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
-      val pinMatched = newPin.equals(savedPin, false)
+      val pinMatched = newPin.equals(pinUiState.value.savedPin, false)
       enableSetPin.value = true
       showError.value = !pinMatched
       _pin.postValue(newPin)
-      if (pinMatched && !isSetupPage) {
+      if (pinMatched && !pinUiState.value.isSetupPage) {
         sharedPreferences.write(IS_LOGGED_IN, true)
         _navigateToHome.value = true
       }

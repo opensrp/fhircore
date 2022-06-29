@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.view
+package org.smartregister.fhircore.engine.configuration.navigation
 
-import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.Configuration
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 
-@Stable
 @Serializable
-class FormConfiguration(
-  override val appId: String = "",
-  override val classification: String = "",
-  val forms: List<QuestionnaireConfig> = listOf()
-) : Configuration
-
-@Stable
-fun formConfigurationOf(
-  appId: String = "",
-  classification: String = "form",
-  forms: List<QuestionnaireConfig> = listOf()
-) = FormConfiguration(appId = appId, classification = classification, forms = forms)
+data class NavigationActionConfig(
+  val type: String,
+  val workflow: String? = null,
+  val id: String?,
+  val rules: List<NavigationActionRuleConfig>? = null
+)

@@ -115,21 +115,20 @@ constructor(
     val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
     if (loadFromAssets) {
       val parsedAppId = appId.substringBefore("/").trim()
-      context.assets.use { assetManager ->
-        assetManager
-          .open(String.format(COMPOSITION_CONFIG_PATH, parsedAppId))
-          .bufferedReader()
-          .readText()
-          .decodeResourceFromString<Composition>()
-          .run {
-            populateConfigurationsMap(
-              composition = this,
-              loadFromAssets = loadFromAssets,
-              appId = parsedAppId,
-              configsLoadedCallback = configsLoadedCallback
-            )
-          }
-      }
+      context
+        .assets
+        .open(String.format(COMPOSITION_CONFIG_PATH, parsedAppId))
+        .bufferedReader()
+        .readText()
+        .decodeResourceFromString<Composition>()
+        .run {
+          populateConfigurationsMap(
+            composition = this,
+            loadFromAssets = loadFromAssets,
+            appId = parsedAppId,
+            configsLoadedCallback = configsLoadedCallback
+          )
+        }
     } else {
       repository.searchCompositionByIdentifier(appId)?.run {
         populateConfigurationsMap(this, loadFromAssets, appId, configsLoadedCallback)

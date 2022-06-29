@@ -67,7 +67,7 @@ class RegisterDataViewModelTest : RobolectricTest() {
     Assert.assertEquals("appId", registerDataViewModel.registerViewConfiguration.value?.appId)
     Assert.assertEquals(
       "classification",
-      registerDataViewModel.registerViewConfiguration.value?.classification
+      registerDataViewModel.registerViewConfiguration.value?.configType
     )
     registerDataViewModel.updateViewConfigurations(
       RegisterViewConfiguration("newAppId", "newClassification")
@@ -75,7 +75,7 @@ class RegisterDataViewModelTest : RobolectricTest() {
     Assert.assertEquals("newAppId", registerDataViewModel.registerViewConfiguration.value?.appId)
     Assert.assertEquals(
       "newClassification",
-      registerDataViewModel.registerViewConfiguration.value?.classification
+      registerDataViewModel.registerViewConfiguration.value?.configType
     )
   }
 

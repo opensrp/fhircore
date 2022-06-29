@@ -64,7 +64,7 @@ fun PatientRegisterScreen(
   val context = LocalContext.current
   val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
   val searchText by remember { patientRegisterViewModel.searchText }
-  val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
+  val registerConfigs = remember { patientRegisterViewModel.registerConfiguration }
   val currentSetTotalRecordCount by rememberUpdatedState(
     patientRegisterViewModel::setTotalRecordsCount
   )

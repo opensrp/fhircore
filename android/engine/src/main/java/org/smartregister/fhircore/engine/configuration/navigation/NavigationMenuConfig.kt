@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration
+package org.smartregister.fhircore.engine.configuration.navigation
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 
 @Serializable
-data class ConfigSection(
-  val workflowPoint: String,
-  @Contextual val resource: Resource,
-  val classification: String,
-  val description: String
+data class NavigationMenuConfig(
+  val id: String,
+  val visible: Boolean = true,
+  val display: String,
+  val actions: List<NavigationActionConfig>? = null,
+  val questionnaire: QuestionnaireConfig? = null
 )

@@ -49,9 +49,8 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -127,18 +126,13 @@ constructor(
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    questionnaireConfig = loadConfig!!.first { it.form == form || it.identifier == form }
+    questionnaireConfig = loadConfig!!.first { it.form == form || it.id == form }
     return questionnaireConfig
   }
 
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
-    return kotlin
-      .runCatching {
-        // TODO form configs are no longer loaded separately fix this
-        configurationRegistry.retrieveConfiguration<FormConfiguration>(ConfigType.Application)
-      }
-      .getOrNull()
-      ?.forms
+    // TODO form configs are no longer loaded separately fix this
+    return null
   }
 
   private suspend fun loadQuestionnaireConfigFromAssets(
@@ -301,7 +295,7 @@ constructor(
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
 
-    questionnaireConfig.planDefinitions.forEach { planId ->
+    questionnaireConfig.planDefinitions?.forEach { planId ->
       val data =
         Bundle().apply {
           bundle?.entry?.map { this.addEntry(it) }

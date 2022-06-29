@@ -42,8 +42,8 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.view.SearchFilter
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.domain.model.SearchFilter
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
@@ -125,7 +125,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
           form = it.nameElement.getLocalizedText() ?: it.logicalId,
           title = it.titleElement.getLocalizedText()
               ?: it.nameElement.getLocalizedText() ?: it.logicalId,
-          identifier = it.logicalId
+          id = it.logicalId
         )
       }
     }

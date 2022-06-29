@@ -48,7 +48,7 @@ class LoginScreenWithLogoTest : RobolectricTest() {
   fun setUp() {
     loginViewModelWithLogo =
       mockk {
-        every { loginViewConfiguration } returns MutableLiveData(loginConfig)
+        every { applicationConfiguration } returns MutableLiveData(loginConfig)
         every { username } returns this@LoginScreenWithLogoTest.username
         every { password } returns this@LoginScreenWithLogoTest.password
         every { loginErrorState } returns this@LoginScreenWithLogoTest.loginErrorState

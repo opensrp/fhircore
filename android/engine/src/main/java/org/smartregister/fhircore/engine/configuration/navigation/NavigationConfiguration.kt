@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.register.model
+package org.smartregister.fhircore.engine.configuration.navigation
 
-enum class RegisterFilterType {
-  SEARCH_FILTER,
-  OVERDUE_FILTER
-}
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.Configuration
+
+@Serializable
+data class NavigationConfiguration(
+  override var appId: String,
+  override var configType: String = ConfigType.Navigation.name,
+  val staticMenu: List<NavigationMenuConfig>,
+  val clientRegisters: List<NavigationRegisterConfig> = emptyList(),
+  val bottomSheetRegisters: List<NavigationBottomSheetRegisterConfig>? = null
+) : Configuration()

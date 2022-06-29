@@ -61,7 +61,7 @@ class LoginScreenTest : RobolectricTest() {
   fun setUp() {
     loginViewModel =
       mockk {
-        every { loginViewConfiguration } returns MutableLiveData(loginConfig)
+        every { applicationConfiguration } returns MutableLiveData(loginConfig)
         every { username } returns this@LoginScreenTest.username
         every { password } returns this@LoginScreenTest.password
         every { loginErrorState } returns this@LoginScreenTest.loginError

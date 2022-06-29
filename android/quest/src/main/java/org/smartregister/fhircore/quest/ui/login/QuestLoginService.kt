@@ -20,7 +20,6 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.ui.login.LoginService
@@ -31,7 +30,6 @@ import org.smartregister.p2p.P2PLibrary
 class QuestLoginService
 @Inject
 constructor(
-  val appFeatureManager: AppFeatureManager,
   val secureSharedPreference: SecureSharedPreference,
   val p2pSenderTransferDao: P2PSenderTransferDao,
   val p2pReceiverTransferDao: P2PReceiverTransferDao
@@ -49,8 +47,6 @@ constructor(
       )
       finish()
     }
-
-    appFeatureManager.loadAndActivateFeatures()
 
     // Initialize P2P after login only when username is provided
     val username = secureSharedPreference.retrieveSessionUsername()

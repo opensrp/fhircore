@@ -37,7 +37,7 @@
       "display": "Profile"
     }
   ],
-  "clientRegister": [
+  "clientRegisters": [
     {
       "id": "all_households",
       "display": "All Households",
@@ -67,65 +67,44 @@
       "id": "child",
       "display": "Child",
       "icon": "",
-      "showCount": true,
-      "onClick": {
-        "register": "register_id"
-      }
+      "showCount": true
     },
     {
       "id": "sick",
       "display": "Sick",
       "icon": "",
-      "showCount": true,
-      "onClick": {
-        "register": "register_id"
-      }
+      "showCount": true
     },
     {
       "id": "priority",
       "display": "Today's Priority",
       "icon": "",
-      "showCount": true,
-      "onClick": {
-        "register": "register_id"
-      }
+      "showCount": true
     }
   ],
-  "otherClients": {
+  "bottomSheetRegisters": {
     "visible": true,
     "display": "Other Patients",
-    "bottomSheetRegister": [
+    "registers": [
       {
         "id": "bottom_all_households",
         "display": "All Households",
-        "showCount": true,
-        "onClick": {
-          "register": "register_id"
-        }
+        "showCount": true
       },
       {
         "id": "bottom_child",
         "display": "Child",
-        "showCount": true,
-        "onClick": {
-          "register": "register_id"
-        }
+        "showCount": true
       },
       {
         "id": "bottom_sick",
         "display": "Sick",
-        "showCount": true,
-        "onClick": {
-          "register": "register_id"
-        }
+        "showCount": true
       },
       {
         "id": "bottom_priority",
         "display": "Today's Priority",
-        "showCount": true,
-        "onClick": {
-          "register": "register_id"
-        }
+        "showCount": true
       }
     ]
   }
