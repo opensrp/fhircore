@@ -51,6 +51,30 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Library"
+        ]
+      },
+      "type": "token",
+      "expression": "1753,133081"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Measure"
+        ]
+      },
+      "type": "token",
+      "expression": "133082"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
         "name": "count",
         "code": "_count",
         "base": [
