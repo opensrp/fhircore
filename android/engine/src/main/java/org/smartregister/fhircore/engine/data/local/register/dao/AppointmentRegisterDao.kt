@@ -27,7 +27,6 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.DataFiltersConfiguration
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -71,9 +70,9 @@ constructor(
         .distinctBy { it.subject.reference }
 
     val patients =
-      pregnancies
-        .map { fhirEngine.get<Patient>(it.subject.extractId()) }
-        .sortedBy { it.nameFirstRep.family }
+      pregnancies.map { fhirEngine.get<Patient>(it.subject.extractId()) }.sortedBy {
+        it.nameFirstRep.family
+      }
 
     return patients.map { patient ->
       val carePlans =

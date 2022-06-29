@@ -210,7 +210,8 @@ fun QuestionnaireResponse.assertSubject() {
 fun QuestionnaireResponse.getEncounterId(): String? {
   return this.contained
     ?.find { it.resourceType == ResourceType.Encounter }
-    ?.logicalId?.replace("#", "")
+    ?.logicalId
+    ?.replace("#", "")
 }
 
 fun Resource.generateMissingId() {

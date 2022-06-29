@@ -30,8 +30,7 @@ class AppFeatureManager @Inject constructor(val configurationRegistry: Configura
 
   fun loadAndActivateFeatures() {
     // TODO remove this feature it will be no longer needed. Or refactor it accordingly
-    _appFeatureConfig =
-      configurationRegistry.retrieveConfiguration(ConfigType.Application)
+    _appFeatureConfig = configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
   fun activatedFeatures(): List<FeatureConfig> =

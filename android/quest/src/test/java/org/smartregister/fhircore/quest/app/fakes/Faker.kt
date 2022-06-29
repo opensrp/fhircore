@@ -76,8 +76,8 @@ object Faker {
     configurationRegistry: ConfigurationRegistry
   ) {
     val composition =
-      getBasePath(appId, "composition").readFile(systemPath).decodeResourceFromString()
-        as Composition
+      getBasePath(appId, "composition").readFile(systemPath).decodeResourceFromString() as
+        Composition
     coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns composition
 
     coEvery { defaultRepository.getBinary(any()) } answers

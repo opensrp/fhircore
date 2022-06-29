@@ -76,8 +76,8 @@ class LoginActivity :
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
     }
 
-    //TODO login configurations now in app config update this
-      configureViews(configurationRegistry.retrieveConfiguration(ConfigType.Application))
+    // TODO login configurations now in app config update this
+    configureViews(configurationRegistry.retrieveConfiguration(ConfigType.Application))
 
     // Check if Pin enabled and stored then move to Pin login
     val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false

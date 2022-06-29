@@ -68,13 +68,13 @@ constructor(
   open fun getDefaultDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf(
-          ResourceType.Group,
-          ResourceType.Patient,
-          ResourceType.Questionnaire,
-          ResourceType.QuestionnaireResponse,
-          ResourceType.Observation,
-          ResourceType.Encounter
-        )
+        ResourceType.Group,
+        ResourceType.Patient,
+        ResourceType.Questionnaire,
+        ResourceType.QuestionnaireResponse,
+        ResourceType.Observation,
+        ResourceType.Encounter
+      )
         .mapIndexed { index, resourceType ->
           DataType(name = resourceType.name, DataType.Filetype.JSON, index)
         }
@@ -82,9 +82,9 @@ constructor(
 
   open fun getDynamicDataTypes(resourceList: List<String>): TreeSet<DataType> =
     TreeSet<DataType>(
-      resourceList
-        .filter { isValidResourceType(it) }
-        .mapIndexed { index, resource -> DataType(name = resource, DataType.Filetype.JSON, index) }
+      resourceList.filter { isValidResourceType(it) }.mapIndexed { index, resource ->
+        DataType(name = resource, DataType.Filetype.JSON, index)
+      }
     )
 
   suspend fun <R : Resource> addOrUpdate(resource: R) {
@@ -155,9 +155,9 @@ constructor(
 
     getDataTypes().forEach {
       resourceClassType(it).let { classType ->
-          val lastRecordId = highestRecordIdMap[it.name] ?: 0L
-          val searchCount = getSearchObjectForCount(lastRecordId, classType)
-          recordCount += fhirEngine.count(searchCount)
+        val lastRecordId = highestRecordIdMap[it.name] ?: 0L
+        val searchCount = getSearchObjectForCount(lastRecordId, classType)
+        recordCount += fhirEngine.count(searchCount)
       }
     }
     return recordCount

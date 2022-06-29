@@ -71,7 +71,7 @@ constructor(
    *
    * Sections in Composition with Binary or Parameter represents a valid application configuration.
    * Example below is represents an application configuration uniquely identified by the
-   * [ConfigType] 'application'. Sections can be nested like in the registers case.
+   * [ConfigType]'application'. Sections can be nested like in the registers case.
    *
    * ```
    *  {
@@ -201,7 +201,7 @@ constructor(
    * set in the section components of the [Composition] resource.
    *
    * This function retrieves the composition based on the appId and groups the non-patient resources
-   * ([ResourceType.Questionnaire] or [ResourceType.Questionnaire]) based on their type.
+   * ( [ResourceType.Questionnaire] or [ResourceType.Questionnaire]) based on their type.
    *
    * Searching is done using the _id search parameter of these not patient resources; the
    * composition section components are grouped by resource type ,then the ids concatenated (as

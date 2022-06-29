@@ -92,9 +92,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
 
     val retrievedConfiguration =
-      configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
-        AppConfigType.LOGIN
-      )
+      configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(AppConfigType.LOGIN)
 
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
     val configurationsMap = configurationRegistry.configsJsonMap

@@ -106,7 +106,7 @@ constructor(
       }
   }
 
-  //TODO pin configurations now loaded via ApplicationConfigs fix this
+  // TODO pin configurations now loaded via ApplicationConfigs fix this
   fun getPinConfiguration(): PinViewConfiguration =
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
 

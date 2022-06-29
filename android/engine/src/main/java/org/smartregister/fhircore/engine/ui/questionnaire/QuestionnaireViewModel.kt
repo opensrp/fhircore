@@ -134,7 +134,7 @@ constructor(
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
     return kotlin
       .runCatching {
-        //TODO form configs are no longer loaded separately fix this
+        // TODO form configs are no longer loaded separately fix this
         configurationRegistry.retrieveConfiguration<FormConfiguration>(ConfigType.Application)
       }
       .getOrNull()
@@ -378,9 +378,9 @@ constructor(
       questionnaireResponse.authored = Date()
     }
 
-    questionnaire.useContext
-      .filter { it.hasValueCodeableConcept() }
-      .forEach { it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) } }
+    questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+      it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
+    }
 
     defaultRepository.addOrUpdate(questionnaireResponse)
   }
@@ -410,9 +410,10 @@ constructor(
 
   fun retrieveStructureMapProvider(): (suspend (String, IWorkerContext) -> StructureMap?) {
     if (structureMapProvider == null) {
-      structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
-        fetchStructureMap(structureMapUrl)
-      }
+      structureMapProvider =
+        { structureMapUrl: String, _: IWorkerContext ->
+          fetchStructureMap(structureMapUrl)
+        }
     }
 
     return structureMapProvider!!
@@ -473,7 +474,8 @@ constructor(
       ?.answer
       ?.firstOrNull()
       ?.valueDecimalType
-      ?.value?.toInt()
+      ?.value
+      ?.toInt()
   }
 
   /** Subtract [age] from today's date */

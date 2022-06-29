@@ -75,39 +75,39 @@ constructor(
    */
   suspend fun fetchConfigurations(appId: String, context: Context) {
     runCatching {
-        Timber.i("Fetching configs for app $appId")
-        this._showProgressBar.postValue(true)
-        val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
-        val compositionResponse =
-          fhirResourceDataSource.loadData(urlPath).entryFirstRep.also {
-            if (!it.hasResource()) {
-              Timber.w("No response for composition resource on path $urlPath")
-              _showProgressBar.postValue(false)
-              _error.postValue(context.getString(R.string.application_not_supported, appId))
-              return
-            }
+      Timber.i("Fetching configs for app $appId")
+      this._showProgressBar.postValue(true)
+      val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
+      val compositionResponse =
+        fhirResourceDataSource.loadData(urlPath).entryFirstRep.also {
+          if (!it.hasResource()) {
+            Timber.w("No response for composition resource on path $urlPath")
+            _showProgressBar.postValue(false)
+            _error.postValue(context.getString(R.string.application_not_supported, appId))
+            return
           }
+        }
 
-        val composition = (compositionResponse.resource as Composition)
-        composition
-          .retrieveCompositionSections()
-          .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
-          .groupBy { it.focus.reference.substringBeforeLast("/") }
-          .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
-          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            val ids = entry.value.joinToString(",") { it.focus.extractId() }
-            val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
-            fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach {
-              defaultRepository.save(it.resource)
-            }
+      val composition = (compositionResponse.resource as Composition)
+      composition
+        .retrieveCompositionSections()
+        .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
+        .groupBy { it.focus.reference.substringBeforeLast("/") }
+        .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
+        .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+          val ids = entry.value.joinToString(",") { it.focus.extractId() }
+          val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
+          fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach {
+            defaultRepository.save(it.resource)
           }
+        }
 
-        // Save composition after fetching all the referenced section resources
-        defaultRepository.save(composition)
+      // Save composition after fetching all the referenced section resources
+      defaultRepository.save(composition)
 
-        loadConfigurations(true)
-        _showProgressBar.postValue(false)
-      }
+      loadConfigurations(true)
+      _showProgressBar.postValue(false)
+    }
       .onFailure {
         Timber.w(it)
         _showProgressBar.postValue(false)
