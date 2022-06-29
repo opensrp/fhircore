@@ -105,14 +105,14 @@ constructor(
       tasks =
         defaultRepository.searchResourceFor<Task>(
             subjectId = resourceId,
-            subjectType = ResourceType.Task,
+            subjectType = ResourceType.Patient,
             subjectParam = Task.SUBJECT
           )
           .sortedBy { it.executionPeriod.start.time },
       services =
         defaultRepository.searchResourceFor<CarePlan>(
           subjectId = resourceId,
-          subjectType = ResourceType.CarePlan,
+          subjectType = ResourceType.Patient,
           subjectParam = CarePlan.SUBJECT
         )
     )
