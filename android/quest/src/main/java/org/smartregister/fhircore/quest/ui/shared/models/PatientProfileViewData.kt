@@ -32,6 +32,7 @@ sealed class ProfileViewData(
     val sex: String = "",
     val age: String = "",
     val dob: String = "",
+    val showListsHighlights: Boolean = true,
     val tasks: List<PatientProfileRowItem> = emptyList(),
     val forms: List<FormButtonData> = emptyList(),
     val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),

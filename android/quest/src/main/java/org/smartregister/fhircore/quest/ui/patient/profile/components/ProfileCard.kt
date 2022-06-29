@@ -51,6 +51,7 @@ fun ProfileCard(
   title: String,
   profileViewSection: PatientProfileViewSection,
   onActionClick: (PatientProfileViewSection) -> Unit,
+  showSeeAll: Boolean = true,
   modifier: Modifier = Modifier,
   body: (@Composable() () -> Unit)
 ) {
@@ -65,17 +66,24 @@ fun ProfileCard(
         color = DefaultColor,
         fontWeight = FontWeight.SemiBold
       )
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.clickable { onActionClick(profileViewSection) }
-      ) {
-        TextButton(onClick = { onActionClick(profileViewSection) }) {
-          Text(
-            text = stringResource(R.string.see_all).uppercase(Locale.getDefault()),
-            color = InfoColor
+
+      if (showSeeAll) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          modifier = modifier.clickable { onActionClick(profileViewSection) }
+        ) {
+          TextButton(onClick = { onActionClick(profileViewSection) }) {
+            Text(
+              text = stringResource(R.string.see_all).uppercase(Locale.getDefault()),
+              color = InfoColor
+            )
+          }
+          Icon(
+            imageVector = Icons.Outlined.ChevronRight,
+            contentDescription = null,
+            tint = InfoColor
           )
         }
-        Icon(imageVector = Icons.Outlined.ChevronRight, contentDescription = null, tint = InfoColor)
       }
     }
 
