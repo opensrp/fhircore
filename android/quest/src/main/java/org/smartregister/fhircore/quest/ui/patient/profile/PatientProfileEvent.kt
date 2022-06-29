@@ -32,7 +32,7 @@ sealed class PatientProfileEvent {
   data class OpenTaskForm(
     val context: Context,
     val taskFormId: String,
-    val taskId: String,
+    val taskId: String?,
     val patientId: String
   ) : PatientProfileEvent()
 

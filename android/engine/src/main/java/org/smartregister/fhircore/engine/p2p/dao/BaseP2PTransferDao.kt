@@ -25,6 +25,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
 import java.util.TreeSet
 import kotlinx.coroutines.withContext
@@ -131,7 +132,7 @@ constructor(
       val search =
         Search(type = classType.newInstance().resourceType).apply {
           filter(
-            DateClientParam("_lastUpdated"),
+            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
             {
               value = of(DateTimeType(Date(lastRecordUpdatedAt)))
               prefix = ParamPrefixEnum.GREATERTHAN
@@ -147,5 +148,30 @@ constructor(
 
   fun resourceClassType(dataType: DataType): Class<out Resource> {
     return Class.forName("org.hl7.fhir.r4.model.${dataType.name}") as Class<out Resource>
+  }
+
+  suspend fun countTotalRecordsForSync(highestRecordIdMap: HashMap<String, Long>): Long {
+    var recordCount: Long = 0
+
+    getDataTypes().forEach {
+      resourceClassType(it).let { classType ->
+          val lastRecordId = highestRecordIdMap[it.name] ?: 0L
+          val searchCount = getSearchObjectForCount(lastRecordId, classType)
+          recordCount += fhirEngine.count(searchCount)
+      }
+    }
+    return recordCount
+  }
+
+  fun getSearchObjectForCount(lastRecordUpdatedAt: Long, classType: Class<out Resource>): Search {
+    return Search(type = classType.newInstance().resourceType).apply {
+      filter(
+        DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
+        {
+          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
+          prefix = ParamPrefixEnum.GREATERTHAN
+        }
+      )
+    }
   }
 }

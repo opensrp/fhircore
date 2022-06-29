@@ -25,6 +25,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
+import org.ocpsoft.prettytime.PrettyTime
 
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
 val SDF_DD_MMM = SimpleDateFormat("dd MMM")
@@ -56,6 +57,9 @@ fun Date?.makeItReadable(): String {
     SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).run { format(this@makeItReadable) }
   }
 }
+
+fun Date?.prettifyDate(): String =
+  if (this == null) "" else PrettyTime(Locale.getDefault()).formatDuration(this)
 
 fun Date.daysPassed() =
   TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)
