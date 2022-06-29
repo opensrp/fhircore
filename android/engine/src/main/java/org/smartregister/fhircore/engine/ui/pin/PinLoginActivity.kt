@@ -48,9 +48,8 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     pinViewModel.apply {
-      if (configurationRegistry.isAppIdInitialized()) {
-        loadData(isSetup = false)
-      }
+      loadData(isSetup = false)
+
       val pinLoginActivity = this@PinLoginActivity
       navigateToHome.observe(pinLoginActivity) { pinLoginActivity.moveToHome() }
       launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }

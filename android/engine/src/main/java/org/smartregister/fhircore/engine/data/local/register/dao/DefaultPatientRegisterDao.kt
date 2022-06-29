@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -82,7 +83,7 @@ constructor(
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData =
     withContext(dispatcherProvider.io()) {
       val patient = fhirEngine.get<Patient>(resourceId)
-      val formsFilter = configurationRegistry.retrieveDataFilterConfiguration(FORMS_LIST_FILTER_KEY)
+      val formsFilter = getRegisterDataFilters()
 
       ProfileData.DefaultProfileData(
         logicalId = patient.logicalId,
@@ -127,7 +128,7 @@ constructor(
           )
       )
     }
-
+  private fun getRegisterDataFilters() = emptyList<SearchFilter>()
   companion object {
     const val FORMS_LIST_FILTER_KEY = "forms_list"
   }

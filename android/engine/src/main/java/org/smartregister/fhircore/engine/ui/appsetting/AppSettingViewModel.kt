@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Com
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import timber.log.Timber
 
 @HiltViewModel
@@ -67,38 +68,42 @@ constructor(
     this.fetchConfigs.postValue(fetchConfigs)
   }
 
+  /**
+   * Fetch the [Composition] resource whose identifier matches the provided [appId]. Save the
+   * composition resource and all the nested resources referenced in the
+   * [Composition.SectionComponent].
+   */
   suspend fun fetchConfigurations(appId: String, context: Context) {
-    kotlin
-      .runCatching {
+    runCatching {
         Timber.i("Fetching configs for app $appId")
-
         this._showProgressBar.postValue(true)
-        val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
-        val data =
-          fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
+        val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
+        val compositionResponse =
+          fhirResourceDataSource.loadData(urlPath).entryFirstRep.also {
             if (!it.hasResource()) {
-              Timber.w("No response for composition resource on path $cPath")
+              Timber.w("No response for composition resource on path $urlPath")
               _showProgressBar.postValue(false)
               _error.postValue(context.getString(R.string.application_not_supported, appId))
               return
             }
           }
 
-        val composition = data.resource as Composition
-        defaultRepository.save(composition)
-
+        val composition = (compositionResponse.resource as Composition)
         composition
-          .section
-          .groupBy { it.focus.reference.split("/")[0] }
-          .entries
+          .retrieveCompositionSections()
+          .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
+          .groupBy { it.focus.reference.substringBeforeLast("/") }
           .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
             val ids = entry.value.joinToString(",") { it.focus.extractId() }
-            val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
-            fhirResourceDataSource.loadData(rPath).entry.forEach {
+            val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
+            fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach {
               defaultRepository.save(it.resource)
             }
           }
+
+        // Save composition after fetching all the referenced section resources
+        defaultRepository.save(composition)
 
         loadConfigurations(true)
         _showProgressBar.postValue(false)
@@ -110,9 +115,5 @@ constructor(
       }
   }
 
-  fun hasDebugSuffix(): Boolean? {
-    return if (!appId.value.isNullOrBlank())
-      appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
-    else null
-  }
+  fun hasDebugSuffix(): Boolean? = appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true)
 }

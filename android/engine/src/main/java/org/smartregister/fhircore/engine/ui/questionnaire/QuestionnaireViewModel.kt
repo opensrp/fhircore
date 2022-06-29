@@ -49,8 +49,8 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -134,9 +134,8 @@ constructor(
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
     return kotlin
       .runCatching {
-        configurationRegistry.retrieveConfiguration<FormConfiguration>(
-          AppConfigClassification.FORMS
-        )
+        //TODO form configs are no longer loaded separately fix this
+        configurationRegistry.retrieveConfiguration<FormConfiguration>(ConfigType.Application)
       }
       .getOrNull()
       ?.forms
@@ -379,9 +378,9 @@ constructor(
       questionnaireResponse.authored = Date()
     }
 
-    questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-      it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
-    }
+    questionnaire.useContext
+      .filter { it.hasValueCodeableConcept() }
+      .forEach { it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) } }
 
     defaultRepository.addOrUpdate(questionnaireResponse)
   }
@@ -411,10 +410,9 @@ constructor(
 
   fun retrieveStructureMapProvider(): (suspend (String, IWorkerContext) -> StructureMap?) {
     if (structureMapProvider == null) {
-      structureMapProvider =
-        { structureMapUrl: String, _: IWorkerContext ->
-          fetchStructureMap(structureMapUrl)
-        }
+      structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
+        fetchStructureMap(structureMapUrl)
+      }
     }
 
     return structureMapProvider!!
@@ -475,8 +473,7 @@ constructor(
       ?.answer
       ?.firstOrNull()
       ?.valueDecimalType
-      ?.value
-      ?.toInt()
+      ?.value?.toInt()
   }
 
   /** Subtract [age] from today's date */

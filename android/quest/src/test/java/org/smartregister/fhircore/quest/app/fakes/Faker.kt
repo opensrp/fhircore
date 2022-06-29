@@ -20,30 +20,18 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.HumanName
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.quest.data.patient.PatientRepository
-import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
-import org.smartregister.fhircore.quest.data.patient.model.PatientItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest.Companion.readFile
 
 object Faker {
@@ -72,87 +60,6 @@ object Faker {
     }
   }
 
-  fun initPatientRepositoryMocks(patientRepository: PatientRepository) {
-
-    coEvery { patientRepository.fetchDemographicsWithAdditionalData(any()) } answers
-      {
-        PatientItem(id = firstArg(), name = "John Doe", gender = "M", age = "22y")
-      }
-
-    coEvery { patientRepository.fetchDemographics(any()) } returns
-      Patient().apply {
-        name =
-          listOf(
-            HumanName().apply {
-              family = "Doe"
-              given = listOf(StringType("John"))
-            }
-          )
-        id = "5583145"
-        gender = Enumerations.AdministrativeGender.MALE
-        birthDate = SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01")
-        address =
-          listOf(
-            Address().apply {
-              city = "Nairobi"
-              country = "Kenya"
-            }
-          )
-        identifier = listOf(Identifier().apply { value = "12345" })
-      }
-
-    coEvery { patientRepository.fetchTestForms(any()) } returns
-      listOf(
-        QuestionnaireConfig(
-          form = "sample-order-result",
-          title = "Sample Order Result",
-          identifier = "12345"
-        ),
-        QuestionnaireConfig(
-          form = "sample-test-result",
-          title = "Sample Test Result",
-          identifier = "67890"
-        )
-      )
-
-    coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns
-      listOf(
-        QuestResultItem(
-          Pair(
-            QuestionnaireResponseItem("1", Date(), "1", ""),
-            QuestionnaireItem("1", "Sample Order", "Sample Order")
-          ),
-          listOf(
-            listOf(
-              AdditionalData(value = "Sample Order", label = "Label"),
-              AdditionalData(value = "(${Date().asDdMmmYyyy()})")
-            )
-          )
-        ),
-        QuestResultItem(
-          Pair(
-            QuestionnaireResponseItem("1", Date(), "1", ""),
-            QuestionnaireItem("1", "ample Test", "ample Test")
-          ),
-          listOf(
-            listOf(
-              AdditionalData(value = "Sample Test"),
-              AdditionalData(value = "(${Date().asDdMmmYyyy()})")
-            )
-          )
-        )
-      )
-
-    coEvery { patientRepository.fetchPregnancyCondition(any()) } returns ""
-  }
-
-  fun initPatientRepositoryEmptyMocks(patientRepository: PatientRepository) {
-
-    coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
-    coEvery { patientRepository.fetchTestForms(any()) } returns emptyList()
-    coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns emptyList()
-  }
-
   val systemPath =
     (System.getProperty("user.dir") +
       File.separator +
@@ -169,8 +76,8 @@ object Faker {
     configurationRegistry: ConfigurationRegistry
   ) {
     val composition =
-      getBasePath(appId, "composition").readFile(systemPath).decodeResourceFromString() as
-        Composition
+      getBasePath(appId, "composition").readFile(systemPath).decodeResourceFromString()
+        as Composition
     coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns composition
 
     coEvery { defaultRepository.getBinary(any()) } answers

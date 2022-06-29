@@ -35,8 +35,8 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -48,7 +48,6 @@ import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceSt
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
-import org.smartregister.fhircore.quest.util.REGISTER_FORM_ID_KEY
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
@@ -78,8 +77,7 @@ constructor(
     private set
 
   init {
-    registerViewConfiguration =
-      configurationRegistry.retrieveConfiguration(AppConfigClassification.PATIENT_REGISTER)
+    registerViewConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Register)
   }
 
   fun paginateRegisterData(
@@ -174,6 +172,6 @@ constructor(
   }
 
   fun isRegisterFormViaSettingExists(): Boolean {
-    return appFeatureManager.appFeatureHasSetting(REGISTER_FORM_ID_KEY)
+    return appFeatureManager.appFeatureHasSetting("registerFormId")
   }
 }

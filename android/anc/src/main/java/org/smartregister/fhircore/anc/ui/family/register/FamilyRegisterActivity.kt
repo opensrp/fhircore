@@ -30,7 +30,7 @@ import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
-import org.smartregister.fhircore.anc.util.AncConfigClassification
+import org.smartregister.fhircore.anc.util.AncConfigType
 import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
 import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -52,7 +52,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     super.onCreate(savedInstanceState)
     val registerViewConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-        configClassification = AncConfigClassification.PATIENT_REGISTER,
+        configType = AncConfigType.PATIENT_REGISTER,
         jsonSpecificationProvider.getJson()
       )
     configureViews(registerViewConfiguration)

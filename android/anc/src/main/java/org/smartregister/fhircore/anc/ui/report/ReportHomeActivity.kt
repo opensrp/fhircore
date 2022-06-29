@@ -32,7 +32,7 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
-import org.smartregister.fhircore.anc.util.AncConfigClassification
+import org.smartregister.fhircore.anc.util.AncConfigType
 import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
@@ -64,7 +64,7 @@ class ReportHomeActivity :
     super.onCreate(savedInstanceState)
     registerViewConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-        configClassification = AncConfigClassification.PATIENT_REPORT_REGISTER,
+        configType = AncConfigType.PATIENT_REPORT_REGISTER,
         jsonSpecificationProvider.getJson()
       )
 

@@ -18,9 +18,7 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,8 +31,8 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -68,7 +66,7 @@ constructor(
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
   private val applicationConfiguration: ApplicationConfiguration =
-    configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
 
   fun retrieveAppMainUiState() {
     appMainUiState.value =

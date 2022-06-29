@@ -33,7 +33,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
+import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -70,9 +70,9 @@ class AppSettingActivity : AppCompatActivity() {
 
         if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
           lifecycleScope.launch(dispatcherProvider.io()) {
-            configurationRegistry.loadConfigurationsLocally(appId) { loadSuccessful: Boolean ->
+            configurationRegistry.loadConfigurations(appId = appId) { loadSuccessful: Boolean ->
               if (loadSuccessful) {
-                sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
+                sharedPreferencesHelper.write(APP_ID_KEY, appId)
                 if (!isLoggedIn) {
                   accountAuthenticator.launchLoginScreen()
                 } else {
@@ -93,7 +93,7 @@ class AppSettingActivity : AppCompatActivity() {
         lifecycleScope.launch(dispatcherProvider.io()) {
           configurationRegistry.loadConfigurations(appId) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
-              sharedPreferencesHelper.write(APP_ID_CONFIG, appId)
+              sharedPreferencesHelper.write(APP_ID_KEY, appId)
               accountAuthenticator.launchLoginScreen()
               finish()
             } else {
@@ -128,7 +128,7 @@ class AppSettingActivity : AppCompatActivity() {
       }
     }
 
-    val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.trimEnd()
+    val lastAppId = sharedPreferencesHelper.read(APP_ID_KEY, null)?.trimEnd()
     lastAppId?.let {
       with(appSettingViewModel) {
         onApplicationIdChanged(it)

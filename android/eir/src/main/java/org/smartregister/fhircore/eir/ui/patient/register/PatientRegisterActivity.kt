@@ -27,7 +27,7 @@ import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-import org.smartregister.fhircore.eir.util.EirConfigClassification
+import org.smartregister.fhircore.eir.util.EirConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
@@ -44,7 +44,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     super.onCreate(savedInstanceState)
     val registerViewConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-        configClassification = EirConfigClassification.PATIENT_REGISTER
+        configType = EirConfigType.PATIENT_REGISTER
       )
     configureViews(registerViewConfiguration)
   }

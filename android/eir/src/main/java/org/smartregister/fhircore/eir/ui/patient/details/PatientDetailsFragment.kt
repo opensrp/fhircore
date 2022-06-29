@@ -38,7 +38,7 @@ import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventQuestionnaireA
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventQuestionnaireActivity.Companion.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.eir.util.ADVERSE_EVENT_FORM
-import org.smartregister.fhircore.eir.util.EirConfigClassification
+import org.smartregister.fhircore.eir.util.EirConfigType
 import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
@@ -91,7 +91,7 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
     )
     val viewConfiguration =
       configurationRegistry.retrieveConfiguration<ImmunizationProfileViewConfiguration>(
-        configClassification = EirConfigClassification.IMMUNIZATION_PROFILE
+        configType = EirConfigType.IMMUNIZATION_PROFILE
       )
     configureViews(viewConfiguration)
   }

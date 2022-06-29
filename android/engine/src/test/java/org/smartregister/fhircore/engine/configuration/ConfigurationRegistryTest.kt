@@ -36,7 +36,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -94,11 +93,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
-        AppConfigClassification.LOGIN
+        AppConfigType.LOGIN
       )
 
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
-    val configurationsMap = configurationRegistry.configurationsMap
+    val configurationsMap = configurationRegistry.configsJsonMap
     Assert.assertTrue(configurationsMap.isNotEmpty())
     Assert.assertTrue(configurationsMap.containsKey("default|login"))
     Assert.assertTrue(configurationsMap["default|login"]!! is LoginViewConfiguration)
@@ -116,10 +115,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
 
     val retrievedConfiguration =
-      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
+      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigType.PIN)
 
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
-    val configurationsMap = configurationRegistry.configurationsMap
+    val configurationsMap = configurationRegistry.configsJsonMap
     Assert.assertTrue(configurationsMap.isNotEmpty())
     Assert.assertTrue(configurationsMap.containsKey("default|pin"))
     Assert.assertTrue(configurationsMap["default|pin"]!! is PinViewConfiguration)
@@ -137,10 +136,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configurationRegistry.appId = "testApp"
 
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isEmpty())
-    Assert.assertTrue(configurationRegistry.configurationsMap.isEmpty())
+    Assert.assertTrue(configurationRegistry.configsJsonMap.isEmpty())
 
     val retrievedConfiguration =
-      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
+      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigType.PIN)
 
     Assert.assertNotNull(retrievedConfiguration)
   }
@@ -245,7 +244,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Composition.SectionComponent().apply {
         this.focus = Reference().apply { reference = "Binary/123" }
       }
-    Assert.assertTrue(configurationRegistry.isWorkflowPoint(sectionComponent))
+    Assert.assertTrue(configurationRegistry.isApplicationConfig(sectionComponent))
   }
 
   @Test
@@ -254,6 +253,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Composition.SectionComponent().apply {
         this.focus = Reference().apply { reference = "Questionnaire/123" }
       }
-    Assert.assertFalse(configurationRegistry.isWorkflowPoint(sectionComponent))
+    Assert.assertFalse(configurationRegistry.isApplicationConfig(sectionComponent))
   }
 }

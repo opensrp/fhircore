@@ -46,8 +46,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
@@ -152,7 +152,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
   }
 
 fun ConfigurationRegistry.fetchLanguages() =
-  this.retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
+  this.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
     .run { this.languages }
     .map { Language(it, Locale.forLanguageTag(it).displayName) }
 

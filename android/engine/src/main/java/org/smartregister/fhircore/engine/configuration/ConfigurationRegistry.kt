@@ -18,32 +18,25 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.LinkedList
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.view.DataFiltersConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import timber.log.Timber
 
-/**
- * A configuration store used to store all the application configurations. Application
- * configurations are to be downloaded and synced from the server. This registry provides a map with
- * different [Configuration] implementations. The ensures that all the application configurations
- * are accessible from one place. If no configurations are retrieved from the server, then the
- * defaults are used.
- */
+/** A configuration store for application configurations */
 @Singleton
 class ConfigurationRegistry
 @Inject
@@ -55,205 +48,215 @@ constructor(
   val repository: DefaultRepository
 ) {
 
-  val configurationsMap = mutableMapOf<String, Configuration>()
-
-  val workflowPointsMap = mutableMapOf<String, WorkflowPoint>()
-
-  lateinit var appId: String
+  val configsJsonMap = mutableMapOf<String, String>()
 
   /**
-   * Retrieve configuration for the provided [ConfigClassification]. Populate the map when the
-   * config is loaded for the first time. File name containing configs MUST start with the workflow
-   * resource in snake_case
-   *
-   * E.g. for a workflow resource RegisterViewConfiguration, the name of the file containing configs
-   * becomes register_view_configurations.json
+   * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
+   * can be directly converted to a FHIR resource or hard coded custom model.
    */
-  inline fun <reified T : Configuration> retrieveConfiguration(
-    configClassification: ConfigClassification,
-    jsonSerializer: Json? = null
-  ): T =
-    workflowPointName(configClassification.classification).let { workflowName ->
-      val workflowPoint = workflowPointsMap[workflowName]
-      if (workflowPoint == null) {
-        Timber.w("No configuration found for $workflowName. Initializing default instance")
-        return T::class.java.newInstance()
-      }
-      configurationsMap.getOrPut(workflowName) {
-        // Binary content could be either a Configuration or a FHIR Resource
-        (workflowPoint.resource as Binary).content.decodeToString().let {
-          if (T::class.java.isAssignableFrom(FhirConfiguration::class.java))
-            FhirConfiguration(appId, workflowPoint.classification, it.decodeResourceFromString())
-          else it.decodeJson<T>(jsonSerializer)
-        }
-      } as
-        T
-    }
-
-  fun retrieveDataFilterConfiguration(id: String) =
-    retrieveConfiguration<DataFiltersConfiguration>(AppConfigClassification.DATA_FILTERS)
-      .filters
-      .filter { it.id.contentEquals(id, ignoreCase = true) }
+  inline fun <reified T : Any> retrieveConfiguration(
+    configType: ConfigType,
+    configId: String? = null
+  ): T {
+    val configKey =
+      if (configType.multiConfig && !configId.isNullOrEmpty()) configId else configType.name
+    return if (configType.parseAsResource)
+      configsJsonMap.getValue(configKey).decodeResourceFromString()
+    else configsJsonMap.getValue(configKey).decodeJson()
+  }
 
   /**
-   * Populate application's workflow points from the composition resource. Only Binary and Parameter
-   * Resources are used to represent workflow point configurations.
+   * Populate application's configurations from the composition resource. Only Binary and Parameter
+   * Resources are used to represent application configurations.
    *
-   * Sections in Composition with Binary or Parameter represents a workflow { "title": "register
-   * configuration",
+   * Sections in Composition with Binary or Parameter represents a valid application configuration.
+   * Example below is represents an application configuration uniquely identified by the
+   * [ConfigType] 'application'. Sections can be nested like in the registers case.
+   *
    * ```
+   *  {
+   *    "title": "Application configuration",
    *    "mode": "working",
    *    "focus": {
    *      "reference": "Binary/11111",
    *      "identifier: {
-   *      "value": "registration"
+   *      "value": "application"
    *      }
    *    }
+   *  }
    * ```
+   *
+   * Nested section example
+   *
+   * ```
+   *  {
+   *     "title": "Register configurations",
+   *     "mode": "working",
+   *     "section": [
+   *        {
+   *          "title": "Household register configuration",
+   *          "focus": {
+   *             "reference": "Binary/11111115",
+   *             "identifier": {
+   *                "value": "all_household_register_config"
+   *              }
+   *          }
+   *        }
+   *     ]
    * }
+   * ```
    *
-   * A workflow point would be mapped like "workflowPoint": "registration", "resource":
-   * "RegisterViewConfiguration", "classification": "patient_register", "description": "register
-   * configuration"
-   *
-   * @param appId application's unique identifier
-   * @param configsLoadedCallback function for use as trailing lambda that provides Boolean
-   * indicating whether configurations were loaded successfully or not
+   * [appId] is a unique identifier for the application. Typically written in human readable form
+   * [configsLoadedCallback] is a callback function called once configs have been loaded.
    */
-  suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
-    this.appId = appId
-
-    repository
-      .searchCompositionByIdentifier(appId)
-      .also { if (it == null) configsLoadedCallback(false) }
-      ?.section
-      ?.filter { isWorkflowPoint(it) }
-      ?.forEach {
-        val workflowPointName = workflowPointName(it.focus.identifier.value)
-        val workflowPoint =
-          WorkflowPoint(
-            classification = it.focus.identifier.value,
-            description = it.title,
-            resource = repository.getBinary(it.focus.extractId()),
-            workflowPoint = it.focus.identifier.value
-          )
-        workflowPointsMap[workflowPointName] = workflowPoint
+  suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit = {}) {
+    // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
+    // extract appId by removing the suffix e.g. app from above example
+    val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
+    if (loadFromAssets) {
+      val parsedAppId = appId.substringBefore("/").trim()
+      context.assets.use { assetManager ->
+        assetManager
+          .open(String.format(COMPOSITION_CONFIG_PATH, parsedAppId))
+          .bufferedReader()
+          .readText()
+          .decodeResourceFromString<Composition>()
+          .run {
+            populateConfigurationsMap(
+              composition = this,
+              loadFromAssets = loadFromAssets,
+              appId = parsedAppId,
+              configsLoadedCallback = configsLoadedCallback
+            )
+          }
       }
-      ?.also { configsLoadedCallback(true) }
+    } else {
+      repository.searchCompositionByIdentifier(appId)?.run {
+        populateConfigurationsMap(this, loadFromAssets, appId, configsLoadedCallback)
+      }
+    }
   }
 
-  fun loadConfigurationsLocally(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
-    val parsedAppId = appId.substringBefore("/$DEBUG_SUFFIX")
-    this.appId = parsedAppId
-
-    val baseConfigPath = BASE_CONFIG_PATH.run { replace(DEFAULT_APP_ID, parsedAppId) }
-
-    runCatching {
-      context
-        .assets
-        .open(baseConfigPath.plus(COMPOSITION_CONFIG_PATH))
-        .bufferedReader()
-        .use { it.readText() }
-        .decodeResourceFromString<Composition>()
-        .section
-        .filter { isWorkflowPoint(it) }
-        .forEach { sectionComponent ->
-          val binaryConfigPath =
-            BINARY_CONFIG_PATH.run {
-              replace(DEFAULT_CLASSIFICATION, sectionComponent.focus.identifier.value)
-            }
-
-          val localBinaryJsonConfig =
-            context.assets.open(baseConfigPath.plus(binaryConfigPath)).bufferedReader().use {
-              it.readText()
-            }
-
-          val binaryConfig =
-            Binary().apply {
-              contentType = CONFIG_CONTENT_TYPE
-              content = localBinaryJsonConfig.encodeToByteArray()
-            }
-
-          val workflowPointName = workflowPointName(sectionComponent.focus.identifier.value)
-          val workflowPoint =
-            WorkflowPoint(
-              classification = sectionComponent.focus.identifier.value,
-              description = sectionComponent.title,
-              resource = binaryConfig,
-              workflowPoint = sectionComponent.focus.identifier.value
-            )
-          workflowPointsMap[workflowPointName] = workflowPoint
+  private suspend fun populateConfigurationsMap(
+    composition: Composition,
+    loadFromAssets: Boolean,
+    appId: String,
+    configsLoadedCallback: (Boolean) -> Unit
+  ) {
+    if (loadFromAssets) {
+      retrieveAssetConfigs(appId).forEach { fileName ->
+        // Create binary config from asset and add to map, skip composition resource
+        // Use file name as the key. Conventionally navigation configs MUST end with "_config.json"
+        // File names in asset should match the configType/id (MUST be unique) in the config JSON
+        if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
+          val configKey = fileName.substringAfterLast("/").removeSuffix(CONFIG_SUFFIX)
+          val configJson = context.assets.open(fileName).bufferedReader().readText()
+          configsJsonMap[configKey] = configJson
         }
+      }
+    } else {
+      composition.retrieveCompositionSections().forEach {
+        if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
+          val configKey = it.focus.identifier.value
+          val referenceResourceType = it.focus.reference.substringBeforeLast("/")
+          if (isAppConfig(referenceResourceType)) {
+            val configBinary = repository.getBinary(it.focus.extractId())
+            configsJsonMap[configKey] = configBinary.content.decodeToString()
+          }
+        }
+      }
     }
-      .getOrNull()
-      .also { if (it == null) configsLoadedCallback(false) }
-      ?.also { configsLoadedCallback(true) }
+    configsLoadedCallback(true)
+  }
+
+  private fun isAppConfig(referenceResourceType: String) =
+    referenceResourceType in arrayOf(ResourceType.Binary.name, ResourceType.Parameters.name)
+
+  private fun retrieveAssetConfigs(appId: String): MutableList<String> {
+    // Reads .json configurations in asset/config/* directory recursively.
+    // Populates all sub directory in a queue then reads all the nested files for each sub
+    // directory until queue is empty
+    val filesQueue = LinkedList<String>()
+    val configFiles = mutableListOf<String>()
+    context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
+      if (!it.endsWith(JSON_EXTENSION))
+        filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + it)
+      else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + it)
+    }
+    while (filesQueue.isNotEmpty()) {
+      val currentPath = filesQueue.removeFirst()
+      context.assets.list(currentPath)?.onEach {
+        if (!it.endsWith(JSON_EXTENSION)) filesQueue.addLast("$currentPath/$it")
+        else configFiles.add("$currentPath/$it")
+      }
+    }
+    return configFiles
   }
 
   /**
-   * Fetch non-patient Resources for the application that are not workflow point configurations such
-   * as Questionnaire and StructureMap These are section components of the Composition
+   * Fetch non-patient Resources for the application that are not application configurations
+   * resources such as [ResourceType.Questionnaire] and [ResourceType.StructureMap]. (
+   * [ResourceType.Binary] and [ResourceType.Parameters] are currently the only FHIR HL7 resources
+   * used to represent application configurations). These non-patients resource identifiers are also
+   * set in the section components of the [Composition] resource.
    *
-   * This function retrieves the composition based on the appId and groups the non workflow sections
-   * (not Binary or Parameter) based on their resource types
+   * This function retrieves the composition based on the appId and groups the non-patient resources
+   * ([ResourceType.Questionnaire] or [ResourceType.Questionnaire]) based on their type.
    *
-   * To enable searching of the non workflow (not Binary or Parameter) resources represented in the
-   * composition in a single search query by resource type using the _id search parameter, the
-   * section components are grouped by resource type ,ids concatenated (with comma separator), and a
-   * search query path generated in the format 'Resource Type'?_id='comma separated list of ids'
+   * Searching is done using the _id search parameter of these not patient resources; the
+   * composition section components are grouped by resource type ,then the ids concatenated (as
+   * comma separated values), thus generating a search query like the following 'Resource
+   * Type'?_id='comma,separated,list,of,ids'
    */
   fun fetchNonWorkflowConfigResources() {
+    // TODO load these type of configs from assets too
     CoroutineScope(dispatcherProvider.io()).launch {
       try {
-        Timber.i("Fetching non-workflow resources for app $appId")
-        repository
-          .searchCompositionByIdentifier(appId)
-          ?.section
-          ?.groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0) ?: "" }
-          ?.entries
-          ?.filterNot {
-            it.key in arrayOf(ResourceType.Binary.name, ResourceType.Parameters.name, "")
-          }
-          ?.forEach { resourceGroup ->
-            val resourceIds =
-              resourceGroup.value.joinToString(",") { sectionComponent ->
-                sectionComponent.focus.extractId()
+        sharedPreferencesHelper.read(APP_ID_KEY, null)?.let { appId: String ->
+          repository.searchCompositionByIdentifier(appId)?.let { composition ->
+            composition
+              .retrieveCompositionSections()
+              .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
+              .filterNot { isAppConfig(it.key) }
+              .forEach { resourceGroup ->
+                val resourceIds =
+                  resourceGroup.value.joinToString(",") { sectionComponent ->
+                    sectionComponent.focus.extractId()
+                  }
+                val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
+                fhirResourceDataSource.loadData(searchPath).entry.forEach {
+                  repository.addOrUpdate(it.resource)
+                }
               }
-            val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
-            fhirResourceDataSource.loadData(searchPath).entry.forEach {
-              repository.addOrUpdate(it.resource)
-            }
           }
+        }
       } catch (exception: Exception) {
-        Timber.e("Error fetching non-workflow resources for app $appId")
         Timber.e(exception)
       }
     }
   }
 
-  fun workflowPointName(key: String) = "$appId|$key"
-
-  fun isAppIdInitialized() = this::appId.isInitialized
-
-  fun isWorkflowPoint(sectionComponent: Composition.SectionComponent): Boolean {
-    sectionComponent.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0).let { resourceType ->
+  /**
+   * Application configurations are represented with only [ResourceType.Binary] and
+   * [ResourceType.Parameters]
+   */
+  fun Composition.SectionComponent.isApplicationConfig(): Boolean {
+    this.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.first().let { resourceType ->
       return resourceType in arrayOf(ResourceType.Parameters.name, ResourceType.Binary.name)
     }
   }
 
   companion object {
-    const val DEFAULT_APP_ID = "appId"
-    const val BASE_CONFIG_PATH = "configs/$DEFAULT_APP_ID"
-    const val COMPOSITION_CONFIG_PATH = "/config_composition.json"
-    const val DEFAULT_CLASSIFICATION = "classification"
-    const val BINARY_CONFIG_PATH = "/config_$DEFAULT_CLASSIFICATION.json"
-    const val CONFIG_CONTENT_TYPE = "application/json"
-    const val DEBUG_SUFFIX = "debug"
+    const val BASE_CONFIG_PATH = "configs/%s/"
+    const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
+    const val DEBUG_SUFFIX = "/debug"
     const val ORGANIZATION = "organization"
     const val PUBLISHER = "publisher"
     const val ID = "_id"
     const val COUNT = "count"
     const val DEFAULT_COUNT = "100"
     const val TYPE_REFERENCE_DELIMITER = "/"
+    const val JSON_EXTENSION = ".json"
+    const val CONFIG_SUFFIX = "_config.json"
   }
 }

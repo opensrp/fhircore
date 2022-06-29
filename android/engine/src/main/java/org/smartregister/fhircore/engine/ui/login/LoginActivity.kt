@@ -24,8 +24,8 @@ import androidx.activity.viewModels
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
@@ -76,9 +76,8 @@ class LoginActivity :
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
     }
 
-    if (configurationRegistry.isAppIdInitialized()) {
-      configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
-    }
+    //TODO login configurations now in app config update this
+      configureViews(configurationRegistry.retrieveConfiguration(ConfigType.Application))
 
     // Check if Pin enabled and stored then move to Pin login
     val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
@@ -101,7 +100,7 @@ class LoginActivity :
   }
 
   fun getApplicationConfiguration(): ApplicationConfiguration {
-    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+    return configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
   override fun configureViews(viewConfiguration: LoginViewConfiguration) {

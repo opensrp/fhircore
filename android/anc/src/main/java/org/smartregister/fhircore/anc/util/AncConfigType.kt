@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.anc.util
 
-const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
-const val USER_INFO_SHARED_PREFERENCE_KEY = "user_info"
-const val LOGGED_IN_PRACTITIONER = "logged_in_practitioner"
-const val APP_ID_KEY = "app_id"
-const val FORCE_LOGIN_VIA_USERNAME = "force_login_with_username"
-const val FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP = "force_login_with_username_from_pin_setup"
-const val IS_LOGGED_IN = "is_logged_in"
+import org.smartregister.fhircore.engine.configuration.ConfigType
+
+enum class AncConfigType : ConfigType {
+  PATIENT_REGISTER,
+  PATIENT_REPORT_REGISTER,
+  LOGIN;
+  override val classification: String = name.lowercase()
+}

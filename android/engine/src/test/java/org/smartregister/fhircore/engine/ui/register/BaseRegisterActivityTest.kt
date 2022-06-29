@@ -66,7 +66,7 @@ import org.smartregister.fhircore.engine.app.fakes.FakeModel
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.auth.TokenManagerService
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
@@ -741,7 +741,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     }
   }
 
-  enum class TestConfigClassification : ConfigClassification {
+  enum class TestConfigType : ConfigType {
     PATIENT_REGISTER;
 
     override val classification: String = name.lowercase()

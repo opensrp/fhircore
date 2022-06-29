@@ -20,8 +20,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.appfeature.model.AppFeatureConfig
 import org.smartregister.fhircore.engine.appfeature.model.FeatureConfig
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 
 @Singleton
 class AppFeatureManager @Inject constructor(val configurationRegistry: ConfigurationRegistry) {
@@ -29,9 +29,9 @@ class AppFeatureManager @Inject constructor(val configurationRegistry: Configura
   private var _appFeatureConfig: AppFeatureConfig? = null
 
   fun loadAndActivateFeatures() {
-    // TODO do we want to handle missing this config for any app
+    // TODO remove this feature it will be no longer needed. Or refactor it accordingly
     _appFeatureConfig =
-      configurationRegistry.retrieveConfiguration(AppConfigClassification.APP_FEATURE)
+      configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
   fun activatedFeatures(): List<FeatureConfig> =

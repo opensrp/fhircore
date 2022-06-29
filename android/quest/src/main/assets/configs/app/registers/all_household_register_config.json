@@ -1,0 +1,124 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "all_household_register_config",
+  "filter": {
+    "visible": true,
+    "display": "Show overdue",
+    "rules": [
+      {
+        "name": "filter",
+        "condition": "",
+        "action": [
+          ""
+        ]
+      }
+    ]
+  },
+  "dataFilters": [
+    {
+      "id": "family",
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "https://www.snomed.org",
+        "code": "35359004"
+      }
+    }
+  ],
+  "searchBar": {
+    "visible": true,
+    "display": "Search name or ID",
+    "rules": [
+      {
+        "name": "searchBar",
+        "condition": "",
+        "action": [
+          ""
+        ]
+      }
+    ]
+  },
+  "registerCard": {
+    "columnOne": {
+      "rowOne": {
+        "separator": "-",
+        "rules": [
+          {
+            "name": "filter",
+            "condition": "",
+            "action": [
+              ""
+            ]
+          }
+        ]
+      },
+      "rowTwo": {
+        "visible": true,
+        "columnOne": {
+          "visible": true,
+          "rowOne": {
+            "visible": true,
+            "rules": [
+              {
+                "name": "filter",
+                "condition": "",
+                "action": [
+                  ""
+                ]
+              }
+            ]
+          },
+          "rowTwo": {
+            "visible": true,
+            "rules": [
+              {
+                "name": "filter",
+                "condition": "",
+                "action": [
+                  ""
+                ]
+              }
+            ]
+          }
+        },
+        "columnTwo": {
+          "visible": true,
+          "rules": [
+            {
+              "name": "filter",
+              "condition": "",
+              "action": [
+                "filterValue = fhirpath.excute('expression')",
+                ""
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "divider": {
+      "visible": false
+    },
+    "columnTwo": {
+      "visible": true,
+      "rules": [
+        {
+          "name": "count",
+          "condition": "",
+          "action": [
+            ""
+          ]
+        },
+        {
+          "name": "status",
+          "condition": "",
+          "action": [
+            ""
+          ]
+        }
+      ]
+    }
+  }
+}

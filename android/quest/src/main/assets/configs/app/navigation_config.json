@@ -1,0 +1,132 @@
+{
+  "appId": "app",
+  "configType": "navigation",
+  "staticMenu": [
+    {
+      "id": "main_add_button",
+      "visible": true,
+      "display": "Add New Household",
+      "actions": [
+        {
+          "type": "onClose",
+          "workflow": "launch_profile",
+          "id": "patient_profile"
+        }
+      ],
+      "questionnaire": {
+        "id": "82952",
+        "title": "Add Family",
+        "saveButtonText": "ADD FAMILY",
+        "setPractitionerDetails": true,
+        "setOrganizationDetails": true
+      }
+    },
+    {
+      "id": "reports",
+      "visible": true,
+      "display": "Reports"
+    },
+    {
+      "id": "p2p_sync",
+      "visible": true,
+      "display": "Transfer Data"
+    },
+    {
+      "id": "profile",
+      "visible": true,
+      "display": "Profile"
+    }
+  ],
+  "clientRegister": [
+    {
+      "id": "all_households",
+      "display": "All Households",
+      "icon": "",
+      "showCount": true,
+      "actions": [
+        {
+          "type": "onClick",
+          "workflow": "launch_register",
+          "id": "all_household_register"
+        },
+        {
+          "type": "count",
+          "rules": [
+            {
+              "name": "householdCount",
+              "condition": "",
+              "action": [
+                "householdCountValue = helper.count('all_household_register')"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "child",
+      "display": "Child",
+      "icon": "",
+      "showCount": true,
+      "onClick": {
+        "register": "register_id"
+      }
+    },
+    {
+      "id": "sick",
+      "display": "Sick",
+      "icon": "",
+      "showCount": true,
+      "onClick": {
+        "register": "register_id"
+      }
+    },
+    {
+      "id": "priority",
+      "display": "Today's Priority",
+      "icon": "",
+      "showCount": true,
+      "onClick": {
+        "register": "register_id"
+      }
+    }
+  ],
+  "otherClients": {
+    "visible": true,
+    "display": "Other Patients",
+    "bottomSheetRegister": [
+      {
+        "id": "bottom_all_households",
+        "display": "All Households",
+        "showCount": true,
+        "onClick": {
+          "register": "register_id"
+        }
+      },
+      {
+        "id": "bottom_child",
+        "display": "Child",
+        "showCount": true,
+        "onClick": {
+          "register": "register_id"
+        }
+      },
+      {
+        "id": "bottom_sick",
+        "display": "Sick",
+        "showCount": true,
+        "onClick": {
+          "register": "register_id"
+        }
+      },
+      {
+        "id": "bottom_priority",
+        "display": "Today's Priority",
+        "showCount": true,
+        "onClick": {
+          "register": "register_id"
+        }
+      }
+    ]
+  }
+}

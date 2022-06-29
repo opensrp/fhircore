@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -154,6 +155,6 @@ constructor(
     return visitStatus
   }
 
-  private fun getRegisterDataFilters() =
-    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.ANC.name)
+  private fun getRegisterDataFilters() = emptyList<SearchFilter>()
+
 }
