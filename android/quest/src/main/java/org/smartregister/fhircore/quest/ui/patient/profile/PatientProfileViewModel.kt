@@ -109,6 +109,8 @@ constructor(
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
       is PatientProfileEvent.OverflowMenuClick -> {
+        // TODO use navigation items from config and handle these actions dynamically
+        // https://github.com/opensrp/fhircore/issues/1371
         when (event.menuId) {
           R.id.individual_details ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
@@ -144,14 +146,6 @@ constructor(
           R.id.pregnancy_outcome ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = PREGNANCY_OUTCOME_FORM,
-              clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
-            )
-          R.id.record_sick_child ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId =
-                if (event.patient.dob!!.monthsPassed() < 2) SICK_CHILD_UNDER_2M_FORM
-                else SICK_CHILD_ABOVE_2M_FORM,
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )

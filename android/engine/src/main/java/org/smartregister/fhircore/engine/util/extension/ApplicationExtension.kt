@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import android.content.Context
 import android.content.res.AssetManager
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -33,6 +34,7 @@ import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.SyncJob
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.gson.Gson
+import java.net.URL
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
@@ -40,9 +42,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Library
+import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -137,7 +142,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
         if (entry.resource.resourceType == ResourceType.Library) {
           fhirOperator.loadLib(entry.resource as Library)
         } else {
-          if (true /*!savedResources!!.contains(resourcesBundlePath)*/) {
+          if (!savedResources!!.contains(resourcesBundlePath)) {
             create(entry.resource)
             sharedPreferencesHelper.write(
               SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,
@@ -147,6 +152,46 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
         }
       }
     }
+  } catch (exception: Exception) {
+    Timber.e(exception)
+  }
+
+suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: String) {
+  // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
+  val library =
+    if (!UrlUtil.isValid(path)) get<Library>(IdType(path).idPart)
+    else search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
+
+  library?.let {
+    fhirOperator.loadLib(it)
+
+    it.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
+  }
+}
+
+suspend fun FhirEngine.loadLibraryAtPath(
+  fhirOperator: FhirOperator,
+  relatedArtifact: RelatedArtifact
+) {
+  if (relatedArtifact.type.isIn(
+      RelatedArtifact.RelatedArtifactType.COMPOSEDOF,
+      RelatedArtifact.RelatedArtifactType.DEPENDSON
+    )
+  )
+    loadLibraryAtPath(fhirOperator, relatedArtifact.resource)
+}
+
+suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measurePath: String) =
+  try {
+    // resource path could be Measure/123 OR something like http://fhir.labs.common/Measure/123
+    val measure =
+      if (UrlUtil.isValid(measurePath))
+        search<Measure> { filter(Measure.URL, { value = measurePath }) }.first()
+      else get(measurePath)
+
+    measure.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
+
+    measure.library.map { it.value }.forEach { path -> loadLibraryAtPath(fhirOperator, path) }
   } catch (exception: Exception) {
     Timber.e(exception)
   }

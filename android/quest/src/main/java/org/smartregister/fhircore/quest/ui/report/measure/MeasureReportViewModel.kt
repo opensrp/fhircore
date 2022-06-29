@@ -27,6 +27,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.filter
+import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -191,9 +192,7 @@ constructor(
   fun evaluateMeasure(context: Context, navController: NavController) {
     // Run evaluate measure only for existing report
     if (measureReportRowData.value != null) {
-      val reportName = measureReportRowData.value?.name
-      val measureUrl = "http://fhir.org/guides/who/anc-cds/Measure/$reportName"
-      val measureResourceBundleUrl = "measure/$reportName-bundle.json"
+      val reportName = measureReportRowData.value!!.name
       val individualEvaluation = reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL
       // Retrieve and parse dates from this format (16 Nov, 2020) to this (2020-11-16)
       val startDateFormatted =
@@ -208,17 +207,24 @@ constructor(
       viewModelScope.launch {
         kotlin
           .runCatching {
+            val assetsResource = !UrlUtil.isValid(reportName)
+            val measureUrl =
+              if (assetsResource) "http://fhir.org/guides/who/anc-cds/Measure/$reportName"
+              else reportName
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
 
             withContext(dispatcherProvider.io()) {
-              fhirEngine.loadCqlLibraryBundle(
-                context = context,
-                fhirOperator = fhirOperator,
-                sharedPreferencesHelper = sharedPreferencesHelper,
-                resourcesBundlePath = measureResourceBundleUrl
-              )
+              if (!assetsResource) fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
+              else
+                fhirEngine.loadCqlLibraryBundle(
+                  context,
+                  sharedPreferencesHelper,
+                  fhirOperator,
+                  "measure/$reportName-bundle.json"
+                )
             }
+
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
               val measureReport =
                 withContext(dispatcherProvider.io()) {
@@ -305,11 +311,11 @@ constructor(
               val numerator = stratum.findPopulation(NUMERATOR)?.count ?: 0
               val denominator = reportGroup.findPopulation(NUMERATOR)?.count ?: 0
               val percentage =
-                numerator.toDouble().div(if (denominator == 0) 1 else denominator) * 100.0
+                if (denominator == 0) null else numerator.toDouble().div(denominator) * 100
               val count = "$numerator/$denominator"
               MeasureReportIndividualResult(
                 title = text,
-                percentage = percentage.roundToInt().toString(),
+                percentage = percentage?.roundToInt()?.toString() ?: "0",
                 count = count
               )
             }

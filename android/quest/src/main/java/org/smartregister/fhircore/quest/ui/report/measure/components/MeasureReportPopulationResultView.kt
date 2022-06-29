@@ -80,8 +80,10 @@ private fun PopulationResultCard(
             textAlign = TextAlign.End
           )
         }
-        Divider(color = DividerColor, modifier = modifier.padding(vertical = 20.dp))
-        resultItem.dataList.forEach { item -> PopulationResultItem(item) }
+        if (resultItem.dataList.isNotEmpty()) {
+          Divider(color = DividerColor, modifier = modifier.padding(vertical = 20.dp))
+          resultItem.dataList.forEach { item -> PopulationResultItem(item) }
+        }
       }
     }
   }
