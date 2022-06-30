@@ -50,6 +50,11 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterDao {
 
+  fun isValidPatient(patient: Patient): Boolean =
+    patient.hasName() &&
+      patient.hasGender() &&
+      patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }
+
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
@@ -65,7 +70,7 @@ constructor(
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return patients.filterNot { it.gender == null }.map { patient ->
+    return patients.filter(this::isValidPatient).map { patient ->
       RegisterData.HivRegisterData(
         logicalId = patient.logicalId,
         identifier = patient.identifierFirstRep.value,
@@ -121,7 +126,7 @@ constructor(
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     return fhirEngine
       .search<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
-      .filter { it.gender != null && it.active && !it.name.isNullOrEmpty() }
+      .filter(this::isValidPatient)
       .size
       .toLong()
   }
@@ -130,5 +135,9 @@ constructor(
 
   fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+  }
+
+  companion object {
+    const val HAPI_MDM_TAG = "HAPI-MDM"
   }
 }
