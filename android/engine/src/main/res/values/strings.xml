@@ -8,7 +8,7 @@
     <string name="scan_bar_code">SCAN BARCODE</string>
     <string name="empty_client_list_message_title">No Results</string>
     <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
-    <string name="register_new_client">Register new client</string>
+    <string name="register_new_client">Register new Person</string>
     <string name="default_app_title" translatable="false">Fhir App</string>
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
@@ -79,6 +79,7 @@
     <string name="register">Register</string>
     <string name="tasks">Tasks</string>
     <string name="visits">Visits</string>
+    <string name="clinic_visits">Clinic Visits</string>
     <string name="reports">Reports</string>
     <string name="profile">Profile</string>
     <string name="settings">Settings</string>

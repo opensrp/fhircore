@@ -357,11 +357,11 @@ abstract class BaseRegisterActivity :
     }
 
     // Add language and logout menu items
-    menu.add(R.id.menu_group_app_actions, R.id.menu_item_language, 0, R.string.language).apply {
-      icon =
-        ContextCompat.getDrawable(this@BaseRegisterActivity, R.drawable.ic_outline_language_white)
-      actionView = layoutInflater.inflate(R.layout.drawer_menu_language_layout, null, false)
-    }
+//    menu.add(R.id.menu_group_app_actions, R.id.menu_item_language, 0, R.string.language).apply {
+//      icon =
+//        ContextCompat.getDrawable(this@BaseRegisterActivity, R.drawable.ic_outline_language_white)
+//      actionView = layoutInflater.inflate(R.layout.drawer_menu_language_layout, null, false)
+//    }
     menu.add(R.id.menu_group_app_actions, R.id.menu_item_logout, 1, R.string.logout_as_user).apply {
       icon = ContextCompat.getDrawable(this@BaseRegisterActivity, R.drawable.ic_logout_white)
     }

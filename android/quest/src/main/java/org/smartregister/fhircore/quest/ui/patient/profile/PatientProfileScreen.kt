@@ -152,7 +152,7 @@ fun PatientProfileScreen(
         // Patient tasks: List of tasks for the patients
         if (profileViewData.tasks.isNotEmpty()) {
           ProfileCard(
-            title = stringResource(R.string.visits).uppercase(),
+            title = stringResource(R.string.clinic_visits).uppercase(),
             onActionClick = {},
             profileViewSection = PatientProfileViewSection.TASKS
           ) {

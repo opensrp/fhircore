@@ -78,7 +78,7 @@ constructor(
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
         sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
-        languages = configurationRegistry.fetchLanguages(),
+        languages = emptyList(),//configurationRegistry.fetchLanguages(),
         enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync),
         enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting)
       )
