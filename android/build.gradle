@@ -4,49 +4,61 @@ buildscript {
     repositories {
         google()
         maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+
     }
     dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31'
-        classpath "org.jetbrains.kotlin:kotlin-serialization:1.5.31"
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.38.1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10'
+        classpath "org.jetbrains.kotlin:kotlin-serialization:1.6.10"
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.39.1'
         classpath deps.spotless
         classpath deps.kotlin_coveralls_plugin
         classpath deps.junit5_plugin
         classpath deps.dokka_plugin
-        classpath "com.android.tools.build:gradle:7.0.4"
+        classpath "com.android.tools.build:gradle:7.1.2"
     }
 }
 
 allprojects {
     repositories {
         mavenLocal()
-        google() 
+        google()
         mavenCentral()
 
         maven {
             url 'https://oss.sonatype.org/content/repositories/snapshots'
         }
+        maven {
+            name = "fhirsdk"
+            url = uri("/Users/ndegwamartin/.m2.dev/fhirsdk")
+        }
     }
+}
 
-    subprojects {
-        apply plugin: 'com.diffplug.spotless'
-        apply plugin: 'kotlin-kapt'
+subprojects {
+    apply plugin: 'com.diffplug.spotless'
 
-        spotless {
-            kotlin {
-                target '**/*.kt'
-                ktlint(versions.ktlint).userData(['indent_size': '2', 'continuation_indent_size': '2'])
-                ktfmt().googleStyle()
-                licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
-            }
+    spotless {
+        kotlin {
+            target '**/*.kt'
+            ktlint(versions.ktlint).userData(['indent_size': '2', 'continuation_indent_size': '2'])
+            ktfmt().googleStyle()
+            licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
         }
 
-        configurations.all {
-            resolutionStrategy {
-                eachDependency { details ->
-                    if ('org.jacoco' == details.requested.group) {
-                        details.useVersion versions.jacoco_tool
-                    }
+        format 'xml', {
+            target '**/*.xml'
+            indentWithSpaces()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            eachDependency { details ->
+                if ('org.jacoco' == details.requested.group) {
+                    details.useVersion versions.jacoco_tool
                 }
             }
         }

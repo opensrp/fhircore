@@ -23,4 +23,5 @@ object FamilyFormConstants {
   const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
   const val FAMILY_REGISTER_FORM = "family-registration"
   const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
+  const val REMOVE_FAMILY = "remove-family"
 }

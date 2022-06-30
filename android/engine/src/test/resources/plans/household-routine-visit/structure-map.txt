@@ -1,0 +1,97 @@
+map "http://hl7.org/fhir/StructureMap/hh" = 'HHRoutineCarePlan'
+
+uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
+uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
+
+group HHRoutineCarePlan(source src : Parameters, target tgt: CarePlan) {
+    src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
+            evaluate(src, $this.parameter.where(name='definition').resource) as definition
+            then ExtractCarePlan(subject, definition, tgt), ExtractActivityDetail(subject, definition, tgt) "r_careplan";
+}
+
+group ExtractCarePlan(source subject: Group, source definition: ActivityDefinition, target careplan : CarePlan) {
+    subject -> careplan.id = uuid() ,
+           careplan.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+           careplan.status = 'active',
+           careplan.intent = 'plan',
+           careplan.subject = create('Reference') as ref, ref.reference = evaluate(subject, $this.id),
+           careplan.created = evaluate(subject, now()),
+           careplan.period = create('Period') as period, evaluate(subject, today()) as offset then ExtractPeriod_1m(offset, period) "r_cp_data";
+}
+
+group ExtractActivityDetail(source subject : Group,
+    source definition: ActivityDefinition, target careplan : CarePlan){
+    subject -> careplan.activity = create('CarePlan_Activity') as activity then {
+        subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
+            subject -> det.kind = 'Task',
+                   det.status = 'in-progress',
+                   det.description = evaluate(definition, $this.title),
+                   det.code = create('CodeableConcept') as concept then ExtractTimingCode(subject, concept) "r_act_det_data";
+
+            subject -> det.scheduled = evaluate(definition, $this.timing) as timing,
+                   evaluate(timing, $this.repeat) as repeat then {
+
+                subject -> evaluate(subject, today()) as offset, evaluate(careplan, $this.period) as range then
+                       ExtractTasks(offset, range, subject, careplan, activity, timing) "r_tasks";
+
+                subject -> repeat.count = create('positiveInt') as c, c.value = '1' "r_task_rep_count";
+
+            } "r_tim_repeat";
+        } "r_act_det";
+
+    } "r_cp_acti";
+}
+
+group ExtractTasks(
+    source offset: DateType,
+    source range: Period,
+    source subject : Patient,
+    target careplan: CarePlan,
+    target activity : CarePlan_Activity,
+    target timing: Timing){
+
+    offset -> evaluate(offset, $this.value.substring(0,7) + '-01') as startStr,
+                                        create('date') as start, start.value = startStr,
+                                        create('Period') as period,
+                                        careplan.contained = create('Task') as task then {
+        subject then ExtractPeriod_1m(start, period) "r_task_period_extr";
+
+        subject -> task.id = uuid(),
+               task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+               task.status = 'requested',
+               task.intent = 'plan',
+               task.executionPeriod = period,
+               task.priority = 'routine',
+               task.description = 'HH Routine  visit Task',
+               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id),
+               task.basedOn = reference(careplan),
+               task.authoredOn = evaluate(subject, now()) "r_task_data";
+
+        subject -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/sample-questionnaire-for-hh' "r_task_reason_ref_above1";
+
+        subject -> activity.outcomeReference = reference(task) "r_cp_task_ref";
+        subject -> timing.event = evaluate(period, $this.start) "r_activity_timing";
+    } "r_cp_acti_outcome";
+}
+
+group ExtractTimingCode(source subject : Group, target concept: CodeableConcept){
+    subject -> concept.coding = c("http://terminology.hl7.org/CodeSystem/v3-GTSAbbreviation", "MO") as coding then {
+        subject -> coding.display = 'MO' "r_cp_cod_disp";
+    } "r_cp_cc_cod";
+    subject -> concept.text = 'MO' "r_cp_cc_txt";
+}
+
+group ExtractPeriod_1m(source offset : DateType, target period: Period){
+    offset -> offset as start,
+              evaluate(offset, $this + 1 'month') as end then
+              ExtractPeriod(start, end, period) "r_period";
+}
+
+group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00') "r_per_end";
+}

@@ -31,6 +31,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 
 @HiltAndroidTest
+@Ignore("To be deleted test class; new test to be written after refactor")
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -139,17 +141,15 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
     val config = patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
 
-    val bottomNavigationOptions =
-      config.bottomNavigationOptions?.plus(
-        NavigationOption(
-          "control_test",
-          "Control Test",
-          "ic_reports",
+    config.bottomNavigationOptions?.plus(
+      NavigationOption(
+        id = "control_test",
+        title = "Control Test",
+        icon = "ic_reports",
+        action =
           QuestionnaireDataDetailsNavigationAction(classification = "control_test_details_view")
-        )
       )
-
-    config.bottomNavigationOptions = bottomNavigationOptions
+    )
 
     patientRegisterActivity.onBottomNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = "control_test".hashCode() },
@@ -212,7 +212,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(1, list.size)
     with(list[0]) {
       Assert.assertEquals(PatientRegisterFragment.TAG, uniqueTag)
-      Assert.assertEquals(patientRegisterActivity.getString(R.string.clients), title)
+      Assert.assertEquals(patientRegisterActivity.getString(R.string.all_clients), title)
       Assert.assertTrue(isSelected)
     }
   }

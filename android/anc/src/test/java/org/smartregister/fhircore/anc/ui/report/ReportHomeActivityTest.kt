@@ -42,6 +42,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.smartregister.fhircore.anc.app.fakes.FakeModel
+import org.smartregister.fhircore.anc.app.fakes.Faker
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
@@ -49,8 +50,9 @@ import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
+import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -61,6 +63,12 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
+
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry =
+    Faker.buildTestConfigurationRegistry("anc", mockk())
+  @Inject lateinit var jsonSpecificationProvider: AncJsonSpecificationProvider
+
   @Inject lateinit var reportRepository: ReportRepository
   @Inject lateinit var patientRepository: PatientRepository
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper

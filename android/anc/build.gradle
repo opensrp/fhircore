@@ -3,33 +3,21 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'de.mannodermaus.android-junit5'
-    id 'kotlin-android-extensions'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
 }
 
+apply from: '../properties.gradle'
 apply from: '../jacoco.gradle'
 
-Properties props = new Properties()
-
-def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
-if (rootProject.file("local.properties").exists()) {
-    props.load(rootProject.file("local.properties").newDataInputStream())
-
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
-    }
-} else {
-    println("local.properties does not exist. The following values are required " + arr.join(", "))
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
-    }
-}
-
 android {
-    compileSdkVersion 30
+    compileSdkVersion sdk_versions.compile_sdk
+
+    lintOptions {
+        abortOnError false
+    }
 
     dataBinding {
         enabled true
@@ -49,10 +37,10 @@ android {
 
     defaultConfig {
         applicationId "org.smartregister.fhircore.anc"
-        minSdkVersion 21
-        targetSdkVersion 30
-        versionCode 1
-        versionName "0.0.4"
+        minSdkVersion sdk_versions.min_sdk
+        targetSdkVersion sdk_versions.target_sdk
+        versionCode 2
+        versionName "0.0.5"
         multiDexEnabled true
 
         testInstrumentationRunner "org.smartregister.fhircore.anc.ui.AncTestRunner"
@@ -68,6 +56,19 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
     }
 
+    signingConfigs {
+        release {
+
+            v1SigningEnabled false
+            v2SigningEnabled true
+
+            keyAlias System.getenv("KEYSTORE_ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            storeFile file(System.getProperty("user.home") + "/fhircore.keystore.jks")
+        }
+    }
+
     buildTypes {
         debug {
             testCoverageEnabled true
@@ -75,22 +76,25 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+	    signingConfig signingConfigs.release
         }
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
         coreLibraryDesugaringEnabled true
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_11.toString()
+        freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
     buildFeatures {
         compose true
         viewBinding true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.0.4'
+        kotlinCompilerExtensionVersion '1.1.1'
     }
     packagingOptions {
         exclude 'META-INF/ASL-2.0.txt'
@@ -136,12 +140,10 @@ android {
 dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.1.5"
     implementation(project(":engine"))
-    implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation deps.lifecycle.viewmodel
     implementation deps.work.runtime
@@ -152,7 +154,7 @@ dependencies {
     androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0'
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine
@@ -175,7 +177,7 @@ dependencies {
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
 
-    def composeVersion = "1.0.5"
+    def composeVersion = "1.1.1"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")

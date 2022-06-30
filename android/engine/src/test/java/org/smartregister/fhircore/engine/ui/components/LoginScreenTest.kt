@@ -23,6 +23,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextInput
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
@@ -38,6 +39,7 @@ import org.smartregister.fhircore.engine.ui.login.APP_NAME_TEXT_TAG
 import org.smartregister.fhircore.engine.ui.login.ForgotPasswordDialog
 import org.smartregister.fhircore.engine.ui.login.LOGIN_BUTTON_TAG
 import org.smartregister.fhircore.engine.ui.login.LOGIN_FOOTER
+import org.smartregister.fhircore.engine.ui.login.LoginErrorState
 import org.smartregister.fhircore.engine.ui.login.LoginScreen
 import org.smartregister.fhircore.engine.ui.login.LoginViewModel
 import org.smartregister.fhircore.engine.ui.login.PASSWORD_FIELD_TAG
@@ -51,7 +53,7 @@ class LoginScreenTest : RobolectricTest() {
   private val app = ApplicationProvider.getApplicationContext<Application>()
   private val username = MutableLiveData("")
   private val password = MutableLiveData("")
-  private val loginError = MutableLiveData("")
+  private val loginError: LiveData<LoginErrorState?> = MutableLiveData(null)
   private val showProgressBar = MutableLiveData(false)
   private val loginConfig = loginViewConfigurationOf()
 
@@ -62,9 +64,8 @@ class LoginScreenTest : RobolectricTest() {
         every { loginViewConfiguration } returns MutableLiveData(loginConfig)
         every { username } returns this@LoginScreenTest.username
         every { password } returns this@LoginScreenTest.password
-        every { loginError } returns this@LoginScreenTest.loginError
+        every { loginErrorState } returns this@LoginScreenTest.loginError
         every { showProgressBar } returns this@LoginScreenTest.showProgressBar
-        every { appLogoResourceFile } returns "ic_launcher"
         every { onUsernameUpdated(any()) } answers
           {
             this@LoginScreenTest.username.value = firstArg()
@@ -102,9 +103,6 @@ class LoginScreenTest : RobolectricTest() {
     composeRule.onNodeWithTag(PASSWORD_FIELD_TAG).assertIsDisplayed()
     composeRule.onNodeWithTag(PASSWORD_FIELD_TAG, useUnmergedTree = true).assertTextEquals("")
     composeRule.onNodeWithTag(PASSWORD_FIELD_TAG, useUnmergedTree = true).performTextInput("12345")
-    composeRule
-      .onNodeWithTag(PASSWORD_FIELD_TAG, useUnmergedTree = true)
-      .assertTextEquals(password.value!!)
     verify(exactly = 1) { loginViewModel.onPasswordUpdated(password.value!!) }
 
     // verify login button properties and behaviour

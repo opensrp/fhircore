@@ -1,0 +1,16 @@
+{
+  "appId": "g6pd",
+  "classification": "data_filters",
+  "filters": [
+    {
+      "id": "forms_list",
+      "filterType": "TOKEN",
+      "key": "context",
+      "valueType": "CODING",
+      "valueCoding": {
+        "system": "http://fhir.ona.io",
+        "code": "000002"
+      }
+    }
+  ]
+}

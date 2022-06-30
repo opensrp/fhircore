@@ -18,6 +18,11 @@ jobs:
   engine-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Cancel Previous workflow runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
       - name: Checkout 🛎️
         uses: actions/checkout@v2
         with:
@@ -37,72 +42,12 @@ jobs:
         working-directory: android
          
       - name: Run Engine unit tests with Gradle
-        run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x :engine:testReleaseUnitTest --stacktrace
+        run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x :engine:testReleaseUnitTest --info --stacktrace
         working-directory: android
 
       - name: Upload Engine Test Report to codecov
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-
-  eir-tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-        working-directory: android
-
-      - name: Spotless check eir application
-        run: ./gradlew :eir:spotlessCheck
-        working-directory: android
-         
-      - name: Run EIR unit tests with Gradle
-        run: ./gradlew :eir:clean && ./gradlew :eir:jacocoTestReport -x :eir:testReleaseUnitTest --stacktrace
-        working-directory: android
-
-      - name: Upload EIR Test Report to codecov
-        working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F eir -f "eir/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-
-  anc-tests:
-    runs-on: macos-11.0
-
-    steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-        working-directory: android
-
-      - name: Spotless check anc application
-        run: ./gradlew :anc:spotlessCheck
-        working-directory: android
-  
-      - name: Run ANC unit tests with Gradle
-        run: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
-        working-directory: android
-
-      - name: Upload ANC Test Report to codecov
-        working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F anc -f "anc/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
   quest-tests:
     runs-on: ubuntu-latest
@@ -127,7 +72,7 @@ jobs:
         working-directory: android
 
       - name: Run Quest unit tests with Gradle
-        run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReport -x :quest:testReleaseUnitTest --stacktrace
+        run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReportQuestDebug -x :quest:testQuestReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload Quest Test Report to codecov

@@ -20,29 +20,12 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 @Singleton
-class QuestConfigService
-@Inject
-constructor(
-  @ApplicationContext val context: Context,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry
-) : ConfigService {
-  private val authenticatedUserInfo by lazy {
-    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
-  }
-  override val resourceSyncParams: Map<ResourceType, Map<String, String>> by lazy {
-    loadRegistrySyncParams(configurationRegistry, authenticatedUserInfo)
-  }
+class QuestConfigService @Inject constructor(@ApplicationContext val context: Context) :
+  ConfigService {
 
   override fun provideAuthConfiguration() =
     AuthConfiguration(

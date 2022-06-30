@@ -1,0 +1,97 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Quest APK Release
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+      - v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+
+      - v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-[0-9a-zA-Z]+
+env:
+ FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
+ FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
+ CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous workflow runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+      - id: product-flavor
+        name: Generate Product Flavor identifier
+        run: |
+          id=$(echo ${{ github.ref }} | cut -d- -f2)
+          echo "::set-output name=id::$id"
+          idCapitalized=$(echo ${{ github.ref }} | cut -d- -f2 | sed 's/.*/\u&/')
+          echo "::set-output name=idCapitalized::$idCapitalized"
+          
+      - name: Decode & Generate Keystore file
+        run: echo $ENCODED_KEYSTORE | base64 -di > "${HOME}"/fhircore.keystore.jks
+        env:
+          ENCODED_KEYSTORE: ${{ secrets.KEYSTORE_FILE }}   
+
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: android
+
+      - name: Decode & Generate local.properties file
+        run: echo $LOCAL_PROPERTIES | base64 -di > local.properties
+        working-directory: android
+        env:
+          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }} 
+
+      - name: Decode & Generate keystore.properties file
+        run: echo $KEYSTORE_PROPERTIES | base64 -di > keystore.properties
+        working-directory: android
+        env:
+          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }} 
+ 
+      - name: Spotless check quest application
+        run: ./gradlew :quest:spotlessCheck
+        working-directory: android
+
+      - name: Generate AAB (Android App Bundle) file
+        if: ${{ false }}
+        run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
+        working-directory: android
+        
+      - name: Upload AAB file to tag assets
+        if: ${{ false }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: android/quest/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.aab
+          asset_name: "quest-$tag.aab"
+          tag: ${{ github.ref }}
+          overwrite: true
+      
+      - name: Generate APK (Android App PacKage) file
+        run: ./gradlew :quest:assemble${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
+        working-directory: android
+        
+      - name: Upload APK file to tag assets
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: android/quest/build/outputs/apk/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.apk
+          asset_name: "quest-$tag.apk"
+          tag: ${{ github.ref }}
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+          overwrite: true
+ 

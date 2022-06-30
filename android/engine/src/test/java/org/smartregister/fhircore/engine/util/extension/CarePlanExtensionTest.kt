@@ -359,6 +359,13 @@ class CarePlanExtensionTest {
   }
 
   @Test
+  fun testCarePlan_Started_ShouldReturn_True_When_PeriodStartNotSpecified() {
+    val noPeriodStart =
+      buildCarePlan(CarePlan.CarePlanStatus.ACTIVE, Period().apply { end = futureDate(2) })
+    assertTrue(noPeriodStart.started())
+  }
+
+  @Test
   fun testCarePlan_MilestonesDue_ShouldReturn_CorrectData() {
     val due1 =
       CarePlan.CarePlanActivityComponent().apply {

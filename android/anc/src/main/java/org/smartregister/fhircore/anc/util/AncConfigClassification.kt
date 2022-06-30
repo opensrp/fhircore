@@ -20,6 +20,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigClassification
 
 enum class AncConfigClassification : ConfigClassification {
   PATIENT_REGISTER,
+  PATIENT_REPORT_REGISTER,
   LOGIN;
   override val classification: String = name.lowercase()
 }

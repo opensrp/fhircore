@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
@@ -39,7 +40,7 @@ class PatientRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val domainMapper: PatientItemMapper,
+  override val dataMapper: PatientItemMapper,
   val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Pair<Patient, List<Immunization>>, PatientItem> {
 
@@ -58,7 +59,7 @@ constructor(
         val immunizations: List<Immunization> = getPatientImmunizations(it.logicalId)
         patientImmunizations.add(Pair(it, immunizations))
       }
-      patientImmunizations.map { domainMapper.mapToDomainModel(it) }
+      patientImmunizations.map { dataMapper.transformInputToOutputModel(it) }
     }
   }
 
@@ -68,7 +69,9 @@ constructor(
     }
 
   suspend fun fetchDemographics(patientId: String): Patient =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.get(ResourceType.Patient, patientId) as Patient
+    }
 
   override suspend fun countAll(): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }

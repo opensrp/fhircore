@@ -28,13 +28,13 @@ class DotKtTest : RobolectricTest() {
 
   @Test
   fun testDotShouldDisplayWhenShowDotIsTrue() {
-    composeRule.setContent { Dot(showDot = true) }
-    composeRule.onNodeWithTag(DOT_TAG).assertExists()
+    composeRule.setContent { Separator(showSeparator = true) }
+    composeRule.onNodeWithTag(SEPARATOR_TAG).assertExists()
   }
 
   @Test
   fun testDotShouldNotDisplayWhenShowDotIsFalse() {
-    composeRule.setContent { Dot(showDot = false) }
-    composeRule.onNodeWithTag(DOT_TAG).assertDoesNotExist()
+    composeRule.setContent { Separator(showSeparator = false) }
+    composeRule.onNodeWithTag(SEPARATOR_TAG).assertDoesNotExist()
   }
 }

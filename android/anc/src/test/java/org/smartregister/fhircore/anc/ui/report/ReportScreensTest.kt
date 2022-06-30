@@ -48,7 +48,6 @@ import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -115,6 +114,8 @@ class ReportScreensTest : RobolectricTest() {
     registerDataViewModel =
       mockk {
         every { registerData } returns allRegisterData
+        every { showHeader } returns MutableLiveData(true)
+        every { showFooter } returns MutableLiveData(true)
         every { showResultsCount } returns MutableLiveData(false)
         every { showLoader } returns MutableLiveData(false)
         every { currentPage() } returns 1

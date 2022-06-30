@@ -83,7 +83,7 @@ fun dummyPatientPagingList(): LazyPagingItems<PatientItem> {
             name = "John Doe",
             gender = "M",
             age = "27y",
-            address = "Nairobi"
+            displayAddress = "Nairobi"
           ),
           PatientItem(
             id = "my-test-id2",
@@ -91,7 +91,7 @@ fun dummyPatientPagingList(): LazyPagingItems<PatientItem> {
             name = "Jane Doe",
             gender = "F",
             age = "20y",
-            address = "Nairobi"
+            displayAddress = "Nairobi"
           )
         )
       )

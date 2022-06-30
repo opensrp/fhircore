@@ -1,0 +1,16 @@
+[
+  {
+    "id": "0",
+    "title": "Households",
+    "description": "Number of Households, Household members registered, disaggregated by age and gender for each age group",
+    "reportType": "HH_IND_GENDER_AGE",
+    "name": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01"
+  },
+  {
+    "id": "1",
+    "title": "First ANC",
+    "description": "Percentage of pregnant women with first ANC contact in the first trimester (before 12 weeks of gestation)",
+    "reportType": "ANC_IND_ONE",
+    "name": "ANCIND01"
+  }
+]

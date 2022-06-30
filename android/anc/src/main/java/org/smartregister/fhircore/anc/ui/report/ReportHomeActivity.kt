@@ -32,6 +32,11 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
+import org.smartregister.fhircore.anc.util.AncConfigClassification
+import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -40,22 +45,37 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 import timber.log.Timber
 
 @AndroidEntryPoint
-class ReportHomeActivity : BaseMultiLanguageActivity() {
+class ReportHomeActivity :
+  BaseMultiLanguageActivity(), ConfigurableComposableView<RegisterViewConfiguration> {
 
   @Inject lateinit var patientRepository: PatientRepository
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var jsonSpecificationProvider: AncJsonSpecificationProvider
 
   lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
 
   val reportViewModel by viewModels<ReportViewModel>()
 
+  lateinit var registerViewConfiguration: RegisterViewConfiguration
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    registerViewConfiguration =
+      configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
+        configClassification = AncConfigClassification.PATIENT_REPORT_REGISTER,
+        jsonSpecificationProvider.getJson()
+      )
+
     val currentActivity = this@ReportHomeActivity
 
     registerDataViewModel =
       initializeRegisterDataViewModel().also { dataViewModel ->
-        dataViewModel.currentPage.observe(currentActivity, { dataViewModel.loadPageData(it) })
+        dataViewModel.currentPage.observe(currentActivity) { dataViewModel.loadPageData(it) }
       }
+
+    configureViews(registerViewConfiguration)
 
     reportViewModel.apply {
       setStartEndDate(
@@ -106,7 +126,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
               ignoreCase = true
             )
           ) {
-
             val reportName = selectedMeasureReportItem.value?.name!!
             Timber.d(message = "This is the measure name => ".plus(reportName))
             reportViewModel.evaluateMeasure(
@@ -139,6 +158,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         }
       }
     }
+  }
+
+  override fun configureViews(viewConfiguration: RegisterViewConfiguration) {
+    registerDataViewModel.updateViewConfigurations(viewConfiguration)
   }
 
   private fun filterRegisterData(

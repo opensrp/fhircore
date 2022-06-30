@@ -17,11 +17,13 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
@@ -29,6 +31,10 @@ import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -36,14 +42,16 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.Call
@@ -62,8 +70,6 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
@@ -72,18 +78,24 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   private lateinit var accountAuthenticatorSpy: AccountAuthenticator
 
+  private val resourceService: FhirResourceService = mockk()
+
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
+
   @Before
   fun setUp() {
     hiltRule.inject()
     // Spy needed to control interaction with the real injected dependency
     accountAuthenticatorSpy = spyk(accountAuthenticator)
 
+    fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
+
     loginViewModel =
       LoginViewModel(
         accountAuthenticator = accountAuthenticatorSpy,
-        dispatcher = dispatcherProvider,
+        dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        app = ApplicationProvider.getApplicationContext()
+        fhirResourceDataSource = fhirResourceDataSource
       )
   }
 
@@ -139,9 +151,8 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel.attemptRemoteLogin()
 
-    // Login error is reset
-    Assert.assertNotNull(loginViewModel.loginError.value)
-    Assert.assertTrue(loginViewModel.loginError.value!!.isEmpty())
+    // Login error is reset to null
+    Assert.assertNull(loginViewModel.loginErrorState.value)
 
     // Show progress bar active
     Assert.assertNotNull(loginViewModel.showProgressBar.value)
@@ -201,7 +212,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel.attemptRemoteLogin()
 
-    Assert.assertEquals("", loginViewModel.loginError.value)
+    Assert.assertEquals(null, loginViewModel.loginErrorState.value)
     loginViewModel.showProgressBar.value?.let { Assert.assertTrue(it) }
     verify { accountAuthenticatorSpy.fetchToken("testUser", "51r1K4l1".toCharArray()) }
   }
@@ -214,19 +225,85 @@ internal class LoginViewModelTest : RobolectricTest() {
       "handleErrorMessage",
       ReflectionHelpers.ClassParameter(Throwable::class.java, UnknownHostException())
     )
-    Assert.assertEquals(
-      loginViewModel.app.getString(R.string.login_call_fail_error_message),
-      loginViewModel.loginError.value
-    )
+    Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value)
 
     ReflectionHelpers.callInstanceMethod<Any>(
       loginViewModel,
       "handleErrorMessage",
       ReflectionHelpers.ClassParameter(Throwable::class.java, IOException())
     )
-    Assert.assertEquals(
-      loginViewModel.app.getString(R.string.invalid_login_credentials),
-      loginViewModel.loginError.value
-    )
+    Assert.assertEquals(LoginErrorState.INVALID_CREDENTIALS, loginViewModel.loginErrorState.value)
+  }
+
+  @Test
+  fun testFetchLoggedInPractitionerShouldRetrieveAndSavePractitioner() {
+    coroutineTestRule.runBlockingTest {
+      val userInfo =
+        UserInfo(
+          questionnairePublisher = "quesP1",
+          keycloakUuid = "keyck1",
+          organization = "org",
+          location = "Nairobi"
+        )
+
+      val practitionerId = "12123"
+
+      coEvery { resourceService.searchResource(ResourceType.Practitioner.name, any()) } returns
+        Bundle().apply {
+          entry.add(
+            Bundle.BundleEntryComponent().apply {
+              resource = Practitioner().apply { id = practitionerId }
+            }
+          )
+        }
+
+      loginViewModel.fetchLoggedInPractitioner(userInfo)
+
+      // Shared preference contains practitioner details
+      val practitioner =
+        sharedPreferencesHelper.read<Practitioner>(
+          LOGGED_IN_PRACTITIONER,
+          decodeFhirResource = true
+        )
+      Assert.assertNotNull(practitioner)
+      Assert.assertEquals(practitionerId, practitioner!!.logicalId)
+
+      // Eventually dismisses the progress dialog and navigates home
+      Assert.assertNotNull(loginViewModel.showProgressBar.value)
+      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+      Assert.assertNotNull(loginViewModel.navigateToHome.value)
+      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+    }
+  }
+  @Test
+  fun testFetchLoggedInPractitionerWithNullKeycloakUuid() {
+    coroutineTestRule.runBlockingTest {
+      val userInfo =
+        UserInfo(
+          questionnairePublisher = "quesP1",
+          keycloakUuid = null,
+          organization = "org",
+          location = "Nairobi"
+        )
+
+      val practitionerId = "12123"
+
+      coEvery { resourceService.searchResource(ResourceType.Practitioner.name, any()) } returns
+        Bundle().apply {
+          entry.add(
+            Bundle.BundleEntryComponent().apply {
+              resource = Practitioner().apply { id = practitionerId }
+            }
+          )
+        }
+
+      loginViewModel.fetchLoggedInPractitioner(userInfo)
+
+      // Eventually dismisses the progress dialog and navigates home
+      Assert.assertNotNull(loginViewModel.showProgressBar.value)
+      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+      Assert.assertNotNull(loginViewModel.navigateToHome.value)
+      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+    }
   }
 }

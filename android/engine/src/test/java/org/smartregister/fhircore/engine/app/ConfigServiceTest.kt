@@ -41,9 +41,9 @@ class ConfigServiceTest : RobolectricTest() {
 
     val resourceTypes =
       arrayOf(
-          ResourceType.Binary,
           ResourceType.Library,
           ResourceType.StructureMap,
+          ResourceType.PlanDefinition,
           ResourceType.MedicationRequest,
           ResourceType.QuestionnaireResponse,
           ResourceType.Questionnaire,
@@ -57,9 +57,11 @@ class ConfigServiceTest : RobolectricTest() {
 
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
-    syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
+    syncParam.keys
+      .filter {
+        it.isIn(ResourceType.Binary, ResourceType.StructureMap, ResourceType.PlanDefinition)
+      }
+      .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
 
     syncParam.keys.filter { it.isIn(ResourceType.Library) }.forEach {
       Assert.assertTrue(syncParam[it]!!.containsKey("_id"))

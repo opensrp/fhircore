@@ -27,6 +27,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -59,6 +60,8 @@ import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
 import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
@@ -75,6 +78,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
+  val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
+
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
     spyk(
@@ -83,7 +88,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         defaultRepository = mockk(),
         configurationRegistry = mockk(),
         transformSupportServices = mockk(),
-        dispatcherProvider = mockk(),
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = mockk(),
         libraryEvaluator = mockk()
       )
@@ -103,7 +108,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
 
-    val questionnaireConfig = QuestionnaireConfig("appId", "form", "title", "form-id")
+    val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
     coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
       questionnaireConfig
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
@@ -140,12 +145,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     populationResources.add(patient)
     val result =
       QuestionnaireActivity.intentArgs(
-        "1234",
-        "my-form",
-        QuestionnaireType.READ_ONLY,
-        questionnaireResponse,
-        populationResources = populationResources,
-        immunizationId = "2323"
+        clientIdentifier = "1234",
+        formName = "my-form",
+        questionnaireType = QuestionnaireType.READ_ONLY,
+        questionnaireResponse = questionnaireResponse,
+        populationResources = populationResources
       )
     Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(
@@ -157,15 +161,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE)
     )
     Assert.assertEquals(
-      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(questionnaireResponse),
+      FhirContext.forCached(FhirVersionEnum.R4)
+        .newJsonParser()
+        .encodeResourceToString(questionnaireResponse),
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
     )
     Assert.assertEquals(
-      "2323",
-      result.getString(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
-    )
-    Assert.assertEquals(
-      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(patient),
+      FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(patient),
       result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
     )
   }
@@ -250,7 +252,16 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     questionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
 
-    verify { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any()) }
+    verify {
+      questionnaireViewModel.extractAndSaveResources(
+        any(),
+        any(),
+        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+        any(),
+        any(),
+        any()
+      )
+    }
   }
 
   @Test
@@ -267,7 +278,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(timeout = 2000) {
-      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(
+        any(),
+        any(),
+        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+        any(),
+        any(),
+        any()
+      )
     }
   }
 
@@ -287,7 +305,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(inverse = true) {
-      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(
+        any(),
+        any(),
+        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+        any(),
+        any(),
+        any()
+      )
     }
   }
 

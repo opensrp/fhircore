@@ -19,11 +19,11 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
-import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -40,37 +40,55 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
+private val fhirR4JsonParser = FhirContext.forR4Cached().newJsonParser()
+
 fun Base?.valueToString(): String {
-  return if (this == null) return ""
-  else if (this.isDateTime) (this as BaseDateTimeType).value.makeItReadable()
-  else if (this.isPrimitive) (this as PrimitiveType<*>).asStringValue()
-  else if (this is Coding) this.display ?: code
-  else if (this is CodeableConcept) this.stringValue()
-  else if (this is Quantity) this.value.toPlainString()
-  else if (this is Timing)
-    this.repeat.let {
-      it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
-    }
-  else if (this is HumanName) "${this.given.firstOrNull().valueToString()} ${this.family}"
-  else this.toString()
+  return when {
+    this == null -> return ""
+    this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable()
+    this.isPrimitive -> (this as PrimitiveType<*>).asStringValue()
+    this is Coding -> this.display ?: code
+    this is CodeableConcept -> this.stringValue()
+    this is Quantity -> this.value.toPlainString()
+    this is Timing ->
+      this.repeat.let {
+        it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
+      }
+    this is HumanName -> "${this.given.firstOrNull().valueToString()} ${this.family}"
+    else -> this.toString()
+  }
 }
+
+fun Coding.asCodeableConcept() =
+  CodeableConcept().apply {
+    addCoding(this@asCodeableConcept)
+    text = this@asCodeableConcept.display
+  }
 
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
-fun Resource.encodeResourceToString(
-  parser: IParser = FhirContext.forR4Cached().newJsonParser()
-): String = parser.encodeResourceToString(this)
+fun Resource.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
+  parser.encodeResourceToString(this.copy())
 
-fun <T> String.decodeResourceFromString(
-  parser: IParser = FhirContext.forR4Cached().newJsonParser()
-): T = parser.parseResource(this) as T
+fun StructureMap.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
+  parser
+    .encodeResourceToString(this)
+    .replace("'months'", "\\\\'months\\\\'")
+    .replace("'days'", "\\\\'days\\\\'")
+    .replace("'years'", "\\\\'years\\\\'")
+    .replace("'weeks'", "\\\\'weeks\\\\'")
+
+fun <T> String.decodeResourceFromString(parser: IParser = fhirR4JsonParser): T =
+  parser.parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   var extensionUpdateForm = listOf<Extension>()
@@ -81,7 +99,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   if (this is Patient) {
     extension = this.extension
   }
-  val jsonParser = FhirContext.forR4Cached().newJsonParser()
+  val jsonParser = fhirR4JsonParser
   val stringJson = encodeResourceToString(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
@@ -198,6 +216,10 @@ fun Resource.generateMissingId() {
   if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
 
+fun Resource.updateLastUpdated() {
+  meta.lastUpdated = Date()
+}
+
 fun Resource.isPatient(patientId: String) =
   this.resourceType == ResourceType.Patient && this.logicalId == patientId
 
@@ -229,4 +251,16 @@ fun Resource.referenceParamForObservation(): ReferenceClientParam =
 fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
 
-fun ResourceType.generateUniqueId() = UUID.randomUUID().toString()
+fun generateUniqueId() = UUID.randomUUID().toString()
+
+fun Base.extractWithFhirPath(expression: String) =
+  FhirPathDataExtractor.extractData(this, expression).firstOrNull()?.primitiveValue() ?: ""
+
+fun isValidResourceType(resourceCode: String): Boolean {
+  return try {
+    ResourceType.fromCode(resourceCode)
+    true
+  } catch (exception: FHIRException) {
+    false
+  }
+}

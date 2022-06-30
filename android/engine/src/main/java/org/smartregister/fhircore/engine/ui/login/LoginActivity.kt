@@ -21,10 +21,11 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
@@ -32,6 +33,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
+import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 
 @AndroidEntryPoint
 class LoginActivity :
@@ -41,7 +43,7 @@ class LoginActivity :
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   private val loginViewModel by viewModels<LoginViewModel>()
 
@@ -52,20 +54,26 @@ class LoginActivity :
       navigateToHome.observe(this@LoginActivity) {
         if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
           val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
-          if (lastPinExist) {
-            loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
-            syncBroadcaster.runSync()
-            loginService.navigateToHome()
-          } else {
-            loginService.navigateToPinLogin(goForSetup = true)
+          val forceLoginViaUsernamePinSetup =
+            loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
+          when {
+            lastPinExist -> {
+              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME, false)
+            }
+            forceLoginViaUsernamePinSetup -> {
+              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
+            }
+            else -> {
+              loginService.navigateToPinLogin(goForSetup = true)
+            }
           }
         } else {
-          syncBroadcaster.runSync()
+          configurationRegistry.fetchNonWorkflowConfigResources()
+          syncBroadcaster.get().runSync()
           loginService.navigateToHome()
         }
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
-      appLogoResourceFile = getApplicationConfiguration().appLogoIconResourceFile
     }
 
     if (configurationRegistry.isAppIdInitialized()) {
@@ -83,6 +91,13 @@ class LoginActivity :
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+  }
+
+  private fun goToHomeScreen(sharedPreferencesKey: String, sharedPreferencesValue: Boolean) {
+    loginViewModel.sharedPreferences.write(sharedPreferencesKey, sharedPreferencesValue)
+    configurationRegistry.fetchNonWorkflowConfigResources()
+    syncBroadcaster.get().runSync()
+    loginService.navigateToHome()
   }
 
   fun getApplicationConfiguration(): ApplicationConfiguration {

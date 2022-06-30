@@ -19,47 +19,46 @@ package org.smartregister.fhircore.engine.util.extension
 import android.content.Context
 import android.content.res.AssetManager
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.ResourceSyncParams
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.FhirSyncWorker
+import com.google.android.fhir.sync.PeriodicSyncConfiguration
+import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.SyncJob
+import com.google.android.fhir.workflow.FhirOperator
 import com.google.gson.Gson
-import kotlinx.coroutines.flow.MutableSharedFlow
+import java.net.URL
+import java.util.Locale
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Library
+import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.cql.FhirOperatorDecorator
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
-
-suspend fun FhirEngine.runOneTimeSync(
-  sharedSyncStatus: MutableSharedFlow<State>,
-  syncJob: SyncJob,
-  resourceSyncParams: ResourceSyncParams,
-  fhirResourceDataSource: FhirResourceDataSource
-) {
-
-  // TODO run initial sync for binary and library resources
-
-  syncJob.run(
-    fhirEngine = this,
-    dataSource = fhirResourceDataSource,
-    resourceSyncParams = resourceSyncParams,
-    subscribeTo = sharedSyncStatus
-  )
-}
 
 fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
   var json = assets.open(id).bufferedReader().use { it.readText() }
@@ -90,8 +89,8 @@ suspend fun FhirEngine.searchActivePatients(
     sort(Patient.NAME, Order.ASCENDING)
     count =
       if (loadAll) this@searchActivePatients.countActivePatients().toInt()
-      else PaginationUtil.DEFAULT_PAGE_SIZE
-    from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+      else PaginationConstant.DEFAULT_PAGE_SIZE
+    from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
   }
 
 suspend fun FhirEngine.countActivePatients(): Long =
@@ -99,7 +98,7 @@ suspend fun FhirEngine.countActivePatients(): Long =
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {
-    this@loadResource.load(T::class.java, resourceId)
+    this@loadResource.get(resourceId)
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }
@@ -129,7 +128,7 @@ suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immuniz
 suspend fun FhirEngine.loadCqlLibraryBundle(
   context: Context,
   sharedPreferencesHelper: SharedPreferencesHelper,
-  fhirOperator: FhirOperatorDecorator,
+  fhirOperator: FhirOperator,
   resourcesBundlePath: String
 ) =
   try {
@@ -144,7 +143,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
           fhirOperator.loadLib(entry.resource as Library)
         } else {
           if (!savedResources!!.contains(resourcesBundlePath)) {
-            save(entry.resource)
+            create(entry.resource)
             sharedPreferencesHelper.write(
               SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,
               savedResources.plus(",").plus(resourcesBundlePath)
@@ -156,3 +155,67 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
   } catch (exception: Exception) {
     Timber.e(exception)
   }
+
+suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: String) {
+  // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
+  val library =
+    if (!UrlUtil.isValid(path)) get<Library>(IdType(path).idPart)
+    else search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
+
+  library?.let {
+    fhirOperator.loadLib(it)
+
+    it.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
+  }
+}
+
+suspend fun FhirEngine.loadLibraryAtPath(
+  fhirOperator: FhirOperator,
+  relatedArtifact: RelatedArtifact
+) {
+  if (relatedArtifact.type.isIn(
+      RelatedArtifact.RelatedArtifactType.COMPOSEDOF,
+      RelatedArtifact.RelatedArtifactType.DEPENDSON
+    )
+  )
+    loadLibraryAtPath(fhirOperator, relatedArtifact.resource)
+}
+
+suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measurePath: String) =
+  try {
+    // resource path could be Measure/123 OR something like http://fhir.labs.common/Measure/123
+    val measure =
+      if (UrlUtil.isValid(measurePath))
+        search<Measure> { filter(Measure.URL, { value = measurePath }) }.first()
+      else get(measurePath)
+
+    measure.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
+
+    measure.library.map { it.value }.forEach { path -> loadLibraryAtPath(fhirOperator, path) }
+  } catch (exception: Exception) {
+    Timber.e(exception)
+  }
+
+fun ConfigurationRegistry.fetchLanguages() =
+  this.retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
+    .run { this.languages }
+    .map { Language(it, Locale.forLanguageTag(it).displayName) }
+
+/**
+ * Schedule periodic sync periodically as defined in the [configurationRegistry] application config
+ * interval. The [syncBroadcaster] will broadcast the sync status to its listeners
+ */
+fun SyncJob.schedulePeriodicSync(
+  configurationRegistry: ConfigurationRegistry, // TODO Obtain sync interval from app config
+  syncBroadcaster: SyncBroadcaster,
+  syncInterval: Long = 30
+) {
+  CoroutineScope(Dispatchers.Main).launch {
+    syncBroadcaster.sharedSyncStatus.emitAll(this@schedulePeriodicSync.stateFlow())
+  }
+  this.poll(
+    periodicSyncConfiguration =
+      PeriodicSyncConfiguration(repeat = RepeatInterval(syncInterval, TimeUnit.MINUTES)),
+    clazz = FhirSyncWorker::class.java
+  )
+}

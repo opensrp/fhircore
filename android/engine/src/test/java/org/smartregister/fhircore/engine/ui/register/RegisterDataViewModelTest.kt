@@ -123,16 +123,6 @@ class RegisterDataViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testShowPageCount() {
-    registerDataViewModel.showResultsCount(true)
-    Assert.assertNotNull(registerDataViewModel.showPageCount.value)
-    Assert.assertTrue(registerDataViewModel.showPageCount.value!!)
-    registerDataViewModel.showPageCount(false)
-    Assert.assertNotNull(registerDataViewModel.showPageCount.value)
-    Assert.assertFalse(registerDataViewModel.showPageCount.value!!)
-  }
-
-  @Test
   fun testShowLoader() {
     registerDataViewModel.setShowLoader(true)
     Assert.assertNotNull(registerDataViewModel.showLoader.value)

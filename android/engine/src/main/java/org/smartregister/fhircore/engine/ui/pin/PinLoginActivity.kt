@@ -22,9 +22,11 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
@@ -35,6 +37,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   val pinViewModel by viewModels<PinViewModel>()
 
@@ -61,6 +64,8 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   }
 
   private fun moveToHome() {
+    configurationRegistry.fetchNonWorkflowConfigResources()
+    syncBroadcaster.get().runSync()
     loginService.navigateToHome()
   }
 

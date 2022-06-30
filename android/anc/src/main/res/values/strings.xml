@@ -99,10 +99,7 @@
     <string name="button_cql_evaluate">CQL</string>
     <string name="pregnant_woman">Pregnant woman</string>
     <string name="add_family">ADD FAMILY</string>
-
-    <string name="families">Families</string>
     <string name="anc_clients">ANC Clients</string>
-
     <string name="households">Households</string>
     <string name="pregnant_clients">Pregnant clients</string>
     <string name="post_natal_clients">Post-natal clients</string>
@@ -134,4 +131,7 @@
     <string name="percentage">%</string>
     <string name="please_wait">Please wait…</string>
     <string name="so_and_so_family">%1$s Family</string>
+
+    <string name="remove_family_warning">Removing %1$s will remove their entire health record from your device. This action can’t be undone.</string>
+    <string name="family_resource_not_found">"Family resource for that ID NOT Found"</string>
 </resources>

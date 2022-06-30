@@ -1,0 +1,71 @@
+{
+  "resourceType": "Composition",
+  "id": "71739",
+  "status": "final",
+  "date": "2022-02-08",
+  "type": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "1156600005",
+        "display": "Device setting parameter"
+      }
+    ]
+  },
+  "identifier": {
+    "use": "official",
+    "value": "anc"
+  },
+  "title": "Device configurations",
+  "confidentiality": "L",
+  "section": [
+    {
+      "title": "App configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/71737",
+        "identifier": { "value": "application" }
+      }
+    },
+    {
+      "title": "Login configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/71731",
+        "identifier": { "value": "login" }
+      }
+    },
+    {
+      "title": "Pin View configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/71733",
+        "identifier": { "value": "pin" }
+      }
+    },
+    {
+      "title": "Patient Register configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/71735",
+        "identifier": { "value": "patient_register" }
+      }
+    },
+    {
+      "title": "Forms configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/105307",
+        "identifier": { "value": "forms" }
+      }
+    },
+    {
+      "title": "Sync configuration",
+      "mode": "working",
+      "focus": {
+        "reference": "Binary/71729",
+        "identifier": { "value": "sync" }
+      }
+    }
+  ]
+}

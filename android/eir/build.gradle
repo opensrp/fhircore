@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'de.mannodermaus.android-junit5'
-    id 'kotlin-android-extensions'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
@@ -11,26 +10,18 @@ plugins {
 }
 
 apply from: '../jacoco.gradle'
-
-Properties props = new Properties()
-
-def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
-if (rootProject.file("local.properties").exists()) {
-    props.load(rootProject.file("local.properties").newDataInputStream())
-
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
-    }
-} else {
-    println("local.properties does not exist. The following values are required " + arr.join(", "))
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
-    }
-}
+apply from: '../properties.gradle'
 
 android {
 
     compileSdkVersion sdk_versions.compile_sdk
+
+    lintOptions {
+        abortOnError false
+    }
+    buildFeatures {
+        viewBinding true
+    }
     dataBinding {
         enabled true
     }
@@ -63,13 +54,9 @@ android {
         }
     }
     compileOptions {
-        // Flag to enable support for the new language APIs
-        // See https://developer.android.com/studio/write/java8-support
         coreLibraryDesugaringEnabled true
-        // Sets Java compatibility to Java 8
-        // See https://developer.android.com/studio/write/java8-support
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     packagingOptions {
         exclude 'license.html'
@@ -92,7 +79,8 @@ android {
     }
     // See https://developer.android.com/studio/write/java8-support
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = JavaVersion.VERSION_11.toString()
+        freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
 
     // avoid errors with message 'Duplicate files copied in APK ...'
@@ -103,9 +91,10 @@ android {
 
     buildFeatures {
         compose true
+        viewBinding true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.0.4'
+        kotlinCompilerExtensionVersion '1.1.1'
     }
 
     testOptions {
@@ -199,12 +188,12 @@ dependencies {
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0'
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
 
-    def composeVersion = "1.0.5"
+    def composeVersion = "1.1.1"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 

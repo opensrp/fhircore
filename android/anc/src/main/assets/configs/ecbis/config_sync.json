@@ -1,0 +1,92 @@
+{
+  "resourceType": "Parameters",
+  "parameter": [
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "organization",
+        "base": [
+          "Patient"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "subject.organization",
+        "base": [
+          "Encounter","Observation","Condition","CarePlan","QuestionnaireResponse"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "publisher",
+        "code": "publisher",
+        "base": [
+          "Questionnaire"
+        ],
+        "type": "token",
+        "expression": "#publisher"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "StructureMap","PlanDefinition"
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Binary"
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Task"
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "count",
+        "code": "_count",
+        "base": [
+          "Patient",
+          "Encounter",
+          "Observation",
+          "Condition",
+          "CarePlan",
+          "QuestionnaireResponse",
+          "Questionnaire",
+          "StructureMap",
+          "Binary",
+          "Task"
+        ],
+        "type": "token",
+        "expression": "#count"
+      }
+    }
+  ]
+}

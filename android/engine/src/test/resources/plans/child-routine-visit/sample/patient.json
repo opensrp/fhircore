@@ -1,0 +1,16 @@
+{
+  "resourceType": "Patient",
+  "id": "TEST_PATIENT",
+  "active": true,
+  "name": [
+    {
+      "family": "Hadi",
+      "given": [
+        "Bareera"
+      ]
+    }
+  ],
+  "gender": "female",
+  "birthDate": "2022-01-14",
+  "generalPractitioner":[{"reference":"Practitioner/TEST_PRACTITIONER"}]
+}

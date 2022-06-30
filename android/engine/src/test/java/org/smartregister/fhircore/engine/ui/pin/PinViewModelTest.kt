@@ -24,7 +24,9 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
@@ -66,7 +68,7 @@ internal class PinViewModelTest : RobolectricTest() {
   private lateinit var pinViewModel: PinViewModel
 
   private val testPin = MutableLiveData("1234")
-  val testPinViewConfiguration =
+  private val testPinViewConfiguration =
     PinViewConfiguration(
       appId = "appId",
       classification = "classification",
@@ -81,7 +83,7 @@ internal class PinViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { sharedPreferencesHelper.read(any(), "") } returns "1234"
-    coEvery { sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, true) } returns Unit
+    coEvery { sharedPreferencesHelper.write(any(), true) } just runs
     coEvery { sharedPreferencesHelper.remove(any()) } returns Unit
     coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { secureSharedPreference.saveSessionPin("1234") } returns Unit
@@ -91,9 +93,6 @@ internal class PinViewModelTest : RobolectricTest() {
         AuthCredentials("username", "password", "sessionToken", "refreshToken")
       )
     } returns Unit
-    coEvery { secureSharedPreference.retrievePinCredentials() } returns
-      AuthCredentials("username", "password", "sessionToken", "refreshToken")
-    coEvery { secureSharedPreference.savePinCredentials() } returns Unit
 
     pinViewModel =
       PinViewModel(
@@ -107,7 +106,6 @@ internal class PinViewModelTest : RobolectricTest() {
       savedPin = "1234"
       isSetupPage = true
       appName = "demo"
-      appLogoResFile = "ic_launcher"
       onPinChanged("1234")
       pinViewConfiguration = testPinViewConfiguration
     }
@@ -212,7 +210,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnMenuLoginClicked() {
-    pinViewModel.onMenuLoginClicked()
+    pinViewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME)
     Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
   }
 

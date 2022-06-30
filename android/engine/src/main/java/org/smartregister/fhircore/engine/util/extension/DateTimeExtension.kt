@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -26,12 +25,19 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
+import org.ocpsoft.prettytime.PrettyTime
 
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
+val SDF_DD_MMM = SimpleDateFormat("dd MMM")
 val SDF_YYYY_MM_DD = SimpleDateFormat("yyyy-MM-dd")
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
+}
+
+fun Date?.asDdMmm(): String {
+  if (this == null) return ""
+  return SDF_DD_MMM.format(this)
 }
 
 fun Date.asDdMmmYyyy(): String {
@@ -52,10 +58,15 @@ fun Date?.makeItReadable(): String {
   }
 }
 
+fun Date?.prettifyDate(): String =
+  if (this == null) "" else PrettyTime(Locale.getDefault()).formatDuration(this)
+
 fun Date.daysPassed() =
-  TimeUnit.DAYS.convert(Instant.now().toEpochMilli() - this.time, TimeUnit.MILLISECONDS)
+  TimeUnit.DAYS.convert(Calendar.getInstance().timeInMillis - this.time, TimeUnit.MILLISECONDS)
 
 fun Date.yearsPassed() = this.daysPassed().div(365).toInt()
+
+fun Date.monthsPassed() = this.daysPassed().div(30.5).toInt()
 
 fun Date?.toAgeDisplay() = if (this == null) "" else getAgeStringFromDays(this.daysPassed())
 
@@ -71,10 +82,35 @@ fun DateType.plusMonthsAsString(months: Int): String {
   return clone.format()
 }
 
+fun Date.calendar(): Calendar = Calendar.getInstance().apply { time = this@calendar }
+
 fun Date.plusYears(years: Int): Date {
-  val date = this
-  val clone = Calendar.getInstance().apply { time = date }
+  val clone = this.calendar()
   clone.add(Calendar.YEAR, years)
+  return clone.time
+}
+
+fun Date.plusDays(days: Int): Date {
+  val clone = this.calendar()
+  clone.add(Calendar.DATE, days)
+  return clone.time
+}
+
+fun Date.plusMonths(months: Int, startOfMonth: Boolean = false): Date {
+  val clone = this.calendar()
+  clone.add(Calendar.MONTH, months)
+  return clone.time.let { if (startOfMonth) it.firstDayOfMonth() else it }
+}
+
+fun Date.firstDayOfMonth(): Date {
+  val clone = this.calendar()
+  clone.set(Calendar.DATE, clone.getActualMinimum(Calendar.DATE))
+  return clone.time
+}
+
+fun Date.lastDayOfMonth(): Date {
+  val clone = this.calendar()
+  clone.set(Calendar.DATE, clone.getActualMaximum(Calendar.DATE))
   return clone.time
 }
 
