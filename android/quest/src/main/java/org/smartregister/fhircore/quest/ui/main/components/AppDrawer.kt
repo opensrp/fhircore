@@ -138,31 +138,31 @@ fun AppDrawer(
           }
         )
       }
-      if(languages.isNotEmpty()) {
+      if (languages.isNotEmpty()) {
         Box {
           SideMenuItem(
-                  iconResource = R.drawable.ic_outline_language_white,
-                  title = stringResource(R.string.language),
-                  showEndText = true,
-                  endText = currentLanguage,
-                  onSideMenuClick = { expandLanguageDropdown = true }
+            iconResource = R.drawable.ic_outline_language_white,
+            title = stringResource(R.string.language),
+            showEndText = true,
+            endText = currentLanguage,
+            onSideMenuClick = { expandLanguageDropdown = true }
           )
           DropdownMenu(
-                  expanded = expandLanguageDropdown,
-                  onDismissRequest = { expandLanguageDropdown = false },
-                  modifier = modifier.wrapContentWidth(Alignment.End)
+            expanded = expandLanguageDropdown,
+            onDismissRequest = { expandLanguageDropdown = false },
+            modifier = modifier.wrapContentWidth(Alignment.End)
           ) {
             for (language in languages) {
               DropdownMenuItem(
-                      onClick = {
-                        onSideMenuClick(AppMainEvent.SwitchLanguage(language, context))
-                        expandLanguageDropdown = false
-                      }
+                onClick = {
+                  onSideMenuClick(AppMainEvent.SwitchLanguage(language, context))
+                  expandLanguageDropdown = false
+                }
               ) {
                 Text(
-                        modifier = modifier.fillMaxWidth(),
-                        text = language.displayName,
-                        fontSize = 18.sp
+                  modifier = modifier.fillMaxWidth(),
+                  text = language.displayName,
+                  fontSize = 18.sp
                 )
               }
             }
