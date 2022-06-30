@@ -154,6 +154,7 @@ fun PatientProfileScreen(
           ProfileCard(
             title = stringResource(R.string.clinic_visits).uppercase(),
             onActionClick = {},
+            showSeeAll = profileViewData.showListsHighlights,
             profileViewSection = PatientProfileViewSection.TASKS
           ) {
             profileViewData.tasks.forEach {

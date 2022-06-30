@@ -24,6 +24,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -49,6 +50,11 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterDao {
 
+  fun isValidPatient(patient: Patient): Boolean =
+    patient.hasName() &&
+      patient.hasGender() &&
+      patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }
+
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
@@ -64,7 +70,7 @@ constructor(
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return patients.filterNot { it.gender == null }.map { patient ->
+    return patients.filter(this::isValidPatient).map { patient ->
       RegisterData.HivRegisterData(
         logicalId = patient.logicalId,
         identifier = patient.identifierFirstRep.value,
@@ -104,18 +110,23 @@ constructor(
       tasks =
         defaultRepository.searchResourceFor<Task>(
             subjectId = resourceId,
+            subjectType = ResourceType.Patient,
             subjectParam = Task.SUBJECT
           )
           .sortedBy { it.executionPeriod.start.time },
       services =
-        defaultRepository.searchResourceFor(subjectId = resourceId, subjectParam = CarePlan.SUBJECT)
+        defaultRepository.searchResourceFor<CarePlan>(
+          subjectId = resourceId,
+          subjectType = ResourceType.Patient,
+          subjectParam = CarePlan.SUBJECT
+        )
     )
   }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     return fhirEngine
       .search<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
-      .filter { it.gender != null && it.active && !it.name.isNullOrEmpty() }
+      .filter(this::isValidPatient)
       .size
       .toLong()
   }
@@ -124,5 +135,9 @@ constructor(
 
   fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+  }
+
+  companion object {
+    const val HAPI_MDM_TAG = "HAPI-MDM"
   }
 }

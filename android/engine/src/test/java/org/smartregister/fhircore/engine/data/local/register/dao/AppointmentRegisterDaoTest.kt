@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.regitser.dao
+package org.smartregister.fhircore.engine.data.local.register.dao
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
@@ -33,7 +33,6 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.local.register.dao.AppointmentRegisterDao
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
