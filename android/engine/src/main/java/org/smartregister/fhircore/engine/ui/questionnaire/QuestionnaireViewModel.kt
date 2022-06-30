@@ -123,10 +123,13 @@ constructor(
       this.url = this.url ?: this.referenceValue()
     }
 
-  suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
+  suspend fun getQuestionnaireConfig(
+    questionnaireId: String,
+    context: Context
+  ): QuestionnaireConfig {
     val loadConfig =
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    questionnaireConfig = loadConfig!!.first { it.form == form || it.id == form }
+    questionnaireConfig = loadConfig!!.first { it.id == questionnaireId }
     return questionnaireConfig
   }
 

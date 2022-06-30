@@ -23,7 +23,9 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 data class NavigationMenuConfig(
   val id: String,
   val visible: Boolean = true,
+  val icon: String? = null,
   val display: String,
-  val actions: List<NavigationActionConfig>? = null,
-  val questionnaire: QuestionnaireConfig? = null
+  val questionnaire: QuestionnaireConfig? = null,
+  val showCount: Boolean = false,
+  val actions: List<NavigationActionConfig>? = null
 )

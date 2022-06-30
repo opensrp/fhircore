@@ -21,6 +21,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class NavigationBottomSheetRegisterConfig(
   val visible: Boolean = true,
-  val display: String = "Other Patients",
-  val registers: List<NavigationRegisterConfig> = emptyList()
+  val display: String = "",
+  val registers: List<NavigationMenuConfig> = emptyList()
 )

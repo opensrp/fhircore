@@ -76,8 +76,9 @@ constructor(
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
+  // TODO remove hard coded register config id. To be provided dynamically.
   val registerConfiguration: RegisterConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Register)
+    configurationRegistry.retrieveConfiguration(ConfigType.Register, "all_household_register")
   }
 
   fun paginateRegisterData(

@@ -22,6 +22,6 @@ import kotlinx.serialization.Serializable
 data class NavigationActionConfig(
   val type: String,
   val workflow: String? = null,
-  val id: String?,
+  val id: String? = null,
   val rules: List<NavigationActionRuleConfig>? = null
 )

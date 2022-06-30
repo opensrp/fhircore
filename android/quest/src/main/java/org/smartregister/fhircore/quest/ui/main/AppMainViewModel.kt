@@ -28,21 +28,20 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
 import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
@@ -51,22 +50,27 @@ class AppMainViewModel
 constructor(
   val accountAuthenticator: AccountAuthenticator,
   val syncBroadcaster: SyncBroadcaster,
-  val sideMenuOptionFactory: SideMenuOptionFactory,
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val configService: ConfigService,
-  val appFeatureManager: AppFeatureManager
+  val configService: ConfigService
 ) : ViewModel() {
 
-  val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
+  val appMainUiState: MutableState<AppMainUiState> =
+    mutableStateOf(
+      appMainUiStateOf(
+        navigationConfiguration =
+          NavigationConfiguration(sharedPreferencesHelper.read(APP_ID_KEY) ?: "")
+      )
+    )
 
   val refreshDataState: MutableState<Boolean> = mutableStateOf(false)
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
-  private val applicationConfiguration: ApplicationConfiguration =
+  private val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
 
   fun retrieveAppMainUiState() {
     appMainUiState.value =
@@ -74,11 +78,9 @@ constructor(
         appTitle = applicationConfiguration.appTitle,
         currentLanguage = loadCurrentLanguage(),
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
-        sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
-        enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync),
-        enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting)
+        navigationConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
       )
   }
 
@@ -94,24 +96,15 @@ constructor(
       }
       AppMainEvent.SyncData -> {
         syncBroadcaster.runSync()
-        appMainUiState.value =
-          appMainUiState.value.copy(
-            sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions()
-          )
+        retrieveAppMainUiState()
       }
       is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          // Update register count when sync completes
-          is State.Finished,
-          is State.Failed -> {
-            // Notify subscribers to refresh views after sync
+          is State.Finished, is State.Failed -> {
+            // Notify subscribers to refresh views after sync and refresh UI
             refreshDataState.value = true
-            appMainUiState.value =
-              appMainUiState.value.copy(
-                lastSyncTime = event.lastSyncTime ?: "",
-                sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions()
-              )
+            retrieveAppMainUiState()
           }
           else ->
             appMainUiState.value =

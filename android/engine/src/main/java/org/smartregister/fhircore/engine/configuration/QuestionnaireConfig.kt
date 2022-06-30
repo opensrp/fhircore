@@ -18,17 +18,10 @@ package org.smartregister.fhircore.engine.configuration
 
 import kotlinx.serialization.Serializable
 
-/**
- * Data class to represent a form configuration. Questionnaires are synced from the server
- * @property form A unique name for the form as declared in the `form_configurations.json file`
- * @property title The title of the form
- * @property id Represents the identifier as synced from the server
- */
 @Serializable
 data class QuestionnaireConfig(
-  val form: String,
-  val title: String,
   val id: String,
+  val title: String,
   val saveButtonText: String? = null,
   val setPractitionerDetails: Boolean = false,
   val setOrganizationDetails: Boolean = false,

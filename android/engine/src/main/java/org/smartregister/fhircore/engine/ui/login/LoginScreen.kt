@@ -81,6 +81,7 @@ import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.appVersion
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
 const val USERNAME_FIELD_TAG = "usernameFieldTag"
@@ -134,6 +135,7 @@ fun LoginPage(
     if (applicationConfiguration.useDarkTheme) Color.White else LoginButtonColor
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
   val context = LocalContext.current
+  val (versionCode, versionName) = remember { context.appVersion() }
 
   Surface(
     modifier =
@@ -321,12 +323,7 @@ fun LoginPage(
         Text(
           color = contentColor,
           fontSize = 16.sp,
-          text =
-            stringResource(
-              id = R.string.app_version,
-              context.packageManager.getPackageInfo(context.packageName, 0).versionCode,
-              context.packageManager.getPackageInfo(context.packageName, 0).versionName
-            ),
+          text = stringResource(id = R.string.app_version, versionCode, versionName),
           modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
         )
       }

@@ -21,14 +21,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import java.util.Locale
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import timber.log.Timber
@@ -65,12 +62,6 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   }
 
   return configuration
-}
-
-fun Context.getDrawable(name: String): Drawable {
-  var resourceId = this.resources.getIdentifier(name, "drawable", packageName)
-  if (resourceId == 0) resourceId = R.drawable.ic_app_logo
-  return ContextCompat.getDrawable(this, resourceId)!!
 }
 
 fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
@@ -118,4 +109,17 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
       ),
     0
   )
+}
+
+/** Return a pair of application versionCode and versionName e.g. Pair(1, 0.0.1) */
+fun Context.appVersion() =
+  Pair(
+    this.packageManager.getPackageInfo(this.packageName, 0).versionCode,
+    this.packageManager.getPackageInfo(this.packageName, 0).versionName
+  )
+
+fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "drawable"): Int? {
+  if (resourceName.isNullOrEmpty()) return null
+  val resourceId = this.resources.getIdentifier(resourceName, resourceType, this.packageName)
+  return if (resourceId != 0) resourceId else null
 }

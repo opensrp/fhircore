@@ -43,7 +43,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
@@ -160,7 +159,8 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
+      // TODO revert by uncommenting
+      //      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
       RegisterList(
         pagingItems = pagingItems,
         onRowClick = { patientId: String ->

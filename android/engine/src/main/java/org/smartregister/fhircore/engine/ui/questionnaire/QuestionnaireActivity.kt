@@ -192,11 +192,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         // load questionnaire from db and build config
         questionnaire = questionnaireViewModel.loadQuestionnaire(formName, questionnaireType)!!
         questionnaireViewModel.questionnaireConfig =
-          QuestionnaireConfig(
-            form = questionnaire.name ?: "",
-            title = questionnaire.title ?: "",
-            id = questionnaire.logicalId
-          )
+          QuestionnaireConfig(title = questionnaire.title ?: "", id = questionnaire.logicalId)
       }
       .also { populateInitialValues(questionnaire) }
 

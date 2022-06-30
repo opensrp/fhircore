@@ -37,7 +37,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.domain.model.SideMenuOption
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -69,17 +69,10 @@ fun MainScreen(
     scaffoldState = scaffoldState,
     drawerContent = {
       AppDrawer(
-        appTitle = uiState.appTitle,
-        username = uiState.username,
-        lastSyncTime = uiState.lastSyncTime,
-        currentLanguage = uiState.currentLanguage,
-        languages = uiState.languages,
+        appUiState = uiState,
         openDrawer = openDrawer,
-        sideMenuOptions = uiState.sideMenuOptions,
         onSideMenuClick = appMainViewModel::onEvent,
-        navController = navController,
-        enableDeviceToDeviceSync = uiState.enableDeviceToDeviceSync,
-        enableReports = uiState.enableReports
+        navController = navController
       )
     },
     bottomBar = {
@@ -95,8 +88,8 @@ fun MainScreen(
         navController = navController,
         mainNavigationScreens = MainNavigationScreen.appScreens,
         openDrawer = openDrawer,
-        sideMenuOptions = uiState.sideMenuOptions,
-        appMainViewModel = appMainViewModel
+        appMainViewModel = appMainViewModel,
+        navigationConfiguration = uiState.navigationConfiguration
       )
     }
   }
@@ -107,13 +100,13 @@ private fun AppMainNavigationGraph(
   navController: NavHostController,
   mainNavigationScreens: List<MainNavigationScreen>,
   openDrawer: (Boolean) -> Unit,
-  sideMenuOptions: List<SideMenuOption>,
+  navigationConfiguration: NavigationConfiguration,
   measureReportViewModel: MeasureReportViewModel = hiltViewModel(),
   appMainViewModel: AppMainViewModel
 ) {
 
-  val firstSideMenuOption = sideMenuOptions.first()
-  val firstScreenTitle = stringResource(firstSideMenuOption.titleResource)
+  val firstNavigationMenu = navigationConfiguration.clientRegisters.first()
+  val firstScreenTitle = firstNavigationMenu.display
   NavHost(
     navController = navController,
     startDestination =
@@ -121,19 +114,13 @@ private fun AppMainNavigationGraph(
         NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)
   ) {
     mainNavigationScreens.forEach {
-      val commonNavArgs =
-        NavigationArg.commonNavArgs(
-          firstSideMenuOption.appFeatureName,
-          firstSideMenuOption.healthModule
-        )
-
       when (it) {
         is MainNavigationScreen.Home ->
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)}",
             arguments =
-              commonNavArgs.plus(
+              listOf(
                 navArgument(NavigationArg.SCREEN_TITLE) {
                   type = NavType.StringType
                   nullable = true
@@ -164,7 +151,7 @@ private fun AppMainNavigationGraph(
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
+            arguments = patientIdNavArgument()
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
             val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
@@ -181,7 +168,7 @@ private fun AppMainNavigationGraph(
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
+            arguments = patientIdNavArgument()
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
             FamilyProfileScreen(

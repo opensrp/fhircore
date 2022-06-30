@@ -24,7 +24,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 data class NavigationConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.Navigation.name,
-  val staticMenu: List<NavigationMenuConfig>,
-  val clientRegisters: List<NavigationRegisterConfig> = emptyList(),
-  val bottomSheetRegisters: List<NavigationBottomSheetRegisterConfig>? = null
+  val menuActionButton: NavigationMenuConfig? = null,
+  val staticMenu: List<NavigationMenuConfig> = emptyList(),
+  val clientRegisters: List<NavigationMenuConfig> = emptyList(),
+  val bottomSheetRegisters: NavigationBottomSheetRegisterConfig? = null
 ) : Configuration()

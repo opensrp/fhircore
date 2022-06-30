@@ -90,6 +90,7 @@
     <string name="visit_overdue">%1$s overdue %2$s ago</string>
     <string name="record_as_anc">Record as ANC</string>
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
+    <string name="registers">Registers</string>
 
 
 </resources>

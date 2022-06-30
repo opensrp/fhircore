@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "all_household_register_config",
+  "id": "all_household_register",
   "filter": {
     "visible": true,
     "display": "Show overdue",
