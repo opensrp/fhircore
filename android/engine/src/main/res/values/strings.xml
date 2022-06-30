@@ -79,6 +79,7 @@
     <string name="register">Register</string>
     <string name="tasks">Tasks</string>
     <string name="visits">Visits</string>
+    <string name="clinic_visits">Clinic Visits</string>
     <string name="reports">Reports</string>
     <string name="profile">Profile</string>
     <string name="settings">Settings</string>
