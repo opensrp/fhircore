@@ -39,7 +39,7 @@ data class MeasureReportRowConfig(
 )
 
 @Stable
-fun reportConfigurationOf(
+fun measureReportConfigurationOf(
   appId: String = "",
   classification: String = "report",
   reports: List<MeasureReportRowConfig> = listOf()
