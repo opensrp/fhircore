@@ -175,7 +175,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
 
-    api('org.smartregister:data-capture:0.1.0-beta03-preview5-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta03-preview6-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
