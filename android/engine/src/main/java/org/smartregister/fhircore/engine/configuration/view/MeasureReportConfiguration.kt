@@ -14,17 +14,33 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.data.report.measure.models
+package org.smartregister.fhircore.engine.configuration.view
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Stable
 @Serializable
-data class MeasureReportRowData(
+class MeasureReportConfiguration(
+  override val appId: String = "",
+  override val classification: String = "",
+  val reports: List<MeasureReportRowConfig> = listOf()
+) : Configuration
+
+@Stable
+@Serializable
+data class MeasureReportRowConfig(
   val id: String = "",
   val title: String = "",
   val description: String = "",
   val reportType: String = "",
   val name: String = ""
 )
+
+@Stable
+fun reportConfigurationOf(
+  appId: String = "",
+  classification: String = "report",
+  reports: List<MeasureReportRowConfig> = listOf()
+) = MeasureReportConfiguration(appId = appId, classification = classification, reports = reports)
