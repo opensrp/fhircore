@@ -43,6 +43,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
@@ -64,12 +65,10 @@ fun PatientRegisterScreen(
   val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerConfiguration }
-  val currentSetTotalRecordCount by rememberUpdatedState(
-    patientRegisterViewModel::setTotalRecordsCount
-  )
-  val currentPaginateRegisterData by rememberUpdatedState(
-    patientRegisterViewModel::paginateRegisterData
-  )
+  val currentSetTotalRecordCount by
+    rememberUpdatedState(patientRegisterViewModel::setTotalRecordsCount)
+  val currentPaginateRegisterData by
+    rememberUpdatedState(patientRegisterViewModel::paginateRegisterData)
   val refreshDataStateValue by remember { refreshDataState }
 
   LaunchedEffect(Unit) {
@@ -88,11 +87,9 @@ fun PatientRegisterScreen(
   }
 
   val pagingItems: LazyPagingItems<RegisterViewData> =
-    patientRegisterViewModel
-      .paginatedRegisterData
+    patientRegisterViewModel.paginatedRegisterData
       .collectAsState(emptyFlow())
-      .value
-      .collectAsLazyPagingItems()
+      .value.collectAsLazyPagingItems()
 
   Scaffold(
     topBar = {
@@ -159,8 +156,7 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      // TODO revert by uncommenting
-      //      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
+      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
       RegisterList(
         pagingItems = pagingItems,
         onRowClick = { patientId: String ->
