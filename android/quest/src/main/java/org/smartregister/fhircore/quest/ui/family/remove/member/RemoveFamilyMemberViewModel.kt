@@ -21,7 +21,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.quest.ui.family.remove.BaseRemoveFamilyEntityViewModel
 import timber.log.Timber
@@ -31,7 +30,6 @@ class RemoveFamilyMemberViewModel
 @Inject
 constructor(
   override val repository: PatientRegisterRepository,
-  val appFeatureManager: AppFeatureManager
 ) : BaseRemoveFamilyEntityViewModel<Patient>(repository) {
 
   override fun fetch(profileId: String) {

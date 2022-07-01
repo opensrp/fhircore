@@ -21,8 +21,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Group
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.quest.ui.family.remove.BaseRemoveFamilyEntityViewModel
 import timber.log.Timber
@@ -32,17 +30,10 @@ class RemoveFamilyViewModel
 @Inject
 constructor(
   override val repository: PatientRegisterRepository,
-  val appFeatureManager: AppFeatureManager
 ) : BaseRemoveFamilyEntityViewModel<Group>(repository) {
 
+  // TODO this setting should be loaded from a configuration
   var isDeactivateMembers = false
-
-  init {
-    isDeactivateMembers =
-      appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement)[
-          DEACTIVATE_FAMILY_MEMBERS_SETTING_KEY]
-        .toBoolean()
-  }
 
   override fun fetch(profileId: String) {
     viewModelScope.launch { profile.postValue(repository.loadResource(profileId)) }
@@ -58,9 +49,5 @@ constructor(
         isDiscarded.postValue(true)
       }
     }
-  }
-
-  companion object {
-    const val DEACTIVATE_FAMILY_MEMBERS_SETTING_KEY = "deactivateMembers"
   }
 }

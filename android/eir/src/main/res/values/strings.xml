@@ -31,9 +31,6 @@
 
     <string name="submit_button_text">Submit</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
     <string name="immunization_brief_text">"Received %1$s dose %2$d"</string>
     <string name="immunization_next_dose_text">"Dose %1$d due %2$s"</string>
     <string name="immunization_next_overdue_dose_text">"Dose %1$d overdue %2$s"</string>

@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -59,7 +58,6 @@ constructor(
   val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
-  val appFeatureManager: AppFeatureManager,
   val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
@@ -173,8 +171,9 @@ constructor(
       }
   }
 
+  // TODO this setting should be removed after refactor
   fun isRegisterFormViaSettingExists(): Boolean {
-    return appFeatureManager.appFeatureHasSetting("registerFormId")
+    return false
   }
 
   fun isFirstTimeSync() = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrEmpty()

@@ -65,10 +65,12 @@ fun PatientRegisterScreen(
   val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
   val searchText by remember { patientRegisterViewModel.searchText }
   val registerConfigs = remember { patientRegisterViewModel.registerConfiguration }
-  val currentSetTotalRecordCount by
-    rememberUpdatedState(patientRegisterViewModel::setTotalRecordsCount)
-  val currentPaginateRegisterData by
-    rememberUpdatedState(patientRegisterViewModel::paginateRegisterData)
+  val currentSetTotalRecordCount by rememberUpdatedState(
+    patientRegisterViewModel::setTotalRecordsCount
+  )
+  val currentPaginateRegisterData by rememberUpdatedState(
+    patientRegisterViewModel::paginateRegisterData
+  )
   val refreshDataStateValue by remember { refreshDataState }
 
   LaunchedEffect(Unit) {
@@ -87,9 +89,11 @@ fun PatientRegisterScreen(
   }
 
   val pagingItems: LazyPagingItems<RegisterViewData> =
-    patientRegisterViewModel.paginatedRegisterData
+    patientRegisterViewModel
+      .paginatedRegisterData
       .collectAsState(emptyFlow())
-      .value.collectAsLazyPagingItems()
+      .value
+      .collectAsLazyPagingItems()
 
   Scaffold(
     topBar = {
