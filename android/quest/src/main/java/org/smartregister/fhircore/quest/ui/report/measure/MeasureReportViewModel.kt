@@ -27,7 +27,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.filter
-import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -46,6 +45,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Practitioner
+import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowConfig
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
@@ -55,7 +55,6 @@ import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
-import org.smartregister.fhircore.quest.data.report.measure.models.MeasureReportRowData
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
@@ -81,7 +80,7 @@ constructor(
   private val measureReportDateFormatter =
     SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
 
-  val measureReportRowData: MutableState<MeasureReportRowData?> = mutableStateOf(null)
+  val measureReportRowData: MutableState<MeasureReportRowConfig?> = mutableStateOf(null)
 
   val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
     mutableStateOf(null)
@@ -120,7 +119,7 @@ constructor(
       MaterialDatePicker.todayInUtcMilliseconds()
     )
 
-  fun reportMeasuresList(): Flow<PagingData<MeasureReportRowData>> =
+  fun reportMeasuresList(): Flow<PagingData<MeasureReportRowConfig>> =
     Pager(PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE)) { measureReportRepository }
       .flow
 
@@ -207,22 +206,12 @@ constructor(
       viewModelScope.launch {
         kotlin
           .runCatching {
-            val assetsResource = !UrlUtil.isValid(reportName)
-            val measureUrl =
-              if (assetsResource) "http://fhir.org/guides/who/anc-cds/Measure/$reportName"
-              else reportName
+            val measureUrl = reportName
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
 
             withContext(dispatcherProvider.io()) {
-              if (!assetsResource) fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
-              else
-                fhirEngine.loadCqlLibraryBundle(
-                  context,
-                  sharedPreferencesHelper,
-                  fhirOperator,
-                  "measure/$reportName-bundle.json"
-                )
+              fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
             }
 
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {

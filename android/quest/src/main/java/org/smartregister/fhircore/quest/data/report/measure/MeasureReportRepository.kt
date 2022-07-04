@@ -22,13 +22,14 @@ import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.appfeature.AppFeature
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.view.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowConfig
 import org.smartregister.fhircore.engine.data.local.register.dao.AncPatientRegisterDao
 import org.smartregister.fhircore.engine.domain.model.RegisterData
-import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.quest.data.report.measure.models.MeasureReportRowData
 
 class MeasureReportRepository
 @Inject
@@ -36,20 +37,21 @@ constructor(
   val fhirEngine: FhirEngine,
   @ApplicationContext val context: Context,
   val dispatcherProvider: DefaultDispatcherProvider,
-  val ancPatientRegisterDao: AncPatientRegisterDao
-) : PagingSource<Int, MeasureReportRowData>() {
+  val ancPatientRegisterDao: AncPatientRegisterDao,
+  val configurationRegistry: ConfigurationRegistry
+) : PagingSource<Int, MeasureReportRowConfig>() {
 
-  override fun getRefreshKey(state: PagingState<Int, MeasureReportRowData>): Int? {
+  override fun getRefreshKey(state: PagingState<Int, MeasureReportRowConfig>): Int? {
     return state.anchorPosition
   }
 
-  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MeasureReportRowData> {
+  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MeasureReportRowConfig> {
     return try {
       val data =
-        withContext(dispatcherProvider.io()) {
-          AssetUtil.decodeAsset<List<MeasureReportRowData>>(SAMPLE_REPORT_MEASURES_FILE, context)
-        }
-      LoadResult.Page(data = data, prevKey = null, nextKey = null)
+        configurationRegistry.retrieveConfiguration<MeasureReportConfiguration>(
+          AppConfigClassification.MEASURE_REPORTS
+        )
+      LoadResult.Page(data = data.reports, prevKey = null, nextKey = null)
     } catch (e: Exception) {
       LoadResult.Error(e)
     }
