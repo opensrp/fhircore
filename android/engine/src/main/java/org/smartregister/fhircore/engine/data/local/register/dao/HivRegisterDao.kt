@@ -38,6 +38,8 @@ import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
+import org.smartregister.fhircore.engine.util.extension.extractSecondaryIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
@@ -54,6 +56,11 @@ constructor(
     patient.hasName() &&
       patient.hasGender() &&
       patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }
+
+  fun hivPatientIdentifier(patient: Patient): String =
+    // would either be an ART or HCC number
+    patient.extractOfficialIdentifier()
+      ?: patient.extractSecondaryIdentifier() ?: patient.identifierFirstRep.value
 
   override suspend fun loadRegisterData(
     currentPage: Int,
@@ -73,7 +80,7 @@ constructor(
     return patients.filter(this::isValidPatient).map { patient ->
       RegisterData.HivRegisterData(
         logicalId = patient.logicalId,
-        identifier = patient.identifierFirstRep.value,
+        identifier = hivPatientIdentifier(patient),
         name = patient.extractName(),
         gender = patient.gender,
         age = patient.birthDate.toAgeDisplay(),
@@ -96,7 +103,7 @@ constructor(
       logicalId = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
-      identifier = patient.identifierFirstRep.value,
+      identifier = hivPatientIdentifier(patient),
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),

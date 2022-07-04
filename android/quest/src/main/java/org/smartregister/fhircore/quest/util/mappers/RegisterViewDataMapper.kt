@@ -95,7 +95,8 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
         RegisterViewData(
           logicalId = inputModel.logicalId,
           title = listOf(inputModel.name, inputModel.age).joinToString(", "),
-          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter()
+          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter(),
+          identifier = inputModel.identifier ?: ""
         )
       is RegisterData.AppointmentRegisterData ->
         RegisterViewData(
