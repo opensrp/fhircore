@@ -48,9 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowConfig
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.data.report.measure.models.MeasureReportRowData
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.components.DateRangeItem
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportIndividualResultView
@@ -85,7 +85,7 @@ fun MeasureReportResultScreen(
 fun MeasureReportResultPage(
   screenTitle: String,
   navController: NavController,
-  measureReportRowData: MeasureReportRowData?,
+  measureReportRowData: MeasureReportRowConfig?,
   startDate: String,
   endDate: String,
   patientViewData: MeasureReportPatientViewData?,
@@ -166,7 +166,7 @@ private fun MeasureReportResultScreenForIndividualPreview() {
     screenTitle = "First ANC",
     navController = rememberNavController(),
     measureReportRowData =
-      MeasureReportRowData(
+      MeasureReportRowConfig(
         title = "First ANC",
         description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
       ),
@@ -197,7 +197,7 @@ private fun MeasureReportResultScreenForPopulationPreview() {
     screenTitle = "First ANC",
     navController = rememberNavController(),
     measureReportRowData =
-      MeasureReportRowData(
+      MeasureReportRowConfig(
         description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
       ),
     startDate = "25 Nov, 2021",
