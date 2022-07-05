@@ -112,7 +112,7 @@ constructor(
 
   fun onPinChanged(newPin: String) {
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
-      val pinMatched = newPin.equals(pinUiState.value.savedPin, false)
+      val pinMatched = newPin == secureSharedPreference.retrieveSessionPin()
       enableSetPin.value = true
       showError.value = !pinMatched
       _pin.postValue(newPin)
@@ -134,7 +134,7 @@ constructor(
   fun forgotPin() {
     // Todo: disable dialer action for now
     //  plus load supervisor contact from config
-    // _launchDialPad.value = "tel:####"
+    _launchDialPad.value = "tel:####"
   }
 
   fun onMenuSettingClicked() {
