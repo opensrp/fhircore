@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.model
+package org.smartregister.fhircore.engine.configuration.register
 
-/** Application action are used to represent application events like button click events etc. */
-enum class ApplicationAction {
-  /**
-   * An action that is performed when user presses a button or any actionable component in the UI
-   */
-  ON_CLICK,
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
-  /** An action triggered when the user exits their current screen */
-  ON_CLOSE,
-
-  /** Action that is triggered to count register items */
-  ON_COUNT
-}
+@Serializable
+data class RegisterContentConfig(
+  val separator: String? = null,
+  val display: String? = null,
+  val rules: List<RuleConfig>? = null,
+  val visible: Boolean? = null,
+  val columnOne: RegisterContentConfig? = null,
+  val columnTwo: RegisterContentConfig? = null,
+  val rowOne: RegisterContentConfig? = null,
+  val rowTwo: RegisterContentConfig? = null
+)
