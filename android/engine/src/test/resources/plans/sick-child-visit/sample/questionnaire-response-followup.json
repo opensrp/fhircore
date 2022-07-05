@@ -1,0 +1,89 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "e1a34f15-08b1-4dca-8cca-dbc9ca8f3c84",
+  "meta": {
+    "lastUpdated": "2022-06-16T04:27:46.530+05:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+        "display": "eCBIS Sick Child Follow Up"
+      }
+    ]
+  },
+  "questionnaire": "Questionnaire/131898",
+  "subject": {
+    "reference": "Patient/5717ec7d-5874-46c7-8816-a6fb502b4f14"
+  },
+  "authored": "2022-06-16T04:27:46+05:00",
+  "item": [
+    {
+      "linkId": "0e2d8659-22ee-44ca-8c26-bf81cca6b366",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "4c341dd6-50a5-4047-ebc1-eadf4692e620",
+            "system": "urn:uuid:0b8a0c56-3996-44e3-abca-17c749df6f8d",
+            "code": "fully-recovered",
+            "display": "Fully recovered"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "1d50acf7-a341-41b9-f7f5-a3c92ba8b6d9",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "9c5855fb-07b7-4033-8a38-6f874a96efaf",
+            "system": "urn:uuid:e771aad0-be27-423b-a9ea-cb79cc7b1cb5",
+            "code": "no",
+            "display": "No"
+          },
+          "item": [
+            {
+              "linkId": "478bc269-1b0f-46dc-e53a-44c60f7ad285",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "id": "f5e6e2b1-6bdd-46d3-e154-4274843ebe61",
+                    "system": "urn:uuid:07d41ebc-c2cc-4095-8df5-c3818cf3ee4d",
+                    "code": "yes",
+                    "display": "Yes"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "d219d1ec-470d-4360-f439-403ff0e79a28",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "1b98fbc6-794a-4a14-d5d8-e9080e1ba313",
+            "system": "urn:uuid:14c95be4-8a25-4bb5-9a19-7e55e3ffd32f",
+            "code": "measles",
+            "display": "Measles"
+          },
+          "item": [
+            {
+              "linkId": "04491c90-6f5a-4005-e604-64775f23345e",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "id": "03b50e2e-35dd-489a-be97-605ca5283770",
+                    "system": "urn:uuid:dd0dddcc-7e43-41b2-d2b9-9ec31ad12a34",
+                    "code": "yes",
+                    "display": "Yes"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

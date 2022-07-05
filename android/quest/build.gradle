@@ -23,8 +23,8 @@ android {
         applicationId "org.smartregister.fhircore"
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
-        versionCode 3
-        versionName "0.0.3"
+        versionCode 4
+        versionName "0.0.4"
         multiDexEnabled true
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
@@ -150,6 +150,13 @@ android {
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
         }
+        afyayangu {
+            dimension "apps"
+            applicationIdSuffix ".afyayangu"
+            versionNameSuffix "-afyayangu"
+            versionCode 1
+            versionName "0.0.1"
+        }
     }
 }
 
@@ -162,7 +169,7 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
-    implementation('org.smartregister:p2p-lib:0.2.0-SNAPSHOT')
+    implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"

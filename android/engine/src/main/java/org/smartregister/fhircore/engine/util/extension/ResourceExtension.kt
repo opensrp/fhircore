@@ -23,6 +23,7 @@ import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -39,10 +40,12 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 private val fhirR4JsonParser = FhirContext.forR4Cached().newJsonParser()
@@ -74,7 +77,15 @@ fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
 fun Resource.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
-  parser.encodeResourceToString(this)
+  parser.encodeResourceToString(this.copy())
+
+fun StructureMap.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
+  parser
+    .encodeResourceToString(this)
+    .replace("'months'", "\\\\'months\\\\'")
+    .replace("'days'", "\\\\'days\\\\'")
+    .replace("'years'", "\\\\'years\\\\'")
+    .replace("'weeks'", "\\\\'weeks\\\\'")
 
 fun <T> String.decodeResourceFromString(parser: IParser = fhirR4JsonParser): T =
   parser.parseResource(this) as T
@@ -241,3 +252,15 @@ fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
 
 fun generateUniqueId() = UUID.randomUUID().toString()
+
+fun Base.extractWithFhirPath(expression: String) =
+  FhirPathDataExtractor.extractData(this, expression).firstOrNull()?.primitiveValue() ?: ""
+
+fun isValidResourceType(resourceCode: String): Boolean {
+  return try {
+    ResourceType.fromCode(resourceCode)
+    true
+  } catch (exception: FHIRException) {
+    false
+  }
+}

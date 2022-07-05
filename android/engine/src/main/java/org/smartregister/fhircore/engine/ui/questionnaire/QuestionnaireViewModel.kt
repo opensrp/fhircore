@@ -41,6 +41,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -54,25 +55,25 @@ import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.task.FhirTaskGenerator
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
-import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -88,7 +89,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator
 ) : ViewModel() {
-  @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
+  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   val extractionProgress = MutableLiveData<Boolean>()
 
@@ -98,12 +99,19 @@ constructor(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  private lateinit var questionnaireConfig: QuestionnaireConfig
+  lateinit var questionnaireConfig: QuestionnaireConfig
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private val authenticatedUserInfo by lazy {
-    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+    sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY)
+  }
+
+  private val loggedInPractitioner by lazy {
+    sharedPreferencesHelper.read<Practitioner>(
+      key = LOGGED_IN_PRACTITIONER,
+      decodeFhirResource = true
+    )
   }
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
@@ -119,7 +127,7 @@ constructor(
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    questionnaireConfig = loadConfig!!.first { it.form == form }
+    questionnaireConfig = loadConfig!!.first { it.form == form || it.identifier == form }
     return questionnaireConfig
   }
 
@@ -158,7 +166,8 @@ constructor(
 
   fun appendOrganizationInfo(resource: Resource) {
     authenticatedUserInfo?.organization?.let { org ->
-      val organizationRef = Reference().apply { reference = "Organization/$org" }
+      val organizationRef =
+        Reference().apply { reference = "${ResourceType.Organization.name}/$org" }
 
       if (resource is Patient) resource.managingOrganization = organizationRef
       else if (resource is Group) resource.managingEntity = organizationRef
@@ -166,8 +175,8 @@ constructor(
   }
 
   fun appendPractitionerInfo(resource: Resource) {
-    authenticatedUserInfo?.keyclockuuid?.let { uuid ->
-      val practitionerRef = Reference().apply { reference = "Practitioner/$uuid" }
+    loggedInPractitioner?.id?.let {
+      val practitionerRef = Reference().apply { reference = it }
 
       if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
       else if (resource is Encounter)
@@ -178,28 +187,32 @@ constructor(
     }
   }
 
-  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, resourceId: String) {
-    val family = defaultRepository.loadResource<Group>(resourceId)!!
-    if (resource.resourceType == ResourceType.Patient) {
-      family.member.add(
-        Group.GroupMemberComponent().apply {
-          entity = Reference().apply { reference = "Patient/${resource.logicalId}" }
-        }
-      )
-    } else {
-      family.managingEntity =
-        Reference().apply { reference = "RelatedPerson/${resource.logicalId}" }
+  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, groupResourceId: String) {
+    defaultRepository.loadResource<Group>(groupResourceId)?.run {
+      if (resource.resourceType == ResourceType.Patient) {
+        this.member?.add(
+          Group.GroupMemberComponent().apply {
+            entity =
+              Reference().apply { reference = "${ResourceType.Patient.name}/${resource.logicalId}" }
+          }
+        )
+      } else {
+        this.managingEntity =
+          Reference().apply {
+            reference = "${ResourceType.RelatedPerson.name}/${resource.logicalId}"
+          }
+      }
+      defaultRepository.addOrUpdate(this)
     }
-
-    defaultRepository.addOrUpdate(family)
   }
 
   fun extractAndSaveResources(
     context: Context,
     resourceId: String?,
-    questionnaire: Questionnaire,
+    groupResourceId: String? = null,
     questionnaireResponse: QuestionnaireResponse,
-    questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT
+    questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+    questionnaire: Questionnaire
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
       // important to set response subject so that structure map can handle subject for all entities
@@ -228,16 +241,12 @@ constructor(
                 ResourceType.RelatedPerson
               )
           ) {
-            resourceId?.let {
+            groupResourceId?.let {
               appendPatientsAndRelatedPersonsToGroups(
                 resource = bundleEntry.resource,
-                resourceId = it
+                groupResourceId = it
               )
             }
-          }
-
-          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient)) {
-            generateCarePlanForUnder5(bundleEntry.resource as Patient)
           }
 
           // response MUST have subject by far otherwise flow has issues
@@ -277,20 +286,36 @@ constructor(
         }
 
         extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+        extractCarePlan(questionnaireResponse, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
+        extractCarePlan(questionnaireResponse, null)
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
-  // TODO Update the structure map id to be dynamic
-  suspend fun generateCarePlanForUnder5(patient: Patient) {
-    val age = patient.birthDate!!.yearsPassed()
-    if (age < 5) {
-      fhirTaskGenerator.generateCarePlan("105121", patient)
+  suspend fun extractCarePlan(questionnaireResponse: QuestionnaireResponse, bundle: Bundle?) {
+    val subject =
+      questionnaireResponse.findSubject(bundle)
+        ?: defaultRepository.loadResource(questionnaireResponse.subject)
+
+    questionnaireConfig.planDefinitions.forEach { planId ->
+      val data =
+        Bundle().apply {
+          bundle?.entry?.map { this.addEntry(it) }
+
+          addEntry().resource = questionnaireResponse
+        }
+
+      kotlin
+        .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
+        .onFailure {
+          Timber.e(it)
+          extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
+        }
     }
   }
 
@@ -329,7 +354,7 @@ constructor(
     questionnaireResponse.subject =
       when (subjectType) {
         ResourceType.Organization.name ->
-          authenticatedUserInfo!!.organization!!.asReference(ResourceType.Organization)
+          authenticatedUserInfo?.organization?.asReference(ResourceType.Organization)
         else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
       }
   }

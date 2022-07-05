@@ -23,5 +23,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MeasureReportPopulationResult(
   val title: String = "",
+  val count: String = "",
   val dataList: List<MeasureReportIndividualResult> = emptyList()
 )

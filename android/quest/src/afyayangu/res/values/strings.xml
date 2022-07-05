@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">Afya Yangu</string>
+    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.afyayangu</string>
+</resources>

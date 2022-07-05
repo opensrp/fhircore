@@ -1,0 +1,16 @@
+{
+  "appId": "quest",
+  "classification": "app_feature",
+  "appFeatures": [
+    {
+      "feature": "PatientManagement",
+      "active": true,
+      "settings": {},
+      "target": "CHW",
+      "healthModule": "DEFAULT",
+      "useCases": [
+        "PATIENT_REGISTRATION"
+      ]
+    }
+  ]
+}

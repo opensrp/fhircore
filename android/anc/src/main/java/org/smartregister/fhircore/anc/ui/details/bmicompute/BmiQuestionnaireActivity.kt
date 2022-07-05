@@ -113,8 +113,9 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
           questionnaireViewModel.extractAndSaveResources(
             this@BmiQuestionnaireActivity,
             patientId,
-            questionnaire,
-            questionnaireResponse
+            intent.getStringExtra(QUESTIONNAIRE_ARG_GROUP_KEY),
+            questionnaireResponse,
+            questionnaire = questionnaire
           )
           exitForm()
         }

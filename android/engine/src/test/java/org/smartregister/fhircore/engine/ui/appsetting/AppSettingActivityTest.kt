@@ -16,113 +16,123 @@
 
 package org.smartregister.fhircore.engine.ui.appsetting
 
-import android.app.Activity
 import android.content.Context
-import android.widget.Toast
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.rules.activityScenarioRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
+import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.Robolectric
-import org.robolectric.shadows.ShadowToast
+import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
+import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
-class AppSettingActivityTest : ActivityRobolectricTest() {
+@Config(application = HiltTestApplication::class)
+@RunWith(AndroidJUnit4::class)
+class AppSettingActivityTest {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) var activityScenarioRule = activityScenarioRule<AppSettingActivity>()
 
-  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
-  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
-
-  private val testAppId = "default"
-
-  val defaultRepository: DefaultRepository = mockk()
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
-  private lateinit var appSettingActivity: AppSettingActivity
+  val context: Context =
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+  @BindValue val sharedPreferencesHelper = SharedPreferencesHelper(context)
+  @BindValue val secureSharedPreference = mockk<SecureSharedPreference>()
+  @BindValue val accountAuthenticator = mockk<AccountAuthenticator>()
+  @BindValue
+  var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository = mockk())
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
-    appSettingActivity =
-      spyk(Robolectric.buildActivity(AppSettingActivity::class.java).create().resume().get())
   }
 
   @Test
-  fun testThatConfigsAreLoadedCorrectlyAndActivityIsFinished() {
-    coroutineTestRule.runBlockingTest {
-      appSettingActivity.appSettingViewModel.run {
-        onApplicationIdChanged(testAppId)
-        loadConfigurations(true)
+  fun testAppSettingActivity_withAppId_hasNotBeenSubmitted() {
+    every { accountAuthenticator.hasActiveSession() } returns false
+
+    activityScenarioRule.scenario.recreate()
+    activityScenarioRule.scenario.onActivity { activity ->
+      Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
+      Assert.assertEquals(null, activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
+      Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
+    }
+  }
+
+  @Test
+  fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasNotLoggedIn() {
+    sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
+    every { accountAuthenticator.hasActiveSession() } returns false
+
+    activityScenarioRule.scenario.recreate()
+    activityScenarioRule.scenario.onActivity { activity ->
+      Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
+      Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
+      Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
+    }
+  }
+
+  @Test
+  fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn() {
+    sharedPreferencesHelper.write(IS_LOGGED_IN, true)
+    sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
+    every { accountAuthenticator.hasActiveSession() } returns true
+
+    activityScenarioRule.scenario.recreate()
+    activityScenarioRule.scenario.onActivity { activity ->
+      Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
+      Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
+      Assert.assertEquals(true, activity.accountAuthenticator.hasActiveSession())
+    }
+  }
+
+  @Test
+  fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn_withSessionToken_hasExpired() {
+    sharedPreferencesHelper.write(IS_LOGGED_IN, true)
+    sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
+    every { accountAuthenticator.hasActiveSession() } returns false
+
+    activityScenarioRule.scenario.recreate()
+    activityScenarioRule.scenario.onActivity { activity ->
+      Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
+      Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
+      Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
+    }
+  }
+
+  @Test
+  fun testAppSettingActivity_withConfig_hasBeenLoaded() {
+    sharedPreferencesHelper.write(APP_ID_CONFIG, "default/debug")
+    every { accountAuthenticator.hasActiveSession() } returns true
+
+    activityScenarioRule.scenario.recreate()
+    activityScenarioRule.scenario.onActivity { activity ->
+      activity.configurationRegistry.workflowPointsMap.let { workflows ->
+        Assert.assertEquals(9, workflows.size)
+        Assert.assertEquals(true, workflows.containsKey("default|application"))
+        Assert.assertEquals(true, workflows.containsKey("default|login"))
+        Assert.assertEquals(true, workflows.containsKey("default|app_feature"))
+        Assert.assertEquals(true, workflows.containsKey("default|patient_register"))
+        Assert.assertEquals(true, workflows.containsKey("default|patient_task_register"))
+        Assert.assertEquals(true, workflows.containsKey("default|pin"))
+        Assert.assertEquals(true, workflows.containsKey("default|patient_details_view"))
+        Assert.assertEquals(true, workflows.containsKey("default|result_details_navigation"))
+        Assert.assertEquals(true, workflows.containsKey("default|sync"))
       }
     }
-
-    val workflowPointsMap = appSettingActivity.configurationRegistry.workflowPointsMap
-    Assert.assertTrue(workflowPointsMap.isNotEmpty())
-    Assert.assertTrue(workflowPointsMap.containsKey("default|application"))
-    val configuration =
-      appSettingActivity.configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
-      )
-    Assert.assertEquals(testAppId, configuration.appId)
-    Assert.assertEquals("application", configuration.classification)
-    Assert.assertEquals("DefaultAppTheme", configuration.theme)
-    Assert.assertTrue(configuration.languages.containsAll(listOf("en", "sw")))
-    // TODO Assert.assertTrue(appSettingActivity.isFinishing)
   }
-
-  @Test
-  @Ignore
-  fun testThatConfigsAreNotLoadedAndToastNotificationDisplayed() = runBlockingTest {
-    coEvery { configurationRegistry.repository.searchCompositionByIdentifier("wrongAppId") } returns
-      null
-
-    appSettingActivity.appSettingViewModel.run {
-      onApplicationIdChanged("wrongAppId")
-      loadConfigurations(true)
-    }
-    val latestToast = ShadowToast.getLatestToast()
-    Assert.assertEquals(Toast.LENGTH_LONG, latestToast.duration)
-  }
-
-  @Test
-  fun testLocalConfig() {
-    appSettingActivity.appSettingViewModel.run {
-      onApplicationIdChanged("$testAppId/debug")
-      loadConfigurations(true)
-    }
-
-    Assert.assertTrue(appSettingActivity.appSettingViewModel.hasDebugSuffix() == true)
-    Assert.assertEquals("default/debug", appSettingActivity.appSettingViewModel.appId.value)
-    Assert.assertEquals(8, appSettingActivity.configurationRegistry.workflowPointsMap.size)
-
-    val workflows = appSettingActivity.configurationRegistry.workflowPointsMap
-    Assert.assertTrue(workflows.containsKey("default|application"))
-    Assert.assertTrue(workflows.containsKey("default|login"))
-    Assert.assertTrue(workflows.containsKey("default|patient_register"))
-    Assert.assertTrue(workflows.containsKey("default|patient_task_register"))
-    Assert.assertTrue(workflows.containsKey("default|pin"))
-    Assert.assertTrue(workflows.containsKey("default|patient_details_view"))
-    Assert.assertTrue(workflows.containsKey("default|result_details_navigation"))
-    Assert.assertTrue(workflows.containsKey("default|sync"))
-  }
-
-  override fun getActivity(): Activity = appSettingActivity
 }

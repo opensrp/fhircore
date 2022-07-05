@@ -1,9 +1,0 @@
-{
-  "appId": "afyayangu",
-  "classification": "application",
-  "theme": "AppTheme",
-  "languages": ["en", "sw"],
-  "applicationName": "AfyaYangu",
-  "appLogoIconResourceFile": "ic_liberia",
-  "count": "100"
-}

@@ -196,7 +196,8 @@ object Faker {
     appId: String,
     defaultRepository: DefaultRepository
   ): ConfigurationRegistry {
-    val configurationRegistry = spyk(ConfigurationRegistry(mockk(), mockk(), defaultRepository))
+    val configurationRegistry =
+      spyk(ConfigurationRegistry(mockk(), mockk(), mockk(), mockk(), defaultRepository))
 
     loadTestConfigurationRegistryData(appId, defaultRepository, configurationRegistry)
 

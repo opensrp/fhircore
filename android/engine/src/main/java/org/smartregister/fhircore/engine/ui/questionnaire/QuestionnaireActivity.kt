@@ -69,8 +69,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
-  lateinit var questionnaireConfig: QuestionnaireConfig
-
   var questionnaireType = QuestionnaireType.DEFAULT
 
   protected lateinit var questionnaire: Questionnaire
@@ -133,14 +131,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       } else if (questionnaireType.isEditMode()) {
         // setting the save button text from Questionnaire Config
         text =
-          questionnaireConfig.saveButtonText
+          questionnaireViewModel.questionnaireConfig.saveButtonText
             ?: getString(R.string.questionnaire_alert_submit_button_title)
       }
     }
 
     supportActionBar?.apply {
       setDisplayHomeAsUpEnabled(true)
-      title = questionnaireConfig.title
+      title = questionnaireViewModel.questionnaireConfig.title
     }
   }
 
@@ -184,7 +182,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     // load from assets and get questionnaire or if not found build it from questionnaire
     kotlin
       .runCatching {
-        questionnaireConfig =
+        val questionnaireConfig =
           questionnaireViewModel.getQuestionnaireConfig(formName, this@QuestionnaireActivity)
         questionnaire =
           questionnaireViewModel.loadQuestionnaire(
@@ -195,7 +193,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       .onFailure {
         // load questionnaire from db and build config
         questionnaire = questionnaireViewModel.loadQuestionnaire(formName, questionnaireType)!!
-        questionnaireConfig =
+        questionnaireViewModel.questionnaireConfig =
           QuestionnaireConfig(
             form = questionnaire.name ?: "",
             title = questionnaire.title ?: "",
@@ -224,7 +222,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
-        loadQuestionnaireAndConfig(questionnaireConfig.identifier)
+        loadQuestionnaireAndConfig(questionnaireViewModel.questionnaireConfig.identifier)
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
         withContext(dispatcherProvider.main()) {
@@ -349,6 +347,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
+      groupResourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_GROUP_KEY),
       questionnaireType = questionnaireType
     )
   }
@@ -384,6 +383,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
+    const val QUESTIONNAIRE_ARG_GROUP_KEY = "questionnaire_group_item_id"
     const val FORM_CONFIGURATIONS = "configurations/form/form_configurations.json"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
     const val QUESTIONNAIRE_ARG_TYPE = "questionnaire-type"
@@ -399,6 +399,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     fun intentArgs(
       clientIdentifier: String? = null,
+      groupIdentifier: String? = null,
       formName: String,
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
@@ -407,6 +408,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
+        Pair(QUESTIONNAIRE_ARG_GROUP_KEY, groupIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, formName),
         Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
         Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)

@@ -16,7 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
-import org.smartregister.fhircore.engine.domain.model.FormButtonData
+import java.util.Date
+import org.smartregister.fhircore.engine.domain.model.ActionableButtonData
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
 sealed class ProfileViewData(
@@ -31,9 +32,9 @@ sealed class ProfileViewData(
     val status: String? = null,
     val sex: String = "",
     val age: String = "",
-    val dob: String = "",
-    val tasks: List<PatientProfileRowItem> = emptyList(),
-    val forms: List<FormButtonData> = emptyList(),
+    val dob: Date? = null,
+    val tasks: List<ActionableButtonData> = emptyList(),
+    val forms: List<ActionableButtonData> = emptyList(),
     val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
     val upcomingServices: List<PatientProfileRowItem> = emptyList(),
     val ancCardData: List<PatientProfileRowItem> = emptyList(),
@@ -45,5 +46,21 @@ sealed class ProfileViewData(
     val address: String = "",
     val age: String = "",
     val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
+  ) : ProfileViewData(logicalId = logicalId, name = name)
+
+  data class HivProfileViewData(
+    override val logicalId: String = "",
+    override val name: String = "",
+    val address: String = "",
+    val age: String = "",
+    val artNumber: String = ""
+  ) : ProfileViewData(logicalId = logicalId, name = name)
+
+  data class AppointmentProfileViewData(
+    override val logicalId: String = "",
+    override val name: String = "",
+    val address: String = "",
+    val age: String = "",
+    val artNumber: String = ""
   ) : ProfileViewData(logicalId = logicalId, name = name)
 }

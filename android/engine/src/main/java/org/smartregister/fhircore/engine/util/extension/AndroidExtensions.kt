@@ -81,6 +81,7 @@ fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
 inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   questionnaireId: String,
   clientIdentifier: String? = null,
+  groupIdentifier: String? = null,
   questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
   intentBundle: Bundle = Bundle.EMPTY
 ) {
@@ -90,6 +91,7 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
       .putExtras(
         QuestionnaireActivity.intentArgs(
           clientIdentifier = clientIdentifier,
+          groupIdentifier = groupIdentifier,
           formName = questionnaireId,
           questionnaireType = questionnaireType
         )

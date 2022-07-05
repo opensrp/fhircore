@@ -18,7 +18,10 @@ package org.smartregister.fhircore.engine.util.extension
 
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.targetStructureMap
+import com.google.android.fhir.logicalId
 import java.util.Locale
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 
@@ -35,6 +38,11 @@ fun Questionnaire.isExtractionCandidate() =
 fun Questionnaire.cqfLibraryIds() =
   this.extension.filter { it.url.contains("cqf-library") }.mapNotNull {
     it.value?.asStringValue()?.replace("Library/", "")
+  }
+
+fun QuestionnaireResponse.findSubject(bundle: Bundle?) =
+  IdType(this.subject.reference).let { subject ->
+    bundle?.entry?.find { it.resource.logicalId == subject.idPart }?.resource
   }
 
 fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
