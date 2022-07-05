@@ -115,7 +115,7 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
 fun Context.appVersion() =
   Pair(
     this.packageManager.getPackageInfo(this.packageName, 0).versionCode,
-    this.packageManager.getPackageInfo(this.packageName, 0).versionName
+    this.packageManager.getPackageInfo(this.packageName, 0).versionName.substringBefore("-")
   )
 
 fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "drawable"): Int? {

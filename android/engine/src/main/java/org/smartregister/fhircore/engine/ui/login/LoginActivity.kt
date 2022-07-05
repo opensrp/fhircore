@@ -24,9 +24,7 @@ import androidx.activity.viewModels
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -91,10 +89,6 @@ class LoginActivity : BaseMultiLanguageActivity() {
     configurationRegistry.fetchNonWorkflowConfigResources()
     syncBroadcaster.get().runSync()
     loginService.navigateToHome()
-  }
-
-  fun getApplicationConfiguration(): ApplicationConfiguration {
-    return configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
   private fun launchDialPad(phone: String) {

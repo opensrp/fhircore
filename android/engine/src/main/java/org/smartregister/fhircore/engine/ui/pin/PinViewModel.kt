@@ -81,20 +81,17 @@ constructor(
   }
 
   fun setPinUiState(isSetup: Boolean = false) {
-    PinUiState(
-      appId = sharedPreferences.read(APP_ID_KEY, "")!!,
-      appName = applicationConfiguration.appTitle,
-      savedPin = secureSharedPreference.retrieveSessionPin() ?: "",
-      isSetupPage = isSetup,
-      enterUserLoginMessage =
-        secureSharedPreference.retrieveSessionUsername().let {
-          if (it.isNullOrEmpty()) {
-            app.getString(R.string.enter_login_pin)
-          } else {
-            app.getString(R.string.enter_pin_for_user, it)
-          }
-        }
-    )
+    val username = secureSharedPreference.retrieveSessionUsername()
+    pinUiState.value =
+      PinUiState(
+        appId = sharedPreferences.read(APP_ID_KEY, "")!!,
+        appName = applicationConfiguration.appTitle,
+        savedPin = secureSharedPreference.retrieveSessionPin() ?: "",
+        isSetupPage = isSetup,
+        enterUserLoginMessage =
+          if (username.isNullOrEmpty()) app.getString(R.string.enter_login_pin)
+          else app.getString(R.string.enter_pin_for_user, username)
+      )
   }
 
   fun onPinConfirmed() {
