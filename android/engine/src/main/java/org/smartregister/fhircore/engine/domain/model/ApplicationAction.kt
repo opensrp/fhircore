@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.navigation
+package org.smartregister.fhircore.engine.domain.model
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.ApplicationAction
-import org.smartregister.fhircore.engine.domain.model.ApplicationWorkflow
+/** Application action are used to represent application events like button click events etc. */
+enum class ApplicationAction {
+  /**
+   * An action that is performed when user presses a button or any actionable component in the UI
+   */
+  ON_CLICK,
 
-@Serializable
-data class NavigationActionConfig(
-  val type: ApplicationAction,
-  val workflow: ApplicationWorkflow? = null,
-  val id: String? = null,
-  val rules: List<NavigationActionRuleConfig>? = null
-)
+  /** An action triggered when the user exits their current screen */
+  ON_CLOSE,
+
+  /** Action that is triggered to count register items */
+  ON_COUNT
+}
