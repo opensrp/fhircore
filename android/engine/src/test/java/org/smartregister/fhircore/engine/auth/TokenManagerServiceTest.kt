@@ -23,6 +23,8 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.UnsupportedJwtException
 import io.mockk.every
 import io.mockk.spyk
@@ -90,8 +92,20 @@ class TokenManagerServiceTest : RobolectricTest() {
 
   @Test
   @Throws(UnsupportedJwtException::class)
-  fun testIsTokenActiveWithMalformedJwtToken() {
+  fun testIsTokenActiveWithUnsupportedJwtToken() {
     Assert.assertFalse(tokenManagerService.isTokenActive("gibberish-token"))
+  }
+
+  @Test
+  @Throws(ExpiredJwtException::class)
+  fun testIsTokenActiveWithExpiredJwtToken() {
+    Assert.assertFalse(tokenManagerService.isTokenActive("expired-token"))
+  }
+
+  @Test
+  @Throws(MalformedJwtException::class)
+  fun testIsTokenActiveWithMalformedJwtToken() {
+    Assert.assertFalse(tokenManagerService.isTokenActive("malformed-token"))
   }
 
   @Test
