@@ -109,7 +109,11 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          practitioners = listOf(Reference().setReference( "reference/Key1"), Reference().setReference( "reference/Key2")),
+          practitioners =
+            listOf(
+              Reference().setReference("reference/Key1"),
+              Reference().setReference("reference/Key2")
+            ),
           chwAssigned = "reference/Key",
           phoneContacts = emptyList(),
           healthStatus = HealthStatus.EXPOSED_INFANT
