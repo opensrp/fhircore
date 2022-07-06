@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -48,6 +49,8 @@ class RegisterDataTest : RobolectricTest() {
       Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
       //            Assert.assertEquals(Date("12345678"), birthdate)
       Assert.assertEquals("reference/Key", chwAssigned)
+      Assert.assertEquals("reference/Key1", practitioners?.get(0)?.reference)
+      Assert.assertEquals("reference/Key2", practitioners?.get(1)?.reference)
     }
   }
 
@@ -64,6 +67,7 @@ class RegisterDataTest : RobolectricTest() {
       Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
       //      Assert.assertEquals(Date("12345678"), birthdate)
       Assert.assertEquals("reference/Key", chwAssigned)
+      Assert.assertEquals(true, practitioners?.isEmpty())
     }
   }
 
@@ -105,6 +109,7 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
+          practitioners = listOf(Reference().setReference( "reference/Key1"), Reference().setReference( "reference/Key2")),
           chwAssigned = "reference/Key",
           phoneContacts = emptyList(),
           healthStatus = HealthStatus.EXPOSED_INFANT
@@ -117,6 +122,7 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
+          practitioners = emptyList(),
           chwAssigned = "reference/Key"
         )
       HealthModule.APPOINTMENT ->
