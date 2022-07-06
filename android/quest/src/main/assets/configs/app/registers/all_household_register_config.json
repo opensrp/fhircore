@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "all_household_register",
+  "id": "allHouseholdRegister",
   "filter": {
     "visible": true,
     "display": "Show overdue",
@@ -90,8 +90,7 @@
               "name": "filter",
               "condition": "",
               "action": [
-                "filterValue = fhirpath.excute('expression')",
-                ""
+                "filterValue = fhirpath.excute('expression')"
               ]
             }
           ]

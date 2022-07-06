@@ -7,9 +7,9 @@
     "display": "Add New Household",
     "actions": [
       {
-        "type": "onClose",
-        "workflow": "launch_profile",
-        "id": "patient_profile"
+        "type": "ON_CLOSE",
+        "workflow": "LAUNCH_PROFILE",
+        "id": "patientProfile"
       }
     ],
     "questionnaire": {
@@ -45,18 +45,18 @@
       "showCount": true,
       "actions": [
         {
-          "type": "onClick",
-          "workflow": "launch_register",
-          "id": "all_household_register"
+          "type": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "allHouseholdRegister"
         },
         {
-          "type": "count",
+          "type": "ON_COUNT",
           "rules": [
             {
               "name": "householdCount",
               "condition": "true",
               "action": [
-                "householdCountValue = helper.count('all_household_register')"
+                "householdCountValue = helper.count('allHouseholdRegister')"
               ]
             }
           ]

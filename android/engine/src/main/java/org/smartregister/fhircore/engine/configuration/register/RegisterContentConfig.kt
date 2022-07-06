@@ -17,17 +17,16 @@
 package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.Configuration
-import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
-data class RegisterConfiguration(
-  override var appId: String,
-  override var configType: String = ConfigType.Register.name,
-  val id: String,
-  val filter: RegisterContentConfig? = null,
-  val dataQueries: List<DataQuery> = emptyList(),
-  val searchBar: RegisterContentConfig? = null,
-  val registerCard: RegisterCardConfig
-) : Configuration()
+data class RegisterContentConfig(
+  val separator: String? = null,
+  val display: String? = null,
+  val rules: List<RuleConfig>? = null,
+  val visible: Boolean? = null,
+  val columnOne: RegisterContentConfig? = null,
+  val columnTwo: RegisterContentConfig? = null,
+  val rowOne: RegisterContentConfig? = null,
+  val rowTwo: RegisterContentConfig? = null
+)
