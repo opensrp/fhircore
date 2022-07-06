@@ -25,9 +25,10 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
 import java.util.TreeSet
 import kotlinx.coroutines.withContext
@@ -40,17 +41,42 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao
-constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
+constructor(
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider,
+  open val configurationRegistry: ConfigurationRegistry
+) {
 
   protected val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
-  open fun getDataTypes(): TreeSet<DataType> =
+  open fun getDataTypes(): TreeSet<DataType> {
+    val appRegistry =
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        AppConfigClassification.APPLICATION
+      )
+    val deviceToDeviceSyncConfigs = appRegistry.deviceToDeviceSync
+
+    return if (deviceToDeviceSyncConfigs?.resourcesToSync != null &&
+        deviceToDeviceSyncConfigs.resourcesToSync.isNotEmpty()
+    ) {
+      getDynamicDataTypes(deviceToDeviceSyncConfigs.resourcesToSync)
+    } else {
+      getDefaultDataTypes()
+    }
+  }
+
+  open fun getDefaultDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf(
         ResourceType.Group,
@@ -65,52 +91,23 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         }
     )
 
-  suspend inline fun <reified R : Resource> addOrUpdate(resource: R) {
+  open fun getDynamicDataTypes(resourceList: List<String>): TreeSet<DataType> =
+    TreeSet<DataType>(
+      resourceList.filter { isValidResourceType(it) }.mapIndexed { index, resource ->
+        DataType(name = resource, DataType.Filetype.JSON, index)
+      }
+    )
+
+  suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
       try {
-        fhirEngine.get<R>(resource.logicalId).run { fhirEngine.update(updateFrom(resource)) }
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
+          fhirEngine.update(updateFrom(resource))
+        }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
         fhirEngine.create(resource)
-      }
-    }
-  }
-
-  suspend fun loadResources(lastRecordUpdatedAt: Long, batchSize: Int): List<Patient>? {
-    return withContext(dispatcherProvider.io()) {
-      // TODO FIX search order by _lastUpdated; SearchQuery no longer allowed in search API
-      /* val searchQuery =
-        SearchQuery(
-          """
-      SELECT a.serializedResource, b.index_to
-      FROM ResourceEntity a
-      LEFT JOIN DateTimeIndexEntity b
-      ON a.resourceType = b.resourceType AND a.resourceId = b.resourceId AND b.index_name = '_lastUpdated'
-      WHERE a.resourceType = 'Patient'
-      AND a.resourceId IN (
-      SELECT resourceId FROM DateTimeIndexEntity
-      WHERE resourceType = 'Patient' AND index_name = '_lastUpdated' AND index_to > ?
-      )
-      ORDER BY b.index_from ASC
-      LIMIT ?
-          """.trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize)
-        )
-          fhirEngine.search(searchQuery)
-        */
-
-      fhirEngine.search {
-        sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
-        filter(
-          DateClientParam("_lastUpdated"),
-          {
-            value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-          }
-        )
-
-        // sort(DateClientParam("_lastUpdated"), Order.ASCENDING)
-        count = batchSize
       }
     }
   }
@@ -146,10 +143,10 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       val search =
         Search(type = classType.newInstance().resourceType).apply {
           filter(
-            DateClientParam("_lastUpdated"),
+            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
             {
               value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+              prefix = ParamPrefixEnum.GREATERTHAN
             }
           )
 
@@ -160,14 +157,32 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     }
   }
 
-  protected fun resourceClassType(type: DataType) =
-    when (ResourceType.valueOf(type.name)) {
-      ResourceType.Group -> Group::class.java
-      ResourceType.Encounter -> Encounter::class.java
-      ResourceType.Observation -> Observation::class.java
-      ResourceType.Patient -> Patient::class.java
-      ResourceType.Questionnaire -> Questionnaire::class.java
-      ResourceType.QuestionnaireResponse -> QuestionnaireResponse::class.java
-      else -> null /*TODO support other resource types*/
+  fun resourceClassType(dataType: DataType): Class<out Resource> {
+    return Class.forName("org.hl7.fhir.r4.model.${dataType.name}") as Class<out Resource>
+  }
+
+  suspend fun countTotalRecordsForSync(highestRecordIdMap: HashMap<String, Long>): Long {
+    var recordCount: Long = 0
+
+    getDataTypes().forEach {
+      resourceClassType(it)?.let { classType ->
+        val lastRecordId = highestRecordIdMap[it.name] ?: 0L
+        var search = getSearchObjectForCount(lastRecordId, classType)
+        recordCount += fhirEngine.count(search)
+      }
     }
+    return recordCount
+  }
+
+  fun getSearchObjectForCount(lastRecordUpdatedAt: Long, classType: Class<out Resource>): Search {
+    return Search(type = classType.newInstance().resourceType).apply {
+      filter(
+        DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
+        {
+          value = of(DateTimeType(Date(lastRecordUpdatedAt)))
+          prefix = ParamPrefixEnum.GREATERTHAN
+        }
+      )
+    }
+  }
 }

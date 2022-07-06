@@ -36,9 +36,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Date
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
+import org.smartregister.fhircore.engine.util.extension.asDdMmm
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 @Composable
@@ -80,7 +83,10 @@ fun PersonalData(
       ) {
         OtherDetailsItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
         OtherDetailsItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
-        OtherDetailsItem(title = stringResource(R.string.dob), value = patientProfileViewData.dob)
+        OtherDetailsItem(
+          title = stringResource(R.string.dob),
+          value = patientProfileViewData.dob.asDdMmm()
+        )
       }
     }
   }
@@ -104,7 +110,7 @@ fun PersonalDataPreview() {
       status = "Family Head",
       sex = "Female",
       age = "48y",
-      dob = "08 Dec",
+      dob = Date().plusYears(-48),
       identifier = "123455"
     )
   PersonalData(patientProfileViewData = patientProfileData)

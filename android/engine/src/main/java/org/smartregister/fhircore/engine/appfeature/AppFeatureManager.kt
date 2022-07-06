@@ -50,4 +50,10 @@ class AppFeatureManager @Inject constructor(val configurationRegistry: Configura
 
   fun appFeatureSettings(appFeature: AppFeature) =
     activatedFeatures().find { appFeature.name.equals(it.feature, true) }?.settings ?: mapOf()
+
+  fun appFeatureSettings(appFeatureName: String) =
+    activatedFeatures().find { appFeatureName.equals(it.feature, true) }?.settings ?: mapOf()
+
+  fun appFeatureHasSetting(settingName: String) =
+    activatedFeatures().any { appFeatureSettings(it.feature).contains(settingName) }
 }

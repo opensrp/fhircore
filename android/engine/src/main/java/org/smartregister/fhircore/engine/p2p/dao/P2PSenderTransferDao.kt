@@ -16,15 +16,13 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
@@ -33,14 +31,20 @@ import timber.log.Timber
 
 class P2PSenderTransferDao
 @Inject
-constructor(fhirEngine: FhirEngine, dispatcherProvider: DefaultDispatcherProvider) :
-  BaseP2PTransferDao(fhirEngine, dispatcherProvider), SenderTransferDao {
+constructor(
+  fhirEngine: FhirEngine,
+  dispatcherProvider: DefaultDispatcherProvider,
+  configurationRegistry: ConfigurationRegistry
+) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, configurationRegistry), SenderTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 
+  override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): Long {
+    return runBlocking { countTotalRecordsForSync(highestRecordIdMap) }
+  }
+
   override fun getJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int): JsonData? {
     // TODO: complete  retrieval of data implementation
-    // Find a way to make this generic
     Timber.e("Last updated at value is $lastUpdated")
     var highestRecordId = lastUpdated
 
@@ -68,27 +72,5 @@ constructor(fhirEngine: FhirEngine, dispatcherProvider: DefaultDispatcherProvide
 
     Timber.e("New highest Last updated at value is $highestRecordId")
     return JsonData(jsonArray, highestRecordId)
-  }
-
-  fun genericGetJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int) {
-    val resourceTypes = ResourceType.values()
-
-    val jsonParser = FhirContext.forR4().newJsonParser()
-    resourceTypes.forEach {
-      runBlocking {
-        try {
-          val resourceClass = Class.forName("org.hl7.fhir.r4.model.$it") as Class<out Resource>
-          Timber.e("Fetch data for resource type ----> ${resourceClass.name}")
-          val loadedResources = loadResources(lastUpdated, batchSize, resourceClass)
-          loadedResources.forEachIndexed { index, resource ->
-            Timber.e(
-              "${index + 1}. ${resource.resourceType} -> ${jsonParser.encodeResourceToString(resource)}"
-            )
-          }
-        } catch (ex: ClassNotFoundException) {
-          Timber.e(ex)
-        }
-      }
-    }
   }
 }

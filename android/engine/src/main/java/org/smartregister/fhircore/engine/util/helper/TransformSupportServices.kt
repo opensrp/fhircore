@@ -25,8 +25,10 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.ResourceFactory
 import org.hl7.fhir.r4.model.RiskAssessment.RiskAssessmentPredictionComponent
 import org.hl7.fhir.r4.model.Timing
@@ -66,6 +68,8 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "CarePlan_ActivityDetail" -> CarePlan.CarePlanActivityDetailComponent()
       "Patient_Link" -> Patient.PatientLinkComponent()
       "Timing_Repeat" -> Timing.TimingRepeatComponent()
+      "PlanDefinition_Action" -> PlanDefinition.PlanDefinitionActionComponent()
+      "Group_Characteristic" -> Group.GroupCharacteristicComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }

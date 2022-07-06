@@ -111,7 +111,7 @@ private fun ActionButton(
   modifier: Modifier,
   onActionClick: (String, String) -> Unit
 ) {
-  if (patientProfileRowItem.profileViewSection == PatientProfileViewSection.TASKS &&
+  if (patientProfileRowItem.profileViewSection == PatientProfileViewSection.VISITS &&
       patientProfileRowItem.actionButtonColor != null &&
       patientProfileRowItem.actionButtonText != null
   ) {
@@ -196,7 +196,7 @@ fun ProfileActionableItemForTasksPreview() {
         title = "ANC",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "due date",
-        profileViewSection = PatientProfileViewSection.TASKS,
+        profileViewSection = PatientProfileViewSection.VISITS,
         actionButtonColor = InfoColor,
         actionButtonText = "ANC visit"
       ),
@@ -209,7 +209,7 @@ fun ProfileActionableItemForTasksPreview() {
         title = "Sick",
         titleIcon = R.drawable.ic_pregnant,
         subtitle = "due date",
-        profileViewSection = PatientProfileViewSection.TASKS,
+        profileViewSection = PatientProfileViewSection.VISITS,
         actionButtonColor = OverdueColor,
         actionButtonText = "Malaria medicine"
       ),

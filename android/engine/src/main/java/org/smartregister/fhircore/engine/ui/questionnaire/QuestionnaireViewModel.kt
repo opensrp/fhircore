@@ -55,7 +55,7 @@ import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.task.FhirTaskGenerator
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
@@ -67,13 +67,13 @@ import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
-import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -89,7 +89,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator
 ) : ViewModel() {
-  @Inject lateinit var fhirTaskGenerator: FhirTaskGenerator
+  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   val extractionProgress = MutableLiveData<Boolean>()
 
@@ -99,7 +99,7 @@ constructor(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  private lateinit var questionnaireConfig: QuestionnaireConfig
+  lateinit var questionnaireConfig: QuestionnaireConfig
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -127,7 +127,7 @@ constructor(
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    questionnaireConfig = loadConfig!!.first { it.form == form }
+    questionnaireConfig = loadConfig!!.first { it.form == form || it.identifier == form }
     return questionnaireConfig
   }
 
@@ -249,10 +249,6 @@ constructor(
             }
           }
 
-          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient)) {
-            generateCarePlanForUnder5(bundleEntry.resource as Patient)
-          }
-
           // response MUST have subject by far otherwise flow has issues
           if (!questionnaire.experimental) questionnaireResponse.assertSubject()
 
@@ -290,20 +286,36 @@ constructor(
         }
 
         extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+        extractCarePlan(questionnaireResponse, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
+        extractCarePlan(questionnaireResponse, null)
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
-  // TODO Update the structure map id to be dynamic
-  suspend fun generateCarePlanForUnder5(patient: Patient) {
-    val age = patient.birthDate!!.yearsPassed()
-    if (age < 5) {
-      fhirTaskGenerator.generateCarePlan("105121", patient)
+  suspend fun extractCarePlan(questionnaireResponse: QuestionnaireResponse, bundle: Bundle?) {
+    val subject =
+      questionnaireResponse.findSubject(bundle)
+        ?: defaultRepository.loadResource(questionnaireResponse.subject)
+
+    questionnaireConfig.planDefinitions.forEach { planId ->
+      val data =
+        Bundle().apply {
+          bundle?.entry?.map { this.addEntry(it) }
+
+          addEntry().resource = questionnaireResponse
+        }
+
+      kotlin
+        .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
+        .onFailure {
+          Timber.e(it)
+          extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
+        }
     }
   }
 

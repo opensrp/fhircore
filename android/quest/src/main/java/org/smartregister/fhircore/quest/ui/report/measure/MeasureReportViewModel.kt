@@ -35,7 +35,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import kotlin.math.ceil
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -43,21 +43,25 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Practitioner
+import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowConfig
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
-import org.smartregister.fhircore.quest.data.report.measure.models.MeasureReportRowData
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import timber.log.Timber
 
 @HiltViewModel
 class MeasureReportViewModel
@@ -76,7 +80,7 @@ constructor(
   private val measureReportDateFormatter =
     SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
 
-  val measureReportRowData: MutableState<MeasureReportRowData?> = mutableStateOf(null)
+  val measureReportRowData: MutableState<MeasureReportRowConfig?> = mutableStateOf(null)
 
   val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
     mutableStateOf(null)
@@ -115,7 +119,7 @@ constructor(
       MaterialDatePicker.todayInUtcMilliseconds()
     )
 
-  fun reportMeasuresList(): Flow<PagingData<MeasureReportRowData>> =
+  fun reportMeasuresList(): Flow<PagingData<MeasureReportRowConfig>> =
     Pager(PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE)) { measureReportRepository }
       .flow
 
@@ -187,9 +191,7 @@ constructor(
   fun evaluateMeasure(context: Context, navController: NavController) {
     // Run evaluate measure only for existing report
     if (measureReportRowData.value != null) {
-      val reportName = measureReportRowData.value?.name
-      val measureUrl = "http://fhir.org/guides/who/anc-cds/Measure/$reportName"
-      val measureResourceBundleUrl = "measure/$reportName-bundle.json"
+      val reportName = measureReportRowData.value!!.name
       val individualEvaluation = reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL
       // Retrieve and parse dates from this format (16 Nov, 2020) to this (2020-11-16)
       val startDateFormatted =
@@ -204,17 +206,14 @@ constructor(
       viewModelScope.launch {
         kotlin
           .runCatching {
+            val measureUrl = reportName
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
 
             withContext(dispatcherProvider.io()) {
-              fhirEngine.loadCqlLibraryBundle(
-                context = context,
-                fhirOperator = fhirOperator,
-                sharedPreferencesHelper = sharedPreferencesHelper,
-                resourcesBundlePath = measureResourceBundleUrl
-              )
+              fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
             }
+
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
               val measureReport =
                 withContext(dispatcherProvider.io()) {
@@ -284,36 +283,69 @@ constructor(
   fun formatPopulationMeasureReport(
     measureReport: MeasureReport
   ): List<MeasureReportPopulationResult> {
-    return measureReport.group.flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
-      reportGroup.stratifier.map { stratifier ->
-        val resultItems: List<MeasureReportIndividualResult> =
-          stratifier.stratum.filter { it.hasValue() }.map { stratifierComponent ->
-            val text =
-              when {
-                stratifierComponent.value.hasText() -> stratifierComponent.value.text
-                stratifierComponent.value.hasCoding() ->
-                  stratifierComponent.value.coding.last().display
-                else -> ""
-              }
+    return measureReport
+      .also { Timber.w(it.encodeResourceToString()) }
+      .group
+      .flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
+        reportGroup.stratifier.map { stratifier ->
+          val resultItems: List<MeasureReportIndividualResult> =
+            stratifier.stratum.filter { it.hasValue() }.map { stratum ->
+              val text =
+                when {
+                  stratum.value.hasText() -> stratum.value.text
+                  stratum.value.hasCoding() -> stratum.value.coding.last().display
+                  else -> "N/A"
+                }
 
-            val numerator = stratifierComponent.findPopulation(NUMERATOR)?.count ?: 0
-            val denominator = stratifierComponent.findPopulation(DENOMINATOR)?.count ?: 0
+              val numerator = stratum.findPopulation(NUMERATOR)?.count ?: 0
+              val denominator = reportGroup.findPopulation(NUMERATOR)?.count ?: 0
+              val percentage =
+                if (denominator == 0) null else numerator.toDouble().div(denominator) * 100
+              val count = "$numerator/$denominator"
+              MeasureReportIndividualResult(
+                title = text,
+                percentage = percentage?.roundToInt()?.toString() ?: "0",
+                count = count
+              )
+            }
 
-            val percentage =
-              ceil((numerator / if (denominator == 0) 1 else denominator) * 100.0).toInt()
-            val count = "$numerator/$denominator"
-            MeasureReportIndividualResult(
-              title = text,
-              percentage = percentage.toString(),
-              count = count
+          MeasureReportPopulationResult(
+            title =
+              "${reportGroup.id} - ${stratifier.id.replace("-", " ").uppercase(Locale.getDefault())}",
+            count = reportGroup.findRatio(),
+            dataList = resultItems
+          )
+        }
+      }
+      .toMutableList()
+      .apply {
+        measureReport
+          .contained
+          .groupBy {
+            it as Observation
+            it.extension
+              .flatMap { it.extension }
+              .firstOrNull { it.url == POPULATION_OBS_URL }
+              ?.value
+              ?.valueToString()
+          }
+          .map { it.key to it.value.map { it as Observation } }
+          .map { group ->
+            group
+              .second
+              .distinctBy { it.code.codingFirstRep.code }
+              .count { it.code.codingFirstRep.code.isNotBlank() }
+              .let { group.first to it }
+          }
+          .filter { it.first?.isNotBlank() == true }
+          .distinctBy { it.first }
+          .forEach {
+            this.add(
+              0,
+              MeasureReportPopulationResult(title = it.first ?: "", count = it.second.toString())
             )
           }
-        MeasureReportPopulationResult(
-          title = stratifier.id.replace("-", " ").uppercase(Locale.getDefault()),
-          dataList = resultItems
-        )
       }
-    }
   }
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
@@ -321,6 +353,16 @@ constructor(
     id: String
   ): MeasureReport.StratifierGroupPopulationComponent? {
     return this.population.find { it.hasId() && it.id.equals(id, ignoreCase = true) }
+  }
+
+  private fun MeasureReport.MeasureReportGroupComponent.findPopulation(
+    id: String
+  ): MeasureReport.MeasureReportGroupPopulationComponent? {
+    return this.population.find { it.hasId() && it.id.equals(id, ignoreCase = true) }
+  }
+
+  private fun MeasureReport.MeasureReportGroupComponent.findRatio(): String {
+    return "${this.findPopulation(NUMERATOR)?.count}/${this.findPopulation(DENOMINATOR)?.count}"
   }
 
   fun resetState() {
@@ -337,5 +379,6 @@ constructor(
     const val DENOMINATOR = "denominator"
     const val SUBJECT = "subject"
     const val POPULATION = "population"
+    const val POPULATION_OBS_URL = "populationId"
   }
 }

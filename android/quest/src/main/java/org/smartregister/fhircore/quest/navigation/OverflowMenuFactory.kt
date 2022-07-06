@@ -59,7 +59,9 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
     listOf(
       OverflowMenuItem(R.id.individual_details, R.string.individual_details),
       OverflowMenuItem(R.id.view_family, R.string.view_family),
+      OverflowMenuItem(R.id.record_sick_child, R.string.record_sick_child),
       OverflowMenuItem(R.id.record_as_anc, R.string.record_as_anc),
+      OverflowMenuItem(R.id.pregnancy_outcome, R.string.pregnancy_outcome),
       OverflowMenuItem(
         id = R.id.remove_family_member,
         titleResource = R.string.remove_this_person,
