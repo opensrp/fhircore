@@ -25,6 +25,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
@@ -468,5 +469,21 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertNotNull(patient.extractHealthStatusFromMeta(""))
     Assert.assertEquals(HealthStatus.DEFAULT, patient.extractHealthStatusFromMeta(""))
+  }
+
+  @Test
+  fun testExtractSecondaryIdentifier() {
+    val patient = Patient()
+    Assert.assertNull(patient.extractSecondaryIdentifier())
+    val secondaryValue = "123456"
+    patient.apply {
+      identifier.add(
+        Identifier().apply {
+          this.use = Identifier.IdentifierUse.SECONDARY
+          this.value = secondaryValue
+        }
+      )
+    }
+    Assert.assertEquals(secondaryValue, patient.extractSecondaryIdentifier())
   }
 }

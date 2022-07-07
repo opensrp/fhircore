@@ -209,6 +209,13 @@ fun Enumerations.AdministrativeGender.translateGender(context: Context) =
     else -> context.getString(R.string.unknown)
   }
 
+fun Patient.extractSecondaryIdentifier(): String? {
+  if (this.hasIdentifier()) {
+    return this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.SECONDARY }?.value
+  }
+  return null
+}
+
 fun Patient.extractOfficialIdentifier(): String? =
   if (this.hasIdentifier())
     this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
