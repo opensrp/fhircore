@@ -61,10 +61,7 @@ constructor(
   fun fetchPatientProfileData(profileId: String, patientId: String) {
     if (patientId.isNotEmpty()) {
       viewModelScope.launch {
-        patientRegisterRepository.loadProfileData(
-            profileId = profileId,
-            identifier = patientId
-          )
+        patientRegisterRepository.loadProfileData(profileId = profileId, identifier = patientId)
           ?.let {
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as

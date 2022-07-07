@@ -51,7 +51,7 @@
             "name": "filter",
             "condition": "",
             "actions": [
-              "filterValue = fhirPathEngine.execute('Patient.name.given')"
+              "filter = fhirPathDataExtractor.extractValue('Patient.name.given')"
             ]
           }
         ]

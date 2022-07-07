@@ -86,7 +86,8 @@ interface ConfigService {
   ): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
-    val syncConfig = configurationRegistry.retrieveConfiguration<Parameters>(ConfigType.Sync)
+    val syncConfig =
+      configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
 
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
