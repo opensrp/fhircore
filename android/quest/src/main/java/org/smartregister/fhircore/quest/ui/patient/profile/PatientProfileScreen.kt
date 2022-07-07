@@ -52,7 +52,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.quest.R
@@ -63,9 +62,8 @@ import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSecti
 
 @Composable
 fun PatientProfileScreen(
-  appFeatureName: String?,
-  healthModule: HealthModule,
-  patientId: String?,
+  profileId: String,
+  patientId: String,
   familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
@@ -80,13 +78,16 @@ fun PatientProfileScreen(
   val refreshDataStateValue by remember { refreshDataState }
 
   LaunchedEffect(Unit) {
-    patientProfileViewModel.fetchPatientProfileData(appFeatureName, healthModule, patientId ?: "")
+    patientProfileViewModel.fetchPatientProfileData(
+      profileId = profileId,
+      patientId = patientId ?: ""
+    )
   }
 
   SideEffect {
     // Refresh family profile data on resume
     if (refreshDataStateValue) {
-      patientProfileViewModel.fetchPatientProfileData(appFeatureName, healthModule, patientId ?: "")
+      patientProfileViewModel.fetchPatientProfileData(profileId = profileId, patientId = patientId)
       refreshDataState.value = false
     }
   }

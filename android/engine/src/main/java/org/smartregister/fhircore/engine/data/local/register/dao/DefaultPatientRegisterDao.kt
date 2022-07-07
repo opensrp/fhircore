@@ -33,9 +33,9 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
-import org.smartregister.fhircore.engine.domain.model.SearchFilter
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -128,8 +128,5 @@ constructor(
           )
       )
     }
-  private fun getRegisterDataFilters() = emptyList<SearchFilter>()
-  companion object {
-    const val FORMS_LIST_FILTER_KEY = "forms_list"
-  }
+  private fun getRegisterDataFilters() = emptyList<DataQuery>()
 }

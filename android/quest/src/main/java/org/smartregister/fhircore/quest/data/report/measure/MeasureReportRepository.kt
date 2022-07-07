@@ -23,7 +23,6 @@ import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.data.local.register.dao.AncPatientRegisterDao
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.util.AssetUtil
@@ -59,7 +58,7 @@ constructor(
     return ancPatientRegisterDao.loadRegisterData(
       currentPage = currentPage,
       loadAll = true,
-      AppFeature.PatientManagement.name
+      appFeatureName = null // TODO provide relevant registerId
     )
   }
 

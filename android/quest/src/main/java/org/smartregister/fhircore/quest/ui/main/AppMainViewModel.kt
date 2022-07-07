@@ -34,6 +34,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.configuration.workflow.WorkflowTrigger
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
@@ -42,6 +44,9 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.navigation.NavigationArg.bindArgumentsOf
 import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
@@ -110,6 +115,16 @@ constructor(
             appMainUiState.value =
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
+      }
+      is AppMainEvent.NavigateToScreen -> {
+        val navigationAction =
+          event.actions?.find {
+            it.trigger == WorkflowTrigger.ON_CLICK &&
+              it.workflow == ApplicationWorkflow.LAUNCH_REGISTER
+          }
+
+        val urlParams = bindArgumentsOf(Pair(NavigationArg.REGISTER_ID, event.registerId))
+        event.navController.navigate(route = MainNavigationScreen.Home.route + urlParams)
       }
     }
   }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.model
+package org.smartregister.fhircore.engine.configuration.workflow
 
 /** An application event that can trigger a workflow. Examples button click, on back press etc */
 enum class WorkflowTrigger {

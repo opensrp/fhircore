@@ -28,8 +28,8 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.RegisterData
-import org.smartregister.fhircore.engine.domain.model.SearchFilter
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -95,5 +95,5 @@ constructor(
     }
   }
 
-  private fun getRegisterDataFilters() = emptyList<SearchFilter>()
+  private fun getRegisterDataFilters() = emptyList<DataQuery>()
 }

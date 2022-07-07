@@ -253,7 +253,6 @@ constructor(
     const val PUBLISHER = "publisher"
     const val ID = "_id"
     const val COUNT = "count"
-    const val DEFAULT_COUNT = "100"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val JSON_EXTENSION = ".json"
     const val CONFIG_SUFFIX = "_config.json"
