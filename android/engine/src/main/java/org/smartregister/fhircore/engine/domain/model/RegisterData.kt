@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.domain.model
 
 import java.util.Date
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Reference
 
 sealed class RegisterData(open val logicalId: String, open val name: String) {
   data class DefaultRegisterData(
@@ -75,6 +76,7 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val address: String,
     val familyName: String? = null,
     val phoneContacts: List<String>? = null,
+    val practitioners: List<Reference>? = null,
     val chwAssigned: String,
     val healthStatus: HealthStatus
   ) : RegisterData(logicalId = logicalId, name = name)
@@ -88,6 +90,7 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val address: String,
     val familyName: String? = null,
     val phoneContacts: List<String>? = null,
+    val practitioners: List<Reference>? = null,
     val chwAssigned: String
   ) : RegisterData(logicalId = logicalId, name = name)
 }

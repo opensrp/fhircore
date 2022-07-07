@@ -87,6 +87,7 @@ constructor(
         address = patient.extractAddress(),
         familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
         phoneContacts = patient.extractTelecom(),
+        practitioners = patient.generalPractitioner,
         chwAssigned = patient.extractGeneralPractitionerReference(),
         healthStatus =
           patient.extractHealthStatusFromMeta(
