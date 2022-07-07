@@ -16,11 +16,9 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
+import com.google.android.fhir.datacapture.enablement.fhirPathEngine
 import javax.inject.Inject
-import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
-import org.hl7.fhir.r4.utils.FHIRPathEngine
+import javax.inject.Singleton
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -29,19 +27,17 @@ import org.jeasy.rules.core.DefaultRulesEngine
 import org.jeasy.rules.core.RuleBuilder
 import org.mvel2.CompileException
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.navigation.NavigationActionRuleConfig
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
+@Singleton
 class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationRegistry) :
   RuleListener {
 
   private var facts: Facts = Facts()
-  var allRules: Rules? = null
   private var rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
-  private var executableRulesList: HashSet<Rule> = hashSetOf()
-  private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
-  private val fhirPathEngine: FHIRPathEngine =
-    FHIRPathEngine(HapiWorkerContext(fhirContext, fhirContext.validationSupport))
+  private val fhirPathDataExtractor = FhirPathDataExtractor
 
   init {
     rulesEngine.registerRuleListener(this)
@@ -62,32 +58,20 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
 
   override fun afterEvaluate(rule: Rule?, facts: Facts?, evaluationResult: Boolean) = Unit
 
-  fun updateFactsAndExecuteRules() {
-    fireRules()
-  }
-
-  fun readRulesFromFile() {
-    // TODO Implement this
-  }
-
   fun loadFacts() {
     configurationRegistry.configsJsonMap.forEach { entry -> facts.put(entry.key, entry.value) }
 
     facts.put("fhirPathEngine", fhirPathEngine)
   }
 
-  fun fireRule(navActionRuleConfig: NavigationActionRuleConfig) {
+  fun fireRule(ruleConfig: RuleConfig) {
     val rule =
       RuleBuilder()
-        .name(navActionRuleConfig.name)
-        .description(navActionRuleConfig.condition)
-        .then { navActionRuleConfig.action }
+        .name(ruleConfig.name)
+        .description(ruleConfig.condition)
+        // .then { ruleConfig.action } // TODO check on this
         .build()
 
     rulesEngine.fire(Rules(rule), facts)
-  }
-
-  private fun fireRules() {
-    rulesEngine.fire(Rules(executableRulesList), facts)
   }
 }
