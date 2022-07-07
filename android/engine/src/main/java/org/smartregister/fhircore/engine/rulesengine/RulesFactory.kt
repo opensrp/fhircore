@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
-import com.google.android.fhir.datacapture.enablement.fhirPathEngine
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.jeasy.rules.api.Facts
@@ -61,7 +60,7 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
   fun loadFacts() {
     configurationRegistry.configsJsonMap.forEach { entry -> facts.put(entry.key, entry.value) }
 
-    facts.put("fhirPathEngine", fhirPathEngine)
+    facts.put("fhirPathDataExtractor", fhirPathDataExtractor)
   }
 
   fun fireRule(ruleConfig: RuleConfig) {
