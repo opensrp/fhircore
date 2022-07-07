@@ -74,30 +74,27 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           showIdentifierInProfile = inputModel.showIdentifierInProfile,
           showListsHighlights = false,
           tasks =
-            inputModel.tasks.sortedWith(
-                compareByDescending<Task> { it.authoredOn }.thenBy { it.description }
+            inputModel.tasks.sortedWith(compareBy<Task> { it.description }).map {
+              PatientProfileRowItem(
+                id = it.logicalId,
+                actionFormId =
+                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                    it.reasonReference.extractId()
+                  else null,
+                title = "", // it.description,
+                subtitle = "", // context.getString(R.string.due_on,
+                // it.executionPeriod.start.makeItReadable()),
+                profileViewSection = PatientProfileViewSection.TASKS,
+                actionButtonIcon =
+                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+                  else Icons.Filled.Add,
+                actionIconColor =
+                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
+                  else it.status.retrieveColorCode(),
+                actionButtonColor = it.status.retrieveColorCode(),
+                actionButtonText = it.description,
               )
-              .map {
-                PatientProfileRowItem(
-                  id = it.logicalId,
-                  actionFormId =
-                    if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                      it.reasonReference.extractId()
-                    else null,
-                  title = "", // it.description,
-                  subtitle = "", // context.getString(R.string.due_on,
-                  // it.executionPeriod.start.makeItReadable()),
-                  profileViewSection = PatientProfileViewSection.TASKS,
-                  actionButtonIcon =
-                    if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-                    else Icons.Filled.Add,
-                  actionIconColor =
-                    if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
-                    else it.status.retrieveColorCode(),
-                  actionButtonColor = it.status.retrieveColorCode(),
-                  actionButtonText = it.description,
-                )
-              }
+            }
         )
       is ProfileData.DefaultProfileData ->
         ProfileViewData.PatientProfileViewData(
