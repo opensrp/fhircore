@@ -16,15 +16,29 @@
 
 package org.smartregister.fhircore.engine.app
 
+import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.impl.WorkManagerImpl
+import com.google.android.fhir.sync.FhirSyncWorker
+import com.google.android.fhir.sync.SyncJob
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.util.ReflectionHelpers.setStaticField
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.util.extension.isIn
 
 @HiltAndroidTest
@@ -98,5 +112,49 @@ class ConfigServiceTest : RobolectricTest() {
       Assert.assertTrue(syncParam[it]!!.containsKey("publisher"))
       Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
+  }
+
+  @Test
+  fun testSchedulePeriodicSyncShouldPoll() = runTest {
+    val syncJob = mockk<SyncJob>()
+    val configurationRegistry = mockk<ConfigurationRegistry>()
+    val syncBroadcaster = mockk<SyncBroadcaster>()
+
+    every { syncJob.stateFlow() } returns mockk()
+    every { syncJob.poll(any(), FhirSyncWorker::class.java) } returns mockk()
+    coEvery { syncBroadcaster.sharedSyncStatus } returns mockk()
+
+    configService.schedulePeriodicSync(syncJob, configurationRegistry, syncBroadcaster)
+    shadowOf(Looper.getMainLooper()).idle()
+
+    verify { syncJob.poll(any(), eq(FhirSyncWorker::class.java)) }
+  }
+
+  @Test
+  fun testSchedulePlanShouldEnqueueUniquePeriodicWork() {
+    val workManager = mockk<WorkManagerImpl>()
+    setStaticField(WorkManagerImpl::class.java, "sDelegatedInstance", workManager)
+
+    every { workManager.enqueueUniquePeriodicWork(any(), any(), any()) } returns mockk()
+    configService.schedulePlan(mockk())
+
+    verify {
+      workManager.enqueueUniquePeriodicWork(
+        eq(FhirTaskPlanWorker.WORK_ID),
+        eq(ExistingPeriodicWorkPolicy.REPLACE),
+        any()
+      )
+    }
+  }
+
+  @Test
+  fun testUnschedulePlanShouldCancelUniqueWork() {
+    val workManager = mockk<WorkManagerImpl>()
+    setStaticField(WorkManagerImpl::class.java, "sDelegatedInstance", workManager)
+
+    every { workManager.cancelUniqueWork(any()) } returns mockk()
+    configService.unschedulePlan(mockk())
+
+    verify { workManager.cancelUniqueWork(eq(FhirTaskPlanWorker.WORK_ID)) }
   }
 }
