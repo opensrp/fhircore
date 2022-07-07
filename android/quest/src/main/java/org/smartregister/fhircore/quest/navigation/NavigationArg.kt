@@ -23,10 +23,12 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 object NavigationArg {
 
   const val FAMILY_ID = "familyId"
+  const val REGISTER_ID = "registerId"
   const val FEATURE = "feature"
   const val HEALTH_MODULE = "healthModule"
   const val SCREEN_TITLE = "screenTitle"
   const val PATIENT_ID = "patientId"
+  const val PROFILE_ID = "profileId"
 
   fun commonNavArgs(appFeatureName: String, healthModule: HealthModule) =
     mutableListOf(
@@ -43,12 +45,8 @@ object NavigationArg {
     )
 
   /** Create route paths */
-  fun routePathsOf(includeCommonArgs: Boolean = false, vararg navArg: String): String =
-    "?" +
-      if (includeCommonArgs) listOf(FEATURE, HEALTH_MODULE).plus(navArg).joinByAmpersand()
-      else navArg.toList().joinByAmpersand()
-
-  private fun List<String>.joinByAmpersand() = this.joinToString("&") { "$it={$it}" }
+  fun routePathsOf(vararg navArg: String): String =
+    "?" + navArg.toList().joinToString("&") { "$it={$it}" }
 
   /** Bind nav arguments values */
   fun bindArgumentsOf(vararg navArg: Pair<String, String?>): String =

@@ -2,6 +2,8 @@
   "appId": "app",
   "configType": "register",
   "id": "allHouseholdRegister",
+  "baseResource": "Group",
+  "relatedResources": [],
   "filter": {
     "visible": true,
     "display": "Show overdue",
@@ -9,13 +11,13 @@
       {
         "name": "filter",
         "condition": "",
-        "action": [
+        "actions": [
           ""
         ]
       }
     ]
   },
-  "dataFilters": [
+  "dataQueries": [
     {
       "id": "family",
       "filterType": "TOKEN",
@@ -34,7 +36,7 @@
       {
         "name": "searchBar",
         "condition": "",
-        "action": [
+        "actions": [
           ""
         ]
       }
@@ -48,8 +50,8 @@
           {
             "name": "filter",
             "condition": "",
-            "action": [
-              ""
+            "actions": [
+              "filterValue = fhirPathEngine.execute('Patient.name.given')"
             ]
           }
         ]
@@ -64,7 +66,7 @@
               {
                 "name": "filter",
                 "condition": "",
-                "action": [
+                "actions": [
                   ""
                 ]
               }
@@ -76,7 +78,7 @@
               {
                 "name": "filter",
                 "condition": "",
-                "action": [
+                "actions": [
                   ""
                 ]
               }
@@ -89,8 +91,8 @@
             {
               "name": "filter",
               "condition": "",
-              "action": [
-                "filterValue = fhirpath.excute('expression')"
+              "actions": [
+                "filterValue = 1 + fhirpath.execute('expression')"
               ]
             }
           ]
@@ -106,14 +108,14 @@
         {
           "name": "count",
           "condition": "",
-          "action": [
+          "actions": [
             ""
           ]
         },
         {
           "name": "status",
           "condition": "",
-          "action": [
+          "actions": [
             ""
           ]
         }

@@ -22,7 +22,7 @@ import org.hl7.fhir.r4.model.Enumerations
 
 @Serializable
 /** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
-data class SearchFilter(
+data class DataQuery(
   val id: String = "",
   val key: String,
   val filterType: Enumerations.SearchParamType,

@@ -19,9 +19,7 @@ package org.smartregister.fhircore.engine.data.local.register
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFactory
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
@@ -32,7 +30,6 @@ class PatientRegisterRepository
 constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
-  val registerDaoFactory: RegisterDaoFactory
 ) :
   RegisterRepository,
   DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
@@ -40,34 +37,22 @@ constructor(
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
-    appFeatureName: String?,
-    healthModule: HealthModule
+    registerId: String
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
-        currentPage = currentPage,
-        appFeatureName = appFeatureName
-      )
-        ?: emptyList()
+      // TODO return register data
+      emptyList()
     }
 
-  override suspend fun countRegisterData(
-    appFeatureName: String?,
-    healthModule: HealthModule
-  ): Long =
+  override suspend fun countRegisterData(registerId: String): Long =
     withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+      // TODO return register content count
+      0
     }
 
-  override suspend fun loadPatientProfileData(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    patientId: String
-  ): ProfileData? =
+  override suspend fun loadProfileData(profileId: String, identifier: String): ProfileData? =
     withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
-        appFeatureName = appFeatureName,
-        resourceId = patientId
-      )
+      // TODO return profile data
+      null
     }
 }

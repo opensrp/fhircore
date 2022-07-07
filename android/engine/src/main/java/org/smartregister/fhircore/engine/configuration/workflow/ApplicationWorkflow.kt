@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.model
+package org.smartregister.fhircore.engine.configuration.workflow
 
 enum class ApplicationWorkflow {
 

@@ -30,7 +30,7 @@ object FhirPathDataExtractor {
     FHIRPathEngine(HapiWorkerContext(fhirContext, fhirContext.validationSupport))
 
   fun extractData(base: Base, expressions: Map<String, String>): Map<String, List<Base>> =
-    expressions.map { Pair(it.key, fhirPathEngine.evaluate(base, it.value)) }.toMap()
+    expressions.map { Pair(it.key, extractData(base, it.value)) }.toMap()
 
   fun extractData(base: Base, expression: String): List<Base> =
     fhirPathEngine.evaluate(base, expression)

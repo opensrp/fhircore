@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.navigation
+package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class NavigationActionRuleConfig(
+data class RuleConfig(
   val name: String,
-  val condition: String,
-  val action: List<String>
+  val description: String = "",
+  val priority: Int = 1,
+  val condition: String = "true", // Default to always execute the action
+  val actions: List<String>
 )

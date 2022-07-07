@@ -2,14 +2,14 @@
   "appId": "app",
   "configType": "navigation",
   "menuActionButton": {
-    "id": "main_add_button",
+    "id": "mainActionButton",
     "visible": true,
     "display": "Add New Household",
     "actions": [
       {
-        "type": "ON_CLOSE",
-        "workflow": "LAUNCH_PROFILE",
-        "id": "patientProfile"
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_REGISTER",
+        "id": "allHouseholdRegister"
       }
     ],
     "questionnaire": {
@@ -45,18 +45,18 @@
       "showCount": true,
       "actions": [
         {
-          "type": "ON_CLICK",
+          "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REGISTER",
           "id": "allHouseholdRegister"
         },
         {
-          "type": "ON_COUNT",
+          "trigger": "ON_COUNT",
           "rules": [
             {
               "name": "householdCount",
               "condition": "true",
-              "action": [
-                "householdCountValue = helper.count('allHouseholdRegister')"
+              "actions": [
+                "householdCountValue = counterService.count('allHouseholdRegister')"
               ]
             }
           ]

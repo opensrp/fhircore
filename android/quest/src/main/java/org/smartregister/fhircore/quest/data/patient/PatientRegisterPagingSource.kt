@@ -32,7 +32,7 @@ class PatientRegisterPagingSource(
   private val registerViewDataMapper: RegisterViewDataMapper
 ) : PagingSource<Int, RegisterViewData>() {
 
-  private var _patientPagingSourceState = PatientPagingSourceState()
+  private lateinit var _patientPagingSourceState: PatientPagingSourceState
 
   /**
    * To load data for the current page, nextKey and prevKey for [params] are both set to null to
@@ -52,8 +52,7 @@ class PatientRegisterPagingSource(
       val data =
         patientRegisterRepository.loadRegisterData(
             currentPage = currentPage,
-            appFeatureName = _patientPagingSourceState.appFeatureName,
-            healthModule = _patientPagingSourceState.healthModule,
+            registerId = _patientPagingSourceState.registerId,
             loadAll = _patientPagingSourceState.loadAll
           )
           .map { registerViewDataMapper.transformInputToOutputModel(it) }

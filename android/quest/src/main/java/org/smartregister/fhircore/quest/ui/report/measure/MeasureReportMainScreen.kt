@@ -55,7 +55,7 @@ fun NavGraphBuilder.measureReportNavigationGraph(
     composable(
       route =
         MeasureReportNavigationScreen.ReportTypeSelector.route +
-          NavigationArg.routePathsOf(includeCommonArgs = false, NavigationArg.SCREEN_TITLE),
+          NavigationArg.routePathsOf(NavigationArg.SCREEN_TITLE),
       arguments =
         listOf(
           navArgument(NavigationArg.SCREEN_TITLE) {

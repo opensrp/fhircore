@@ -32,8 +32,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -46,7 +44,6 @@ import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
-import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
@@ -79,19 +76,11 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Register, "all_household_register")
   }
 
-  fun paginateRegisterData(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    loadAll: Boolean = false
-  ) {
-    paginatedRegisterData.value = getPager(appFeatureName, healthModule, loadAll).flow
+  fun paginateRegisterData(registerId: String, loadAll: Boolean = false) {
+    paginatedRegisterData.value = getPager(registerId, loadAll).flow
   }
 
-  private fun getPager(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    loadAll: Boolean = false
-  ): Pager<Int, RegisterViewData> =
+  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, RegisterViewData> =
     Pager(
       config =
         PagingConfig(pageSize = DEFAULT_PAGE_SIZE, initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE),
@@ -99,8 +88,7 @@ constructor(
         PatientRegisterPagingSource(patientRegisterRepository, registerViewDataMapper).apply {
           setPatientPagingSourceState(
             PatientPagingSourceState(
-              appFeatureName = appFeatureName,
-              healthModule = healthModule,
+              registerId = registerId,
               loadAll = loadAll,
               currentPage = if (loadAll) 0 else currentPage.value!!
             )
@@ -109,11 +97,9 @@ constructor(
       }
     )
 
-  fun setTotalRecordsCount(appFeatureName: String?, healthModule: HealthModule) {
+  fun setTotalRecordsCount(registerId: String) {
     viewModelScope.launch {
-      _totalRecordsCount.postValue(
-        patientRegisterRepository.countRegisterData(appFeatureName, healthModule)
-      )
+      _totalRecordsCount.postValue(patientRegisterRepository.countRegisterData(registerId))
     }
   }
 
@@ -126,44 +112,40 @@ constructor(
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is PatientRegisterEvent.SearchRegister -> {
         _searchText.value = event.searchText
-        if (event.searchText.isEmpty())
-          paginateRegisterData(event.appFeatureName, event.healthModule)
+        if (event.searchText.isEmpty()) paginateRegisterData(event.registerId)
         else filterRegisterData(event)
       }
       is PatientRegisterEvent.MoveToNextPage -> {
         this._currentPage.value = this._currentPage.value?.plus(1)
-        paginateRegisterData(event.appFeatureName, event.healthModule)
+        paginateRegisterData(event.registerId)
       }
       is PatientRegisterEvent.MoveToPreviousPage -> {
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
-        paginateRegisterData(event.appFeatureName, event.healthModule)
+        paginateRegisterData(event.registerId)
       }
       is PatientRegisterEvent.RegisterNewClient ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(
           // TODO use appropriate property from the register configuration
-          registerConfiguration.registrationForm
+          "provide-questionnaire-id"
         )
       is PatientRegisterEvent.OpenProfile -> {
         val urlParams =
-          NavigationArg.bindArgumentsOf(
-            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-            Pair(NavigationArg.HEALTH_MODULE, HealthModule.DEFAULT.name),
-            Pair(NavigationArg.PATIENT_ID, event.patientId)
-          )
-        if (event.healthModule == HealthModule.FAMILY)
-          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
-        else
-          event.navController.navigate(
-            route = MainNavigationScreen.PatientProfile.route + urlParams
-          )
+          NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, event.patientId))
+        // TODO conditionally navigate to either family or patient profile
+        //        if (event.registerId)
+        //          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route +
+        // urlParams)
+        //        else
+        //          event.navController.navigate(
+        //            route = MainNavigationScreen.PatientProfile.route + urlParams
+        //          )
       }
     }
   }
 
   private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
     paginatedRegisterData.value =
-      getPager(event.appFeatureName, event.healthModule, true).flow.map {
-        pagingData: PagingData<RegisterViewData> ->
+      getPager(event.registerId, true).flow.map { pagingData: PagingData<RegisterViewData> ->
         pagingData.filter {
           it.title.contains(event.searchText, ignoreCase = true) ||
             it.logicalId.contentEquals(event.searchText, ignoreCase = true)
