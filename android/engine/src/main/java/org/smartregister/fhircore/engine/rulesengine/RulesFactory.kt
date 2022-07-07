@@ -23,7 +23,7 @@ import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
-import org.jeasy.rules.core.RuleBuilder
+import org.jeasy.rules.mvel.MVELRule
 import org.mvel2.CompileException
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -64,13 +64,15 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
   }
 
   fun fireRule(ruleConfig: RuleConfig) {
-    val rule =
-      RuleBuilder()
-        .name(ruleConfig.name)
-        .description(ruleConfig.condition)
-        // .then { ruleConfig.action } // TODO check on this
-        .build()
 
-    rulesEngine.fire(Rules(rule), facts)
+    val customRule: MVELRule =
+      MVELRule()
+        .name(ruleConfig.name)
+        .description(ruleConfig.description)
+        .`when`(ruleConfig.condition)
+
+    ruleConfig.actions.forEach { customRule.then(it) }
+
+    rulesEngine.fire(Rules(customRule), facts)
   }
 }
