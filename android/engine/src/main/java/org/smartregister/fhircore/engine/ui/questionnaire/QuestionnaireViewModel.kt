@@ -214,15 +214,14 @@ constructor(
     questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
     questionnaire: Questionnaire
   ) {
+    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
+
+    if (questionnaireResponse.logicalId.isEmpty()) {
+      questionnaireResponse.id = UUID.randomUUID().toString()
+      questionnaireResponse.authored = Date()
+    }
+
     viewModelScope.launch(dispatcherProvider.io()) {
-      questionnaireResponse.questionnaire =
-        "${questionnaire.resourceType}/${questionnaire.logicalId}"
-
-      if (questionnaireResponse.logicalId.isEmpty()) {
-        questionnaireResponse.id = UUID.randomUUID().toString()
-        questionnaireResponse.authored = Date()
-      }
-
       questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
         it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
       }
