@@ -33,7 +33,8 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDat
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MeasureReportPatientsPagingSourceTest {
-  val measureReportRepository = spyk(MeasureReportRepository(mockk(), mockk(), mockk(), mockk()))
+  val measureReportRepository =
+    spyk(MeasureReportRepository(mockk(), mockk(), mockk(), mockk(), mockk()))
   val measureReportPatientViewDataMapper = spyk(MeasureReportPatientViewDataMapper(mockk()))
   val measureReportPatientData = mockk<RegisterData.AncRegisterData>()
   val measureReportPatientViewData = mockk<MeasureReportPatientViewData>()
