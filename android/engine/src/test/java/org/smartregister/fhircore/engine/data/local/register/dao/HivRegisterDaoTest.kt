@@ -31,6 +31,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -167,6 +168,48 @@ class HivRegisterDaoTest : RobolectricTest() {
     assertEquals("practitioner/1234", hivProfileData.chwAssigned.reference)
     assertEquals(HealthStatus.EXPOSED_INFANT, hivProfileData.healthStatus)
     assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
+  }
+
+  @Test
+  fun `test hiv patient identifier to be the 'official' identifier`() = runTest {
+    val identifierNumber = "123456"
+    val patient =
+      Patient().apply {
+        identifier.add(Identifier())
+
+        identifier.add(
+          Identifier().apply {
+            this.use = Identifier.IdentifierUse.OFFICIAL
+            this.value = identifierNumber
+          }
+        )
+
+        identifier.add(
+          Identifier().apply {
+            this.use = Identifier.IdentifierUse.SECONDARY
+            this.value = "149856"
+          }
+        )
+      }
+    assertEquals(identifierNumber, hivRegisterDao.hivPatientIdentifier(patient))
+  }
+
+  @Test
+  fun `test hiv patient identifier to be the 'secondary' identifier when no 'official' identifier found`() =
+      runTest {
+    val identifierNumber = "149856"
+    val patient =
+      Patient().apply {
+        identifier.add(Identifier())
+
+        identifier.add(
+          Identifier().apply {
+            this.use = Identifier.IdentifierUse.SECONDARY
+            this.value = identifierNumber
+          }
+        )
+      }
+    assertEquals(identifierNumber, hivRegisterDao.hivPatientIdentifier(patient))
   }
 
   @Test

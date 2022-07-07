@@ -37,5 +37,6 @@ data class RegisterViewData(
   val serviceButtonBorderColor: Color = InfoColor,
   val borderedServiceButton: Boolean = false,
   val showDivider: Boolean = false,
-  val showServiceButton: Boolean = true
+  val showServiceButton: Boolean = true,
+  val identifier: String = ""
 )
