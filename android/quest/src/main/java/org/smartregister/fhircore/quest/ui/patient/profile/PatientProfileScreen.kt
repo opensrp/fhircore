@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -52,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.ui.components.FormButton
+import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
@@ -155,24 +156,27 @@ fun PatientProfileScreen(
         // Patient tasks: List of tasks for the patients
         if (profileViewData.tasks.isNotEmpty()) {
           ProfileCard(
-            title = stringResource(R.string.tasks).uppercase(),
+            title = stringResource(R.string.visits).uppercase(),
             onActionClick = {},
-            profileViewSection = PatientProfileViewSection.TASKS
+            profileViewSection = PatientProfileViewSection.VISITS
           ) {
             profileViewData.tasks.forEach {
-              ProfileActionableItem(
-                it,
-                onActionClick = { taskFormId, taskId ->
+              Spacer(modifier = modifier.height(16.dp))
+              ActionableButton(
+                actionableButtonData = it,
+                onAction = { questionnaireId, taskId ->
                   patientProfileViewModel.onEvent(
                     PatientProfileEvent.OpenTaskForm(
                       context = context,
-                      taskFormId = taskFormId,
+                      taskFormId = questionnaireId,
                       taskId = taskId,
                       patientId = profileViewData.logicalId
                     )
                   )
                 }
               )
+              Spacer(modifier = modifier.height(16.dp))
+              Divider()
             }
           }
         }
@@ -186,9 +190,9 @@ fun PatientProfileScreen(
           ) {
             Spacer(modifier.height(16.dp))
             profileViewData.forms.forEach {
-              FormButton(
-                formButtonData = it,
-                onFormClick = { questionnaireId, _ ->
+              ActionableButton(
+                actionableButtonData = it,
+                onAction = { questionnaireId, _ ->
                   patientProfileViewModel.onEvent(
                     PatientProfileEvent.LoadQuestionnaire(questionnaireId, context)
                   )

@@ -18,9 +18,7 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -13,4 +13,5 @@
     <item name="view_family" type="id"/>
     <item name="record_sick_child" type="id"/>
     <item name="record_as_anc" type="id" />
+    <item name="pregnancy_outcome" type="id" />
 </resources>

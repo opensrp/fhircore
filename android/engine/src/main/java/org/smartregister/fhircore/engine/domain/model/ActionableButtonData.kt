@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.data.report.measure.models
+package org.smartregister.fhircore.engine.domain.model
 
-import androidx.compose.runtime.Stable
-import kotlinx.serialization.Serializable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import org.hl7.fhir.r4.model.Reference
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
 
-@Stable
-@Serializable
-data class MeasureReportRowData(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val reportType: String = "",
-  val name: String = ""
+data class ActionableButtonData(
+  val action: String,
+  val questionnaireId: String?,
+  val backReference: Reference? = null,
+  val contentColor: Color = InfoColor,
+  val iconColor: Color = InfoColor,
+  val iconStart: ImageVector = Icons.Filled.Add
 )
