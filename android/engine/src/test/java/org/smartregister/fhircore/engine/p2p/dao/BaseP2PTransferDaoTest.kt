@@ -24,11 +24,14 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.DateParamFilterCriterion
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import java.util.Date
+import java.util.TreeSet
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Encounter
@@ -45,6 +48,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.joda.time.LocalDate
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
@@ -239,6 +243,24 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
         DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 0)
       )
     )
+  }
+
+  @Test
+  fun `countTotalRecordsForSync() calls fhirEngine#count`() = runTest {
+    every { baseP2PTransferDao.getDataTypes() } returns
+      TreeSet<DataType>().apply {
+        add(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
+      }
+
+    coEvery { fhirEngine.count(any()) } returns 1
+
+    assertEquals(1, baseP2PTransferDao.countTotalRecordsForSync(HashMap()))
+  }
+
+  @Test
+  fun `getSearchObjectForCount() create search filter in fhirEngine`() {
+    val search = baseP2PTransferDao.getSearchObjectForCount(1656663911, Patient::class.java)
+    assertEquals("Patient", search.type.name)
   }
 
   private fun populateTestPatient(): Patient {
