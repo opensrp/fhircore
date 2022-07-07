@@ -215,6 +215,18 @@ constructor(
     questionnaire: Questionnaire
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
+      questionnaireResponse.questionnaire =
+        "${questionnaire.resourceType}/${questionnaire.logicalId}"
+
+      if (questionnaireResponse.logicalId.isEmpty()) {
+        questionnaireResponse.id = UUID.randomUUID().toString()
+        questionnaireResponse.authored = Date()
+      }
+
+      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+        it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
+      }
+
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
@@ -371,17 +383,6 @@ constructor(
     }
 
     questionnaireResponse.assertSubject() // should not allow further flow without subject
-
-    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
-
-    if (questionnaireResponse.logicalId.isEmpty()) {
-      questionnaireResponse.id = UUID.randomUUID().toString()
-      questionnaireResponse.authored = Date()
-    }
-
-    questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-      it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
-    }
 
     defaultRepository.addOrUpdate(questionnaireResponse)
   }
