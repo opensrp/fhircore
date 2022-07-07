@@ -38,7 +38,7 @@ fun RegisterList(
   onRowClick: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  LazyColumn {
+  LazyColumn(modifier = modifier) {
     items(pagingItems, key = { it.logicalId }) {
       RegisterListRow(registerViewData = it!!, onRowClick = onRowClick)
       Divider(color = DividerColor, thickness = 1.dp)
