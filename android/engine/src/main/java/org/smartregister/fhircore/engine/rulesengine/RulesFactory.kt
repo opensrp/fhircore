@@ -57,14 +57,13 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
 
   override fun afterEvaluate(rule: Rule?, facts: Facts?, evaluationResult: Boolean) = Unit
 
-  fun loadFacts() {
+  private fun loadFacts() {
     configurationRegistry.configsJsonMap.forEach { entry -> facts.put(entry.key, entry.value) }
 
-    facts.put("fhirPathDataExtractor", fhirPathDataExtractor)
+    facts.put(FHIR_PATH_DATA_EXTRACTOR, fhirPathDataExtractor)
   }
 
   fun fireRule(ruleConfig: RuleConfig) {
-
     val customRule: MVELRule =
       MVELRule()
         .name(ruleConfig.name)
@@ -74,5 +73,9 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
     ruleConfig.actions.forEach { customRule.then(it) }
 
     rulesEngine.fire(Rules(customRule), facts)
+  }
+
+  companion object {
+    private const val FHIR_PATH_DATA_EXTRACTOR = "fhirPathDataExtractor"
   }
 }
