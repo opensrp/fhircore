@@ -20,7 +20,7 @@ android {
     defaultConfig {
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "org.smartregister.fhircore.engine.EngineTestRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
 
@@ -250,4 +250,8 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
+    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 }

@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.profile
+package org.smartregister.fhircore.engine
 
-import androidx.compose.material.Text
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import org.junit.Rule
-import org.junit.Test
+import android.app.Application
+import android.content.Context
+import androidx.test.runner.AndroidJUnitRunner
+import dagger.hilt.android.testing.HiltTestApplication
 
-class TextComponentTest {
-
-  @get:Rule val composeTestRule = createComposeRule()
-
-  @Test
-  fun sampleTest() {
-    composeTestRule.setContent { Text("Hello Universe") }
-    composeTestRule.onNodeWithText("Hello Universe").assertIsDisplayed()
+class EngineTestRunner : AndroidJUnitRunner() {
+  override fun newApplication(cl: ClassLoader?, name: String?, context: Context?): Application {
+    return super.newApplication(cl, HiltTestApplication::class.java.name, context)
   }
 }
