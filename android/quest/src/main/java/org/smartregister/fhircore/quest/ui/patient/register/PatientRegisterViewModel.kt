@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -40,7 +42,7 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
@@ -124,6 +126,15 @@ constructor(
     _totalRecordsCount.value?.toDouble()?.div(DEFAULT_PAGE_SIZE.toLong())?.let { ceil(it).toInt() }
       ?: 1
 
+  fun patientRegisterQuestionnaireIntent(context: Context) =
+    Intent(context, QuestionnaireActivity::class.java)
+      .putExtras(
+        QuestionnaireActivity.intentArgs(
+          formName = registerViewConfiguration.registrationForm,
+          questionnaireType = QuestionnaireType.DEFAULT
+        )
+      )
+
   fun onEvent(event: PatientRegisterEvent) {
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
@@ -141,10 +152,11 @@ constructor(
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
         paginateRegisterData(event.appFeatureName, event.healthModule)
       }
-      is PatientRegisterEvent.RegisterNewClient ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
-          registerViewConfiguration.registrationForm
-        )
+      is PatientRegisterEvent.RegisterNewClient -> {
+        //        event.context.launchQuestionnaire<QuestionnaireActivity>(
+        //          registerViewConfiguration.registrationForm
+        //        )
+      }
       is PatientRegisterEvent.OpenProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
