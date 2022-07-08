@@ -137,8 +137,6 @@ fun PatientRegisterScreen(
           )
         }
       ) { openDrawer(true) }
-      // Only show counter during search
-      if (searchText.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
     },
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action
@@ -189,7 +187,14 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
+      // Only show counter during search
+      var iModifier = Modifier.padding(top = 0.dp)
+      if (searchText.isNotEmpty()) {
+        iModifier = Modifier.padding(top = 32.dp)
+        RegisterHeader(resultCount = pagingItems.itemCount)
+      }
       RegisterList(
+        modifier = iModifier,
         pagingItems = pagingItems,
         onRowClick = { patientId: String ->
           patientRegisterViewModel.onEvent(
