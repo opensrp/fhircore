@@ -63,16 +63,21 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
     facts.put(FHIR_PATH_DATA_EXTRACTOR, fhirPathDataExtractor)
   }
 
-  fun fireRule(ruleConfig: RuleConfig) {
-    val customRule: MVELRule =
-      MVELRule()
-        .name(ruleConfig.name)
-        .description(ruleConfig.description)
-        .`when`(ruleConfig.condition)
+  fun fireRule(ruleConfigs: List<RuleConfig>) {
 
-    ruleConfig.actions.forEach { customRule.then(it) }
+    var customRules: Set<Rule> = setOf()
+    ruleConfigs.forEach { ruleConfig ->
+      val customRule: MVELRule =
+        MVELRule()
+          .name(ruleConfig.name)
+          .description(ruleConfig.description)
+          .`when`(ruleConfig.condition)
 
-    rulesEngine.fire(Rules(customRule), facts)
+      ruleConfig.actions.forEach { customRule.then(it) }
+      customRules.plus(customRule)
+    }
+
+    rulesEngine.fire(Rules(customRules), facts)
   }
 
   companion object {
