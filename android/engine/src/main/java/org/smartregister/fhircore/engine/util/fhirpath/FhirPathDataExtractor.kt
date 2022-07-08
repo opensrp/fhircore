@@ -34,4 +34,7 @@ object FhirPathDataExtractor {
 
   fun extractData(base: Base, expression: String): List<Base> =
     fhirPathEngine.evaluate(base, expression)
+
+  fun extractWithFhirPath(base: Base, expression: String) =
+    extractData(base, expression).firstOrNull()?.primitiveValue() ?: ""
 }
