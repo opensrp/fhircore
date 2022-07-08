@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.rulesengine
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Base
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -63,16 +64,32 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
     facts.put(FHIR_PATH_DATA_EXTRACTOR, fhirPathDataExtractor)
   }
 
-  fun fireRule(ruleConfig: RuleConfig) {
-    val customRule: MVELRule =
-      MVELRule()
-        .name(ruleConfig.name)
-        .description(ruleConfig.description)
-        .`when`(ruleConfig.condition)
+  fun fireRule(ruleConfigs: List<RuleConfig>, resourceMap: Map<String, Base>): Map<String, Any> {
+    val resultMap = hashMapOf<String, Any>()
+    val customRules: Set<Rule> = setOf()
+    ruleConfigs.forEach { ruleConfig ->
+      val customRule: MVELRule =
+        MVELRule()
+          .name(ruleConfig.name)
+          .description(ruleConfig.description)
+          .`when`(ruleConfig.condition)
 
-    ruleConfig.actions.forEach { customRule.then(it) }
+      ruleConfig.actions.forEach { customRule.then(it) }
+      customRules.plus(customRule)
+    }
 
-    rulesEngine.fire(Rules(customRule), facts)
+    resourceMap.forEach { resource -> facts.put(resource.key, resource.value) }
+
+    rulesEngine.fire(Rules(customRules), facts)
+
+    val factsMap = facts.asMap()
+    ruleConfigs.forEach { ruleConfig ->
+      if (factsMap.contains(ruleConfig.name)) {
+        resultMap[ruleConfig.name] = facts.get(ruleConfig.name)
+      }
+    }
+
+    return resultMap
   }
 
   companion object {
