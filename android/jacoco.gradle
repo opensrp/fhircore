@@ -1,12 +1,13 @@
-task jacocoTestReport(type: JacocoReport, dependsOn: [
-        "testDebugUnitTest",
-//       Uncomment to include instrumentation tests coverage
-//       "createDebugCoverageReport"
+def module = project.name == "quest" ? "Quest" : ""
+
+task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
+        "test${module}DebugUnitTest",
+        "connected${module}DebugAndroidTest"
 ]) {
 
     reports {
-        xml.enabled = true
-        html.enabled = true
+        xml.required = true
+        html.required = true
     }
 
     def excludes = [
@@ -47,8 +48,9 @@ task jacocoTestReport(type: JacocoReport, dependsOn: [
             '**/databinding/*'
     ]
 
-    def javaDebugTree = fileTree(dir: "$project.buildDir/intermediates/javac/debug/classes/", excludes: excludes)
-    def kotlinDebugTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/debug", excludes: excludes)
+    def moduleVariant = project.name == "quest" ? "questDebug" : "debug"
+    def javaDebugTree = fileTree(dir: "$project.buildDir/intermediates/javac/${moduleVariant}/classes/", excludes: excludes)
+    def kotlinDebugTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/${moduleVariant}", excludes: excludes)
     def mainSrc = "$project.projectDir/src/main/java"
     def kotlinSrc = "$project.projectDir/src/main/kotlin"
 
@@ -57,9 +59,8 @@ task jacocoTestReport(type: JacocoReport, dependsOn: [
 
     executionData.setFrom(
             fileTree(dir: project.buildDir, includes: [
-                    "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
-                    // Uncomment to include instrumentation test coverage
-                    // "outputs/code_coverage/debugAndroidTest/connected/**/*.ec"
+                    "outputs/unit_test_code_coverage/${moduleVariant}UnitTest/test${module}DebugUnitTest.exec",
+                    "outputs/code_coverage/${moduleVariant}AndroidTest/connected/**/*.ec"
             ])
     )
 }
