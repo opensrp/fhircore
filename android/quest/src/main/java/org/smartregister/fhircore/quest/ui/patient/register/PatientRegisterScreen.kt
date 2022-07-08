@@ -42,12 +42,11 @@ import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
+import org.smartregister.fhircore.engine.domain.model.RegisterResource
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
-import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
-import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 @Composable
 fun PatientRegisterScreen(
@@ -62,7 +61,6 @@ fun PatientRegisterScreen(
   val context = LocalContext.current
   val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
   val searchText by remember { patientRegisterViewModel.searchText }
-  val registerConfigs = remember { patientRegisterViewModel.registerConfiguration }
   val currentSetTotalRecordCount by rememberUpdatedState(
     patientRegisterViewModel::setTotalRecordsCount
   )
@@ -86,7 +84,7 @@ fun PatientRegisterScreen(
     }
   }
 
-  val pagingItems: LazyPagingItems<RegisterViewData> =
+  val pagingItems: LazyPagingItems<RegisterResource> =
     patientRegisterViewModel
       .paginatedRegisterData
       .collectAsState(emptyFlow())
@@ -146,16 +144,16 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      // TODO revert after fixing sync
+      // TODO revert after UI functionality is wired
       //      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
-      RegisterList(
-        pagingItems = pagingItems,
-        onRowClick = { patientId: String ->
-          patientRegisterViewModel.onEvent(
-            PatientRegisterEvent.OpenProfile(registerId, patientId, navController)
-          )
-        }
-      )
+      //      RegisterList(
+      //        pagingItems = pagingItems,
+      //        onRowClick = { patientId: String ->
+      //          patientRegisterViewModel.onEvent(
+      //            PatientRegisterEvent.OpenProfile(registerId, patientId, navController)
+      //          )
+      //        }
+      //      )
     }
   }
 }

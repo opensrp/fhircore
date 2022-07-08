@@ -36,16 +36,17 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.domain.model.RegisterResource
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
@@ -68,24 +69,19 @@ constructor(
 
   private val _totalRecordsCount = MutableLiveData(1L)
 
-  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
+  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterResource>>> =
     MutableStateFlow(emptyFlow())
-
-  // TODO remove hard coded register config id. To be provided dynamically.
-  val registerConfiguration: RegisterConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Register, "all_household_register")
-  }
 
   fun paginateRegisterData(registerId: String, loadAll: Boolean = false) {
     paginatedRegisterData.value = getPager(registerId, loadAll).flow
   }
 
-  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, RegisterViewData> =
+  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, RegisterResource> =
     Pager(
       config =
         PagingConfig(pageSize = DEFAULT_PAGE_SIZE, initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE),
       pagingSourceFactory = {
-        PatientRegisterPagingSource(patientRegisterRepository, registerViewDataMapper).apply {
+        PatientRegisterPagingSource(patientRegisterRepository).apply {
           setPatientPagingSourceState(
             PatientPagingSourceState(
               registerId = registerId,
@@ -98,8 +94,19 @@ constructor(
     )
 
   fun setTotalRecordsCount(registerId: String) {
+    // Get the baseResource from the register configurations. Retrieve it's resource type then count
+    val fhirResource =
+      configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
+          ConfigType.Register,
+          configId = registerId
+        )
+        .fhirResource
+
+    val baseResourceClass = fhirResource.baseResource.resource.resourceClassType().newInstance()
     viewModelScope.launch {
-      _totalRecordsCount.postValue(patientRegisterRepository.countRegisterData(registerId))
+      _totalRecordsCount.postValue(
+        patientRegisterRepository.countRegisterData(baseResourceClass.resourceType, registerId)
+      )
     }
   }
 
@@ -145,10 +152,12 @@ constructor(
 
   private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
     paginatedRegisterData.value =
-      getPager(event.registerId, true).flow.map { pagingData: PagingData<RegisterViewData> ->
+      getPager(event.registerId, true).flow.map { pagingData: PagingData<RegisterResource> ->
         pagingData.filter {
-          it.title.contains(event.searchText, ignoreCase = true) ||
-            it.logicalId.contentEquals(event.searchText, ignoreCase = true)
+          // TODO apply relevant filters
+          //          it.title.contains(event.searchText, ignoreCase = true) ||
+          //            it.logicalId.contentEquals(event.searchText, ignoreCase = true)
+          true
         }
       }
   }

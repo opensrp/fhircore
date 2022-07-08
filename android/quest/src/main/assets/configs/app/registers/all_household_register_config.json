@@ -1,9 +1,18 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "allHouseholdRegister",
-  "baseResource": "Group",
-  "relatedResources": [],
+  "id": "all_household_register",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Patient"
+    },
+    "relatedResources": [
+      {
+        "resource": "Immunization",
+        "searchParameter": "patient"
+      }
+    ]
+  },
   "filter": {
     "visible": true,
     "display": "Show overdue",
@@ -17,18 +26,6 @@
       }
     ]
   },
-  "dataQueries": [
-    {
-      "id": "family",
-      "filterType": "TOKEN",
-      "key": "code",
-      "valueType": "CODEABLECONCEPT",
-      "valueCoding": {
-        "system": "https://www.snomed.org",
-        "code": "35359004"
-      }
-    }
-  ],
   "searchBar": {
     "visible": true,
     "display": "Search name or ID",
@@ -48,10 +45,10 @@
         "separator": "-",
         "rules": [
           {
-            "name": "filter",
+            "name": "patientName",
             "condition": "",
             "actions": [
-              "filter = fhirPathDataExtractor.extractValue('Patient.name.given')"
+              "patientName = fhirPathDataExtractor.extractValue(patient, 'Patient.name.given')"
             ]
           }
         ]
@@ -92,7 +89,7 @@
               "name": "filter",
               "condition": "",
               "actions": [
-                "filterValue = 1 + fhirpath.execute('expression')"
+                "filter = 1 + fhirpath.execute('expression')"
               ]
             }
           ]

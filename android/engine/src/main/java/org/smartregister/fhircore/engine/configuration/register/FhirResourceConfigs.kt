@@ -17,16 +17,25 @@
 package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 
+/**
+ * Represents FHIR resources used on the register. The [baseResource] is the main resource used
+ * which can be accompanied by [relatedResources]
+ */
 @Serializable
-data class RegisterConfiguration(
-  override var appId: String,
-  override var configType: String = ConfigType.Register.name,
-  val id: String,
-  val fhirResource: FhirResourceConfig,
-  val filter: RegisterContentConfig? = null,
-  val searchBar: RegisterContentConfig? = null,
-  val registerCard: RegisterCardConfig
-) : Configuration()
+data class FhirResourceConfig(
+  val baseResource: ResourceConfig,
+  val relatedResources: List<ResourceConfig> = emptyList()
+)
+
+/**
+ * Defines the name of the [resource], an optional [searchParameter] that is useful for querying
+ * related resources. The [dataQueries] are optional configurations used to filter data.
+ */
+@Serializable
+data class ResourceConfig(
+  val resource: String,
+  val searchParameter: String? = null,
+  val dataQueries: List<DataQuery>? = null
+)

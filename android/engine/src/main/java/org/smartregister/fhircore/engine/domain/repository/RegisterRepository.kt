@@ -16,8 +16,9 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterData
+import org.smartregister.fhircore.engine.domain.model.RegisterResource
 
 /** Common repository for register. */
 interface RegisterRepository {
@@ -25,10 +26,10 @@ interface RegisterRepository {
     currentPage: Int,
     loadAll: Boolean = false,
     registerId: String
-  ): List<RegisterData>
+  ): List<RegisterResource>
 
   /** Return the count for the register content. The register is identified by its [registerId] */
-  suspend fun countRegisterData(registerId: String): Long
+  suspend fun countRegisterData(resourceType: ResourceType, registerId: String): Long
 
   /** This function returns data displayed on the users profile */
   suspend fun loadProfileData(profileId: String, identifier: String): ProfileData?

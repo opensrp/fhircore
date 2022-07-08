@@ -55,13 +55,12 @@ constructor(
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
    * can be directly converted to a FHIR resource or hard coded custom model.
    */
-  //TODO optimize to use a map to avoid decoding configuration everytime a config is retrieved
+  // TODO optimize to use a map to avoid decoding configuration everytime a config is retrieved
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
     configId: String? = null
   ): T {
-    val configKey =
-      if (configType.multiConfig && !configId.isNullOrEmpty()) configId else configType.name
+    val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
       configsJsonMap.getValue(configKey).decodeResourceFromString()
     else configsJsonMap.getValue(configKey).decodeJson()

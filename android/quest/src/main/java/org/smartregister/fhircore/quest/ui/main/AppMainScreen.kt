@@ -36,6 +36,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.configuration.workflow.WorkflowTrigger
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -103,9 +104,13 @@ private fun AppMainNavigationGraph(
   measureReportViewModel: MeasureReportViewModel = hiltViewModel(),
   appMainViewModel: AppMainViewModel
 ) {
-
   val firstNavigationMenu = navigationConfiguration.clientRegisters.first()
-  val firstScreenTitle = firstNavigationMenu.display
+
+  // registerId = (id of the register's click action) otherwise use navigation menu id
+  val firstRegisterId =
+    firstNavigationMenu.actions?.find { it.trigger == WorkflowTrigger.ON_CLICK }?.id
+      ?: firstNavigationMenu.id
+
   val homeUrlParams = routePathsOf(NavigationArg.SCREEN_TITLE, NavigationArg.REGISTER_ID)
   NavHost(
     navController = navController,
@@ -115,17 +120,18 @@ private fun AppMainNavigationGraph(
       when (it) {
         is MainNavigationScreen.Home ->
           composable(
-            route = "${it.route}$homeUrlParams",
+            route = it.route + homeUrlParams,
             arguments =
               listOf(
                 navArgument(NavigationArg.SCREEN_TITLE) {
                   type = NavType.StringType
                   nullable = false
-                  defaultValue = firstScreenTitle
+                  defaultValue = firstNavigationMenu.display
                 },
                 navArgument(NavigationArg.REGISTER_ID) {
                   type = NavType.StringType
                   nullable = false
+                  defaultValue = firstRegisterId
                 }
               )
           ) { stackEntry ->

@@ -94,13 +94,11 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     subjectId: String,
     subjectType: ResourceType = ResourceType.Patient,
     subjectParam: ReferenceClientParam,
-    filters: List<DataQuery> = listOf()
+    filters: List<DataQuery>? = null
   ): List<T> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(subjectParam, subjectType, subjectId)
-        filters.forEach { filterBy(it) }
-      }
+    fhirEngine.search {
+      filterByResourceTypeId(subjectParam, subjectType, subjectId)
+      filters?.forEach { filterBy(it) }
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
