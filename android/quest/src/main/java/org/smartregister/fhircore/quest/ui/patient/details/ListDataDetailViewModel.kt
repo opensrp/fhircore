@@ -38,7 +38,7 @@ import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewCo
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
-import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import org.smartregister.fhircore.quest.util.mappers.PatientItemMapper
 
 @HiltViewModel
 class ListDataDetailViewModel

@@ -42,7 +42,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -210,7 +209,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnMenuLoginClicked() {
-    pinViewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME)
+    pinViewModel.onMenuLoginClicked()
     Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
   }
 

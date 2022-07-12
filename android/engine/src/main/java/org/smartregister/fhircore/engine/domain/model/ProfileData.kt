@@ -23,19 +23,19 @@ import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 sealed class ProfileData(open val logicalId: String, open val name: String) {
   data class DefaultProfileData(
     override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
-    val birthdate: Date,
-    val age: String = birthdate.toAgeDisplay(),
+    val birthdate: Date? = null,
+    val age: String,
     val address: String,
     val gender: Enumerations.AdministrativeGender,
     val deathDate: Date? = null,
@@ -46,7 +46,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val tasks: List<Task> = listOf(),
     val visits: List<Encounter> = listOf(),
     val forms: List<QuestionnaireConfig> = listOf(),
-    val responses: List<QuestionnaireResponse> = listOf()
+    val responses: List<Pair<Questionnaire, QuestionnaireResponse>> = listOf()
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class FamilyProfileData(

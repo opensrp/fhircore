@@ -36,8 +36,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import retrofit2.Call
-import retrofit2.Response
 
 class ReferenceAttachmentResolverTest : RobolectricTest() {
   @get:Rule val coroutineTestRule = CoroutineTestRule()
@@ -75,9 +73,7 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   @Test
   fun testResolveImageUrlWithNullBodyShouldReturnNull() {
     coroutineTestRule.runBlockingTest {
-      val mockResponse = mockk<Call<ResponseBody?>>()
-      every { mockResponse.execute() } returns Response.success(null)
-      every { fhirResourceService.fetchImage(any()) } returns mockResponse
+      coEvery { fhirResourceService.fetchImage(any()) } returns null
       Assert.assertNull(
         referenceAttachmentResolver.resolveImageUrl("https://image-server.com/8929839")
       )
@@ -98,17 +94,14 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
           }
         )
 
-      val mockResponse = Response.success<ResponseBody?>(mockResponseBody)
-
       every { mockResponseBody.byteStream() } returns
         (ByteArrayInputStream(
           "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7".toByteArray(
             Charset.forName("UTF-8")
           )
         ))
-      val callResponse = mockk<Call<ResponseBody?>>()
-      every { callResponse.execute() } returns mockResponse
-      every { fhirResourceService.fetchImage(any()) } returns callResponse
+
+      coEvery { fhirResourceService.fetchImage(any()) } returns mockResponseBody
       val bitmap = referenceAttachmentResolver.resolveImageUrl("https://image-server.com/8929839")
       Assert.assertNotNull(bitmap)
       Assert.assertTrue(bitmap is Bitmap)

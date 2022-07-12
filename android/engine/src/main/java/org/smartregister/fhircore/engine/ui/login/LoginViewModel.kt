@@ -131,7 +131,7 @@ constructor(
       override fun handleFailure(call: Call<OAuthResponse>, throwable: Throwable) {
         Timber.e(throwable.stackTraceToString())
         if (attemptLocalLogin()) {
-          _navigateToHome.postValue(true)
+          _navigateToHome.value = true
           _showProgressBar.postValue(false)
           return
         }
@@ -240,9 +240,18 @@ constructor(
     if (!username.value.isNullOrBlank() && !password.value.isNullOrBlank()) {
       _loginErrorState.postValue(null)
       _showProgressBar.postValue(true)
-      accountAuthenticator
-        .fetchToken(username.value!!.trim(), password.value!!.trim().toCharArray())
-        .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})
+
+      // For subsequent logins only allow previously logged in accounts
+      accountAuthenticator.run {
+        val trimmedUsername = username.value!!.trim()
+        if (validatePreviousLogin(trimmedUsername)) {
+          fetchToken(trimmedUsername, password.value!!.trim().toCharArray())
+            .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})
+        } else {
+          _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+          _showProgressBar.postValue(false)
+        }
+      }
     }
   }
 
@@ -253,7 +262,6 @@ constructor(
 
   @TestOnly
   fun navigateToHome(navigateHome: Boolean = true) {
-    _navigateToHome.value = navigateHome
     _navigateToHome.postValue(navigateHome)
   }
 

@@ -33,23 +33,19 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
@@ -77,7 +73,7 @@ constructor(
     Timber.i("Adding account of type $accountType with auth token of type $authTokenType")
 
     val intent =
-      Intent(context, getLoginActivityClass()).apply {
+      Intent(context, LoginActivity::class.java).apply {
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, getAccountType())
         putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
         putExtra(AUTH_TOKEN_TYPE, authTokenType)
@@ -157,7 +153,7 @@ constructor(
     Timber.i("Updating credentials for ${account.name} from auth activity")
 
     val intent =
-      Intent(context, getLoginActivityClass()).apply {
+      Intent(context, LoginActivity::class.java).apply {
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type)
         putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name)
         putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
@@ -225,11 +221,11 @@ constructor(
 
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
     Timber.v("Validating credentials with local storage")
-    return secureSharedPreference.retrieveCredentials()?.let {
-      it.username.contentEquals(username) &&
-        it.password.contentEquals(password.concatToString().toSha1())
-    }
-      ?: false
+    return if (accountExists(username)) {
+      val credentials = secureSharedPreference.retrieveCredentials()
+      credentials?.username.contentEquals(username, true) &&
+        credentials?.password.contentEquals(password.concatToString().toSha1())
+    } else false
   }
 
   fun updateSession(successResponse: OAuthResponse) {
@@ -282,36 +278,33 @@ constructor(
 
   fun logout() {
     getRefreshToken()?.run {
-      val logoutService = oAuthService.logout(clientId(), clientSecret(), this)
-      kotlin
-        .runCatching {
-          CoroutineScope(dispatcherProvider.io() + coroutineExceptionHandler).launch {
-            logoutService.execute().run {
-              if (!this.isSuccessful) {
-                Timber.w(this.errorBody()?.toString())
-                context.showToast(
-                  context.getString(R.string.error_contacting_server, this.code().toString())
-                )
-              }
+      val logoutService: Call<ResponseBody> = oAuthService.logout(clientId(), clientSecret(), this)
+      logoutService.enqueue(
+        object : Callback<ResponseBody> {
+          override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+            if (response.isSuccessful) {
+              // Invalidate access token then launch login screen
+              accountManager.invalidateAuthToken(
+                getAccountType(),
+                tokenManagerService.getLocalSessionToken()
+              )
+              // Reset session and refresh tokens to null to force re-login
+              secureSharedPreference.deleteSessionTokens()
+              launchScreen(LoginActivity::class.java)
+            } else {
+              context.showToast(context.getString(R.string.cannot_logout_user))
+            }
+          }
+
+          override fun onFailure(call: Call<ResponseBody>, throwable: Throwable) {
+            Timber.w(throwable)
+            context.run {
+              showToast(getString(R.string.error_logging_out, throwable.localizedMessage))
             }
           }
         }
-        .onFailure {
-          Timber.w(it)
-          context.showToast(context.getString(R.string.error_contacting_server, it.message ?: ""))
-        }
+      )
     }
-
-    sharedPreference.write(IS_LOGGED_IN, false)
-    launchScreen(AppSettingActivity::class.java)
-  }
-
-  val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-    throwable.printStackTrace()
-  }
-
-  fun launchLoginScreen() {
-    launchScreen(getLoginActivityClass())
   }
 
   fun launchScreen(clazz: Class<*>) {
@@ -327,8 +320,6 @@ constructor(
     )
   }
 
-  fun getLoginActivityClass(): Class<*> = LoginActivity::class.java
-
   fun getAccountType(): String = configService.provideAuthConfiguration().accountType
 
   fun clientSecret(): String = configService.provideAuthConfiguration().clientSecret
@@ -336,6 +327,16 @@ constructor(
   fun clientId(): String = configService.provideAuthConfiguration().clientId
 
   fun providerScope(): String = configService.provideAuthConfiguration().scope
+
+  fun validatePreviousLogin(username: String): Boolean {
+    if (secureSharedPreference.retrieveCredentials() == null) return true
+    return accountExists(username)
+  }
+
+  private fun accountExists(username: String) =
+    accountManager.accounts.find {
+      it.name.equals(username, true) && it.type == getAccountType()
+    } != null && secureSharedPreference.retrieveCredentials()?.username.equals(username, true)
 
   companion object {
     const val AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE"
