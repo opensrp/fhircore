@@ -38,7 +38,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 
 @ExperimentalCoroutinesApi
 class PinLoginScreensTest : RobolectricTest() {
@@ -50,7 +49,7 @@ class PinLoginScreensTest : RobolectricTest() {
       object {
         // Imitate click action by doing nothing
         fun onPinChanged() {}
-        fun onMenuLoginClicked(value: String) {}
+        fun onMenuLoginClicked() {}
         fun forgotPin() {}
         fun onDismissForgotDialog() {}
       }
@@ -84,7 +83,7 @@ class PinLoginScreensTest : RobolectricTest() {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = false,
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
         appName = "anc"
@@ -105,7 +104,7 @@ class PinLoginScreensTest : RobolectricTest() {
       .assertHasClickAction()
       .performClick()
 
-    verify { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) }
+    verify { listenerObjectSpy.onMenuLoginClicked() }
   }
 
   @Test
@@ -114,7 +113,7 @@ class PinLoginScreensTest : RobolectricTest() {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = true,
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
         appName = "g6pd"

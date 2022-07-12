@@ -1,0 +1,54 @@
+{
+  "appId": "anc",
+  "classification": "app_feature",
+  "appFeatures": [
+    {
+      "feature": "HouseHoldManagement",
+      "active": true,
+      "settings": {
+        "deactivateMembers": "true"
+      },
+      "target": "CHW",
+      "healthModule": "FAMILY",
+      "useCases": [
+        "HOUSEHOLD_REGISTRATION",
+        "REMOVE_HOUSEHOLD",
+        "HOUSEHOLD_VISITS",
+        "REMOVE_HOUSEHOLD_MEMBER"
+      ]
+    },
+    {
+      "feature": "PatientManagement",
+      "active": true,
+      "settings": {},
+      "target": "CHW",
+      "healthModule": "ANC",
+      "useCases": [
+        "PATIENT_REGISTRATION",
+        "ANC_VISITS",
+        "PREGNANCY_OUTCOME"
+      ]
+    },
+    {
+      "feature": "PatientManagement",
+      "active": true,
+      "settings": {},
+      "target": "HF",
+      "healthModule": "CHILD",
+      "useCases": [
+        "PATIENT_REGISTRATION",
+        "CHILD_IMMUNIZATION"
+      ]
+    },
+    {
+      "feature": "InAppReporting",
+      "settings": {},
+      "active": true
+    },
+    {
+      "feature": "DeviceToDeviceSync",
+      "settings": {},
+      "active": true
+    }
+  ]
+}

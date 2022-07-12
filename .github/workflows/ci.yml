@@ -16,7 +16,10 @@ env:
 
 jobs:
   engine-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        api-level: [30]
     steps:
       - name: Cancel Previous workflow runs
         uses: styfle/cancel-workflow-action@0.9.1
@@ -36,22 +39,59 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
+      
+      - name: Copy CI gradle.properties
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
+
+      - name: Setup Gradle cache
+        uses: gradle/gradle-build-action@v2
 
       - name: Spotless check engine module
-        run: ./gradlew :engine:spotlessCheck
-        working-directory: android
-         
-      - name: Run Engine unit tests with Gradle
-        run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x :engine:testReleaseUnitTest --info --stacktrace
-        working-directory: android
+        run: ./gradlew :engine:spotlessCheck --stacktrace
+        working-directory: android 
+      
+      - name: Load AVD cache
+        uses: actions/cache@v2
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
 
-      - name: Upload Engine Test Report to codecov
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          working-directory: android
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+      
+      - name: Run Unit and Instrumentation tests and generate coverage report
+        uses: reactivecircus/android-emulator-runner@v2
+        with: 
+          working-directory: android
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew :engine:clean && ./gradlew :engine:fhircoreJacocoReport --stacktrace
+
+      - name: Upload Combined Engine Test Report to Codecov
+        if: matrix.api-level == 30 # Only upload coverage on API level 30
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   quest-tests:
-    runs-on: ubuntu-latest
-
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        api-level: [30]
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2
@@ -66,17 +106,50 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
+
+      - name: Copy CI gradle.properties
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+
+      - name: Setup Gradle cache
+        uses: gradle/gradle-build-action@v2
  
       - name: Spotless check quest application
         run: ./gradlew :quest:spotlessCheck
+        working-directory: android 
+      
+      - name: Load AVD cache
+        uses: actions/cache@v2
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          working-directory: android
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Run Unit and Instrumentation tests and generate coverage report
+        uses: reactivecircus/android-emulator-runner@v2
+        with: 
+          working-directory: android
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew :quest:clean && ./gradlew :quest:fhircoreJacocoReport --stacktrace
+
+      - name: Upload Quest Test Report to Codecov
+        if: matrix.api-level == 30 # Only upload coverage on API level 30
         working-directory: android
-
-      - name: Run Quest unit tests with Gradle
-        run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReportQuestDebug -x :quest:testQuestReleaseUnitTest --stacktrace
-        working-directory: android
-
-      - name: Upload Quest Test Report to codecov
-        working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-
-
+        run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
