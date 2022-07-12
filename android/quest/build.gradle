@@ -34,8 +34,7 @@ android {
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
 
-  //      testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
+        testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
     }
 
     signingConfigs {
