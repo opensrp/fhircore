@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,10 +43,14 @@ import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
@@ -61,6 +68,29 @@ fun PatientRegisterScreen(
 ) {
   val context = LocalContext.current
   val searchText by remember { patientRegisterViewModel.searchText }
+  val patientRegistrationLauncher =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.StartActivityForResult(),
+      onResult = {
+        if (it.resultCode == Activity.RESULT_OK && it.data != null) {
+          val questionnaireResponse =
+            it.data!!
+              .getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+              ?.decodeResourceFromString<QuestionnaireResponse>()
+          val patientId = questionnaireResponse?.subject?.extractId()
+          if (patientId != null) {
+            patientRegisterViewModel.onEvent(
+              PatientRegisterEvent.OpenProfile(
+                appFeatureName,
+                healthModule,
+                patientId,
+                navController
+              )
+            )
+          }
+        }
+      }
+    )
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
   val currentSetTotalRecordCount by rememberUpdatedState(
     patientRegisterViewModel::setTotalRecordsCount
@@ -142,7 +172,11 @@ fun PatientRegisterScreen(
             Button(
               modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
               onClick = {
-                patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
+                patientRegistrationLauncher.launch(
+                  patientRegisterViewModel.patientRegisterQuestionnaireIntent(context)
+                )
+                //
+                // patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
               }
             ) {
               Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp))

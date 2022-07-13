@@ -60,7 +60,7 @@ constructor(
   fun hivPatientIdentifier(patient: Patient): String =
     // would either be an ART or HCC number
     patient.extractOfficialIdentifier()
-      ?: patient.extractSecondaryIdentifier() ?: patient.identifierFirstRep.value
+      ?: patient.extractSecondaryIdentifier() ?: patient.identifierFirstRep.value ?: ""
 
   override suspend fun loadRegisterData(
     currentPage: Int,
