@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.data.patient.model
+package org.smartregister.fhircore.quest.ui.shared.models
 
-import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 
-data class PatientPagingSourceState(
-  val registerId: String,
-  val currentPage: Int = 0,
-  val loadAll: Boolean = false,
-  val registerCardConfig: RegisterCardConfig
+data class RegisterCardData(
+  val resourceData: ResourceData,
+  val computedRegisterCardData: Map<String, Any>
 )

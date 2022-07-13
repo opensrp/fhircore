@@ -219,8 +219,8 @@ dependencies {
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
     //Easy rules dependency
-    api 'org.jeasy:easy-rules-core:4.1.1-SNAPSHOT'
-    api 'org.jeasy:easy-rules-mvel:4.1.1-SNAPSHOT'
+    api 'org.jeasy:easy-rules-core:4.1.0'
+    api 'org.jeasy:easy-rules-mvel:4.1.0'
 
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")

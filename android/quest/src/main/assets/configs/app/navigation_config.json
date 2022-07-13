@@ -39,7 +39,7 @@
   ],
   "clientRegisters": [
     {
-      "id": "all_household_register",
+      "id": "patient_register",
       "display": "All Households",
       "icon": "",
       "showCount": true,
@@ -47,7 +47,7 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REGISTER",
-          "id": "all_household_register"
+          "id": "patient_register"
         },
         {
           "trigger": "ON_COUNT",

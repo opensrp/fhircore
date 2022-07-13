@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.Resource
 
 /**
  * Represent the resource types that are used on a Register.
@@ -27,7 +27,7 @@ import org.hl7.fhir.r4.model.Base
  * For example. For every Patient resource we return also their Immunization and Observation
  * resources
  */
-data class RegisterResource(
-  val baseResource: Base,
-  val relatedResources: Map<String, List<Base>> = emptyMap()
+data class ResourceData(
+  val baseResource: Resource,
+  val relatedResources: Map<String, List<Resource>> = emptyMap()
 )

@@ -19,8 +19,10 @@ package org.smartregister.fhircore.quest.data.patient
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
-import org.smartregister.fhircore.engine.domain.model.RegisterResource
+import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterCardData
 import timber.log.Timber
 
 /**
@@ -28,8 +30,9 @@ import timber.log.Timber
  * [PatientRegisterRepository] function for loading data to the paging source.
  */
 class PatientRegisterPagingSource(
-  private val patientRegisterRepository: PatientRegisterRepository
-) : PagingSource<Int, RegisterResource>() {
+  private val patientRegisterRepository: PatientRegisterRepository,
+  private val rulesFactory: RulesFactory
+) : PagingSource<Int, RegisterCardData>() {
 
   private lateinit var _patientPagingSourceState: PatientPagingSourceState
 
@@ -45,15 +48,21 @@ class PatientRegisterPagingSource(
    *
    * nextKey = if (data.isNotEmpty()) pageNumber + 1 else null
    */
-  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterResource> {
+  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterCardData> {
     return try {
       val currentPage = params.key ?: _patientPagingSourceState.currentPage
       val data =
         patientRegisterRepository.loadRegisterData(
-          currentPage = currentPage,
-          registerId = _patientPagingSourceState.registerId,
-          loadAll = _patientPagingSourceState.loadAll
-        )
+            currentPage = currentPage,
+            registerId = _patientPagingSourceState.registerId,
+            loadAll = _patientPagingSourceState.loadAll
+          )
+          .map {
+            RegisterCardData(
+              resourceData = it,
+              computedRegisterCardData = computeRegisterCardRules(it)
+            )
+          }
       val prevKey =
         when {
           _patientPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
@@ -72,11 +81,16 @@ class PatientRegisterPagingSource(
     }
   }
 
+  private fun computeRegisterCardRules(resourceData: ResourceData): Map<String, Any> {
+    val rules = _patientPagingSourceState.registerCardConfig.columnOne.rowOne?.rules
+    return rulesFactory.fireRule(rules ?: listOf(), resourceData)
+  }
+
   fun setPatientPagingSourceState(patientPagingSourceState: PatientPagingSourceState) {
     this._patientPagingSourceState = patientPagingSourceState
   }
 
-  override fun getRefreshKey(state: PagingState<Int, RegisterResource>): Int? {
+  override fun getRefreshKey(state: PagingState<Int, RegisterCardData>): Int? {
     return state.anchorPosition
   }
 

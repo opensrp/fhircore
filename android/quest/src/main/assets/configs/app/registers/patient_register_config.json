@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "all_household_register",
+  "id": "patient_register",
   "fhirResource": {
     "baseResource": {
       "resource": "Patient"
@@ -46,9 +46,9 @@
         "rules": [
           {
             "name": "patientName",
-            "condition": "",
+            "condition": "true",
             "actions": [
-              "patientName = fhirPathDataExtractor.extractValue(patient, 'Patient.name.given')"
+              "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given'))"
             ]
           }
         ]
@@ -89,7 +89,7 @@
               "name": "filter",
               "condition": "",
               "actions": [
-                "filter = 1 + fhirpath.execute('expression')"
+                ""
               ]
             }
           ]
@@ -100,7 +100,7 @@
       "visible": false
     },
     "columnTwo": {
-      "visible": true,
+      "visible": false,
       "rules": [
         {
           "name": "count",

@@ -42,11 +42,11 @@ import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
-import org.smartregister.fhircore.engine.domain.model.RegisterResource
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterCardData
 
 @Composable
 fun PatientRegisterScreen(
@@ -84,7 +84,7 @@ fun PatientRegisterScreen(
     }
   }
 
-  val pagingItems: LazyPagingItems<RegisterResource> =
+  val pagingItems: LazyPagingItems<RegisterCardData> =
     patientRegisterViewModel
       .paginatedRegisterData
       .collectAsState(emptyFlow())

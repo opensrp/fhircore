@@ -36,7 +36,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
-import org.smartregister.fhircore.engine.domain.model.RegisterResource
+import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -47,6 +47,7 @@ import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterCardData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
@@ -56,7 +57,8 @@ constructor(
   val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val rulesFactory: RulesFactory
 ) : ViewModel() {
 
   private val _currentPage = MutableLiveData(0)
@@ -69,38 +71,39 @@ constructor(
 
   private val _totalRecordsCount = MutableLiveData(1L)
 
-  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterResource>>> =
+  private lateinit var registerConfiguration: RegisterConfiguration
+
+  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterCardData>>> =
     MutableStateFlow(emptyFlow())
 
   fun paginateRegisterData(registerId: String, loadAll: Boolean = false) {
     paginatedRegisterData.value = getPager(registerId, loadAll).flow
   }
 
-  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, RegisterResource> =
+  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, RegisterCardData> =
     Pager(
-      config =
-        PagingConfig(pageSize = DEFAULT_PAGE_SIZE, initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE),
+      PagingConfig(pageSize = DEFAULT_PAGE_SIZE, initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE),
       pagingSourceFactory = {
-        PatientRegisterPagingSource(patientRegisterRepository).apply {
-          setPatientPagingSourceState(
-            PatientPagingSourceState(
-              registerId = registerId,
-              loadAll = loadAll,
-              currentPage = if (loadAll) 0 else currentPage.value!!
-            )
+        PatientRegisterPagingSource(
+            patientRegisterRepository = patientRegisterRepository,
+            rulesFactory = rulesFactory
           )
-        }
+          .apply {
+            setPatientPagingSourceState(
+              PatientPagingSourceState(
+                registerId = registerId,
+                loadAll = loadAll,
+                currentPage = if (loadAll) 0 else currentPage.value!!,
+                registerCardConfig = retrieveRegisterConfiguration(registerId).registerCard
+              )
+            )
+          }
       }
     )
 
   fun setTotalRecordsCount(registerId: String) {
     // Get the baseResource from the register configurations. Retrieve it's resource type then count
-    val fhirResource =
-      configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
-          ConfigType.Register,
-          configId = registerId
-        )
-        .fhirResource
+    val fhirResource = retrieveRegisterConfiguration(registerId).fhirResource
 
     val baseResourceClass = fhirResource.baseResource.resource.resourceClassType().newInstance()
     viewModelScope.launch {
@@ -108,6 +111,14 @@ constructor(
         patientRegisterRepository.countRegisterData(baseResourceClass.resourceType, registerId)
       )
     }
+  }
+
+  private fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
+    if (!::registerConfiguration.isInitialized) {
+      registerConfiguration =
+        configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
+    }
+    return registerConfiguration
   }
 
   fun countPages(): Int =
@@ -152,7 +163,7 @@ constructor(
 
   private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
     paginatedRegisterData.value =
-      getPager(event.registerId, true).flow.map { pagingData: PagingData<RegisterResource> ->
+      getPager(event.registerId, true).flow.map { pagingData: PagingData<RegisterCardData> ->
         pagingData.filter {
           // TODO apply relevant filters
           //          it.title.contains(event.searchText, ignoreCase = true) ||

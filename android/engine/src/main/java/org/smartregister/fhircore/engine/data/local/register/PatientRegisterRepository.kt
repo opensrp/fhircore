@@ -32,7 +32,7 @@ import org.smartregister.fhircore.engine.configuration.register.ResourceConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterResource
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -54,7 +54,7 @@ constructor(
     currentPage: Int,
     loadAll: Boolean,
     registerId: String
-  ): List<RegisterResource> =
+  ): List<ResourceData> =
     withContext(dispatcherProvider.io()) {
       val registerConfiguration =
         configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
@@ -91,7 +91,7 @@ constructor(
           val relatedResources = fhirEngine.search<Resource>(relatedResourceSearch)
           retrievedRelatedResources[resourceConfig.resource] = relatedResources
         }
-        RegisterResource(baseResource = baseResource, relatedResources = retrievedRelatedResources)
+        ResourceData(baseResource = baseResource, relatedResources = retrievedRelatedResources)
       }
     }
 

@@ -63,7 +63,7 @@
           "focus": {
             "reference": "Binary/11111115",
             "identifier": {
-              "value": "all_household_register"
+              "value": "patient_register"
             }
           }
         }
