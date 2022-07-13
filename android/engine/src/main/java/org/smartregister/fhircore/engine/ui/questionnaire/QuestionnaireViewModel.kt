@@ -171,6 +171,7 @@ constructor(
 
       if (resource is Patient) resource.managingOrganization = organizationRef
       else if (resource is Group) resource.managingEntity = organizationRef
+      else if (resource is Encounter) resource.serviceProvider = organizationRef
     }
   }
 
@@ -214,15 +215,14 @@ constructor(
     questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
     questionnaire: Questionnaire
   ) {
+    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
+
+    if (questionnaireResponse.logicalId.isEmpty()) {
+      questionnaireResponse.id = UUID.randomUUID().toString()
+      questionnaireResponse.authored = Date()
+    }
+
     viewModelScope.launch(dispatcherProvider.io()) {
-      questionnaireResponse.questionnaire =
-        "${questionnaire.resourceType}/${questionnaire.logicalId}"
-
-      if (questionnaireResponse.logicalId.isEmpty()) {
-        questionnaireResponse.id = UUID.randomUUID().toString()
-        questionnaireResponse.authored = Date()
-      }
-
       questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
         it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
       }
@@ -236,15 +236,15 @@ constructor(
         bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-            if (questionnaireConfig.setOrganizationDetails) {
-              appendOrganizationInfo(bundleEntry.resource)
-            }
             // if it is new registration set response subject
             if (resourceId == null)
               questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
+          }
+          if (questionnaireConfig.setOrganizationDetails) {
+            appendOrganizationInfo(bundleEntry.resource)
           }
 
           if (questionnaireType != QuestionnaireType.EDIT &&
