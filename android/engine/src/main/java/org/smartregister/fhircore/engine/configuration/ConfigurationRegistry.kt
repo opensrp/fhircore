@@ -23,6 +23,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
@@ -49,6 +50,12 @@ constructor(
   val repository: DefaultRepository
 ) {
 
+  val json = Json {
+    encodeDefaults = true
+    ignoreUnknownKeys = true
+    isLenient = true
+  }
+
   val configsJsonMap = mutableMapOf<String, String>()
 
   /**
@@ -63,7 +70,7 @@ constructor(
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
       configsJsonMap.getValue(configKey).decodeResourceFromString()
-    else configsJsonMap.getValue(configKey).decodeJson()
+    else configsJsonMap.getValue(configKey).decodeJson(jsonInstance = json)
   }
 
   /**

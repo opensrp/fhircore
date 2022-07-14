@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.engine.configuration.register.view
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.register.view.RegisterCardViewProperties
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
-data class RegisterCardConfig(
-  val rules: List<RuleConfig> = emptyList(),
-  val views: List<RegisterCardViewProperties> = emptyList()
-)
+class GroupedViewProperties(
+  override val viewType: ViewType,
+  override val weight: Float? = null,
+  override val children: List<RegisterCardViewProperties>? = null,
+) : RegisterCardViewProperties()

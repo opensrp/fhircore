@@ -40,83 +40,32 @@
     ]
   },
   "registerCard": {
-    "columnOne": {
-      "rowOne": {
-        "separator": "-",
-        "rules": [
+    "rules": [
+      {
+        "name": "patientName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientName', fhirPath.extractValue(Immunization, fhirPath.extractValue(Immunization[0], 'Patient.name.given'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
           {
-            "name": "patientName",
-            "condition": "true",
-            "actions": [
-              "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given'))"
-            ]
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "Example of concatenated text: {$patientName}",
+            "primaryTextColor": "#000000",
+            "secondaryText": "G6PD",
+            "weight": 0.75
+          },
+          {
+            "viewType": "ROW",
+            "children": []
           }
         ]
-      },
-      "rowTwo": {
-        "visible": true,
-        "columnOne": {
-          "visible": true,
-          "rowOne": {
-            "visible": true,
-            "rules": [
-              {
-                "name": "filter",
-                "condition": "",
-                "actions": [
-                  ""
-                ]
-              }
-            ]
-          },
-          "rowTwo": {
-            "visible": true,
-            "rules": [
-              {
-                "name": "filter",
-                "condition": "",
-                "actions": [
-                  ""
-                ]
-              }
-            ]
-          }
-        },
-        "columnTwo": {
-          "visible": true,
-          "rules": [
-            {
-              "name": "filter",
-              "condition": "",
-              "actions": [
-                ""
-              ]
-            }
-          ]
-        }
       }
-    },
-    "divider": {
-      "visible": false
-    },
-    "columnTwo": {
-      "visible": false,
-      "rules": [
-        {
-          "name": "count",
-          "condition": "",
-          "actions": [
-            ""
-          ]
-        },
-        {
-          "name": "status",
-          "condition": "",
-          "actions": [
-            ""
-          ]
-        }
-      ]
-    }
+    ]
   }
 }
