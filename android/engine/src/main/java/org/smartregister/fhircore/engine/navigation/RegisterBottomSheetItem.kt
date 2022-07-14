@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.navigation
+package org.smartregister.fhircore.engine.navigation
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.navigation.RegisterBottomSheetItem
 
 @Serializable
-data class NavigationBottomSheetRegisterConfig(
-  val visible: Boolean = true,
-  val display: String = "",
-  val registers: List<RegisterBottomSheetItem> = emptyList()
-)
+data class RegisterBottomSheetItem(val id: String, val display: String, var showCount: Boolean = false)

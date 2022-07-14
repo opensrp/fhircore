@@ -17,32 +17,34 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
-import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.p2p.utils.startP2PScreen
+import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.util.*
+import javax.inject.Inject
 
 @HiltViewModel
 class AppMainViewModel
@@ -72,7 +74,7 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  fun retrieveAppMainUiState() {
+  fun retrieveAppMainUiState() {0
     appMainUiState.value =
       appMainUiStateOf(
         appTitle = applicationConfiguration.appTitle,
@@ -97,6 +99,19 @@ constructor(
       AppMainEvent.SyncData -> {
         syncBroadcaster.runSync()
         retrieveAppMainUiState()
+      }
+      is AppMainEvent.RegisterNewClient -> {
+        event.context.launchQuestionnaire<QuestionnaireActivity>(
+          questionnaireId = event.questionnaireId
+        )
+      }
+      is AppMainEvent.OpenRegistersBottomSheet -> {
+        event.context.run {
+          (this as AppCompatActivity).let { activity ->
+            val navigationBottomSheet = NavigationBottomSheet(registersList = event.registersList) {}
+            navigationBottomSheet.show(activity.supportFragmentManager, NavigationBottomSheet.TAG)
+          }
+        }
       }
       is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
       is AppMainEvent.UpdateSyncState -> {

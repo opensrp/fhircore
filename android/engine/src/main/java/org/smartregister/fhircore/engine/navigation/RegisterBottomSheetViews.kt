@@ -16,20 +16,10 @@
 
 package org.smartregister.fhircore.engine.navigation
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Surface
@@ -37,9 +27,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,37 +34,40 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun RegisterBottomSheet(
-  registers: List<RegisterItem>,
+  registers: List<RegisterBottomSheetItem>?,
   itemListener: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
   Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
-    Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp)) {
+    Column(modifier = modifier
+      .fillMaxWidth()
+      .padding(horizontal = 16.dp, vertical = 12.dp)) {
       Text(
-        text = stringResource(R.string.select_register),
-        textAlign = TextAlign.Center,
+        text = stringResource(R.string.other_patients),
+        textAlign = TextAlign.Start,
         fontWeight = FontWeight.Bold,
-        fontSize = 22.sp,
+        fontSize = 16.sp,
         modifier =
-          modifier.padding(horizontal = 12.dp, vertical = 16.dp).align(Alignment.CenterHorizontally)
+        modifier
+          .padding(horizontal = 12.dp, vertical = 16.dp)
+          .align(Alignment.Start)
       )
+      Divider(color = DividerColor, thickness = 1.dp)
       LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
         modifier = Modifier.fillMaxWidth()
       ) {
-        items(
-          items = registers,
-          itemContent = {
-            RegisterListItem(it, itemListener)
+        itemsIndexed(registers!!) { index, item ->
+          RegisterListItem(item, itemListener)
+          if (index < registers.lastIndex)
             Divider(color = DividerColor, thickness = 1.dp)
-          }
-        )
+        }
       }
     }
   }
@@ -85,27 +75,29 @@ fun RegisterBottomSheet(
 
 @Composable
 fun RegisterListItem(
-  registerItem: RegisterItem,
+  registerItem: RegisterBottomSheetItem,
   itemListener: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
   Row(
     modifier =
-      modifier.fillMaxWidth().clickable { itemListener(registerItem.uniqueTag) }.padding(14.dp)
+    modifier
+      .fillMaxWidth()
+      .clickable { itemListener(registerItem.id) }
+      .padding(14.dp)
   ) {
-    Box(modifier = modifier.wrapContentWidth()) {
-      if (registerItem.isSelected) {
-        Image(
-          painter = painterResource(R.drawable.ic_green_tick),
-          contentDescription = stringResource(id = R.string.tick),
-          colorFilter = ColorFilter.tint(color = Color.Gray),
-          modifier = modifier.size(22.dp)
-        )
-      } else {
-        Spacer(modifier = modifier.width(20.dp))
-      }
+    Box(modifier = modifier.wrapContentWidth()) {}
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+      Text(text = registerItem.display, modifier = modifier.padding(horizontal = 12.dp))
+      Text(
+        text = "1", textAlign = TextAlign.Start,
+        color = StatusTextColor,
+        fontSize = 13.sp,
+      )
     }
-    Text(text = registerItem.title, modifier = modifier.padding(horizontal = 12.dp))
   }
 }
 
@@ -114,7 +106,7 @@ fun RegisterListItem(
 @Composable
 fun RegisterListItemPreview() {
   RegisterListItem(
-    registerItem = RegisterItem("TestFragmentTag", "All Clients", true),
+    registerItem = RegisterBottomSheetItem("TestFragmentTag", "All Clients", true),
     itemListener = {}
   )
 }
@@ -127,8 +119,8 @@ fun RegisterBottomSheetPreview() {
     itemListener = {},
     registers =
       listOf(
-        RegisterItem(uniqueTag = "TestFragmentTag", title = "All Clients"),
-        RegisterItem(uniqueTag = "TestFragmentTag2", title = "Families", isSelected = true)
+        RegisterBottomSheetItem(id = "TestFragmentTag", display = "All Clients"),
+        RegisterBottomSheetItem(id = "TestFragmentTag2", display = "Families", showCount = true)
       )
   )
 }
