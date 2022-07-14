@@ -224,9 +224,20 @@ fun Patient.extractOfficialIdentifier(): String? =
 fun Patient.extractHealthStatusFromMeta(filterTag: String): HealthStatus {
   return try {
     val tagList = this.meta.tag.filter { it.system.equals(filterTag, true) }
-    if (filterTag.isEmpty() || tagList.isEmpty() || tagList[0].code.isEmpty())
+    if (filterTag.isEmpty() ||
+        tagList.isEmpty() ||
+        tagList[0].code == null ||
+        tagList[0].code.isEmpty()
+    )
       return HealthStatus.DEFAULT
-    HealthStatus.valueOf(tagList[0].code?.uppercase(Locale.getDefault())?.replace("-", "_") ?: "")
+    HealthStatus.valueOf(tagList[0].code!!.uppercase(Locale.getDefault()).replace("-", "_")).apply {
+      display =
+        when (this) {
+          HealthStatus.NEWLY_DIAGNOSED_CLIENT, HealthStatus.CLIENT_ALREADY_ON_ART -> "ART Client"
+          HealthStatus.COMMUNITY_POSITIVE -> "No Conf Test"
+          else -> tagList[0].display
+        }
+    }
   } catch (e: Exception) {
     Timber.e(e)
     HealthStatus.DEFAULT

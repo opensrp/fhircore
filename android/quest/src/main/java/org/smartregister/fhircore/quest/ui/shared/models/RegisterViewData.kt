@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import kotlin.reflect.KClass
+import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 
@@ -30,7 +33,7 @@ data class RegisterViewData(
   val otherStatus: String? = null,
   val serviceMembers: List<ServiceMember> = emptyList(),
   val serviceText: String? = null,
-  val serviceTextIcon: Int? = null,
+  @DrawableRes val serviceTextIcon: Int? = null,
   val serviceButtonActionable: Boolean = false,
   val serviceButtonForegroundColor: Color = DefaultColor,
   val serviceButtonBackgroundColor: Color = Color.White,
@@ -38,5 +41,6 @@ data class RegisterViewData(
   val borderedServiceButton: Boolean = false,
   val showDivider: Boolean = false,
   val showServiceButton: Boolean = true,
+  val registerType: KClass<out RegisterData> = RegisterData.DefaultRegisterData::class,
   val identifier: String = ""
 )

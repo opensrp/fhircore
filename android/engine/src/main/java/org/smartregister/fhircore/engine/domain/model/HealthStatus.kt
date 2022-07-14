@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-enum class HealthStatus {
+enum class HealthStatus(var display: String = "") {
   NEWLY_DIAGNOSED_CLIENT,
   CLIENT_ALREADY_ON_ART,
   EXPOSED_INFANT,

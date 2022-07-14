@@ -18,12 +18,17 @@ package org.smartregister.fhircore.quest.util.mappers
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
+import androidx.ui.text.substring
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Enumerations
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DueLightColor
+import org.smartregister.fhircore.engine.ui.theme.FemalePinkColor
+import org.smartregister.fhircore.engine.ui.theme.MaleBlueColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
@@ -40,7 +45,8 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
         RegisterViewData(
           logicalId = inputModel.logicalId,
           title = listOf(inputModel.name, inputModel.age).joinToString(", "),
-          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter()
+          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter(),
+          registerType = RegisterData.DefaultRegisterData::class
         )
       is RegisterData.FamilyRegisterData -> {
         val serviceText =
@@ -75,7 +81,8 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           borderedServiceButton = inputModel.servicesDue != 0 && inputModel.servicesOverdue == 0,
           serviceButtonBorderColor = BlueTextColor,
           showDivider = true,
-          showServiceButton = !serviceText.isNullOrEmpty()
+          showServiceButton = !serviceText.isNullOrEmpty(),
+          registerType = RegisterData.FamilyRegisterData::class
         )
       }
       is RegisterData.AncRegisterData ->
@@ -89,20 +96,37 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           serviceButtonForegroundColor =
             if (inputModel.servicesOverdue == 0) BlueTextColor else OverdueDarkRedColor,
           serviceText = context.getString(R.string.anc_visit),
-          showServiceButton = inputModel.servicesOverdue != 0 || inputModel.servicesDue != 0
+          showServiceButton = inputModel.servicesOverdue != 0 || inputModel.servicesDue != 0,
+          registerType = RegisterData.AncRegisterData::class
         )
       is RegisterData.HivRegisterData ->
         RegisterViewData(
           logicalId = inputModel.logicalId,
-          title = listOf(inputModel.name, inputModel.age).joinToString(", "),
-          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter(),
-          identifier = inputModel.identifier ?: ""
+          title = inputModel.name,
+          subtitle = "${inputModel.age}, ${inputModel.healthStatus.display}",
+          registerType = RegisterData.HivRegisterData::class,
+          identifier = inputModel.identifier?.let { if (it.length > 6) it.substring(0..5) else it }
+              ?: "",
+          serviceButtonBackgroundColor =
+            if (inputModel.gender == Enumerations.AdministrativeGender.MALE) MaleBlueColor
+            else FemalePinkColor,
+          serviceTextIcon =
+            when {
+              inputModel.healthStatus == HealthStatus.EXPOSED_INFANT ->
+                R.drawable.baseline_child_care_fill_48
+              inputModel.gender == Enumerations.AdministrativeGender.MALE ->
+                R.drawable.baseline_man_24
+              inputModel.gender == Enumerations.AdministrativeGender.FEMALE ->
+                R.drawable.baseline_woman_24
+              else -> null
+            }
         )
       is RegisterData.AppointmentRegisterData ->
         RegisterViewData(
           logicalId = inputModel.logicalId,
           title = listOf(inputModel.name, inputModel.age).joinToString(", "),
-          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter()
+          subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter(),
+          registerType = RegisterData.AppointmentRegisterData::class
         )
       else -> throw UnsupportedOperationException()
     }

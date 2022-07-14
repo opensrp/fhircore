@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
+import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -40,8 +41,7 @@ fun RegisterList(
 ) {
   LazyColumn(modifier = modifier) {
     items(pagingItems, key = { it.logicalId }) {
-      RegisterListRow(registerViewData = it!!, onRowClick = onRowClick)
-      Divider(color = DividerColor, thickness = 1.dp)
+      RegisterRowItem(registerViewData = it!!, onRowClick = onRowClick)
     }
     pagingItems.apply {
       when {
@@ -69,6 +69,19 @@ fun RegisterList(
           }
         }
       }
+    }
+  }
+}
+
+@Composable
+fun RegisterRowItem(registerViewData: RegisterViewData, onRowClick: (String) -> Unit) {
+  when (registerViewData.registerType) {
+    RegisterData.HivRegisterData::class -> {
+      HivPatientRegisterListRow(data = registerViewData, onItemClick = onRowClick)
+    }
+    else -> {
+      RegisterListRow(registerViewData = registerViewData, onRowClick = onRowClick)
+      Divider(color = DividerColor, thickness = 1.dp)
     }
   }
 }
