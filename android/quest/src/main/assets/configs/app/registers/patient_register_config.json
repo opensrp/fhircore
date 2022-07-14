@@ -45,7 +45,7 @@
         "name": "patientName",
         "condition": "true",
         "actions": [
-          "data.put('patientName', fhirPath.extractValue(Immunization, fhirPath.extractValue(Immunization[0], 'Patient.name.given'))"
+          "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given'))"
         ]
       }
     ],
