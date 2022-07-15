@@ -65,7 +65,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
                 icon =
                   when {
                     it.pregnant -> R.drawable.ic_pregnant
-                    it.age.toInt() <= 5 -> R.drawable.ic_kids
+                    it.age?.toInt()?.let { it <= 5 } == true -> R.drawable.ic_kids
                     else -> R.drawable.ic_users
                   },
                 logicalId = it.logicalId

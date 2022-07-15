@@ -267,7 +267,7 @@ constructor(
       RegisterData.FamilyMemberRegisterData(
         logicalId = patient.logicalId,
         name = patient.extractName(),
-        age = (patient.birthDate.daysPassed() / DAYS_IN_YEAR).toString(),
+        age = patient.birthDate?.let { it.daysPassed() / DAYS_IN_YEAR }?.toString(),
         birthdate = patient.birthDate,
         gender = patient.gender.display.first().toString(),
         pregnant = conditions.hasActivePregnancy(),
