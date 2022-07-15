@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.appfeature
+package org.smartregister.fhircore.engine.configuration.register
 
-/**
- * A representation of application features. An application feature can have a list of supported
- * actions. Actions can be triggered via a click action on the side menu or clicking a menu item
- * from the toolbar.
- */
-sealed class AppFeature(val name: String) {
-  object InAppReporting : AppFeature(name = "InAppReporting")
-  object PatientManagement : AppFeature(name = "PatientManagement")
-  object HouseholdManagement : AppFeature(name = "HouseholdManagement")
-  object DeviceToDeviceSync : AppFeature(name = "DeviceToDeviceSync")
-}
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+
+@Serializable
+data class RegisterContentConfig(
+  val separator: String? = null,
+  val display: String? = null,
+  val rules: List<RuleConfig>? = null,
+  val visible: Boolean? = null,
+  val columnOne: RegisterContentConfig? = null,
+  val columnTwo: RegisterContentConfig? = null,
+  val rowOne: RegisterContentConfig? = null,
+  val rowTwo: RegisterContentConfig? = null
+)

@@ -23,6 +23,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -54,15 +55,24 @@ constructor(
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
    * can be directly converted to a FHIR resource or hard coded custom model.
    */
-  inline fun <reified T : Any> retrieveConfiguration(
+  // TODO optimize to use a map to avoid decoding configuration everytime a config is retrieved
+  inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
     configId: String? = null
   ): T {
-    val configKey =
-      if (configType.multiConfig && !configId.isNullOrEmpty()) configId else configType.name
+    val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
       configsJsonMap.getValue(configKey).decodeResourceFromString()
     else configsJsonMap.getValue(configKey).decodeJson()
+  }
+
+  /**
+   * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
+   * can be directly converted to a FHIR resource or hard coded custom model.
+   */
+  inline fun <reified T : Base> retrieveResourceConfiguration(configType: ConfigType): T {
+    require(configType.parseAsResource) { "Configuration MUST be a supported FHIR Resource" }
+    return configsJsonMap.getValue(configType.name).decodeResourceFromString()
   }
 
   /**
@@ -253,7 +263,6 @@ constructor(
     const val PUBLISHER = "publisher"
     const val ID = "_id"
     const val COUNT = "count"
-    const val DEFAULT_COUNT = "100"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val JSON_EXTENSION = ".json"
     const val CONFIG_SUFFIX = "_config.json"

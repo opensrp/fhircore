@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.p2p.sync.DataType
@@ -146,15 +147,11 @@ constructor(
     }
   }
 
-  fun resourceClassType(dataType: DataType): Class<out Resource> {
-    return Class.forName("org.hl7.fhir.r4.model.${dataType.name}") as Class<out Resource>
-  }
-
   suspend fun countTotalRecordsForSync(highestRecordIdMap: HashMap<String, Long>): Long {
     var recordCount: Long = 0
 
     getDataTypes().forEach {
-      resourceClassType(it).let { classType ->
+      it.name.resourceClassType().let { classType ->
         val lastRecordId = highestRecordIdMap[it.name] ?: 0L
         val searchCount = getSearchObjectForCount(lastRecordId, classType)
         recordCount += fhirEngine.count(searchCount)

@@ -35,10 +35,10 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FamilyMemberProfileData
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
-import org.smartregister.fhircore.engine.domain.model.SearchFilter
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
@@ -337,7 +337,7 @@ constructor(
       subjectType = ResourceType.Patient
     )
 
-  private fun getRegisterDataFilters(id: String) = emptyList<SearchFilter>()
+  private fun getRegisterDataFilters(id: String) = emptyList<DataQuery>()
 
   companion object {
     const val FAMILY_CARE_PLAN = "family_care_plan"

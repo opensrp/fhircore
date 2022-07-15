@@ -16,22 +16,18 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-import androidx.compose.runtime.Stable
-import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Resource
 
-@Serializable
-/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
-data class DataQuery(
-  val id: String = "",
-  val key: String,
-  val filterType: Enumerations.SearchParamType,
-  val valueType: Enumerations.DataType,
-  val valueBoolean: Boolean? = null,
-  val valueCoding: Code? = null,
-  val valueString: String? = null
+/**
+ * Represent the resource types that are used on a Register.
+ * @property baseResource is the main resource used on the register
+ * @property relatedResources are the other/extra resources accompanying the [baseResource]. For
+ * each [baseResource] return associated [relatedResources].
+ *
+ * For example. For every Patient resource we return also their Immunization and Observation
+ * resources
+ */
+data class ResourceData(
+  val baseResource: Resource,
+  val relatedResources: Map<String, List<Resource>> = emptyMap()
 )
-
-@Stable
-@Serializable
-data class Code(val system: String? = null, val code: String? = null, val display: String? = null)

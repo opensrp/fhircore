@@ -16,23 +16,36 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.register.ResourceConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFactory
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterData
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.filterBy
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 
 class PatientRegisterRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
-  val registerDaoFactory: RegisterDaoFactory
+  val configurationRegistry: ConfigurationRegistry
 ) :
   RegisterRepository,
   DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
@@ -40,34 +53,80 @@ constructor(
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
-    appFeatureName: String?,
-    healthModule: HealthModule
-  ): List<RegisterData> =
+    registerId: String
+  ): List<ResourceData> =
     withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
-        currentPage = currentPage,
-        appFeatureName = appFeatureName
-      )
-        ?: emptyList()
+      val registerConfiguration =
+        configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
+          ConfigType.Register,
+          configId = registerId
+        )
+      val baseResourceConfig = registerConfiguration.fhirResource.baseResource
+      val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
+      val baseResourceClass = baseResourceConfig.resource.resourceClassType()
+
+      val baseResources =
+        searchResource(
+          baseResourceClass = baseResourceClass,
+          dataQueries = baseResourceConfig.dataQueries,
+          loadAll = loadAll,
+          registerId = registerId,
+          currentPage = currentPage
+        )
+      // Retrieve data for each of the configured related resources
+      baseResources.map { baseResource: Resource ->
+        val retrievedRelatedResources = mutableMapOf<String, List<Resource>>()
+        relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
+          val relatedResourceClass = resourceConfig.resource.resourceClassType().newInstance()
+          val relatedResourceSearch =
+            Search(type = relatedResourceClass.resourceType).apply {
+              // Filter resource by reference
+              filterByResourceTypeId(
+                ReferenceClientParam(resourceConfig.searchParameter),
+                baseResourceClass.newInstance().resourceType,
+                baseResource.logicalId
+              )
+              resourceConfig.dataQueries?.forEach { filterBy(it) }
+            }
+          val relatedResources = fhirEngine.search<Resource>(relatedResourceSearch)
+          retrievedRelatedResources[resourceConfig.resource] = relatedResources
+        }
+        ResourceData(baseResource = baseResource, relatedResources = retrievedRelatedResources)
+      }
     }
 
-  override suspend fun countRegisterData(
-    appFeatureName: String?,
-    healthModule: HealthModule
-  ): Long =
+  private suspend fun searchResource(
+    baseResourceClass: Class<out Resource>,
+    dataQueries: List<DataQuery>?,
+    loadAll: Boolean,
+    registerId: String,
+    currentPage: Int
+  ): List<Resource> {
+    val resourceType = baseResourceClass.newInstance().resourceType
+    val search =
+      Search(type = resourceType).apply {
+        dataQueries?.forEach { filterBy(it) }
+        filter(TokenClientParam(ACTIVE), { value = of(true) }) // filter only active ones
+        count =
+          if (loadAll) countRegisterData(resourceType, registerId).toInt()
+          else PaginationConstant.DEFAULT_PAGE_SIZE
+        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+      }
+    return fhirEngine.search(search)
+  }
+
+  override suspend fun countRegisterData(resourceType: ResourceType, registerId: String): Long =
+    fhirEngine.count(
+      Search(resourceType).apply { filter(TokenClientParam(ACTIVE), { value = of(true) }) }
+    )
+
+  override suspend fun loadProfileData(profileId: String, identifier: String): ProfileData? =
     withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+      // TODO return profile data
+      null
     }
 
-  override suspend fun loadPatientProfileData(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    patientId: String
-  ): ProfileData? =
-    withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
-        appFeatureName = appFeatureName,
-        resourceId = patientId
-      )
-    }
+  companion object {
+    const val ACTIVE = "active"
+  }
 }

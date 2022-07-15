@@ -81,20 +81,17 @@ constructor(
   }
 
   fun setPinUiState(isSetup: Boolean = false) {
-    PinUiState(
-      appId = sharedPreferences.read(APP_ID_KEY, "")!!,
-      appName = applicationConfiguration.appTitle,
-      savedPin = secureSharedPreference.retrieveSessionPin() ?: "",
-      isSetupPage = isSetup,
-      enterUserLoginMessage =
-        secureSharedPreference.retrieveSessionUsername().let {
-          if (it.isNullOrEmpty()) {
-            app.getString(R.string.enter_login_pin)
-          } else {
-            app.getString(R.string.enter_pin_for_user, it)
-          }
-        }
-    )
+    val username = secureSharedPreference.retrieveSessionUsername()
+    pinUiState.value =
+      PinUiState(
+        appId = sharedPreferences.read(APP_ID_KEY, "")!!,
+        appName = applicationConfiguration.appTitle,
+        savedPin = secureSharedPreference.retrieveSessionPin() ?: "",
+        isSetupPage = isSetup,
+        enterUserLoginMessage =
+          if (username.isNullOrEmpty()) app.getString(R.string.enter_login_pin)
+          else app.getString(R.string.enter_pin_for_user, username)
+      )
   }
 
   fun onPinConfirmed() {
@@ -112,7 +109,7 @@ constructor(
 
   fun onPinChanged(newPin: String) {
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
-      val pinMatched = newPin.equals(pinUiState.value.savedPin, false)
+      val pinMatched = newPin == secureSharedPreference.retrieveSessionPin()
       enableSetPin.value = true
       showError.value = !pinMatched
       _pin.postValue(newPin)
@@ -134,7 +131,7 @@ constructor(
   fun forgotPin() {
     // Todo: disable dialer action for now
     //  plus load supervisor contact from config
-    // _launchDialPad.value = "tel:####"
+    _launchDialPad.value = "tel:####"
   }
 
   fun onMenuSettingClicked() {

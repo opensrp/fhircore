@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.engine.configuration.workflow
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.Configuration
+/** An application event that can trigger a workflow. Examples button click, on back press etc */
+enum class WorkflowTrigger {
+  /**
+   * An action that is performed when user presses a button or any actionable component in the UI
+   */
+  ON_CLICK,
 
-@Serializable
-data class RegisterConfiguration(
-  override var appId: String,
-  override var configType: String = ConfigType.Register.name,
-  val id: String,
-  val fhirResource: FhirResourceConfig,
-  val filter: RegisterContentConfig? = null,
-  val searchBar: RegisterContentConfig? = null,
-  val registerCard: RegisterCardConfig
-) : Configuration()
+  /** An action triggered when the user exits their current screen */
+  ON_CLOSE,
+
+  /** Action that is triggered to count register items */
+  ON_COUNT
+}

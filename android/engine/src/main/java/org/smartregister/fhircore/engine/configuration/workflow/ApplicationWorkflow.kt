@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.navigation
+package org.smartregister.fhircore.engine.configuration.workflow
 
-import kotlinx.serialization.Serializable
+enum class ApplicationWorkflow {
 
-@Serializable
-data class NavigationActionRuleConfig(
-  val name: String,
-  val condition: String,
-  val action: List<String>
-)
+  /**
+   * A workflow for starting a register. This workflow prompts the app to load a list of clients
+   * filtered as configured.
+   */
+  LAUNCH_REGISTER,
+
+  /**
+   * A workflow for starting a profile. This workflow prompts the app to load data for a patient as
+   * configured.
+   */
+  LAUNCH_PROFILE
+}

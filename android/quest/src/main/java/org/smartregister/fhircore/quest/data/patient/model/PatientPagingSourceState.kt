@@ -16,11 +16,11 @@
 
 package org.smartregister.fhircore.quest.data.patient.model
 
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 
 data class PatientPagingSourceState(
-  val healthModule: HealthModule = HealthModule.DEFAULT,
-  val appFeatureName: String? = null,
+  val registerId: String,
   val currentPage: Int = 0,
-  val loadAll: Boolean = false
+  val loadAll: Boolean = false,
+  val registerCardConfig: RegisterCardConfig
 )

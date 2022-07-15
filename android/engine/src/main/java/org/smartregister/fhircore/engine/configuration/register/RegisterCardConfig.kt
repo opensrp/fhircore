@@ -17,16 +17,10 @@
 package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Serializable
-data class RegisterConfiguration(
-  override var appId: String,
-  override var configType: String = ConfigType.Register.name,
-  val id: String,
-  val fhirResource: FhirResourceConfig,
-  val filter: RegisterContentConfig? = null,
-  val searchBar: RegisterContentConfig? = null,
-  val registerCard: RegisterCardConfig
-) : Configuration()
+data class RegisterCardConfig(
+  val columnOne: RegisterContentConfig,
+  val divider: RegisterContentConfig? = null,
+  val columnTwo: RegisterContentConfig? = null,
+)

@@ -25,9 +25,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -61,14 +58,10 @@ constructor(
   val patientProfileViewData: MutableState<ProfileViewData.PatientProfileViewData> =
     mutableStateOf(ProfileViewData.PatientProfileViewData())
 
-  fun fetchPatientProfileData(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    patientId: String
-  ) {
+  fun fetchPatientProfileData(profileId: String, patientId: String) {
     if (patientId.isNotEmpty()) {
       viewModelScope.launch {
-        patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
+        patientRegisterRepository.loadProfileData(profileId = profileId, identifier = patientId)
           ?.let {
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
@@ -119,11 +112,7 @@ constructor(
           R.id.view_family -> {
             event.familyId?.let { familyId ->
               val urlParams =
-                NavigationArg.bindArgumentsOf(
-                  Pair(NavigationArg.FEATURE, AppFeature.HouseholdManagement.name),
-                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.FAMILY.name),
-                  Pair(NavigationArg.PATIENT_ID, familyId)
-                )
+                NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, familyId))
               event.navController.navigate(
                 route = MainNavigationScreen.FamilyProfile.route + urlParams
               )

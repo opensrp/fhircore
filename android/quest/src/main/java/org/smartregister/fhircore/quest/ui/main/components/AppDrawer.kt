@@ -111,7 +111,13 @@ fun AppDrawer(
         )
       }
       Spacer(modifier = modifier.height(8.dp))
-      ClientRegisterMenus(appUiState.navigationConfiguration, context, openDrawer)
+      ClientRegisterMenus(
+        navigationConfiguration = appUiState.navigationConfiguration,
+        context = context,
+        navController = navController,
+        openDrawer = openDrawer,
+        onSideMenuClick = onSideMenuClick
+      )
       if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true
       ) {
         OtherPatientsItem(appUiState.navigationConfiguration, onSideMenuClick, context, openDrawer)
@@ -211,7 +217,9 @@ private fun NavTopSection(
 private fun ClientRegisterMenus(
   navigationConfiguration: NavigationConfiguration,
   context: Context,
-  openDrawer: (Boolean) -> Unit
+  navController: NavHostController,
+  openDrawer: (Boolean) -> Unit,
+  onSideMenuClick: (AppMainEvent) -> Unit
 ) {
   LazyColumn {
     items(navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
@@ -223,7 +231,13 @@ private fun ClientRegisterMenus(
         showEndText = navigationMenu.showCount,
         onSideMenuClick = {
           openDrawer(false)
-          // TODO navigate to relevant screen/initiate an action
+          onSideMenuClick(
+            AppMainEvent.NavigateToScreen(
+              navController = navController,
+              actions = navigationMenu.actions,
+              registerId = navigationMenu.id
+            )
+          )
         }
       )
     }
@@ -307,7 +321,7 @@ private fun SideMenuItem(
   endTextColor: Color = Color.White,
   showEndText: Boolean,
   endIconResource: Int? = null,
-  onSideMenuClick: () -> Unit // showEndIcon //ShowEndIconResource
+  onSideMenuClick: () -> Unit
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,

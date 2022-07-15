@@ -17,11 +17,14 @@
 package org.smartregister.fhircore.engine.configuration.navigation
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.configuration.workflow.WorkflowTrigger
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class NavigationActionConfig(
-  val type: String,
-  val workflow: String? = null,
+  val trigger: WorkflowTrigger,
+  val workflow: ApplicationWorkflow? = null,
   val id: String? = null,
-  val rules: List<NavigationActionRuleConfig>? = null
+  val rules: List<RuleConfig>? = null
 )

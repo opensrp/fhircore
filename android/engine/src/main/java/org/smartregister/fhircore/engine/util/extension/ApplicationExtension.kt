@@ -89,7 +89,7 @@ suspend fun FhirEngine.searchActivePatients(
   }
 
 suspend fun FhirEngine.countActivePatients(): Long =
-  this.count<Patient> { apply { filter(Patient.ACTIVE, { value = of(true) }) }.getQuery(true) }
+  this.count<Patient> { apply { filter(Patient.ACTIVE, { value = of(true) }) } }
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {

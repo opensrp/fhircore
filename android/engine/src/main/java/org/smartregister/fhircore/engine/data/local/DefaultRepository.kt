@@ -43,7 +43,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.domain.model.SearchFilter
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
@@ -94,20 +94,18 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     subjectId: String,
     subjectType: ResourceType = ResourceType.Patient,
     subjectParam: ReferenceClientParam,
-    filters: List<SearchFilter> = listOf()
+    filters: List<DataQuery>? = null
   ): List<T> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(subjectParam, subjectType, subjectId)
-        filters.forEach { filterBy(it) }
-      }
+    fhirEngine.search {
+      filterByResourceTypeId(subjectParam, subjectType, subjectId)
+      filters?.forEach { filterBy(it) }
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
     token: TokenClientParam,
     subjectType: ResourceType,
     subjectId: String,
-    filters: List<SearchFilter> = listOf()
+    filters: List<DataQuery> = listOf()
   ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
@@ -117,7 +115,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     }
 
   suspend fun searchQuestionnaireConfig(
-    filters: List<SearchFilter> = listOf()
+    filters: List<DataQuery> = listOf()
   ): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search<Questionnaire> { filters.forEach { filterBy(it) } }.map {
@@ -130,7 +128,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
 
   suspend fun loadConditions(
     patientId: String,
-    filters: List<SearchFilter> = listOf()
+    filters: List<DataQuery> = listOf()
   ): List<Condition> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {

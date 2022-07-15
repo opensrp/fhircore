@@ -30,7 +30,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -144,16 +143,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
     val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  }
-
-  @Test
-  fun testGetApplicationConfiguration() {
-    runBlocking {
-      configurationRegistry.loadConfigurationsLocally("${configurationRegistry.appId}/debug") {
-        Assert.assertTrue(it)
-      }
-    }
-    Assert.assertNotNull(loginActivity.getApplicationConfiguration())
   }
 
   override fun getActivity(): Activity {

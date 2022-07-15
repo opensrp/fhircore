@@ -1,7 +1,18 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "all_household_register",
+  "id": "patient_register",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Patient"
+    },
+    "relatedResources": [
+      {
+        "resource": "Immunization",
+        "searchParameter": "patient"
+      }
+    ]
+  },
   "filter": {
     "visible": true,
     "display": "Show overdue",
@@ -9,24 +20,12 @@
       {
         "name": "filter",
         "condition": "",
-        "action": [
+        "actions": [
           ""
         ]
       }
     ]
   },
-  "dataFilters": [
-    {
-      "id": "family",
-      "filterType": "TOKEN",
-      "key": "code",
-      "valueType": "CODEABLECONCEPT",
-      "valueCoding": {
-        "system": "https://www.snomed.org",
-        "code": "35359004"
-      }
-    }
-  ],
   "searchBar": {
     "visible": true,
     "display": "Search name or ID",
@@ -34,7 +33,7 @@
       {
         "name": "searchBar",
         "condition": "",
-        "action": [
+        "actions": [
           ""
         ]
       }
@@ -46,10 +45,10 @@
         "separator": "-",
         "rules": [
           {
-            "name": "filter",
-            "condition": "",
-            "action": [
-              ""
+            "name": "patientName",
+            "condition": "true",
+            "actions": [
+              "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given'))"
             ]
           }
         ]
@@ -64,7 +63,7 @@
               {
                 "name": "filter",
                 "condition": "",
-                "action": [
+                "actions": [
                   ""
                 ]
               }
@@ -76,7 +75,7 @@
               {
                 "name": "filter",
                 "condition": "",
-                "action": [
+                "actions": [
                   ""
                 ]
               }
@@ -89,8 +88,7 @@
             {
               "name": "filter",
               "condition": "",
-              "action": [
-                "filterValue = fhirpath.excute('expression')",
+              "actions": [
                 ""
               ]
             }
@@ -102,19 +100,19 @@
       "visible": false
     },
     "columnTwo": {
-      "visible": true,
+      "visible": false,
       "rules": [
         {
           "name": "count",
           "condition": "",
-          "action": [
+          "actions": [
             ""
           ]
         },
         {
           "name": "status",
           "condition": "",
-          "action": [
+          "actions": [
             ""
           ]
         }

@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.quest.ui.shared.models
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 
-@Serializable
-data class RegisterConfiguration(
-  override var appId: String,
-  override var configType: String = ConfigType.Register.name,
-  val id: String,
-  val fhirResource: FhirResourceConfig,
-  val filter: RegisterContentConfig? = null,
-  val searchBar: RegisterContentConfig? = null,
-  val registerCard: RegisterCardConfig
-) : Configuration()
+data class RegisterCardData(
+  val resourceData: ResourceData,
+  val computedRegisterCardData: Map<String, Any>
+)

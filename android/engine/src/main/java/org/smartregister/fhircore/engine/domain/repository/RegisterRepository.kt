@@ -16,27 +16,21 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.model.RegisterData
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** Common repository for register. */
 interface RegisterRepository {
   suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean = false,
-    appFeatureName: String? = null,
-    healthModule: HealthModule = HealthModule.DEFAULT
-  ): List<RegisterData>
+    registerId: String
+  ): List<ResourceData>
 
-  suspend fun countRegisterData(
-    appFeatureName: String? = null,
-    healthModule: HealthModule = HealthModule.DEFAULT
-  ): Long
+  /** Return the count for the register content. The register is identified by its [registerId] */
+  suspend fun countRegisterData(resourceType: ResourceType, registerId: String): Long
 
-  suspend fun loadPatientProfileData(
-    appFeatureName: String? = null,
-    healthModule: HealthModule = HealthModule.DEFAULT,
-    patientId: String
-  ): ProfileData?
+  /** This function returns data displayed on the users profile */
+  suspend fun loadProfileData(profileId: String, identifier: String): ProfileData?
 }

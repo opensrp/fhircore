@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
+import androidx.navigation.NavHostController
 import com.google.android.fhir.sync.State
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationActionConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.navigation.RegisterBottomSheetItem
 
@@ -32,4 +34,9 @@ sealed class AppMainEvent {
   object Logout : AppMainEvent()
   object SyncData : AppMainEvent()
   data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
+  data class NavigateToScreen(
+    val navController: NavHostController,
+    val actions: List<NavigationActionConfig>?,
+    val registerId: String
+  ) : AppMainEvent()
 }

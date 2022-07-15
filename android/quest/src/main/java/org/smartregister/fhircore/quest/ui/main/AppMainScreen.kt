@@ -28,7 +28,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -36,12 +35,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.configuration.workflow.WorkflowTrigger
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.navigation.NavigationArg.routePathsOf
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
@@ -104,41 +104,48 @@ private fun AppMainNavigationGraph(
   measureReportViewModel: MeasureReportViewModel = hiltViewModel(),
   appMainViewModel: AppMainViewModel
 ) {
-
   val firstNavigationMenu = navigationConfiguration.clientRegisters.first()
-  val firstScreenTitle = firstNavigationMenu.display
+
+  // registerId = (id of the register's click action) otherwise use navigation menu id
+  val firstRegisterId =
+    firstNavigationMenu.actions?.find { it.trigger == WorkflowTrigger.ON_CLICK }?.id
+      ?: firstNavigationMenu.id
+
+  val homeUrlParams = routePathsOf(NavigationArg.SCREEN_TITLE, NavigationArg.REGISTER_ID)
   NavHost(
     navController = navController,
-    startDestination =
-      MainNavigationScreen.Home.route +
-        NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)
+    startDestination = MainNavigationScreen.Home.route + homeUrlParams
   ) {
     mainNavigationScreens.forEach {
       when (it) {
         is MainNavigationScreen.Home ->
           composable(
-            route =
-              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)}",
+            route = it.route + homeUrlParams,
             arguments =
               listOf(
                 navArgument(NavigationArg.SCREEN_TITLE) {
                   type = NavType.StringType
-                  nullable = true
-                  defaultValue = firstScreenTitle
+                  nullable = false
+                  defaultValue = firstNavigationMenu.display
+                },
+                navArgument(NavigationArg.REGISTER_ID) {
+                  type = NavType.StringType
+                  nullable = false
+                  defaultValue = firstRegisterId
                 }
               )
           ) { stackEntry ->
-            val appFeatureName = stackEntry.retrieveAppFeatureNameArg()
-            val healthModule = stackEntry.retrieveHealthModuleArg()
             val screenTitle: String =
               stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
                 ?: stringResource(R.string.all_clients)
+            val registerId: String =
+              stackEntry.arguments?.getString(NavigationArg.REGISTER_ID) ?: ""
+
             PatientRegisterScreen(
               navController = navController,
               openDrawer = openDrawer,
-              appFeatureName = appFeatureName,
-              healthModule = healthModule,
               screenTitle = screenTitle,
+              registerId = registerId,
               refreshDataState = appMainViewModel.refreshDataState
             )
           }
@@ -150,15 +157,20 @@ private fun AppMainNavigationGraph(
         MainNavigationScreen.PatientProfile ->
           composable(
             route =
-              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
+              "${it.route}${
+            routePathsOf(
+              NavigationArg.PATIENT_ID,
+              NavigationArg.FAMILY_ID
+            )
+            }",
             arguments = patientIdNavArgument()
           ) { stackEntry ->
-            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
+            val profileId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID) ?: ""
+            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID) ?: ""
             val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
             PatientProfileScreen(
               navController = navController,
-              appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
-              healthModule = stackEntry.retrieveHealthModuleArg(),
+              profileId = profileId,
               patientId = patientId,
               familyId = familyId,
               refreshDataState = appMainViewModel.refreshDataState
@@ -166,8 +178,7 @@ private fun AppMainNavigationGraph(
           }
         MainNavigationScreen.FamilyProfile ->
           composable(
-            route =
-              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
+            route = "${it.route}${routePathsOf(NavigationArg.PATIENT_ID)}",
             arguments = patientIdNavArgument()
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
@@ -181,12 +192,6 @@ private fun AppMainNavigationGraph(
     }
   }
 }
-
-private fun NavBackStackEntry.retrieveAppFeatureNameArg() =
-  this.arguments?.getString(NavigationArg.FEATURE)
-
-private fun NavBackStackEntry.retrieveHealthModuleArg(): HealthModule =
-  (this.arguments?.get(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT) as HealthModule
 
 private fun patientIdNavArgument() =
   listOf(

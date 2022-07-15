@@ -290,3 +290,7 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
   }
   return sections
 }
+
+fun String.resourceClassType(): Class<out Resource> {
+  return Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
+}

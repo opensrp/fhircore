@@ -27,7 +27,7 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.Code
-import org.smartregister.fhircore.engine.domain.model.SearchFilter
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 
 fun Search.filterByResourceTypeId(
   reference: ReferenceClientParam,
@@ -57,7 +57,7 @@ fun Search.filterByPatientName(name: String?) {
   }
 }
 
-fun Search.filterBy(filter: SearchFilter) {
+fun Search.filterBy(filter: DataQuery) {
   when (filter.filterType) {
     Enumerations.SearchParamType.TOKEN -> filterToken(filter)
     Enumerations.SearchParamType.STRING -> filterString(filter)
@@ -66,7 +66,7 @@ fun Search.filterBy(filter: SearchFilter) {
   }
 }
 
-fun Search.filterToken(filter: SearchFilter) {
+fun Search.filterToken(filter: DataQuery) {
   // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
   when (filter.valueType) {
     Enumerations.DataType.CODING ->
@@ -78,7 +78,7 @@ fun Search.filterToken(filter: SearchFilter) {
   }
 }
 
-fun Search.filterString(filter: SearchFilter) {
+fun Search.filterString(filter: DataQuery) {
   // TODO StringFilter in SDK is not fully implemented and ignores all types but String and Boolean
   when (filter.valueType) {
     Enumerations.DataType.STRING ->
