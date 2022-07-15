@@ -220,7 +220,12 @@ dependencies {
 
     //Easy rules dependency
     api 'org.jeasy:easy-rules-core:4.1.0'
-    api 'org.jeasy:easy-rules-mvel:4.1.0'
+    //api 'org.jeasy:easy-rules-mvel:4.1.0'
+
+    // jexl
+    api ('org.jeasy:easy-rules-jexl:4.1.0') {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
 
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
