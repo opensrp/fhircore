@@ -91,7 +91,13 @@ constructor(
           Pair(R.id.record_sick_child, profileData?.dob?.let { it.yearsPassed() >= 5 } ?: false),
           Pair(
             R.id.record_as_anc,
-            profileData?.tasks?.any { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } ?: false
+            profileData?.let {
+              // hide menu item for people not female | not reproductive age | enrolled into anc
+              it.sex.startsWith("F", true).not() ||
+                (it.dob?.yearsPassed() in 15..45).not() ||
+                it.tasks.any { it.action.matches(Regex(ACTIVE_ANC_REGEX)) }
+            }
+              ?: false
           ),
           Pair(
             R.id.pregnancy_outcome,
