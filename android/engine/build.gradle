@@ -220,7 +220,6 @@ dependencies {
 
     //Easy rules dependency
     api 'org.jeasy:easy-rules-core:4.1.0'
-    //api 'org.jeasy:easy-rules-mvel:4.1.0'
 
     // jexl
     api ('org.jeasy:easy-rules-jexl:4.1.0') {

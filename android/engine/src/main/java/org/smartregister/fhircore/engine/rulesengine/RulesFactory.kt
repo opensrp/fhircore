@@ -79,18 +79,13 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
 
     val customRules = mutableSetOf<Rule>()
     ruleConfigs.forEach { ruleConfig ->
-     /* val customRule: MVELRule =
-        MVELRule()
-          .name(ruleConfig.name)
-          .description(ruleConfig.description)
-          .`when`(ruleConfig.condition.ifEmpty { TRUE })*/
 
       // jexl rule
-      val customRule: JexlRule =
-        JexlRule()
-          .name(ruleConfig.name)
-          .description(ruleConfig.description)
-          .`when`(ruleConfig.condition.ifEmpty { TRUE })
+       val customRule: JexlRule =
+         JexlRule()
+           .name(ruleConfig.name)
+           .description(ruleConfig.description)
+           .`when`(ruleConfig.condition.ifEmpty { TRUE })
 
       ruleConfig.actions.forEach { customRule.then(it) }
       customRules.add(customRule)
@@ -103,8 +98,6 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
       relatedResources.forEach { resource -> facts.put(resource.key, resource.value) }
     }
     rulesEngine.fire(Rules(customRules), facts)
-
-
 
     return computedValuesMap
   }
