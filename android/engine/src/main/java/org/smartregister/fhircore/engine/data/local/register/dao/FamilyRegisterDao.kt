@@ -40,9 +40,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -267,7 +265,7 @@ constructor(
       RegisterData.FamilyMemberRegisterData(
         logicalId = patient.logicalId,
         name = patient.extractName(),
-        age = patient.birthDate?.let { it.daysPassed() / DAYS_IN_YEAR }?.toString(),
+        age = patient.extractAge(),
         birthdate = patient.birthDate,
         gender = patient.gender.display.first().toString(),
         pregnant = conditions.hasActivePregnancy(),

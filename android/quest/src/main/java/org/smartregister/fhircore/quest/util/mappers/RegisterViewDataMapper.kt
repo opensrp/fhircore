@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.engine.util.extension.translateGender
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.ui.shared.models.ServiceMember
@@ -65,7 +66,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
                 icon =
                   when {
                     it.pregnant -> R.drawable.ic_pregnant
-                    it.age?.toInt()?.let { it <= 5 } == true -> R.drawable.ic_kids
+                    it.birthdate?.yearsPassed()?.let { it <= 5 } == true -> R.drawable.ic_kids
                     else -> R.drawable.ic_users
                   },
                 logicalId = it.logicalId
