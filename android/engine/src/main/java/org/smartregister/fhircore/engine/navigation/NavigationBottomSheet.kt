@@ -24,8 +24,10 @@ import androidx.compose.ui.platform.ComposeView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class NavigationBottomSheet(val registersList: List<RegisterBottomSheetItem>? = emptyList(), private val itemListener: (String) -> Unit) :
-  BottomSheetDialogFragment() {
+class NavigationBottomSheet(
+  val registersList: List<RegisterBottomSheetItem>? = emptyList(),
+  private val itemListener: (String) -> Unit
+) : BottomSheetDialogFragment() {
 
   override fun onCreateView(
     inflater: LayoutInflater,

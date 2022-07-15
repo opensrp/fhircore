@@ -23,6 +23,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -41,10 +47,6 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.p2p.utils.startP2PScreen
-import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.util.*
-import javax.inject.Inject
 
 @HiltViewModel
 class AppMainViewModel
@@ -74,7 +76,8 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  fun retrieveAppMainUiState() {0
+  fun retrieveAppMainUiState() {
+    0
     appMainUiState.value =
       appMainUiStateOf(
         appTitle = applicationConfiguration.appTitle,
@@ -108,7 +111,8 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> {
         event.context.run {
           (this as AppCompatActivity).let { activity ->
-            val navigationBottomSheet = NavigationBottomSheet(registersList = event.registersList) {}
+            val navigationBottomSheet =
+              NavigationBottomSheet(registersList = event.registersList) {}
             navigationBottomSheet.show(activity.supportFragmentManager, NavigationBottomSheet.TAG)
           }
         }

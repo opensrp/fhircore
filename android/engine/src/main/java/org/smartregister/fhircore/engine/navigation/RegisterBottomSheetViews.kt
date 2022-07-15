@@ -17,7 +17,14 @@
 package org.smartregister.fhircore.engine.navigation
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,18 +52,13 @@ fun RegisterBottomSheet(
   modifier: Modifier = Modifier
 ) {
   Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
-    Column(modifier = modifier
-      .fillMaxWidth()
-      .padding(horizontal = 16.dp, vertical = 12.dp)) {
+    Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
       Text(
         text = stringResource(R.string.other_patients),
         textAlign = TextAlign.Start,
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp,
-        modifier =
-        modifier
-          .padding(horizontal = 12.dp, vertical = 16.dp)
-          .align(Alignment.Start)
+        modifier = modifier.padding(horizontal = 12.dp, vertical = 16.dp).align(Alignment.Start)
       )
       Divider(color = DividerColor, thickness = 1.dp)
       LazyColumn(
@@ -65,8 +67,7 @@ fun RegisterBottomSheet(
       ) {
         itemsIndexed(registers!!) { index, item ->
           RegisterListItem(item, itemListener)
-          if (index < registers.lastIndex)
-            Divider(color = DividerColor, thickness = 1.dp)
+          if (index < registers.lastIndex) Divider(color = DividerColor, thickness = 1.dp)
         }
       }
     }
@@ -80,20 +81,14 @@ fun RegisterListItem(
   modifier: Modifier = Modifier
 ) {
   Row(
-    modifier =
-    modifier
-      .fillMaxWidth()
-      .clickable { itemListener(registerItem.id) }
-      .padding(14.dp)
+    modifier = modifier.fillMaxWidth().clickable { itemListener(registerItem.id) }.padding(14.dp)
   ) {
     Box(modifier = modifier.wrapContentWidth()) {}
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween
-    ) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
       Text(text = registerItem.display, modifier = modifier.padding(horizontal = 12.dp))
       Text(
-        text = "1", textAlign = TextAlign.Start,
+        text = "1",
+        textAlign = TextAlign.Start,
         color = StatusTextColor,
         fontSize = 13.sp,
       )

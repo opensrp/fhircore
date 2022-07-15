@@ -19,4 +19,8 @@ package org.smartregister.fhircore.engine.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RegisterBottomSheetItem(val id: String, val display: String, var showCount: Boolean = false)
+data class RegisterBottomSheetItem(
+  val id: String,
+  val display: String,
+  var showCount: Boolean = false
+)

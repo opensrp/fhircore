@@ -19,7 +19,17 @@ package org.smartregister.fhircore.quest.ui.main.components
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,7 +54,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
-import org.smartregister.fhircore.engine.ui.theme.*
+import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
+import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
+import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
+import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
+import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
+import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
+import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
@@ -69,9 +85,7 @@ fun AppDrawer(
 
   Column(
     verticalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier
-      .fillMaxHeight()
-      .background(SideMenuDarkColor)
+    modifier = modifier.fillMaxHeight().background(SideMenuDarkColor)
   ) {
 
     // Display the app name and version
@@ -88,10 +102,7 @@ fun AppDrawer(
     Divider(color = DividerColor)
 
     // Display list of configurable client registers
-    Column(
-      modifier
-        .background(SideMenuDarkColor)
-        .padding(16.dp)) {
+    Column(modifier.background(SideMenuDarkColor).padding(16.dp)) {
       if (appUiState.navigationConfiguration.clientRegisters.isNotEmpty()) {
         Text(
           text = stringResource(id = R.string.registers).uppercase(),
@@ -101,7 +112,8 @@ fun AppDrawer(
       }
       Spacer(modifier = modifier.height(8.dp))
       ClientRegisterMenus(appUiState.navigationConfiguration, context, openDrawer)
-      if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true) {
+      if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true
+      ) {
         OtherPatientsItem(appUiState.navigationConfiguration, onSideMenuClick, context, openDrawer)
       }
     }
@@ -129,9 +141,7 @@ private fun NavBottomSection(
 ) {
   Box(
     modifier =
-    modifier
-      .background(SideMenuBottomItemDarkColor)
-      .padding(horizontal = 16.dp, vertical = 4.dp)
+      modifier.background(SideMenuBottomItemDarkColor).padding(horizontal = 16.dp, vertical = 4.dp)
   ) {
     SideMenuItem(
       iconResource = R.drawable.ic_sync,
@@ -162,7 +172,8 @@ private fun OtherPatientsItem(
       openDrawer(false)
       onSideMenuClick(
         AppMainEvent.OpenRegistersBottomSheet(
-          context = context, registersList = navigationConfiguration.bottomSheetRegisters?.registers
+          context = context,
+          registersList = navigationConfiguration.bottomSheetRegisters?.registers
         )
       )
     }
@@ -179,10 +190,7 @@ private fun NavTopSection(
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier =
-    modifier
-      .fillMaxWidth()
-      .background(SideMenuTopItemDarkColor)
-      .padding(horizontal = 16.dp)
+      modifier.fillMaxWidth().background(SideMenuTopItemDarkColor).padding(horizontal = 16.dp)
   ) {
     Text(
       text = appUiState.appTitle,
@@ -256,24 +264,22 @@ private fun MenuActionButton(
   if (navigationConfiguration.menuActionButton != null) {
     Row(
       modifier =
-      modifier
-        .fillMaxWidth()
-        .clickable {
-          onSideMenuClick(
-            AppMainEvent.RegisterNewClient(
-              context = context,
-              questionnaireId = navigationConfiguration.menuActionButton?.questionnaire?.id.toString()
+        modifier
+          .fillMaxWidth()
+          .clickable {
+            onSideMenuClick(
+              AppMainEvent.RegisterNewClient(
+                context = context,
+                questionnaireId =
+                  navigationConfiguration.menuActionButton?.questionnaire?.id.toString()
+              )
             )
-          )
-        }
-        .padding(16.dp),
+          }
+          .padding(16.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
       Box(
-        modifier
-          .background(MenuActionButtonTextColor)
-          .size(16.dp)
-          .clip(RoundedCornerShape(2.dp)),
+        modifier.background(MenuActionButtonTextColor).size(16.dp).clip(RoundedCornerShape(2.dp)),
         contentAlignment = Alignment.Center
       ) {
         Icon(
@@ -301,21 +307,17 @@ private fun SideMenuItem(
   endTextColor: Color = Color.White,
   showEndText: Boolean,
   endIconResource: Int? = null,
-  onSideMenuClick: () -> Unit //showEndIcon //ShowEndIconResource
+  onSideMenuClick: () -> Unit // showEndIcon //ShowEndIconResource
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier
-      .fillMaxWidth()
-      .clickable { onSideMenuClick() },
+    modifier = modifier.fillMaxWidth().clickable { onSideMenuClick() },
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(modifier = modifier.padding(vertical = 16.dp)) {
       if (iconResource != null) {
         Icon(
-          modifier = modifier
-            .padding(end = 10.dp)
-            .size(24.dp),
+          modifier = modifier.padding(end = 10.dp).size(24.dp),
           painter = painterResource(id = iconResource),
           contentDescription = SIDE_MENU_ICON,
           tint = MenuItemColor
@@ -330,8 +332,7 @@ private fun SideMenuItem(
 
     endIconResource?.let { icon ->
       Icon(
-        modifier = modifier
-          .padding(end = 10.dp),
+        modifier = modifier.padding(end = 10.dp),
         painter = painterResource(id = icon),
         contentDescription = SIDE_MENU_ICON,
         tint = MenuItemColor
