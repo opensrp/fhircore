@@ -92,7 +92,7 @@ constructor(
         name = patient.extractName(),
         identifier = patient.extractOfficialIdentifier(),
         gender = patient.gender,
-        age = patient.birthDate.toAgeDisplay(),
+        age = patient.birthDate?.toAgeDisplay() ?: "N/A",
         address = patient.extractAddress(),
         visitStatus = getVisitStatus(carePlans),
         servicesDue = carePlans.sumOf { it.milestonesDue().size },
