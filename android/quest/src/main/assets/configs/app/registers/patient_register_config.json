@@ -55,14 +55,32 @@
         "children": [
           {
             "viewType": "COMPOUND_TEXT",
-            "primaryText": "Example of concatenated text: {$patientName}",
-            "primaryTextColor": "#000000",
-            "secondaryText": "G6PD",
-            "weight": 0.75
+            "primaryText": "Patient Name, Age, Gender |patientName|",
+            "primaryTextColor": "#000000"
           },
           {
             "viewType": "ROW",
-            "children": []
+            "children": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "TB",
+                "primaryTextColor": "#5A5A5A",
+                "secondaryText": "Negative",
+                "secondaryTextColor": "#1DB11B"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "G6PD Status",
+                "primaryTextColor": "#5A5A5A",
+                "secondaryText": "Positive",
+                "secondaryTextColor": "#FF333F"
+              }
+            ]
+          },
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "Last seen on Thursday",
+            "primaryTextColor": "#5A5A5A"
           }
         ]
       }

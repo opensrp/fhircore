@@ -166,6 +166,7 @@ dependencies {
     api("androidx.paging:paging-compose:1.0.0-alpha14")
     api("androidx.activity:activity-compose:1.4.0")
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
+    api ("com.google.accompanist:accompanist-flowlayout:0.23.1")
     api("androidx.work:work-runtime-ktx:2.7.1")
     api ("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
 

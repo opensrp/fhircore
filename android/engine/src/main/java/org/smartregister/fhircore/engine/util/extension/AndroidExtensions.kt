@@ -21,13 +21,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
+import androidx.compose.ui.graphics.Color as ComposeColor
 import java.util.Locale
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import timber.log.Timber
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
@@ -123,3 +126,10 @@ fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "dr
   val resourceId = this.resources.getIdentifier(resourceName, resourceType, this.packageName)
   return if (resourceId != 0) resourceId else null
 }
+
+/**
+ * Parse this [String] to a color code to be used in compose. Color code must begin with pound sign
+ * ('#') and should be of 6 valid characters
+ */
+fun String?.parseColor() =
+  if (this.isNullOrEmpty()) DefaultColor else ComposeColor(Color.parseColor(this))

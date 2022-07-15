@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterCardData
 
 @Composable
@@ -146,14 +147,16 @@ fun PatientRegisterScreen(
     Box(modifier = modifier.padding(innerPadding)) {
       // TODO revert after UI functionality is wired
       //      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
-      //      RegisterList(
-      //        pagingItems = pagingItems,
-      //        onRowClick = { patientId: String ->
-      //          patientRegisterViewModel.onEvent(
-      //            PatientRegisterEvent.OpenProfile(registerId, patientId, navController)
-      //          )
-      //        }
-      //      )
+      RegisterCardList(
+        pagingItems = pagingItems,
+        onCardClick = { patientId: String ->
+          patientRegisterViewModel.onEvent(
+            PatientRegisterEvent.OpenProfile(registerId, patientId, navController)
+          )
+        },
+        registerCardConfig =
+          patientRegisterViewModel.retrieveRegisterConfiguration(registerId).registerCard
+      )
     }
   }
 }

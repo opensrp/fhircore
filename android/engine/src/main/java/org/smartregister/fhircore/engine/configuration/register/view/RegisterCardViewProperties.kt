@@ -28,5 +28,4 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 abstract class RegisterCardViewProperties {
   abstract val viewType: ViewType
   abstract val weight: Float?
-  abstract val children: List<RegisterCardViewProperties>?
 }

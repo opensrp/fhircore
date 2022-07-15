@@ -113,7 +113,7 @@ constructor(
     }
   }
 
-  private fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
+  fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
     if (!::registerConfiguration.isInitialized) {
       registerConfiguration =
         configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)

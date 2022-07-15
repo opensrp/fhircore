@@ -23,5 +23,5 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 class GroupedViewProperties(
   override val viewType: ViewType,
   override val weight: Float? = null,
-  override val children: List<RegisterCardViewProperties>? = null,
+  val children: List<RegisterCardViewProperties> = emptyList()
 ) : RegisterCardViewProperties()

@@ -38,7 +38,6 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import timber.log.Timber
 
-/** A configuration store for application configurations */
 @Singleton
 class ConfigurationRegistry
 @Inject
@@ -217,7 +216,7 @@ constructor(
    * set in the section components of the [Composition] resource.
    *
    * This function retrieves the composition based on the appId and groups the non-patient resources
-   * ( [ResourceType.Questionnaire] or [ResourceType.Questionnaire]) based on their type.
+   * ( [ResourceType.Questionnaire] or [ResourceType.StructureMap]) based on their type.
    *
    * Searching is done using the _id search parameter of these not patient resources; the
    * composition section components are grouped by resource type ,then the ids concatenated (as

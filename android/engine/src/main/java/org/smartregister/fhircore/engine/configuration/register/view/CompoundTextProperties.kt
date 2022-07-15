@@ -23,7 +23,6 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 data class CompoundTextProperties(
   override val viewType: ViewType,
   override val weight: Float? = null,
-  override val children: List<RegisterCardViewProperties>? = null,
   val primaryText: String? = null,
   val primaryTextColor: String? = null,
   val secondaryText: String? = null,
