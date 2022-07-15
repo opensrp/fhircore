@@ -199,7 +199,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api('org.smartregister:engine:0.1.0-beta01-preview10-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta01-preview10.4-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
