@@ -22,8 +22,10 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
+import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -58,23 +60,32 @@ internal class FamilyRegisterDaoTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
+    coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns
+      Faker.buildPatient("1", "doe", "john", 50)
+
     coEvery { fhirEngine.search<Group>(any()) } returns
       listOf(
         Group().apply {
           id = "12"
           active = true
           name = "ABC Family"
+          addMember().apply { this.entity.reference = "Patient/123" }
         }
       )
 
     coEvery { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
 
     familyRegisterDao =
-      FamilyRegisterDao(
-        fhirEngine = fhirEngine,
-        defaultRepository = defaultRepository,
-        configurationRegistry = configurationRegistry
+      spyk(
+        FamilyRegisterDao(
+          fhirEngine = fhirEngine,
+          defaultRepository = defaultRepository,
+          configurationRegistry = configurationRegistry
+        )
       )
+
+    coEvery { familyRegisterDao.loadMemberCondition(any()) } returns emptyList()
+    coEvery { familyRegisterDao.loadMemberCarePlan(any()) } returns emptyList()
   }
 
   @Test

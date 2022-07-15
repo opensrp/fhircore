@@ -301,14 +301,14 @@ constructor(
       )
     }
 
-  private suspend fun loadMemberCondition(patientId: String) =
+  suspend fun loadMemberCondition(patientId: String) =
     defaultRepository.searchResourceFor<Condition>(
       subjectId = patientId,
       subjectParam = Condition.SUBJECT,
       subjectType = ResourceType.Patient
     )
 
-  private suspend fun loadMemberCarePlan(patientId: String) =
+  suspend fun loadMemberCarePlan(patientId: String) =
     fhirEngine.search<CarePlan> {
       filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
       filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })
