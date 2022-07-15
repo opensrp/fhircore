@@ -86,7 +86,7 @@ constructor(
         }
           ?: listOf()
 
-      val familyHead = loadFamilyHead(family)
+      val familyHead = family.takeIf { it.hasManagingEntity() }?.let { loadFamilyHead(family) }
 
       RegisterData.FamilyRegisterData(
         logicalId = family.logicalId,
