@@ -18,13 +18,13 @@ package org.smartregister.fhircore.engine.rulesengine
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.apache.commons.jexl3.JexlException
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
-import org.jeasy.rules.mvel.MVELRule
-import org.mvel2.CompileException
+import org.jeasy.rules.jexl.JexlRule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -57,7 +57,7 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
 
   override fun onFailure(rule: Rule, facts: Facts, exception: Exception?) =
     when (exception) {
-      is CompileException -> Timber.e(exception.cause)
+      is JexlException -> Timber.e(exception.cause)
       else -> Timber.e(exception)
     }
 
@@ -74,8 +74,10 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
 
     val customRules = mutableSetOf<Rule>()
     ruleConfigs.forEach { ruleConfig ->
-      val customRule: MVELRule =
-        MVELRule()
+
+      // jexl rule
+      val customRule: JexlRule =
+        JexlRule()
           .name(ruleConfig.name)
           .description(ruleConfig.description)
           .`when`(ruleConfig.condition.ifEmpty { TRUE })
@@ -90,8 +92,8 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
       facts.put(baseResource.resourceType.name, baseResource)
       relatedResources.forEach { resource -> facts.put(resource.key, resource.value) }
     }
-
     rulesEngine.fire(Rules(customRules), facts)
+
     return computedValuesMap
   }
 
