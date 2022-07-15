@@ -23,6 +23,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
@@ -37,7 +38,6 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import timber.log.Timber
 
-/** A configuration store for application configurations */
 @Singleton
 class ConfigurationRegistry
 @Inject
@@ -48,6 +48,12 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val repository: DefaultRepository
 ) {
+
+  val json = Json {
+    encodeDefaults = true
+    ignoreUnknownKeys = true
+    isLenient = true
+  }
 
   val configsJsonMap = mutableMapOf<String, String>()
 
@@ -63,7 +69,7 @@ constructor(
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
       configsJsonMap.getValue(configKey).decodeResourceFromString()
-    else configsJsonMap.getValue(configKey).decodeJson()
+    else configsJsonMap.getValue(configKey).decodeJson(jsonInstance = json)
   }
 
   /**
@@ -210,7 +216,7 @@ constructor(
    * set in the section components of the [Composition] resource.
    *
    * This function retrieves the composition based on the appId and groups the non-patient resources
-   * ( [ResourceType.Questionnaire] or [ResourceType.Questionnaire]) based on their type.
+   * ( [ResourceType.Questionnaire] or [ResourceType.StructureMap]) based on their type.
    *
    * Searching is done using the _id search parameter of these not patient resources; the
    * composition section components are grouped by resource type ,then the ids concatenated (as

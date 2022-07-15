@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.engine.domain.model
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.register.view.RegisterCardViewProperties
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
+/** Represents different types of views that can be rendered via compose */
+enum class ViewType {
+  /** Represent a vertical layout that arranges views one on top of the other */
+  COLUMN,
 
-@Serializable
-data class RegisterCardConfig(
-  val rules: List<RuleConfig> = emptyList(),
-  val views: List<RegisterCardViewProperties> = emptyList()
-)
+  /** Represents a text view that displays two texts that can be formatted separately */
+  COMPOUND_TEXT,
+
+  /** A horizontal layout that arranges views from left to right */
+  ROW
+}

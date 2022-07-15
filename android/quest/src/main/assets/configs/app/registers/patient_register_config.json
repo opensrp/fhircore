@@ -40,83 +40,50 @@
     ]
   },
   "registerCard": {
-    "columnOne": {
-      "rowOne": {
-        "separator": "-",
-        "rules": [
-          {
-            "name": "patientName",
-            "condition": "true",
-            "actions": [
-              "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given'))"
-            ]
-          }
+    "rules": [
+      {
+        "name": "patientName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given'))"
         ]
-      },
-      "rowTwo": {
-        "visible": true,
-        "columnOne": {
-          "visible": true,
-          "rowOne": {
-            "visible": true,
-            "rules": [
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "Patient Name, Age, Gender |patientName|",
+            "primaryTextColor": "#000000"
+          },
+          {
+            "viewType": "ROW",
+            "children": [
               {
-                "name": "filter",
-                "condition": "",
-                "actions": [
-                  ""
-                ]
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "TB",
+                "primaryTextColor": "#5A5A5A",
+                "secondaryText": "Negative",
+                "secondaryTextColor": "#1DB11B"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "G6PD Status",
+                "primaryTextColor": "#5A5A5A",
+                "secondaryText": "Positive",
+                "secondaryTextColor": "#FF333F"
               }
             ]
           },
-          "rowTwo": {
-            "visible": true,
-            "rules": [
-              {
-                "name": "filter",
-                "condition": "",
-                "actions": [
-                  ""
-                ]
-              }
-            ]
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "Last seen on Thursday",
+            "primaryTextColor": "#5A5A5A"
           }
-        },
-        "columnTwo": {
-          "visible": true,
-          "rules": [
-            {
-              "name": "filter",
-              "condition": "",
-              "actions": [
-                ""
-              ]
-            }
-          ]
-        }
+        ]
       }
-    },
-    "divider": {
-      "visible": false
-    },
-    "columnTwo": {
-      "visible": false,
-      "rules": [
-        {
-          "name": "count",
-          "condition": "",
-          "actions": [
-            ""
-          ]
-        },
-        {
-          "name": "status",
-          "condition": "",
-          "actions": [
-            ""
-          ]
-        }
-      ]
-    }
+    ]
   }
 }

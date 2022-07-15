@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.data.patient
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterCardData
@@ -60,7 +59,8 @@ class PatientRegisterPagingSource(
           .map {
             RegisterCardData(
               resourceData = it,
-              computedRegisterCardData = computeRegisterCardRules(it)
+              computedRegisterCardData =
+                rulesFactory.fireRule(_patientPagingSourceState.registerCardConfig.rules, it)
             )
           }
       val prevKey =
@@ -79,11 +79,6 @@ class PatientRegisterPagingSource(
       Timber.e(exception)
       LoadResult.Error(exception)
     }
-  }
-
-  private fun computeRegisterCardRules(resourceData: ResourceData): Map<String, Any> {
-    val rules = _patientPagingSourceState.registerCardConfig.columnOne.rowOne?.rules
-    return rulesFactory.fireRule(rules ?: listOf(), resourceData)
   }
 
   fun setPatientPagingSourceState(patientPagingSourceState: PatientPagingSourceState) {
