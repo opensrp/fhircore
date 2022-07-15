@@ -52,7 +52,6 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
     facts.apply {
       put(FHIR_PATH, fhirPathDataExtractor)
       put(DATA, computedValuesMap)
-      put("configurationRegistry", configurationRegistry)
     }
   }
 
@@ -103,7 +102,7 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
   }
 
   companion object {
-     const val FHIR_PATH = "fhirPath"
+    private const val FHIR_PATH = "fhirPath"
     private const val DATA = "data"
     private const val TRUE = "true"
   }
