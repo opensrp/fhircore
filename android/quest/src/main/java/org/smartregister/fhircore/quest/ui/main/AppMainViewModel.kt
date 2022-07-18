@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -36,12 +37,15 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.configuration.workflow.WorkflowTrigger
+import org.smartregister.fhircore.engine.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -102,6 +106,20 @@ constructor(
       AppMainEvent.SyncData -> {
         syncBroadcaster.runSync()
         retrieveAppMainUiState()
+      }
+      is AppMainEvent.RegisterNewClient -> {
+        event.context.launchQuestionnaire<QuestionnaireActivity>(
+          questionnaireId = event.questionnaireId
+        )
+      }
+      is AppMainEvent.OpenRegistersBottomSheet -> {
+        event.context.run {
+          (this as AppCompatActivity).let { activity ->
+            val navigationBottomSheet =
+              NavigationBottomSheet(registersList = event.registersList) {}
+            navigationBottomSheet.show(activity.supportFragmentManager, NavigationBottomSheet.TAG)
+          }
+        }
       }
       is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
       is AppMainEvent.UpdateSyncState -> {
