@@ -41,13 +41,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun RegisterBottomSheet(
-  registers: List<RegisterBottomSheetItem>?,
+  registers: List<NavigationMenuConfig>?,
   itemListener: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -76,7 +77,7 @@ fun RegisterBottomSheet(
 
 @Composable
 fun RegisterListItem(
-  registerItem: RegisterBottomSheetItem,
+  registerItem: NavigationMenuConfig,
   itemListener: (String) -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -101,7 +102,7 @@ fun RegisterListItem(
 @Composable
 fun RegisterListItemPreview() {
   RegisterListItem(
-    registerItem = RegisterBottomSheetItem("TestFragmentTag", "All Clients", true),
+    registerItem = NavigationMenuConfig(id = "TestFragmentTag", display = "All Clients", showCount =  true),
     itemListener = {}
   )
 }
@@ -114,8 +115,8 @@ fun RegisterBottomSheetPreview() {
     itemListener = {},
     registers =
       listOf(
-        RegisterBottomSheetItem(id = "TestFragmentTag", display = "All Clients"),
-        RegisterBottomSheetItem(id = "TestFragmentTag2", display = "Families", showCount = true)
+        NavigationMenuConfig(id = "TestFragmentTag", display = "All Clients"),
+        NavigationMenuConfig(id = "TestFragmentTag2", display = "Families", showCount = true)
       )
   )
 }
