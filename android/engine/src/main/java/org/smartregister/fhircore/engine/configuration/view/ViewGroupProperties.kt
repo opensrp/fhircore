@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register.view
+package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
-data class CompoundTextProperties(
+class ViewGroupProperties(
   override val viewType: ViewType,
   override val weight: Float? = null,
-  val primaryText: String? = null,
-  val primaryTextColor: String? = null,
-  val secondaryText: String? = null,
-  val secondaryTextColor: String? = null,
+  val children: List<RegisterCardViewProperties> = emptyList()
 ) : RegisterCardViewProperties()

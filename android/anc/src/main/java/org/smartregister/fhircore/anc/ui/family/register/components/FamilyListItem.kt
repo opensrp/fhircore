@@ -90,11 +90,7 @@ fun FamilyRow(
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
-        Separator(
-          modifier = modifier,
-          showSeparator =
-            familyItem.address.isNotEmpty() && familyItem.members.any { it.pregnant == true }
-        )
+        Separator(modifier = modifier)
         familyItem.members.filter { it.pregnant == true }.forEach { _ ->
           Image(
             painter = painterResource(R.drawable.ic_pregnant),

@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Text
@@ -29,9 +31,9 @@ import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
-import org.smartregister.fhircore.engine.configuration.register.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.register.view.GroupedViewProperties
-import org.smartregister.fhircore.engine.configuration.register.view.RegisterCardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.RegisterCardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.components.Separator
@@ -55,11 +57,11 @@ fun RegisterCard(
 ) {
   registerCardViewProperties.forEach { viewProperties ->
     // Render views recursively
-    if (viewProperties is GroupedViewProperties) {
+    if (viewProperties is ViewGroupProperties) {
       if (viewProperties.children.isEmpty()) return
       when (viewProperties.viewType) {
         ViewType.COLUMN, ViewType.ROW ->
-          RenderGroupedViews(viewProperties, modifier, registerCardData, onCardClick)
+          RenderViewGroup(viewProperties, modifier, registerCardData, onCardClick)
         else -> return
       }
     } else {
@@ -73,14 +75,14 @@ fun RegisterCard(
 }
 
 @Composable
-private fun RenderGroupedViews(
-  viewProperties: GroupedViewProperties,
+private fun RenderViewGroup(
+  viewProperties: ViewGroupProperties,
   modifier: Modifier,
   registerCardData: RegisterCardData,
   onCardClick: (String) -> Unit
 ) {
   viewProperties.children.forEach { childViewProperty ->
-    if (childViewProperty is GroupedViewProperties) {
+    if (childViewProperty is ViewGroupProperties) {
       if (childViewProperty.viewType == ViewType.COLUMN) {
         FlowColumn {
           RegisterCard(
@@ -143,11 +145,13 @@ fun CompoundText(
       )
     }
     if (compoundTextProperties.secondaryText != null) {
-      Separator()
+      // Separate the primary and secondary text
+      Separator(separator = compoundTextProperties.separator ?: "-")
+
       Text(
         text = compoundTextProperties.secondaryText!!,
         color = compoundTextProperties.secondaryTextColor.parseColor(),
-        modifier = modifier.wrapContentWidth(Alignment.Start)
+        modifier = modifier.wrapContentWidth(Alignment.Start).padding(end = 8.dp)
       )
     }
   }
@@ -155,49 +159,97 @@ fun CompoundText(
 
 @Preview(showBackground = true)
 @Composable
-fun RegisterCardPreview() {
+private fun CompoundTextPreview() {
+  Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+    CompoundText(
+      compoundTextProperties =
+        CompoundTextProperties(
+          primaryText = "Angela Merkel, 67, F",
+          primaryTextColor = "#000000",
+        ),
+      registerCardData =
+        RegisterCardData(
+          resourceData = ResourceData(baseResource = Patient()),
+          computedRegisterCardData = emptyMap()
+        )
+    )
+    CompoundText(
+      compoundTextProperties =
+        CompoundTextProperties(
+          primaryText = "Coughlin HH",
+          primaryTextColor = "#5A5A5A",
+          secondaryText = "002",
+          separator = "-",
+          secondaryTextColor = "#5A5A5A"
+        ),
+      registerCardData =
+        RegisterCardData(
+          resourceData = ResourceData(baseResource = Patient()),
+          computedRegisterCardData = emptyMap()
+        )
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RegisterCardPreview() {
   val registerCardViewProperties =
     listOf<RegisterCardViewProperties>(
-      GroupedViewProperties(
+      ViewGroupProperties(
         viewType = ViewType.COLUMN,
         children =
           listOf(
-            GroupedViewProperties(
+            ViewGroupProperties(
+              viewType = ViewType.COLUMN,
+              children =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Column #1",
+                    primaryTextColor = "#000000"
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Column #2",
+                    primaryTextColor = "#000000"
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Column #3",
+                    primaryTextColor = "#000000"
+                  )
+                )
+            ),
+            ViewGroupProperties(
               viewType = ViewType.ROW,
               children =
                 listOf(
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Nelson Mandela Madiba, 83, M",
-                    primaryTextColor = "#000000"
+                    primaryText = "TB",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "Row 1",
+                    secondaryTextColor = "#1DB11B"
                   ),
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "HIV status",
-                    secondaryTextColor = "#1DB11B",
-                    secondaryText = "Negative",
-                    primaryTextColor = "#5A5A5A"
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Osama Bin Laden, 56, M ",
-                    primaryTextColor = "#000000"
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "HIV status",
-                    secondaryTextColor = "#FF333F",
-                    secondaryText = "Positive",
-                    primaryTextColor = "#5A5A5A"
+                    primaryText = "HIV",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "Row 2",
+                    secondaryTextColor = "#FF333F"
                   )
                 )
             )
           )
       )
     )
-  RegisterCard(
-    registerCardViewProperties = registerCardViewProperties,
-    registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
-    onCardClick = {}
-  )
+
+  Column {
+    RegisterCard(
+      registerCardViewProperties = registerCardViewProperties,
+      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      onCardClick = {}
+    )
+  }
 }

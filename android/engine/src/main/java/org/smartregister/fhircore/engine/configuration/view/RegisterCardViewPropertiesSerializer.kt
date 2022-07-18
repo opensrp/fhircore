@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register.view
+package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
@@ -40,7 +40,7 @@ object RegisterCardViewPropertiesSerializer :
     }
     return when (ViewType.valueOf(viewType)) {
       ViewType.COMPOUND_TEXT -> CompoundTextProperties.serializer()
-      ViewType.COLUMN, ViewType.ROW -> GroupedViewProperties.serializer()
+      ViewType.COLUMN, ViewType.ROW -> ViewGroupProperties.serializer()
     }
   }
 }

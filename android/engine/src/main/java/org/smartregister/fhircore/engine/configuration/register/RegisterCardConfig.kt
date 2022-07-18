@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.register.view.RegisterCardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.RegisterCardViewProperties
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable

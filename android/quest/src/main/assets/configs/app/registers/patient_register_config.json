@@ -54,9 +54,24 @@
         "viewType": "COLUMN",
         "children": [
           {
-            "viewType": "COMPOUND_TEXT",
-            "primaryText": "Patient Name, Age, Gender |patientName|",
-            "primaryTextColor": "#000000"
+            "viewType": "COLUMN",
+            "children": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Column #1",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Column #2",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Column #3",
+                "primaryTextColor": "#5A5A5A"
+              }
+            ]
           },
           {
             "viewType": "ROW",
@@ -65,22 +80,17 @@
                 "viewType": "COMPOUND_TEXT",
                 "primaryText": "TB",
                 "primaryTextColor": "#5A5A5A",
-                "secondaryText": "Negative",
+                "secondaryText": "Row 1",
                 "secondaryTextColor": "#1DB11B"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "G6PD Status",
+                "primaryText": "HIV",
                 "primaryTextColor": "#5A5A5A",
-                "secondaryText": "Positive",
+                "secondaryText": "Row 2",
                 "secondaryTextColor": "#FF333F"
               }
             ]
-          },
-          {
-            "viewType": "COMPOUND_TEXT",
-            "primaryText": "Last seen on Thursday",
-            "primaryTextColor": "#5A5A5A"
           }
         ]
       }
