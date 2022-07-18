@@ -113,7 +113,7 @@ constructor(
     patientsData.value = retrieveAncPatients()
   }
 
-  private fun defaultDateRangeState() =
+  fun defaultDateRangeState() =
     androidx.core.util.Pair(
       MaterialDatePicker.thisMonthInUtcMilliseconds(),
       MaterialDatePicker.todayInUtcMilliseconds()
@@ -275,7 +275,7 @@ constructor(
     measureReportPopulationResults.value = formatPopulationMeasureReport(measureReport)
   }
 
-  private fun toggleProgressIndicatorVisibility(showProgressIndicator: Boolean = false) {
+  fun toggleProgressIndicatorVisibility(showProgressIndicator: Boolean = false) {
     reportTypeSelectorUiState.value =
       reportTypeSelectorUiState.value.copy(showProgressIndicator = showProgressIndicator)
   }

@@ -64,11 +64,11 @@ import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
-import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
 import org.smartregister.fhircore.quest.util.FhirPathUtil.getPathValue
 import org.smartregister.fhircore.quest.util.getSearchResults
 import org.smartregister.fhircore.quest.util.loadAdditionalData
+import org.smartregister.fhircore.quest.util.mappers.PatientItemMapper
 import timber.log.Timber
 
 class PatientRepository

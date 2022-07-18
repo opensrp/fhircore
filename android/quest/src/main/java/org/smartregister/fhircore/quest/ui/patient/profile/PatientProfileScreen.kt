@@ -188,6 +188,7 @@ fun PatientProfileScreen(
             onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.FORMS
           ) {
+            Spacer(modifier.height(16.dp))
             profileViewData.forms.forEach {
               ActionableButton(
                 actionableButtonData = it,
@@ -197,6 +198,21 @@ fun PatientProfileScreen(
                   )
                 }
               )
+            }
+            Spacer(modifier.height(16.dp))
+          }
+        }
+
+        // Form responses: load questionnaire responses
+        if (profileViewData.formResponses.isNotEmpty()) {
+          ProfileCard(
+            title =
+              stringResource(R.string.responses, profileViewData.formResponses.size).uppercase(),
+            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+            profileViewSection = PatientProfileViewSection.FORM_RESPONSES
+          ) {
+            profileViewData.formResponses.forEach {
+              ProfileActionableItem(it, onActionClick = { _, _ -> })
             }
           }
         }

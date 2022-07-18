@@ -36,12 +36,9 @@ constructor(val fhirEngine: FhirEngine, val fhirResourceService: FhirResourceSer
   }
 
   override suspend fun resolveImageUrl(uri: String): Bitmap? {
-    return fhirResourceService.fetchImage(uri).execute().run {
-      if (this.body() != null) {
-        BitmapFactory.decodeStream(this.body()?.byteStream())
-      } else {
-        null
-      }
-    }
+    val response = fhirResourceService.fetchImage(uri)
+    return if (response != null) {
+      BitmapFactory.decodeStream(response.byteStream())
+    } else null
   }
 }

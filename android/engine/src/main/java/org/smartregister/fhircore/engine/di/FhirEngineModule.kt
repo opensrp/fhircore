@@ -21,6 +21,7 @@ import com.google.android.fhir.DatabaseErrorStrategy
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineConfiguration
 import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.NetworkConfiguration
 import com.google.android.fhir.ServerConfiguration
 import com.google.android.fhir.sync.Authenticator
 import dagger.Module
@@ -56,7 +57,8 @@ class FhirEngineModule {
           authenticator =
             object : Authenticator {
               override fun getAccessToken() = tokenManagerService.getBlockingActiveAuthToken() ?: ""
-            }
+            },
+          networkConfiguration = NetworkConfiguration(120, 120, 120)
         )
       )
     )

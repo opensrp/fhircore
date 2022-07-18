@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 
 @AndroidEntryPoint
 class PinSetupActivity : BaseMultiLanguageActivity() {
@@ -54,7 +53,10 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
         loadData(isSetup = true)
       }
       val pinSetupActivity = this@PinSetupActivity
-      navigateToHome.observe(pinSetupActivity) { pinSetupActivity.moveToHome() }
+      navigateToHome.observe(pinSetupActivity) {
+        loginService.navigateToHome()
+        syncBroadcaster.get().runSync()
+      }
       navigateToSettings.observe(pinSetupActivity) { pinSetupActivity.moveToSettings() }
       navigateToLogin.observe(pinSetupActivity) { pinSetupActivity.moveToLoginViaUsername() }
       pin.observe(pinSetupActivity) {
@@ -62,13 +64,6 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
       }
     }
     setContent { AppTheme { PinSetupScreen(pinViewModel) } }
-  }
-
-  private fun moveToHome() {
-    sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false)
-    configurationRegistry.fetchNonWorkflowConfigResources()
-    syncBroadcaster.get().runSync()
-    loginService.navigateToHome()
   }
 
   private fun moveToSettings() {

@@ -21,7 +21,6 @@ import okhttp3.ResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
-import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -57,7 +56,7 @@ interface FhirResourceService {
     @Path("id") id: String
   ): OperationOutcome
 
-  @GET fun fetchImage(@Url url: String): Call<ResponseBody?>
+  @GET suspend fun fetchImage(@Url url: String): ResponseBody?
 
   @GET("{resourceType}/_search")
   suspend fun searchResource(
