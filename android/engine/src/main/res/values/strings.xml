@@ -122,4 +122,5 @@
     <string name="medical_history">MEDICAL HISTORY</string>
     <string name="upcoming_services">UPCOMING SERVICES</string>
     <string name="service_card">SERVICE CARD</string>
+    <string name="other_patients">Other patients</string>
 </resources>

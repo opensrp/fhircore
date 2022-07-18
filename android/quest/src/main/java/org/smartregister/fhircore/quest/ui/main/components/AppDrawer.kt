@@ -94,7 +94,9 @@ fun AppDrawer(
     // Display menu action button
     MenuActionButton(
       modifier = modifier,
-      navigationConfiguration = appUiState.navigationConfiguration
+      navigationConfiguration = appUiState.navigationConfiguration,
+      onSideMenuClick = onSideMenuClick,
+      context = context
     )
 
     Divider(color = DividerColor)
@@ -116,6 +118,10 @@ fun AppDrawer(
         openDrawer = openDrawer,
         onSideMenuClick = onSideMenuClick
       )
+      if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true
+      ) {
+        OtherPatientsItem(appUiState.navigationConfiguration, onSideMenuClick, context, openDrawer)
+      }
     }
 
     Divider(color = DividerColor)
@@ -152,6 +158,32 @@ private fun NavBottomSection(
       onSideMenuClick = { onSideMenuClick(AppMainEvent.SyncData) }
     )
   }
+}
+
+@Composable
+private fun OtherPatientsItem(
+  navigationConfiguration: NavigationConfiguration,
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  context: Context,
+  openDrawer: (Boolean) -> Unit
+) {
+  SideMenuItem(
+    iconResource = null,
+    title = stringResource(R.string.other_patients),
+    endText = "",
+    showEndText = false,
+    endIconResource = R.drawable.ic_right_arrow,
+    endTextColor = SubtitleTextColor,
+    onSideMenuClick = {
+      openDrawer(false)
+      onSideMenuClick(
+        AppMainEvent.OpenRegistersBottomSheet(
+          context = context,
+          registersList = navigationConfiguration.bottomSheetRegisters?.registers
+        )
+      )
+    }
+  )
 }
 
 @Composable
@@ -239,14 +271,24 @@ private fun StaticMenus(
 @Composable
 private fun MenuActionButton(
   modifier: Modifier = Modifier,
-  navigationConfiguration: NavigationConfiguration
+  navigationConfiguration: NavigationConfiguration,
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  context: Context
 ) {
   if (navigationConfiguration.menuActionButton != null) {
     Row(
       modifier =
         modifier
           .fillMaxWidth()
-          .clickable { /*TODO handle main action button click*/}
+          .clickable {
+            onSideMenuClick(
+              AppMainEvent.RegisterNewClient(
+                context = context,
+                questionnaireId =
+                  navigationConfiguration.menuActionButton?.questionnaire?.id.toString()
+              )
+            )
+          }
           .padding(16.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
@@ -278,6 +320,7 @@ private fun SideMenuItem(
   endText: String = "",
   endTextColor: Color = Color.White,
   showEndText: Boolean,
+  endIconResource: Int? = null,
   onSideMenuClick: () -> Unit
 ) {
   Row(
@@ -300,12 +343,35 @@ private fun SideMenuItem(
     if (showEndText) {
       SideMenuItemText(title = endText, textColor = endTextColor)
     }
+
+    endIconResource?.let { icon ->
+      Icon(
+        modifier = modifier.padding(end = 10.dp),
+        painter = painterResource(id = icon),
+        contentDescription = SIDE_MENU_ICON,
+        tint = MenuItemColor
+      )
+    }
   }
 }
 
 @Composable
 private fun SideMenuItemText(title: String, textColor: Color) {
   Text(text = title, color = textColor, fontSize = 18.sp)
+}
+
+@Preview(showBackground = false)
+@ExcludeFromJacocoGeneratedReport
+@Composable
+fun PreviewSideMenuItem() {
+  SideMenuItem(
+    iconResource = null,
+    title = "Other Patients",
+    endText = "End Text",
+    showEndText = false,
+    endIconResource = R.drawable.ic_right_arrow,
+    onSideMenuClick = {}
+  )
 }
 
 @Preview(showBackground = true)
