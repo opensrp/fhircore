@@ -35,7 +35,6 @@ data class ServiceButton(
   val visible: Boolean? = null,
   val text: String? = null,
   val status: ServiceStatus = ServiceStatus.UPCOMING,
-  val label: String? = null,
   val smallSized: Boolean = false,
   val questionnaire: QuestionnaireConfig? = null
 )

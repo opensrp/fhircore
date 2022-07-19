@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -95,8 +96,8 @@ fun RegisterCard(
     if (viewProperties is ViewGroupProperties) {
       if (viewProperties.children.isEmpty()) return
       when (viewProperties.viewType) {
-        ViewType.COLUMN, ViewType.ROW ->
-          RenderViewGroup(viewProperties, modifier, registerCardData, onCardClick)
+        ViewType.COLUMN,
+        ViewType.ROW -> RenderViewGroup(viewProperties, modifier, registerCardData, onCardClick)
         else -> return
       }
     } else {
@@ -223,7 +224,7 @@ fun ServiceCard(
           .clickable {
             /** TODO call card click listener */
           }
-          .padding(start = 16.dp, top = 24.dp, bottom = 24.dp)
+          .padding(top = 24.dp, bottom = 24.dp)
           .weight(0.75f)
     ) {
       Column {
@@ -245,7 +246,7 @@ fun ServiceCard(
 
     // Show action button (occupies 25% of the row width)
     Box(
-      modifier = modifier.weight(0.25f).padding(end = 16.dp, top = 24.dp, bottom = 24.dp),
+      modifier = modifier.weight(0.25f).padding(top = 24.dp, bottom = 24.dp),
       contentAlignment = Alignment.Center
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
@@ -314,7 +315,7 @@ private fun SmallServiceButton(modifier: Modifier = Modifier, serviceButton: Ser
       modifier = modifier.size(16.dp).padding(horizontal = 1.dp)
     )
     Text(
-      text = serviceButton.label ?: "",
+      text = serviceButton.text ?: "",
       color = contentColor,
       fontSize = 12.sp,
       fontWeight = FontWeight.Bold,
@@ -331,9 +332,13 @@ private fun BigServiceButton(modifier: Modifier = Modifier, serviceButton: Servi
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   Column(
     modifier =
-      modifier.background(
-        if (serviceButton.status == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
-      ),
+      modifier
+        .fillMaxSize()
+        .padding(8.dp)
+        .clip(RoundedCornerShape(4.dp))
+        .background(
+          if (serviceButton.status == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
+        ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
@@ -403,45 +408,62 @@ private fun RegisterCardPreview() {
         viewType = ViewType.COLUMN,
         children =
           listOf(
-            ViewGroupProperties(
-              viewType = ViewType.COLUMN,
-              children =
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
                 listOf(
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Column #1",
-                    primaryTextColor = "#000000"
+                    primaryText = "Household Name HH",
+                    primaryTextColor = "#000000",
                   ),
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Column #2",
-                    primaryTextColor = "#000000"
+                    primaryText = "Town/Village",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "HH No.",
+                    secondaryTextColor = "#555AAA"
                   ),
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Column #3",
-                    primaryTextColor = "#000000"
+                    primaryText = "Last visited yesterday",
+                    primaryTextColor = "#5A5A5A",
                   )
+                ),
+              serviceMemberIcons = "CHILD,CHILD,CHILD,CHILD",
+              showVerticalDivider = true,
+              serviceButton =
+                ServiceButton(
+                  visible = true,
+                  status = ServiceStatus.OVERDUE,
+                  text = "3",
+                  smallSized = false
                 )
             ),
-            ViewGroupProperties(
-              viewType = ViewType.ROW,
-              children =
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
                 listOf(
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "TB",
-                    primaryTextColor = "#5A5A5A",
-                    secondaryText = "Row 1",
-                    secondaryTextColor = "#1DB11B"
+                    primaryText = "ANC Woman Name",
+                    primaryTextColor = "#000000",
                   ),
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "HIV",
+                    primaryText = "EDD",
                     primaryTextColor = "#5A5A5A",
-                    secondaryText = "Row 2",
-                    secondaryTextColor = "#FF333F"
+                    secondaryText = "29-10-2022",
+                    secondaryTextColor = "#555AAA"
                   )
+                ),
+              showVerticalDivider = false,
+              serviceButton =
+                ServiceButton(
+                  visible = true,
+                  status = ServiceStatus.OVERDUE,
+                  text = "ANC Visit",
+                  smallSized = true
                 )
             )
           )
