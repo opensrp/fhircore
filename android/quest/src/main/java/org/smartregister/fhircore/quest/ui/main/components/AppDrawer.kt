@@ -131,7 +131,9 @@ fun AppDrawer(
       modifier = modifier.background(SideMenuDarkColor),
       navigationConfiguration = appUiState.navigationConfiguration,
       context = context,
-      openDrawer = openDrawer
+      navController = navController,
+      openDrawer = openDrawer,
+      onSideMenuClick = onSideMenuClick
     )
 
     // Display bottom section of the nav (sync)
@@ -249,7 +251,9 @@ private fun StaticMenus(
   modifier: Modifier = Modifier,
   navigationConfiguration: NavigationConfiguration,
   context: Context,
-  openDrawer: (Boolean) -> Unit
+  navController: NavHostController,
+  openDrawer: (Boolean) -> Unit,
+  onSideMenuClick: (AppMainEvent) -> Unit
 ) {
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
     items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
@@ -261,7 +265,14 @@ private fun StaticMenus(
         showEndText = navigationMenu.showCount,
         onSideMenuClick = {
           openDrawer(false)
-          // TODO navigate to relevant screen/initiate an action
+          onSideMenuClick(
+            AppMainEvent.NavigateToMenu(
+              context = context,
+              navController = navController,
+              actions = navigationMenu.actions,
+              registerId = navigationMenu.id
+            )
+          )
         }
       )
     }

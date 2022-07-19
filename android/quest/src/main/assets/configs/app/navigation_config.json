@@ -24,17 +24,38 @@
     {
       "id": "reports",
       "visible": true,
-      "display": "Reports"
+      "display": "Reports",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REPORT",
+          "id": "navigateToReportsScreen"
+        }
+      ]
     },
     {
       "id": "p2p_sync",
       "visible": true,
-      "display": "Transfer Data"
+      "display": "Transfer Data",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "DEVICE_TO_DEVICE_SYNC",
+          "id": "navigateToP2PScreen"
+        }
+      ]
     },
     {
       "id": "profile",
       "visible": true,
-      "display": "Profile"
+      "display": "Profile",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_SETTINGS",
+          "id": "navigateToSettingsScreen"
+        }
+      ]
     }
   ],
   "clientRegisters": [

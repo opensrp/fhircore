@@ -144,6 +144,19 @@ constructor(
         val urlParams = bindArgumentsOf(Pair(NavigationArg.REGISTER_ID, event.registerId))
         event.navController.navigate(route = MainNavigationScreen.Home.route + urlParams)
       }
+      is AppMainEvent.NavigateToMenu -> {
+        /** Collecting the navigation action where the trigger is of type 'ON_CLICK' */
+        val navigationAction = event.actions?.find { it.trigger == WorkflowTrigger.ON_CLICK }
+        /** Navigating to appropriate screen based on the navigationAction's Workflow */
+        when (navigationAction?.workflow) {
+          ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(context = event.context)
+          ApplicationWorkflow.LAUNCH_SETTINGS ->
+            event.navController.navigate(route = MainNavigationScreen.Settings.route)
+          ApplicationWorkflow.LAUNCH_REPORT ->
+            event.navController.navigate(route = MainNavigationScreen.Reports.route)
+          else -> event.navController.navigate(route = MainNavigationScreen.Home.route)
+        }
+      }
     }
   }
 
