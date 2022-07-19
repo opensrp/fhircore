@@ -36,6 +36,6 @@ enum class ApplicationWorkflow {
   /** A workflow for navigating to user's profile */
   LAUNCH_SETTINGS,
 
-  /** A workflow for launching the P2P Screen */
+  /** A workflow to trigger device to device sync */
   DEVICE_TO_DEVICE_SYNC
 }
