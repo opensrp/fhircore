@@ -33,7 +33,7 @@ enum class ApplicationWorkflow {
   /** A workflow for navigating to in-app reports */
   LAUNCH_REPORT,
 
-  /** A workflow for navigating to user's profile */
+  /** A workflow for navigating to user's settings screen */
   LAUNCH_SETTINGS,
 
   /** A workflow to trigger device to device sync */
