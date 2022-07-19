@@ -149,7 +149,6 @@ private fun AppMainNavigationGraph(
               refreshDataState = appMainViewModel.refreshDataState
             )
           }
-        MainNavigationScreen.Tasks -> composable(MainNavigationScreen.Tasks.route) {}
         MainNavigationScreen.Reports ->
           measureReportNavigationGraph(navController, measureReportViewModel)
         MainNavigationScreen.Settings ->

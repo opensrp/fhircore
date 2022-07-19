@@ -84,7 +84,6 @@ fun BottomScreenSectionPreview() {
   val navigationScreens =
     listOf(
       MainNavigationScreen.Home,
-      MainNavigationScreen.Tasks,
       MainNavigationScreen.Reports,
       MainNavigationScreen.Settings
     )

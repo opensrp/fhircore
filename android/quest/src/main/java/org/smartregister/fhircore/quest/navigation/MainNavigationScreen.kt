@@ -25,7 +25,6 @@ sealed class MainNavigationScreen(
   val showInBottomNav: Boolean = false
 ) {
   object Home : MainNavigationScreen(R.string.clients, R.drawable.ic_home, "homeRoute", true)
-  object Tasks : MainNavigationScreen(R.string.visits, R.drawable.ic_tasks, "tasksRoute", true)
   object Reports :
     MainNavigationScreen(R.string.reports, R.drawable.ic_reports, "reportsRoute", true)
   object Settings :
@@ -35,6 +34,6 @@ sealed class MainNavigationScreen(
   object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
 
   companion object {
-    val appScreens = listOf(Home, Tasks, Reports, Settings, PatientProfile, FamilyProfile)
+    val appScreens = listOf(Home, Reports, Settings, PatientProfile, FamilyProfile)
   }
 }
