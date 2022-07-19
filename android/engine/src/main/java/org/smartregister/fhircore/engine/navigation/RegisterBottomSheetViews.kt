@@ -102,7 +102,8 @@ fun RegisterListItem(
 @Composable
 fun RegisterListItemPreview() {
   RegisterListItem(
-    registerItem = NavigationMenuConfig(id = "TestFragmentTag", display = "All Clients", showCount =  true),
+    registerItem =
+      NavigationMenuConfig(id = "TestFragmentTag", display = "All Clients", showCount = true),
     itemListener = {}
   )
 }
