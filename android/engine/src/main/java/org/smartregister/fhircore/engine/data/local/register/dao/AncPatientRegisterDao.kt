@@ -35,7 +35,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
-import org.smartregister.fhircore.engine.domain.model.VisitStatus
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -94,7 +94,7 @@ constructor(
         gender = patient.gender,
         age = patient.birthDate.toAgeDisplay(),
         address = patient.extractAddress(),
-        visitStatus = getVisitStatus(carePlans),
+        serviceStatus = getVisitStatus(carePlans),
         servicesDue = carePlans.sumOf { it.milestonesDue().size },
         servicesOverdue = carePlans.sumOf { it.milestonesOverdue().size },
         familyName = if (patient.hasName()) patient.nameFirstRep.family else null
@@ -118,7 +118,7 @@ constructor(
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
-      visitStatus = getVisitStatus(carePlans),
+      serviceStatus = getVisitStatus(carePlans),
       services = carePlans,
       tasks =
         defaultRepository.searchResourceFor(
@@ -146,12 +146,12 @@ constructor(
   override suspend fun countRegisterData(appFeatureName: String?) =
     fhirEngine.count<Condition> { getRegisterDataFilters().forEach { filterBy(it) } }
 
-  private fun getVisitStatus(carePlans: List<CarePlan>): VisitStatus {
-    var visitStatus = VisitStatus.PLANNED
-    if (carePlans.any { it.milestonesOverdue().isNotEmpty() }) visitStatus = VisitStatus.OVERDUE
-    else if (carePlans.any { it.milestonesDue().isNotEmpty() }) visitStatus = VisitStatus.DUE
+  private fun getVisitStatus(carePlans: List<CarePlan>): ServiceStatus {
+    var serviceStatus = ServiceStatus.UPCOMING
+    if (carePlans.any { it.milestonesOverdue().isNotEmpty() }) serviceStatus = ServiceStatus.OVERDUE
+    else if (carePlans.any { it.milestonesDue().isNotEmpty() }) serviceStatus = ServiceStatus.DUE
 
-    return visitStatus
+    return serviceStatus
   }
 
   private fun getRegisterDataFilters() = emptyList<DataQuery>()

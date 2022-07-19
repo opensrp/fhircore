@@ -78,7 +78,7 @@ class RegisterDataTest : RobolectricTest() {
       Assert.assertEquals("5y", age)
       //      Assert.assertEquals(Date("12345678"), birthdate)
       Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
-      Assert.assertEquals(VisitStatus.DUE, visitStatus)
+      Assert.assertEquals(ServiceStatus.DUE, serviceStatus)
     }
   }
 
@@ -136,7 +136,7 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          visitStatus = VisitStatus.DUE
+          serviceStatus = ServiceStatus.DUE
         )
       HealthModule.FAMILY ->
         RegisterData.FamilyRegisterData(
@@ -162,7 +162,7 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          visitStatus = VisitStatus.DUE
+          serviceStatus = ServiceStatus.DUE
         )
       HealthModule.PNC ->
         RegisterData.AncRegisterData(
@@ -172,7 +172,7 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          visitStatus = VisitStatus.DUE
+          serviceStatus = ServiceStatus.DUE
         )
       HealthModule.CHILD ->
         RegisterData.AncRegisterData(
@@ -182,7 +182,7 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          visitStatus = VisitStatus.DUE
+          serviceStatus = ServiceStatus.DUE
         )
       HealthModule.DEFAULT ->
         RegisterData.DefaultRegisterData(

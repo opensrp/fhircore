@@ -42,7 +42,7 @@
   "registerCard": {
     "rules": [
       {
-        "name": "patientName",
+        "name": "familyName",
         "condition": "true",
         "actions": [
           "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given'))"
@@ -54,43 +54,35 @@
         "viewType": "COLUMN",
         "children": [
           {
-            "viewType": "COLUMN",
-            "children": [
+            "viewType": "SERVICE_CARD",
+            "details": [
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "Column #1",
+                "primaryText": "Household Name HH",
                 "primaryTextColor": "#000000"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "Column #2",
-                "primaryTextColor": "#000000"
+                "primaryText": "Town/Village",
+                "primaryTextColor": "#5A5A5A",
+                "separator": "-",
+                "secondaryText": "HH No.",
+                "secondaryTextColor": "#5A5A5A"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "Column #3",
+                "primaryText": "Last visited yesterday",
                 "primaryTextColor": "#5A5A5A"
               }
-            ]
-          },
-          {
-            "viewType": "ROW",
-            "children": [
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "TB",
-                "primaryTextColor": "#5A5A5A",
-                "secondaryText": "Row 1",
-                "secondaryTextColor": "#1DB11B"
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "HIV",
-                "primaryTextColor": "#5A5A5A",
-                "secondaryText": "Row 2",
-                "secondaryTextColor": "#FF333F"
-              }
-            ]
+            ],
+            "showVerticalDivider": true,
+            "serviceMemberIcons": "PREGNANT_WOMAN,CHILD,CHILD",
+            "serviceButton": {
+              "visible": true,
+              "text": "2",
+              "status": "OVERDUE",
+              "smallSized": false
+            }
           }
         ]
       }

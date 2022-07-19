@@ -24,6 +24,7 @@ val json = Json {
   encodeDefaults = true
   ignoreUnknownKeys = true
   isLenient = true
+  useAlternativeNames = true
 }
 
 /** Decode string to an entity of type [T] */

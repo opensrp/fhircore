@@ -22,7 +22,6 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 @Serializable
 data class CompoundTextProperties(
   override val viewType: ViewType = ViewType.COMPOUND_TEXT,
-  override val weight: Float? = null,
   val primaryText: String? = null,
   val primaryTextColor: String? = null,
   val secondaryText: String? = null,

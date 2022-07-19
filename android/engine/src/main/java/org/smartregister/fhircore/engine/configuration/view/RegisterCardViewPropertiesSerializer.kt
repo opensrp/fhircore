@@ -39,8 +39,9 @@ object RegisterCardViewPropertiesSerializer :
           """.trimMargin()
     }
     return when (ViewType.valueOf(viewType)) {
-      ViewType.COMPOUND_TEXT -> CompoundTextProperties.serializer()
       ViewType.COLUMN, ViewType.ROW -> ViewGroupProperties.serializer()
+      ViewType.COMPOUND_TEXT -> CompoundTextProperties.serializer()
+      ViewType.SERVICE_CARD -> ServiceCardProperties.serializer()
     }
   }
 }

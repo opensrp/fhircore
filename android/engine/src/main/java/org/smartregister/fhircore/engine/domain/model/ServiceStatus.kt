@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-enum class VisitStatus {
-  DUE,
-  OVERDUE,
-  PLANNED
+import kotlinx.serialization.json.JsonNames
+
+enum class ServiceStatus {
+  @JsonNames("due", "Due") DUE,
+  @JsonNames("overdue", "Overdue") OVERDUE,
+  @JsonNames("upcoming", "Upcoming") UPCOMING,
+  @JsonNames("completed", "Completed") COMPLETED
 }

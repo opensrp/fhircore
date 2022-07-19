@@ -17,18 +17,9 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.json.JsonNames
+import org.smartregister.fhircore.engine.R
 
-/** Represents different types of views that can be rendered via compose */
-enum class ViewType {
-  /** Represent a vertical layout that arranges views one on top of the other */
-  @JsonNames("column", "Column") COLUMN,
-
-  /** Represents a text view that displays two texts that can be formatted separately */
-  @JsonNames("compound_text", "CompoundText") COMPOUND_TEXT,
-
-  /** A horizontal layout that arranges views from left to right */
-  @JsonNames("row", "Row") ROW,
-
-  /** A card like view with an actionable service button used register list rows */
-  @JsonNames("service_card", "ServiceCard") SERVICE_CARD
+enum class ServiceMemberIcon(val icon: Int) {
+  @JsonNames("child", "Child") CHILD(R.drawable.ic_kids),
+  @JsonNames("pregnant_woman", "PregnantWoman") PREGNANT_WOMAN(R.drawable.ic_pregnant)
 }

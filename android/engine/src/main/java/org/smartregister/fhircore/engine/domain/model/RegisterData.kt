@@ -60,7 +60,7 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val gender: Enumerations.AdministrativeGender,
     val age: String,
     val address: String,
-    val visitStatus: VisitStatus,
+    val serviceStatus: ServiceStatus,
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null,
     val familyName: String? = null

@@ -80,7 +80,7 @@ class ProfileDataTest : RobolectricTest() {
       Assert.assertEquals("5y", age)
       //      Assert.assertEquals(Date("12345678"), birthdate)
       Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
-      Assert.assertEquals(VisitStatus.DUE, visitStatus)
+      Assert.assertEquals(ServiceStatus.DUE, serviceStatus)
       Assert.assertEquals(true, services.isEmpty())
       Assert.assertEquals(true, tasks.isEmpty())
       Assert.assertEquals(true, conditions.isEmpty())
@@ -148,7 +148,7 @@ class ProfileDataTest : RobolectricTest() {
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          visitStatus = VisitStatus.DUE,
+          serviceStatus = ServiceStatus.DUE,
           services = emptyList(),
           tasks = emptyList(),
           conditions = emptyList(),
@@ -208,7 +208,7 @@ class ProfileDataTest : RobolectricTest() {
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          visitStatus = VisitStatus.DUE,
+          serviceStatus = ServiceStatus.DUE,
           services = emptyList(),
           tasks = emptyList(),
           conditions = emptyList(),

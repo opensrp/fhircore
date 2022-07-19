@@ -27,5 +27,4 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 @Serializable(with = RegisterCardViewPropertiesSerializer::class)
 abstract class RegisterCardViewProperties {
   abstract val viewType: ViewType
-  abstract val weight: Float?
 }

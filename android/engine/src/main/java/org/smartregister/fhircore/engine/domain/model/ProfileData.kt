@@ -69,7 +69,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val age: String,
     val gender: Enumerations.AdministrativeGender,
     val address: String,
-    val visitStatus: VisitStatus,
+    val serviceStatus: ServiceStatus,
     val conditions: List<Condition> = listOf(),
     val flags: List<Flag> = listOf(),
     val services: List<CarePlan> = listOf(),

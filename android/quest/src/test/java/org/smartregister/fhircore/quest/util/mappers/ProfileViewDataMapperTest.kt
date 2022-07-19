@@ -33,7 +33,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.ProfileData
-import org.smartregister.fhircore.engine.domain.model.VisitStatus
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
@@ -179,7 +179,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          visitStatus = VisitStatus.DUE,
+          serviceStatus = ServiceStatus.DUE,
           services = emptyList(),
           tasks = emptyList(),
           conditions = emptyList(),
@@ -239,7 +239,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
-          visitStatus = VisitStatus.DUE,
+          serviceStatus = ServiceStatus.DUE,
           services = emptyList(),
           tasks = emptyList(),
           conditions = emptyList(),

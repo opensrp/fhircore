@@ -22,6 +22,7 @@ package org.smartregister.fhircore.engine.configuration
  * @property parseAsResource Instructs that this configuration should be parsed into a FHIR resource
  * (for configurations saved as Binary resource but can be directly converted to a eligible FHIR
  * resource); generally a custom hard coded is used.
+ * @property multiConfig Denotes that we can have multiple instances of this type of config.
  */
 sealed class ConfigType(
   val name: String,
