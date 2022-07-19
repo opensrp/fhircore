@@ -82,11 +82,7 @@ fun BottomScreenSection(
 fun BottomScreenSectionPreview() {
   val navController = rememberNavController()
   val navigationScreens =
-    listOf(
-      MainNavigationScreen.Home,
-      MainNavigationScreen.Reports,
-      MainNavigationScreen.Settings
-    )
+    listOf(MainNavigationScreen.Home, MainNavigationScreen.Reports, MainNavigationScreen.Settings)
 
   BottomScreenSection(navController = navController, mainNavigationScreens = navigationScreens)
 }

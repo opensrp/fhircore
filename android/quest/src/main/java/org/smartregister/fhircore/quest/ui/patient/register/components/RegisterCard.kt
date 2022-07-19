@@ -96,8 +96,8 @@ fun RegisterCard(
     if (viewProperties is ViewGroupProperties) {
       if (viewProperties.children.isEmpty()) return
       when (viewProperties.viewType) {
-        ViewType.COLUMN,
-        ViewType.ROW -> RenderViewGroup(viewProperties, modifier, registerCardData, onCardClick)
+        ViewType.COLUMN, ViewType.ROW ->
+          RenderViewGroup(viewProperties, modifier, registerCardData, onCardClick)
         else -> return
       }
     } else {
@@ -363,16 +363,14 @@ private fun ServiceButton.statusColor(): Color = remember {
   }
 }
 
-@Composable @Preview(showBackground = true) fun ServiceCardPreview() {}
-
 @Preview(showBackground = true)
 @Composable
-private fun CompoundTextPreview() {
-  Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+private fun CompoundTextNoSecondaryTextPreview() {
+  Column(modifier = Modifier.fillMaxWidth()) {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
-          primaryText = "Angela Merkel, 67, F",
+          primaryText = "Full Name, Age",
           primaryTextColor = "#000000",
         ),
       registerCardData =
@@ -384,9 +382,40 @@ private fun CompoundTextPreview() {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
-          primaryText = "Coughlin HH",
+          primaryText = "Sex",
           primaryTextColor = "#5A5A5A",
-          secondaryText = "002",
+        ),
+      registerCardData =
+        RegisterCardData(
+          resourceData = ResourceData(baseResource = Patient()),
+          computedRegisterCardData = emptyMap()
+        )
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CompoundTextWithSecondaryTextPreview() {
+  Column(modifier = Modifier.fillMaxWidth()) {
+    CompoundText(
+      compoundTextProperties =
+        CompoundTextProperties(
+          primaryText = "Full Name, Sex, Age",
+          primaryTextColor = "#000000",
+        ),
+      registerCardData =
+        RegisterCardData(
+          resourceData = ResourceData(baseResource = Patient()),
+          computedRegisterCardData = emptyMap()
+        )
+    )
+    CompoundText(
+      compoundTextProperties =
+        CompoundTextProperties(
+          primaryText = "Last visited",
+          primaryTextColor = "#5A5A5A",
+          secondaryText = "G6PD status",
           separator = "-",
           secondaryTextColor = "#5A5A5A"
         ),
@@ -401,7 +430,7 @@ private fun CompoundTextPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun RegisterCardPreview() {
+private fun RegisterCardServiceOverduePreview() {
   val registerCardViewProperties =
     listOf<RegisterCardViewProperties>(
       ViewGroupProperties(
@@ -430,23 +459,254 @@ private fun RegisterCardPreview() {
                     primaryTextColor = "#5A5A5A",
                   )
                 ),
-              serviceMemberIcons = "CHILD,CHILD,CHILD,CHILD",
+              serviceMemberIcons = "CHILD",
               showVerticalDivider = true,
               serviceButton =
                 ServiceButton(
                   visible = true,
                   status = ServiceStatus.OVERDUE,
-                  text = "3",
+                  text = "1",
                   smallSized = false
                 )
-            ),
+            )
+          )
+      )
+    )
+
+  Column {
+    RegisterCard(
+      registerCardViewProperties = registerCardViewProperties,
+      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      onCardClick = {}
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RegisterCardServiceDuePreview() {
+  val registerCardViewProperties =
+    listOf<RegisterCardViewProperties>(
+      ViewGroupProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
             ServiceCardProperties(
               viewType = ViewType.SERVICE_CARD,
               details =
                 listOf(
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "ANC Woman Name",
+                    primaryText = "Due household services",
+                    primaryTextColor = "#000000",
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Town/Village",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "HH No.",
+                    secondaryTextColor = "#555AAA"
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Last visited yesterday",
+                    primaryTextColor = "#5A5A5A",
+                  )
+                ),
+              serviceMemberIcons = "CHILD,PREGNANT_WOMAN,CHILD,CHILD",
+              showVerticalDivider = true,
+              serviceButton =
+                ServiceButton(
+                  visible = true,
+                  status = ServiceStatus.DUE,
+                  text = "Issue Bed net",
+                  smallSized = false
+                )
+            )
+          )
+      )
+    )
+
+  Column {
+    RegisterCard(
+      registerCardViewProperties = registerCardViewProperties,
+      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      onCardClick = {}
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RegisterCardServiceUpcomingPreview() {
+  val registerCardViewProperties =
+    listOf<RegisterCardViewProperties>(
+      ViewGroupProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Upcoming household service",
+                    primaryTextColor = "#000000",
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Town/Village",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "HH No.",
+                    secondaryTextColor = "#555AAA"
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Last visited yesterday",
+                    primaryTextColor = "#5A5A5A",
+                  )
+                ),
+              serviceMemberIcons = "CHILD,CHILD,CHILD,CHILD",
+              showVerticalDivider = true,
+              serviceButton =
+                ServiceButton(
+                  visible = true,
+                  status = ServiceStatus.UPCOMING,
+                  text = "Next visit 09-10-2022",
+                  smallSized = false
+                )
+            )
+          )
+      )
+    )
+
+  Column {
+    RegisterCard(
+      registerCardViewProperties = registerCardViewProperties,
+      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      onCardClick = {}
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RegisterCardServiceCompletedPreview() {
+  val registerCardViewProperties =
+    listOf<RegisterCardViewProperties>(
+      ViewGroupProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Fully vaccinated household",
+                    primaryTextColor = "#000000",
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Town/Village",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "HH No.",
+                    secondaryTextColor = "#555AAA"
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Last visited yesterday",
+                    primaryTextColor = "#5A5A5A",
+                  )
+                ),
+              showVerticalDivider = true,
+              serviceButton =
+                ServiceButton(
+                  visible = true,
+                  status = ServiceStatus.COMPLETED,
+                  text = "Fully Vaccinated",
+                  smallSized = false
+                )
+            )
+          )
+      )
+    )
+
+  Column {
+    RegisterCard(
+      registerCardViewProperties = registerCardViewProperties,
+      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      onCardClick = {}
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RegisterCardANCServiceDuePreview() {
+  val registerCardViewProperties =
+    listOf<RegisterCardViewProperties>(
+      ViewGroupProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "ANC service due",
+                    primaryTextColor = "#000000",
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "EDD",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "29-10-2022",
+                    secondaryTextColor = "#555AAA"
+                  )
+                ),
+              showVerticalDivider = false,
+              serviceButton =
+                ServiceButton(
+                  visible = true,
+                  status = ServiceStatus.DUE,
+                  text = "ANC Visit",
+                  smallSized = true
+                )
+            )
+          )
+      )
+    )
+
+  Column {
+    RegisterCard(
+      registerCardViewProperties = registerCardViewProperties,
+      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      onCardClick = {}
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RegisterCardANCServiceOverduePreview() {
+  val registerCardViewProperties =
+    listOf<RegisterCardViewProperties>(
+      ViewGroupProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "ANC service overdue",
                     primaryTextColor = "#000000",
                   ),
                   CompoundTextProperties(
