@@ -18,15 +18,18 @@ package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
@@ -36,13 +39,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AuthCredentials
-import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.pinViewConfigurationOf
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -59,24 +60,18 @@ internal class PinViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   val defaultRepository: DefaultRepository = mockk()
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+
+  @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
   private lateinit var pinViewModel: PinViewModel
 
   private val testPin = MutableLiveData("1234")
-  private val testPinViewConfiguration =
-    PinViewConfiguration(
-      appId = "appId",
-      configType = "classification",
-      applicationName = "Test App",
-      appLogoIconResourceFile = "ic_launcher",
-      enablePin = true,
-      showLogo = true
-    )
 
   @Before
   fun setUp() {
@@ -95,52 +90,28 @@ internal class PinViewModelTest : RobolectricTest() {
     } returns Unit
 
     pinViewModel =
-      PinViewModel(
-        dispatcher = dispatcherProvider,
-        sharedPreferences = sharedPreferencesHelper,
-        secureSharedPreference = secureSharedPreference,
-        configurationRegistry = configurationRegistry,
-        app = application
+      spyk(
+        PinViewModel(
+          dispatcher = dispatcherProvider,
+          sharedPreferences = sharedPreferencesHelper,
+          secureSharedPreference = secureSharedPreference,
+          configurationRegistry = configurationRegistry,
+          app = application
+        )
       )
-    pinViewModel.apply {
-      savedPin = "1234"
-      isSetupPage = true
-      appName = "demo"
-      onPinChanged("1234")
-      applicationConfiguration = testPinViewConfiguration
-    }
-  }
 
-  @Test
-  fun testPinViewConfiguration() {
-    val expectedPinConfig =
-      pinViewConfigurationOf(
-        appId = "appId",
-        classification = "classification",
-        applicationName = "Test App",
-        appLogoIconResourceFile = "ic_launcher",
-        enablePin = true,
-        showLogo = true
-      )
-    Assert.assertEquals(expectedPinConfig.appId, testPinViewConfiguration.appId)
-    Assert.assertEquals(expectedPinConfig.configType, testPinViewConfiguration.configType)
-    Assert.assertEquals(expectedPinConfig.applicationName, testPinViewConfiguration.applicationName)
-    Assert.assertEquals(
-      expectedPinConfig.appLogoIconResourceFile,
-      testPinViewConfiguration.appLogoIconResourceFile
-    )
-    Assert.assertEquals(expectedPinConfig.enablePin, testPinViewConfiguration.enablePin)
-    Assert.assertEquals(expectedPinConfig.showLogo, testPinViewConfiguration.showLogo)
+    every { pinViewModel.pinUiState } returns
+      mutableStateOf(PinUiState(savedPin = "1234", isSetupPage = true, appName = "demo"))
+    every { pinViewModel.applicationConfiguration } returns
+      ApplicationConfiguration(appId = "appId", appTitle = "demo")
   }
 
   @Test
   fun testOnPinChangeValidated() {
-    pinViewModel.apply {
-      savedPin = "1234"
-      isSetupPage = false
-    }
+    pinViewModel.pinUiState.value = PinUiState(savedPin = "1234", isSetupPage = false)
+
     pinViewModel.onPinChanged(testPin.value.toString())
-    Assert.assertEquals(pinViewModel.savedPin, testPin.value.toString())
+    Assert.assertEquals(pinViewModel.pinUiState.value.savedPin, testPin.value.toString())
     Assert.assertEquals(pinViewModel.enableSetPin.value, true)
     Assert.assertEquals(pinViewModel.navigateToHome.value, true)
   }
@@ -167,25 +138,20 @@ internal class PinViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnAppBackCLicked() {
-    pinViewModel.onAppBackClick()
-    Assert.assertEquals(pinViewModel.onBackClick.value, true)
-  }
-
-  @Test
   fun testLoadData() {
     pinViewModel.setPinUiState(isSetup = true)
-    Assert.assertEquals(pinViewModel.isSetupPage, true)
-    Assert.assertNotNull(pinViewModel.savedPin)
-    Assert.assertNotNull(pinViewModel.enterUserLoginMessage)
+    val pinUiState = pinViewModel.pinUiState.value
+    Assert.assertEquals(pinUiState.isSetupPage, true)
+    Assert.assertNotNull(pinUiState.savedPin)
+    Assert.assertNotNull(pinUiState.enterUserLoginMessage)
   }
 
   @Test
   fun testLoadDataForLoginScreen() {
     pinViewModel.setPinUiState(isSetup = false)
-    Assert.assertEquals(pinViewModel.isSetupPage, false)
-    Assert.assertNotNull(pinViewModel.savedPin)
-    Assert.assertEquals("demo", pinViewModel.retrieveUsername())
+    val pinUiState = pinViewModel.pinUiState.value
+    Assert.assertEquals(pinUiState.isSetupPage, false)
+    Assert.assertNotNull(pinUiState.savedPin)
   }
 
   @Test
@@ -210,7 +176,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnMenuLoginClicked() {
-    pinViewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME)
+    pinViewModel.onMenuLoginClicked()
     Assert.assertEquals(pinViewModel.navigateToLogin.value, true)
   }
 

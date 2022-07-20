@@ -39,14 +39,13 @@ import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
+import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -89,7 +88,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
         accountAuthenticator = accountAuthenticator,
         dispatcher = DefaultDispatcherProvider(),
         sharedPreferences = sharedPreferencesHelper,
-        fhirResourceDataSource = fhirResourceDataSource
+        fhirResourceDataSource = fhirResourceDataSource,
+        configurationRegistry = configurationRegistry
       )
 
     loginActivity =
@@ -105,7 +105,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
       )
 
     loginActivity.configurationRegistry = configurationRegistry
-    loginActivity.configurationRegistry.appId = "default"
+    sharedPreferencesHelper.write(APP_ID_KEY, "default")
     loginService = loginActivity.loginService
   }
 
@@ -118,8 +118,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenPinExists() {
     coEvery { accountAuthenticator.hasActivePin() } returns true
-    val loginConfig = loginViewConfigurationOf(enablePin = true)
-    loginViewModel.updateViewConfigurations(loginConfig)
     loginViewModel.navigateToHome()
     verify { loginService.navigateToHome() }
   }
@@ -127,9 +125,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenForcedLogin() {
     coEvery { accountAuthenticator.hasActivePin() } returns false
-    sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, true)
-    val loginConfig = loginViewConfigurationOf(enablePin = true)
-    loginViewModel.updateViewConfigurations(loginConfig)
     loginViewModel.navigateToHome()
 
     verify { loginService.navigateToHome() }
@@ -137,8 +132,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToPinSetupShouldVerifyExpectedIntent() {
-    val loginConfig = loginViewConfigurationOf(enablePin = true)
-    loginViewModel.updateViewConfigurations(loginConfig)
     loginViewModel.navigateToHome()
     val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity

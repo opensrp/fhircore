@@ -20,7 +20,7 @@ android {
     defaultConfig {
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "org.smartregister.fhircore.engine.EngineTestRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
 
@@ -48,14 +48,6 @@ android {
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.1.1'
-    }
-
-    //CQL
-    configurations {
-        all*.exclude group: 'org.eclipse.persistence'
-        all*.exclude group: 'javax.activation', module: 'activation'
-        all*.exclude group: 'javax', module: 'javaee-api'
-        all*.exclude group: 'xml-apis'
     }
 
     packagingOptions {
@@ -96,39 +88,53 @@ android {
     }
 }
 
+//CQL
+configurations {
+    all*.exclude group: 'org.eclipse.persistence'
+    all*.exclude group: 'javax.activation', module: 'activation'
+    all*.exclude group: 'javax', module: 'javaee-api'
+    all*.exclude group: 'xml-apis'
+}
+
 dependencies {
 
     implementation 'androidx.preference:preference-ktx:1.2.0'
     coreLibraryDesugaring deps.desugar
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0"
-    implementation 'androidx.fragment:fragment-ktx:1.4.1'
+    implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+    implementation 'androidx.fragment:fragment-ktx:1.5.0'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation "androidx.cardview:cardview:1.0.0"
-    implementation 'joda-time:joda-time:2.10.6'
+    implementation 'joda-time:joda-time:2.10.14'
     implementation 'androidx.paging:paging-runtime-ktx:3.1.1'
-    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    implementation 'com.github.bumptech.glide:glide:4.13.0'
     implementation 'id.zelory:compressor:3.0.1'
 
     //CQL
-    implementation group: 'xerces', name: 'xercesImpl', version: '2.11.0'
+    implementation group: 'xerces', name: 'xercesImpl', version: '2.12.0'
     implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
     implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
     implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
-    implementation 'org.opencds.cqf.cql:engine:1.5.4-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.builder:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.activitydefinition:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.plandefinition:1.4.2-SNAPSHOT'
-    implementation ('org.opencds.cqf.cql:evaluator.dagger:1.4.2-SNAPSHOT'){}
+
+    def cqlEngineVersion = '1.5.4'
+    implementation "org.opencds.cqf.cql:engine:$cqlEngineVersion"
+    implementation "org.opencds.cqf.cql:engine.fhir:$cqlEngineVersion"
+
+    def cqlEvaluatorVersion = '1.4.2'
+    implementation "org.opencds.cqf.cql:evaluator:$cqlEvaluatorVersion"
+    implementation "org.opencds.cqf.cql:evaluator.builder:$cqlEvaluatorVersion"
+    implementation "org.opencds.cqf.cql:evaluator.activitydefinition:$cqlEvaluatorVersion"
+    implementation "org.opencds.cqf.cql:evaluator.plandefinition:$cqlEvaluatorVersion"
+    implementation("org.opencds.cqf.cql:evaluator.dagger:$cqlEvaluatorVersion") {}
+
+
     api('org.smartregister:workflow:0.1.0-alpha01-preview6-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'
@@ -145,14 +151,15 @@ dependencies {
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
-    api 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
-    api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
+    def lifecycleKtxVersion = '2.5.0'
+    api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleKtxVersion"
+    api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleKtxVersion"
 
     // P2P dependency
     implementation('org.smartregister:p2p-lib:0.4.0-SNAPSHOT')
 
     //Configure Jetpack Compose
-    def composeVersion = "1.1.1"
+    def composeVersion = "1.3.0-alpha01"
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
     api("androidx.compose.foundation:foundation:$composeVersion")
@@ -160,22 +167,22 @@ dependencies {
     api("androidx.compose.material:material-icons-core:$composeVersion")
     api("androidx.compose.material:material-icons-extended:$composeVersion")
     api("androidx.compose.runtime:runtime-livedata:$composeVersion")
-    api("androidx.navigation:navigation-compose:2.5.0-alpha03")
-    api ("androidx.hilt:hilt-navigation-compose:1.0.0")
-    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0-alpha04")
-    api("androidx.paging:paging-compose:1.0.0-alpha14")
-    api("androidx.activity:activity-compose:1.4.0")
+    api("androidx.navigation:navigation-compose:2.5.0")
+    api("androidx.hilt:hilt-navigation-compose:1.0.0")
+    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0")
+    api("androidx.paging:paging-compose:1.0.0-alpha15")
+    api("androidx.activity:activity-compose:1.5.0")
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
     api ("com.google.accompanist:accompanist-flowlayout:0.23.1")
     api("androidx.work:work-runtime-ktx:2.7.1")
-    api ("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
+    api("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
 
-    def coroutineVersion = '1.6.0'
+    def coroutineVersion = '1.6.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
 
-    api('org.smartregister:data-capture:0.1.0-beta03-preview5-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta03-preview6-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -193,7 +200,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api('org.smartregister:engine:0.1.0-beta01-preview10-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta01-preview10.4-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -206,7 +213,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api 'com.google.code.gson:gson:2.8.7'
+    api 'com.google.code.gson:gson:2.9.0'
     api 'com.jakewharton.timber:timber:5.0.1'
 
     def retrofitVersion = '2.9.0'
@@ -246,14 +253,14 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation "androidx.test.espresso:espresso-core:$versions.atsl_expresso"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
     implementation deps.work.runtime
-    testImplementation group: 'org.json', name: 'json', version: '20210307'
+    testImplementation group: 'org.json', name: 'json', version: '20220320'
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 
-    runtimeOnly ("androidx.core:core:1.8.0-alpha05") {
-        exclude group: 'com.android.support', module: 'support-compat'
-    }
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
+    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 }

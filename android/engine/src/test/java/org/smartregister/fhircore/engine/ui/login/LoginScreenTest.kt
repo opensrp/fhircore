@@ -27,7 +27,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.LoginConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
@@ -48,7 +49,12 @@ class LoginScreenTest : RobolectricTest() {
 
   private lateinit var loginViewModel: LoginViewModel
 
-  val loginConfig = loginViewConfigurationOf(showLogo = true)
+  val applicationConfiguration =
+    ApplicationConfiguration(
+      appTitle = "My app",
+      appId = "appId",
+      loginConfig = LoginConfig(showLogo = true)
+    )
 
   @Before
   fun setUp() {
@@ -58,14 +64,14 @@ class LoginScreenTest : RobolectricTest() {
         every { password } returns MutableLiveData("1234")
         every { loginErrorState } returns MutableLiveData(null)
         every { showProgressBar } returns MutableLiveData(false)
-        every { applicationConfiguration } returns MutableLiveData(loginConfig)
+        every { applicationConfiguration } returns applicationConfiguration
       }
   }
 
   @Test
   fun testLoginScreen() {
     composeRule.setContent { LoginScreen(loginViewModel = loginViewModel) }
-    if (loginConfig.showLogo) {
+    if (applicationConfiguration.loginConfig.showLogo) {
       composeRule.onNodeWithTag(APP_LOGO_TAG).assertExists()
     }
     composeRule.onNodeWithTag(APP_NAME_TEXT_TAG).assertExists()
@@ -78,7 +84,7 @@ class LoginScreenTest : RobolectricTest() {
   fun testLoginPage() {
     composeRule.setContent {
       LoginPage(
-        applicationConfiguration = loginConfig,
+        applicationConfiguration = applicationConfiguration,
         username = "user",
         onUsernameChanged = { listenerObjectSpy.onUsernameUpdated("test") },
         password = "password",
@@ -87,7 +93,7 @@ class LoginScreenTest : RobolectricTest() {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() }
       )
     }
-    if (loginConfig.showLogo) {
+    if (applicationConfiguration.loginConfig.showLogo) {
       composeRule.onNodeWithTag(APP_LOGO_TAG).assertExists()
     }
     composeRule.onNodeWithTag(APP_NAME_TEXT_TAG).assertExists()

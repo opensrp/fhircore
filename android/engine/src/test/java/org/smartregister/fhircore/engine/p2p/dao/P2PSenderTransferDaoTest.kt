@@ -104,7 +104,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
     val actualPatient: Patient =
       jsonParser.parseResource(actualJsonData!!.getJsonArray()!!.get(0).toString()) as Patient
 
-    Assert.assertEquals(currentDate.time, actualJsonData!!.getHighestRecordId())
+    Assert.assertEquals(currentDate.time, actualJsonData.getHighestRecordId())
     Assert.assertEquals(expectedPatient.logicalId, actualPatient.logicalId)
     Assert.assertEquals(expectedPatient.birthDate, actualPatient.birthDate)
     Assert.assertEquals(expectedPatient.gender, actualPatient.gender)

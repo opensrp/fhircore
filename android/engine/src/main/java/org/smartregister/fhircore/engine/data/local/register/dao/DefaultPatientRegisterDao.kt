@@ -125,7 +125,8 @@ constructor(
           defaultRepository.searchResourceFor(
             subjectId = resourceId,
             subjectParam = QuestionnaireResponse.SUBJECT
-          )
+          ),
+        age = patient.extractAge()
       )
     }
   private fun getRegisterDataFilters() = emptyList<DataQuery>()

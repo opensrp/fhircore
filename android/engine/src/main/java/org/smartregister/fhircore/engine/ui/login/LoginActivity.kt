@@ -28,8 +28,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 
 @AndroidEntryPoint
 class LoginActivity : BaseMultiLanguageActivity() {
@@ -40,54 +38,36 @@ class LoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
-  private val loginViewModel by viewModels<LoginViewModel>()
+  val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
     loginViewModel.apply {
-      navigateToHome.observe(this@LoginActivity) {
-        if (loginViewModel.applicationConfiguration.loginConfig.enablePin == true) {
-          val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
-          val forceLoginViaUsernamePinSetup =
-            loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
-          when {
-            lastPinExist -> {
-              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME, false)
-            }
-            forceLoginViaUsernamePinSetup -> {
-              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
-            }
-            else -> {
-              loginService.navigateToPinLogin(goForSetup = true)
-            }
+      // Run sync and navigate directly to home screen if session is active
+      if (accountAuthenticator.hasActiveSession()) runSyncAndNavigateHome()
+
+      val isPinEnabled = loginViewModel.applicationConfiguration.loginConfig?.enablePin ?: false
+      navigateToHome.observe(this@LoginActivity) { launchHomeScreen ->
+        when {
+          launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() -> {
+            loginService.navigateToPinLogin(false)
           }
-        } else {
-          configurationRegistry.fetchNonWorkflowConfigResources()
-          syncBroadcaster.get().runSync()
-          loginService.navigateToHome()
+          launchHomeScreen && isPinEnabled && !accountAuthenticator.hasActivePin() -> {
+            loginService.navigateToPinLogin(true)
+          }
+          launchHomeScreen && !isPinEnabled -> {
+            runSyncAndNavigateHome()
+          }
         }
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
     }
 
-    // Check if Pin enabled and stored then move to Pin login
-    val isPinEnabled = loginViewModel.applicationConfiguration.loginConfig.enablePin ?: false
-    val forceLoginViaUsername =
-      loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
-    val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
-    if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
-      loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
-      loginService.navigateToPinLogin()
-    }
-
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
   }
 
-  private fun goToHomeScreen(sharedPreferencesKey: String, sharedPreferencesValue: Boolean) {
-    loginViewModel.sharedPreferences.write(sharedPreferencesKey, sharedPreferencesValue)
-    configurationRegistry.fetchNonWorkflowConfigResources()
-    syncBroadcaster.get().runSync()
+  private fun runSyncAndNavigateHome() {
     loginService.navigateToHome()
   }
 

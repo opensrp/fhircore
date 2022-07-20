@@ -183,4 +183,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
     }
   }
+
+  suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire =
+    withContext(dispatcherProvider.io()) { fhirEngine.get(questionnaireId) }
 }

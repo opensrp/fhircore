@@ -31,11 +31,11 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -54,8 +54,7 @@ class AppSettingActivity : AppCompatActivity() {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
 
-    val isLoggedIn =
-      sharedPreferencesHelper.read(IS_LOGGED_IN, false) && accountAuthenticator.hasActiveSession()
+    val isLoggedIn = accountAuthenticator.hasActiveSession()
 
     with(appSettingViewModel) {
       loadConfigs.observe(this@AppSettingActivity) { loadConfigs ->
@@ -68,13 +67,13 @@ class AppSettingActivity : AppCompatActivity() {
 
         val appId = appId.value!!.trimEnd()
 
-        if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
+        if (hasDebugSuffix() && BuildConfig.DEBUG) {
           lifecycleScope.launch(dispatcherProvider.io()) {
             configurationRegistry.loadConfigurations(appId = appId) { loadSuccessful: Boolean ->
               if (loadSuccessful) {
                 sharedPreferencesHelper.write(APP_ID_KEY, appId)
                 if (!isLoggedIn) {
-                  accountAuthenticator.launchLoginScreen()
+                  accountAuthenticator.launchScreen(LoginActivity::class.java)
                 } else {
                   loginService.loginActivity = this@AppSettingActivity
                   loginService.navigateToHome()
@@ -94,7 +93,7 @@ class AppSettingActivity : AppCompatActivity() {
           configurationRegistry.loadConfigurations(appId) { loadSuccessful: Boolean ->
             if (loadSuccessful) {
               sharedPreferencesHelper.write(APP_ID_KEY, appId)
-              accountAuthenticator.launchLoginScreen()
+              accountAuthenticator.launchScreen(LoginActivity::class.java)
               finish()
             } else {
               launch(dispatcherProvider.main()) {
@@ -111,7 +110,7 @@ class AppSettingActivity : AppCompatActivity() {
           return@observe
         }
 
-        if (hasDebugSuffix() == true && BuildConfig.DEBUG) {
+        if (hasDebugSuffix() && BuildConfig.DEBUG) {
           loadConfigurations(true)
           return@observe
         }

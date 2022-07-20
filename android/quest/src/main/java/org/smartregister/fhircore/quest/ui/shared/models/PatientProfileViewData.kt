@@ -33,6 +33,7 @@ sealed class ProfileViewData(
     val sex: String = "",
     val age: String = "",
     val dob: Date? = null,
+    val formResponses: List<PatientProfileRowItem> = emptyList(),
     val tasks: List<ActionableButtonData> = emptyList(),
     val forms: List<ActionableButtonData> = emptyList(),
     val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),

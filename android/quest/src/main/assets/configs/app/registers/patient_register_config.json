@@ -47,6 +47,13 @@
         "actions": [
           "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given') + ' ' + fhirPath.extractValue(Patient, 'Patient.name.family'))"
         ]
+      },
+      {
+        "name": "patientGender",
+        "condition": "true",
+        "actions": [
+          "data.put('patientGender', fhirPath.extractValue(Patient, 'Patient.gender'))"
+        ]
       }
     ],
     "views": [
@@ -60,6 +67,11 @@
                 "viewType": "COMPOUND_TEXT",
                 "primaryText": "@{patientName}",
                 "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{patientGender}",
+                "primaryTextColor": "#5A5A5A"
               }
             ],
             "showVerticalDivider": true,

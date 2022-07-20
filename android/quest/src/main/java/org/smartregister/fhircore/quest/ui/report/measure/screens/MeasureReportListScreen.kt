@@ -41,10 +41,10 @@ import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import kotlinx.coroutines.flow.Flow
+import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowData
 import org.smartregister.fhircore.engine.ui.components.LoadingIndicator
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.data.report.measure.models.MeasureReportRowData
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportRow
 
 @Composable

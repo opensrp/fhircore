@@ -37,10 +37,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowData
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.data.report.measure.models.MeasureReportRowData
 
 @Composable
 @Preview(showBackground = true)

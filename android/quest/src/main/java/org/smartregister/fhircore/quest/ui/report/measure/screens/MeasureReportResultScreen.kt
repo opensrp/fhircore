@@ -48,9 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowData
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.data.report.measure.models.MeasureReportRowData
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.components.DateRangeItem
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportIndividualResultView
@@ -214,10 +214,12 @@ private fun MeasureReportResultScreenForPopulationPreview() {
       listOf(
         MeasureReportPopulationResult(
           title = "Age Range",
+          count = "1/2",
           listOf(testResultItem1, testResultItem2)
         ),
         MeasureReportPopulationResult(
           title = "Education Level",
+          count = "2/3",
           listOf(testResultItem1, testResultItem2)
         )
       )

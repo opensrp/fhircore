@@ -41,9 +41,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.extension.DAYS_IN_YEAR
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -89,7 +87,7 @@ constructor(
         }
           ?: listOf()
 
-      val familyHead = loadFamilyHead(family)
+      val familyHead = family.takeIf { it.hasManagingEntity() }?.let { loadFamilyHead(family) }
 
       RegisterData.FamilyRegisterData(
         logicalId = family.logicalId,
@@ -268,7 +266,7 @@ constructor(
       RegisterData.FamilyMemberRegisterData(
         logicalId = patient.logicalId,
         name = patient.extractName(),
-        age = (patient.birthDate.daysPassed() / DAYS_IN_YEAR).toString(),
+        age = patient.extractAge(),
         birthdate = patient.birthDate,
         gender = patient.gender.display.first().toString(),
         pregnant = conditions.hasActivePregnancy(),
@@ -304,14 +302,14 @@ constructor(
       )
     }
 
-  private suspend fun loadMemberCondition(patientId: String) =
+  suspend fun loadMemberCondition(patientId: String) =
     defaultRepository.searchResourceFor<Condition>(
       subjectId = patientId,
       subjectParam = Condition.SUBJECT,
       subjectType = ResourceType.Patient
     )
 
-  private suspend fun loadMemberCarePlan(patientId: String) =
+  suspend fun loadMemberCarePlan(patientId: String) =
     fhirEngine.search<CarePlan> {
       filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
       filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCoding()) })

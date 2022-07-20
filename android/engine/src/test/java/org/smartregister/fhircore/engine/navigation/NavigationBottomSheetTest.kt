@@ -26,25 +26,27 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric.buildActivity
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class NavigationBottomSheetTest : RobolectricTest() {
 
-  private val navigationBottomSheet = spyk(NavigationBottomSheet {})
+  private val navigationBottomSheet =
+    spyk(
+      NavigationBottomSheet(
+        listOf(
+          NavigationMenuConfig(id = "UniqueTag1", display = "Menu 1"),
+          NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2")
+        )
+      ) {}
+    )
 
   private lateinit var activity: AppCompatActivity
-
-  private val registerItems =
-    listOf(
-      RegisterItem(uniqueTag = "UniqueTag1", title = "Menu 1", isSelected = true),
-      RegisterItem(uniqueTag = "UniqueTag2", title = "Menu 2", isSelected = false)
-    )
 
   @Before
   fun setUp() {
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     activity = buildActivity(AppCompatActivity::class.java).create().resume().get()
-    navigationBottomSheet.registersList = registerItems
   }
 
   @After
@@ -54,7 +56,7 @@ class NavigationBottomSheetTest : RobolectricTest() {
 
   @Test
   fun testThatBottomSheetIsShown() {
-    Assert.assertEquals(2, navigationBottomSheet.registersList.size)
+    Assert.assertEquals(2, navigationBottomSheet.registersList?.size)
     navigationBottomSheet.show(activity.supportFragmentManager, NavigationBottomSheet.TAG)
     Assert.assertTrue(navigationBottomSheet.showsDialog)
   }

@@ -25,6 +25,7 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class RegisterBottomSheetViewsKtTest : RobolectricTest() {
@@ -33,16 +34,16 @@ class RegisterBottomSheetViewsKtTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 
-  private val registerItems =
+  private val registerMenuItems =
     listOf(
-      RegisterItem(uniqueTag = "UniqueTag1", title = "Menu 1", isSelected = true),
-      RegisterItem(uniqueTag = "UniqueTag2", title = "Menu 2", isSelected = false)
+      NavigationMenuConfig(id = "UniqueTag1", display = "Menu 1"),
+      NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2")
     )
 
   @Before
   fun setUp() {
     composeRule.setContent {
-      RegisterBottomSheet(registers = registerItems, itemListener = mockListener)
+      RegisterBottomSheet(registers = registerMenuItems, itemListener = mockListener)
     }
   }
 

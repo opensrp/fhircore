@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Application
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
@@ -38,7 +39,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 
 @ExperimentalCoroutinesApi
 class PinSetupScreenTest : RobolectricTest() {
@@ -52,7 +52,7 @@ class PinSetupScreenTest : RobolectricTest() {
         fun onPinChanged() {}
         fun onPinConfirmed() {}
         fun onMenuSettingsClicked() {}
-        fun onMenuLoginClicked(value: String) {}
+        fun onMenuLoginClicked() {}
       }
     )
 
@@ -64,7 +64,7 @@ class PinSetupScreenTest : RobolectricTest() {
   fun setUp() {
     pinViewModel =
       mockk {
-        every { appName } returns "anc"
+        every { pinViewModel.pinUiState } returns mutableStateOf(PinUiState(appName = "anc"))
         every { pin } returns MutableLiveData("1234")
         every { enableSetPin } returns MutableLiveData(false)
       }
@@ -85,9 +85,7 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
-        onMenuLoginClicked = {
-          listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
-        },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         setPinEnabled = false,
         inputPin = ""
       )
@@ -119,9 +117,7 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
-        onMenuLoginClicked = {
-          listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
-        },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         setPinEnabled = false,
         inputPin = ""
       )
@@ -143,7 +139,7 @@ class PinSetupScreenTest : RobolectricTest() {
       .assertHasClickAction()
       .performClick()
 
-    verify { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP) }
+    verify { listenerObjectSpy.onMenuLoginClicked() }
   }
 
   @Test
@@ -153,9 +149,7 @@ class PinSetupScreenTest : RobolectricTest() {
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         onPinConfirmed = { listenerObjectSpy.onPinConfirmed() },
         onMenuSettingClicked = { listenerObjectSpy.onMenuSettingsClicked() },
-        onMenuLoginClicked = {
-          listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
-        },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         setPinEnabled = true,
         inputPin = "0000"
       )

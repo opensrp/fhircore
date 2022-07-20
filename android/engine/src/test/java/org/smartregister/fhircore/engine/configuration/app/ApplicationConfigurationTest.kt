@@ -38,7 +38,7 @@ class ApplicationConfigurationTest {
     Assert.assertEquals("dark theme", applicationConfiguration.theme)
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
     Assert.assertEquals("Test App", applicationConfiguration.appTitle)
-    Assert.assertEquals("100", applicationConfiguration.remoteSyncPageSize)
+    Assert.assertEquals(100, applicationConfiguration.remoteSyncPageSize)
   }
 
   @Test
@@ -58,6 +58,6 @@ class ApplicationConfigurationTest {
     Assert.assertEquals("dark theme", applicationConfiguration.theme)
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
     Assert.assertEquals("Test App", applicationConfiguration.appTitle)
-    Assert.assertEquals("100", applicationConfiguration.remoteSyncPageSize)
+    Assert.assertEquals(100, applicationConfiguration.remoteSyncPageSize)
   }
 }

@@ -115,5 +115,5 @@ constructor(
       }
   }
 
-  fun hasDebugSuffix(): Boolean? = appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true)
+  fun hasDebugSuffix(): Boolean = appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) ?: false
 }

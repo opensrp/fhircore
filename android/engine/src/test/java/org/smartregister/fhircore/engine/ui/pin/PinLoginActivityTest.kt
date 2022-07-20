@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
@@ -42,7 +43,6 @@ import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -77,10 +77,9 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
     every { pinLoginActivitySpy.finish() } returns Unit
 
     pinViewModel = mockk()
-    coEvery { pinViewModel.savedPin } returns "1234"
-    coEvery { pinViewModel.enterUserLoginMessage } returns "demo"
+    every { pinViewModel.pinUiState } returns
+      mutableStateOf(PinUiState(savedPin = "1234", enterUserLoginMessage = "demo", appName = "Anc"))
     coEvery { pinViewModel.pin } returns testPin
-    every { pinViewModel.appName } returns "Anc"
   }
 
   @After
@@ -95,7 +94,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToLoginShouldVerifyExpectedIntent() {
-    pinLoginActivity.pinViewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME)
+    pinLoginActivity.pinViewModel.onMenuLoginClicked()
     val expectedIntent = Intent(pinLoginActivity, LoginActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)

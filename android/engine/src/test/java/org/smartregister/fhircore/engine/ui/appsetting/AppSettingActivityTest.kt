@@ -36,7 +36,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
-import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -67,7 +66,6 @@ class AppSettingActivityTest {
 
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
       Assert.assertEquals(null, activity.sharedPreferencesHelper.read(APP_ID_KEY, null))
       Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
     }
@@ -80,7 +78,6 @@ class AppSettingActivityTest {
 
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
       Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_KEY, null))
       Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
     }
@@ -88,13 +85,11 @@ class AppSettingActivityTest {
 
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn() {
-    sharedPreferencesHelper.write(IS_LOGGED_IN, true)
     sharedPreferencesHelper.write(APP_ID_KEY, "default")
     every { accountAuthenticator.hasActiveSession() } returns true
 
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
       Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_KEY, null))
       Assert.assertEquals(true, activity.accountAuthenticator.hasActiveSession())
     }
@@ -102,13 +97,11 @@ class AppSettingActivityTest {
 
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn_withSessionToken_hasExpired() {
-    sharedPreferencesHelper.write(IS_LOGGED_IN, true)
     sharedPreferencesHelper.write(APP_ID_KEY, "default")
     every { accountAuthenticator.hasActiveSession() } returns false
 
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
       Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_KEY, null))
       Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
     }

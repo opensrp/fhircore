@@ -23,11 +23,11 @@ import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowData
 import org.smartregister.fhircore.engine.data.local.register.dao.AncPatientRegisterDao
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.quest.data.report.measure.models.MeasureReportRowData
 
 class MeasureReportRepository
 @Inject
