@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,7 +113,6 @@ fun PatientProfileScreen(
             viewState.overflowMenuItems.forEach {
               DropdownMenuItem(
                 onClick = {
-                  showOverflowMenu = false
                   patientProfileViewModel.onEvent(
                     PatientProfileEvent.OverflowMenuClick(
                       navController,
@@ -122,6 +122,8 @@ fun PatientProfileScreen(
                       familyId
                     )
                   )
+                  Log.e("aW", "TEWT")
+                  showOverflowMenu = false
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier =

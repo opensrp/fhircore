@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.os.bundleOf
@@ -117,6 +118,7 @@ constructor(
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
       is PatientProfileEvent.OverflowMenuClick -> {
+        Log.e("aw","inside listener")
         when (event.menuId) {
           R.id.individual_details ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
@@ -149,7 +151,14 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
-          else -> {}
+          R.id.edit_profile ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = EDIT_PROFILE_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.EDIT
+            )
+          else -> {
+          }
         }
       }
       is PatientProfileEvent.OpenTaskForm ->
@@ -164,5 +173,6 @@ constructor(
     const val REMOVE_FAMILY_FORM = "remove-family"
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
     const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
+    const val EDIT_PROFILE_FORM = "edit-patient-profile"
   }
 }

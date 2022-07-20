@@ -1,0 +1,912 @@
+{
+  "resourceType": "StructureMap",
+  "id": "patient-edit-profile-structure-map",
+  "url": "https://fhir-dev.d-tree.org/fhir/StructureMap/patient-edit-profile-structure-map",
+  "name": "Edit Patient Profile",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "PatientRegistration",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bun_type",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_bun_entries",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "patient",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Patient"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractPatient",
+              "variable": [
+                "src",
+                "patient",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPatient",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "patient",
+          "type": "Patient",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_p_id_1",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "patient",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            }
+          ]
+        },
+        {
+          "name": "r_p_active",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "patient",
+              "contextType": "variable",
+              "element": "active",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueBoolean": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "item",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item_bio",
+              "condition": "(linkId = 'page-patient-personal-details')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_p_name",
+              "source": [
+                {
+                  "context": "item_bio",
+                  "element": "item",
+                  "variable": "item_name",
+                  "condition": "(linkId = 'patient-name')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "patient",
+                  "contextType": "variable",
+                  "element": "name",
+                  "variable": "patientName",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "HumanName"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_p_required_fname",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientName",
+                      "contextType": "variable",
+                      "element": "given",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_name"
+                        },
+                        {
+                          "valueString": "$this.item.where((linkId = 'required-first-name') and (answer.count() > 0)).answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_optional_fname",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientName",
+                      "contextType": "variable",
+                      "element": "given",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_name"
+                        },
+                        {
+                          "valueString": "$this.item.where((linkId = 'optional-first-name') and (answer.count() > 0)).answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_lname",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientName",
+                      "contextType": "variable",
+                      "element": "family",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_name"
+                        },
+                        {
+                          "valueString": "$this.item.where(linkId = 'last-name').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_p_gender",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "patient",
+                  "contextType": "variable",
+                  "element": "gender",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "item_bio"
+                    },
+                    {
+                      "valueString": "$this.item.where(linkId = 'gender').answer.value.code"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_p_dob",
+              "source": [
+                {
+                  "context": "item_bio",
+                  "element": "item",
+                  "variable": "item_dob",
+                  "condition": "((linkId = 'date-of-birth') and (answer.count() > 0))"
+                }
+              ],
+              "target": [
+                {
+                  "context": "patient",
+                  "contextType": "variable",
+                  "element": "birthDate",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "item_dob"
+                    },
+                    {
+                      "valueString": "$this.answer.value"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_age_in_days",
+              "source": [
+                {
+                  "context": "item_bio",
+                  "element": "item",
+                  "variable": "age",
+                  "condition": "((linkId = 'age') and (answer.count() > 0))"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "age_in_days",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "age"
+                    },
+                    {
+                      "valueString": "(($this.answer.value * 365).toString() + ' days').toQuantity()"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_approx_dob",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "approximate_date_of_birth",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "today() - age_in_days"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_year_of_birth",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "year_of_birth",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "approximate_date_of_birth.toString().substring(0, 4)"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_month_and_day_of_birth",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "month_and_day_of_birth",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "today().toString().substring(5)"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_dob_today_x_years_ago",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "patient",
+                                  "contextType": "variable",
+                                  "element": "birthDate",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "year_of_birth + '-' + month_and_day_of_birth"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "item",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item_location",
+              "condition": "(linkId = 'page-patient-location-details')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_p_address",
+              "source": [
+                {
+                  "context": "item_location",
+                  "element": "item",
+                  "variable": "item_address",
+                  "condition": "(linkId = 'patient-address')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "patient",
+                  "contextType": "variable",
+                  "element": "address",
+                  "variable": "patientAddress",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Address"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_p_add_district",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "district",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_address"
+                        },
+                        {
+                          "valueString": "$this.item.where(linkId = 'district').answer.value.display"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_add_trace_catch_balaka",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "state",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_address"
+                        },
+                        {
+                          "valueString": "$this.item.where((linkId = 'tracing-catchment-balaka') and (answer.count() > 0)).answer.value.display"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_add_trace_catch_machinga",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "state",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_address"
+                        },
+                        {
+                          "valueString": "$this.item.where((linkId = 'tracing-catchment-machinga') and (answer.count() > 0)).answer.value.display"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_add_trace_catch_mangochi",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "state",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_address"
+                        },
+                        {
+                          "valueString": "$this.item.where((linkId = 'tracing-catchment-mangochi') and (answer.count() > 0)).answer.value.display"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_add_trace_catch_phalombe",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "state",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_address"
+                        },
+                        {
+                          "valueString": "$this.item.where((linkId = 'tracing-catchment-phalombe') and (answer.count() > 0)).answer.value.display"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_add_trace_catch_salima",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "state",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_address"
+                        },
+                        {
+                          "valueString": "$this.item.where((linkId = 'tracing-catchment-salima') and (answer.count() > 0)).answer.value.display"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_add_state",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_address"
+                        },
+                        {
+                          "valueString": "$this.item.where(linkId = 'physical-locator').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_add_use",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "use",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "home"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_add_typ",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientAddress",
+                      "contextType": "variable",
+                      "element": "type",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "physical"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "item",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item_phone_detail",
+              "condition": "(linkId = 'page-patient-phone-numbers')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_p_tel",
+              "source": [
+                {
+                  "context": "item_phone_detail",
+                  "element": "item",
+                  "variable": "item_tele",
+                  "condition": "(linkId = 'contact-information')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "patient",
+                  "contextType": "variable",
+                  "element": "telecom",
+                  "variable": "patientContact",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "ContactPoint"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_p_tel_num",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientContact",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_tele"
+                        },
+                        {
+                          "valueString": "$this.item.where(linkId = 'first-phone-number').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_tel_sys",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientContact",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "phone"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_p_tel2",
+                  "source": [
+                    {
+                      "context": "item_tele",
+                      "element": "item",
+                      "variable": "item_tele2",
+                      "condition": "(linkId = 'second-contact-information')"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patient",
+                      "contextType": "variable",
+                      "element": "telecom",
+                      "variable": "patientContact2",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "ContactPoint"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_p_tel2_num",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patientContact2",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item_tele2"
+                            },
+                            {
+                              "valueString": "$this.item.where(linkId = 'second-phone-number').answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_p_tel2_sys",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patientContact2",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "phone"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "item",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item_chw_assigned",
+              "condition": "(linkId = 'page-chw-assigned')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_p_chw_assigned",
+              "source": [
+                {
+                  "context": "item_chw_assigned",
+                  "element": "item",
+                  "variable": "item_chw",
+                  "condition": "(linkId = 'chw_assigned')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "patient",
+                  "contextType": "variable",
+                  "element": "generalPractitioner",
+                  "variable": "pref",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_p_chw_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "pref",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_chw"
+                        },
+                        {
+                          "valueString": "$this.answer.value.code"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

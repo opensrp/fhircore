@@ -1,0 +1,82 @@
+map "http://hl7.org/fhir/StructureMap/PatientDemographicRegistration" = 'PatientDemographicRegistration'
+
+    uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+    uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group PatientRegistration(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src->bundle.type = 'collection' "r_bun_type";
+    src->bundle.entry as entry,
+    entry.resource = create('Patient')as patient then
+        ExtractPatient(src, patient, bundle)"r_bun_entries";
+}
+
+group ExtractPatient(source src: QuestionnaireResponse, target patient: Patient, target bundle: Bundle) {
+    src->patient.id = uuid()"r_p_id_1";
+
+    src->patient.active = true "r_p_active";
+
+    src.item as item_bio where(linkId = 'page-patient-personal-details')then {
+        item_bio.item as item_name where(linkId = 'patient-name')->patient.name = create('HumanName')as patientName then {
+            src->patientName.given = evaluate(item_name, $this.item.where(linkId = 'required-first-name' and answer.count() > 0).answer.value)"r_p_required_fname";
+            src->patientName.given = evaluate(item_name, $this.item.where(linkId = 'optional-first-name' and answer.count() > 0).answer.value)"r_p_optional_fname";
+
+            src->patientName.family = evaluate(item_name, $this.item.where(linkId = 'last-name').answer.value)"r_p_lname";
+        }
+        "r_p_name";
+
+        src->patient.gender = evaluate(item_bio, $this.item.where(linkId = 'gender').answer.value.code)"r_p_gender";
+
+        item_bio.item as item_dob where(linkId = 'date-of-birth' and answer.count() > 0)->patient.birthDate = evaluate(item_dob, $this.answer.value)"r_p_dob";
+
+        item_bio.item as age where(linkId = 'age' and answer.count() > 0)->evaluate(age, (($this.answer.value * 365).toString() + ' days').toQuantity())as age_in_days then {
+            src->evaluate(src, today() - age_in_days)as approximate_date_of_birth then {
+                src->evaluate(src, approximate_date_of_birth.toString().substring(0, 4))as year_of_birth then {
+                    src->evaluate(src, today().toString().substring(5))as month_and_day_of_birth then {
+                        src->patient.birthDate = evaluate(src, year_of_birth + '-' + month_and_day_of_birth)"r_dob_today_x_years_ago";
+                    }
+                    "r_month_and_day_of_birth";
+                }
+				"r_year_of_birth";
+            }
+            "r_approx_dob";
+        }
+        "r_age_in_days";
+    };
+
+    src.item as item_location where(linkId = 'page-patient-location-details')then {
+        item_location.item as item_address where(linkId = 'patient-address')->patient.address = create('Address')as patientAddress then {
+            src->patientAddress.district = evaluate(item_address, $this.item.where(linkId = 'district').answer.value.display)"r_p_add_district";
+
+            src->patientAddress.state = evaluate(item_address, $this.item.where(linkId = 'tracing-catchment-balaka' and answer.count() > 0).answer.value.display)"r_p_add_trace_catch_balaka";
+            src->patientAddress.state = evaluate(item_address, $this.item.where(linkId = 'tracing-catchment-machinga' and answer.count() > 0).answer.value.display)"r_p_add_trace_catch_machinga";
+            src->patientAddress.state = evaluate(item_address, $this.item.where(linkId = 'tracing-catchment-mangochi' and answer.count() > 0).answer.value.display)"r_p_add_trace_catch_mangochi";
+            src->patientAddress.state = evaluate(item_address, $this.item.where(linkId = 'tracing-catchment-phalombe' and answer.count() > 0).answer.value.display)"r_p_add_trace_catch_phalombe";
+            src->patientAddress.state = evaluate(item_address, $this.item.where(linkId = 'tracing-catchment-salima' and answer.count() > 0).answer.value.display)"r_p_add_trace_catch_salima";
+
+            src->patientAddress.text = evaluate(item_address, $this.item.where(linkId = 'physical-locator').answer.value)"r_p_add_state";
+            src->patientAddress.use = "home" "r_p_add_use";
+            src->patientAddress.type = "physical" "r_p_add_typ";
+        }
+        "r_p_address";
+    };
+
+    src.item as item_phone_detail where(linkId = 'page-patient-phone-numbers')then {
+        item_phone_detail.item as item_tele where(linkId = 'contact-information')->patient.telecom = create('ContactPoint')as patientContact then {
+            src->patientContact.value = evaluate(item_tele, $this.item.where(linkId = 'first-phone-number').answer.value)"r_p_tel_num";
+            src->patientContact.system = "phone" "r_p_tel_sys";
+
+            item_tele.item as item_tele2 where(linkId = 'second-contact-information')->patient.telecom = create('ContactPoint')as patientContact2 then {
+                src->patientContact2.value = evaluate(item_tele2, $this.item.where(linkId = 'second-phone-number').answer.value)"r_p_tel2_num";
+                src->patientContact2.system = "phone" "r_p_tel2_sys";
+            }
+            "r_p_tel2";
+        }
+        "r_p_tel";
+    };
+
+    src.item as item_chw_assigned where(linkId = 'page-chw-assigned')then {
+        item_chw_assigned.item as item_chw where(linkId = 'chw_assigned')->patient.generalPractitioner = create('Reference')as pref then {
+            src->pref.reference = evaluate(item_chw, $this.answer.value.code)"r_p_chw_ref";
+        }
+        "r_p_chw_assigned";
+    };

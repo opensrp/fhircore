@@ -107,4 +107,31 @@ class RegisterContentTest : RobolectricTest() {
 
     assertResourceContent(condition, sampleCondition)
   }
+
+  @Test
+  fun testMWCoreRegistrationExtraction() {
+    val structureMap = "mwcore-registration/structure-map.txt".readFile()
+    val response = "mwcore-registration/questionnaire-response.json".readFile()
+
+    val scu = buildStructureMapUtils()
+    val targetResource = transform(scu, structureMap, response, "PatientRegistration")
+
+    Assert.assertEquals(1, targetResource.entry.size)
+
+    val patient = targetResource.entry[0].resource as Patient
+    val samplePatient =
+            "mwcore-registration/sample/patient.json".parseSampleResourceFromFile() as
+                    Patient
+
+    assertResourceContent(patient, samplePatient)
+
+//    val condition = targetResource.entry[1].resource as Condition
+//    val sampleCondition =
+//            "patient-registration-questionnaire/sample/condition.json".parseSampleResourceFromFile() as
+//                    Condition
+//    // replace subject as registration forms generate uuid on the fly
+//    sampleCondition.subject = condition.subject
+//
+//    assertResourceContent(condition, sampleCondition)
+  }
 }

@@ -1,0 +1,34 @@
+{
+  "resourceType": "Patient",
+  "id": "TEST_PATIENT",
+  "active": true,
+  "name": [
+    {
+      "family": "test44",
+      "given": [
+        "awtest22"
+      ]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "2342342342"
+    },
+    {
+      "system": "phone",
+      "value": "23423423423"
+    }
+  ],
+  "gender": "male",
+  "birthDate": "2022-05-18",
+  "address": [
+    {
+      "use": "home",
+      "type": "physical",
+      "text": "test55",
+      "district": "Balaka",
+      "state": "Adamu"
+    }
+  ]
+}
