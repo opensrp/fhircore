@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
@@ -33,7 +32,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.quest.ui.shared.models.RegisterCardData
 import timber.log.Timber
 
 /**
@@ -44,14 +42,13 @@ import timber.log.Timber
 fun RegisterCardList(
   modifier: Modifier = Modifier,
   registerCardConfig: RegisterCardConfig,
-  pagingItems: LazyPagingItems<RegisterCardData>,
+  pagingItems: LazyPagingItems<ResourceData>,
   onCardClick: (String) -> Unit
 ) {
   LazyColumn {
-    items(pagingItems, key = { it.resourceData.baseResource.logicalId }) {
+    items(pagingItems, key = { it.baseResource.logicalId }) {
       RegisterCard(
-        modifier = modifier.padding(horizontal = 8.dp),
-        registerCardData = it!!,
+        resourceData = it!!,
         registerCardViewProperties = registerCardConfig.views,
         onCardClick = onCardClick
       )

@@ -121,17 +121,8 @@ class AppSettingActivityTest {
 
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
-      activity.configurationRegistry.workflowPointsMap.let { workflows ->
-        Assert.assertEquals(9, workflows.size)
-        Assert.assertEquals(true, workflows.containsKey("default|application"))
-        Assert.assertEquals(true, workflows.containsKey("default|login"))
-        Assert.assertEquals(true, workflows.containsKey("default|app_feature"))
-        Assert.assertEquals(true, workflows.containsKey("default|patient_register"))
-        Assert.assertEquals(true, workflows.containsKey("default|patient_task_register"))
-        Assert.assertEquals(true, workflows.containsKey("default|pin"))
-        Assert.assertEquals(true, workflows.containsKey("default|patient_details_view"))
-        Assert.assertEquals(true, workflows.containsKey("default|result_details_navigation"))
-        Assert.assertEquals(true, workflows.containsKey("default|sync"))
+      activity.configurationRegistry.configsJsonMap.let { workflows ->
+        Assert.assertTrue(workflows.isNotEmpty())
       }
     }
   }

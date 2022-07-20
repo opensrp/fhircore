@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.register.model
+package org.smartregister.fhircore.engine.util.extension
 
-import androidx.compose.runtime.Stable
-
-@Stable
-/**
- * @property uniqueTag Unique identifier for the register. Typically the fragment TAG
- * @property title Name of the register
- * @property isSelected Flag indicating whether the register is currently opened
- */
-data class RegisterItem(val uniqueTag: String, val title: String, var isSelected: Boolean = false)
+class StringExtensionsKtTest

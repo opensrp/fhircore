@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
@@ -47,7 +48,6 @@ import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.shared.models.RegisterCardData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
@@ -73,31 +73,26 @@ constructor(
 
   private lateinit var registerConfiguration: RegisterConfiguration
 
-  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterCardData>>> =
+  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
 
   fun paginateRegisterData(registerId: String, loadAll: Boolean = false) {
     paginatedRegisterData.value = getPager(registerId, loadAll).flow
   }
 
-  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, RegisterCardData> =
+  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> =
     Pager(
       PagingConfig(pageSize = DEFAULT_PAGE_SIZE, initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE),
       pagingSourceFactory = {
-        PatientRegisterPagingSource(
-            patientRegisterRepository = patientRegisterRepository,
-            rulesFactory = rulesFactory
-          )
-          .apply {
-            setPatientPagingSourceState(
-              PatientPagingSourceState(
-                registerId = registerId,
-                loadAll = loadAll,
-                currentPage = if (loadAll) 0 else currentPage.value!!,
-                registerCardConfig = retrieveRegisterConfiguration(registerId).registerCard
-              )
+        PatientRegisterPagingSource(patientRegisterRepository).apply {
+          setPatientPagingSourceState(
+            PatientPagingSourceState(
+              registerId = registerId,
+              loadAll = loadAll,
+              currentPage = if (loadAll) 0 else currentPage.value!!
             )
-          }
+          )
+        }
       }
     )
 
@@ -163,7 +158,7 @@ constructor(
 
   private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
     paginatedRegisterData.value =
-      getPager(event.registerId, true).flow.map { pagingData: PagingData<RegisterCardData> ->
+      getPager(event.registerId, true).flow.map { pagingData: PagingData<ResourceData> ->
         pagingData.filter {
           // TODO apply relevant filters
           //          it.title.contains(event.searchText, ignoreCase = true) ||

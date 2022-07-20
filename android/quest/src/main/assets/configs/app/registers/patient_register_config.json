@@ -42,10 +42,10 @@
   "registerCard": {
     "rules": [
       {
-        "name": "familyName",
+        "name": "patientName",
         "condition": "true",
         "actions": [
-          "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given'))"
+          "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given') + ' ' + fhirPath.extractValue(Patient, 'Patient.name.family'))"
         ]
       }
     ],
@@ -58,28 +58,15 @@
             "details": [
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "Household Name HH",
+                "primaryText": "@{patientName}",
                 "primaryTextColor": "#000000"
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "Town/Village",
-                "primaryTextColor": "#5A5A5A",
-                "separator": "-",
-                "secondaryText": "HH No.",
-                "secondaryTextColor": "#5A5A5A"
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "Last visited yesterday",
-                "primaryTextColor": "#5A5A5A"
               }
             ],
             "showVerticalDivider": true,
             "serviceMemberIcons": "PREGNANT_WOMAN,CHILD,CHILD",
             "serviceButton": {
               "visible": true,
-              "text": "2",
+              "text": "1",
               "status": "OVERDUE",
               "smallSized": false
             }

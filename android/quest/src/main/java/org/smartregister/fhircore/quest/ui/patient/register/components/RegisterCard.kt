@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
+import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
@@ -72,8 +73,8 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.ui.shared.models.RegisterCardData
 import org.smartregister.p2p.utils.capitalize
 
 /**
@@ -88,7 +89,7 @@ import org.smartregister.p2p.utils.capitalize
 fun RegisterCard(
   modifier: Modifier = Modifier,
   registerCardViewProperties: List<RegisterCardViewProperties>,
-  registerCardData: RegisterCardData,
+  resourceData: ResourceData,
   onCardClick: (String) -> Unit
 ) {
   registerCardViewProperties.forEach { viewProperties ->
@@ -97,14 +98,14 @@ fun RegisterCard(
       if (viewProperties.children.isEmpty()) return
       when (viewProperties.viewType) {
         ViewType.COLUMN, ViewType.ROW ->
-          RenderViewGroup(viewProperties, modifier, registerCardData, onCardClick)
+          RenderViewGroup(viewProperties, modifier, resourceData, onCardClick)
         else -> return
       }
     } else {
       RenderChildView(
         modifier = modifier,
         registerCardViewProperties = viewProperties,
-        registerCardData = registerCardData,
+        resourceData = resourceData,
         onCardClick = onCardClick
       )
     }
@@ -115,7 +116,7 @@ fun RegisterCard(
 private fun RenderViewGroup(
   viewProperties: ViewGroupProperties,
   modifier: Modifier,
-  registerCardData: RegisterCardData,
+  resourceData: ResourceData,
   onCardClick: (String) -> Unit
 ) {
   viewProperties.children.forEach { childViewProperty ->
@@ -125,7 +126,7 @@ private fun RenderViewGroup(
           RegisterCard(
             modifier = modifier,
             registerCardViewProperties = childViewProperty.children,
-            registerCardData = registerCardData,
+            resourceData = resourceData,
             onCardClick = onCardClick
           )
         }
@@ -134,7 +135,7 @@ private fun RenderViewGroup(
           RegisterCard(
             modifier = modifier,
             registerCardViewProperties = childViewProperty.children,
-            registerCardData = registerCardData,
+            resourceData = resourceData,
             onCardClick = onCardClick
           )
         }
@@ -143,7 +144,7 @@ private fun RenderViewGroup(
     RenderChildView(
       modifier = modifier,
       registerCardViewProperties = childViewProperty,
-      registerCardData = registerCardData,
+      resourceData = resourceData,
       onCardClick = onCardClick
     )
   }
@@ -153,20 +154,20 @@ private fun RenderViewGroup(
 private fun RenderChildView(
   modifier: Modifier = Modifier,
   registerCardViewProperties: RegisterCardViewProperties,
-  registerCardData: RegisterCardData,
+  resourceData: ResourceData,
   onCardClick: (String) -> Unit
 ) {
   when (registerCardViewProperties) {
     is CompoundTextProperties ->
       CompoundText(
+        modifier = modifier,
         compoundTextProperties = registerCardViewProperties,
-        registerCardData = registerCardData,
-        modifier = modifier
+        computedValuesMap = resourceData.computedValuesMap,
       )
     is ServiceCardProperties ->
       ServiceCard(
         serviceCardProperties = registerCardViewProperties,
-        registerCardData = registerCardData,
+        resourceData = resourceData,
         onCardClick = onCardClick
       )
   }
@@ -176,7 +177,7 @@ private fun RenderChildView(
 fun CompoundText(
   modifier: Modifier = Modifier,
   compoundTextProperties: CompoundTextProperties,
-  registerCardData: RegisterCardData
+  computedValuesMap: Map<String, Any>
 ) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
@@ -184,7 +185,7 @@ fun CompoundText(
   ) {
     if (compoundTextProperties.primaryText != null) {
       Text(
-        text = compoundTextProperties.primaryText!!,
+        text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap),
         color = compoundTextProperties.primaryTextColor.parseColor(),
         modifier = modifier.wrapContentWidth(Alignment.Start)
       )
@@ -194,7 +195,7 @@ fun CompoundText(
       Separator(separator = compoundTextProperties.separator ?: "-")
 
       Text(
-        text = compoundTextProperties.secondaryText!!,
+        text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap),
         color = compoundTextProperties.secondaryTextColor.parseColor(),
         modifier = modifier.wrapContentWidth(Alignment.Start).padding(end = 8.dp)
       )
@@ -206,7 +207,7 @@ fun CompoundText(
 fun ServiceCard(
   modifier: Modifier = Modifier,
   serviceCardProperties: ServiceCardProperties,
-  registerCardData: RegisterCardData,
+  resourceData: ResourceData,
   onCardClick: (String) -> Unit
 ) {
   Row(
@@ -221,15 +222,16 @@ fun ServiceCard(
       horizontalArrangement = Arrangement.SpaceBetween,
       modifier =
         modifier
-          .clickable {
-            /** TODO call card click listener */
-          }
+          .clickable { onCardClick(resourceData.baseResource.logicalId) }
           .padding(top = 24.dp, bottom = 24.dp)
           .weight(0.75f)
     ) {
       Column {
         serviceCardProperties.details.forEach {
-          CompoundText(compoundTextProperties = it, registerCardData = registerCardData)
+          CompoundText(
+            compoundTextProperties = it,
+            computedValuesMap = resourceData.computedValuesMap
+          )
         }
       }
       ServiceMemberIcons(modifier = modifier, serviceCardProperties.serviceMemberIcons)
@@ -261,7 +263,8 @@ fun ServiceCard(
         } else {
           BigServiceButton(
             modifier = modifier,
-            serviceButton = serviceCardProperties.serviceButton!!
+            serviceButton = serviceCardProperties.serviceButton!!,
+            computedValuesMap = resourceData.computedValuesMap
           )
         }
       }
@@ -327,7 +330,11 @@ private fun SmallServiceButton(modifier: Modifier = Modifier, serviceButton: Ser
 }
 
 @Composable
-private fun BigServiceButton(modifier: Modifier = Modifier, serviceButton: ServiceButton) {
+private fun BigServiceButton(
+  modifier: Modifier = Modifier,
+  serviceButton: ServiceButton,
+  computedValuesMap: Map<String, Any>
+) {
   val statusColor = serviceButton.statusColor()
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   Column(
@@ -345,7 +352,7 @@ private fun BigServiceButton(modifier: Modifier = Modifier, serviceButton: Servi
     if (serviceButton.status == ServiceStatus.COMPLETED)
       Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
     Text(
-      text = serviceButton.text ?: "",
+      text = serviceButton.text?.interpolate(computedValuesMap) ?: "",
       color = if (serviceButton.status == ServiceStatus.OVERDUE) Color.White else contentColor,
       textAlign = TextAlign.Center
     )
@@ -373,11 +380,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryText = "Full Name, Age",
           primaryTextColor = "#000000",
         ),
-      registerCardData =
-        RegisterCardData(
-          resourceData = ResourceData(baseResource = Patient()),
-          computedRegisterCardData = emptyMap()
-        )
+      computedValuesMap = emptyMap()
     )
     CompoundText(
       compoundTextProperties =
@@ -385,11 +388,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryText = "Sex",
           primaryTextColor = "#5A5A5A",
         ),
-      registerCardData =
-        RegisterCardData(
-          resourceData = ResourceData(baseResource = Patient()),
-          computedRegisterCardData = emptyMap()
-        )
+      computedValuesMap = emptyMap()
     )
   }
 }
@@ -404,11 +403,7 @@ private fun CompoundTextWithSecondaryTextPreview() {
           primaryText = "Full Name, Sex, Age",
           primaryTextColor = "#000000",
         ),
-      registerCardData =
-        RegisterCardData(
-          resourceData = ResourceData(baseResource = Patient()),
-          computedRegisterCardData = emptyMap()
-        )
+      computedValuesMap = emptyMap()
     )
     CompoundText(
       compoundTextProperties =
@@ -419,11 +414,7 @@ private fun CompoundTextWithSecondaryTextPreview() {
           separator = "-",
           secondaryTextColor = "#5A5A5A"
         ),
-      registerCardData =
-        RegisterCardData(
-          resourceData = ResourceData(baseResource = Patient()),
-          computedRegisterCardData = emptyMap()
-        )
+      computedValuesMap = emptyMap()
     )
   }
 }
@@ -476,7 +467,7 @@ private fun RegisterCardServiceOverduePreview() {
   Column {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
-      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
       onCardClick = {}
     )
   }
@@ -530,7 +521,7 @@ private fun RegisterCardServiceDuePreview() {
   Column {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
-      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
       onCardClick = {}
     )
   }
@@ -584,7 +575,7 @@ private fun RegisterCardServiceUpcomingPreview() {
   Column {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
-      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
       onCardClick = {}
     )
   }
@@ -637,7 +628,7 @@ private fun RegisterCardServiceCompletedPreview() {
   Column {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
-      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
       onCardClick = {}
     )
   }
@@ -685,7 +676,7 @@ private fun RegisterCardANCServiceDuePreview() {
   Column {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
-      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
       onCardClick = {}
     )
   }
@@ -733,7 +724,7 @@ private fun RegisterCardANCServiceOverduePreview() {
   Column {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
-      registerCardData = RegisterCardData(ResourceData(Patient()), emptyMap()),
+      resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
       onCardClick = {}
     )
   }

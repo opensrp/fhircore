@@ -27,7 +27,6 @@ import org.junit.Test
 import org.robolectric.Robolectric.buildActivity
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 
 class NavigationBottomSheetTest : RobolectricTest() {
 

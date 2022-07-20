@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.rulesengine
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.apache.commons.jexl3.JexlException
+import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -26,7 +27,6 @@ import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.jeasy.rules.jexl.JexlRule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
@@ -68,7 +68,11 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
 
   override fun afterEvaluate(rule: Rule, facts: Facts, evaluationResult: Boolean) = Unit
 
-  fun fireRule(ruleConfigs: List<RuleConfig>, resourceData: ResourceData): Map<String, Any> {
+  fun fireRule(
+    ruleConfigs: List<RuleConfig>,
+    baseResource: Resource,
+    relatedResources: MutableMap<String, List<Resource>>,
+  ): Map<String, Any> {
     // Reset previously computed values first
     computedValuesMap.clear()
 
@@ -88,13 +92,12 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
 
     // Put baseResource and related resources in the facts map. relatedResources value is a list and
     // is included to the map as is. E.g. list of all Immunization resources for a Patient.
-    resourceData.run {
-      facts.put(baseResource.resourceType.name, baseResource)
-      relatedResources.forEach { resource -> facts.put(resource.key, resource.value) }
-    }
+    facts.put(baseResource.resourceType.name, baseResource)
+    relatedResources.forEach { resource -> facts.put(resource.key, resource.value) }
+
     rulesEngine.fire(Rules(customRules), facts)
 
-    return computedValuesMap
+    return mutableMapOf<String, Any>().apply { putAll(computedValuesMap) }
   }
 
   companion object {

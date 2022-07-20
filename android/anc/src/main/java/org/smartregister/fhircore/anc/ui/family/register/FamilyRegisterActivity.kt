@@ -35,8 +35,8 @@ import org.smartregister.fhircore.anc.util.AncJsonSpecificationProvider
 import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.navigation.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
-import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 

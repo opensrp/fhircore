@@ -42,12 +42,13 @@ import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
+import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterCardList
-import org.smartregister.fhircore.quest.ui.shared.models.RegisterCardData
 
 @Composable
 fun PatientRegisterScreen(
@@ -85,7 +86,7 @@ fun PatientRegisterScreen(
     }
   }
 
-  val pagingItems: LazyPagingItems<RegisterCardData> =
+  val pagingItems: LazyPagingItems<ResourceData> =
     patientRegisterViewModel
       .paginatedRegisterData
       .collectAsState(emptyFlow())
@@ -145,8 +146,7 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      // TODO revert after UI functionality is wired
-      //      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
+      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
       RegisterCardList(
         pagingItems = pagingItems,
         onCardClick = { patientId: String ->

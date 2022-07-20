@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local.register
 
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
@@ -35,17 +36,20 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
+import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
+import timber.log.Timber
 
 class PatientRegisterRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
+  val rulesFactory: RulesFactory
 ) :
   RegisterRepository,
   DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
@@ -55,7 +59,7 @@ constructor(
     loadAll: Boolean,
     registerId: String
   ): List<ResourceData> =
-    withContext(dispatcherProvider.io()) {
+    try {
       val registerConfiguration =
         configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
           ConfigType.Register,
@@ -91,8 +95,23 @@ constructor(
           val relatedResources = fhirEngine.search<Resource>(relatedResourceSearch)
           retrievedRelatedResources[resourceConfig.resource] = relatedResources
         }
-        ResourceData(baseResource = baseResource, relatedResources = retrievedRelatedResources)
+
+        // Compute values via rules engine and return a map. Rule names MUST be unique
+        val computedValuesMap =
+          rulesFactory.fireRule(
+            ruleConfigs = registerConfiguration.registerCard.rules,
+            baseResource = baseResource,
+            relatedResources = retrievedRelatedResources
+          )
+        ResourceData(
+          baseResource = baseResource,
+          relatedResources = retrievedRelatedResources,
+          computedValuesMap = computedValuesMap
+        )
       }
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      Timber.e(resourceNotFoundException)
+      emptyList()
     }
 
   private suspend fun searchResource(
