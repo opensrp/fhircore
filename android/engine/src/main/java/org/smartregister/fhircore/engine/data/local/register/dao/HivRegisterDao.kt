@@ -142,7 +142,7 @@ constructor(
       .toLong()
   }
 
-  internal suspend fun Patient.isPregnant() = patientConditions(this.id).hasActivePregnancy()
+  internal suspend fun Patient.isPregnant() = patientConditions(this.logicalId).hasActivePregnancy()
 
   internal suspend fun patientConditions(patientId: String) =
     defaultRepository.searchResourceFor<Condition>(
