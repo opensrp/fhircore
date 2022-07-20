@@ -118,7 +118,7 @@ constructor(
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
       is PatientProfileEvent.OverflowMenuClick -> {
-        Log.e("aw","inside listener")
+        Log.e("aw", "inside listener")
         when (event.menuId) {
           R.id.individual_details ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
@@ -157,8 +157,7 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
-          else -> {
-          }
+          else -> {}
         }
       }
       is PatientProfileEvent.OpenTaskForm ->

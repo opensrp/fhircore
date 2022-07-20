@@ -120,18 +120,18 @@ class RegisterContentTest : RobolectricTest() {
 
     val patient = targetResource.entry[0].resource as Patient
     val samplePatient =
-            "mwcore-registration/sample/patient.json".parseSampleResourceFromFile() as
-                    Patient
+      "mwcore-registration/sample/patient.json".parseSampleResourceFromFile() as Patient
 
     assertResourceContent(patient, samplePatient)
 
-//    val condition = targetResource.entry[1].resource as Condition
-//    val sampleCondition =
-//            "patient-registration-questionnaire/sample/condition.json".parseSampleResourceFromFile() as
-//                    Condition
-//    // replace subject as registration forms generate uuid on the fly
-//    sampleCondition.subject = condition.subject
-//
-//    assertResourceContent(condition, sampleCondition)
+    //    val condition = targetResource.entry[1].resource as Condition
+    //    val sampleCondition =
+    //
+    // "patient-registration-questionnaire/sample/condition.json".parseSampleResourceFromFile() as
+    //                    Condition
+    //    // replace subject as registration forms generate uuid on the fly
+    //    sampleCondition.subject = condition.subject
+    //
+    //    assertResourceContent(condition, sampleCondition)
   }
 }
