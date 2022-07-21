@@ -133,7 +133,8 @@ fun AppDrawer(
       context = context,
       navController = navController,
       openDrawer = openDrawer,
-      onSideMenuClick = onSideMenuClick
+      onSideMenuClick = onSideMenuClick,
+      appUiState = appUiState
     )
 
     // Display bottom section of the nav (sync)
@@ -253,7 +254,8 @@ private fun StaticMenus(
   context: Context,
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
-  onSideMenuClick: (AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  appUiState: AppMainUiState
 ) {
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
     items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
@@ -261,7 +263,7 @@ private fun StaticMenus(
         // TODO Do we want save icons as base64 encoded strings
         iconResource = context.retrieveResourceId(navigationMenu.icon),
         title = navigationMenu.display,
-        endText = "", // TODO compute register count
+        endText = appUiState.registerCountMap[navigationMenu.id].toString(),
         showEndText = navigationMenu.showCount,
         onSideMenuClick = {
           openDrawer(false)
