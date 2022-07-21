@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -35,6 +34,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -86,68 +86,73 @@ fun AppDrawer(
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
 
-  Column(
-    verticalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier.fillMaxHeight().background(SideMenuDarkColor)
-  ) {
+  Scaffold(
+    topBar = {
+      Column(modifier = modifier.background(SideMenuDarkColor)) {
+        // Display the app name and version
+        NavTopSection(modifier, appUiState, versionCode, versionName)
 
-    // Display the app name and version
-    NavTopSection(modifier, appUiState, versionCode, versionName)
-
-    // Display menu action button
-    MenuActionButton(
-      modifier = modifier,
-      navigationConfiguration = appUiState.navigationConfiguration,
-      onSideMenuClick = onSideMenuClick,
-      context = context
-    )
-
-    Divider(color = DividerColor)
-
-    // Display list of configurable client registers
-    Column(modifier = modifier.background(SideMenuDarkColor).padding(16.dp)) {
-      if (appUiState.navigationConfiguration.clientRegisters.isNotEmpty()) {
-        Text(
-          text = stringResource(id = R.string.registers).uppercase(),
-          fontSize = 14.sp,
-          color = MenuItemColor
-        )
-      }
-      Spacer(modifier = modifier.height(8.dp))
-      ClientRegisterMenus(
-        appUiState = appUiState,
-        context = context,
-        navController = navController,
-        openDrawer = openDrawer,
-        onSideMenuClick = onSideMenuClick
-      )
-      if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true
-      ) {
-        OtherPatientsItem(
+        // Display menu action button
+        MenuActionButton(
+          modifier = modifier,
           navigationConfiguration = appUiState.navigationConfiguration,
           onSideMenuClick = onSideMenuClick,
+          context = context
+        )
+
+        Divider(color = DividerColor)
+      }
+    },
+    bottomBar = { // Display bottom section of the nav (sync)
+      NavBottomSection(modifier, appUiState, onSideMenuClick)
+    }
+  ) { innerPadding ->
+    Box(modifier = modifier.padding(innerPadding).background(SideMenuDarkColor)) {
+      Column {
+        // Display list of configurable client registers
+        Column(modifier = modifier.background(SideMenuDarkColor).padding(16.dp)) {
+          if (appUiState.navigationConfiguration.clientRegisters.isNotEmpty()) {
+            Text(
+              text = stringResource(id = R.string.registers).uppercase(),
+              fontSize = 14.sp,
+              color = MenuItemColor
+            )
+          }
+          Spacer(modifier = modifier.height(8.dp))
+          ClientRegisterMenus(
+            appUiState = appUiState,
+            context = context,
+            navController = navController,
+            openDrawer = openDrawer,
+            onSideMenuClick = onSideMenuClick
+          )
+          if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() ==
+              true
+          ) {
+            OtherPatientsItem(
+              navigationConfiguration = appUiState.navigationConfiguration,
+              onSideMenuClick = onSideMenuClick,
+              context = context,
+              openDrawer = openDrawer,
+              navController
+            )
+          }
+        }
+
+        Divider(color = DividerColor)
+
+        // Display list of configurable static menu
+        StaticMenus(
+          modifier = modifier.background(SideMenuDarkColor),
+          navigationConfiguration = appUiState.navigationConfiguration,
           context = context,
+          navController = navController,
           openDrawer = openDrawer,
-          navController
+          onSideMenuClick = onSideMenuClick,
+          appUiState = appUiState
         )
       }
     }
-
-    Divider(color = DividerColor)
-
-    // Display list of configurable static menu
-    StaticMenus(
-      modifier = modifier.background(SideMenuDarkColor),
-      navigationConfiguration = appUiState.navigationConfiguration,
-      context = context,
-      navController = navController,
-      openDrawer = openDrawer,
-      onSideMenuClick = onSideMenuClick,
-      appUiState = appUiState
-    )
-
-    // Display bottom section of the nav (sync)
-    NavBottomSection(modifier, appUiState, onSideMenuClick)
   }
 }
 
