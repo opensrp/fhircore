@@ -52,7 +52,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
@@ -78,10 +80,11 @@ fun AppDrawer(
   appUiState: AppMainUiState,
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
-  onSideMenuClick: (AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  appVersionPair: Pair<Int, String>? = null
 ) {
   val context = LocalContext.current
-  val (versionCode, versionName) = remember { context.appVersion() }
+  val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
 
   Column(
     verticalArrangement = Arrangement.SpaceBetween,
@@ -102,7 +105,7 @@ fun AppDrawer(
     Divider(color = DividerColor)
 
     // Display list of configurable client registers
-    Column(modifier.background(SideMenuDarkColor).padding(16.dp)) {
+    Column(modifier = modifier.background(SideMenuDarkColor).padding(16.dp)) {
       if (appUiState.navigationConfiguration.clientRegisters.isNotEmpty()) {
         Text(
           text = stringResource(id = R.string.registers).uppercase(),
@@ -406,10 +409,19 @@ fun AppDrawerPreview() {
         lastSyncTime = "05:30 PM, Mar 3",
         currentLanguage = "English",
         languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-        navigationConfiguration = NavigationConfiguration(appId = "appId")
+        navigationConfiguration =
+          NavigationConfiguration(
+            appId = "appId",
+            configType = ConfigType.Navigation.name,
+            staticMenu = listOf(),
+            clientRegisters = listOf(),
+            menuActionButton =
+              NavigationMenuConfig(id = "id1", visible = true, display = "Register Household")
+          )
       ),
     navController = rememberNavController(),
     openDrawer = {},
-    onSideMenuClick = {}
+    onSideMenuClick = {},
+    appVersionPair = Pair(1, "0.0.1")
   )
 }

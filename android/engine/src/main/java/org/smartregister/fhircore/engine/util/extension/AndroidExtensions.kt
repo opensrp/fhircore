@@ -115,7 +115,7 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
 }
 
 /** Return a pair of application versionCode and versionName e.g. Pair(1, 0.0.1) */
-fun Context.appVersion() =
+fun Context.appVersion(): Pair<Int, String> =
   Pair(
     this.packageManager.getPackageInfo(this.packageName, 0).versionCode,
     this.packageManager.getPackageInfo(this.packageName, 0).versionName.substringBefore("-")
