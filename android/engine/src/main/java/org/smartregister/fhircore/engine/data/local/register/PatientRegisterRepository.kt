@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
+import org.smartregister.fhircore.engine.util.extension.getResourceTypeFromRegisterId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import timber.log.Timber
 
@@ -127,16 +128,16 @@ constructor(
         dataQueries?.forEach { filterBy(it) }
         filter(TokenClientParam(ACTIVE), { value = of(true) }) // filter only active ones
         count =
-          if (loadAll) countRegisterData(resourceType, registerId).toInt()
+          if (loadAll) countRegisterData(registerId).toInt()
           else PaginationConstant.DEFAULT_PAGE_SIZE
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
     return fhirEngine.search(search)
   }
 
-  override suspend fun countRegisterData(resourceType: ResourceType, registerId: String): Long =
+  override suspend fun countRegisterData(registerId: String): Long =
     fhirEngine.count(
-      Search(resourceType).apply { filter(TokenClientParam(ACTIVE), { value = of(true) }) }
+      Search(registerId.getResourceTypeFromRegisterId()).apply { filter(TokenClientParam(ACTIVE), { value = of(true) }) }
     )
 
   override suspend fun loadProfileData(profileId: String, identifier: String): ProfileData? =
