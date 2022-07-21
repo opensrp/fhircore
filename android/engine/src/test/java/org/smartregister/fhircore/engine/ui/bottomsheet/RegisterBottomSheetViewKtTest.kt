@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.navigation
+package org.smartregister.fhircore.engine.ui.bottomsheet
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -28,13 +28,13 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class RegisterBottomSheetViewsKtTest : RobolectricTest() {
+class RegisterBottomSheetViewKtTest : RobolectricTest() {
 
-  private val mockListener: (String) -> Unit = spyk({})
+  private val mockListener: (NavigationMenuConfig) -> Unit = spyk({})
 
   @get:Rule val composeRule = createComposeRule()
 
-  private val registerMenuItems =
+  private val navigationMenuConfigs =
     listOf(
       NavigationMenuConfig(id = "UniqueTag1", display = "Menu 1"),
       NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2")
@@ -43,7 +43,10 @@ class RegisterBottomSheetViewsKtTest : RobolectricTest() {
   @Before
   fun setUp() {
     composeRule.setContent {
-      RegisterBottomSheet(registers = registerMenuItems, itemListener = mockListener)
+      RegisterBottomSheet(
+        menuClickListener = mockListener,
+        navigationMenuConfigs = navigationMenuConfigs,
+      )
     }
   }
 

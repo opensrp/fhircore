@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.navigation
+package org.smartregister.fhircore.engine.ui.bottomsheet
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -25,9 +25,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class NavigationBottomSheet(
-  val registersList: List<NavigationMenuConfig>? = emptyList(),
-  private val itemListener: (String) -> Unit
+class RegisterBottomSheet(
+  val navigationMenuConfigs: List<NavigationMenuConfig>? = emptyList(),
+  val registerCountMap: Map<String, Long> = emptyMap(),
+  val menuClickListener: (NavigationMenuConfig) -> Unit
 ) : BottomSheetDialogFragment() {
 
   override fun onCreateView(
@@ -37,13 +38,19 @@ class NavigationBottomSheet(
   ): View {
     return ComposeView(requireContext()).apply {
       setContent {
-        AppTheme { RegisterBottomSheet(registers = registersList, itemListener = itemListener) }
+        AppTheme {
+          RegisterBottomSheetView(
+            navigationMenuConfigs = navigationMenuConfigs,
+            registerCountMap = registerCountMap,
+            menuClickListener = menuClickListener,
+            onDismiss = { dismiss() }
+          )
+        }
       }
     }
   }
 
   companion object {
-
     const val TAG = "NavigationBottomSheetTag"
   }
 }

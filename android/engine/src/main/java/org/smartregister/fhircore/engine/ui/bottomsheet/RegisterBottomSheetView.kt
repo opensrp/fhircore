@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.navigation
+package org.smartregister.fhircore.engine.ui.bottomsheet
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +32,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,15 +43,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
-fun RegisterBottomSheet(
-  registers: List<NavigationMenuConfig>?,
-  itemListener: (String) -> Unit,
-  modifier: Modifier = Modifier
+fun RegisterBottomSheetView(
+  modifier: Modifier = Modifier,
+  navigationMenuConfigs: List<NavigationMenuConfig>?,
+  registerCountMap: Map<String, Long> = emptyMap(),
+  menuClickListener: (NavigationMenuConfig) -> Unit,
+  onDismiss: () -> Unit
 ) {
   Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
@@ -66,9 +70,15 @@ fun RegisterBottomSheet(
         contentPadding = PaddingValues(vertical = 8.dp),
         modifier = Modifier.fillMaxWidth()
       ) {
-        itemsIndexed(registers!!) { index, item ->
-          RegisterListItem(item, itemListener)
-          if (index < registers.lastIndex) Divider(color = DividerColor, thickness = 1.dp)
+        itemsIndexed(navigationMenuConfigs!!) { index, item ->
+          RegisterListItem(
+            navigationMenuConfig = item,
+            registerCountMap = registerCountMap,
+            menuClickListener = menuClickListener,
+            onDismiss = onDismiss
+          )
+          if (index < navigationMenuConfigs.lastIndex)
+            Divider(color = DividerColor, thickness = 1.dp)
         }
       }
     }
@@ -77,18 +87,32 @@ fun RegisterBottomSheet(
 
 @Composable
 fun RegisterListItem(
-  registerItem: NavigationMenuConfig,
-  itemListener: (String) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  navigationMenuConfig: NavigationMenuConfig,
+  registerCountMap: Map<String, Long> = emptyMap(),
+  menuClickListener: (NavigationMenuConfig) -> Unit,
+  onDismiss: () -> Unit
 ) {
+
+  val action = remember {
+    navigationMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_COUNT }
+  }
   Row(
-    modifier = modifier.fillMaxWidth().clickable { itemListener(registerItem.id) }.padding(14.dp)
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .clickable {
+          // Act on click then dismiss dialog
+          menuClickListener(navigationMenuConfig)
+          onDismiss()
+        }
+        .padding(14.dp)
   ) {
     Box(modifier = modifier.wrapContentWidth()) {}
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-      Text(text = registerItem.display, modifier = modifier.padding(horizontal = 12.dp))
+      Text(text = navigationMenuConfig.display, modifier = modifier.padding(horizontal = 12.dp))
       Text(
-        text = "1",
+        text = registerCountMap[action?.id ?: navigationMenuConfig.id]?.toString() ?: "",
         textAlign = TextAlign.Start,
         color = StatusTextColor,
         fontSize = 13.sp,
@@ -102,9 +126,10 @@ fun RegisterListItem(
 @Composable
 fun RegisterListItemPreview() {
   RegisterListItem(
-    registerItem =
+    navigationMenuConfig =
       NavigationMenuConfig(id = "TestFragmentTag", display = "All Clients", showCount = true),
-    itemListener = {}
+    menuClickListener = {},
+    onDismiss = {}
   )
 }
 
@@ -112,12 +137,13 @@ fun RegisterListItemPreview() {
 @ExcludeFromJacocoGeneratedReport
 @Composable
 fun RegisterBottomSheetPreview() {
-  RegisterBottomSheet(
-    itemListener = {},
-    registers =
+  RegisterBottomSheetView(
+    navigationMenuConfigs =
       listOf(
         NavigationMenuConfig(id = "TestFragmentTag", display = "All Clients"),
         NavigationMenuConfig(id = "TestFragmentTag2", display = "Families", showCount = true)
-      )
+      ),
+    menuClickListener = {},
+    onDismiss = {}
   )
 }

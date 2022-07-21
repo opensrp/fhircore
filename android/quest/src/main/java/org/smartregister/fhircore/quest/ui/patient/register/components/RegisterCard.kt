@@ -81,9 +81,16 @@ import org.smartregister.p2p.utils.capitalize
  * A register card is a configurable view component that renders views for every of the rows of the
  * register. A register card consumes the data provided via the [ResourceData] class. The views are
  * configured via the [RegisterCardConfig]. The card also has an [onCardClick] listener that
- * responds to the click events of the register.
+ * responds to the click events.
  *
- * The [RegisterCardConfig] defines rules that should be pre-computed before
+ * The [ResourceData.computedValuesMap] provides a map of computed rules values that can now be used
+ * in the view.
+ *
+ * Note that by default the register card is not rendered in a view group like a Column/Row. This is
+ * to allow us to call the function recursively for nested view group layout. Therefore when using
+ * the this layout, provide a parent layout (usually Row/Column) so that the views can be rendered
+ * appropriately otherwise the generated view group will be rendered one on top of the other. See
+ * the Previews samples in this files.
  */
 @Composable
 fun RegisterCard(

@@ -27,7 +27,7 @@ data class AppMainUiState(
   val currentLanguage: String,
   val languages: List<Language>,
   val navigationConfiguration: NavigationConfiguration,
-  val registerCountMap: Map<String, Int> = emptyMap()
+  val registerCountMap: Map<String, Long> = emptyMap()
 )
 
 fun appMainUiStateOf(
@@ -37,7 +37,7 @@ fun appMainUiStateOf(
   currentLanguage: String = Locale.ENGLISH.displayName,
   languages: List<Language> = emptyList(),
   navigationConfiguration: NavigationConfiguration,
-  registerCountMap: Map<String, Int> = emptyMap()
+  registerCountMap: Map<String, Long> = emptyMap()
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,

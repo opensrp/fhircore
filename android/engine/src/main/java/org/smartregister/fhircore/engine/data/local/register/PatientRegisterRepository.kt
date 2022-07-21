@@ -25,7 +25,6 @@ import com.google.android.fhir.search.Search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -40,7 +39,6 @@ import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
-import org.smartregister.fhircore.engine.util.extension.getResourceTypeFromRegisterId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import timber.log.Timber
 
@@ -55,17 +53,15 @@ constructor(
   RegisterRepository,
   DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
 
+  private lateinit var registerConfiguration: RegisterConfiguration
+
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
     registerId: String
   ): List<ResourceData> =
     try {
-      val registerConfiguration =
-        configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
-          ConfigType.Register,
-          configId = registerId
-        )
+      val registerConfiguration = retrieveRegisterConfiguration(registerId)
       val baseResourceConfig = registerConfiguration.fhirResource.baseResource
       val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
       val baseResourceClass = baseResourceConfig.resource.resourceClassType()
@@ -135,16 +131,33 @@ constructor(
     return fhirEngine.search(search)
   }
 
-  override suspend fun countRegisterData(registerId: String): Long =
-    fhirEngine.count(
-      Search(registerId.getResourceTypeFromRegisterId()).apply { filter(TokenClientParam(ACTIVE), { value = of(true) }) }
+  /** Count register data for the provided [registerId]. Use the configured base resource filters */
+  override suspend fun countRegisterData(registerId: String): Long {
+    val registerConfiguration = retrieveRegisterConfiguration(registerId)
+    val baseResourceConfig = registerConfiguration.fhirResource.baseResource
+    val baseResourceClass = baseResourceConfig.resource.resourceClassType()
+
+    return fhirEngine.count(
+      Search(baseResourceClass.newInstance().resourceType).apply {
+        baseResourceConfig.dataQueries?.forEach { filterBy(it) }
+        filter(TokenClientParam(ACTIVE), { value = of(true) })
+      }
     )
+  }
 
   override suspend fun loadProfileData(profileId: String, identifier: String): ProfileData? =
     withContext(dispatcherProvider.io()) {
       // TODO return profile data
       null
     }
+
+  fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
+    if (!::registerConfiguration.isInitialized) {
+      registerConfiguration =
+        configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
+    }
+    return registerConfiguration
+  }
 
   companion object {
     const val ACTIVE = "active"
