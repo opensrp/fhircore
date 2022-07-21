@@ -31,6 +31,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LocaleUtil.localize
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -68,8 +69,8 @@ constructor(
   ): T {
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
-      configsJsonMap.getValue(configKey).decodeResourceFromString()
-    else configsJsonMap.getValue(configKey).decodeJson(jsonInstance = json)
+      configsJsonMap.getValue(configKey).localize().decodeResourceFromString()
+    else configsJsonMap.getValue(configKey).localize().decodeJson(jsonInstance = json)
   }
 
   /**

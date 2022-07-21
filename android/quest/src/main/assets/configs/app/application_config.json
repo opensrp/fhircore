@@ -8,6 +8,26 @@
 		"en",
 		"sw"
 	],
+	"section": [
+		{
+			"title": "Translation English",
+			"focus": {
+				"reference": "Binary/xxxxx",
+				"identifier": {
+					"value": "en"
+				}
+			}
+		},
+		{
+			"title": "Translation Swahili",
+			"focus": {
+				"reference": "Binary/xxxxx",
+				"identifier": {
+					"value": "sw"
+				}
+			}
+		}
+	],
 	"useDarkTheme": false,
 	"syncInterval": 30,
 	"loginConfig": {

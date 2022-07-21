@@ -4,7 +4,7 @@
   "menuActionButton": {
     "id": "mainActionButton",
     "visible": true,
-    "display": "Add New Household",
+    "display": "Add New Household {{name.title}}",
     "actions": [
       {
         "trigger": "ON_CLICK",
@@ -14,7 +14,7 @@
     ],
     "questionnaire": {
       "id": "82952",
-      "title": "Add Family",
+      "title": "Add Family {{name.title}}",
       "saveButtonText": "ADD FAMILY",
       "setPractitionerDetails": true,
       "setOrganizationDetails": true
@@ -61,7 +61,7 @@
   "clientRegisters": [
     {
       "id": "patient_register",
-      "display": "All Households",
+      "display": "All Households {{name.title}}",
       "icon": "",
       "showCount": true,
       "actions": [
@@ -124,7 +124,7 @@
       },
       {
         "id": "bottom_priority",
-        "display": "Today's Priority",
+        "display": "Today's Priority {{name.title}}",
         "showCount": true
       }
     ]
