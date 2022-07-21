@@ -66,6 +66,15 @@
               "value": "patient_register"
             }
           }
+        },
+        {
+          "title": "Task register configuration",
+          "focus": {
+            "reference": "Binary/11111116",
+            "identifier": {
+              "value": "task_register"
+            }
+          }
         }
       ]
     }

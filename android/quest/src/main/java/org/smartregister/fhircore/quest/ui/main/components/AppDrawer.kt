@@ -105,9 +105,10 @@ fun AppDrawer(
     },
     bottomBar = { // Display bottom section of the nav (sync)
       NavBottomSection(modifier, appUiState, onSideMenuClick)
-    }
+    },
+    backgroundColor = SideMenuDarkColor
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding).background(SideMenuDarkColor)) {
+    Box(modifier = modifier.padding(innerPadding)) {
       Column {
         // Display list of configurable client registers
         Column(modifier = modifier.background(SideMenuDarkColor).padding(16.dp)) {
@@ -253,7 +254,7 @@ private fun ClientRegisterMenus(
             AppMainEvent.TriggerWorkflow(
               navController = navController,
               actions = navigationMenu.actions,
-              registerId = navigationMenu.id,
+              navMenu = navigationMenu,
               context = context
             )
           )
@@ -288,7 +289,7 @@ private fun StaticMenus(
               context = context,
               navController = navController,
               actions = navigationMenu.actions,
-              registerId = navigationMenu.id
+              navMenu = navigationMenu
             )
           )
         }

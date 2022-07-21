@@ -77,60 +77,21 @@
       ]
     },
     {
-      "id": "child",
-      "display": "Child",
+      "id": "task_register",
+      "display": "Tasks",
       "icon": "",
-      "showCount": true
-    },
-    {
-      "id": "sick",
-      "display": "Sick",
-      "icon": "",
-      "showCount": true
-    },
-    {
-      "id": "priority",
-      "display": "Today's Priority",
-      "icon": "",
-      "showCount": true
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "task_register"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "task_register"
+        }
+      ]
     }
-  ],
-  "bottomSheetRegisters": {
-    "visible": true,
-    "display": "Other Patients",
-    "registers": [
-      {
-        "id": "patient_register",
-        "display": "All Households",
-        "icon": "",
-        "showCount": true,
-        "actions": [
-          {
-            "trigger": "ON_CLICK",
-            "workflow": "LAUNCH_REGISTER",
-            "id": "patient_register"
-          },
-          {
-            "trigger": "ON_COUNT",
-            "id": "patient_register"
-          }
-        ]
-      },
-      {
-        "id": "bottom_child",
-        "display": "Child",
-        "showCount": true
-      },
-      {
-        "id": "bottom_sick",
-        "display": "Sick",
-        "showCount": true
-      },
-      {
-        "id": "bottom_priority",
-        "display": "Today's Priority",
-        "showCount": true
-      }
-    ]
-  }
+  ]
 }

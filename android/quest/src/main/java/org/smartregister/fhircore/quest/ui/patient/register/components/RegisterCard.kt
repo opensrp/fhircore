@@ -268,13 +268,14 @@ fun ServiceCard(
         if (serviceCardProperties.serviceButton!!.smallSized) {
           SmallServiceButton(
             modifier = modifier,
-            serviceButton = serviceCardProperties.serviceButton!!
+            serviceButton = serviceCardProperties.serviceButton!!,
+            computedValuesMap = resourceData.computedValuesMap
           )
         } else {
           BigServiceButton(
             modifier = modifier,
             serviceButton = serviceCardProperties.serviceButton!!,
-            computedValuesMap = resourceData.computedValuesMap
+            computedValuesMap = resourceData.computedValuesMap,
           )
         }
       }
@@ -309,8 +310,12 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
 }
 
 @Composable
-private fun SmallServiceButton(modifier: Modifier = Modifier, serviceButton: ServiceButton) {
-  val statusColor = serviceButton.statusColor()
+private fun SmallServiceButton(
+  modifier: Modifier = Modifier,
+  serviceButton: ServiceButton,
+  computedValuesMap: Map<String, Any>
+) {
+  val statusColor = serviceButton.statusColor(computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   Row(
     modifier =
@@ -345,8 +350,12 @@ private fun BigServiceButton(
   serviceButton: ServiceButton,
   computedValuesMap: Map<String, Any>
 ) {
-  val statusColor = serviceButton.statusColor()
+  val statusColor = serviceButton.statusColor(computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
+  val extractedStatus = remember {
+    ServiceStatus.valueOf(serviceButton.status.interpolate(computedValuesMap))
+  }
+
   Column(
     modifier =
       modifier
@@ -354,25 +363,25 @@ private fun BigServiceButton(
         .padding(8.dp)
         .clip(RoundedCornerShape(4.dp))
         .background(
-          if (serviceButton.status == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
+          if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
         ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    if (serviceButton.status == ServiceStatus.COMPLETED)
+    if (extractedStatus == ServiceStatus.COMPLETED)
       Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
     Text(
       text = serviceButton.text?.interpolate(computedValuesMap) ?: "",
-      color = if (serviceButton.status == ServiceStatus.OVERDUE) Color.White else contentColor,
+      color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
       textAlign = TextAlign.Center
     )
   }
 }
 
 @Composable
-private fun ServiceButton.statusColor(): Color = remember {
+private fun ServiceButton.statusColor(computedValuesMap: Map<String, Any>): Color = remember {
   // Status color is determined from the service status
-  when (this.status) {
+  when (ServiceStatus.valueOf(this.status.interpolate(computedValuesMap))) {
     ServiceStatus.DUE -> InfoColor
     ServiceStatus.OVERDUE -> DangerColor
     ServiceStatus.UPCOMING -> DefaultColor
@@ -465,7 +474,7 @@ private fun RegisterCardServiceOverduePreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.OVERDUE,
+                  status = ServiceStatus.OVERDUE.name,
                   text = "1",
                   smallSized = false
                 )
@@ -519,7 +528,7 @@ private fun RegisterCardServiceDuePreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.DUE,
+                  status = ServiceStatus.DUE.name,
                   text = "Issue Bed net",
                   smallSized = false
                 )
@@ -573,7 +582,7 @@ private fun RegisterCardServiceUpcomingPreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.UPCOMING,
+                  status = ServiceStatus.UPCOMING.name,
                   text = "Next visit 09-10-2022",
                   smallSized = false
                 )
@@ -626,7 +635,7 @@ private fun RegisterCardServiceCompletedPreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.COMPLETED,
+                  status = ServiceStatus.COMPLETED.name,
                   text = "Fully Vaccinated",
                   smallSized = false
                 )
@@ -674,7 +683,7 @@ private fun RegisterCardANCServiceDuePreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.DUE,
+                  status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
                   smallSized = true
                 )
@@ -722,7 +731,7 @@ private fun RegisterCardANCServiceOverduePreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.OVERDUE,
+                  status = ServiceStatus.OVERDUE.name,
                   text = "ANC Visit",
                   smallSized = true
                 )

@@ -137,7 +137,7 @@ constructor(
                     context = event.context,
                     navController = event.navController,
                     actions = it.actions,
-                    registerId = it.id
+                    navMenu = it
                   )
                 )
               }
@@ -167,7 +167,11 @@ constructor(
           ApplicationWorkflow.LAUNCH_REPORT ->
             event.navController.navigate(route = MainNavigationScreen.Reports.route)
           ApplicationWorkflow.LAUNCH_REGISTER -> {
-            val urlParams = bindArgumentsOf(Pair(NavigationArg.REGISTER_ID, event.registerId))
+            val urlParams =
+              bindArgumentsOf(
+                Pair(NavigationArg.REGISTER_ID, event.navMenu.id),
+                Pair(NavigationArg.SCREEN_TITLE, event.navMenu.display)
+              )
             event.navController.navigate(route = MainNavigationScreen.Home.route + urlParams)
           }
           ApplicationWorkflow.LAUNCH_PROFILE ->

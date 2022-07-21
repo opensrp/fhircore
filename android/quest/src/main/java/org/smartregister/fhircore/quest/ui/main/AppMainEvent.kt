@@ -38,6 +38,6 @@ sealed class AppMainEvent {
     val context: Context,
     val navController: NavHostController,
     val actions: List<NavigationActionConfig>?,
-    val registerId: String
+    val navMenu: NavigationMenuConfig
   ) : AppMainEvent()
 }

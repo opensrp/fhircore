@@ -25,6 +25,7 @@ import com.google.android.fhir.search.Search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -52,8 +53,6 @@ constructor(
 ) :
   RegisterRepository,
   DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
-
-  private lateinit var registerConfiguration: RegisterConfiguration
 
   override suspend fun loadRegisterData(
     currentPage: Int,
@@ -122,7 +121,10 @@ constructor(
     val search =
       Search(type = resourceType).apply {
         dataQueries?.forEach { filterBy(it) }
-        filter(TokenClientParam(ACTIVE), { value = of(true) }) // filter only active ones
+        // For patient return only active members
+        if (resourceType == ResourceType.Patient) {
+          filter(TokenClientParam(ACTIVE), { value = of(true) })
+        }
         count =
           if (loadAll) countRegisterData(registerId).toInt()
           else PaginationConstant.DEFAULT_PAGE_SIZE
@@ -137,10 +139,14 @@ constructor(
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
 
+    val resourceType = baseResourceClass.newInstance().resourceType
     return fhirEngine.count(
-      Search(baseResourceClass.newInstance().resourceType).apply {
+      Search(resourceType).apply {
         baseResourceConfig.dataQueries?.forEach { filterBy(it) }
-        filter(TokenClientParam(ACTIVE), { value = of(true) })
+        // For patient return only active members count
+        if (resourceType == ResourceType.Patient) {
+          filter(TokenClientParam(ACTIVE), { value = of(true) })
+        }
       }
     )
   }
@@ -151,13 +157,8 @@ constructor(
       null
     }
 
-  fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
-    if (!::registerConfiguration.isInitialized) {
-      registerConfiguration =
-        configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
-    }
-    return registerConfiguration
-  }
+  fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration =
+    configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
 
   companion object {
     const val ACTIVE = "active"
