@@ -233,7 +233,7 @@ fun ServiceCard(
           .padding(top = 24.dp, bottom = 24.dp)
           .weight(0.75f)
     ) {
-      Column {
+      Column(modifier = modifier.wrapContentWidth(Alignment.Start).weight(0.7f)) {
         serviceCardProperties.details.forEach {
           CompoundText(
             compoundTextProperties = it,
@@ -241,7 +241,10 @@ fun ServiceCard(
           )
         }
       }
-      ServiceMemberIcons(modifier = modifier, serviceCardProperties.serviceMemberIcons)
+      ServiceMemberIcons(
+        modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
+        serviceCardProperties.serviceMemberIcons
+      )
     }
 
     // Display a vertical divider to separate service card details from action button
@@ -380,7 +383,7 @@ private fun ServiceButton.statusColor(): Color = remember {
 @Preview(showBackground = true)
 @Composable
 private fun CompoundTextNoSecondaryTextPreview() {
-  Column(modifier = Modifier.fillMaxWidth()) {
+  Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
@@ -403,7 +406,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun CompoundTextWithSecondaryTextPreview() {
-  Column(modifier = Modifier.fillMaxWidth()) {
+  Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
@@ -441,7 +444,7 @@ private fun RegisterCardServiceOverduePreview() {
                 listOf(
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Household Name HH",
+                    primaryText = "Overdue household service",
                     primaryTextColor = "#000000",
                   ),
                   CompoundTextProperties(
@@ -471,7 +474,7 @@ private fun RegisterCardServiceOverduePreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -525,7 +528,7 @@ private fun RegisterCardServiceDuePreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -579,7 +582,7 @@ private fun RegisterCardServiceUpcomingPreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -632,7 +635,7 @@ private fun RegisterCardServiceCompletedPreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -680,7 +683,7 @@ private fun RegisterCardANCServiceDuePreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -728,7 +731,7 @@ private fun RegisterCardANCServiceOverduePreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
