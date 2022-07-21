@@ -40,7 +40,6 @@
     <string name="households">Kaya</string>
     <string name="children">Watoto</string>
     <string name="remove_family_warning">Kuondoa %1$s kutaondoa rekodi yake yote ya afya kwenye kifaa chako. Kitendo hiki hakiwezi kutenduliwa.</string>
-    <string name="confirm_remove_family_title">Futa Familia</string>
     <string name="remove_family_member_warning">%1$s itaondolewa kabisa kutoka kwa familia hii. Kitendo hiki hakiwezi kutenduliwa.</string>
     <string name="household">Kaya</string>
     <string name="all">Wote</string>

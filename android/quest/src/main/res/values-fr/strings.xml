@@ -39,7 +39,6 @@
     <string name="households">Ménages</string>
     <string name="children">Enfants</string>
     <string name="remove_family_warning">La suppression de %1$s supprimera l\'intégralité de son dossier médical de votre appareil. Cette action ne peut pas être annulée.</string>
-    <string name="confirm_remove_family_title">Supprimer la Famille</string>
     <string name="remove_family_member_warning">%1$s sera supprimé définitivement de cette famille. Cette action ne peut pas être annulée.</string>
     <string name="household">Ménage</string>
     <string name="all">Tout</string>
