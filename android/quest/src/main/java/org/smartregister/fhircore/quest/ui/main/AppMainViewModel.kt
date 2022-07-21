@@ -62,7 +62,8 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val configService: ConfigService
+  val configService: ConfigService,
+  val patientRegisterRepository: PatientRegisterRepository
 ) : ViewModel() {
 
   val appMainUiState: MutableState<AppMainUiState> =
@@ -72,6 +73,8 @@ constructor(
           NavigationConfiguration(sharedPreferencesHelper.read(APP_ID_KEY) ?: "")
       )
     )
+
+  //TODO create State
 
   val refreshDataState: MutableState<Boolean> = mutableStateOf(false)
 
@@ -89,7 +92,8 @@ constructor(
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
-        navigationConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+        navigationConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Navigation),
+        //TODO set value for registerCountMap = map from countfunction()
       )
   }
 
@@ -128,6 +132,8 @@ constructor(
             // Notify subscribers to refresh views after sync and refresh UI
             refreshDataState.value = true
             retrieveAppMainUiState()
+            calculateRegisterCounts()
+
           }
           else ->
             appMainUiState.value =
@@ -181,6 +187,14 @@ constructor(
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
     sharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, formatLastSyncTimestamp(timestamp))
+  }
+
+  fun calculateRegisterCounts() {
+    //TODO iterate through the menus in the NavigationConfiguration to get the ids for all type of regs
+    // for each register calculate the counts by calling the patientRegisterRepository.countRegisterData(registerId)
+    // populate the regiserCountMap with registerId as key and register count as the value
+
+    // patientRegisterRepository.countRegisterData(registerId) }
   }
 
   companion object {

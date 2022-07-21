@@ -103,7 +103,7 @@ constructor(
     val baseResourceClass = fhirResource.baseResource.resource.resourceClassType().newInstance()
     viewModelScope.launch {
       _totalRecordsCount.postValue(
-        patientRegisterRepository.countRegisterData(baseResourceClass.resourceType, registerId)
+        patientRegisterRepository.countRegisterData(registerId)
       )
     }
   }
