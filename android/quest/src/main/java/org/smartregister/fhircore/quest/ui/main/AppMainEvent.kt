@@ -25,21 +25,16 @@ import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class AppMainEvent {
   data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
-  data class DeviceToDeviceSync(val context: Context) : AppMainEvent()
   data class RegisterNewClient(val context: Context, val questionnaireId: String) : AppMainEvent()
   data class OpenRegistersBottomSheet(
     val context: Context,
+    val navController: NavHostController,
     val registersList: List<NavigationMenuConfig>?
   ) : AppMainEvent()
   object Logout : AppMainEvent()
   object SyncData : AppMainEvent()
   data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
-  data class NavigateToScreen(
-    val navController: NavHostController,
-    val actions: List<NavigationActionConfig>?,
-    val registerId: String
-  ) : AppMainEvent()
-  data class NavigateToMenu(
+  data class TriggerWorkflow(
     val context: Context,
     val navController: NavHostController,
     val actions: List<NavigationActionConfig>?,

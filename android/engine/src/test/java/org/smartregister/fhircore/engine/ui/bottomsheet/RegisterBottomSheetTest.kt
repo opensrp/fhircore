@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.navigation
+package org.smartregister.fhircore.engine.ui.bottomsheet
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
@@ -29,11 +29,11 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class NavigationBottomSheetTest : RobolectricTest() {
+class RegisterBottomSheetTest : RobolectricTest() {
 
-  private val navigationBottomSheet =
+  private val registerBottomSheet =
     spyk(
-      NavigationBottomSheet(
+      RegisterBottomSheet(
         listOf(
           NavigationMenuConfig(id = "UniqueTag1", display = "Menu 1"),
           NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2")
@@ -56,8 +56,8 @@ class NavigationBottomSheetTest : RobolectricTest() {
 
   @Test
   fun testThatBottomSheetIsShown() {
-    Assert.assertEquals(2, navigationBottomSheet.registersList?.size)
-    navigationBottomSheet.show(activity.supportFragmentManager, NavigationBottomSheet.TAG)
-    Assert.assertTrue(navigationBottomSheet.showsDialog)
+    Assert.assertEquals(2, registerBottomSheet.navigationMenuConfigs?.size)
+    registerBottomSheet.show(activity.supportFragmentManager, RegisterBottomSheet.TAG)
+    Assert.assertTrue(registerBottomSheet.showsDialog)
   }
 }

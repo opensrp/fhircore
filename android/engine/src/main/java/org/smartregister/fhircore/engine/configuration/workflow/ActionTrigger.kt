@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.workflow
 
 /** An application event that can trigger a workflow. Examples button click, on back press etc */
-enum class WorkflowTrigger {
+enum class ActionTrigger {
   /**
    * An action that is performed when user presses a button or any actionable component in the UI
    */

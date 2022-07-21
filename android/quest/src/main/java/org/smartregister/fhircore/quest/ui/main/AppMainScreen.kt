@@ -36,7 +36,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
-import org.smartregister.fhircore.engine.configuration.workflow.WorkflowTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -108,7 +108,7 @@ private fun AppMainNavigationGraph(
 
   // registerId = (id of the register's click action) otherwise use navigation menu id
   val firstRegisterId =
-    firstNavigationMenu.actions?.find { it.trigger == WorkflowTrigger.ON_CLICK }?.id
+    firstNavigationMenu.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id
       ?: firstNavigationMenu.id
 
   val homeUrlParams = routePathsOf(NavigationArg.SCREEN_TITLE, NavigationArg.REGISTER_ID)
