@@ -16,8 +16,8 @@
     <string name="no_test_results_found">No test results found</string>
     <string name="patient_test_results">TEST RESULTS</string>
     <string name="last_test"> Last Test - %1$s</string>
-    <string name="sample_distance">2.4 km</string>
-    <string name="hash_sign">#</string>
+    <string name="sample_distance" translatable="false">2.4 km</string>
+    <string name="hash_sign" translatable="false">#</string>
     <string name="menu_tasks">Tasks</string>
     <string name="household">Household</string>
     <string name="routine_visit">Routine visit</string>
@@ -56,11 +56,9 @@
 
     <!--remove family questionnaire strings-->
     <string name="remove_family_warning">Removing %1$s will remove their entire health record from your device. This action can’t be undone.</string>
-    <string name="confirm_remove_family_title">Remove Family</string>
 
     <!--remove family member questionnaire strings-->
     <string name="remove_family_member_warning">%1$s will be removed permanently from this family. This action can’t be undone.</string>
-    <string name="confirm_remove_family_member_title">Remove member</string>
     <string name="remove_member">Remove member</string>
 
     <!--Reporting strings -->
