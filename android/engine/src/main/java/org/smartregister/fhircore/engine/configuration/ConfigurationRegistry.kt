@@ -35,7 +35,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.localize
 import timber.log.Timber
 
 /**
@@ -84,12 +83,8 @@ constructor(
         // Binary content could be either a Configuration or a FHIR Resource
         (workflowPoint.resource as Binary).content.decodeToString().let {
           if (T::class.java.isAssignableFrom(FhirConfiguration::class.java))
-            FhirConfiguration(
-              appId,
-              workflowPoint.classification,
-              it.localize().decodeResourceFromString()
-            )
-          else it.localize().decodeJson<T>(jsonSerializer)
+            FhirConfiguration(appId, workflowPoint.classification, it.decodeResourceFromString())
+          else it.decodeJson<T>(jsonSerializer)
         }
       } as
         T

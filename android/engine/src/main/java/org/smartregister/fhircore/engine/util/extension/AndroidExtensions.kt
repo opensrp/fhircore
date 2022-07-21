@@ -27,7 +27,6 @@ import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import java.nio.charset.StandardCharsets
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -62,7 +61,7 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   }
 
   if (Build.VERSION.SDK_INT <= 23) {
-    Locale.setDefault(Locale.forLanguageTag(languageTag))
+    Locale.setDefault(Locale(languageTag))
   }
 
   return configuration
@@ -119,22 +118,4 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
       ),
     0
   )
-}
-
-fun Context.readAssetFileAsString(filePath: String): String {
-  val inputStream = resources.assets.open(filePath)
-  val size = inputStream.available()
-  val buffer = ByteArray(size)
-  inputStream.read(buffer)
-  inputStream.close()
-  return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-    String(buffer, StandardCharsets.UTF_8)
-  } else {
-    String(buffer)
-  }
-}
-
-fun String.localize(): String {
-
-  return this
 }

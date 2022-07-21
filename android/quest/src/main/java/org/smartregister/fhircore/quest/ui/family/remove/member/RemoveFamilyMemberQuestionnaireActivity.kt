@@ -36,7 +36,7 @@ class RemoveFamilyMemberQuestionnaireActivity :
   }
 
   override fun setRemoveDialogTitle(): String {
-    return getString(R.string.remove_member)
+    return getString(R.string.confirm_remove_family_member_title)
   }
 
   override fun setRemoveDialogMessage(profileName: String): String {
