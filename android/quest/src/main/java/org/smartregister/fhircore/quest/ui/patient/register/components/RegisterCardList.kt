@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
@@ -47,11 +49,14 @@ fun RegisterCardList(
 ) {
   LazyColumn {
     items(pagingItems, key = { it.baseResource.logicalId }) {
-      RegisterCard(
-        resourceData = it!!,
-        registerCardViewProperties = registerCardConfig.views,
-        onCardClick = onCardClick
-      )
+      // Register card UI rendered dynamically should be wrapped in a column
+      Column(modifier = modifier.padding(horizontal = 16.dp)) {
+        RegisterCard(
+          resourceData = it!!,
+          registerCardViewProperties = registerCardConfig.views,
+          onCardClick = onCardClick
+        )
+      }
       Divider(color = DividerColor, thickness = 1.dp)
     }
     pagingItems.apply {

@@ -26,7 +26,8 @@ data class AppMainUiState(
   val lastSyncTime: String,
   val currentLanguage: String,
   val languages: List<Language>,
-  val navigationConfiguration: NavigationConfiguration
+  val navigationConfiguration: NavigationConfiguration,
+  val registerCountMap: Map<String, Long> = emptyMap()
 )
 
 fun appMainUiStateOf(
@@ -35,7 +36,8 @@ fun appMainUiStateOf(
   lastSyncTime: String = "",
   currentLanguage: String = Locale.ENGLISH.displayName,
   languages: List<Language> = emptyList(),
-  navigationConfiguration: NavigationConfiguration
+  navigationConfiguration: NavigationConfiguration,
+  registerCountMap: Map<String, Long> = emptyMap()
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,
@@ -43,6 +45,7 @@ fun appMainUiStateOf(
     lastSyncTime = lastSyncTime,
     currentLanguage = currentLanguage,
     languages = languages,
-    navigationConfiguration = navigationConfiguration
+    navigationConfiguration = navigationConfiguration,
+    registerCountMap = registerCountMap
   )
 }

@@ -9,7 +9,7 @@
       {
         "trigger": "ON_CLICK",
         "workflow": "LAUNCH_REGISTER",
-        "id": "allHouseholdRegister"
+        "id": "patient_register"
       }
     ],
     "questionnaire": {
@@ -72,15 +72,7 @@
         },
         {
           "trigger": "ON_COUNT",
-          "rules": [
-            {
-              "name": "householdCount",
-              "condition": "true",
-              "actions": [
-                "householdCountValue = counterService.count('all_household_register')"
-              ]
-            }
-          ]
+          "id": "patient_register"
         }
       ]
     },
@@ -108,9 +100,21 @@
     "display": "Other Patients",
     "registers": [
       {
-        "id": "bottom_all_households",
+        "id": "patient_register",
         "display": "All Households",
-        "showCount": true
+        "icon": "",
+        "showCount": true,
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_REGISTER",
+            "id": "patient_register"
+          },
+          {
+            "trigger": "ON_COUNT",
+            "id": "patient_register"
+          }
+        ]
       },
       {
         "id": "bottom_child",

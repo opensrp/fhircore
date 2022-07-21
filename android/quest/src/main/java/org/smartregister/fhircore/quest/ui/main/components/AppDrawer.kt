@@ -112,7 +112,7 @@ fun AppDrawer(
       }
       Spacer(modifier = modifier.height(8.dp))
       ClientRegisterMenus(
-        navigationConfiguration = appUiState.navigationConfiguration,
+        appUiState = appUiState,
         context = context,
         navController = navController,
         openDrawer = openDrawer,
@@ -120,7 +120,13 @@ fun AppDrawer(
       )
       if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true
       ) {
-        OtherPatientsItem(appUiState.navigationConfiguration, onSideMenuClick, context, openDrawer)
+        OtherPatientsItem(
+          navigationConfiguration = appUiState.navigationConfiguration,
+          onSideMenuClick = onSideMenuClick,
+          context = context,
+          openDrawer = openDrawer,
+          navController
+        )
       }
     }
 
@@ -133,7 +139,8 @@ fun AppDrawer(
       context = context,
       navController = navController,
       openDrawer = openDrawer,
-      onSideMenuClick = onSideMenuClick
+      onSideMenuClick = onSideMenuClick,
+      appUiState = appUiState
     )
 
     // Display bottom section of the nav (sync)
@@ -167,7 +174,8 @@ private fun OtherPatientsItem(
   navigationConfiguration: NavigationConfiguration,
   onSideMenuClick: (AppMainEvent) -> Unit,
   context: Context,
-  openDrawer: (Boolean) -> Unit
+  openDrawer: (Boolean) -> Unit,
+  navController: NavHostController
 ) {
   SideMenuItem(
     iconResource = null,
@@ -181,7 +189,8 @@ private fun OtherPatientsItem(
       onSideMenuClick(
         AppMainEvent.OpenRegistersBottomSheet(
           context = context,
-          registersList = navigationConfiguration.bottomSheetRegisters?.registers
+          registersList = navigationConfiguration.bottomSheetRegisters?.registers,
+          navController = navController
         )
       )
     }
@@ -217,27 +226,27 @@ private fun NavTopSection(
 
 @Composable
 private fun ClientRegisterMenus(
-  navigationConfiguration: NavigationConfiguration,
+  appUiState: AppMainUiState,
   context: Context,
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit
 ) {
   LazyColumn {
-    items(navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
+    items(appUiState.navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
       SideMenuItem(
-        // TODO Do we want save icons as base64 encoded strings
         iconResource = context.retrieveResourceId(navigationMenu.icon),
         title = navigationMenu.display,
-        endText = "", // TODO compute register count
+        endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
         showEndText = navigationMenu.showCount,
         onSideMenuClick = {
           openDrawer(false)
           onSideMenuClick(
-            AppMainEvent.NavigateToScreen(
+            AppMainEvent.TriggerWorkflow(
               navController = navController,
               actions = navigationMenu.actions,
-              registerId = navigationMenu.id
+              registerId = navigationMenu.id,
+              context = context
             )
           )
         }
@@ -253,7 +262,8 @@ private fun StaticMenus(
   context: Context,
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
-  onSideMenuClick: (AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  appUiState: AppMainUiState
 ) {
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
     items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
@@ -261,12 +271,12 @@ private fun StaticMenus(
         // TODO Do we want save icons as base64 encoded strings
         iconResource = context.retrieveResourceId(navigationMenu.icon),
         title = navigationMenu.display,
-        endText = "", // TODO compute register count
+        endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
         showEndText = navigationMenu.showCount,
         onSideMenuClick = {
           openDrawer(false)
           onSideMenuClick(
-            AppMainEvent.NavigateToMenu(
+            AppMainEvent.TriggerWorkflow(
               context = context,
               navController = navController,
               actions = navigationMenu.actions,
@@ -354,7 +364,6 @@ private fun SideMenuItem(
     if (showEndText) {
       SideMenuItemText(title = endText, textColor = endTextColor)
     }
-
     endIconResource?.let { icon ->
       Icon(
         modifier = modifier.padding(end = 10.dp),
