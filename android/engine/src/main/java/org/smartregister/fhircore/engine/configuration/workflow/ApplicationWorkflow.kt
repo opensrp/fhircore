@@ -37,5 +37,8 @@ enum class ApplicationWorkflow {
   LAUNCH_SETTINGS,
 
   /** A workflow to trigger device to device sync */
-  DEVICE_TO_DEVICE_SYNC
+  DEVICE_TO_DEVICE_SYNC,
+
+  /** A workflow to trigger count for register items */
+  COUNT_REGISTER_DATA
 }

@@ -72,15 +72,8 @@
         },
         {
           "trigger": "ON_COUNT",
-          "rules": [
-            {
-              "name": "householdCount",
-              "condition": "true",
-              "actions": [
-                "householdCountValue = counterService.count('all_household_register')"
-              ]
-            }
-          ]
+          "workflow": "COUNT_REGISTER_DATA",
+          "id": "patient_register"
         }
       ]
     },
