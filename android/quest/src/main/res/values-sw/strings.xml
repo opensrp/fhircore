@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Quest</string>
     <string name="back_to_clients">Rudi kwa orodha ya wateja</string>
-    <string name="test_results">Matokeo</string>
+    <string name="test_results">Matokeo ya Vipimo</string>
 
     <string name="edit_patient_info">Hariri</string>
 
@@ -13,6 +13,53 @@
     <string name="loading_responses">Majibu yanapakia...</string>
     <string name="no_test_results_found">Hakuna matokeo yaliyopatikana</string>
     <string name="patient_test_results">Matokeo</string>
-    <string name="last_test">" Mtihani Wa Mwisho - %1$s"</string>
+    <string name="last_test">" Kipimo Cha Mwisho - %1$s"</string>
+    <string name="menu_tasks">Majukumu</string>
+    <string name="routine_visit">Tembeleo la kawaida</string>
+    <string name="anc_visit">Tembeleo la ANC</string>
+    <string name="at_risk">Hatarini</string>
+    <string name="add_memeber">ONGEZA MWANAKAYA</string>
+    <string name="no_tasks">Hakuna jukumu</string>
+    <string name="what_to_do">Unataka kufanya nini?</string>
+    <string name="family_details">Maelezo ya familia</string>
+    <string name="change_family_head">Badilisha mkuu wa familia</string>
+    <string name="view_profile">Tazama wasifu</string>
+    <string name="change_primary_caregiver">Badilisha mlezi mkuu</string>
+    <string name="family_activity">Shughuli za familia</string>
+    <string name="view_past_encounters">Mitembeleo ya zamani</string>
+    <string name="family_suffix">%1$s Familia</string>
+    <string name="remove_family">Futa familia</string>
+    <string name="remove_this_person">Futa mtu huyu</string>
+    <string name="individual_details">Maelezo ya mtu binafsi</string>
+    <string name="view_family">Tazama familia</string>
+    <string name="device_to_device_sync">Usawazishaji wa kifaa kwa kifaa</string>
+    <string name="anc_clients">Wateja wa ANC</string>
+    <string name="all_clients">Wateja Wote</string>
+    <string name="pnc_clients">Wateja wa PNC</string>
+    <string name="family_planning_clients">Wateja wa kupanga uzazi</string>
+    <string name="households">Kaya</string>
+    <string name="children">Watoto</string>
+    <string name="remove_family_warning">Kuondoa %1$s kutaondoa rekodi yake yote ya afya kwenye kifaa chako. Kitendo hiki hakiwezi kutenduliwa.</string>
+    <string name="remove_family_member_warning">%1$s itaondolewa kabisa kutoka kwa familia hii. Kitendo hiki hakiwezi kutenduliwa.</string>
+    <string name="household">Kaya</string>
+    <string name="all">Wote</string>
+    <string name="alert_message_abort_operation">Je, una uhakika unataka kukomesha operesheni hii?</string>
+    <string name="label_assign_new_family_head">Mteue kama mkuu wa kaya</string>
+    <string name="change">Badilisha</string>
+    <string name="date_range">Muda wa tarehe</string>
+    <string name="due_on">Inastahiliwa %1$s</string>
+    <string name="end_date">Tarehe ya mwisho</string>
+    <string name="generate_report">TOA RIPOTI</string>
+    <string name="unsaved_changes_message_alert">Ukiondoka kabla ya kuhifadhi, mabadiliko yako yatapotea</string>
+    <string name="individual">Mtu binafsi</string>
+    <string name="no_eligible_family_members">Aucun membre de la famille ne peut être chef de famille.</string>
+    <string name="patient">Mgonjwa</string>
+    <string name="please_wait">Tafadhali subiri...</string>
+    <string name="record_as_anc">Sajili kama ANC</string>
+    <string name="remove_member">Futa mwanakaya</string>
+    <string name="label_select_new_head">Chagua mkuu mpya wa kaya</string>
+    <string name="select_date">Chagua tarehe</string>
+    <string name="select_patient">CHAGUA MGONJWA</string>
+    <string name="start_date">Tarehe ya kuanza</string>
 
 </resources>
