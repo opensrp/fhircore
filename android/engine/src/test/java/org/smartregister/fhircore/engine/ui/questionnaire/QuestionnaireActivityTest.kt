@@ -441,6 +441,39 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     verify { spiedActivity.dismissSaveProcessing() }
   }
 
+  @Test
+  fun testQuestionnaireTypeEditShouldAppendEditPrefixInActionBarTitle() {
+    questionnaireActivity.questionnaireType = QuestionnaireType.EDIT
+    questionnaireActivity.questionnaireViewModel.questionnaireConfig =
+      QuestionnaireConfig("form", "title", "form-id")
+
+    questionnaireActivity.updateViews()
+
+    Assert.assertEquals("Edit title", questionnaireActivity.supportActionBar?.title)
+  }
+
+  @Test
+  fun testQuestionnaireTypeDefaultShouldHasNormalActionBarTitle() {
+    questionnaireActivity.questionnaireType = QuestionnaireType.DEFAULT
+    questionnaireActivity.questionnaireViewModel.questionnaireConfig =
+      QuestionnaireConfig("form", "title", "form-id")
+
+    questionnaireActivity.updateViews()
+
+    Assert.assertEquals("title", questionnaireActivity.supportActionBar?.title)
+  }
+
+  @Test
+  fun testQuestionnaireTypeReadOnlyShouldHasNormalActionBarTitle() {
+    questionnaireActivity.questionnaireType = QuestionnaireType.READ_ONLY
+    questionnaireActivity.questionnaireViewModel.questionnaireConfig =
+      QuestionnaireConfig("form", "title", "form-id")
+
+    questionnaireActivity.updateViews()
+
+    Assert.assertEquals("title", questionnaireActivity.supportActionBar?.title)
+  }
+
   private fun buildQuestionnaireWithConstraints(): Questionnaire {
     return Questionnaire().apply {
       addItem().apply {
