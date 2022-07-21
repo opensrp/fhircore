@@ -23,6 +23,8 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
+import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -33,7 +35,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -43,16 +44,14 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
-  @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry("g6pd", mockk())
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   private lateinit var configService: ConfigService
 
   @Before
   fun setUp() {
     hiltRule.inject()
-
+    runBlocking { configurationRegistry.loadConfigurations(APP_DEBUG) {} }
     configService = QuestConfigService(context = ApplicationProvider.getApplicationContext())
   }
 
