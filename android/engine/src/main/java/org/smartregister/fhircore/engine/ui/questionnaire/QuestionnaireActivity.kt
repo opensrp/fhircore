@@ -138,7 +138,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     supportActionBar?.apply {
       setDisplayHomeAsUpEnabled(true)
-      title = questionnaireViewModel.questionnaireConfig.title
+      title =
+        if (questionnaireType.isEditMode())
+          "${getString(R.string.edit)} ${questionnaireViewModel.questionnaireConfig.title}"
+        else questionnaireViewModel.questionnaireConfig.title
     }
   }
 
