@@ -443,35 +443,38 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testQuestionnaireTypeEditShouldAppendEditPrefixInActionBarTitle() {
-    questionnaireActivity.questionnaireType = QuestionnaireType.EDIT
-    questionnaireActivity.questionnaireViewModel.questionnaireConfig =
-      QuestionnaireConfig("form", "title", "form-id")
+    with(questionnaireActivity) {
+      questionnaireType = QuestionnaireType.EDIT
+      questionnaireViewModel.questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
 
-    questionnaireActivity.updateViews()
+      updateViews()
 
-    Assert.assertEquals("Edit title", questionnaireActivity.supportActionBar?.title)
+      Assert.assertEquals("${getString(R.string.edit)} title", supportActionBar?.title)
+    }
   }
 
   @Test
   fun testQuestionnaireTypeDefaultShouldHasNormalActionBarTitle() {
-    questionnaireActivity.questionnaireType = QuestionnaireType.DEFAULT
-    questionnaireActivity.questionnaireViewModel.questionnaireConfig =
-      QuestionnaireConfig("form", "title", "form-id")
+    with(questionnaireActivity) {
+      questionnaireType = QuestionnaireType.DEFAULT
+      questionnaireViewModel.questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
 
-    questionnaireActivity.updateViews()
+      updateViews()
 
-    Assert.assertEquals("title", questionnaireActivity.supportActionBar?.title)
+      Assert.assertEquals("title", supportActionBar?.title)
+    }
   }
 
   @Test
   fun testQuestionnaireTypeReadOnlyShouldHasNormalActionBarTitle() {
-    questionnaireActivity.questionnaireType = QuestionnaireType.READ_ONLY
-    questionnaireActivity.questionnaireViewModel.questionnaireConfig =
-      QuestionnaireConfig("form", "title", "form-id")
+    with(questionnaireActivity) {
+      questionnaireType = QuestionnaireType.READ_ONLY
+      questionnaireViewModel.questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
 
-    questionnaireActivity.updateViews()
+      updateViews()
 
-    Assert.assertEquals("title", questionnaireActivity.supportActionBar?.title)
+      Assert.assertEquals("title", supportActionBar?.title)
+    }
   }
 
   private fun buildQuestionnaireWithConstraints(): Questionnaire {
