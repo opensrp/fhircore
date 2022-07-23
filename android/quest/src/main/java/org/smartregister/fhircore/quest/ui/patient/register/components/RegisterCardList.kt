@@ -51,14 +51,6 @@ fun RegisterCardList(
 ) {
   LazyColumn {
     items(pagingItems, key = { it.baseResource.logicalId }) {
-      SideEffect {
-        Timber.e(
-          "Redraw for logical ID: " +
-            it!!.baseResource.logicalId +
-            " computed values (${ObjectUtils.identityToString(it.computedValuesMap)}): " +
-            it.computedValuesMap
-        )
-      }
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.padding(horizontal = 16.dp)) {
         RegisterCard(
