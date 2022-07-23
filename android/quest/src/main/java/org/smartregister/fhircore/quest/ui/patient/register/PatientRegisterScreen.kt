@@ -95,18 +95,20 @@ fun PatientRegisterScreen(
 
   Scaffold(
     topBar = {
-      // Top section has toolbar and a results counts view
-      TopScreenSection(
-        title = screenTitle,
-        searchText = searchText,
-        onSearchTextChanged = { searchText ->
-          patientRegisterViewModel.onEvent(
-            PatientRegisterEvent.SearchRegister(searchText = searchText, registerId = registerId)
-          )
-        }
-      ) { openDrawer(true) }
-      // Only show counter during search
-      if (searchText.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
+      Column {
+        // Top section has toolbar and a results counts view
+        TopScreenSection(
+          title = screenTitle,
+          searchText = searchText,
+          onSearchTextChanged = { searchText ->
+            patientRegisterViewModel.onEvent(
+              PatientRegisterEvent.SearchRegister(searchText = searchText, registerId = registerId)
+            )
+          }
+        ) { openDrawer(true) }
+        // Only show counter during search
+        if (searchText.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
+      }
     },
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action

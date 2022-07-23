@@ -53,7 +53,9 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
 
   override fun beforeEvaluate(rule: Rule, facts: Facts): Boolean = true
 
-  override fun onSuccess(rule: Rule, facts: Facts) = Timber.d("%s executed successfully", rule)
+  override fun onSuccess(rule: Rule, facts: Facts) {
+    Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
+  }
 
   override fun onFailure(rule: Rule, facts: Facts, exception: Exception?) =
     when (exception) {

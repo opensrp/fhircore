@@ -243,7 +243,8 @@ fun ServiceCard(
       }
       ServiceMemberIcons(
         modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
-        serviceCardProperties.serviceMemberIcons
+        serviceMemberIcons =
+          serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
       )
     }
 
@@ -339,7 +340,6 @@ private fun SmallServiceButton(
       fontWeight = FontWeight.Bold,
       modifier = modifier.padding(4.dp).wrapContentHeight(Alignment.CenterVertically),
       overflow = TextOverflow.Visible,
-      maxLines = 1
     )
   }
 }

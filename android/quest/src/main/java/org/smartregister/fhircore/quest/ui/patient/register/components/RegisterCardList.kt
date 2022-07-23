@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
 import com.google.android.fhir.logicalId
+import org.apache.commons.lang3.ObjectUtils
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
@@ -49,6 +51,14 @@ fun RegisterCardList(
 ) {
   LazyColumn {
     items(pagingItems, key = { it.baseResource.logicalId }) {
+      SideEffect {
+        Timber.e(
+          "Redraw for logical ID: " +
+            it!!.baseResource.logicalId +
+            " computed values (${ObjectUtils.identityToString(it.computedValuesMap)}): " +
+            it.computedValuesMap
+        )
+      }
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.padding(horizontal = 16.dp)) {
         RegisterCard(

@@ -10,14 +10,8 @@
   "searchBar": {
     "visible": true,
     "display": "Search task by name",
-    "rules": [
-      {
-        "name": "searchBar",
-        "condition": "",
-        "actions": [
-          ""
-        ]
-      }
+    "computedRules": [
+      "taskName"
     ]
   },
   "registerCard": {
@@ -47,7 +41,7 @@
         "name": "taskStatusColorCode",
         "condition": "true",
         "actions": [
-          "data.put('taskStatusColorCode', taskStatus == 'READY' ? 'DUE' : taskStatus == 'FAILED' || taskStatus == 'CANCELED' ? 'OVERDUE' : taskStatus == 'REQUESTED' ? 'UPCOMING' : taskStatus == 'COMPLETED' ? 'COMPLETED' : 'UPCOMING')"
+          "data.put('taskStatusColorCode', taskStatus == 'ready' ? 'DUE' : taskStatus == 'failed' || taskStatus == 'canceled' ? 'OVERDUE' : taskStatus == 'requested' ? 'UPCOMING' : taskStatus == 'completed' ? 'COMPLETED' : 'UPCOMING')"
         ]
       }
     ],

@@ -23,6 +23,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -42,9 +43,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
-import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -73,16 +72,18 @@ constructor(
 
   private lateinit var registerConfiguration: RegisterConfiguration
 
+  private lateinit var allPatientRegisterData: Flow<PagingData<ResourceData>>
+
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
 
   fun paginateRegisterData(registerId: String, loadAll: Boolean = false) {
-    paginatedRegisterData.value = getPager(registerId, loadAll).flow
+    paginatedRegisterData.value = getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
   }
 
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> =
     Pager(
-      PagingConfig(pageSize = DEFAULT_PAGE_SIZE, initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE),
+      config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE, enablePlaceholders = false),
       pagingSourceFactory = {
         PatientRegisterPagingSource(patientRegisterRepository).apply {
           setPatientPagingSourceState(
@@ -97,21 +98,26 @@ constructor(
     )
 
   fun setTotalRecordsCount(registerId: String) {
-    // Get the baseResource from the register configurations. Retrieve it's resource type then count
-    val fhirResource = retrieveRegisterConfiguration(registerId).fhirResource
-
-    val baseResourceClass = fhirResource.baseResource.resource.resourceClassType().newInstance()
     viewModelScope.launch {
       _totalRecordsCount.postValue(patientRegisterRepository.countRegisterData(registerId))
     }
   }
 
   fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
+    // register configuration initialized once
     if (!::registerConfiguration.isInitialized) {
       registerConfiguration =
         configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
     }
     return registerConfiguration
+  }
+
+  private fun retrieveAllPatientRegisterData(registerId: String): Flow<PagingData<ResourceData>> {
+    // Ensure that we only initialize this flow once
+    if (!::allPatientRegisterData.isInitialized) {
+      allPatientRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
+    }
+    return allPatientRegisterData
   }
 
   fun countPages(): Int =
@@ -155,15 +161,21 @@ constructor(
   }
 
   private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
-    paginatedRegisterData.value =
-      getPager(event.registerId, true).flow.map { pagingData: PagingData<ResourceData> ->
-        pagingData.filter {
-          // TODO apply relevant filters
-          //          it.title.contains(event.searchText, ignoreCase = true) ||
-          //            it.logicalId.contentEquals(event.searchText, ignoreCase = true)
-          true
+    val searchBar = retrieveRegisterConfiguration(event.registerId).searchBar
+    // computedRules (names of pre-computed rules) must be provided for search to work.
+    if (searchBar?.computedRules != null) {
+      paginatedRegisterData.value =
+        retrieveAllPatientRegisterData(event.registerId).map { pagingData: PagingData<ResourceData>
+          ->
+          pagingData.filter { resourceData: ResourceData ->
+            searchBar.computedRules!!.any { ruleName ->
+              // if ruleName not found in map return {-1}; check always return false hence no data
+              val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
+              value.contains(other = event.searchText, ignoreCase = true)
+            }
+          }
         }
-      }
+    }
   }
 
   // TODO this setting should be removed after refactor

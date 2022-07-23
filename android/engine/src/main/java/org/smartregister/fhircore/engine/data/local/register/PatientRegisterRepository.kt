@@ -54,11 +54,7 @@ constructor(
   RegisterRepository,
   DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
 
-  override suspend fun loadRegisterData(
-    currentPage: Int,
-    loadAll: Boolean,
-    registerId: String
-  ): List<ResourceData> =
+  override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> =
     try {
       val registerConfiguration = retrieveRegisterConfiguration(registerId)
       val baseResourceConfig = registerConfiguration.fhirResource.baseResource
@@ -69,8 +65,6 @@ constructor(
         searchResource(
           baseResourceClass = baseResourceClass,
           dataQueries = baseResourceConfig.dataQueries,
-          loadAll = loadAll,
-          registerId = registerId,
           currentPage = currentPage
         )
       // Retrieve data for each of the configured related resources
@@ -113,8 +107,6 @@ constructor(
   private suspend fun searchResource(
     baseResourceClass: Class<out Resource>,
     dataQueries: List<DataQuery>?,
-    loadAll: Boolean,
-    registerId: String,
     currentPage: Int
   ): List<Resource> {
     val resourceType = baseResourceClass.newInstance().resourceType
@@ -125,9 +117,7 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
-        count =
-          if (loadAll) countRegisterData(registerId).toInt()
-          else PaginationConstant.DEFAULT_PAGE_SIZE
+        count = PaginationConstant.DEFAULT_PAGE_SIZE
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
     return fhirEngine.search(search)
