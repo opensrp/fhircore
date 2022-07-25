@@ -14,41 +14,51 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local.register.dao
+package org.smartregister.fhircore.engine.data.local.regitser.dao
 
-import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import javax.inject.Inject
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
+import io.mockk.mockk
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.data.local.register.dao.AncPatientRegisterDao
+import org.smartregister.fhircore.engine.data.local.register.dao.AppointmentRegisterDao
+import org.smartregister.fhircore.engine.data.local.register.dao.DefaultPatientRegisterDao
+import org.smartregister.fhircore.engine.data.local.register.dao.FamilyRegisterDao
+import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
+import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFactory
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class OverflowMenuFactoryTest : RobolectricTest() {
-
-  @get:Rule val hiltRule = HiltAndroidRule(this)
-
-  @Inject lateinit var registerDaoFactory: RegisterDaoFactory
-
-  @Before
-  fun setup() {
-    hiltRule.inject()
-  }
+class RegisterDaoFactoryTest : RobolectricTest() {
 
   @Test
-  fun testRegisterDaoMap() {
-    val registerDaoMap = registerDaoFactory.registerDaoMap
-    Assert.assertNotNull(registerDaoMap)
-    Assert.assertEquals(7, registerDaoMap.size)
-    Assert.assertEquals(true, registerDaoMap.containsKey(HealthModule.ANC))
-    Assert.assertEquals(true, registerDaoMap.containsKey(HealthModule.FAMILY))
-    Assert.assertEquals(true, registerDaoMap.containsKey(HealthModule.HIV))
-    Assert.assertEquals(true, registerDaoMap.containsKey(HealthModule.HOME_TRACING))
-    Assert.assertEquals(true, registerDaoMap.containsKey(HealthModule.PHONE_TRACING))
-    Assert.assertEquals(true, registerDaoMap.containsKey(HealthModule.APPOINTMENT))
-    Assert.assertEquals(true, registerDaoMap.containsKey(HealthModule.DEFAULT))
+  fun testVerifyRegisterDaoMap() {
+
+    val ancPatientRegisterDao = mockk<AncPatientRegisterDao>()
+    val defaultPatientRegisterDao = mockk<DefaultPatientRegisterDao>()
+    val familyRegisterDao = mockk<FamilyRegisterDao>()
+    val hivRegisterDao = mockk<HivRegisterDao>()
+    val appointmentRegisterDao = mockk<AppointmentRegisterDao>()
+
+    val registerDaoFactory =
+      RegisterDaoFactory(
+        ancPatientRegisterDao,
+        defaultPatientRegisterDao,
+        familyRegisterDao,
+        hivRegisterDao,
+        appointmentRegisterDao
+      )
+
+    with(registerDaoFactory.registerDaoMap) {
+      assertEquals(6, size)
+      assertNotNull(get(HealthModule.ANC))
+      assertNotNull(get(HealthModule.FAMILY))
+      assertNotNull(get(HealthModule.HIV))
+      assertNotNull(get(HealthModule.TRACING))
+      assertNotNull(get(HealthModule.APPOINTMENT))
+      assertNotNull(get(HealthModule.DEFAULT))
+    }
   }
 }

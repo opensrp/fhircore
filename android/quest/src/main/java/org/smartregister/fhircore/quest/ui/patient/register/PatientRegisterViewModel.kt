@@ -43,6 +43,8 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
@@ -60,7 +62,8 @@ constructor(
   val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
-  val appFeatureManager: AppFeatureManager
+  val appFeatureManager: AppFeatureManager,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
   private val _currentPage = MutableLiveData(0)
@@ -188,4 +191,6 @@ constructor(
   fun isRegisterFormViaSettingExists(): Boolean {
     return appFeatureManager.appFeatureHasSetting(REGISTER_FORM_ID_KEY)
   }
+
+  fun isFirstTimeSync() = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrEmpty()
 }

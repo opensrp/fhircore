@@ -267,6 +267,11 @@ fun LoginPage(
                   stringResource(R.string.invalid_login_credentials)
                 )
               null -> ""
+              LoginErrorState.MULTI_USER_LOGIN_ATTEMPT ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.multi_user_login_attempt)
+                )
             },
           modifier =
             modifier

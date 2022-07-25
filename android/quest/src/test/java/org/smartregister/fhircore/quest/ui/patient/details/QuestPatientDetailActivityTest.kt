@@ -64,7 +64,7 @@ import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import org.smartregister.fhircore.quest.util.mappers.PatientItemMapper
 
 @HiltAndroidTest
 @Ignore("To be deleted test class; new test to be written after refactor")

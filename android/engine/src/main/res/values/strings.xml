@@ -49,7 +49,8 @@
     <string name="syncing_retry">Retry sync</string>
     <string name="syncing_in_progress">Sync in progress</string>
     <string name="loading">Loading</string>
-    <string name="error_contacting_server">Error contacting server. Error code %1$s</string>
+    <string name="error_logging_out">Logout error message: %1$s</string>
+    <string name="cannot_logout_user">Unable to logout. Check if device is offline.</string>
     <string name="error_loading_config">Error loading configuration. Details: %1$s</string>
     <string name="error_loading_form">Error loading form</string>
     <string name="error_saving_form">Error encountered cannot save form</string>
@@ -77,7 +78,6 @@
     <string name="cancel">CANCEL</string>
     <string name="dial_number">DIAL NUMBER</string>
     <string name="register">Register</string>
-    <string name="tasks">Tasks</string>
     <string name="visits">Visits</string>
     <string name="clinic_visits">Clinic Visits</string>
     <string name="reports">Reports</string>
@@ -125,4 +125,6 @@
     <string name="medical_history">MEDICAL HISTORY</string>
     <string name="upcoming_services">UPCOMING SERVICES</string>
     <string name="service_card">SERVICE CARD</string>
+    <string name="responses">RESPONSES (%1$s)</string>
+    <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
 </resources>

@@ -11,7 +11,9 @@
     <item name="remove_family_member" type="id" />
     <item name="individual_details" type="id"/>
     <item name="view_family" type="id"/>
+    <item name="record_sick_child" type="id"/>
     <item name="record_as_anc" type="id" />
+    <item name="pregnancy_outcome" type="id" />
     <item name="client_clinic_visit"  type="id"/>
     <item name="guardian_visit" type="id"/>
     <item name="viral_load_results"  type="id"/>

@@ -117,6 +117,8 @@ constructor(
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
       is PatientProfileEvent.OverflowMenuClick -> {
+        // TODO use navigation items from config and handle these actions dynamically
+        // https://github.com/opensrp/fhircore/issues/1371
         when (event.menuId) {
           R.id.individual_details ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
@@ -156,7 +158,7 @@ constructor(
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,
-          backReference = event.taskId.asReference(ResourceType.Task).reference
+          backReference = event.taskId?.asReference(ResourceType.Task)?.reference
         )
     }
 
@@ -164,5 +166,8 @@ constructor(
     const val REMOVE_FAMILY_FORM = "remove-family"
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
     const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
+    const val PREGNANCY_OUTCOME_FORM = "pregnancy-outcome"
+    const val SICK_CHILD_UNDER_2M_FORM = "sick-child-under-2m"
+    const val SICK_CHILD_ABOVE_2M_FORM = "sick-child-above-2m"
   }
 }

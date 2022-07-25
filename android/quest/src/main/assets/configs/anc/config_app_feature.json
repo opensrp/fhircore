@@ -3,15 +3,18 @@
   "classification": "app_feature",
   "appFeatures": [
     {
-      "feature": "PatientManagement",
+      "feature": "HouseHoldManagement",
       "active": true,
-      "settings": {},
+      "settings": {
+        "deactivateMembers": "true"
+      },
       "target": "CHW",
-      "healthModule": "PNC",
+      "healthModule": "FAMILY",
       "useCases": [
-        "PATIENT_REGISTRATION",
-        "PNC_VISITS",
-        "CLOSE_PNC_RECORD"
+        "HOUSEHOLD_REGISTRATION",
+        "REMOVE_HOUSEHOLD",
+        "HOUSEHOLD_VISITS",
+        "REMOVE_HOUSEHOLD_MEMBER"
       ]
     },
     {
@@ -30,18 +33,6 @@
       "feature": "PatientManagement",
       "active": true,
       "settings": {},
-      "target": "CHW",
-      "healthModule": "FAMILY_PLANNING",
-      "useCases": [
-        "PATIENT_REGISTRATION",
-        "FAMILY_PLANNING_VISITS",
-        "CLOSE_FAMILY_PLANNING_RECORD"
-      ]
-    },
-    {
-      "feature": "PatientManagement",
-      "active": true,
-      "settings": {},
       "target": "HF",
       "healthModule": "CHILD",
       "useCases": [
@@ -50,19 +41,9 @@
       ]
     },
     {
-      "feature": "HouseHoldManagement",
-      "active": true,
-      "settings": {
-        "deactivateMembers": "true"
-      },
-      "target": "CHW",
-      "healthModule": "FAMILY",
-      "useCases": [
-        "HOUSEHOLD_REGISTRATION",
-        "REMOVE_HOUSEHOLD",
-        "HOUSEHOLD_VISITS",
-        "REMOVE_HOUSEHOLD_MEMBER"
-      ]
+      "feature": "InAppReporting",
+      "settings": {},
+      "active": true
     },
     {
       "feature": "DeviceToDeviceSync",

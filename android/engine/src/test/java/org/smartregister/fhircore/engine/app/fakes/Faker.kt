@@ -92,6 +92,7 @@ object Faker {
   ): Patient {
     return Patient().apply {
       this.id = id
+      this.active = true
       this.identifierFirstRep.value = id
       this.addName().apply {
         this.family = family

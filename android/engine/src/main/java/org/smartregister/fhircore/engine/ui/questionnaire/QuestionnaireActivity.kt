@@ -69,8 +69,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
-  lateinit var questionnaireConfig: QuestionnaireConfig
-
   var questionnaireType = QuestionnaireType.DEFAULT
 
   protected lateinit var questionnaire: Questionnaire
@@ -133,14 +131,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       } else if (questionnaireType.isEditMode()) {
         // setting the save button text from Questionnaire Config
         text =
-          questionnaireConfig.saveButtonText
+          questionnaireViewModel.questionnaireConfig.saveButtonText
             ?: getString(R.string.questionnaire_alert_submit_button_title)
       }
     }
 
     supportActionBar?.apply {
       setDisplayHomeAsUpEnabled(true)
-      title = questionnaireConfig.title
+      title = questionnaireViewModel.questionnaireConfig.title
     }
   }
 
@@ -191,7 +189,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             questionnaireType
           )
 
-        questionnaireConfig = resultPair.first
+        questionnaireViewModel.questionnaireConfig = resultPair.first
         questionnaire = resultPair.second
       }
       .onFailure { Timber.e(it) }
@@ -217,7 +215,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
-        loadQuestionnaireAndConfig(questionnaireConfig.identifier)
+        loadQuestionnaireAndConfig(questionnaireViewModel.questionnaireConfig.identifier)
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
         withContext(dispatcherProvider.main()) {

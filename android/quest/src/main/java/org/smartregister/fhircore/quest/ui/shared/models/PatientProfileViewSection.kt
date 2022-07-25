@@ -17,10 +17,11 @@
 package org.smartregister.fhircore.quest.ui.shared.models
 
 enum class PatientProfileViewSection {
-  TASKS,
+  VISITS,
   SERVICE_CARD,
   UPCOMING_SERVICES,
   MEDICAL_HISTORY,
   TEST_RESULTS,
-  FORMS
+  FORMS,
+  FORM_RESPONSES
 }

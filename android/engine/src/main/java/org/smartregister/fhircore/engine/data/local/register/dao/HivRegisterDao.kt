@@ -83,7 +83,7 @@ constructor(
         identifier = hivPatientIdentifier(patient),
         name = patient.extractName(),
         gender = patient.gender,
-        age = patient.birthDate.toAgeDisplay(),
+        age = patient.birthDate?.toAgeDisplay() ?: "N/A",
         address = patient.extractAddress(),
         familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
         phoneContacts = patient.extractTelecom(),

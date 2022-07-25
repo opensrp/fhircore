@@ -22,9 +22,11 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
@@ -37,6 +39,8 @@ import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.p2p.sync.DataType
@@ -45,13 +49,16 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
 
   private val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
   private lateinit var p2PSenderTransferDao: P2PSenderTransferDao
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
   private val currentDate = Date()
 
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    p2PSenderTransferDao = spyk(P2PSenderTransferDao(fhirEngine, DefaultDispatcherProvider()))
+    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    p2PSenderTransferDao =
+      spyk(P2PSenderTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
   }
 
   @Test
@@ -133,5 +140,13 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
         meta = Meta().apply { lastUpdated = currentDate }
       }
     return patient
+  }
+
+  fun `getTotalRecordCount() calls countTotalRecordsForSync()`() {
+    var highestRecordIdMap: HashMap<String, Long> = HashMap()
+    highestRecordIdMap.put("Patient", 25)
+
+    runBlocking { p2PSenderTransferDao.countTotalRecordsForSync(highestRecordIdMap) }
+    coVerify { p2PSenderTransferDao.countTotalRecordsForSync(highestRecordIdMap) }
   }
 }

@@ -22,6 +22,7 @@ import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
@@ -30,10 +31,17 @@ import timber.log.Timber
 
 class P2PSenderTransferDao
 @Inject
-constructor(fhirEngine: FhirEngine, dispatcherProvider: DefaultDispatcherProvider) :
-  BaseP2PTransferDao(fhirEngine, dispatcherProvider), SenderTransferDao {
+constructor(
+  fhirEngine: FhirEngine,
+  dispatcherProvider: DefaultDispatcherProvider,
+  configurationRegistry: ConfigurationRegistry
+) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, configurationRegistry), SenderTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
+
+  override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): Long {
+    return runBlocking { countTotalRecordsForSync(highestRecordIdMap) }
+  }
 
   override fun getJsonData(dataType: DataType, lastUpdated: Long, batchSize: Int): JsonData? {
     // TODO: complete  retrieval of data implementation

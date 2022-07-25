@@ -31,7 +31,8 @@ data class ApplicationConfiguration(
   var applicationName: String = "",
   var appLogoIconResourceFile: String = "ic_default_logo",
   var patientTypeFilterTagViaMetaCodingSystem: String = "",
-  var count: String = ConfigurationRegistry.DEFAULT_COUNT
+  var count: String = ConfigurationRegistry.DEFAULT_COUNT,
+  var deviceToDeviceSync: DeviceToDeviceSyncConfiguration? = null
 ) : Configuration
 
 /**

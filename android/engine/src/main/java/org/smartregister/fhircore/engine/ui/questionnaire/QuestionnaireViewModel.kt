@@ -99,7 +99,7 @@ constructor(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  private lateinit var questionnaireConfig: QuestionnaireConfig
+  lateinit var questionnaireConfig: QuestionnaireConfig
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -127,7 +127,7 @@ constructor(
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    questionnaireConfig = loadConfig!!.first { it.form == form }
+    questionnaireConfig = loadConfig!!.first { it.form == form || it.identifier == form }
     return questionnaireConfig
   }
 
@@ -193,6 +193,7 @@ constructor(
 
       if (resource is Patient) resource.managingOrganization = organizationRef
       else if (resource is Group) resource.managingEntity = organizationRef
+      else if (resource is Encounter) resource.serviceProvider = organizationRef
     }
   }
 
@@ -242,7 +243,18 @@ constructor(
     questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
     questionnaire: Questionnaire
   ) {
+    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
+
+    if (questionnaireResponse.logicalId.isEmpty()) {
+      questionnaireResponse.id = UUID.randomUUID().toString()
+      questionnaireResponse.authored = Date()
+    }
+
     viewModelScope.launch(dispatcherProvider.io()) {
+      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+        it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
+      }
+
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
@@ -252,15 +264,15 @@ constructor(
         bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-            if (questionnaireConfig.setOrganizationDetails) {
-              appendOrganizationInfo(bundleEntry.resource)
-            }
             // if it is new registration set response subject
             if (resourceId == null)
               questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
+          }
+          if (questionnaireConfig.setOrganizationDetails) {
+            appendOrganizationInfo(bundleEntry.resource)
           }
 
           if (questionnaireType != QuestionnaireType.EDIT &&
@@ -318,13 +330,14 @@ constructor(
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
+        extractCarePlan(questionnaireResponse, null)
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
-  suspend fun extractCarePlan(questionnaireResponse: QuestionnaireResponse, bundle: Bundle) {
+  suspend fun extractCarePlan(questionnaireResponse: QuestionnaireResponse, bundle: Bundle?) {
     val subject =
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
@@ -332,13 +345,13 @@ constructor(
     questionnaireConfig.planDefinitions.forEach { planId ->
       val data =
         Bundle().apply {
-          bundle.entry.map { this.addEntry(it) }
+          bundle?.entry?.map { this.addEntry(it) }
 
           addEntry().resource = questionnaireResponse
         }
 
       kotlin
-        .runCatching { fhirCarePlanGenerator.generateCarePlan(planId, subject, data) }
+        .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
         .onFailure {
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
@@ -398,17 +411,6 @@ constructor(
     }
 
     questionnaireResponse.assertSubject() // should not allow further flow without subject
-
-    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
-
-    if (questionnaireResponse.logicalId.isEmpty()) {
-      questionnaireResponse.id = UUID.randomUUID().toString()
-      questionnaireResponse.authored = Date()
-    }
-
-    questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-      it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
-    }
 
     defaultRepository.addOrUpdate(questionnaireResponse)
   }

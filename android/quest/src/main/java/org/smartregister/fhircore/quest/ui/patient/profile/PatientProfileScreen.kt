@@ -20,10 +20,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -49,10 +52,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.ui.components.FormButton
+import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
@@ -119,7 +122,8 @@ fun PatientProfileScreen(
                       context,
                       it.id,
                       profileViewData.logicalId,
-                      familyId
+                      familyId,
+                      profileViewData
                     )
                   )
                 },
@@ -155,22 +159,25 @@ fun PatientProfileScreen(
             title = stringResource(R.string.clinic_visits).uppercase(),
             onActionClick = {},
             showSeeAll = profileViewData.showListsHighlights,
-            profileViewSection = PatientProfileViewSection.TASKS
+            profileViewSection = PatientProfileViewSection.VISITS
           ) {
             profileViewData.tasks.forEach {
-              ProfileActionableItem(
-                it,
-                onActionClick = { taskFormId, taskId ->
+              Spacer(modifier = modifier.height(16.dp))
+              ActionableButton(
+                actionableButtonData = it,
+                onAction = { questionnaireId, taskId ->
                   patientProfileViewModel.onEvent(
                     PatientProfileEvent.OpenTaskForm(
                       context = context,
-                      taskFormId = taskFormId,
+                      taskFormId = questionnaireId,
                       taskId = taskId,
                       patientId = profileViewData.logicalId
                     )
                   )
                 }
               )
+              Spacer(modifier = modifier.height(16.dp))
+              Divider()
             }
           }
         }
@@ -182,15 +189,31 @@ fun PatientProfileScreen(
             onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.FORMS
           ) {
+            Spacer(modifier.height(16.dp))
             profileViewData.forms.forEach {
-              FormButton(
-                formButtonData = it,
-                onFormClick = { questionnaireId, _ ->
+              ActionableButton(
+                actionableButtonData = it,
+                onAction = { questionnaireId, _ ->
                   patientProfileViewModel.onEvent(
                     PatientProfileEvent.LoadQuestionnaire(questionnaireId, context)
                   )
                 }
               )
+            }
+            Spacer(modifier.height(16.dp))
+          }
+        }
+
+        // Form responses: load questionnaire responses
+        if (profileViewData.formResponses.isNotEmpty()) {
+          ProfileCard(
+            title =
+              stringResource(R.string.responses, profileViewData.formResponses.size).uppercase(),
+            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+            profileViewSection = PatientProfileViewSection.FORM_RESPONSES
+          ) {
+            profileViewData.formResponses.forEach {
+              ProfileActionableItem(it, onActionClick = { _, _ -> })
             }
           }
         }

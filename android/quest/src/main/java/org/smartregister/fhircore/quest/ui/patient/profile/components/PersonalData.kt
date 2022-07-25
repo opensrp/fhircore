@@ -36,9 +36,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Date
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 @Composable
@@ -111,7 +113,7 @@ fun PersonalDataPreview() {
       status = "Family Head",
       sex = "Female",
       age = "48y",
-      dob = "08 Dec",
+      dob = Date().plusYears(-48),
       identifier = "123455"
     )
   PersonalData(patientProfileViewData = patientProfileData)
@@ -127,7 +129,7 @@ fun PersonalDataPreviewWithARTNumber() {
       status = "Family Head",
       sex = "Female",
       age = "48y",
-      dob = "08 Dec",
+      dob = Date().plusYears(-48),
       identifier = "123455",
       identifierKey = "HCC Number",
       showIdentifierInProfile = true

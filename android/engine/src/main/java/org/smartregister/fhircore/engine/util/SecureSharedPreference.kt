@@ -43,47 +43,44 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
   fun saveCredentials(authCredentials: AuthCredentials) {
-    secureSharedPreferences.edit {
-      putString(KEY_LATEST_CREDENTIALS_PREFERENCE, authCredentials.encodeJson())
-    }
+    secureSharedPreferences.edit { putString(LOGIN_CREDENTIAL_KEY, authCredentials.encodeJson()) }
   }
 
   fun deleteCredentials() {
-    secureSharedPreferences.edit { remove(KEY_LATEST_CREDENTIALS_PREFERENCE) }
+    secureSharedPreferences.edit { remove(LOGIN_CREDENTIAL_KEY) }
   }
 
   fun retrieveSessionToken() = retrieveCredentials()?.sessionToken
 
   fun retrieveSessionUsername() = retrieveCredentials()?.username
 
-  fun deleteSession() {
+  fun deleteSessionTokens() {
     retrieveCredentials()?.run {
       this.sessionToken = null
       this.refreshToken = null
-
       saveCredentials(this)
     }
   }
 
   fun retrieveCredentials(): AuthCredentials? {
     return secureSharedPreferences
-      .getString(KEY_LATEST_CREDENTIALS_PREFERENCE, null)
+      .getString(LOGIN_CREDENTIAL_KEY, null)
       ?.decodeJson<AuthCredentials>()
   }
 
   fun saveSessionPin(pin: String) {
-    secureSharedPreferences.edit { putString(KEY_SESSION_PIN, pin) }
+    secureSharedPreferences.edit { putString(LOGIN_PIN_KEY, pin) }
   }
 
-  fun retrieveSessionPin() = secureSharedPreferences.getString(KEY_SESSION_PIN, null)
+  fun retrieveSessionPin() = secureSharedPreferences.getString(LOGIN_PIN_KEY, null)
 
   fun deleteSessionPin() {
-    secureSharedPreferences.edit { remove(KEY_SESSION_PIN) }
+    secureSharedPreferences.edit { remove(LOGIN_PIN_KEY) }
   }
 
   companion object {
     const val SECURE_STORAGE_FILE_NAME = "fhircore_secure_preferences"
-    const val KEY_LATEST_CREDENTIALS_PREFERENCE = "LATEST_SUCCESSFUL_SESSION_CREDENTIALS"
-    const val KEY_SESSION_PIN = "KEY_SESSION_PIN"
+    const val LOGIN_CREDENTIAL_KEY = "login_credentials"
+    const val LOGIN_PIN_KEY = "login_pin"
   }
 }

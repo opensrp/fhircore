@@ -40,9 +40,9 @@ fun Questionnaire.cqfLibraryIds() =
     it.value?.asStringValue()?.replace("Library/", "")
   }
 
-fun QuestionnaireResponse.findSubject(bundle: Bundle) =
+fun QuestionnaireResponse.findSubject(bundle: Bundle?) =
   IdType(this.subject.reference).let { subject ->
-    bundle.entry.find { it.resource.logicalId == subject.idPart }?.resource
+    bundle?.entry?.find { it.resource.logicalId == subject.idPart }?.resource
   }
 
 fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
