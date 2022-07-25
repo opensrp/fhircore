@@ -165,8 +165,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
               if (clientIdentifier != null) {
                 setBarcode(questionnaire, clientIdentifier!!, true)
-                questionnaireResponse =
-                  questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+                if (questionnaireResponse == null) {
+                  questionnaireResponse =
+                    questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+                }
                 this.putString(
                   QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
                   questionnaireResponse.encodeResourceToString()

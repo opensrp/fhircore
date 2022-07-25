@@ -190,4 +190,19 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
 
   suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire =
     withContext(dispatcherProvider.io()) { fhirEngine.get(questionnaireId) }
+
+  suspend fun searchQuestionnaireResponses(
+    subjectId: String,
+    subjectType: ResourceType,
+    questionnaireId: String
+  ): List<QuestionnaireResponse> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire.name}/$questionnaireId" }
+        )
+      }
+    }
 }

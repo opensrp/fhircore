@@ -16,20 +16,30 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile
 
+import android.content.Context
+import android.os.Bundle
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
@@ -51,6 +61,7 @@ class FamilyProfileViewModel
 @Inject
 constructor(
   val overflowMenuFactory: OverflowMenuFactory,
+  val configurationRegistry: ConfigurationRegistry,
   val patientRegisterRepository: PatientRegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper,
   val dispatcherProvider: DefaultDispatcherProvider
@@ -66,6 +77,10 @@ constructor(
 
   val familyMemberProfileData: MutableState<ProfileViewData.FamilyProfileViewData> =
     mutableStateOf(ProfileViewData.FamilyProfileViewData())
+
+  private lateinit var questionnaireConfig: QuestionnaireConfig
+
+  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   fun onEvent(event: FamilyProfileEvent) {
     when (event) {
@@ -93,12 +108,34 @@ constructor(
         )
       is FamilyProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
-          R.id.family_details ->
+          R.id.family_details -> {
+            var questionnaireResponse = ""
+
+            runBlocking {
+              questionnaireConfig = getQuestionnaireConfig(FAMILY_REGISTRATION_FORM, event.context)
+              questionnaireResponse =
+                patientRegisterRepository
+                  .registerDaoFactory
+                  .familyRegisterDao
+                  .searchQuestionnaireResponses(
+                    subjectId = event.familyId!!,
+                    subjectType = ResourceType.Group,
+                    questionnaireId = questionnaireConfig.identifier
+                  )
+                  .maxByOrNull { it.authored }
+                  .let { parser.encodeResourceToString(it) }
+            }
+
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = FAMILY_REGISTRATION_FORM,
               clientIdentifier = event.familyId,
-              questionnaireType = QuestionnaireType.EDIT
+              questionnaireType = QuestionnaireType.EDIT,
+              intentBundle =
+                Bundle().apply {
+                  putString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, questionnaireResponse)
+                }
             )
+          }
           R.id.remove_family ->
             event.context.launchQuestionnaire<RemoveFamilyQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
@@ -114,6 +151,37 @@ constructor(
       }
     }
   }
+
+  private suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
+    val loadConfig =
+      loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
+    questionnaireConfig = loadConfig!!.first { it.form == form || it.identifier == form }
+    return questionnaireConfig
+  }
+
+  private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? =
+    kotlin
+      .runCatching {
+        configurationRegistry.retrieveConfiguration<FormConfiguration>(
+          AppConfigClassification.FORMS
+        )
+      }
+      .getOrNull()
+      ?.forms
+
+  private suspend fun loadQuestionnaireConfigFromAssets(
+    context: Context
+  ): List<QuestionnaireConfig>? =
+    kotlin
+      .runCatching {
+        withContext(dispatcherProvider.io()) {
+          AssetUtil.decodeAsset<List<QuestionnaireConfig>>(
+            fileName = QuestionnaireActivity.FORM_CONFIGURATIONS,
+            context = context
+          )
+        }
+      }
+      .getOrNull()
 
   fun fetchFamilyProfileData(familyId: String?) {
     viewModelScope.launch(dispatcherProvider.io()) {

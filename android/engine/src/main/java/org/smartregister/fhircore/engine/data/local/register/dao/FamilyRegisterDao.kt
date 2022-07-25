@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -332,6 +333,17 @@ constructor(
       subjectId = patientId,
       subjectParam = Flag.SUBJECT,
       subjectType = ResourceType.Patient
+    )
+
+  suspend fun searchQuestionnaireResponses(
+    subjectId: String,
+    subjectType: ResourceType,
+    questionnaireId: String
+  ): List<QuestionnaireResponse> =
+    defaultRepository.searchQuestionnaireResponses(
+      subjectId = subjectId,
+      subjectType = subjectType,
+      questionnaireId = questionnaireId
     )
 
   private fun getRegisterDataFilters(id: String) =
