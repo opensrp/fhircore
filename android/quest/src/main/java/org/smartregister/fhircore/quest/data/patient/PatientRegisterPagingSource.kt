@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.data.patient
 
+import android.database.SQLException
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
@@ -67,7 +68,7 @@ class PatientRegisterPagingSource(
         }
 
       LoadResult.Page(data = registerData, prevKey = prevKey, nextKey = nextKey)
-    } catch (exception: Exception) {
+    } catch (exception: SQLException) {
       Timber.e(exception)
       LoadResult.Error(exception)
     }
