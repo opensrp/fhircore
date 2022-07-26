@@ -30,10 +30,6 @@
           {
             "resource": "CarePlan",
             "searchParameter": "subject"
-          },
-          {
-            "resource": "Task",
-            "searchParameter": "for"
           }
         ]
       }
