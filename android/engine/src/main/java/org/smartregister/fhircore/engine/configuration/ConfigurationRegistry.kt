@@ -69,7 +69,7 @@ constructor(
   ): T {
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
-      configsJsonMap.getValue(configKey).localize().decodeResourceFromString()
+      configsJsonMap.getValue(configKey).decodeResourceFromString()
     else configsJsonMap.getValue(configKey).localize().decodeJson(jsonInstance = json)
   }
 

@@ -4,17 +4,17 @@
   "menuActionButton": {
     "id": "mainActionButton",
     "visible": true,
-    "display": "Add New Household {{name.title}}",
+    "display": "Add New Household",
     "actions": [
       {
         "trigger": "ON_CLICK",
         "workflow": "LAUNCH_REGISTER",
-        "id": "allHouseholdRegister"
+        "id": "patient_register"
       }
     ],
     "questionnaire": {
       "id": "82952",
-      "title": "Add Family {{name.title}}",
+      "title": "Add Family",
       "saveButtonText": "ADD FAMILY",
       "setPractitionerDetails": true,
       "setOrganizationDetails": true
@@ -61,7 +61,7 @@
   "clientRegisters": [
     {
       "id": "patient_register",
-      "display": "All Households {{name.title}}",
+      "display": "All Households",
       "icon": "",
       "showCount": true,
       "actions": [
@@ -72,61 +72,26 @@
         },
         {
           "trigger": "ON_COUNT",
-          "rules": [
-            {
-              "name": "householdCount",
-              "condition": "true",
-              "actions": [
-                "householdCountValue = counterService.count('all_household_register')"
-              ]
-            }
-          ]
+          "id": "patient_register"
         }
       ]
     },
     {
-      "id": "child",
-      "display": "Child",
+      "id": "task_register",
+      "display": "Tasks",
       "icon": "",
-      "showCount": true
-    },
-    {
-      "id": "sick",
-      "display": "Sick",
-      "icon": "",
-      "showCount": true
-    },
-    {
-      "id": "priority",
-      "display": "Today's Priority",
-      "icon": "",
-      "showCount": true
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "task_register"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "task_register"
+        }
+      ]
     }
-  ],
-  "bottomSheetRegisters": {
-    "visible": true,
-    "display": "Other Patients",
-    "registers": [
-      {
-        "id": "bottom_all_households",
-        "display": "All Households",
-        "showCount": true
-      },
-      {
-        "id": "bottom_child",
-        "display": "Child",
-        "showCount": true
-      },
-      {
-        "id": "bottom_sick",
-        "display": "Sick",
-        "showCount": true
-      },
-      {
-        "id": "bottom_priority",
-        "display": "Today's Priority {{name.title}}",
-        "showCount": true
-      }
-    ]
-  }
+  ]
 }

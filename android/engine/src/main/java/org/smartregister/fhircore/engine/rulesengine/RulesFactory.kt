@@ -32,8 +32,12 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 @Singleton
-class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationRegistry) :
-  RuleListener {
+class RulesFactory
+@Inject
+constructor(
+  val configurationRegistry: ConfigurationRegistry,
+  val rulesEngineService: RulesEngineService
+) : RuleListener {
 
   private var facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
@@ -48,6 +52,7 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
     facts.apply {
       put(FHIR_PATH, fhirPathDataExtractor)
       put(DATA, computedValuesMap)
+      put(SERVICE, rulesEngineService)
     }
   }
 
@@ -104,5 +109,6 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
     private const val FHIR_PATH = "fhirPath"
     private const val DATA = "data"
     private const val TRUE = "true"
+    private const val SERVICE = "service"
   }
 }

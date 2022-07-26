@@ -16,29 +16,43 @@
 
 package org.smartregister.fhircore.engine.util
 
-import org.apache.commons.text.StringSubstitutor
 import java.util.Locale
-import java.util.ResourceBundle
 import java.util.MissingResourceException
-
+import java.util.ResourceBundle
+import org.apache.commons.text.StringSubstitutor
 
 object LocaleUtil {
 
-    fun parseTemplate(bundleName: String, locale: Locale, template: String): String {
-        return try {
-            val bundle = ResourceBundle.getBundle(bundleName, locale)
-            getBundleStringSubstitutor(bundle).replace(template)
-        } catch (exception: MissingResourceException) {
-            template
-        }
+  fun parseTemplate(bundleName: String, locale: Locale, template: String): String {
+    return try {
+      val bundle = ResourceBundle.getBundle(bundleName, locale)
+      getBundleStringSubstitutor(bundle).replace(template)
+    } catch (exception: MissingResourceException) {
+      template
     }
+  }
 
-    @Throws(IllegalArgumentException::class)
-    private fun getBundleStringSubstitutor(resourceBundle: ResourceBundle): StringSubstitutor {
-        val lookup = mutableMapOf<String, Any>()
-        resourceBundle.keys.toList().forEach { lookup[it] = resourceBundle.getObject(it) }
-        return StringSubstitutor(lookup, "{{", "}}")
-    }
+  @Throws(IllegalArgumentException::class)
+  private fun getBundleStringSubstitutor(resourceBundle: ResourceBundle): StringSubstitutor {
+    val lookup = mutableMapOf<String, Any>()
+    resourceBundle.keys.toList().forEach { lookup[it] = resourceBundle.getObject(it) }
+    return StringSubstitutor(lookup, "{{", "}}")
+  }
 
-    fun String.localize(): String = parseTemplate("strings", Locale.getDefault(), this)
+  // TO DO prefix with appId
+  // fun String.localize(): String = parseTemplate(appId + "strings", Locale.getDefault(), this)
+  fun String.localize(): String = parseTemplate("strings", Locale.getDefault(), this)
+
+  /**
+   * Creates identifier from text by doing clean up on the passed value
+   *
+   * @param text value to be translated
+   * @return string.properties key to be used in string look ups
+   */
+  fun generateIdentifier(text: String): String? {
+    val prefix = if (text.matches(Regex("^\\d.*\\n*"))) "_" else ""
+    return prefix.plus(
+      text.trim { it <= ' ' }.lowercase(Locale.ENGLISH).replace(" ".toRegex(), "_")
+    )
+  }
 }

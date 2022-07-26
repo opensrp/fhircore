@@ -133,7 +133,3 @@ fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "dr
  */
 fun String?.parseColor() =
   if (this.isNullOrEmpty()) DefaultColor else ComposeColor(Color.parseColor(this))
-
-fun Context.processLanguageTranslation(){
-
-}
