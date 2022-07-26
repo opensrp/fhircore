@@ -106,7 +106,7 @@ fun HivPatientRegisterListRow(data: RegisterViewData, onItemClick: (String) -> U
         if (data.serviceTextIcon != null) {
           Image(
             painterResource(id = data.serviceTextIcon),
-            contentDescription = "Hiv",
+            contentDescription = "ART",
             Modifier.size(36.dp)
           )
         }
@@ -166,6 +166,25 @@ fun PreviewHivExposedInfantPatientRegisterRowItem() {
         serviceTextIcon = R.drawable.baseline_child_care_fill_48,
         subtitle = "6mnths, Exposed Infant",
         serviceButtonBackgroundColor = MaleBlueColor,
+        registerType = RegisterData.HivRegisterData::class,
+      ),
+    onItemClick = {}
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
+fun PreviewHivFemalePregnantPatientRegisterRowItem() {
+  HivPatientRegisterListRow(
+    data =
+      RegisterViewData(
+        logicalId = "345667782",
+        identifier = "556637",
+        title = "Maggie Coyote(Mother)",
+        serviceTextIcon = R.drawable.baseline_pregnant_woman_24,
+        subtitle = "27yrs, ART Client",
+        serviceButtonBackgroundColor = FemalePinkColor,
         registerType = RegisterData.HivRegisterData::class,
       ),
     onItemClick = {}
