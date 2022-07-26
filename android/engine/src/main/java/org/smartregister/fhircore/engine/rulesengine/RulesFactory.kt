@@ -26,6 +26,7 @@ import org.jeasy.rules.api.RuleListener
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.jeasy.rules.jexl.JexlRule
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -54,7 +55,9 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
   override fun beforeEvaluate(rule: Rule, facts: Facts): Boolean = true
 
   override fun onSuccess(rule: Rule, facts: Facts) {
-    Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
+    if (BuildConfig.DEBUG) {
+      Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
+    }
   }
 
   override fun onFailure(rule: Rule, facts: Facts, exception: Exception?) =
@@ -63,17 +66,19 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
       else -> Timber.e(exception)
     }
 
-  override fun beforeExecute(rule: Rule, facts: Facts) {
-    // Before we execute the actions we add the rule name to the facts for later access
-    facts.put(rule.name, "")
-  }
+  override fun beforeExecute(rule: Rule, facts: Facts) = Unit
 
   override fun afterEvaluate(rule: Rule, facts: Facts, evaluationResult: Boolean) = Unit
 
+  /**
+   * This function executes the actions defined in the [Rule] s generated from the provided list of
+   * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
+   * [relatedResourcesMap] and the [baseResource].
+   */
   fun fireRule(
     ruleConfigs: List<RuleConfig>,
     baseResource: Resource,
-    relatedResources: MutableMap<String, List<Resource>>,
+    relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   ): Map<String, Any> {
     // Reset previously computed values first
     computedValuesMap.clear()
@@ -81,7 +86,7 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
     val customRules = mutableSetOf<Rule>()
     ruleConfigs.forEach { ruleConfig ->
 
-      // jexl rule
+      // Create JEXL rule
       val customRule: JexlRule =
         JexlRule()
           .name(ruleConfig.name)
@@ -92,10 +97,9 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
       customRules.add(customRule)
     }
 
-    // Put baseResource and related resources in the facts map. relatedResources value is a list and
-    // is included to the map as is. E.g. list of all Immunization resources for a Patient.
+    // baseResource is a FHIR resource whereas relatedResources is a list of FHIR resources
     facts.put(baseResource.resourceType.name, baseResource)
-    relatedResources.forEach { resource -> facts.put(resource.key, resource.value) }
+    relatedResourcesMap.forEach { facts.put(it.key, it.value) }
 
     rulesEngine.fire(Rules(customRules), facts)
 

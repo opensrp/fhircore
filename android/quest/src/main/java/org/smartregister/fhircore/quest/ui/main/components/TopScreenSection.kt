@@ -53,6 +53,7 @@ fun TopScreenSection(
   modifier: Modifier = Modifier,
   title: String,
   searchText: String,
+  searchPlaceholder: String? = null,
   onSearchTextChanged: (String) -> Unit,
   onTitleIconClick: () -> Unit
 ) {
@@ -75,7 +76,7 @@ fun TopScreenSection(
       placeholder = {
         Text(
           color = GreyTextColor,
-          text = stringResource(R.string.search_hint),
+          text = searchPlaceholder ?: stringResource(R.string.search_hint),
         )
       },
       modifier =

@@ -16,20 +16,30 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import java.util.LinkedList
 import org.hl7.fhir.r4.model.Resource
 
 /**
  * Represent the resource types that are used on a Register.
  * @property baseResource is the main resource used on the register
- * @property relatedResources are the other/extra resources accompanying the [baseResource]. For
- * each [baseResource] return associated [relatedResources]. [computedValuesMap] contains data
- * extracted from the resources to be used on the UI
+ * @property relatedResourcesMap are the other/extra resources accompanying the [baseResource]. For
+ * each [baseResource] return associated [relatedResourcesMap].
+ * @property computedValuesMap Contains data extracted from the resources to be used on the UI
  *
  * For example. For every Patient resource we return also their Immunization and Observation
  * resources
  */
 data class ResourceData(
   val baseResource: Resource,
-  val relatedResources: Map<String, List<Resource>> = emptyMap(),
+  val relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   val computedValuesMap: Map<String, Any> = emptyMap()
+)
+
+/**
+ * @property resource A valid FHIR resource
+ * @property relatedResources Nested list of [RelatedResourceData]
+ */
+data class RelatedResourceData(
+  val resource: Resource,
+  val relatedResources: LinkedList<RelatedResourceData> = LinkedList()
 )

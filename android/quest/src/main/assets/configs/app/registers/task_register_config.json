@@ -41,7 +41,7 @@
         "name": "taskStatusColorCode",
         "condition": "true",
         "actions": [
-          "data.put('taskStatusColorCode', taskStatus == 'ready' ? 'DUE' : taskStatus == 'failed' || taskStatus == 'canceled' ? 'OVERDUE' : taskStatus == 'requested' ? 'UPCOMING' : taskStatus == 'completed' ? 'COMPLETED' : 'UPCOMING')"
+          "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
         ]
       }
     ],

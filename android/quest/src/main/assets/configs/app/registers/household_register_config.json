@@ -1,15 +1,41 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "patient_register",
+  "id": "household_register",
   "fhirResource": {
     "baseResource": {
-      "resource": "Patient"
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "id": "householdQuery",
+          "filterType": "TOKEN",
+          "key": "type",
+          "valueType": "CODING",
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/group-type",
+            "code": "person"
+          }
+        }
+      ]
     },
     "relatedResources": [
       {
-        "resource": "Immunization",
-        "searchParameter": "patient"
+        "resource": "Patient",
+        "fhirPathExpression": "Group.member.entity",
+        "relatedResources": [
+          {
+            "resource": "Condition",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "CarePlan",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "Task",
+            "searchParameter": "for"
+          }
+        ]
       }
     ]
   },
@@ -30,23 +56,16 @@
     "visible": true,
     "display": "Search name or ID",
     "computedRules": [
-      "patientName"
+      "familyName"
     ]
   },
   "registerCard": {
     "rules": [
       {
-        "name": "patientName",
+        "name": "familyName",
         "condition": "true",
         "actions": [
-          "data.put('patientName', fhirPath.extractValue(Patient, 'Patient.name.given') + ' ' + fhirPath.extractValue(Patient, 'Patient.name.family'))"
-        ]
-      },
-      {
-        "name": "patientGender",
-        "condition": "true",
-        "actions": [
-          "data.put('patientGender', fhirPath.extractValue(Patient, 'Patient.gender'))"
+          "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
         ]
       }
     ],
@@ -59,12 +78,12 @@
             "details": [
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "@{patientName}",
+                "primaryText": "@{familyName} Family",
                 "primaryTextColor": "#000000"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "@{patientGender}",
+                "primaryText": "Village/Address",
                 "primaryTextColor": "#5A5A5A"
               }
             ],
