@@ -20,6 +20,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -34,10 +35,14 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
+import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -56,6 +61,149 @@ import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 class DefaultRepositoryTest : RobolectricTest() {
 
   private val dispatcherProvider = spyk(DefaultDispatcherProvider())
+
+  @Test
+  fun `loadResource() should get resource using id`() {
+    val samplePatientId = "12345"
+    val samplePatient: Patient = Patient().apply { id = samplePatientId }
+
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.get<Patient>(any()) } answers { samplePatient }
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking {
+      val actualPatient = defaultRepository.loadResource<Patient>(samplePatientId)
+      Assert.assertEquals("12345", actualPatient?.id)
+    }
+
+    coVerify { fhirEngine.get<Patient>("12345") }
+  }
+
+  @Test
+  fun `loadImmunization() should get Immunization using id`() {
+    val sampleImmunizationId = "12345"
+    val sampleImmunization: Immunization = Immunization().apply { id = sampleImmunizationId }
+
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.get<Immunization>(any()) } answers { sampleImmunization }
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking {
+      val actualImmunization = defaultRepository.loadImmunization(sampleImmunizationId)
+      Assert.assertEquals("12345", actualImmunization?.id)
+    }
+
+    coVerify { fhirEngine.get<Immunization>("12345") }
+  }
+
+  @Test
+  fun `searchResourceFor(reference) should search CarePlan that is related to a Patient using patientId`() {
+    val samplePatientId = "12345"
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.search<CarePlan> {} } returns listOf(mockk())
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking {
+      val actualCarePlans =
+        defaultRepository.searchResourceFor<CarePlan>(
+          subjectId = samplePatientId,
+          subjectType = ResourceType.Patient,
+          subjectParam = CarePlan.SUBJECT
+        )
+      Assert.assertEquals(1, actualCarePlans.size)
+    }
+
+    coVerify { fhirEngine.search<CarePlan> {} }
+  }
+
+  @Test
+  fun `searchResourceFor(token) should return 1 Patient using patientId`() {
+    val samplePatientId = "12345"
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.search<Patient> {} } returns listOf(mockk())
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking {
+      val actualPatients =
+        defaultRepository.searchResourceFor<Patient>(
+          token = Patient.RES_ID,
+          subjectId = samplePatientId,
+          subjectType = ResourceType.Patient
+        )
+      Assert.assertEquals(1, actualPatients.size)
+    }
+
+    coVerify { fhirEngine.search<Patient> {} }
+  }
+
+  @Test
+  fun `searchQuestionnaireConfig() should match the proper QuestionnaireConfig`() {
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.search<Questionnaire> {} } returns
+      listOf(
+        Questionnaire().apply {
+          id = "12345"
+          name = "name"
+          title = "title"
+        }
+      )
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking {
+      val actualPatients = defaultRepository.searchQuestionnaireConfig()
+      Assert.assertEquals(1, actualPatients.size)
+      Assert.assertEquals("12345", actualPatients.first().identifier)
+      Assert.assertEquals("name", actualPatients.first().form)
+      Assert.assertEquals("title", actualPatients.first().title)
+    }
+
+    coVerify { fhirEngine.search<Questionnaire> {} }
+  }
+
+  @Test
+  fun `loadConditions() should return 1 Condition using patientId`() {
+    val samplePatientId = "12345"
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.search<Condition> {} } returns listOf(mockk())
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking {
+      val actualPatients = defaultRepository.loadConditions(patientId = samplePatientId)
+      Assert.assertEquals(1, actualPatients.size)
+    }
+
+    coVerify { fhirEngine.search<Condition> {} }
+  }
+
+  @Test
+  fun `search() should return 1 Condition given Condition type DataRequirement`() {
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.search<Condition> {} } returns listOf(mockk())
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking {
+      val actualPatients =
+        defaultRepository.search(
+          dataRequirement =
+            DataRequirement().apply { type = Enumerations.ResourceType.CONDITION.toCode() }
+        )
+      Assert.assertEquals(1, actualPatients.size)
+    }
+  }
 
   @Test
   fun `addOrUpdate() should call fhirEngine#update when resource exists`() {
@@ -132,7 +280,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `loadImmunizations() should call FhirEngine#loadImmunizations`() {
+  fun `loadPatientImmunizations() should call FhirEngine#loadPatientImmunizations`() {
     val patientId = "15672-9234"
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.loadPatientImmunizations(patientId) } returns listOf()
