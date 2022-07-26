@@ -352,9 +352,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val result = runBlocking {
       questionnaireViewModel.getQuestionnaireConfig("patient-registration", context)
     }
-    Assert.assertEquals("patient-registration", result.title)
+    Assert.assertEquals("patient-registration", result.id)
     Assert.assertEquals("Add Patient", result.title)
-    Assert.assertEquals("207", result.id)
+    Assert.assertEquals("Submit", result.saveButtonText)
   }
 
   @Test

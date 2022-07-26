@@ -27,3 +27,4 @@ data class QuestionnaireConfig(
   val setOrganizationDetails: Boolean = false,
   val planDefinitions: List<String>? = null
 )
+

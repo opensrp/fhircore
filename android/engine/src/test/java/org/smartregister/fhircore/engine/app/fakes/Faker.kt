@@ -68,7 +68,7 @@ object Faker {
   }
 
   private fun getBasePath(configName: String): String {
-    return "/configs/default/config_$configName.json"
+    return "/configs/default/${configName}_config.json"
   }
 
   fun buildTestConfigurationRegistry(defaultRepository: DefaultRepository): ConfigurationRegistry {
