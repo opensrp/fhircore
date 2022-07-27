@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -40,6 +41,8 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
@@ -51,6 +54,8 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -67,8 +72,8 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     hiltRule.inject()
 
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
-    pinSetupActivity =
-      Robolectric.buildActivity(PinSetupActivity::class.java).create().resume().get()
+    val controller = Robolectric.buildActivity(PinSetupActivity::class.java)
+    pinSetupActivity = controller.create().resume().get()
 
     pinSetupActivitySpy = spyk(pinSetupActivity, recordPrivateCalls = true)
     every { pinSetupActivitySpy.finish() } returns Unit

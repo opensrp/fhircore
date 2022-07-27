@@ -1,7 +1,6 @@
 {
-  "appId": "app",
   "resourceType": "Parameters",
-  "configType": "sync",
+  "classification": "sync",
   "parameter": [
     {
       "resource": {
@@ -10,6 +9,18 @@
         "code": "organization",
         "base": [
           "Patient"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "managing-entity.patient.organization",
+        "base": [
+          "Group"
         ],
         "type": "token",
         "expression": "#organization"
@@ -35,12 +46,49 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
+        "name": "publisher",
+        "code": "publisher",
+        "base": [
+          "Questionnaire"
+        ],
+        "type": "token",
+        "expression": "#publisher"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
         "name": "_id",
         "code": "_id",
         "base": [
+          "StructureMap",
           "PlanDefinition"
         ]
       }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Library"
+        ]
+      },
+      "type": "token",
+      "expression": "1753,133081,133105"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Measure"
+        ]
+      },
+      "type": "token",
+      "expression": "133082,133104"
     },
     {
       "resource": {
@@ -54,6 +102,8 @@
           "Condition",
           "CarePlan",
           "QuestionnaireResponse",
+          "Questionnaire",
+          "StructureMap",
           "Task",
           "Group"
         ],

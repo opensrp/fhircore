@@ -27,6 +27,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -44,6 +45,7 @@ import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 class PinLoginScreensTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
+  private val testPin = MutableLiveData("1234")
 
   private val listenerObjectSpy =
     spyk(
@@ -62,18 +64,11 @@ class PinLoginScreensTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    pinViewModel =
-      mockk {
-        every { showError } returns MutableLiveData(true)
-        every { pinViewModel.pinUiState } returns
-          mutableStateOf(
-            PinUiState(
-              savedPin = "1234",
-              enterUserLoginMessage = "Enter PIN for DemoUser",
-              appName = "TestApp"
-            )
-          )
-      }
+    pinViewModel = mockk()
+    every { pinViewModel.pinUiState } returns
+      mutableStateOf(PinUiState(savedPin = "1234", enterUserLoginMessage = "demo", appName = "Anc"))
+    every { pinViewModel.showError } returns MutableLiveData(false)
+    coEvery { pinViewModel.pin } returns testPin
   }
 
   @Test

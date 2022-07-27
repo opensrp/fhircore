@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.app.fakes
 
+import io.mockk.MockKAnswerScope
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
@@ -33,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.readFile
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 
 object Faker {
 
@@ -56,19 +58,30 @@ object Faker {
 
     coEvery { defaultRepository.getBinary(any()) } answers
       {
-        val sectionComponent =
-          composition.section.find {
-            this.args.first().toString() == it.focus.reference.substringAfter("Binary/")
-          }
-        val configName = sectionComponent!!.focus.identifier.value
-        Binary().apply { content = getBasePath(configName).readFile(systemPath).toByteArray() }
+        val configName = getSectionComponent(composition)?.focus?.identifier?.value
+        Binary().apply {
+          content = configName?.let { it1 -> getBasePath(it1).readFile(systemPath).toByteArray() }
+        }
       }
 
-    runBlocking { configurationRegistry.loadConfigurations(appId = "default") {} }
+    runBlocking { configurationRegistry.loadConfigurations(appId = "app") {} }
+  }
+
+  private fun MockKAnswerScope<Binary, Binary>.getSectionComponent(
+    composition: Composition
+  ): Composition.SectionComponent? {
+    composition.retrieveCompositionSections().forEach {
+      if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
+        if (this.args.first().toString() == it.focus.reference.substringAfter("Binary/")) {
+          return it
+        }
+      }
+    }
+    return null
   }
 
   private fun getBasePath(configName: String): String {
-    return "/configs/default/${configName}_config.json"
+    return "/configs/app/${configName}_config.json"
   }
 
   fun buildTestConfigurationRegistry(defaultRepository: DefaultRepository): ConfigurationRegistry {

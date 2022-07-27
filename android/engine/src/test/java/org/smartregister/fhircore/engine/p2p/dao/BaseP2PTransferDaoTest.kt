@@ -82,7 +82,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
 
     val actualDataTypes = baseP2PTransferDao.getDataTypes()
-    assertEquals(6, actualDataTypes.size)
+    assertEquals(9, actualDataTypes.size)
     assertTrue(
       actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
     )

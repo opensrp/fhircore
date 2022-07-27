@@ -55,30 +55,25 @@ class ConfigServiceTest : RobolectricTest() {
 
     val resourceTypes =
       arrayOf(
-          ResourceType.Library,
-          ResourceType.StructureMap,
-          ResourceType.PlanDefinition,
-          ResourceType.MedicationRequest,
-          ResourceType.QuestionnaireResponse,
-          ResourceType.Questionnaire,
-          ResourceType.Patient,
+          ResourceType.CarePlan,
           ResourceType.Condition,
-          ResourceType.Observation,
           ResourceType.Encounter,
+          ResourceType.Group,
+          ResourceType.Library,
+          ResourceType.Measure,
+          ResourceType.Observation,
+          ResourceType.Patient,
+          ResourceType.PlanDefinition,
+          ResourceType.Questionnaire,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.StructureMap,
           ResourceType.Task
         )
         .sorted()
 
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
-    syncParam.keys
-      .filter {
-        it.isIn(ResourceType.Binary, ResourceType.StructureMap, ResourceType.PlanDefinition)
-      }
-      .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
-
-    syncParam.keys.filter { it.isIn(ResourceType.Library) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("_id"))
+    syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
       Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
 
@@ -93,18 +88,13 @@ class ConfigServiceTest : RobolectricTest() {
           ResourceType.Encounter,
           ResourceType.Condition,
           ResourceType.MedicationRequest,
-          ResourceType.Task
+          ResourceType.Task,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.Observation
         )
       }
       .forEach {
         Assert.assertTrue(syncParam[it]!!.containsKey("subject.organization"))
-        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-      }
-
-    syncParam.keys
-      .filter { it.isIn(ResourceType.Observation, ResourceType.QuestionnaireResponse) }
-      .forEach {
-        Assert.assertTrue(syncParam[it]!!.containsKey("_filter"))
         Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
       }
 

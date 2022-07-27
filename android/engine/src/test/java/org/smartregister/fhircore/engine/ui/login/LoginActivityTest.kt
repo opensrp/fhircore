@@ -27,7 +27,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
 import org.junit.Assert
@@ -37,6 +36,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -59,11 +59,12 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @BindValue val repository: DefaultRepository = mockk()
 
-  lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+
+  @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
 
   @BindValue lateinit var loginViewModel: LoginViewModel
-
-  private val accountAuthenticator: AccountAuthenticator = mockk()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -80,6 +81,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 
     coEvery { accountAuthenticator.hasActivePin() } returns false
+    coEvery { accountAuthenticator.hasActiveSession() } returns true
 
     fhirResourceDataSource = FhirResourceDataSource(resourceService)
 
@@ -92,17 +94,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
         configurationRegistry = configurationRegistry
       )
 
-    loginActivity =
-      spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
-
-    configurationRegistry =
-      ConfigurationRegistry(
-        ApplicationProvider.getApplicationContext<Context>(),
-        fhirResourceDataSource,
-        sharedPreferencesHelper,
-        DefaultDispatcherProvider(),
-        repository
-      )
+    val controller = Robolectric.buildActivity(LoginActivity::class.java)
+    loginActivity = controller.create().resume().get()
 
     loginActivity.configurationRegistry = configurationRegistry
     sharedPreferencesHelper.write(APP_ID_KEY, "default")

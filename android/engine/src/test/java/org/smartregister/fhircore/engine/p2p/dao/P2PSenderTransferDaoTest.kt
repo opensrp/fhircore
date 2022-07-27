@@ -64,7 +64,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
   @Test
   fun `getP2PDataTypes() returns correct list of datatypes`() {
     val actualDataTypes = p2PSenderTransferDao.getDataTypes()
-    Assert.assertEquals(6, actualDataTypes.size)
+    Assert.assertEquals(9, actualDataTypes.size)
     Assert.assertTrue(
       actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
     )

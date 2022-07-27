@@ -20,14 +20,13 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -40,24 +39,22 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.robolectric.Robolectric
-import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
-@RunWith(FhircoreTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 class PinLoginActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -78,8 +75,8 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
     hiltRule.inject()
 
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
-    pinLoginActivity =
-      spyk(Robolectric.buildActivity(PinLoginActivity::class.java).create().resume().get())
+    val controller = Robolectric.buildActivity(PinLoginActivity::class.java)
+    pinLoginActivity = controller.create().resume().get()
 
     pinLoginActivitySpy = spyk(pinLoginActivity, recordPrivateCalls = true)
     every { pinLoginActivitySpy.finish() } returns Unit

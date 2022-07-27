@@ -59,7 +59,7 @@
       "mode": "working",
       "section": [
         {
-          "title": "Household register configuration",
+          "title": "Patient register",
           "focus": {
             "reference": "Binary/11111115",
             "identifier": {
