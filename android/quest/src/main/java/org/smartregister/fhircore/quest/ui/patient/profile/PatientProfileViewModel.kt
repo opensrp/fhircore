@@ -192,6 +192,6 @@ constructor(
     const val HIV_TEST_AND_RESULTS_FORM = "exposed-infant-hiv-test-and-results"
     const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM =
       "contact-and-community-positive-hiv-test-and-next-appointment"
-    const val REMOVE_HIV_PATIENT_FORM = "remove-patient"
+    const val REMOVE_HIV_PATIENT_FORM = "remove-person"
   }
 }

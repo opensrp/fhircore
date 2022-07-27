@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.remove
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -48,18 +47,8 @@ class HivPatientQuestionnaireActivity : QuestionnaireActivity() {
     btnRemove.text = setRemoveButtonText()
 
     viewModel.apply {
-      isRemoved.observe(this@HivPatientQuestionnaireActivity) {
-        if (it) {
-          setResult(Activity.RESULT_OK)
-          finish()
-        }
-      }
-      isDiscarded.observe(this@HivPatientQuestionnaireActivity) {
-        if (it) {
-          setResult(Activity.RESULT_CANCELED)
-          finish()
-        }
-      }
+      isRemoved.observe(this@HivPatientQuestionnaireActivity) { if (it) onRemove() }
+      isDiscarded.observe(this@HivPatientQuestionnaireActivity) { if (it) finish() }
       profile.observe(this@HivPatientQuestionnaireActivity) { onReceive(it) }
     }
     viewModel.fetch(profileId)
@@ -68,7 +57,9 @@ class HivPatientQuestionnaireActivity : QuestionnaireActivity() {
   @OptIn(ExperimentalMaterialApi::class)
   fun onRemove() {
     val intent =
-      Intent(this, AppMainActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+      Intent(this, AppMainActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+      }
     run {
       startActivity(intent)
       finish()
