@@ -75,6 +75,15 @@
               "value": "task_register"
             }
           }
+        },
+        {
+          "title": "ANC register configuration",
+          "focus": {
+            "reference": "Binary/11111117",
+            "identifier": {
+              "value": "anc_register"
+            }
+          }
         }
       ]
     }

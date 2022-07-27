@@ -77,6 +77,23 @@
       ]
     },
     {
+      "id": "anc_register",
+      "display": "ANC",
+      "icon": "",
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "anc_register"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "anc_register"
+        }
+      ]
+    },
+    {
       "id": "task_register",
       "display": "Tasks",
       "icon": "",

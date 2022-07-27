@@ -7,13 +7,23 @@
       "resource": "Group",
       "dataQueries": [
         {
-          "id": "householdQuery",
+          "id": "householdQueryByType",
           "filterType": "TOKEN",
           "key": "type",
           "valueType": "CODING",
           "valueCoding": {
             "system": "http://hl7.org/fhir/group-type",
             "code": "person"
+          }
+        },
+        {
+          "id": "householdQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "35359004"
           }
         }
       ]
@@ -30,6 +40,22 @@
           {
             "resource": "CarePlan",
             "searchParameter": "subject"
+          }
+        ]
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "id": "filterHouseholdCarePlans",
+            "filterType": "TOKEN",
+            "key": "_tag",
+            "valueType": "CODING",
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "35359004"
+            }
           }
         ]
       }
