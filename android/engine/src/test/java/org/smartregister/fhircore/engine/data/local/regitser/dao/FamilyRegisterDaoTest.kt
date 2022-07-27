@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local.regitser.dao
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -25,6 +26,8 @@ import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -86,6 +89,28 @@ internal class FamilyRegisterDaoTest : RobolectricTest() {
 
     coEvery { familyRegisterDao.loadMemberCondition(any()) } returns emptyList()
     coEvery { familyRegisterDao.loadMemberCarePlan(any()) } returns emptyList()
+  }
+
+  @Test
+  fun searchQuestionnaireResponse_shouldReturnFilteredResponse_1() {
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        subject = Reference("Group/12345")
+        questionnaire = "Questionnaire/1923"
+      }
+    coEvery { fhirEngine.search<QuestionnaireResponse> {} } returns listOf(questionnaireResponse)
+
+    runBlocking {
+      val questionnaireResponses =
+        familyRegisterDao.searchQuestionnaireResponses(
+          subjectId = "12345",
+          subjectType = ResourceType.Group,
+          questionnaireId = "1923"
+        )
+      Assert.assertEquals(1, questionnaireResponses.size)
+      Assert.assertEquals("Group/12345", questionnaireResponses.first().subject.reference)
+      Assert.assertEquals("Questionnaire/1923", questionnaireResponses.first().questionnaire)
+    }
   }
 
   @Test
