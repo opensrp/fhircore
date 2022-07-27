@@ -80,7 +80,7 @@ class LoginScreenTest : RobolectricTest() {
 
   @Test
   fun testLoginScreen() {
-    composeRule.setContent { LoginScreen(loginViewModel = loginViewModel) }
+    composeRule.setContent { LoginScreen(loginViewModel = loginViewModel, appVersionPair = Pair(1, "1.0.1")) }
     if (applicationConfiguration.loginConfig.showLogo) {
       composeRule.onNodeWithTag(APP_LOGO_TAG).assertExists()
     }
@@ -100,7 +100,8 @@ class LoginScreenTest : RobolectricTest() {
         password = "password",
         onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
         forgotPassword = { listenerObjectSpy.forgotPassword() },
-        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() }
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
+        appVersionPair = Pair(1, "1.0.1")
       )
     }
     if (applicationConfiguration.loginConfig.showLogo) {
