@@ -39,7 +39,6 @@ import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepo
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
-import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
@@ -152,9 +151,8 @@ constructor(
     }
   }
 
-  private suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
-    val loadConfig =
-      loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
+  private fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
+    val loadConfig = loadQuestionnaireConfigFromRegistry()
     questionnaireConfig = loadConfig!!.first { it.form == form || it.identifier == form }
     return questionnaireConfig
   }
@@ -168,20 +166,6 @@ constructor(
       }
       .getOrNull()
       ?.forms
-
-  private suspend fun loadQuestionnaireConfigFromAssets(
-    context: Context
-  ): List<QuestionnaireConfig>? =
-    kotlin
-      .runCatching {
-        withContext(dispatcherProvider.io()) {
-          AssetUtil.decodeAsset<List<QuestionnaireConfig>>(
-            fileName = QuestionnaireActivity.FORM_CONFIGURATIONS,
-            context = context
-          )
-        }
-      }
-      .getOrNull()
 
   fun fetchFamilyProfileData(familyId: String?) {
     viewModelScope.launch(dispatcherProvider.io()) {
