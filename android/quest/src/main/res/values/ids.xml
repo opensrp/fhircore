@@ -14,6 +14,7 @@
     <item name="record_as_anc" type="id" />
     <item name="client_clinic_visit"  type="id"/>
     <item name="guardian_visit" type="id"/>
+    <item name="client_guardian_visit" type="id"/>
     <item name="viral_load_results"  type="id"/>
     <item name="edit_profile"  type="id"/>
     <item name="guardian_management"  type="id"/>

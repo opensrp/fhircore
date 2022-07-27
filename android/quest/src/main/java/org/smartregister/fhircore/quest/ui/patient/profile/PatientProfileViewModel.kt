@@ -27,12 +27,17 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.quest.R
@@ -50,6 +55,7 @@ class PatientProfileViewModel
 constructor(
   val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
+  val configurationRegistry: ConfigurationRegistry,
   val profileViewDataMapper: ProfileViewDataMapper
 ) : ViewModel() {
 
@@ -63,6 +69,11 @@ constructor(
   val patientProfileViewData: MutableState<ProfileViewData.PatientProfileViewData> =
     mutableStateOf(ProfileViewData.PatientProfileViewData())
 
+  var patientProfileData: ProfileData? = null
+
+  val applicationConfiguration: ApplicationConfiguration
+    get() = configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+
   fun fetchPatientProfileData(
     appFeatureName: String?,
     healthModule: HealthModule,
@@ -72,6 +83,7 @@ constructor(
       viewModelScope.launch {
         patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
           ?.let {
+            patientProfileData = it
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
                 ProfileViewData.PatientProfileViewData
@@ -109,6 +121,30 @@ constructor(
     }
   }
 
+  fun filterGuardianVisitTasks() {
+    if (patientProfileData != null) {
+      val hivPatientProfileData = patientProfileData as ProfileData.HivProfileData
+      val newProfileData =
+        hivPatientProfileData.copy(
+          tasks =
+            hivPatientProfileData.tasks.filter {
+              it.isGuardianVisit(applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem)
+            }
+        )
+      patientProfileViewData.value =
+        profileViewDataMapper.transformInputToOutputModel(newProfileData) as
+          ProfileViewData.PatientProfileViewData
+    }
+  }
+
+  fun undoGuardianVisitTasksFilter() {
+    if (patientProfileData != null) {
+      patientProfileViewData.value =
+        profileViewDataMapper.transformInputToOutputModel(patientProfileData!!) as
+          ProfileViewData.PatientProfileViewData
+    }
+  }
+
   fun onEvent(event: PatientProfileEvent) =
     when (event) {
       is PatientProfileEvent.LoadQuestionnaire ->
@@ -124,6 +160,28 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
+          R.id.client_guardian_visit -> {
+            val updatedOverflowMenuItems =
+              patientProfileUiState.value.overflowMenuItems.map {
+                if (it.id == R.id.client_guardian_visit) {
+                  val newTitleResource =
+                    when (it.titleResource) {
+                      R.string.guardian_visit -> {
+                        filterGuardianVisitTasks()
+                        R.string.client_clinic_visit
+                      }
+                      R.string.client_clinic_visit -> {
+                        undoGuardianVisitTasksFilter()
+                        R.string.guardian_visit
+                      }
+                      else -> it.titleResource
+                    }
+                  OverflowMenuItem(it.id, newTitleResource)
+                } else it
+              }
+            patientProfileUiState.value =
+              patientProfileUiState.value.copy(overflowMenuItems = updatedOverflowMenuItems)
+          }
           R.id.view_family -> {
             event.familyId?.let { familyId ->
               val urlParams =
