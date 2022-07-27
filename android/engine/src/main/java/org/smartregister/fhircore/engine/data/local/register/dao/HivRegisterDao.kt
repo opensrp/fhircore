@@ -23,6 +23,7 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -41,6 +42,7 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractSecondaryIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
+import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @Singleton
@@ -92,7 +94,8 @@ constructor(
         healthStatus =
           patient.extractHealthStatusFromMeta(
             getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
-          )
+          ),
+        isPregnant = patient.isPregnant()
       )
     }
   }
@@ -138,6 +141,15 @@ constructor(
       .size
       .toLong()
   }
+
+  internal suspend fun Patient.isPregnant() = patientConditions(this.logicalId).hasActivePregnancy()
+
+  internal suspend fun patientConditions(patientId: String) =
+    defaultRepository.searchResourceFor<Condition>(
+      subjectId = patientId,
+      subjectParam = Condition.SUBJECT,
+      subjectType = ResourceType.Patient
+    )
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
 

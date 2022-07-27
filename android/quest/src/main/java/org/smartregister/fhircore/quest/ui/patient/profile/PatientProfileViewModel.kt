@@ -155,6 +155,24 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
+          R.id.viral_load_results ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = VIRAL_LOAD_RESULTS_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
+          R.id.hiv_test_and_results ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = HIV_TEST_AND_RESULTS_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
+          R.id.hiv_test_and_next_appointment ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = HIV_TEST_AND_NEXT_APPOINTMENT_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
           else -> {}
         }
       }
@@ -171,5 +189,9 @@ constructor(
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
     const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
     const val EDIT_PROFILE_FORM = "edit-patient-profile"
+    const val VIRAL_LOAD_RESULTS_FORM = "art-client-viral-load-test-results"
+    const val HIV_TEST_AND_RESULTS_FORM = "exposed-infant-hiv-test-and-results"
+    const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM =
+      "contact-and-community-positive-hiv-test-and-next-appointment"
   }
 }
