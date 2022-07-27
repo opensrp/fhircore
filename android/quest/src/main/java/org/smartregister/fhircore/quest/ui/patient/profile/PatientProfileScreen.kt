@@ -119,7 +119,8 @@ fun PatientProfileScreen(
                       context,
                       it.id,
                       profileViewData.logicalId,
-                      familyId
+                      familyId,
+                      carePlans = profileViewData.carePlans
                     )
                   )
                 },
@@ -166,7 +167,8 @@ fun PatientProfileScreen(
                       context = context,
                       taskFormId = taskFormId,
                       taskId = taskId,
-                      patientId = profileViewData.logicalId
+                      patientId = profileViewData.logicalId,
+                      carePlans = profileViewData.carePlans
                     )
                   )
                 }
