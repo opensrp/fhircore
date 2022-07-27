@@ -157,6 +157,14 @@ constructor(
     return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
   }
 
+  suspend fun removePatient(patientId: String) {
+    defaultRepository.loadResource<Patient>(patientId)!!.let {
+      if (!it.active) throw IllegalStateException("Patient already deleted")
+      it.active = false
+      defaultRepository.addOrUpdate(it)
+    }
+  }
+
   companion object {
     const val HAPI_MDM_TAG = "HAPI-MDM"
   }

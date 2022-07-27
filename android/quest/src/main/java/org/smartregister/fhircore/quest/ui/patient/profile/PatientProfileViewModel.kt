@@ -41,6 +41,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.patient.remove.HivPatientQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
@@ -167,6 +168,11 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
+          R.id.remove_hiv_patient ->
+            event.context.launchQuestionnaire<HivPatientQuestionnaireActivity>(
+              questionnaireId = REMOVE_HIV_PATIENT_FORM,
+              clientIdentifier = event.patientId
+            )
           else -> {}
         }
       }
@@ -186,5 +192,6 @@ constructor(
     const val HIV_TEST_AND_RESULTS_FORM = "exposed-infant-hiv-test-and-results"
     const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM =
       "contact-and-community-positive-hiv-test-and-next-appointment"
+    const val REMOVE_HIV_PATIENT_FORM = "remove-patient"
   }
 }
