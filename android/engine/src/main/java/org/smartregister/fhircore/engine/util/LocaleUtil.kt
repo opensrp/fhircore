@@ -19,29 +19,27 @@ package org.smartregister.fhircore.engine.util
 import java.util.Locale
 import java.util.MissingResourceException
 import java.util.ResourceBundle
-import org.apache.commons.text.StringSubstitutor
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 object LocaleUtil {
 
+  /**
+   * @param bundleName
+   * @param locale
+   * @param template
+   *
+   * @return String of the interpolated template string
+   */
   fun parseTemplate(bundleName: String, locale: Locale, template: String): String {
     return try {
       val bundle = ResourceBundle.getBundle(bundleName, locale)
-      getBundleStringSubstitutor(bundle).replace(template)
+      val lookup = mutableMapOf<String, Any>()
+      bundle.keys.toList().forEach { lookup[it] = bundle.getObject(it) }
+      template.interpolate(lookup, "{{", "}}")
     } catch (exception: MissingResourceException) {
       template
     }
   }
-
-  @Throws(IllegalArgumentException::class)
-  private fun getBundleStringSubstitutor(resourceBundle: ResourceBundle): StringSubstitutor {
-    val lookup = mutableMapOf<String, Any>()
-    resourceBundle.keys.toList().forEach { lookup[it] = resourceBundle.getObject(it) }
-    return StringSubstitutor(lookup, "{{", "}}")
-  }
-
-  // TO DO prefix with appId
-  // fun String.localize(): String = parseTemplate(appId + "strings", Locale.getDefault(), this)
-  fun String.localize(): String = parseTemplate("strings", Locale.getDefault(), this)
 
   /**
    * Creates identifier from text by doing clean up on the passed value

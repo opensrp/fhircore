@@ -4,7 +4,7 @@
   "menuActionButton": {
     "id": "mainActionButton",
     "visible": true,
-    "display": "Add New Household",
+    "display": "Add New Household {{name.title}}",
     "actions": [
       {
         "trigger": "ON_CLICK",
@@ -24,7 +24,7 @@
     {
       "id": "reports",
       "visible": true,
-      "display": "Reports",
+      "display": "Reports {{gender.female}}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -61,7 +61,7 @@
   "clientRegisters": [
     {
       "id": "patient_register",
-      "display": "All Households",
+      "display": "All Households {{gender.male}}",
       "icon": "",
       "showCount": true,
       "actions": [

@@ -17,6 +17,9 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.util.LinkedList
+import java.util.Locale
+import org.apache.commons.text.StringSubstitutor
+import org.smartregister.fhircore.engine.util.LocaleUtil
 
 /**
  * This function replaces the content enclosed within [substitutionPair] with the value obtained
@@ -32,6 +35,7 @@ import java.util.LinkedList
  *
  * "HIV status: @{hivResult}"
  */
+@Deprecated("Use the other extension method")
 fun String.interpolate(
   valuesMap: Map<String, Any>,
   substitutionPair: Pair<String, String> = Pair("@{", "}")
@@ -76,4 +80,12 @@ fun String.interpolate(
     }
   }
   return wordsList.joinToString(delimiter)
+}
+
+// TO DO prefix with appId
+// fun String.localize(): String = parseTemplate(appId + "strings", Locale.getDefault(), this)
+fun String.localize(): String = LocaleUtil.parseTemplate("strings", Locale.getDefault(), this)
+
+fun String.interpolate(lookupMap: Map<String, Any>, prefix: String, suffix: String): String {
+  return StringSubstitutor(lookupMap, prefix, suffix).replace(this)
 }

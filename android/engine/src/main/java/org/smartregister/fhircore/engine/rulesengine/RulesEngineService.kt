@@ -19,8 +19,8 @@ package org.smartregister.fhircore.engine.rulesengine
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
-import org.smartregister.fhircore.engine.util.LocaleUtil.localize
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.localize
 import timber.log.Timber
 
 @Singleton
