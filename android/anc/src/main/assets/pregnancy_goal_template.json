@@ -1,8 +1,0 @@
-{
-  "resourceType" : "Goal",
-  "id" : "#Id",
-  "lifecycleStatus" : "active",
-  "subject" : {
-    "reference" : "#RefPatient"
-  }
-}
