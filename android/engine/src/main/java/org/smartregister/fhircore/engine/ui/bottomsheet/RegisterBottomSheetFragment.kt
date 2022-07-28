@@ -25,7 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class RegisterBottomSheet(
+class RegisterBottomSheetFragment(
   val navigationMenuConfigs: List<NavigationMenuConfig>? = emptyList(),
   val registerCountMap: Map<String, Long> = emptyMap(),
   val menuClickListener: (NavigationMenuConfig) -> Unit

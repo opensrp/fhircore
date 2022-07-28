@@ -1,0 +1,10 @@
+[
+  {
+    "title": "Add Patient",
+    "id": "patient-registration",
+    "saveButtonText": "Submit",
+    "setPractitionerDetails": false,
+    "setOrganizationDetails": false,
+    "planDefinitions": ["Plan1", "Plan2"]
+  }
+]

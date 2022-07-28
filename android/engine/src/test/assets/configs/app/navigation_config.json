@@ -1,0 +1,97 @@
+{
+  "appId": "app",
+  "configType": "navigation",
+  "menuActionButton": {
+    "id": "mainActionButton",
+    "visible": true,
+    "display": "Add New Household",
+    "actions": [
+      {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_REGISTER",
+        "id": "patient_register"
+      }
+    ],
+    "questionnaire": {
+      "id": "82952",
+      "title": "Add Family",
+      "saveButtonText": "ADD FAMILY",
+      "setPractitionerDetails": true,
+      "setOrganizationDetails": true
+    }
+  },
+  "staticMenu": [
+    {
+      "id": "reports",
+      "visible": true,
+      "display": "Reports",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REPORT",
+          "id": "navigateToReportsScreen"
+        }
+      ]
+    },
+    {
+      "id": "p2p_sync",
+      "visible": true,
+      "display": "Transfer Data",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "DEVICE_TO_DEVICE_SYNC",
+          "id": "navigateToP2PScreen"
+        }
+      ]
+    },
+    {
+      "id": "profile",
+      "visible": true,
+      "display": "Profile",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_SETTINGS",
+          "id": "navigateToSettingsScreen"
+        }
+      ]
+    }
+  ],
+  "clientRegisters": [
+    {
+      "id": "patient_register",
+      "display": "All Households",
+      "icon": "",
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "patient_register"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "patient_register"
+        }
+      ]
+    },
+    {
+      "id": "task_register",
+      "display": "Tasks",
+      "icon": "",
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "task_register"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "task_register"
+        }
+      ]
+    }
+  ]
+}

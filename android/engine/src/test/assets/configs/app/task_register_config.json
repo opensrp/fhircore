@@ -1,0 +1,78 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "task_register",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Task"
+    }
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "Search task by name",
+    "computedRules": [
+      "taskName"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "taskName",
+        "condition": "true",
+        "actions": [
+          "data.put('taskName', fhirPath.extractValue(Task, 'Task.description'))"
+        ]
+      },
+      {
+        "name": "taskStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
+        ]
+      },
+      {
+        "name": "taskStartDate",
+        "condition": "true",
+        "actions": [
+          "data.put('taskStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
+        ]
+      },
+      {
+        "name": "taskStatusColorCode",
+        "condition": "true",
+        "actions": [
+          "data.put('taskStatusColorCode', taskStatus == 'ready' ? 'DUE' : taskStatus == 'failed' || taskStatus == 'canceled' ? 'OVERDUE' : taskStatus == 'requested' ? 'UPCOMING' : taskStatus == 'completed' ? 'COMPLETED' : 'UPCOMING')"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{taskName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Start date: @{taskStartDate}",
+                "primaryTextColor": "#5A5A5A"
+              }
+            ],
+            "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": true,
+              "text": "@{taskStatus}",
+              "status": "@{taskStatusColorCode}",
+              "smallSized": false
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

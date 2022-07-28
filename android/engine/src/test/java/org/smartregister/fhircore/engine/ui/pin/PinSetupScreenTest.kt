@@ -27,6 +27,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -62,12 +63,16 @@ class PinSetupScreenTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    pinViewModel =
-      mockk {
-        every { pinViewModel.pinUiState } returns mutableStateOf(PinUiState(appName = "anc"))
-        every { pin } returns MutableLiveData("1234")
-        every { enableSetPin } returns MutableLiveData(false)
-      }
+    pinViewModel = mockk()
+    every { pinViewModel.pinUiState } returns
+      mutableStateOf(
+        PinUiState(
+          savedPin = "1234",
+          enterUserLoginMessage = "demo",
+        )
+      )
+    coEvery { pinViewModel.enableSetPin } returns MutableLiveData(false)
+    coEvery { pinViewModel.pin } returns MutableLiveData("1234")
   }
 
   @Test

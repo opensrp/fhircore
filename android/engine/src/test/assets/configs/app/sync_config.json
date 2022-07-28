@@ -1,5 +1,6 @@
 {
   "resourceType": "Parameters",
+  "classification": "sync",
   "parameter": [
     {
       "resource": {
@@ -17,12 +18,9 @@
       "resource": {
         "resourceType": "SearchParameter",
         "name": "organization",
-        "code": "subject.organization",
+        "code": "managing-entity.patient.organization",
         "base": [
-          "Encounter",
-          "Condition",
-          "MedicationRequest",
-          "Task"
+          "Group"
         ],
         "type": "token",
         "expression": "#organization"
@@ -32,24 +30,17 @@
       "resource": {
         "resourceType": "SearchParameter",
         "name": "organization",
-        "code": "_filter",
+        "code": "subject.organization",
         "base": [
-          "Observation"
+          "Encounter",
+          "Observation",
+          "Condition",
+          "CarePlan",
+          "QuestionnaireResponse",
+          "Task"
         ],
         "type": "token",
-        "expression": "patient.organization eq #organization or focus.subject eq Organization/#organization"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "_filter",
-        "base": [
-          "QuestionnaireResponse"
-        ],
-        "type": "token",
-        "expression": "patient.organization eq #organization or subject eq Organization/#organization"
+        "expression": "#organization"
       }
     },
     {
@@ -70,7 +61,8 @@
         "name": "_id",
         "code": "_id",
         "base": [
-          "StructureMap", "PlanDefinition"
+          "StructureMap",
+          "PlanDefinition"
         ]
       }
     },
@@ -81,10 +73,22 @@
         "code": "_id",
         "base": [
           "Library"
-        ],
-        "type": "token",
-        "expression": "1753,32883,46841,46831,46823"
-      }
+        ]
+      },
+      "type": "token",
+      "expression": "1753,133081,133105"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Measure"
+        ]
+      },
+      "type": "token",
+      "expression": "133082,133104"
     },
     {
       "resource": {
@@ -94,15 +98,14 @@
         "base": [
           "Patient",
           "Encounter",
-          "Condition",
-          "MedicationRequest",
-          "Task",
           "Observation",
+          "Condition",
+          "CarePlan",
           "QuestionnaireResponse",
           "Questionnaire",
           "StructureMap",
-          "PlanDefinition",
-          "Library"
+          "Task",
+          "Group"
         ],
         "type": "token",
         "expression": "#count"

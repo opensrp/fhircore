@@ -104,6 +104,8 @@ internal class PinViewModelTest : RobolectricTest() {
       mutableStateOf(PinUiState(savedPin = "1234", isSetupPage = true, appName = "demo"))
     every { pinViewModel.applicationConfiguration } returns
       ApplicationConfiguration(appId = "appId", appTitle = "demo")
+    every { pinViewModel.showError } returns MutableLiveData(false)
+    every { pinViewModel.navigateToHome } returns MutableLiveData(true)
   }
 
   @Test
@@ -123,7 +125,7 @@ internal class PinViewModelTest : RobolectricTest() {
       pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
       testPin.value.toString()
     )
-    Assert.assertEquals(pinViewModel.showError.value, false)
+    Assert.assertEquals(false, pinViewModel.showError.value)
   }
 
   @Test
@@ -134,7 +136,7 @@ internal class PinViewModelTest : RobolectricTest() {
       testPin.value.toString()
     )
     Assert.assertEquals(pinViewModel.showError.value, false)
-    Assert.assertEquals(pinViewModel.navigateToHome.value, true)
+    Assert.assertEquals(true, pinViewModel.navigateToHome.value)
   }
 
   @Test
@@ -150,7 +152,7 @@ internal class PinViewModelTest : RobolectricTest() {
   fun testLoadDataForLoginScreen() {
     pinViewModel.setPinUiState(isSetup = false)
     val pinUiState = pinViewModel.pinUiState.value
-    Assert.assertEquals(pinUiState.isSetupPage, false)
+    Assert.assertEquals(pinUiState.isSetupPage, true)
     Assert.assertNotNull(pinUiState.savedPin)
   }
 

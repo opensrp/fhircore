@@ -92,7 +92,7 @@ const val LOGIN_FOOTER = "loginFooter"
 const val APP_LOGO_TAG = "appLogoTag"
 
 @Composable
-fun LoginScreen(loginViewModel: LoginViewModel) {
+fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String>? = null) {
   val applicationConfiguration = remember { loginViewModel.applicationConfiguration }
   val username by loginViewModel.username.observeAsState("")
   val password by loginViewModel.password.observeAsState("")
@@ -109,6 +109,7 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
     onLoginButtonClicked = { loginViewModel.attemptRemoteLogin() },
     loginErrorState = loginErrorState,
     showProgressBar = showProgressBar,
+    appVersionPair = appVersionPair
   )
 }
 
@@ -124,6 +125,7 @@ fun LoginPage(
   modifier: Modifier = Modifier,
   loginErrorState: LoginErrorState? = null,
   showProgressBar: Boolean = false,
+  appVersionPair: Pair<Int, String>? = null
 ) {
   var showPassword by remember { mutableStateOf(false) }
   val backgroundColor =
@@ -135,7 +137,7 @@ fun LoginPage(
     if (applicationConfiguration.useDarkTheme) Color.White else LoginButtonColor
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
   val context = LocalContext.current
-  val (versionCode, versionName) = remember { context.appVersion() }
+  val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
 
   Surface(
     modifier =
@@ -389,7 +391,8 @@ fun LoginScreenPreview() {
     password = "",
     onPasswordChanged = {},
     forgotPassword = {},
-    onLoginButtonClicked = {}
+    onLoginButtonClicked = {},
+    appVersionPair = Pair(1, "0.0.1")
   )
 }
 
@@ -405,6 +408,7 @@ fun LoginScreenPreviewDarkMode() {
     password = "",
     onPasswordChanged = {},
     forgotPassword = {},
-    onLoginButtonClicked = {}
+    onLoginButtonClicked = {},
+    appVersionPair = Pair(1, "0.0.1")
   )
 }

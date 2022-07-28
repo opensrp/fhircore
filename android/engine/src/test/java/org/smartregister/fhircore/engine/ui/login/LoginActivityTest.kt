@@ -21,15 +21,16 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -37,33 +38,40 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@ExperimentalCoroutinesApi
 @HiltAndroidTest
 class LoginActivityTest : ActivityRobolectricTest() {
 
   private lateinit var loginActivity: LoginActivity
 
-  @get:Rule var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) var hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 2) val coroutineTestRule: CoroutineTestRule = CoroutineTestRule()
+
+  @get:Rule(order = 3) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @BindValue val repository: DefaultRepository = mockk()
 
-  lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+
+  @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
 
   @BindValue lateinit var loginViewModel: LoginViewModel
-
-  private val accountAuthenticator: AccountAuthenticator = mockk()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -80,29 +88,21 @@ class LoginActivityTest : ActivityRobolectricTest() {
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 
     coEvery { accountAuthenticator.hasActivePin() } returns false
+    coEvery { accountAuthenticator.hasActiveSession() } returns true
 
     fhirResourceDataSource = FhirResourceDataSource(resourceService)
 
     loginViewModel =
       LoginViewModel(
         accountAuthenticator = accountAuthenticator,
-        dispatcher = DefaultDispatcherProvider(),
+        dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
         fhirResourceDataSource = fhirResourceDataSource,
         configurationRegistry = configurationRegistry
       )
 
-    loginActivity =
-      spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
-
-    configurationRegistry =
-      ConfigurationRegistry(
-        ApplicationProvider.getApplicationContext<Context>(),
-        fhirResourceDataSource,
-        sharedPreferencesHelper,
-        DefaultDispatcherProvider(),
-        repository
-      )
+    val controller = Robolectric.buildActivity(LoginActivity::class.java)
+    loginActivity = controller.create().resume().get()
 
     loginActivity.configurationRegistry = configurationRegistry
     sharedPreferencesHelper.write(APP_ID_KEY, "default")
