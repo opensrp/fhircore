@@ -16,13 +16,20 @@
 
 package org.smartregister.fhircore.engine.util
 
+import java.text.MessageFormat
 import java.util.Locale
 import java.util.MissingResourceException
 import java.util.ResourceBundle
+import javax.inject.Inject
+import javax.inject.Singleton
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
-object LocaleUtil {
-
+@Singleton
+class LocaleUtil @Inject constructor(val configurationRegistry: ConfigurationRegistry) {
+  companion object {
+    const val STRINGS_BASE_BUNDLE_NAME = "strings"
+  }
   /**
    * @param bundleName
    * @param locale
@@ -32,7 +39,9 @@ object LocaleUtil {
    */
   fun parseTemplate(bundleName: String, locale: Locale, template: String): String {
     return try {
-      val bundle = ResourceBundle.getBundle(bundleName, locale)
+      val bundle =
+        configurationRegistry.retrieveResourceBundleConfiguration(bundleName(bundleName, locale))
+          ?: ResourceBundle.getBundle(bundleName, locale)
       val lookup = mutableMapOf<String, Any>()
       bundle.keys.toList().forEach { lookup[it] = bundle.getObject(it) }
       template.interpolate(lookup, "{{", "}}")
@@ -40,6 +49,18 @@ object LocaleUtil {
       template
     }
   }
+  // To Discuss whether we need the APP_ID key here i.e. whether we need to distinguish by specific
+  // app
+  // fun bundleName(baseBundle:String, locale: Locale) =
+  // "${configurationRegistry.sharedPreferencesHelper.read(APP_ID_KEY,
+  // "")?.trimEnd()}_${baseBundle}_${locale.toLanguageTag()}"
+
+  /**
+   * @param baseBundle base name of the bundle e.g. strings
+   * @param locale the specific locale. The tag returned for French locale is fr - The resolved
+   * bundle name will be strings_fr
+   */
+  fun bundleName(baseBundle: String, locale: Locale) = "${baseBundle}_${locale.toLanguageTag()}"
 
   /**
    * Creates identifier from text by doing clean up on the passed value
@@ -53,4 +74,7 @@ object LocaleUtil {
       text.trim { it <= ' ' }.lowercase(Locale.ENGLISH).replace(" ".toRegex(), "_")
     )
   }
+
+  fun formatMessage(locale: Locale?, pattern: String?, vararg arguments: Any?) =
+    MessageFormat(pattern, locale).format(arguments)
 }

@@ -16,28 +16,29 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.util.LocaleUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.localize
 import timber.log.Timber
 
 @Singleton
-class RulesEngineService @Inject constructor(val sharedPreferencesHelper: SharedPreferencesHelper) {
+class RulesEngineService
+@Inject
+constructor(
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry
+) {
 
-  fun translate(raw: String): String {
-    var result = raw
-    try {
-
-      val lastAppId = sharedPreferencesHelper.read(APP_ID_KEY, "")?.trimEnd()
-
-      result = raw.localize()
+  fun translate(raw: String): String? {
+    return try {
+      LocaleUtil(configurationRegistry)
+        .parseTemplate(LocaleUtil.STRINGS_BASE_BUNDLE_NAME, Locale.getDefault(), raw)
     } catch (e: Exception) {
-
       Timber.e(e)
-    } finally {
-      return result
+      null
     }
   }
 }

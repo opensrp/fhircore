@@ -20,8 +20,11 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.LinkedList
 import java.util.Locale
+import java.util.PropertyResourceBundle
+import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.NoSuchElementException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -32,13 +35,12 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LocaleUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.localize
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
-import org.smartregister.fhircore.engine.util.helper.Strings_Fr
 import timber.log.Timber
 
 @Singleton
@@ -72,10 +74,14 @@ constructor(
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
       configsJsonMap.getValue(configKey).decodeResourceFromString()
-    else {
-      Strings_Fr(configsJsonMap.getValue("strings_fr").byteInputStream())
-      configsJsonMap.getValue(configKey).localize().decodeJson(jsonInstance = json)
-    }
+    else
+      LocaleUtil(this)
+        .parseTemplate(
+          LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+          Locale.getDefault(),
+          configsJsonMap.getValue(configKey)
+        )
+        .decodeJson(jsonInstance = json)
   }
 
   /**
@@ -85,6 +91,24 @@ constructor(
   inline fun <reified T : Base> retrieveResourceConfiguration(configType: ConfigType): T {
     require(configType.parseAsResource) { "Configuration MUST be a supported FHIR Resource" }
     return configsJsonMap.getValue(configType.name).decodeResourceFromString()
+  }
+
+  /**
+   * Retrieve translation configuration for the provided [bundleName]. The Bundle value is retrieved
+   * from [configsJsonMap] can be directly converted to a ResourceBundle.
+   */
+  fun retrieveResourceBundleConfiguration(bundleName: String): ResourceBundle? {
+    return try {
+      PropertyResourceBundle(configsJsonMap.getValue(bundleName).byteInputStream())
+    } catch (e: NoSuchElementException) {
+      if (bundleName.contains("_")) {
+        return retrieveResourceBundleConfiguration(
+          bundleName.substring(0, bundleName.lastIndexOf('_'))
+        )
+      } else {
+        null
+      }
+    }
   }
 
   /**
