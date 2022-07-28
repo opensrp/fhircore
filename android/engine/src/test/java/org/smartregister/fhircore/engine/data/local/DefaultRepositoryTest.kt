@@ -151,7 +151,6 @@ class DefaultRepositoryTest : RobolectricTest() {
       listOf(
         Questionnaire().apply {
           id = "12345"
-          name = "name"
           title = "title"
         }
       )
@@ -162,8 +161,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking {
       val actualPatients = defaultRepository.searchQuestionnaireConfig()
       Assert.assertEquals(1, actualPatients.size)
-      Assert.assertEquals("12345", actualPatients.first().identifier)
-      Assert.assertEquals("name", actualPatients.first().form)
+      Assert.assertEquals("12345", actualPatients.first().id)
       Assert.assertEquals("title", actualPatients.first().title)
     }
 
