@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.util.extension.extractGeneralPractition
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
-import org.smartregister.fhircore.engine.util.extension.extractSecondaryIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
@@ -61,8 +60,7 @@ constructor(
 
   fun hivPatientIdentifier(patient: Patient): String =
     // would either be an ART or HCC number
-    patient.extractOfficialIdentifier()
-      ?: patient.extractSecondaryIdentifier() ?: patient.identifierFirstRep.value ?: ""
+    patient.extractOfficialIdentifier() ?: ""
 
   override suspend fun loadRegisterData(
     currentPage: Int,
