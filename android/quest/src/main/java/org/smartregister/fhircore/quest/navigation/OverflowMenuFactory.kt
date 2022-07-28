@@ -78,7 +78,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_this_person,
+        titleResource = R.string.remove_active_person,
         titleColor = DangerColor,
         confirmAction = true
       )
@@ -94,7 +94,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_this_person,
+        titleResource = R.string.remove_active_person,
         titleColor = DangerColor,
         confirmAction = true
       )
@@ -109,7 +109,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_this_person,
+        titleResource = R.string.remove_active_person,
         titleColor = DangerColor,
         confirmAction = true
       )
@@ -123,7 +123,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_this_person,
+        titleResource = R.string.remove_active_person,
         titleColor = DangerColor,
         confirmAction = true
       )
@@ -136,7 +136,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_this_person,
+        titleResource = R.string.remove_active_person,
         titleColor = DangerColor,
         confirmAction = true
       )
@@ -150,7 +150,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
-        titleResource = R.string.remove_this_person,
+        titleResource = R.string.remove_active_person,
         titleColor = DangerColor,
         confirmAction = true
       )
