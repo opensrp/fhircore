@@ -109,7 +109,7 @@ fun PatientProfileScreen(
             expanded = showOverflowMenu,
             onDismissRequest = { showOverflowMenu = false }
           ) {
-            viewState.overflowMenuItems.forEach {
+            viewState.visibleOverflowMenuItems().forEach {
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false

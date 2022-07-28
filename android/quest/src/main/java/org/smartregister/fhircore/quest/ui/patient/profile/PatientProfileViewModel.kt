@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
-import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -160,27 +159,31 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
-          R.id.client_guardian_visit -> {
-            val updatedOverflowMenuItems =
+          R.id.guardian_visit -> {
+            val updatedMenuItems =
               patientProfileUiState.value.overflowMenuItems.map {
-                if (it.id == R.id.client_guardian_visit) {
-                  val newTitleResource =
-                    when (it.titleResource) {
-                      R.string.guardian_visit -> {
-                        filterGuardianVisitTasks()
-                        R.string.client_clinic_visit
-                      }
-                      R.string.client_clinic_visit -> {
-                        undoGuardianVisitTasksFilter()
-                        R.string.guardian_visit
-                      }
-                      else -> it.titleResource
-                    }
-                  OverflowMenuItem(it.id, newTitleResource)
-                } else it
+                when (it.id) {
+                  R.id.guardian_visit -> it.copy(hidden = true)
+                  R.id.client_visit, R.id.exposed_infant_visit -> it.copy(hidden = false)
+                  else -> it
+                }
               }
             patientProfileUiState.value =
-              patientProfileUiState.value.copy(overflowMenuItems = updatedOverflowMenuItems)
+              patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
+            filterGuardianVisitTasks()
+          }
+          R.id.client_visit, R.id.exposed_infant_visit -> {
+            val updatedMenuItems =
+              patientProfileUiState.value.overflowMenuItems.map {
+                when (it.id) {
+                  R.id.guardian_visit -> it.copy(hidden = false)
+                  R.id.client_visit, R.id.exposed_infant_visit -> it.copy(hidden = true)
+                  else -> it
+                }
+              }
+            patientProfileUiState.value =
+              patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
+            undoGuardianVisitTasksFilter()
           }
           R.id.view_family -> {
             event.familyId?.let { familyId ->

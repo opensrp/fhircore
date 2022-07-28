@@ -70,7 +70,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
   ),
   NEWLY_DIAGNOSED_PROFILE(
     listOf(
-      OverflowMenuItem(R.id.client_guardian_visit, R.string.guardian_visit),
+      OverflowMenuItem(R.id.client_visit, R.string.client_visit, hidden = true),
+      OverflowMenuItem(R.id.guardian_visit, R.string.guardian_visit),
       OverflowMenuItem(R.id.viral_load_results, R.string.viral_load_results),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
@@ -79,7 +80,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
   ),
   ART_CLIENT_PROFILE(
     listOf(
-      OverflowMenuItem(R.id.client_guardian_visit, R.string.guardian_visit),
+      OverflowMenuItem(R.id.client_visit, R.string.client_visit, hidden = true),
+      OverflowMenuItem(R.id.guardian_visit, R.string.guardian_visit),
       OverflowMenuItem(R.id.viral_load_results, R.string.viral_load_results),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
@@ -88,7 +90,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
   ),
   EXPOSED_INFANT_PROFILE(
     listOf(
-      OverflowMenuItem(R.id.exposed_infant_clinic_visit, R.string.exposed_infant_clinic_visit),
+      OverflowMenuItem(R.id.exposed_infant_visit, R.string.exposed_infant_visit, hidden = true),
+      OverflowMenuItem(R.id.guardian_visit, R.string.guardian_visit),
       OverflowMenuItem(R.id.hiv_test_and_results, R.string.hiv_test_and_results),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),

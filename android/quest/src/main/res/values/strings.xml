@@ -40,12 +40,12 @@
     <string name="individual_details">Individual details</string>
     <string name="view_family">View family</string>
 
-    <string name="client_clinic_visit">Client Clinic Visit</string>
+    <string name="client_visit">Client Visit</string>
     <string name="guardian_visit">Guardian Visit</string>
     <string name="viral_load_results">Viral Load Results</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="guardian_management">Guardian Management</string>
-    <string name="exposed_infant_clinic_visit">Exposed Infant Clinic Visit</string>
+    <string name="exposed_infant_visit">Exposed Infant Visit</string>
     <string name="clinic_history">Clinic History</string>
     <string name="hiv_test_and_results">HIV Test and Results</string>
     <string name="hiv_test_and_next_appointment">HIV Test and Next Appointment</string>

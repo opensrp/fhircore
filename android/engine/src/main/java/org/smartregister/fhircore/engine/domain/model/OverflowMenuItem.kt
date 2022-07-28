@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import androidx.annotation.IdRes
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
 
 data class OverflowMenuItem(
-  val id: Int,
-  val titleResource: Int,
+  @IdRes val id: Int,
+  @StringRes val titleResource: Int,
   val confirmAction: Boolean = false,
-  val titleColor: Color = Color.Black.copy(alpha = 0.7f)
+  val titleColor: Color = Color.Black.copy(alpha = 0.7f),
+  val hidden: Boolean = false
 )
