@@ -44,7 +44,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheet
+import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -128,7 +128,7 @@ constructor(
       }
       is AppMainEvent.OpenRegistersBottomSheet -> {
         (event.context as AppCompatActivity).let { activity ->
-          RegisterBottomSheet(
+          RegisterBottomSheetFragment(
               navigationMenuConfigs = event.registersList,
               registerCountMap = appMainUiState.value.registerCountMap,
               menuClickListener = {
@@ -142,7 +142,7 @@ constructor(
                 )
               }
             )
-            .run { show(activity.supportFragmentManager, RegisterBottomSheet.TAG) }
+            .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
         }
       }
       is AppMainEvent.UpdateSyncState -> {

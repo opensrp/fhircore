@@ -45,7 +45,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
+import org.smartregister.fhircore.engine.app.fakes.Faker.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource

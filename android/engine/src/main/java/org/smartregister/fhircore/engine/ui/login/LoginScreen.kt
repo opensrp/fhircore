@@ -391,7 +391,8 @@ fun LoginScreenPreview() {
     password = "",
     onPasswordChanged = {},
     forgotPassword = {},
-    onLoginButtonClicked = {}
+    onLoginButtonClicked = {},
+    appVersionPair = Pair(1, "0.0.1")
   )
 }
 
@@ -407,6 +408,7 @@ fun LoginScreenPreviewDarkMode() {
     password = "",
     onPasswordChanged = {},
     forgotPassword = {},
-    onLoginButtonClicked = {}
+    onLoginButtonClicked = {},
+    appVersionPair = Pair(1, "0.0.1")
   )
 }

@@ -30,23 +30,26 @@ import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.readFile
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.toSha1
 
 object Faker {
 
+  val authCredentials =
+    AuthCredentials(
+      username = "demo",
+      password = "51r1K4l1".toSha1(),
+      sessionToken = "49fad390491a5b547d0f782309b6a5b33f7ac087",
+      refreshToken = "USrAgmSf5MJ8N_RLQODa7rZ3zNs1Sj1GkSIsTsb4n-Y"
+    )
+
   private val systemPath =
-    (System.getProperty("user.dir") +
-      File.separator +
-      "src" +
-      File.separator +
-      "main" +
-      File.separator +
-      "assets" +
-      File.separator)
+    "${System.getProperty("user.dir")?.plus(File.separator) ?: "."}src${File.separator}main${File.separator}assets${File.separator}"
 
   fun loadTestConfigurationRegistryData(
     defaultRepository: DefaultRepository,

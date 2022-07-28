@@ -29,11 +29,11 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class RegisterBottomSheetTest : RobolectricTest() {
+class RegisterBottomSheetFragmentTest : RobolectricTest() {
 
-  private val registerBottomSheet =
+  private val registerBottomSheetFragment =
     spyk(
-      RegisterBottomSheet(
+      RegisterBottomSheetFragment(
         listOf(
           NavigationMenuConfig(id = "UniqueTag1", display = "Menu 1"),
           NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2")
@@ -56,8 +56,11 @@ class RegisterBottomSheetTest : RobolectricTest() {
 
   @Test
   fun testThatBottomSheetIsShown() {
-    Assert.assertEquals(2, registerBottomSheet.navigationMenuConfigs?.size)
-    registerBottomSheet.show(activity.supportFragmentManager, RegisterBottomSheet.TAG)
-    Assert.assertTrue(registerBottomSheet.showsDialog)
+    Assert.assertEquals(2, registerBottomSheetFragment.navigationMenuConfigs?.size)
+    registerBottomSheetFragment.show(
+      activity.supportFragmentManager,
+      RegisterBottomSheetFragment.TAG
+    )
+    Assert.assertTrue(registerBottomSheetFragment.showsDialog)
   }
 }
