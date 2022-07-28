@@ -130,7 +130,8 @@ constructor(
           subjectId = resourceId,
           subjectType = ResourceType.Patient,
           subjectParam = CarePlan.SUBJECT
-        )
+        ) as
+          ArrayList
     )
   }
 

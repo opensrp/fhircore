@@ -35,7 +35,12 @@ sealed class PatientProfileEvent {
     val taskId: String,
     val patientId: String,
     val carePlans: ArrayList<CarePlan>? = null
-  ) : PatientProfileEvent()
+  ) : PatientProfileEvent() {
+    fun getActiveCarePlans(): ArrayList<CarePlan> {
+      if (carePlans.isNullOrEmpty()) return ArrayList()
+      return carePlans.filter { it.status.equals(CarePlan.CarePlanStatus.ACTIVE) } as ArrayList
+    }
+  }
 
   data class OverflowMenuClick(
     val navController: NavHostController,
@@ -44,5 +49,10 @@ sealed class PatientProfileEvent {
     val patientId: String,
     val familyId: String? = null,
     val carePlans: ArrayList<CarePlan>? = null
-  ) : PatientProfileEvent()
+  ) : PatientProfileEvent() {
+    fun getActiveCarePlans(): ArrayList<CarePlan> {
+      if (carePlans.isNullOrEmpty()) return ArrayList()
+      return carePlans.filter { it.status.equals(CarePlan.CarePlanStatus.ACTIVE) } as ArrayList
+    }
+  }
 }

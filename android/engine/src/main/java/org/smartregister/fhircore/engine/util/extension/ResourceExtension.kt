@@ -25,6 +25,8 @@ import java.util.Date
 import java.util.UUID
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
+import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
@@ -245,3 +247,34 @@ fun generateUniqueId() = UUID.randomUUID().toString()
 
 fun Base.extractWithFhirPath(expression: String) =
   FhirPathDataExtractor.extractData(this, expression).firstOrNull()?.primitiveValue() ?: ""
+
+fun ArrayList<CarePlan>.asBaseResources(): ArrayList<Resource> {
+  var list = ArrayList<Resource>()
+  this.forEach() { carePlan ->
+    var temp = Binary()
+    temp.contentAsBase64 = carePlan.id
+    // temp.contentAsBase64 = carePlan.encodeResourceToString(fhirR4JsonParser)
+    println(temp.contentAsBase64)
+    println(temp.toString())
+    list.add(temp)
+  }
+  println("mapping asBaseResource size = " + list.size)
+  return list
+}
+
+fun ArrayList<Resource>.asCarePlanDomainResource(): ArrayList<CarePlan> {
+  var list = ArrayList<CarePlan>()
+
+  this.forEach() { resource ->
+    var tempBinary = resource as Binary
+    println(tempBinary.toString())
+    println(tempBinary.contentAsBase64)
+    var carePlan = CarePlan()
+    carePlan.id = tempBinary.contentAsBase64
+    // var temp = tempBinary.contentAsBase64.decodeResourceFromString<CarePlan>(fhirR4JsonParser)
+    println(carePlan.id)
+    list.add(carePlan)
+  }
+  println("mapping asCarePlanDomainResource size = " + list.size)
+  return list
+}
