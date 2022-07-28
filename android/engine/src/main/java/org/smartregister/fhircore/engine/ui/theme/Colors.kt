@@ -48,6 +48,7 @@ val PersonalDataBackgroundColor = Color(0xFFF5F5F5)
 val PatientProfileSectionsBackgroundColor = Color(0xFFF2F4F7)
 val MenuActionButtonTextColor = Color(0xFF28B8F9)
 val MenuItemColor = Color(0xFFBFBFBF)
+val SearchHeaderColor = Color(0xFFF2F4F7)
 
 private val PrimaryColor = Color(0xFF005084)
 private val PrimaryVariantColor = Color(0xFF003D66)

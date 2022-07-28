@@ -63,7 +63,25 @@
           "focus": {
             "reference": "Binary/11111115",
             "identifier": {
-              "value": "patient_register"
+              "value": "household_register"
+            }
+          }
+        },
+        {
+          "title": "Task register configuration",
+          "focus": {
+            "reference": "Binary/11111116",
+            "identifier": {
+              "value": "task_register"
+            }
+          }
+        },
+        {
+          "title": "ANC register configuration",
+          "focus": {
+            "reference": "Binary/11111117",
+            "identifier": {
+              "value": "anc_register"
             }
           }
         }

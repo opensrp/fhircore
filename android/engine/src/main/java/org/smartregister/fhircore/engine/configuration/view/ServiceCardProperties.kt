@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
@@ -34,7 +33,7 @@ data class ServiceCardProperties(
 data class ServiceButton(
   val visible: Boolean? = null,
   val text: String? = null,
-  val status: ServiceStatus = ServiceStatus.UPCOMING,
+  val status: String,
   val smallSized: Boolean = false,
   val questionnaire: QuestionnaireConfig? = null
 )

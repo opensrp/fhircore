@@ -1,0 +1,125 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "household_register",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "id": "householdQueryByType",
+          "filterType": "TOKEN",
+          "key": "type",
+          "valueType": "CODING",
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/group-type",
+            "code": "person"
+          }
+        },
+        {
+          "id": "householdQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "35359004"
+          }
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "Patient",
+        "fhirPathExpression": "Group.member.entity",
+        "relatedResources": [
+          {
+            "resource": "Condition",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "CarePlan",
+            "searchParameter": "subject"
+          }
+        ]
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "id": "filterHouseholdCarePlans",
+            "filterType": "TOKEN",
+            "key": "_tag",
+            "valueType": "CODING",
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "35359004"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "filter": {
+    "visible": true,
+    "display": "Show overdue",
+    "rules": [
+      {
+        "name": "filter",
+        "condition": "",
+        "actions": [
+          ""
+        ]
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "Search name or ID",
+    "computedRules": [
+      "familyName"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "familyName",
+        "condition": "true",
+        "actions": [
+          "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{familyName} Family",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Village/Address",
+                "primaryTextColor": "#5A5A5A"
+              }
+            ],
+            "showVerticalDivider": true,
+            "serviceMemberIcons": "PREGNANT_WOMAN,CHILD,CHILD",
+            "serviceButton": {
+              "visible": true,
+              "text": "1",
+              "status": "OVERDUE",
+              "smallSized": false
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

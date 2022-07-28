@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -35,6 +34,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -52,7 +52,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
@@ -78,66 +80,80 @@ fun AppDrawer(
   appUiState: AppMainUiState,
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
-  onSideMenuClick: (AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  appVersionPair: Pair<Int, String>? = null
 ) {
   val context = LocalContext.current
-  val (versionCode, versionName) = remember { context.appVersion() }
+  val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
 
-  Column(
-    verticalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier.fillMaxHeight().background(SideMenuDarkColor)
-  ) {
+  Scaffold(
+    topBar = {
+      Column(modifier = modifier.background(SideMenuDarkColor)) {
+        // Display the app name and version
+        NavTopSection(modifier, appUiState, versionCode, versionName)
 
-    // Display the app name and version
-    NavTopSection(modifier, appUiState, versionCode, versionName)
+        // Display menu action button
+        MenuActionButton(
+          modifier = modifier,
+          navigationConfiguration = appUiState.navigationConfiguration,
+          onSideMenuClick = onSideMenuClick,
+          context = context
+        )
 
-    // Display menu action button
-    MenuActionButton(
-      modifier = modifier,
-      navigationConfiguration = appUiState.navigationConfiguration,
-      onSideMenuClick = onSideMenuClick,
-      context = context
-    )
+        Divider(color = DividerColor)
+      }
+    },
+    bottomBar = { // Display bottom section of the nav (sync)
+      NavBottomSection(modifier, appUiState, onSideMenuClick)
+    },
+    backgroundColor = SideMenuDarkColor
+  ) { innerPadding ->
+    Box(modifier = modifier.padding(innerPadding)) {
+      Column {
+        // Display list of configurable client registers
+        Column(modifier = modifier.background(SideMenuDarkColor).padding(16.dp)) {
+          if (appUiState.navigationConfiguration.clientRegisters.isNotEmpty()) {
+            Text(
+              text = stringResource(id = R.string.registers).uppercase(),
+              fontSize = 14.sp,
+              color = MenuItemColor
+            )
+          }
+          Spacer(modifier = modifier.height(8.dp))
+          ClientRegisterMenus(
+            appUiState = appUiState,
+            context = context,
+            navController = navController,
+            openDrawer = openDrawer,
+            onSideMenuClick = onSideMenuClick
+          )
+          if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() ==
+              true
+          ) {
+            OtherPatientsItem(
+              navigationConfiguration = appUiState.navigationConfiguration,
+              onSideMenuClick = onSideMenuClick,
+              context = context,
+              openDrawer = openDrawer,
+              navController
+            )
+          }
+        }
 
-    Divider(color = DividerColor)
+        Divider(color = DividerColor)
 
-    // Display list of configurable client registers
-    Column(modifier.background(SideMenuDarkColor).padding(16.dp)) {
-      if (appUiState.navigationConfiguration.clientRegisters.isNotEmpty()) {
-        Text(
-          text = stringResource(id = R.string.registers).uppercase(),
-          fontSize = 14.sp,
-          color = MenuItemColor
+        // Display list of configurable static menu
+        StaticMenus(
+          modifier = modifier.background(SideMenuDarkColor),
+          navigationConfiguration = appUiState.navigationConfiguration,
+          context = context,
+          navController = navController,
+          openDrawer = openDrawer,
+          onSideMenuClick = onSideMenuClick,
+          appUiState = appUiState
         )
       }
-      Spacer(modifier = modifier.height(8.dp))
-      ClientRegisterMenus(
-        navigationConfiguration = appUiState.navigationConfiguration,
-        context = context,
-        navController = navController,
-        openDrawer = openDrawer,
-        onSideMenuClick = onSideMenuClick
-      )
-      if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true
-      ) {
-        OtherPatientsItem(appUiState.navigationConfiguration, onSideMenuClick, context, openDrawer)
-      }
     }
-
-    Divider(color = DividerColor)
-
-    // Display list of configurable static menu
-    StaticMenus(
-      modifier = modifier.background(SideMenuDarkColor),
-      navigationConfiguration = appUiState.navigationConfiguration,
-      context = context,
-      navController = navController,
-      openDrawer = openDrawer,
-      onSideMenuClick = onSideMenuClick
-    )
-
-    // Display bottom section of the nav (sync)
-    NavBottomSection(modifier, appUiState, onSideMenuClick)
   }
 }
 
@@ -167,7 +183,8 @@ private fun OtherPatientsItem(
   navigationConfiguration: NavigationConfiguration,
   onSideMenuClick: (AppMainEvent) -> Unit,
   context: Context,
-  openDrawer: (Boolean) -> Unit
+  openDrawer: (Boolean) -> Unit,
+  navController: NavHostController
 ) {
   SideMenuItem(
     iconResource = null,
@@ -181,7 +198,8 @@ private fun OtherPatientsItem(
       onSideMenuClick(
         AppMainEvent.OpenRegistersBottomSheet(
           context = context,
-          registersList = navigationConfiguration.bottomSheetRegisters?.registers
+          registersList = navigationConfiguration.bottomSheetRegisters?.registers,
+          navController = navController
         )
       )
     }
@@ -217,27 +235,27 @@ private fun NavTopSection(
 
 @Composable
 private fun ClientRegisterMenus(
-  navigationConfiguration: NavigationConfiguration,
+  appUiState: AppMainUiState,
   context: Context,
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit
 ) {
   LazyColumn {
-    items(navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
+    items(appUiState.navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
       SideMenuItem(
-        // TODO Do we want save icons as base64 encoded strings
         iconResource = context.retrieveResourceId(navigationMenu.icon),
         title = navigationMenu.display,
-        endText = "", // TODO compute register count
+        endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
         showEndText = navigationMenu.showCount,
         onSideMenuClick = {
           openDrawer(false)
           onSideMenuClick(
-            AppMainEvent.NavigateToScreen(
+            AppMainEvent.TriggerWorkflow(
               navController = navController,
               actions = navigationMenu.actions,
-              registerId = navigationMenu.id
+              navMenu = navigationMenu,
+              context = context
             )
           )
         }
@@ -253,7 +271,8 @@ private fun StaticMenus(
   context: Context,
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
-  onSideMenuClick: (AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  appUiState: AppMainUiState
 ) {
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
     items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
@@ -261,16 +280,16 @@ private fun StaticMenus(
         // TODO Do we want save icons as base64 encoded strings
         iconResource = context.retrieveResourceId(navigationMenu.icon),
         title = navigationMenu.display,
-        endText = "", // TODO compute register count
+        endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
         showEndText = navigationMenu.showCount,
         onSideMenuClick = {
           openDrawer(false)
           onSideMenuClick(
-            AppMainEvent.NavigateToMenu(
+            AppMainEvent.TriggerWorkflow(
               context = context,
               navController = navController,
               actions = navigationMenu.actions,
-              registerId = navigationMenu.id
+              navMenu = navigationMenu
             )
           )
         }
@@ -354,7 +373,6 @@ private fun SideMenuItem(
     if (showEndText) {
       SideMenuItemText(title = endText, textColor = endTextColor)
     }
-
     endIconResource?.let { icon ->
       Icon(
         modifier = modifier.padding(end = 10.dp),
@@ -396,12 +414,20 @@ fun AppDrawerPreview() {
         username = "Demo",
         lastSyncTime = "05:30 PM, Mar 3",
         currentLanguage = "English",
-        languages =
-          listOf(Language("en", "English"), Language("sw", "Swahili"), Language("fr", "French")),
-        navigationConfiguration = NavigationConfiguration(appId = "appId")
+        languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+        navigationConfiguration =
+          NavigationConfiguration(
+            appId = "appId",
+            configType = ConfigType.Navigation.name,
+            staticMenu = listOf(),
+            clientRegisters = listOf(),
+            menuActionButton =
+              NavigationMenuConfig(id = "id1", visible = true, display = "Register Household")
+          )
       ),
     navController = rememberNavController(),
     openDrawer = {},
-    onSideMenuClick = {}
+    onSideMenuClick = {},
+    appVersionPair = Pair(1, "0.0.1")
   )
 }

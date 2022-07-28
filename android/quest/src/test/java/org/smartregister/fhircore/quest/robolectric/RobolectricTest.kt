@@ -160,15 +160,9 @@ abstract class RobolectricTest {
   }
 
   companion object {
-    val ASSET_BASE_PATH =
-      (System.getProperty("user.dir") +
-        File.separator +
-        "src" +
-        File.separator +
-        "test" +
-        File.separator +
-        "resources" +
-        File.separator)
+    val APP_DEBUG = "app/debug"
+    private val ASSET_BASE_PATH =
+      "${System.getProperty("user.dir")}${File.separator}src${File.separator}test${File.separator}resources${File.separator}"
 
     fun String.readFile(systemPath: String = ASSET_BASE_PATH): String {
       val file = File("$systemPath/$this")

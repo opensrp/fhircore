@@ -20,10 +20,8 @@ import android.content.Intent
 import androidx.compose.material.ExperimentalMaterialApi
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -35,7 +33,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 
@@ -47,7 +44,7 @@ class QuestLoginServiceTest : RobolectricTest() {
 
   @Inject lateinit var questLoginService: QuestLoginService
 
-  private lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   lateinit var loginActivity: LoginActivity
 
@@ -56,7 +53,6 @@ class QuestLoginServiceTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking { configurationRegistry = Faker.buildTestConfigurationRegistry("quest", mockk()) }
     loginService = spyk(questLoginService)
     loginActivity = Robolectric.buildActivity(LoginActivity::class.java).get()
     loginService.loginActivity = loginActivity

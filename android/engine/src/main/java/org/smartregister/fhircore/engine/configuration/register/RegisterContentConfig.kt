@@ -25,8 +25,5 @@ data class RegisterContentConfig(
   val display: String? = null,
   val rules: List<RuleConfig>? = null,
   val visible: Boolean? = null,
-  val columnOne: RegisterContentConfig? = null,
-  val columnTwo: RegisterContentConfig? = null,
-  val rowOne: RegisterContentConfig? = null,
-  val rowTwo: RegisterContentConfig? = null
+  val computedRules: List<String>? = null
 )

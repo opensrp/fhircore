@@ -81,9 +81,16 @@ import org.smartregister.p2p.utils.capitalize
  * A register card is a configurable view component that renders views for every of the rows of the
  * register. A register card consumes the data provided via the [ResourceData] class. The views are
  * configured via the [RegisterCardConfig]. The card also has an [onCardClick] listener that
- * responds to the click events of the register.
+ * responds to the click events.
  *
- * The [RegisterCardConfig] defines rules that should be pre-computed before
+ * The [ResourceData.computedValuesMap] provides a map of computed rules values that can now be used
+ * in the view.
+ *
+ * Note that by default the register card is not rendered in a view group like a Column/Row. This is
+ * to allow us to call the function recursively for nested view group layout. Therefore when using
+ * the this layout, provide a parent layout (usually Row/Column) so that the views can be rendered
+ * appropriately otherwise the generated view group will be rendered one on top of the other. See
+ * the Previews samples in this files.
  */
 @Composable
 fun RegisterCard(
@@ -226,7 +233,7 @@ fun ServiceCard(
           .padding(top = 24.dp, bottom = 24.dp)
           .weight(0.75f)
     ) {
-      Column {
+      Column(modifier = modifier.wrapContentWidth(Alignment.Start).weight(0.7f)) {
         serviceCardProperties.details.forEach {
           CompoundText(
             compoundTextProperties = it,
@@ -234,7 +241,11 @@ fun ServiceCard(
           )
         }
       }
-      ServiceMemberIcons(modifier = modifier, serviceCardProperties.serviceMemberIcons)
+      ServiceMemberIcons(
+        modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
+        serviceMemberIcons =
+          serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
+      )
     }
 
     // Display a vertical divider to separate service card details from action button
@@ -258,13 +269,14 @@ fun ServiceCard(
         if (serviceCardProperties.serviceButton!!.smallSized) {
           SmallServiceButton(
             modifier = modifier,
-            serviceButton = serviceCardProperties.serviceButton!!
+            serviceButton = serviceCardProperties.serviceButton!!,
+            computedValuesMap = resourceData.computedValuesMap
           )
         } else {
           BigServiceButton(
             modifier = modifier,
             serviceButton = serviceCardProperties.serviceButton!!,
-            computedValuesMap = resourceData.computedValuesMap
+            computedValuesMap = resourceData.computedValuesMap,
           )
         }
       }
@@ -299,8 +311,12 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
 }
 
 @Composable
-private fun SmallServiceButton(modifier: Modifier = Modifier, serviceButton: ServiceButton) {
-  val statusColor = serviceButton.statusColor()
+private fun SmallServiceButton(
+  modifier: Modifier = Modifier,
+  serviceButton: ServiceButton,
+  computedValuesMap: Map<String, Any>
+) {
+  val statusColor = serviceButton.statusColor(computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   Row(
     modifier =
@@ -324,7 +340,6 @@ private fun SmallServiceButton(modifier: Modifier = Modifier, serviceButton: Ser
       fontWeight = FontWeight.Bold,
       modifier = modifier.padding(4.dp).wrapContentHeight(Alignment.CenterVertically),
       overflow = TextOverflow.Visible,
-      maxLines = 1
     )
   }
 }
@@ -335,8 +350,12 @@ private fun BigServiceButton(
   serviceButton: ServiceButton,
   computedValuesMap: Map<String, Any>
 ) {
-  val statusColor = serviceButton.statusColor()
+  val statusColor = serviceButton.statusColor(computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
+  val extractedStatus = remember {
+    ServiceStatus.valueOf(serviceButton.status.interpolate(computedValuesMap))
+  }
+
   Column(
     modifier =
       modifier
@@ -344,25 +363,25 @@ private fun BigServiceButton(
         .padding(8.dp)
         .clip(RoundedCornerShape(4.dp))
         .background(
-          if (serviceButton.status == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
+          if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
         ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    if (serviceButton.status == ServiceStatus.COMPLETED)
+    if (extractedStatus == ServiceStatus.COMPLETED)
       Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
     Text(
       text = serviceButton.text?.interpolate(computedValuesMap, "@{", "}") ?: "",
-      color = if (serviceButton.status == ServiceStatus.OVERDUE) Color.White else contentColor,
+      color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
       textAlign = TextAlign.Center
     )
   }
 }
 
 @Composable
-private fun ServiceButton.statusColor(): Color = remember {
+private fun ServiceButton.statusColor(computedValuesMap: Map<String, Any>): Color = remember {
   // Status color is determined from the service status
-  when (this.status) {
+  when (ServiceStatus.valueOf(this.status.interpolate(computedValuesMap))) {
     ServiceStatus.DUE -> InfoColor
     ServiceStatus.OVERDUE -> DangerColor
     ServiceStatus.UPCOMING -> DefaultColor
@@ -373,7 +392,7 @@ private fun ServiceButton.statusColor(): Color = remember {
 @Preview(showBackground = true)
 @Composable
 private fun CompoundTextNoSecondaryTextPreview() {
-  Column(modifier = Modifier.fillMaxWidth()) {
+  Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
@@ -396,7 +415,7 @@ private fun CompoundTextNoSecondaryTextPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun CompoundTextWithSecondaryTextPreview() {
-  Column(modifier = Modifier.fillMaxWidth()) {
+  Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
     CompoundText(
       compoundTextProperties =
         CompoundTextProperties(
@@ -434,7 +453,7 @@ private fun RegisterCardServiceOverduePreview() {
                 listOf(
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Household Name HH",
+                    primaryText = "Overdue household service",
                     primaryTextColor = "#000000",
                   ),
                   CompoundTextProperties(
@@ -455,7 +474,7 @@ private fun RegisterCardServiceOverduePreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.OVERDUE,
+                  status = ServiceStatus.OVERDUE.name,
                   text = "1",
                   smallSized = false
                 )
@@ -464,7 +483,7 @@ private fun RegisterCardServiceOverduePreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -509,7 +528,7 @@ private fun RegisterCardServiceDuePreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.DUE,
+                  status = ServiceStatus.DUE.name,
                   text = "Issue Bed net",
                   smallSized = false
                 )
@@ -518,7 +537,7 @@ private fun RegisterCardServiceDuePreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -563,7 +582,7 @@ private fun RegisterCardServiceUpcomingPreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.UPCOMING,
+                  status = ServiceStatus.UPCOMING.name,
                   text = "Next visit 09-10-2022",
                   smallSized = false
                 )
@@ -572,7 +591,7 @@ private fun RegisterCardServiceUpcomingPreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -616,7 +635,7 @@ private fun RegisterCardServiceCompletedPreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.COMPLETED,
+                  status = ServiceStatus.COMPLETED.name,
                   text = "Fully Vaccinated",
                   smallSized = false
                 )
@@ -625,7 +644,7 @@ private fun RegisterCardServiceCompletedPreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -664,7 +683,7 @@ private fun RegisterCardANCServiceDuePreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.DUE,
+                  status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
                   smallSized = true
                 )
@@ -673,7 +692,7 @@ private fun RegisterCardANCServiceDuePreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
@@ -712,7 +731,7 @@ private fun RegisterCardANCServiceOverduePreview() {
               serviceButton =
                 ServiceButton(
                   visible = true,
-                  status = ServiceStatus.OVERDUE,
+                  status = ServiceStatus.OVERDUE.name,
                   text = "ANC Visit",
                   smallSized = true
                 )
@@ -721,7 +740,7 @@ private fun RegisterCardANCServiceOverduePreview() {
       )
     )
 
-  Column {
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
     RegisterCard(
       registerCardViewProperties = registerCardViewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),

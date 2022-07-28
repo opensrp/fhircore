@@ -26,7 +26,6 @@ import com.google.android.fhir.get
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
-import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
@@ -98,7 +97,7 @@ suspend fun FhirEngine.countActivePatients(): Long =
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {
-    this@loadResource.get(resourceId)
+    this.get(resourceId)
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }
@@ -106,9 +105,7 @@ suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: St
 
 suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson>? {
   return try {
-    this@loadRelatedPersons.search {
-      apply { filter(RelatedPerson.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
-    }
+    this.search { filter(RelatedPerson.PATIENT, { value = "Patient/$patientId" }) }
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }
@@ -116,10 +113,7 @@ suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson
 
 suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immunization>? {
   return try {
-    this@loadPatientImmunizations.search {
-      filter(Immunization.PATIENT, { value = "Patient/$patientId" })
-      apply { filter(Immunization.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
-    }
+    this.search { filter(Immunization.PATIENT, { value = "Patient/$patientId" }) }
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }

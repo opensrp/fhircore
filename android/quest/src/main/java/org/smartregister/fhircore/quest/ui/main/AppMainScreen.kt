@@ -36,7 +36,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
-import org.smartregister.fhircore.engine.configuration.workflow.WorkflowTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -95,6 +95,16 @@ fun MainScreen(
   }
 }
 
+/**
+ * The main screen composable function that includes the [NavHost] which provides a place for self
+ * contained navigation. The screens are provided via the list of [MainNavigationScreen] and are
+ * configured using the [NavigationConfiguration]. The main screen is composed of three parts
+ * including: the side menu (navigation drawer), mid content section and the bottom navigation bar.
+ * The [mainNavigationScreens] are rendered in the content section of the main screen depending on
+ * the [MainNavigationScreen.route]. [MeasureReportViewModel] and [AppMainViewModel] are provided to
+ * this composable function to handle any business logic. The [openDrawer] function is used to
+ * toggle between opening and closing the navigation drawer.
+ */
 @Composable
 private fun AppMainNavigationGraph(
   navController: NavHostController,
@@ -106,9 +116,9 @@ private fun AppMainNavigationGraph(
 ) {
   val firstNavigationMenu = navigationConfiguration.clientRegisters.first()
 
-  // registerId = (id of the register's click action) otherwise use navigation menu id
+  // The id of the register's click action, if it exists, otherwise the first navigation menu id
   val firstRegisterId =
-    firstNavigationMenu.actions?.find { it.trigger == WorkflowTrigger.ON_CLICK }?.id
+    firstNavigationMenu.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id
       ?: firstNavigationMenu.id
 
   val homeUrlParams = routePathsOf(NavigationArg.SCREEN_TITLE, NavigationArg.REGISTER_ID)

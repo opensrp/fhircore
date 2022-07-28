@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.data.patient
 
+import android.database.SQLException
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
@@ -51,8 +52,7 @@ class PatientRegisterPagingSource(
       val registerData =
         patientRegisterRepository.loadRegisterData(
           currentPage = currentPage,
-          registerId = _patientPagingSourceState.registerId,
-          loadAll = _patientPagingSourceState.loadAll
+          registerId = _patientPagingSourceState.registerId
         )
 
       val prevKey =
@@ -68,7 +68,7 @@ class PatientRegisterPagingSource(
         }
 
       LoadResult.Page(data = registerData, prevKey = prevKey, nextKey = nextKey)
-    } catch (exception: Exception) {
+    } catch (exception: SQLException) {
       Timber.e(exception)
       LoadResult.Error(exception)
     }
@@ -79,11 +79,13 @@ class PatientRegisterPagingSource(
   }
 
   override fun getRefreshKey(state: PagingState<Int, ResourceData>): Int? {
-    return state.anchorPosition
+    return state.anchorPosition?.let { anchorPosition ->
+      state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
+        ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
+    }
   }
 
   companion object {
     const val DEFAULT_PAGE_SIZE = 20
-    const val DEFAULT_INITIAL_LOAD_SIZE = 20
   }
 }

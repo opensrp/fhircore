@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.model
+package org.smartregister.fhircore.engine.configuration.workflow
 
-enum class ServiceStatus {
-  DUE,
-  OVERDUE,
-  UPCOMING,
-  COMPLETED
+/** An application event that can trigger a workflow. Examples button click, on back press etc */
+enum class ActionTrigger {
+  /**
+   * An action that is performed when user presses a button or any actionable component in the UI
+   */
+  ON_CLICK,
+
+  /** An action triggered when the user exits their current screen */
+  ON_CLOSE,
+
+  /** Action that is triggered to count register items */
+  ON_COUNT
 }

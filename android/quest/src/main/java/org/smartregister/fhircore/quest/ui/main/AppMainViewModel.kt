@@ -19,8 +19,11 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -29,18 +32,22 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
-import org.smartregister.fhircore.engine.configuration.workflow.WorkflowTrigger
-import org.smartregister.fhircore.engine.navigation.NavigationBottomSheet
+import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheet
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -62,7 +69,9 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val configService: ConfigService
+  val configService: ConfigService,
+  val patientRegisterRepository: PatientRegisterRepository,
+  val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
 
   val appMainUiState: MutableState<AppMainUiState> =
@@ -81,6 +90,10 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  private val navigationConfiguration: NavigationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+  }
+
   fun retrieveAppMainUiState() {
     appMainUiState.value =
       appMainUiStateOf(
@@ -89,7 +102,8 @@ constructor(
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
-        navigationConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+        navigationConfiguration = navigationConfiguration,
+        registerCountMap = retrieveRegisterCountMap()
       )
   }
 
@@ -113,15 +127,24 @@ constructor(
         )
       }
       is AppMainEvent.OpenRegistersBottomSheet -> {
-        event.context.run {
-          (this as AppCompatActivity).let { activity ->
-            val navigationBottomSheet =
-              NavigationBottomSheet(registersList = event.registersList) {}
-            navigationBottomSheet.show(activity.supportFragmentManager, NavigationBottomSheet.TAG)
-          }
+        (event.context as AppCompatActivity).let { activity ->
+          RegisterBottomSheet(
+              navigationMenuConfigs = event.registersList,
+              registerCountMap = appMainUiState.value.registerCountMap,
+              menuClickListener = {
+                onEvent(
+                  AppMainEvent.TriggerWorkflow(
+                    context = event.context,
+                    navController = event.navController,
+                    actions = it.actions,
+                    navMenu = it
+                  )
+                )
+              }
+            )
+            .run { show(activity.supportFragmentManager, RegisterBottomSheet.TAG) }
         }
       }
-      is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
           is State.Finished, is State.Failed -> {
@@ -134,28 +157,53 @@ constructor(
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.NavigateToScreen -> {
-        val navigationAction =
-          event.actions?.find {
-            it.trigger == WorkflowTrigger.ON_CLICK &&
-              it.workflow == ApplicationWorkflow.LAUNCH_REGISTER
-          }
+      is AppMainEvent.TriggerWorkflow -> {
+        val navigationAction = event.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
 
-        val urlParams = bindArgumentsOf(Pair(NavigationArg.REGISTER_ID, event.registerId))
-        event.navController.navigate(route = MainNavigationScreen.Home.route + urlParams)
-      }
-      is AppMainEvent.NavigateToMenu -> {
-        /** Collecting the navigation action where the trigger is of type 'ON_CLICK' */
-        val navigationAction = event.actions?.find { it.trigger == WorkflowTrigger.ON_CLICK }
-        /** Navigating to appropriate screen based on the navigationAction's Workflow */
         when (navigationAction?.workflow) {
           ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(context = event.context)
           ApplicationWorkflow.LAUNCH_SETTINGS ->
             event.navController.navigate(route = MainNavigationScreen.Settings.route)
           ApplicationWorkflow.LAUNCH_REPORT ->
             event.navController.navigate(route = MainNavigationScreen.Reports.route)
-          else -> event.navController.navigate(route = MainNavigationScreen.Home.route)
+          ApplicationWorkflow.LAUNCH_REGISTER -> {
+            val urlParams =
+              bindArgumentsOf(
+                Pair(NavigationArg.REGISTER_ID, event.navMenu.id),
+                Pair(NavigationArg.SCREEN_TITLE, event.navMenu.display)
+              )
+            event.navController.navigate(route = MainNavigationScreen.Home.route + urlParams)
+          }
+          ApplicationWorkflow.LAUNCH_PROFILE ->
+            // TODO bind the necessary patient profile url params
+            event.navController.navigate(MainNavigationScreen.PatientProfile.route)
+          null -> return
         }
+      }
+    }
+  }
+
+  private fun retrieveRegisterCountMap(): Map<String, Long> {
+    val countsMap = mutableStateMapOf<String, Long>()
+    viewModelScope.launch(dispatcherProvider.io()) {
+      with(navigationConfiguration) {
+        clientRegisters.setRegisterCount(countsMap)
+        bottomSheetRegisters?.registers?.setRegisterCount(countsMap)
+      }
+    }
+    return countsMap
+  }
+
+  private suspend fun List<NavigationMenuConfig>.setRegisterCount(
+    countsMap: SnapshotStateMap<String, Long>
+  ) {
+    // Set count for registerId against its value. Use action Id; otherwise default to menu id
+    this.filter { it.showCount }.forEach { menuConfig ->
+      val countAction =
+        menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
+      if (countAction != null) {
+        countsMap[countAction.id ?: menuConfig.id] =
+          patientRegisterRepository.countRegisterData(menuConfig.id)
       }
     }
   }

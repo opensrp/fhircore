@@ -4,12 +4,12 @@
   "menuActionButton": {
     "id": "mainActionButton",
     "visible": true,
-    "display": "Add New Household {{name.title}}",
+    "display": "Add New Household {{app.title}}",
     "actions": [
       {
         "trigger": "ON_CLICK",
         "workflow": "LAUNCH_REGISTER",
-        "id": "patient_register"
+        "id": "household_register"
       }
     ],
     "questionnaire": {
@@ -24,7 +24,7 @@
     {
       "id": "reports",
       "visible": true,
-      "display": "Reports {{gender.female}}",
+      "display": "Reports",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -60,19 +60,36 @@
   ],
   "clientRegisters": [
     {
-      "id": "patient_register",
-      "display": "All Households {{gender.male}}",
+      "id": "household_register",
+      "display": "All Households",
       "icon": "",
       "showCount": true,
       "actions": [
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REGISTER",
-          "id": "patient_register"
+          "id": "household_register"
         },
         {
           "trigger": "ON_COUNT",
-          "id": "patient_register"
+          "id": "household_register"
+        }
+      ]
+    },
+    {
+      "id": "anc_register",
+      "display": "ANC",
+      "icon": "",
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "anc_register"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "anc_register"
         }
       ]
     },
