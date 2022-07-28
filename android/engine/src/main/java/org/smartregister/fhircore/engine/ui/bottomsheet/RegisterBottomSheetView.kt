@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +48,8 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+
+const val REGISTER_BOTTOM_SHEET_LIST = "registerBottomSheetList"
 
 @Composable
 fun RegisterBottomSheetView(
@@ -68,7 +71,7 @@ fun RegisterBottomSheetView(
       Divider(color = DividerColor, thickness = 1.dp)
       LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().testTag(REGISTER_BOTTOM_SHEET_LIST)
       ) {
         itemsIndexed(navigationMenuConfigs!!) { index, item ->
           RegisterListItem(

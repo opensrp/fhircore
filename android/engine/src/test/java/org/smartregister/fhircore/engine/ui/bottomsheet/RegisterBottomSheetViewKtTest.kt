@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.ui.bottomsheet
 
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.mockk.spyk
@@ -52,16 +52,12 @@ class RegisterBottomSheetViewKtTest : RobolectricTest() {
 
   @Test
   fun testThatMenuItemsAreShowing() {
-    composeRule.onNodeWithText("Menu 1").assertExists()
-    composeRule.onNodeWithText("Menu 2").assertExists()
-
-    // A tick icon showing for selected menu
-    composeRule.onNodeWithContentDescription("Tick").assertExists()
+    composeRule.onNodeWithTag(REGISTER_BOTTOM_SHEET_LIST, useUnmergedTree = true).assertExists()
   }
 
   @Test
   fun testThatMenuClickCallsTheListener() {
-    val menu2 = composeRule.onNodeWithText("Menu 2")
+    val menu2 = composeRule.onNodeWithText("Menu 2", useUnmergedTree = true)
     menu2.assertExists()
     menu2.performClick()
     verify { mockListener(any()) }

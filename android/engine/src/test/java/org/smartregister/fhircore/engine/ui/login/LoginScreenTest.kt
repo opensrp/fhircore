@@ -80,7 +80,9 @@ class LoginScreenTest : RobolectricTest() {
 
   @Test
   fun testLoginScreen() {
-    composeRule.setContent { LoginScreen(loginViewModel = loginViewModel, appVersionPair = Pair(1, "1.0.1")) }
+    composeRule.setContent {
+      LoginScreen(loginViewModel = loginViewModel, appVersionPair = Pair(1, "1.0.1"))
+    }
     if (applicationConfiguration.loginConfig.showLogo) {
       composeRule.onNodeWithTag(APP_LOGO_TAG).assertExists()
     }

@@ -21,6 +21,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -29,6 +30,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -43,17 +45,22 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@ExperimentalCoroutinesApi
 @HiltAndroidTest
 class LoginActivityTest : ActivityRobolectricTest() {
 
   private lateinit var loginActivity: LoginActivity
 
-  @get:Rule var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) var hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 2) val coroutineTestRule: CoroutineTestRule = CoroutineTestRule()
+
+  @get:Rule(order = 3) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -88,7 +95,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     loginViewModel =
       LoginViewModel(
         accountAuthenticator = accountAuthenticator,
-        dispatcher = DefaultDispatcherProvider(),
+        dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
         fhirResourceDataSource = fhirResourceDataSource,
         configurationRegistry = configurationRegistry
