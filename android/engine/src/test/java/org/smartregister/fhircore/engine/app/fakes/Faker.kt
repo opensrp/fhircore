@@ -49,7 +49,7 @@ object Faker {
     )
 
   private val systemPath =
-    "${System.getProperty("user.dir")?.plus(File.separator) ?: "."}src${File.separator}main${File.separator}assets${File.separator}"
+    "${System.getProperty("user.dir")?.plus(File.separator) ?: "."}src${File.separator}test${File.separator}assets${File.separator}"
 
   fun loadTestConfigurationRegistryData(
     defaultRepository: DefaultRepository,
