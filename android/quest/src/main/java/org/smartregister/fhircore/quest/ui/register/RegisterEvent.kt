@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register
+package org.smartregister.fhircore.quest.ui.register
 
 import android.content.Context
 import androidx.navigation.NavHostController
 
-sealed class PatientRegisterEvent {
-  data class SearchRegister(val searchText: String = "", val registerId: String) :
-    PatientRegisterEvent()
+sealed class RegisterEvent {
+  data class SearchRegister(val searchText: String = "", val registerId: String) : RegisterEvent()
 
-  data class MoveToNextPage(val registerId: String) : PatientRegisterEvent()
+  data class MoveToNextPage(val registerId: String) : RegisterEvent()
 
-  data class MoveToPreviousPage(val registerId: String) : PatientRegisterEvent()
+  data class MoveToPreviousPage(val registerId: String) : RegisterEvent()
 
-  data class RegisterNewClient(val context: Context) : PatientRegisterEvent()
+  data class RegisterNewClient(val context: Context) : RegisterEvent()
 
   data class OpenProfile(
     val registerId: String,
     val patientId: String,
     val navController: NavHostController
-  ) : PatientRegisterEvent()
+  ) : RegisterEvent()
 }

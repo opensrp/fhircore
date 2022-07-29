@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register
+package org.smartregister.fhircore.quest.ui.register
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
@@ -50,7 +50,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
-class PatientRegisterViewModel
+class RegisterViewModel
 @Inject
 constructor(
   val registerRepository: RegisterRepository,
@@ -124,28 +124,28 @@ constructor(
     _totalRecordsCount.value?.toDouble()?.div(DEFAULT_PAGE_SIZE.toLong())?.let { ceil(it).toInt() }
       ?: 1
 
-  fun onEvent(event: PatientRegisterEvent) {
+  fun onEvent(event: RegisterEvent) {
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
-      is PatientRegisterEvent.SearchRegister -> {
+      is RegisterEvent.SearchRegister -> {
         _searchText.value = event.searchText
         if (event.searchText.isEmpty()) paginateRegisterData(event.registerId)
         else filterRegisterData(event)
       }
-      is PatientRegisterEvent.MoveToNextPage -> {
+      is RegisterEvent.MoveToNextPage -> {
         this._currentPage.value = this._currentPage.value?.plus(1)
         paginateRegisterData(event.registerId)
       }
-      is PatientRegisterEvent.MoveToPreviousPage -> {
+      is RegisterEvent.MoveToPreviousPage -> {
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
         paginateRegisterData(event.registerId)
       }
-      is PatientRegisterEvent.RegisterNewClient ->
+      is RegisterEvent.RegisterNewClient ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(
           // TODO use appropriate property from the register configuration
           "provide-questionnaire-id"
         )
-      is PatientRegisterEvent.OpenProfile -> {
+      is RegisterEvent.OpenProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, event.patientId))
         // TODO conditionally navigate to either family or patient profile
@@ -160,7 +160,7 @@ constructor(
     }
   }
 
-  private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
+  private fun filterRegisterData(event: RegisterEvent.SearchRegister) {
     val searchBar = retrieveRegisterConfiguration(event.registerId).searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {

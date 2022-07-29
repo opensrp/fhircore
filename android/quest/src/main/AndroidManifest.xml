@@ -23,7 +23,7 @@
             android:name=".ui.family.remove.family.RemoveFamilyQuestionnaireActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.patient.register.PatientRegisterActivity"
+            android:name="org.smartregister.fhircore.quest.ui.register.PatientRegisterActivity"
             android:exported="false" />
         <activity
             android:name=".ui.patient.details.QuestPatientDetailActivity"

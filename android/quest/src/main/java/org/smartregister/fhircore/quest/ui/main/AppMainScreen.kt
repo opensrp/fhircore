@@ -42,7 +42,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg.routePathsOf
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
-import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
+import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
 
@@ -148,7 +148,7 @@ private fun AppMainNavigationGraph(
             val registerId: String =
               stackEntry.arguments?.getString(NavigationArg.REGISTER_ID) ?: ""
 
-            PatientRegisterScreen(
+            RegisterScreen(
               navController = navController,
               openDrawer = openDrawer,
               screenTitle = screenTitle,

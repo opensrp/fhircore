@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register.components
+package org.smartregister.fhircore.quest.ui.register.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

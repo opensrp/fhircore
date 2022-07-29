@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register
+package org.smartregister.fhircore.quest.ui.register
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,30 +48,26 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
-import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterCardList
+import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 
 @Composable
-fun PatientRegisterScreen(
+fun RegisterScreen(
   modifier: Modifier = Modifier,
   screenTitle: String,
   registerId: String,
   openDrawer: (Boolean) -> Unit,
   refreshDataState: MutableState<Boolean>,
-  patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel(),
+  registerViewModel: RegisterViewModel = hiltViewModel(),
   navController: NavHostController
 ) {
   val context = LocalContext.current
-  val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
-  val searchText by remember { patientRegisterViewModel.searchText }
+  val firstTimeSync = remember { mutableStateOf(registerViewModel.isFirstTimeSync()) }
+  val searchText by remember { registerViewModel.searchText }
   val registerConfiguration by remember {
-    mutableStateOf(patientRegisterViewModel.retrieveRegisterConfiguration(registerId))
+    mutableStateOf(registerViewModel.retrieveRegisterConfiguration(registerId))
   }
-  val currentSetTotalRecordCount by rememberUpdatedState(
-    patientRegisterViewModel::setTotalRecordsCount
-  )
-  val currentPaginateRegisterData by rememberUpdatedState(
-    patientRegisterViewModel::paginateRegisterData
-  )
+  val currentSetTotalRecordCount by rememberUpdatedState(registerViewModel::setTotalRecordsCount)
+  val currentPaginateRegisterData by rememberUpdatedState(registerViewModel::paginateRegisterData)
   val refreshDataStateValue by remember { refreshDataState }
 
   LaunchedEffect(Unit) {
@@ -84,13 +80,13 @@ fun PatientRegisterScreen(
     if (refreshDataStateValue) {
       currentSetTotalRecordCount(registerId)
       currentPaginateRegisterData(registerId, false)
-      firstTimeSync.value = patientRegisterViewModel.isFirstTimeSync()
+      firstTimeSync.value = registerViewModel.isFirstTimeSync()
       refreshDataState.value = false
     }
   }
 
   val pagingItems: LazyPagingItems<ResourceData> =
-    patientRegisterViewModel
+    registerViewModel
       .paginatedRegisterData
       .collectAsState(emptyFlow())
       .value
@@ -105,8 +101,8 @@ fun PatientRegisterScreen(
           searchText = searchText,
           searchPlaceholder = registerConfiguration.searchBar?.display,
           onSearchTextChanged = { searchText ->
-            patientRegisterViewModel.onEvent(
-              PatientRegisterEvent.SearchRegister(searchText = searchText, registerId = registerId)
+            registerViewModel.onEvent(
+              RegisterEvent.SearchRegister(searchText = searchText, registerId = registerId)
             )
           }
         ) { openDrawer(true) }
@@ -121,23 +117,20 @@ fun PatientRegisterScreen(
         if (searchText.isEmpty()) {
           RegisterFooter(
             resultCount = pagingItems.itemCount,
-            currentPage =
-              patientRegisterViewModel.currentPage.observeAsState(initial = 0).value.plus(1),
-            pagesCount = patientRegisterViewModel.countPages(),
+            currentPage = registerViewModel.currentPage.observeAsState(initial = 0).value.plus(1),
+            pagesCount = registerViewModel.countPages(),
             previousButtonClickListener = {
-              patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToPreviousPage(registerId))
+              registerViewModel.onEvent(RegisterEvent.MoveToPreviousPage(registerId))
             },
             nextButtonClickListener = {
-              patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToNextPage(registerId))
+              registerViewModel.onEvent(RegisterEvent.MoveToNextPage(registerId))
             }
           )
           // TODO activate this button action via config; now only activated for family register
-          if (patientRegisterViewModel.isRegisterFormViaSettingExists()) {
+          if (registerViewModel.isRegisterFormViaSettingExists()) {
             Button(
               modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-              onClick = {
-                patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
-              },
+              onClick = { registerViewModel.onEvent(RegisterEvent.RegisterNewClient(context)) },
               enabled = !firstTimeSync.value
             ) {
               // TODO set text from new register configurations
@@ -156,12 +149,10 @@ fun PatientRegisterScreen(
       RegisterCardList(
         pagingItems = pagingItems,
         onCardClick = { patientId: String ->
-          patientRegisterViewModel.onEvent(
-            PatientRegisterEvent.OpenProfile(registerId, patientId, navController)
-          )
+          registerViewModel.onEvent(RegisterEvent.OpenProfile(registerId, patientId, navController))
         },
         registerCardConfig =
-          patientRegisterViewModel.retrieveRegisterConfiguration(registerId).registerCard
+          registerViewModel.retrieveRegisterConfiguration(registerId).registerCard
       )
     }
   }
