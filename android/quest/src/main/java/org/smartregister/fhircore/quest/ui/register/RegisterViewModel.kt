@@ -47,7 +47,6 @@ import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
 class RegisterViewModel
@@ -55,7 +54,6 @@ class RegisterViewModel
 constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val registerViewDataMapper: RegisterViewDataMapper,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val rulesFactory: RulesFactory
 ) : ViewModel() {
