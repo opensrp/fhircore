@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.LinkedList
 import java.util.Locale
 import java.util.PropertyResourceBundle
@@ -47,7 +46,6 @@ import timber.log.Timber
 class ConfigurationRegistry
 @Inject
 constructor(
-  @ApplicationContext val context: Context,
   val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider,
@@ -154,9 +152,16 @@ constructor(
    * ```
    *
    * [appId] is a unique identifier for the application. Typically written in human readable form
+   *
+   * [context] is the targeted Android context
+   *
    * [configsLoadedCallback] is a callback function called once configs have been loaded.
    */
-  suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit = {}) {
+  suspend fun loadConfigurations(
+    appId: String,
+    context: Context,
+    configsLoadedCallback: (Boolean) -> Unit = {}
+  ) {
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
     // extract appId by removing the suffix e.g. app from above example
     val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
@@ -173,24 +178,26 @@ constructor(
             composition = this,
             loadFromAssets = loadFromAssets,
             appId = parsedAppId,
-            configsLoadedCallback = configsLoadedCallback
+            configsLoadedCallback = configsLoadedCallback,
+            context = context
           )
         }
     } else {
       repository.searchCompositionByIdentifier(appId)?.run {
-        populateConfigurationsMap(this, loadFromAssets, appId, configsLoadedCallback)
+        populateConfigurationsMap(context, this, loadFromAssets, appId, configsLoadedCallback)
       }
     }
   }
 
   private suspend fun populateConfigurationsMap(
+    context: Context,
     composition: Composition,
     loadFromAssets: Boolean,
     appId: String,
     configsLoadedCallback: (Boolean) -> Unit
   ) {
     if (loadFromAssets) {
-      retrieveAssetConfigs(appId).forEach { fileName ->
+      retrieveAssetConfigs(context, appId).forEach { fileName ->
         // Create binary config from asset and add to map, skip composition resource
         // Use file name as the key. Conventionally navigation configs MUST end with
         // "_config.<extension>"
@@ -225,16 +232,15 @@ constructor(
   private fun isAppConfig(referenceResourceType: String) =
     referenceResourceType in arrayOf(ResourceType.Binary.name, ResourceType.Parameters.name)
 
-  private fun retrieveAssetConfigs(appId: String): MutableList<String> {
-    // Reads .json and .properties configurations in asset/config/* directory recursively.
-    // Populates all sub directory in a queue then reads all the nested files for each sub
-    // directory until queue is empty
+  private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
+    // Reads supported files from asset/config/* directory recursively
+    // Populates all sub directory in a queue then reads all the nested files for each
     val filesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
       if (!supportedFileExtensions.contains(it.fileExtension))
-        filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + it)
-      else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + it)
+        filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+      else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
     }
     while (filesQueue.isNotEmpty()) {
       val currentPath = filesQueue.removeFirst()
@@ -301,7 +307,7 @@ constructor(
   }
 
   companion object {
-    const val BASE_CONFIG_PATH = "configs/%s/"
+    const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
     const val DEBUG_SUFFIX = "/debug"
     const val ORGANIZATION = "organization"

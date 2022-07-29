@@ -57,7 +57,8 @@ class AppSettingActivity : AppCompatActivity() {
     val isLoggedIn = accountAuthenticator.hasActiveSession()
 
     with(appSettingViewModel) {
-      loadConfigs.observe(this@AppSettingActivity) { loadConfigs ->
+      val appSettingActivity = this@AppSettingActivity
+      loadConfigs.observe(appSettingActivity) { loadConfigs ->
         if (loadConfigs == false) {
           showToast(getString(R.string.application_not_supported, appId.value))
           return@observe
@@ -69,13 +70,14 @@ class AppSettingActivity : AppCompatActivity() {
 
         if (hasDebugSuffix() && BuildConfig.DEBUG) {
           lifecycleScope.launch(dispatcherProvider.io()) {
-            configurationRegistry.loadConfigurations(appId = appId) { loadSuccessful: Boolean ->
+            configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
+              loadSuccessful: Boolean ->
               if (loadSuccessful) {
                 sharedPreferencesHelper.write(APP_ID_KEY, appId)
                 if (!isLoggedIn) {
                   accountAuthenticator.launchScreen(LoginActivity::class.java)
                 } else {
-                  loginService.loginActivity = this@AppSettingActivity
+                  loginService.loginActivity = appSettingActivity
                   loginService.navigateToHome()
                 }
                 finish()
@@ -90,7 +92,8 @@ class AppSettingActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch(dispatcherProvider.io()) {
-          configurationRegistry.loadConfigurations(appId) { loadSuccessful: Boolean ->
+          configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
+            loadSuccessful: Boolean ->
             if (loadSuccessful) {
               sharedPreferencesHelper.write(APP_ID_KEY, appId)
               accountAuthenticator.launchScreen(LoginActivity::class.java)
@@ -104,7 +107,7 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
 
-      fetchConfigs.observe(this@AppSettingActivity) { fetchConfigs ->
+      fetchConfigs.observe(appSettingActivity) { fetchConfigs ->
         if (fetchConfigs == false) {
           loadConfigurations(true)
           return@observe
@@ -118,11 +121,11 @@ class AppSettingActivity : AppCompatActivity() {
         if (appId.value.isNullOrBlank()) return@observe
 
         lifecycleScope.launch(dispatcherProvider.io()) {
-          fetchConfigurations(appId.value!!, this@AppSettingActivity)
+          fetchConfigurations(appId.value!!, appSettingActivity)
         }
       }
 
-      error.observe(this@AppSettingActivity) { error ->
+      error.observe(appSettingActivity) { error ->
         if (error.isNotBlank()) showToast(getString(R.string.error_loading_config, error))
       }
     }

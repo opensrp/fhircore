@@ -4,7 +4,7 @@
   "menuActionButton": {
     "id": "mainActionButton",
     "visible": true,
-    "display": "Add New Household {{name.title}}",
+    "display": "Add New Household",
     "actions": [
       {
         "trigger": "ON_CLICK",

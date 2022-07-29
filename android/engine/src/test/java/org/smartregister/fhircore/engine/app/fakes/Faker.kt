@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.app.fakes
 
+import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.MockKAnswerScope
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -51,7 +52,7 @@ object Faker {
   private val systemPath =
     "${System.getProperty("user.dir")?.plus(File.separator) ?: "."}src${File.separator}test${File.separator}assets${File.separator}"
 
-  fun loadTestConfigurationRegistryData(
+  fun loadConfigurationRegistryTestData(
     defaultRepository: DefaultRepository,
     configurationRegistry: ConfigurationRegistry
   ) {
@@ -67,7 +68,12 @@ object Faker {
         }
       }
 
-    runBlocking { configurationRegistry.loadConfigurations(appId = "app") {} }
+    runBlocking {
+      configurationRegistry.loadConfigurations(
+        context = InstrumentationRegistry.getInstrumentation().targetContext,
+        appId = "app"
+      ) {}
+    }
   }
 
   private fun MockKAnswerScope<Binary, Binary>.getSectionComponent(
@@ -83,15 +89,22 @@ object Faker {
     return null
   }
 
-  private fun getBasePath(configName: String): String {
-    return "/configs/app/${configName}_config.json"
-  }
+  private fun getBasePath(configName: String): String = "/configs/app/${configName}_config.json"
 
-  fun buildTestConfigurationRegistry(defaultRepository: DefaultRepository): ConfigurationRegistry {
+  fun buildTestConfigurationRegistry(
+    defaultRepository: DefaultRepository = mockk()
+  ): ConfigurationRegistry {
     val configurationRegistry =
-      spyk(ConfigurationRegistry(mockk(), mockk(), mockk(), mockk(), defaultRepository))
+      spyk(
+        ConfigurationRegistry(
+          fhirResourceDataSource = mockk(),
+          sharedPreferencesHelper = mockk(),
+          dispatcherProvider = mockk(),
+          repository = defaultRepository
+        )
+      )
 
-    loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+    loadConfigurationRegistryTestData(defaultRepository, configurationRegistry)
 
     return configurationRegistry
   }

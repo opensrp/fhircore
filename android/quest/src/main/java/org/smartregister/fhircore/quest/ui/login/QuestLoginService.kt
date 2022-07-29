@@ -45,21 +45,20 @@ constructor(
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
       )
-      finish()
-    }
-
-    // Initialize P2P after login only when username is provided
-    val username = secureSharedPreference.retrieveSessionUsername()
-    if (!username.isNullOrEmpty()) {
-      P2PLibrary.init(
-        P2PLibrary.Options(
-          context = loginActivity.applicationContext,
-          dbPassphrase = username,
-          username = username,
-          senderTransferDao = p2pSenderTransferDao,
-          receiverTransferDao = p2pReceiverTransferDao
+      // Initialize P2P after login only when username is provided then finish activity
+      val username = secureSharedPreference.retrieveSessionUsername()
+      if (!username.isNullOrEmpty()) {
+        P2PLibrary.init(
+          P2PLibrary.Options(
+            context = loginActivity,
+            dbPassphrase = username,
+            username = username,
+            senderTransferDao = p2pSenderTransferDao,
+            receiverTransferDao = p2pReceiverTransferDao
+          )
         )
-      )
+      }
+      finish()
     }
   }
 }
