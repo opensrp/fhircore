@@ -48,21 +48,21 @@ class RulesEngineServiceTest : RobolectricTest() {
   @Test
   fun testTranslateWithDefaultLocaleReturnsCorrectTranslatedString() {
 
-    val templateString = "{{vaccine.status}} is @{fhirpath.evaluate(value)}"
+    val templateString = "Vaccine status"
 
     val result = rulesEngineService.translate(templateString)
 
-    Assert.assertEquals("Vaccine status is @{fhirpath.evaluate(value)}", result)
+    Assert.assertEquals("Translated Vaccine status", result)
   }
 
   @Test
   fun testTranslateWithOtherLocaleReturnsCorrectTranslatedString() {
 
-    val templateString = "{{vaccine.status}} @{fhirpath.evaluate(value)}"
+    val templateString = "Vaccine status"
     Locale.setDefault(Locale.FRENCH)
 
     val result = rulesEngineService.translate(templateString)
 
-    Assert.assertEquals("Le statut vaccinal est @{fhirpath.evaluate(value)}", result)
+    Assert.assertEquals("Statut Vaccinal Traduit", result)
   }
 }

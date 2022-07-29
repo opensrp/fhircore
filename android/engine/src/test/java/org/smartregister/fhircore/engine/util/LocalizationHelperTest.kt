@@ -27,16 +27,16 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.messageFormat
+import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 
 @HiltAndroidTest
-class LocaleUtilTest : RobolectricTest() {
+class LocalizationHelperTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var configRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
-
     hiltRule.inject()
   }
 
@@ -46,8 +46,8 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "{{person.gender}} from {{person.address}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(
-        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+      configRegistry.localizationHelper.parseTemplate(
+        LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
         templateString
       )
@@ -61,8 +61,8 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "{{person.gender}} from {{person.address}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(
-        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+      configRegistry.localizationHelper.parseTemplate(
+        LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.FRENCH,
         templateString
       )
@@ -76,8 +76,8 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "{{person.profile.description}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(
-        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+      configRegistry.localizationHelper.parseTemplate(
+        LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
         templateString
       )
@@ -94,8 +94,8 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "{{person.home.address.description}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(
-        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+      configRegistry.localizationHelper.parseTemplate(
+        LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
         templateString
       )
@@ -112,8 +112,8 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "The EDD at {{40.weeks}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(
-        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+      configRegistry.localizationHelper.parseTemplate(
+        LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
         templateString
       )
@@ -124,20 +124,20 @@ class LocaleUtilTest : RobolectricTest() {
   @Test
   fun testGenerateIdentifierReturnsCorrectKey() {
 
-    val result = configRegistry.localeUtil.generateIdentifier("OVERDUE")
+    val result = "OVERDUE".translationPropertyKey()
     Assert.assertEquals("overdue", result)
   }
 
   @Test
   fun testGenerateIdentifierWithDigitPrefixParamReturnsCorrectKey() {
-    val result = configRegistry.localeUtil.generateIdentifier("40 Weeks")
+    val result = "40 Weeks".translationPropertyKey()
     Assert.assertEquals("40.weeks", result)
   }
 
   @Test
   fun testGenerateIdentifierWithWhitespacesParamReturnsCorrectKey() {
 
-    val result = configRegistry.localeUtil.generateIdentifier("Home Address")
+    val result = "Home Address".translationPropertyKey()
     Assert.assertEquals("home.address", result)
   }
 
@@ -147,8 +147,8 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "{{ person.gender }} from {{          person.address           }}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(
-        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+      configRegistry.localizationHelper.parseTemplate(
+        LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
         templateString
       )

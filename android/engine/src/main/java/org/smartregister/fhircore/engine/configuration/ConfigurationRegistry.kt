@@ -34,7 +34,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.LocaleUtil
+import org.smartregister.fhircore.engine.util.LocalizationHelper
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -60,7 +60,7 @@ constructor(
   }
 
   val configsJsonMap = mutableMapOf<String, String>()
-  val localeUtil: LocaleUtil by lazy { LocaleUtil(this) }
+  val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -75,9 +75,9 @@ constructor(
     return if (configType.parseAsResource)
       configsJsonMap.getValue(configKey).decodeResourceFromString()
     else
-      localeUtil
+      localizationHelper
         .parseTemplate(
-          LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+          LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           Locale.getDefault(),
           configsJsonMap.getValue(configKey)
         )
@@ -98,17 +98,16 @@ constructor(
    * from [configsJsonMap] can be directly converted to a ResourceBundle.
    */
   fun retrieveResourceBundleConfiguration(bundleName: String): ResourceBundle? {
-    return try {
-      PropertyResourceBundle(configsJsonMap[bundleName]!!.byteInputStream())
-    } catch (e: NullPointerException) {
-      if (bundleName.contains("_")) {
-        return retrieveResourceBundleConfiguration(
-          bundleName.substring(0, bundleName.lastIndexOf('_'))
-        )
-      } else {
-        null
-      }
+    val resourceBundle = configsJsonMap[bundleName]
+    if (resourceBundle != null) {
+      return PropertyResourceBundle(resourceBundle.byteInputStream())
     }
+    if (bundleName.contains("_")) {
+      return retrieveResourceBundleConfiguration(
+        bundleName.substring(0, bundleName.lastIndexOf('_'))
+      )
+    }
+    return null
   }
 
   /**

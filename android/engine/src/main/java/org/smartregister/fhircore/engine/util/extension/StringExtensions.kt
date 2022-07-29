@@ -64,3 +64,11 @@ fun String.interpolate(
  */
 fun String.messageFormat(locale: Locale?, vararg arguments: Any?): String? =
   MessageFormat(this, locale).format(arguments)
+
+/**
+ * Creates identifier from string text by doing clean up on the passed value
+ * @return string.properties key to be used in string look ups
+ */
+fun String.translationPropertyKey(): String {
+  return this.trim { it <= ' ' }.lowercase(Locale.ENGLISH).replace(" ".toRegex(), ".")
+}

@@ -20,21 +20,16 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.util.LocaleUtil
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.LocalizationHelper
+import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 
 @Singleton
-class RulesEngineService
-@Inject
-constructor(
-  val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry
-) {
+class RulesEngineService @Inject constructor(val configurationRegistry: ConfigurationRegistry) {
 
-  fun translate(raw: String): String? =
-    configurationRegistry.localeUtil.parseTemplate(
-      LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+  fun translate(raw: String): String =
+    configurationRegistry.localizationHelper.parseTemplate(
+      LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
       Locale.getDefault(),
-      raw
+      "{{${raw.translationPropertyKey()}}}"
     )
 }

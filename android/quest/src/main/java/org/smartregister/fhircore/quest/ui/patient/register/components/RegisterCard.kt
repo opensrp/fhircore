@@ -192,7 +192,7 @@ fun CompoundText(
   ) {
     if (compoundTextProperties.primaryText != null) {
       Text(
-        text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap, "@{", "}"),
+        text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap),
         color = compoundTextProperties.primaryTextColor.parseColor(),
         modifier = modifier.wrapContentWidth(Alignment.Start)
       )
@@ -202,7 +202,7 @@ fun CompoundText(
       Separator(separator = compoundTextProperties.separator ?: "-")
 
       Text(
-        text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap, "@{", "}"),
+        text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap),
         color = compoundTextProperties.secondaryTextColor.parseColor(),
         modifier = modifier.wrapContentWidth(Alignment.Start).padding(end = 8.dp)
       )
@@ -371,7 +371,7 @@ private fun BigServiceButton(
     if (extractedStatus == ServiceStatus.COMPLETED)
       Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
     Text(
-      text = serviceButton.text?.interpolate(computedValuesMap, "@{", "}") ?: "",
+      text = serviceButton.text?.interpolate(computedValuesMap) ?: "",
       color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
       textAlign = TextAlign.Center
     )

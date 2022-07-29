@@ -22,7 +22,7 @@ import java.util.ResourceBundle
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
-class LocaleUtil(val configurationRegistry: ConfigurationRegistry) {
+class LocalizationHelper(val configurationRegistry: ConfigurationRegistry) {
   /**
    * @param bundleName base name of the bundle e.g. strings
    * @param locale the specific Locale, e.g. Locale.FRENCH. The language tag returned for French
@@ -55,16 +55,6 @@ class LocaleUtil(val configurationRegistry: ConfigurationRegistry) {
    */
   fun getLocaleSpecificFileName(baseBundle: String, locale: Locale) =
     "${baseBundle}_${locale.toLanguageTag()}"
-
-  /**
-   * Creates identifier from text by doing clean up on the passed value
-   *
-   * @param text value to be translated
-   * @return string.properties key to be used in string look ups
-   */
-  fun generateIdentifier(text: String): String? {
-    return text.trim { it <= ' ' }.lowercase(Locale.ENGLISH).replace(" ".toRegex(), ".")
-  }
 
   companion object {
     const val STRINGS_BASE_BUNDLE_NAME = "strings"
