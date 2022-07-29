@@ -43,9 +43,9 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.quest.data.patient.RegisterPagingSource
-import org.smartregister.fhircore.quest.data.patient.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
-import org.smartregister.fhircore.quest.data.patient.model.RegisterPagingSourceState
+import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
+import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
+import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 

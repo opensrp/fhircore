@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.data.patient.model
+package org.smartregister.fhircore.quest.data.register.model
 
 data class RegisterPagingSourceState(
   val registerId: String,

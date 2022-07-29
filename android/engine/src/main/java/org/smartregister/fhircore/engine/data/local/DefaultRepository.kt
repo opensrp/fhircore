@@ -24,6 +24,7 @@ import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
@@ -32,13 +33,18 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -129,6 +135,119 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         resource.generateMissingId()
         fhirEngine.create(resource)
       }
+    }
+  }
+
+  private suspend fun loadManagingEntity(group: Group) =
+    group.managingEntity?.let { reference ->
+      searchResourceFor<RelatedPerson>(
+        token = RelatedPerson.RES_ID,
+        subjectType = ResourceType.RelatedPerson,
+        subjectId = reference.extractId()
+      )
+        .firstOrNull()
+        ?.let { relatedPerson ->
+          searchResourceFor<Patient>(
+              token = Patient.RES_ID,
+              subjectType = ResourceType.Patient,
+              subjectId = relatedPerson.patient.extractId()
+            )
+            .firstOrNull()
+        }
+    }
+
+  suspend fun changeManagingEntity(newManagingEntityId: String, oldManagingEntityId: String) {
+
+    val patient = fhirEngine.get<Patient>(newManagingEntityId)
+
+    val relatedPerson =
+      RelatedPerson().apply {
+        this.active = true
+        this.name = patient.name
+        this.birthDate = patient.birthDate
+        this.telecom = patient.telecom
+        this.address = patient.address
+        this.gender = patient.gender
+        this.relationshipFirstRep.codingFirstRep.system =
+          "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+        this.patient = patient.asReference()
+        this.id = UUID.randomUUID().toString()
+      }
+
+    fhirEngine.create(relatedPerson)
+    val group =
+      fhirEngine.get<Group>(oldManagingEntityId).apply {
+        managingEntity = relatedPerson.asReference()
+        name = relatedPerson.name.first().nameAsSingleString
+      }
+    fhirEngine.update(group)
+  }
+
+  suspend fun removeGroup(groupId: String, isDeactivateMembers: Boolean?) {
+    loadResource<Group>(groupId)?.let { group ->
+      if (!group.active) throw IllegalStateException("Group already deleted")
+      group
+        .managingEntity
+        ?.let { reference ->
+          searchResourceFor<RelatedPerson>(
+            token = RelatedPerson.RES_ID,
+            subjectType = ResourceType.RelatedPerson,
+            subjectId = reference.extractId()
+          )
+        }
+        ?.firstOrNull()
+        ?.let { relatedPerson -> delete(relatedPerson) }
+
+      group.apply {
+        managingEntity = null
+        isDeactivateMembers?.let {
+          if (it) {
+            member.map { thisMember ->
+              loadResource<Patient>(thisMember.entity.extractId())?.let { patient ->
+                patient.active = false
+                addOrUpdate(patient)
+              }
+            }
+          }
+        }
+        member.clear()
+        active = false
+      }
+      addOrUpdate(group)
+    }
+  }
+
+  /** Remove member of a group using the provided [patientId] */
+  suspend fun removeGroupMember(patientId: String, groupId: String?) {
+    // TODO refactor to work with any resource type
+    loadResource<Patient>(patientId)?.let { patient ->
+      if (!patient.active) throw IllegalStateException("Patient already deleted")
+      patient.active = false
+
+      if (groupId != null) {
+        loadResource<Group>(groupId)?.let { group ->
+          group.member.run {
+            remove(this.find { it.entity.reference == "Patient/${patient.logicalId}" })
+          }
+          group
+            .managingEntity
+            ?.let { reference ->
+              searchResourceFor<RelatedPerson>(
+                token = RelatedPerson.RES_ID,
+                subjectType = ResourceType.RelatedPerson,
+                subjectId = reference.extractId()
+              )
+            }
+            ?.firstOrNull()
+            ?.let { relatedPerson ->
+              if (relatedPerson.patient.id == patientId) {
+                delete(relatedPerson)
+                group.managingEntity = null
+              }
+            }
+        }
+      }
+      addOrUpdate(patient)
     }
   }
 }

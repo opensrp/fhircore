@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.data.patient
+package org.smartregister.fhircore.quest.data.register
 
 import android.database.SQLException
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.data.patient.model.RegisterPagingSourceState
+import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import timber.log.Timber
 
 /**
