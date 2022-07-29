@@ -249,32 +249,25 @@ fun Base.extractWithFhirPath(expression: String) =
   FhirPathDataExtractor.extractData(this, expression).firstOrNull()?.primitiveValue() ?: ""
 
 fun ArrayList<CarePlan>.asBaseResources(): ArrayList<Resource> {
-  var list = ArrayList<Resource>()
+  val list = ArrayList<Resource>()
   this.forEach() { carePlan ->
-    var temp = Binary()
-    temp.contentAsBase64 = carePlan.id
-    // temp.contentAsBase64 = carePlan.encodeResourceToString(fhirR4JsonParser)
-    println(temp.contentAsBase64)
-    println(temp.toString())
+    val temp = Binary()
+    val jsonString: String = fhirR4JsonParser.encodeResourceToString(carePlan)
+    println(jsonString)
+    temp.data = jsonString.encodeToByteArray()
     list.add(temp)
   }
-  println("mapping asBaseResource size = " + list.size)
   return list
 }
 
 fun ArrayList<Resource>.asCarePlanDomainResource(): ArrayList<CarePlan> {
-  var list = ArrayList<CarePlan>()
-
+  val list = ArrayList<CarePlan>()
   this.forEach() { resource ->
-    var tempBinary = resource as Binary
-    println(tempBinary.toString())
-    println(tempBinary.contentAsBase64)
-    var carePlan = CarePlan()
-    carePlan.id = tempBinary.contentAsBase64
-    // var temp = tempBinary.contentAsBase64.decodeResourceFromString<CarePlan>(fhirR4JsonParser)
-    println(carePlan.id)
-    list.add(carePlan)
+    val tempBinary = resource as Binary
+    val tempStringJson = tempBinary.data.decodeToString()
+    println(tempStringJson)
+    val temp = fhirR4JsonParser.parseResource(tempStringJson) as CarePlan
+    list.add(temp)
   }
-  println("mapping asCarePlanDomainResource size = " + list.size)
   return list
 }

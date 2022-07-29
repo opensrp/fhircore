@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
@@ -73,7 +74,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = inputModel.showIdentifierInProfile,
           showListsHighlights = false,
-          carePlans = inputModel.services,
+          carePlans = inputModel.services as ArrayList<CarePlan>,
           tasks =
             inputModel.tasks.sortedWith(compareBy<Task> { it.description }).map {
               PatientProfileRowItem(
