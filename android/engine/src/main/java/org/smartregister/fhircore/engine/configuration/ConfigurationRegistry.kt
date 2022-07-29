@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import timber.log.Timber
 
@@ -61,6 +62,7 @@ constructor(
 
   val configsJsonMap = mutableMapOf<String, String>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
+  val supportedFileExtensions = listOf("json", "properties")
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -230,14 +232,14 @@ constructor(
     val filesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
-      if (!it.endsWith(JSON_EXTENSION) && !it.endsWith(PROPERTIES_EXTENSION))
+      if (!supportedFileExtensions.contains(it.fileExtension))
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + it)
       else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + it)
     }
     while (filesQueue.isNotEmpty()) {
       val currentPath = filesQueue.removeFirst()
       context.assets.list(currentPath)?.onEach {
-        if (!it.endsWith(JSON_EXTENSION) && !it.endsWith(PROPERTIES_EXTENSION))
+        if (!supportedFileExtensions.contains(it.fileExtension))
           filesQueue.addLast("$currentPath/$it")
         else configFiles.add("$currentPath/$it")
       }
@@ -307,8 +309,6 @@ constructor(
     const val ID = "_id"
     const val COUNT = "count"
     const val TYPE_REFERENCE_DELIMITER = "/"
-    const val JSON_EXTENSION = ".json"
-    const val PROPERTIES_EXTENSION = ".properties"
     const val CONFIG_SUFFIX = "_config"
   }
 }

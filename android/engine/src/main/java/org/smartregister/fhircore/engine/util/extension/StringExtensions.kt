@@ -72,3 +72,12 @@ fun String.messageFormat(locale: Locale?, vararg arguments: Any?): String? =
 fun String.translationPropertyKey(): String {
   return this.trim { it <= ' ' }.lowercase(Locale.ENGLISH).replace(" ".toRegex(), ".")
 }
+
+/**
+ * This property returns the substring of the filepath after the last period '.' which is the
+ * extension
+ *
+ * e.g /file/path/to/strings.txt would return txt
+ */
+val String.fileExtension
+  get() = this.substringAfterLast('.')
