@@ -41,7 +41,7 @@ import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import kotlinx.coroutines.flow.Flow
-import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowData
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.ui.components.LoadingIndicator
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.R
@@ -50,8 +50,8 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureRepo
 @Composable
 fun MeasureReportListScreen(
   navController: NavController,
-  dataList: Flow<PagingData<MeasureReportRowData>>,
-  onReportMeasureClicked: (MeasureReportRowData) -> Unit,
+  dataList: Flow<PagingData<MeasureReportConfig>>,
+  onReportMeasureClicked: (MeasureReportConfig) -> Unit,
   modifier: Modifier = Modifier
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems()

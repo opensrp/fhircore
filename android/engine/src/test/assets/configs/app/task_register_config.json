@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "task_register",
+  "id": "taskRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Task"

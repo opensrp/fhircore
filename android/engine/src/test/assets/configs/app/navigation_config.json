@@ -9,7 +9,7 @@
       {
         "trigger": "ON_CLICK",
         "workflow": "LAUNCH_REGISTER",
-        "id": "patient_register"
+        "id": "patientRegister"
       }
     ],
     "questionnaire": {
@@ -60,7 +60,7 @@
   ],
   "clientRegisters": [
     {
-      "id": "patient_register",
+      "id": "patientRegister",
       "display": "All Households",
       "icon": "",
       "showCount": true,
@@ -68,16 +68,16 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REGISTER",
-          "id": "patient_register"
+          "id": "patientRegister"
         },
         {
           "trigger": "ON_COUNT",
-          "id": "patient_register"
+          "id": "patientRegister"
         }
       ]
     },
     {
-      "id": "task_register",
+      "id": "taskRegister",
       "display": "Tasks",
       "icon": "",
       "showCount": true,
@@ -85,11 +85,11 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REGISTER",
-          "id": "task_register"
+          "id": "taskRegister"
         },
         {
           "trigger": "ON_COUNT",
-          "id": "task_register"
+          "id": "taskRegister"
         }
       ]
     }

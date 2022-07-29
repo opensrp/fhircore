@@ -1,6 +1,6 @@
 {
   "resourceType": "Parameters",
-  "classification": "sync",
+  "configType": "sync",
   "parameter": [
     {
       "resource": {

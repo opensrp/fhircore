@@ -63,7 +63,7 @@
           "focus": {
             "reference": "Binary/11111115",
             "identifier": {
-              "value": "patient_register"
+              "value": "patientRegister"
             }
           }
         },
@@ -72,7 +72,7 @@
           "focus": {
             "reference": "Binary/11111116",
             "identifier": {
-              "value": "task_register"
+              "value": "taskRegister"
             }
           }
         }

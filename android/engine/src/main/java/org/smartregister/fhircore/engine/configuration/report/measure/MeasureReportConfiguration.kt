@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util.extension
+package org.smartregister.fhircore.engine.configuration.report.measure
 
-class StringExtensionsKtTest
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.Configuration
+
+@Serializable
+data class MeasureReportConfiguration(
+  override var appId: String,
+  override var configType: String = ConfigType.MeasureReport.name,
+  val registerId: String,
+  val reports: List<MeasureReportConfig> = emptyList()
+) : Configuration()

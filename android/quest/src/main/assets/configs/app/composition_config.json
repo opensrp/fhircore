@@ -63,7 +63,7 @@
           "focus": {
             "reference": "Binary/11111115",
             "identifier": {
-              "value": "household_register"
+              "value": "householdRegister"
             }
           }
         },
@@ -72,7 +72,7 @@
           "focus": {
             "reference": "Binary/11111116",
             "identifier": {
-              "value": "task_register"
+              "value": "taskRegister"
             }
           }
         },
@@ -81,7 +81,7 @@
           "focus": {
             "reference": "Binary/11111117",
             "identifier": {
-              "value": "anc_register"
+              "value": "ancRegister"
             }
           }
         }
@@ -119,6 +119,16 @@
           }
         }
       ]
+    },
+    {
+      "title": "Measure reports configuration",
+      "focus": {
+        "reference": "Binary/11111118",
+        "identifier": {
+          "value": "measureReport"
+        }
+      },
+      "mode": "working"
     }
   ]
 }

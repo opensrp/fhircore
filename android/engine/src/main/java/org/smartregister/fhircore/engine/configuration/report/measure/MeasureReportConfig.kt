@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.view
+package org.smartregister.fhircore.engine.configuration.report.measure
 
-import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 
-@Stable
 @Serializable
-data class MeasureReportRowData(
+data class MeasureReportConfig(
   val id: String = "",
   val title: String = "",
   val description: String = "",
-  val reportType: String = "",
-  val name: String = ""
+  val url: String = ""
 )

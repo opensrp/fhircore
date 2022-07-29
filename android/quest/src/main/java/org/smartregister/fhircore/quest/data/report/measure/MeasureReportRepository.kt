@@ -16,53 +16,49 @@
 
 package org.smartregister.fhircore.quest.data.report.measure
 
-import android.content.Context
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import kotlinx.coroutines.withContext
-import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowData
-import org.smartregister.fhircore.engine.data.local.register.dao.AncPatientRegisterDao
-import org.smartregister.fhircore.engine.domain.model.RegisterData
-import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 class MeasureReportRepository
 @Inject
 constructor(
   val fhirEngine: FhirEngine,
-  @ApplicationContext val context: Context,
   val dispatcherProvider: DefaultDispatcherProvider,
-  val ancPatientRegisterDao: AncPatientRegisterDao
-) : PagingSource<Int, MeasureReportRowData>() {
+  val configurationRegistry: ConfigurationRegistry,
+  val registerRepository: RegisterRepository
+) : PagingSource<Int, MeasureReportConfig>() {
 
-  override fun getRefreshKey(state: PagingState<Int, MeasureReportRowData>): Int? {
-    return state.anchorPosition
-  }
-
-  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MeasureReportRowData> {
-    return try {
-      val data =
-        withContext(dispatcherProvider.io()) {
-          AssetUtil.decodeAsset<List<MeasureReportRowData>>(SAMPLE_REPORT_MEASURES_FILE, context)
-        }
-      LoadResult.Page(data = data, prevKey = null, nextKey = null)
-    } catch (e: Exception) {
-      LoadResult.Error(e)
-    }
-  }
-
-  suspend fun retrievePatients(currentPage: Int): List<RegisterData> {
-    return ancPatientRegisterDao.loadRegisterData(
-      currentPage = currentPage,
-      loadAll = true,
-      appFeatureName = null // TODO provide relevant registerId
+  private val measureReportConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration<MeasureReportConfiguration>(
+      ConfigType.MeasureReport
     )
   }
 
-  companion object {
-    const val SAMPLE_REPORT_MEASURES_FILE = "sample_data_report_measures.json"
+  override fun getRefreshKey(state: PagingState<Int, MeasureReportConfig>): Int? {
+    return state.anchorPosition
+  }
+
+  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MeasureReportConfig> {
+    return try {
+      LoadResult.Page(data = measureReportConfiguration.reports, prevKey = null, nextKey = null)
+    } catch (exception: Exception) {
+      LoadResult.Error(exception)
+    }
+  }
+
+  suspend fun retrievePatients(currentPage: Int): List<ResourceData> {
+    return registerRepository.loadRegisterData(
+      currentPage = currentPage,
+      registerId = measureReportConfiguration.registerId
+    )
   }
 }

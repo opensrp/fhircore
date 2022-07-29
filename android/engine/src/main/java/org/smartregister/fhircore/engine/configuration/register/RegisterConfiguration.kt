@@ -28,5 +28,5 @@ data class RegisterConfiguration(
   val fhirResource: FhirResourceConfig,
   val filter: RegisterContentConfig? = null,
   val searchBar: RegisterContentConfig? = null,
-  val registerCard: RegisterCardConfig
+  val registerCard: RegisterCardConfig = RegisterCardConfig()
 ) : Configuration()

@@ -33,4 +33,5 @@ sealed class ConfigType(
   object Sync : ConfigType("sync", true)
   object Navigation : ConfigType("navigation")
   object Register : ConfigType("register", multiConfig = true)
+  object MeasureReport : ConfigType("measureReport")
 }

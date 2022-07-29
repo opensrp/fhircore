@@ -9,7 +9,7 @@
       {
         "trigger": "ON_CLICK",
         "workflow": "LAUNCH_REGISTER",
-        "id": "household_register"
+        "id": "householdRegister"
       }
     ],
     "questionnaire": {
@@ -60,7 +60,7 @@
   ],
   "clientRegisters": [
     {
-      "id": "household_register",
+      "id": "householdRegister",
       "display": "All Households",
       "icon": "",
       "showCount": true,
@@ -68,16 +68,16 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REGISTER",
-          "id": "household_register"
+          "id": "householdRegister"
         },
         {
           "trigger": "ON_COUNT",
-          "id": "household_register"
+          "id": "householdRegister"
         }
       ]
     },
     {
-      "id": "anc_register",
+      "id": "ancRegister",
       "display": "ANC",
       "icon": "",
       "showCount": true,
@@ -85,16 +85,16 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REGISTER",
-          "id": "anc_register"
+          "id": "ancRegister"
         },
         {
           "trigger": "ON_COUNT",
-          "id": "anc_register"
+          "id": "ancRegister"
         }
       ]
     },
     {
-      "id": "task_register",
+      "id": "taskRegister",
       "display": "Tasks",
       "icon": "",
       "showCount": true,
@@ -102,11 +102,11 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_REGISTER",
-          "id": "task_register"
+          "id": "taskRegister"
         },
         {
           "trigger": "ON_COUNT",
-          "id": "task_register"
+          "id": "taskRegister"
         }
       ]
     }

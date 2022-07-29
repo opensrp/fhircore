@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import java.text.MessageFormat
 import java.util.Locale
 import java.util.regex.Pattern
+import org.apache.commons.text.CaseUtils
 import org.apache.commons.text.StringSubstitutor
 
 /**
@@ -81,3 +82,6 @@ fun String.translationPropertyKey(): String {
  */
 val String.fileExtension
   get() = this.substringAfterLast('.')
+
+/** Function that converts snake_case string to camelCase */
+fun String.camelCase(): String = CaseUtils.toCamelCase(this, false, '_')

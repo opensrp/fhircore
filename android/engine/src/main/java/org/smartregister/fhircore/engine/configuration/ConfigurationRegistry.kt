@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -210,6 +211,8 @@ constructor(
                 fileName.indexOfLast { it == '/' }.plus(1),
                 fileName.lastIndexOf(CONFIG_SUFFIX)
               )
+              .camelCase()
+
           val configJson = context.assets.open(fileName).bufferedReader().readText()
           configsJsonMap[configKey] = configJson
         }

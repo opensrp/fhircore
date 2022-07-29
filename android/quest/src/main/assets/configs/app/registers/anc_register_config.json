@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "anc_register",
+  "id": "ancRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Condition",

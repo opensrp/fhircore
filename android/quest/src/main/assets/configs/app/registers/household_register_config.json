@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "household_register",
+  "id": "householdRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Group",

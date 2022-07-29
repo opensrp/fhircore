@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "patient_register",
+  "id": "patientRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Patient"
