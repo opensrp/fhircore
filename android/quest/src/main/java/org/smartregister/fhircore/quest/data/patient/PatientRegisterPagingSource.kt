@@ -19,17 +19,17 @@ package org.smartregister.fhircore.quest.data.patient
 import android.database.SQLException
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import timber.log.Timber
 
 /**
  * @property _patientPagingSourceState as state containing the properties used in the
- * [PatientRegisterRepository] function for loading data to the paging source.
+ * [RegisterRepository] function for loading data to the paging source.
  */
 class PatientRegisterPagingSource(
-  private val patientRegisterRepository: PatientRegisterRepository,
+  private val registerRepository: RegisterRepository,
 ) : PagingSource<Int, ResourceData>() {
 
   private lateinit var _patientPagingSourceState: PatientPagingSourceState
@@ -50,7 +50,7 @@ class PatientRegisterPagingSource(
     return try {
       val currentPage = params.key ?: _patientPagingSourceState.currentPage
       val registerData =
-        patientRegisterRepository.loadRegisterData(
+        registerRepository.loadRegisterData(
           currentPage = currentPage,
           registerId = _patientPagingSourceState.registerId
         )

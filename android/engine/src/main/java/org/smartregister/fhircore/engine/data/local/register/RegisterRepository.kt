@@ -37,7 +37,7 @@ import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
+import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -48,7 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
-class PatientRegisterRepository
+class RegisterRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
@@ -56,8 +56,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val rulesFactory: RulesFactory
 ) :
-  RegisterRepository,
-  DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
+  Repository, DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
 
   override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> =
     try {

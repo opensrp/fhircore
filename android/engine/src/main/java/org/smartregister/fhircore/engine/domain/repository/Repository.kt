@@ -20,7 +20,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** Common repository for register. */
-interface RegisterRepository {
+interface Repository {
   suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData>
 
   /** Return the count for the register content. The register is identified by its [registerId] */

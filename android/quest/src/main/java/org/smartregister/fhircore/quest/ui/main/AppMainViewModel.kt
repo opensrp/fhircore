@@ -42,7 +42,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationConf
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -70,7 +70,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val configService: ConfigService,
-  val patientRegisterRepository: PatientRegisterRepository,
+  val registerRepository: RegisterRepository,
   val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
 
@@ -203,7 +203,7 @@ constructor(
         menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
       if (countAction != null) {
         countsMap[countAction.id ?: menuConfig.id] =
-          patientRegisterRepository.countRegisterData(menuConfig.id)
+          registerRepository.countRegisterData(menuConfig.id)
       }
     }
   }

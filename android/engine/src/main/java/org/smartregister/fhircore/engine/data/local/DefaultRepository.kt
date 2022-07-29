@@ -22,7 +22,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.delete
 import com.google.android.fhir.get
-import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import javax.inject.Inject
@@ -35,21 +34,14 @@ import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Identifier
-import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
-import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
-import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
@@ -67,26 +59,6 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     withContext(dispatcherProvider.io()) {
       IdType(reference.reference).let {
         fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
-      }
-    }
-
-  suspend fun loadRelatedPersons(patientId: String): List<RelatedPerson>? {
-    return withContext(dispatcherProvider.io()) { fhirEngine.loadRelatedPersons(patientId) }
-  }
-
-  suspend fun loadPatientImmunizations(patientId: String): List<Immunization>? {
-    return withContext(dispatcherProvider.io()) { fhirEngine.loadPatientImmunizations(patientId) }
-  }
-
-  suspend fun loadImmunization(immunizationId: String): Immunization? {
-    return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(immunizationId) }
-  }
-
-  suspend fun loadQuestionnaireResponses(patientId: String, questionnaire: Questionnaire) =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search<QuestionnaireResponse> {
-        filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" })
-        filter(QuestionnaireResponse.QUESTIONNAIRE, { value = "Questionnaire/${questionnaire.id}" })
       }
     }
 
@@ -110,30 +82,6 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
         filterByResourceTypeId(token, subjectType, subjectId)
-        filters.forEach { filterBy(it) }
-      }
-    }
-
-  suspend fun searchQuestionnaireConfig(
-    filters: List<DataQuery> = listOf()
-  ): List<QuestionnaireConfig> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search<Questionnaire> { filters.forEach { filterBy(it) } }.map {
-        QuestionnaireConfig(
-          title = it.titleElement.getLocalizedText() ?: it.nameElement.getLocalizedText() ?: "",
-          id = it.logicalId
-        )
-      }
-    }
-
-  suspend fun loadConditions(
-    patientId: String,
-    filters: List<DataQuery> = listOf()
-  ): List<Condition> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
-
         filters.forEach { filterBy(it) }
       }
     }
@@ -183,7 +131,4 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
     }
   }
-
-  suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire =
-    withContext(dispatcherProvider.io()) { fhirEngine.get(questionnaireId) }
 }

@@ -25,7 +25,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.ACTIVE_ANC_REGEX
@@ -48,7 +48,7 @@ class PatientProfileViewModel
 @Inject
 constructor(
   val overflowMenuFactory: OverflowMenuFactory,
-  val patientRegisterRepository: PatientRegisterRepository,
+  val registerRepository: RegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper
 ) : ViewModel() {
 
@@ -61,16 +61,15 @@ constructor(
   fun fetchPatientProfileData(profileId: String, patientId: String) {
     if (patientId.isNotEmpty()) {
       viewModelScope.launch {
-        patientRegisterRepository.loadProfileData(profileId = profileId, identifier = patientId)
-          ?.let {
-            patientProfileViewData.value =
-              profileViewDataMapper.transformInputToOutputModel(it) as
-                ProfileViewData.PatientProfileViewData
+        registerRepository.loadProfileData(profileId = profileId, identifier = patientId)?.let {
+          patientProfileViewData.value =
+            profileViewDataMapper.transformInputToOutputModel(it) as
+              ProfileViewData.PatientProfileViewData
 
-            // TODO only display some overflow menu items when certain conditions are met
-            // dynamically from config
-            patientProfileUiState.value = getProfileUiState(patientProfileViewData.value)
-          }
+          // TODO only display some overflow menu items when certain conditions are met
+          // dynamically from config
+          patientProfileUiState.value = getProfileUiState(patientProfileViewData.value)
+        }
       }
     }
   }

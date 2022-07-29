@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.util.helper
 
 import java.util.Locale
 import java.util.MissingResourceException

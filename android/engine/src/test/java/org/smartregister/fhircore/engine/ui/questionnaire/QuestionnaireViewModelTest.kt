@@ -544,17 +544,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
       }
 
-    coEvery { defaultRepo.loadRelatedPersons("1") } returns listOf(relatedPerson)
+    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns listOf(relatedPerson)
 
     runBlocking {
       val list = questionnaireViewModel.loadRelatedPerson("1")
-      Assert.assertEquals(1, list?.size)
-      val result = list?.get(0)
+      Assert.assertEquals(1, list.size)
+      val result = list.first()
       Assert.assertEquals(
         relatedPerson.name.first().given.first().value,
-        result?.name?.first()?.given?.first()?.value
+        result.name?.first()?.given?.first()?.value
       )
-      Assert.assertEquals(relatedPerson.name.first().family, result?.name?.first()?.family)
+      Assert.assertEquals(relatedPerson.name.first().family, result.name?.first()?.family)
     }
   }
 
@@ -569,8 +569,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testGetPopulationResourcesShouldReturnListOfResources() {
 
     coEvery { questionnaireViewModel.loadPatient("2") } returns Patient().apply { id = "2" }
-    coEvery { defaultRepo.loadRelatedPersons("2") } returns
-      listOf(RelatedPerson().apply { id = "3" })
+    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+      listOf(RelatedPerson().apply { id = "2" })
 
     val intent = Intent()
     intent.putStringArrayListExtra(

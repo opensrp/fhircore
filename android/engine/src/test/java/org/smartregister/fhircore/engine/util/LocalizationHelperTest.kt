@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.messageFormat
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
+import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 
 @HiltAndroidTest
 class LocalizationHelperTest : RobolectricTest() {

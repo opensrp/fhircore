@@ -421,8 +421,12 @@ constructor(
     return defaultRepository.loadResource(patientId)
   }
 
-  suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
-    return defaultRepository.loadRelatedPersons(patientId)
+  suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson> {
+    return defaultRepository.searchResourceFor(
+      token = RelatedPerson.RES_ID,
+      subjectType = ResourceType.RelatedPerson,
+      subjectId = patientId
+    )
   }
 
   fun saveResource(resource: Resource) {

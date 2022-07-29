@@ -42,10 +42,7 @@ import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
-import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -55,8 +52,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
-import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
-import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 
 class DefaultRepositoryTest : RobolectricTest() {
 
@@ -79,25 +74,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
     coVerify { fhirEngine.get<Patient>("12345") }
-  }
-
-  @Test
-  fun `loadImmunization() should get Immunization using id`() {
-    val sampleImmunizationId = "12345"
-    val sampleImmunization: Immunization = Immunization().apply { id = sampleImmunizationId }
-
-    val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.get<Immunization>(any()) } answers { sampleImmunization }
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
-
-    runBlocking {
-      val actualImmunization = defaultRepository.loadImmunization(sampleImmunizationId)
-      Assert.assertEquals("12345", actualImmunization?.id)
-    }
-
-    coVerify { fhirEngine.get<Immunization>("12345") }
   }
 
   @Test
@@ -142,47 +118,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
     coVerify { fhirEngine.search<Patient> {} }
-  }
-
-  @Test
-  fun `searchQuestionnaireConfig() should match the proper QuestionnaireConfig`() {
-    val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.search<Questionnaire> {} } returns
-      listOf(
-        Questionnaire().apply {
-          id = "12345"
-          title = "title"
-        }
-      )
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
-
-    runBlocking {
-      val actualPatients = defaultRepository.searchQuestionnaireConfig()
-      Assert.assertEquals(1, actualPatients.size)
-      Assert.assertEquals("12345", actualPatients.first().id)
-      Assert.assertEquals("title", actualPatients.first().title)
-    }
-
-    coVerify { fhirEngine.search<Questionnaire> {} }
-  }
-
-  @Test
-  fun `loadConditions() should return 1 Condition using patientId`() {
-    val samplePatientId = "12345"
-    val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.search<Condition> {} } returns listOf(mockk())
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
-
-    runBlocking {
-      val actualPatients = defaultRepository.loadConditions(patientId = samplePatientId)
-      Assert.assertEquals(1, actualPatients.size)
-    }
-
-    coVerify { fhirEngine.search<Condition> {} }
   }
 
   @Test
@@ -261,47 +196,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } returns listOf()
     runBlocking { defaultRepository.addOrUpdate(Patient()) }
     coVerify(exactly = 1) { fhirEngine.create(any()) }
-  }
-
-  @Test
-  fun `loadRelatedPersons() should call FhirEngine#loadRelatedPersons`() {
-    val patientId = "15672-9234"
-    val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.loadRelatedPersons(patientId) } returns listOf()
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
-
-    runBlocking { defaultRepository.loadRelatedPersons(patientId) }
-
-    coVerify { fhirEngine.loadRelatedPersons(patientId) }
-  }
-
-  @Test
-  fun `loadPatientImmunizations() should call FhirEngine#loadPatientImmunizations`() {
-    val patientId = "15672-9234"
-    val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.loadPatientImmunizations(patientId) } returns listOf()
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
-
-    runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
-
-    coVerify { fhirEngine.loadPatientImmunizations(patientId) }
-  }
-
-  @Test
-  fun `loadQuestionnaireResponse() should call FhirEngine#load`() {
-    val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns listOf()
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
-
-    runBlocking { defaultRepository.loadQuestionnaireResponses("1234", Questionnaire()) }
-
-    coVerify { fhirEngine.search<QuestionnaireResponse>(any()) }
   }
 
   @Test

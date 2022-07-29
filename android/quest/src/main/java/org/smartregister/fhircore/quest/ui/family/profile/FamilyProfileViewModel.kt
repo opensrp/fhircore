@@ -25,7 +25,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -49,7 +49,7 @@ class FamilyProfileViewModel
 @Inject
 constructor(
   val overflowMenuFactory: OverflowMenuFactory,
-  val patientRegisterRepository: PatientRegisterRepository,
+  val registerRepository: RegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper,
   val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {

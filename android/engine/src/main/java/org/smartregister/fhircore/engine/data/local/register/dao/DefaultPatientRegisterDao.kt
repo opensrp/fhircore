@@ -20,6 +20,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,7 +40,6 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
 
@@ -78,7 +78,7 @@ constructor(
     }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long =
-    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+    fhirEngine.count<Patient> { apply { filter(Patient.ACTIVE, { value = of(true) }) } }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData =
     withContext(dispatcherProvider.io()) {
@@ -120,7 +120,7 @@ constructor(
             subjectId = resourceId,
             subjectParam = CarePlan.SUBJECT
           ),
-        forms = defaultRepository.searchQuestionnaireConfig(formsFilter),
+        forms = emptyList(),
         responses =
           defaultRepository.searchResourceFor(
             subjectId = resourceId,

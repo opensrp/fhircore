@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -53,7 +53,7 @@ import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 class PatientRegisterViewModel
 @Inject
 constructor(
-  val patientRegisterRepository: PatientRegisterRepository,
+  val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
   val sharedPreferencesHelper: SharedPreferencesHelper,
@@ -85,7 +85,7 @@ constructor(
     Pager(
       config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE, enablePlaceholders = false),
       pagingSourceFactory = {
-        PatientRegisterPagingSource(patientRegisterRepository).apply {
+        PatientRegisterPagingSource(registerRepository).apply {
           setPatientPagingSourceState(
             PatientPagingSourceState(
               registerId = registerId,
@@ -99,7 +99,7 @@ constructor(
 
   fun setTotalRecordsCount(registerId: String) {
     viewModelScope.launch {
-      _totalRecordsCount.postValue(patientRegisterRepository.countRegisterData(registerId))
+      _totalRecordsCount.postValue(registerRepository.countRegisterData(registerId))
     }
   }
 
