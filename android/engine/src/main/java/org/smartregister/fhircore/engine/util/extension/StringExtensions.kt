@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import java.util.LinkedList
 import org.apache.commons.text.StringSubstitutor
+import java.text.MessageFormat
+import java.util.Locale
+import java.util.LinkedList
 
 /**
  * This function replaces the content enclosed within [substitutionPair] with the value obtained
@@ -34,7 +36,7 @@ import org.apache.commons.text.StringSubstitutor
  * "HIV status: @{hivResult}"
  */
 @Deprecated("Use the other extension method")
-fun String.interpolate(
+fun String.interpolateDepr(
   valuesMap: Map<String, Any>,
   substitutionPair: Pair<String, String> = Pair("@{", "}")
 ): String {
@@ -79,7 +81,39 @@ fun String.interpolate(
   }
   return wordsList.joinToString(delimiter)
 }
-
-fun String.interpolate(lookupMap: Map<String, Any>, prefix: String, suffix: String): String {
+/**
+ * Sample template string: { "saveFamilyButtonText" : {{family.button.save}} } Sample properties
+ * file content: family.button.save=Save Family
+ *
+ * @param lookupMap The Map with the key value items to be used for interpolation
+ * @param prefix The prefix of the key variable to interpolate. In the above example it is {{.
+ * Default is @{
+ * @param suffix The prefix of the key/variable to interpolate. In the above example it is }}.
+ * Default is }
+ *
+ * @return String with the interpolated value. For the sample case above this would be: {
+ * "saveFamilyButtonText" : "Save Family" }
+ */
+fun String.interpolate(
+  lookupMap: Map<String, Any>,
+  prefix: String = "@{",
+  suffix: String = "}"
+): String {
   return StringSubstitutor(lookupMap, prefix, suffix).replace(this)
 }
+
+
+/**
+ * Wrapper method around the Java text formatter
+ *
+ * Example string format: Name {0} {1}, Age {2}
+ *
+ * @param locale this is the Locale to use e.g. Locale.ENGLISH
+ * @param arguments this is a variable number of values to replace placeholders in order
+ *
+ * @return the interpolated string with the placeholder variables replaced with the arguments values.
+ *
+ * In the example above, the result for passing arguments John, Doe, 35 would be: Name John Doe, Age 35
+ */
+fun String.messageFormat(locale: Locale?, vararg arguments: Any?): String? =
+  MessageFormat(this, locale).format(arguments)

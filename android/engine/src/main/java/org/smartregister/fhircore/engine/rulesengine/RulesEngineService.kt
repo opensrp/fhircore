@@ -32,13 +32,6 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) {
 
-  fun translate(raw: String): String? {
-    return try {
-      LocaleUtil(configurationRegistry)
-        .parseTemplate(LocaleUtil.STRINGS_BASE_BUNDLE_NAME, Locale.getDefault(), raw)
-    } catch (e: Exception) {
-      Timber.e(e)
-      null
-    }
-  }
+  fun translate(raw: String): String? = configurationRegistry.localeUtil.parseTemplate(LocaleUtil.STRINGS_BASE_BUNDLE_NAME, Locale.getDefault(), raw)
+
 }

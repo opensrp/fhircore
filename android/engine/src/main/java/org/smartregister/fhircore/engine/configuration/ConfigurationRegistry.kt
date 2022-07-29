@@ -61,6 +61,9 @@ constructor(
   }
 
   val configsJsonMap = mutableMapOf<String, String>()
+  val localeUtil: LocaleUtil by lazy {
+    LocaleUtil(this)
+  }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -75,8 +78,7 @@ constructor(
     return if (configType.parseAsResource)
       configsJsonMap.getValue(configKey).decodeResourceFromString()
     else
-      LocaleUtil(this)
-        .parseTemplate(
+        localeUtil.parseTemplate(
           LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
           Locale.getDefault(),
           configsJsonMap.getValue(configKey)
@@ -99,8 +101,8 @@ constructor(
    */
   fun retrieveResourceBundleConfiguration(bundleName: String): ResourceBundle? {
     return try {
-      PropertyResourceBundle(configsJsonMap.getValue(bundleName).byteInputStream())
-    } catch (e: NoSuchElementException) {
+      PropertyResourceBundle(configsJsonMap[bundleName]!!.byteInputStream())
+    } catch (e: NullPointerException) {
       if (bundleName.contains("_")) {
         return retrieveResourceBundleConfiguration(
           bundleName.substring(0, bundleName.lastIndexOf('_'))
