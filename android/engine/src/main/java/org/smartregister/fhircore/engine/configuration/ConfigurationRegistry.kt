@@ -19,6 +19,9 @@ package org.smartregister.fhircore.engine.configuration
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.LinkedList
+import java.util.Locale
+import java.util.PropertyResourceBundle
+import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -31,10 +34,12 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LocalizationHelper
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import timber.log.Timber
 
@@ -56,6 +61,8 @@ constructor(
   }
 
   val configsJsonMap = mutableMapOf<String, String>()
+  val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
+  val supportedFileExtensions = listOf("json", "properties")
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -69,7 +76,14 @@ constructor(
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     return if (configType.parseAsResource)
       configsJsonMap.getValue(configKey).decodeResourceFromString()
-    else configsJsonMap.getValue(configKey).decodeJson(jsonInstance = json)
+    else
+      localizationHelper
+        .parseTemplate(
+          LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+          Locale.getDefault(),
+          configsJsonMap.getValue(configKey)
+        )
+        .decodeJson(jsonInstance = json)
   }
 
   /**
@@ -79,6 +93,23 @@ constructor(
   inline fun <reified T : Base> retrieveResourceConfiguration(configType: ConfigType): T {
     require(configType.parseAsResource) { "Configuration MUST be a supported FHIR Resource" }
     return configsJsonMap.getValue(configType.name).decodeResourceFromString()
+  }
+
+  /**
+   * Retrieve translation configuration for the provided [bundleName]. The Bundle value is retrieved
+   * from [configsJsonMap] can be directly converted to a ResourceBundle.
+   */
+  fun retrieveResourceBundleConfiguration(bundleName: String): ResourceBundle? {
+    val resourceBundle = configsJsonMap[bundleName]
+    if (resourceBundle != null) {
+      return PropertyResourceBundle(resourceBundle.byteInputStream())
+    }
+    if (bundleName.contains("_")) {
+      return retrieveResourceBundleConfiguration(
+        bundleName.substring(0, bundleName.lastIndexOf('_'))
+      )
+    }
+    return null
   }
 
   /**
@@ -161,10 +192,17 @@ constructor(
     if (loadFromAssets) {
       retrieveAssetConfigs(appId).forEach { fileName ->
         // Create binary config from asset and add to map, skip composition resource
-        // Use file name as the key. Conventionally navigation configs MUST end with "_config.json"
+        // Use file name as the key. Conventionally navigation configs MUST end with
+        // "_config.<extension>"
         // File names in asset should match the configType/id (MUST be unique) in the config JSON
         if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
-          val configKey = fileName.substringAfterLast("/").removeSuffix(CONFIG_SUFFIX)
+          val configKey =
+            fileName
+              .lowercase(Locale.ENGLISH)
+              .substring(
+                fileName.indexOfLast { it == '/' }.plus(1),
+                fileName.lastIndexOf(CONFIG_SUFFIX)
+              )
           val configJson = context.assets.open(fileName).bufferedReader().readText()
           configsJsonMap[configKey] = configJson
         }
@@ -188,20 +226,21 @@ constructor(
     referenceResourceType in arrayOf(ResourceType.Binary.name, ResourceType.Parameters.name)
 
   private fun retrieveAssetConfigs(appId: String): MutableList<String> {
-    // Reads .json configurations in asset/config/* directory recursively.
+    // Reads .json and .properties configurations in asset/config/* directory recursively.
     // Populates all sub directory in a queue then reads all the nested files for each sub
     // directory until queue is empty
     val filesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
-      if (!it.endsWith(JSON_EXTENSION))
+      if (!supportedFileExtensions.contains(it.fileExtension))
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + it)
       else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + it)
     }
     while (filesQueue.isNotEmpty()) {
       val currentPath = filesQueue.removeFirst()
       context.assets.list(currentPath)?.onEach {
-        if (!it.endsWith(JSON_EXTENSION)) filesQueue.addLast("$currentPath/$it")
+        if (!supportedFileExtensions.contains(it.fileExtension))
+          filesQueue.addLast("$currentPath/$it")
         else configFiles.add("$currentPath/$it")
       }
     }
@@ -270,7 +309,6 @@ constructor(
     const val ID = "_id"
     const val COUNT = "count"
     const val TYPE_REFERENCE_DELIMITER = "/"
-    const val JSON_EXTENSION = ".json"
-    const val CONFIG_SUFFIX = "_config.json"
+    const val CONFIG_SUFFIX = "_config"
   }
 }

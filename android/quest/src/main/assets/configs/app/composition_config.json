@@ -86,6 +86,39 @@
           }
         }
       ]
+    },
+    {
+      "title": "Translation configurations",
+      "mode": "working",
+      "section": [
+        {
+          "title": "Translation English",
+          "focus": {
+            "reference": "Binary/21111111",
+            "identifier": {
+              "value": "strings"
+            }
+          }
+        },
+        {
+          "title": "Translation Swahili",
+          "focus": {
+            "reference": "Binary/21111112",
+            "identifier": {
+              "value": "strings_sw"
+            }
+          }
+        },
+        {
+          "title": "Translation French",
+          "focus": {
+            "reference": "Binary/21111113",
+            "identifier": {
+              "value": "strings_fr"
+            }
+          }
+        }
+      ]
     }
   ]
 }

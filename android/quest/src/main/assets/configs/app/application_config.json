@@ -6,7 +6,8 @@
 	"remoteSyncPageSize": 100,
 	"languages": [
 		"en",
-		"sw"
+		"sw",
+		"fr"
 	],
 	"useDarkTheme": false,
 	"syncInterval": 30,
