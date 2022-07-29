@@ -24,7 +24,6 @@ import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.NoSuchElementException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -61,9 +60,7 @@ constructor(
   }
 
   val configsJsonMap = mutableMapOf<String, String>()
-  val localeUtil: LocaleUtil by lazy {
-    LocaleUtil(this)
-  }
+  val localeUtil: LocaleUtil by lazy { LocaleUtil(this) }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -78,7 +75,8 @@ constructor(
     return if (configType.parseAsResource)
       configsJsonMap.getValue(configKey).decodeResourceFromString()
     else
-        localeUtil.parseTemplate(
+      localeUtil
+        .parseTemplate(
           LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
           Locale.getDefault(),
           configsJsonMap.getValue(configKey)

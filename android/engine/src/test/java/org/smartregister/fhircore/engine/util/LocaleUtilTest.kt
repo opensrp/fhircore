@@ -46,7 +46,11 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "{{person.gender}} from {{person.address}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(LocaleUtil.STRINGS_BASE_BUNDLE_NAME, Locale.ENGLISH, templateString)
+      configRegistry.localeUtil.parseTemplate(
+        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+        Locale.ENGLISH,
+        templateString
+      )
 
     Assert.assertEquals("Male from Nairobi, Kenya", result)
   }
@@ -57,7 +61,11 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "{{person.gender}} from {{person.address}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(LocaleUtil.STRINGS_BASE_BUNDLE_NAME, Locale.FRENCH, templateString)
+      configRegistry.localeUtil.parseTemplate(
+        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+        Locale.FRENCH,
+        templateString
+      )
 
     Assert.assertEquals("Mâle from Paris, France", result)
   }
@@ -68,9 +76,16 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "{{person.profile.description}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(LocaleUtil.STRINGS_BASE_BUNDLE_NAME, Locale.ENGLISH, templateString)
+      configRegistry.localeUtil.parseTemplate(
+        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+        Locale.ENGLISH,
+        templateString
+      )
 
-    Assert.assertEquals("Age is 4 years, Height is 100cm, Gender is Female", result.messageFormat(Locale.ENGLISH, 4,100,"Female"))
+    Assert.assertEquals(
+      "Age is 4 years, Height is 100cm, Gender is Female",
+      result.messageFormat(Locale.ENGLISH, 4, 100, "Female")
+    )
   }
 
   @Test
@@ -79,9 +94,16 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "{{person.home.address.description}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(LocaleUtil.STRINGS_BASE_BUNDLE_NAME, Locale.ENGLISH, templateString)
+      configRegistry.localeUtil.parseTemplate(
+        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+        Locale.ENGLISH,
+        templateString
+      )
 
-    Assert.assertEquals("Home address is Nairobi Kenya 106 Park Drive Avenue", result.format(Locale.ENGLISH, "Nairobi Kenya",106,"Park Drive"))
+    Assert.assertEquals(
+      "Home address is Nairobi Kenya 106 Park Drive Avenue",
+      result.format(Locale.ENGLISH, "Nairobi Kenya", 106, "Park Drive")
+    )
   }
 
   @Test
@@ -90,7 +112,11 @@ class LocaleUtilTest : RobolectricTest() {
     val templateString = "The EDD at {{40.weeks}}"
 
     val result =
-      configRegistry.localeUtil.parseTemplate(LocaleUtil.STRINGS_BASE_BUNDLE_NAME, Locale.ENGLISH, templateString)
+      configRegistry.localeUtil.parseTemplate(
+        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+        Locale.ENGLISH,
+        templateString
+      )
 
     Assert.assertEquals("The EDD at 40 Weeks", result)
   }

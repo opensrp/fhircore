@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Adds internationalization(MLS) for App configs
 
-## [0.0.9 Quest] - 2022-07-04
+## [0.0.9 Quest, 0.0.10 EIR, 0.0.4 - ANC] - 2022-07-04, 2021-11-24, 2022-04-01
 ### Added
 - ANC | Updated show search bar to true for family and anc register
 - ANC | Added individual measure reporting results to the ResultHome page

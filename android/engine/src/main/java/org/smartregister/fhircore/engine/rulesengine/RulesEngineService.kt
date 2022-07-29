@@ -22,7 +22,6 @@ import javax.inject.Singleton
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.LocaleUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import timber.log.Timber
 
 @Singleton
 class RulesEngineService
@@ -32,6 +31,10 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) {
 
-  fun translate(raw: String): String? = configurationRegistry.localeUtil.parseTemplate(LocaleUtil.STRINGS_BASE_BUNDLE_NAME, Locale.getDefault(), raw)
-
+  fun translate(raw: String): String? =
+    configurationRegistry.localeUtil.parseTemplate(
+      LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+      Locale.getDefault(),
+      raw
+    )
 }

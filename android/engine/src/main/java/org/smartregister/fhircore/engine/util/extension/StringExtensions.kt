@@ -16,10 +16,10 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import org.apache.commons.text.StringSubstitutor
 import java.text.MessageFormat
-import java.util.Locale
 import java.util.LinkedList
+import java.util.Locale
+import org.apache.commons.text.StringSubstitutor
 
 /**
  * This function replaces the content enclosed within [substitutionPair] with the value obtained
@@ -102,7 +102,6 @@ fun String.interpolate(
   return StringSubstitutor(lookupMap, prefix, suffix).replace(this)
 }
 
-
 /**
  * Wrapper method around the Java text formatter
  *
@@ -111,9 +110,11 @@ fun String.interpolate(
  * @param locale this is the Locale to use e.g. Locale.ENGLISH
  * @param arguments this is a variable number of values to replace placeholders in order
  *
- * @return the interpolated string with the placeholder variables replaced with the arguments values.
+ * @return the interpolated string with the placeholder variables replaced with the arguments
+ * values.
  *
- * In the example above, the result for passing arguments John, Doe, 35 would be: Name John Doe, Age 35
+ * In the example above, the result for passing arguments John, Doe, 35 would be: Name John Doe, Age
+ * 35
  */
 fun String.messageFormat(locale: Locale?, vararg arguments: Any?): String? =
   MessageFormat(this, locale).format(arguments)

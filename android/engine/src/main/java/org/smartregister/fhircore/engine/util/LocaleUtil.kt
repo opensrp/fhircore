@@ -19,23 +19,25 @@ package org.smartregister.fhircore.engine.util
 import java.util.Locale
 import java.util.MissingResourceException
 import java.util.ResourceBundle
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
-class LocaleUtil (val configurationRegistry: ConfigurationRegistry) {
+class LocaleUtil(val configurationRegistry: ConfigurationRegistry) {
   /**
-   *@param bundleName base name of the bundle e.g. strings
-   * @param locale the specific Locale, e.g. Locale.FRENCH. The language tag returned for French locale is fr
-   * @param template the input string with placeholder variables to be replaced with translated values
+   * @param bundleName base name of the bundle e.g. strings
+   * @param locale the specific Locale, e.g. Locale.FRENCH. The language tag returned for French
+   * locale is fr
+   * @param template the input string with placeholder variables to be replaced with translated
+   * values
    *
    * @return String of the interpolated template string
    */
   fun parseTemplate(bundleName: String, locale: Locale, template: String): String {
     return try {
       val bundle =
-        configurationRegistry.retrieveResourceBundleConfiguration(getLocaleSpecificFileName(bundleName, locale))
+        configurationRegistry.retrieveResourceBundleConfiguration(
+          getLocaleSpecificFileName(bundleName, locale)
+        )
           ?: ResourceBundle.getBundle(bundleName, locale)
       val lookup = mutableMapOf<String, Any>()
       bundle.keys.toList().forEach { lookup[it] = bundle.getObject(it) }
@@ -51,7 +53,8 @@ class LocaleUtil (val configurationRegistry: ConfigurationRegistry) {
    *
    * @return The locale specific filename, in this case will be: strings_fr
    */
-  fun getLocaleSpecificFileName(baseBundle: String, locale: Locale) = "${baseBundle}_${locale.toLanguageTag()}"
+  fun getLocaleSpecificFileName(baseBundle: String, locale: Locale) =
+    "${baseBundle}_${locale.toLanguageTag()}"
 
   /**
    * Creates identifier from text by doing clean up on the passed value
