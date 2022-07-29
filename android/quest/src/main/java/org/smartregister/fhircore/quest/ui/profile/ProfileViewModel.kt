@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.profile
+package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +44,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 
 @HiltViewModel
-class PatientProfileViewModel
+class ProfileViewModel
 @Inject
 constructor(
   val overflowMenuFactory: OverflowMenuFactory,
@@ -52,8 +52,7 @@ constructor(
   val profileViewDataMapper: ProfileViewDataMapper
 ) : ViewModel() {
 
-  val patientProfileUiState: MutableState<PatientProfileUiState> =
-    mutableStateOf(getProfileUiState())
+  val profileUiState: MutableState<ProfileUiState> = mutableStateOf(getProfileUiState())
 
   val patientProfileViewData: MutableState<ProfileViewData.PatientProfileViewData> =
     mutableStateOf(ProfileViewData.PatientProfileViewData())
@@ -68,7 +67,7 @@ constructor(
 
           // TODO only display some overflow menu items when certain conditions are met
           // dynamically from config
-          patientProfileUiState.value = getProfileUiState(patientProfileViewData.value)
+          profileUiState.value = getProfileUiState(patientProfileViewData.value)
         }
       }
     }
@@ -76,7 +75,7 @@ constructor(
 
   // TODO handle dynamic profile menu with configurations; avoid string comparison
   fun getProfileUiState(profileData: ProfileViewData.PatientProfileViewData? = null) =
-    PatientProfileUiState(
+    ProfileUiState(
       overflowMenuFactory.retrieveOverflowMenuItems(
         OverflowMenuHost.PATIENT_PROFILE,
         listOfNotNull(
@@ -99,14 +98,14 @@ constructor(
       )
     )
 
-  fun onEvent(event: PatientProfileEvent) =
+  fun onEvent(event: ProfileEvent) =
     when (event) {
-      is PatientProfileEvent.LoadQuestionnaire ->
+      is ProfileEvent.LoadQuestionnaire ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(event.questionnaireId)
-      is PatientProfileEvent.SeeAll -> {
+      is ProfileEvent.SeeAll -> {
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
-      is PatientProfileEvent.OverflowMenuClick -> {
+      is ProfileEvent.OverflowMenuClick -> {
         // TODO use navigation items from config and handle these actions dynamically
         // https://github.com/opensrp/fhircore/issues/1371
         when (event.menuId) {
@@ -154,7 +153,7 @@ constructor(
           else -> {}
         }
       }
-      is PatientProfileEvent.OpenTaskForm ->
+      is ProfileEvent.OpenTaskForm ->
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,

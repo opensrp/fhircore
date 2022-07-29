@@ -79,7 +79,7 @@ constructor(
             Pair(NavigationArg.PATIENT_ID, event.patientId),
             Pair(NavigationArg.FAMILY_ID, event.familyId)
           )
-        event.navController.navigate(route = MainNavigationScreen.PatientProfile.route + urlParams)
+        event.navController.navigate(route = MainNavigationScreen.Profile.route + urlParams)
       }
       is FamilyProfileEvent.OpenTaskForm ->
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(

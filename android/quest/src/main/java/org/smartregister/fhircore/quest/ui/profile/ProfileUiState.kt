@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.profile
+package org.smartregister.fhircore.quest.ui.profile
 
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
 
-data class PatientProfileUiState(val overflowMenuItems: List<OverflowMenuItem> = emptyList())
+data class ProfileUiState(val overflowMenuItems: List<OverflowMenuItem> = emptyList())

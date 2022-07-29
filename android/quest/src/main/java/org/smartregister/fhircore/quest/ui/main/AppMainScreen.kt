@@ -41,7 +41,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.NavigationArg.routePathsOf
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
-import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
+import org.smartregister.fhircore.quest.ui.profile.ProfileScreen
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
@@ -160,7 +160,7 @@ private fun AppMainNavigationGraph(
           measureReportNavigationGraph(navController, measureReportViewModel)
         MainNavigationScreen.Settings ->
           composable(MainNavigationScreen.Settings.route) { UserProfileScreen() }
-        MainNavigationScreen.PatientProfile ->
+        MainNavigationScreen.Profile ->
           composable(
             route =
               "${it.route}${
@@ -174,7 +174,7 @@ private fun AppMainNavigationGraph(
             val profileId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID) ?: ""
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID) ?: ""
             val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
-            PatientProfileScreen(
+            ProfileScreen(
               navController = navController,
               profileId = profileId,
               patientId = patientId,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.profile
+package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -55,39 +55,36 @@ import androidx.navigation.NavHostController
 import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
-import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
-import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
+import org.smartregister.fhircore.quest.ui.profile.components.PersonalData
+import org.smartregister.fhircore.quest.ui.profile.components.ProfileActionableItem
+import org.smartregister.fhircore.quest.ui.profile.components.ProfileCard
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 @Composable
-fun PatientProfileScreen(
+fun ProfileScreen(
   profileId: String,
   patientId: String,
   familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  patientProfileViewModel: PatientProfileViewModel = hiltViewModel(),
+  profileViewModel: ProfileViewModel = hiltViewModel(),
   refreshDataState: MutableState<Boolean>
 ) {
 
   val context = LocalContext.current
-  val profileViewData = patientProfileViewModel.patientProfileViewData.value
+  val profileViewData = profileViewModel.patientProfileViewData.value
   var showOverflowMenu by remember { mutableStateOf(false) }
-  val viewState = patientProfileViewModel.patientProfileUiState.value
+  val viewState = profileViewModel.profileUiState.value
   val refreshDataStateValue by remember { refreshDataState }
 
   LaunchedEffect(Unit) {
-    patientProfileViewModel.fetchPatientProfileData(
-      profileId = profileId,
-      patientId = patientId ?: ""
-    )
+    profileViewModel.fetchPatientProfileData(profileId = profileId, patientId = patientId ?: "")
   }
 
   SideEffect {
     // Refresh family profile data on resume
     if (refreshDataStateValue) {
-      patientProfileViewModel.fetchPatientProfileData(profileId = profileId, patientId = patientId)
+      profileViewModel.fetchPatientProfileData(profileId = profileId, patientId = patientId)
       refreshDataState.value = false
     }
   }
@@ -117,8 +114,8 @@ fun PatientProfileScreen(
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
-                  patientProfileViewModel.onEvent(
-                    PatientProfileEvent.OverflowMenuClick(
+                  profileViewModel.onEvent(
+                    ProfileEvent.OverflowMenuClick(
                       navController,
                       context,
                       it.id,
@@ -166,8 +163,8 @@ fun PatientProfileScreen(
               ActionableButton(
                 actionableButtonData = it,
                 onAction = { questionnaireId, taskId ->
-                  patientProfileViewModel.onEvent(
-                    PatientProfileEvent.OpenTaskForm(
+                  profileViewModel.onEvent(
+                    ProfileEvent.OpenTaskForm(
                       context = context,
                       taskFormId = questionnaireId,
                       taskId = taskId,
@@ -186,7 +183,7 @@ fun PatientProfileScreen(
         if (profileViewData.forms.isNotEmpty()) {
           ProfileCard(
             title = stringResource(R.string.forms),
-            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.FORMS
           ) {
             Spacer(modifier.height(16.dp))
@@ -194,9 +191,7 @@ fun PatientProfileScreen(
               ActionableButton(
                 actionableButtonData = it,
                 onAction = { questionnaireId, _ ->
-                  patientProfileViewModel.onEvent(
-                    PatientProfileEvent.LoadQuestionnaire(questionnaireId, context)
-                  )
+                  profileViewModel.onEvent(ProfileEvent.LoadQuestionnaire(questionnaireId, context))
                 }
               )
             }
@@ -209,7 +204,7 @@ fun PatientProfileScreen(
           ProfileCard(
             title =
               stringResource(R.string.responses, profileViewData.formResponses.size).uppercase(),
-            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.FORM_RESPONSES
           ) {
             profileViewData.formResponses.forEach {
@@ -223,7 +218,7 @@ fun PatientProfileScreen(
         if (profileViewData.medicalHistoryData.isNotEmpty()) {
           ProfileCard(
             title = stringResource(R.string.medical_history),
-            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
           ) {
             profileViewData.medicalHistoryData.forEach {
@@ -236,7 +231,7 @@ fun PatientProfileScreen(
         if (profileViewData.upcomingServices.isNotEmpty()) {
           ProfileCard(
             title = stringResource(R.string.upcoming_services),
-            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES
           ) {
             profileViewData.upcomingServices.forEach {
@@ -249,7 +244,7 @@ fun PatientProfileScreen(
         if (profileViewData.ancCardData.isNotEmpty()) {
           ProfileCard(
             title = stringResource(R.string.service_card),
-            onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
+            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
             profileViewSection = PatientProfileViewSection.SERVICE_CARD
           ) {
             profileViewData.ancCardData.forEach {

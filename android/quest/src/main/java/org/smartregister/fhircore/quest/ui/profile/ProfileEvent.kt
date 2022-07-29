@@ -14,27 +14,25 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.profile
+package org.smartregister.fhircore.quest.ui.profile
 
 import android.content.Context
 import androidx.navigation.NavHostController
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
-sealed class PatientProfileEvent {
+sealed class ProfileEvent {
 
-  data class SeeAll(val patientProfileViewSection: PatientProfileViewSection) :
-    PatientProfileEvent()
+  data class SeeAll(val patientProfileViewSection: PatientProfileViewSection) : ProfileEvent()
 
-  data class LoadQuestionnaire(val questionnaireId: String, val context: Context) :
-    PatientProfileEvent()
+  data class LoadQuestionnaire(val questionnaireId: String, val context: Context) : ProfileEvent()
 
   data class OpenTaskForm(
     val context: Context,
     val taskFormId: String,
     val taskId: String?,
     val patientId: String
-  ) : PatientProfileEvent()
+  ) : ProfileEvent()
 
   data class OverflowMenuClick(
     val navController: NavHostController,
@@ -43,5 +41,5 @@ sealed class PatientProfileEvent {
     val patientId: String,
     val familyId: String? = null,
     val patient: ProfileViewData.PatientProfileViewData
-  ) : PatientProfileEvent()
+  ) : ProfileEvent()
 }
