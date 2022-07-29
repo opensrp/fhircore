@@ -21,18 +21,18 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
+import org.smartregister.fhircore.quest.data.patient.model.RegisterPagingSourceState
 import timber.log.Timber
 
 /**
- * @property _patientPagingSourceState as state containing the properties used in the
+ * @property _registerPagingSourceState as state containing the properties used in the
  * [RegisterRepository] function for loading data to the paging source.
  */
-class PatientRegisterPagingSource(
+class RegisterPagingSource(
   private val registerRepository: RegisterRepository,
 ) : PagingSource<Int, ResourceData>() {
 
-  private lateinit var _patientPagingSourceState: PatientPagingSourceState
+  private lateinit var _registerPagingSourceState: RegisterPagingSourceState
 
   /**
    * To load data for the current page, nextKey and prevKey for [params] are both set to null to
@@ -48,21 +48,21 @@ class PatientRegisterPagingSource(
    */
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ResourceData> {
     return try {
-      val currentPage = params.key ?: _patientPagingSourceState.currentPage
+      val currentPage = params.key ?: _registerPagingSourceState.currentPage
       val registerData =
         registerRepository.loadRegisterData(
           currentPage = currentPage,
-          registerId = _patientPagingSourceState.registerId
+          registerId = _registerPagingSourceState.registerId
         )
 
       val prevKey =
         when {
-          _patientPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
+          _registerPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
           else -> null
         }
       val nextKey =
         when {
-          _patientPagingSourceState.loadAll ->
+          _registerPagingSourceState.loadAll ->
             if (registerData.isNotEmpty()) currentPage + 1 else null
           else -> null
         }
@@ -74,8 +74,8 @@ class PatientRegisterPagingSource(
     }
   }
 
-  fun setPatientPagingSourceState(patientPagingSourceState: PatientPagingSourceState) {
-    this._patientPagingSourceState = patientPagingSourceState
+  fun setPatientPagingSourceState(registerPagingSourceState: RegisterPagingSourceState) {
+    this._registerPagingSourceState = registerPagingSourceState
   }
 
   override fun getRefreshKey(state: PagingState<Int, ResourceData>): Int? {

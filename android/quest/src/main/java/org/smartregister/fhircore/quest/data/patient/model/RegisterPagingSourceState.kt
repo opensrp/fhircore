@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.data.patient.model
 
-data class PatientPagingSourceState(
+data class RegisterPagingSourceState(
   val registerId: String,
   val currentPage: Int = 0,
   val loadAll: Boolean = false

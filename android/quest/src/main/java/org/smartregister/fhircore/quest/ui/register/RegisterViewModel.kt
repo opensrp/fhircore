@@ -43,9 +43,9 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
-import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
-import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
+import org.smartregister.fhircore.quest.data.patient.RegisterPagingSource
+import org.smartregister.fhircore.quest.data.patient.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
+import org.smartregister.fhircore.quest.data.patient.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
@@ -85,9 +85,9 @@ constructor(
     Pager(
       config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE, enablePlaceholders = false),
       pagingSourceFactory = {
-        PatientRegisterPagingSource(registerRepository).apply {
+        RegisterPagingSource(registerRepository).apply {
           setPatientPagingSourceState(
-            PatientPagingSourceState(
+            RegisterPagingSourceState(
               registerId = registerId,
               loadAll = loadAll,
               currentPage = if (loadAll) 0 else currentPage.value!!
