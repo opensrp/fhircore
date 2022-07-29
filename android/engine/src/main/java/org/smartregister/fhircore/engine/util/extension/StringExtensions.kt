@@ -17,72 +17,12 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.text.MessageFormat
-import java.util.LinkedList
 import java.util.Locale
+import java.util.regex.Pattern
 import org.apache.commons.text.StringSubstitutor
 
 /**
- * This function replaces the content enclosed within [substitutionPair] with the value obtained
- * from the [valuesMap]. If the map does not contain the key, the key is returned instead. Default
- * template is @{key}
- *
- * Examples: Given the string "HIV status: @{hivResult}" with a map of {'hivResult': "+ve"}, the
- * resulting string will be:
- *
- * "HIV status: +ve"
- *
- * If the key is not available in the map the resulting string will be:
- *
- * "HIV status: @{hivResult}"
- */
-@Deprecated("Use the other extension method")
-fun String.interpolateDepr(
-  valuesMap: Map<String, Any>,
-  substitutionPair: Pair<String, String> = Pair("@{", "}")
-): String {
-  val (substitutionPrefix, substitutionSuffix) = substitutionPair
-  val wordsList = LinkedList<String>()
-  val delimiter = " "
-
-  // First remove extra white spaces then split
-  val splitWords = this.replace("\\s+".toRegex(), delimiter).split(delimiter)
-
-  var index = 0
-  while (index < splitWords.size) {
-    val word = splitWords[index]
-    if (word.startsWith(substitutionPrefix) && word.endsWith(substitutionSuffix)) {
-      val startIndex = substitutionPrefix.length
-      val endIndex = word.length - substitutionSuffix.length
-      val key = word.substring(startIndex, endIndex).trim()
-      if (valuesMap.containsKey(key)) {
-        wordsList.addLast(valuesMap.getValue(key).toString())
-      } else wordsList.addLast(word)
-      index++
-    } else if (word == substitutionPrefix) {
-      var nextIndex = index.inc()
-
-      // Combine all words after substitutionPrefix into one and use as key
-      val keyStringBuilder = StringBuilder()
-      while (nextIndex < splitWords.size && splitWords[nextIndex] != substitutionSuffix) {
-        keyStringBuilder.append(splitWords[nextIndex])
-        nextIndex++
-      }
-      val key = keyStringBuilder.toString()
-      if (valuesMap.containsKey(key)) {
-        wordsList.addLast(valuesMap.getValue(key).toString())
-      } else {
-        wordsList.addLast(substitutionPrefix + key + substitutionSuffix)
-      }
-      index = nextIndex.inc()
-    } else {
-      wordsList.addLast(word)
-      index++
-    }
-  }
-  return wordsList.joinToString(delimiter)
-}
-/**
- * Sample template string: { "saveFamilyButtonText" : {{family.button.save}} } Sample properties
+ * Sample template string: { "saveFamilyButtonText" : {{ family.button.save }} } Sample properties
  * file content: family.button.save=Save Family
  *
  * @param lookupMap The Map with the key value items to be used for interpolation
@@ -98,9 +38,15 @@ fun String.interpolate(
   lookupMap: Map<String, Any>,
   prefix: String = "@{",
   suffix: String = "}"
-): String {
-  return StringSubstitutor(lookupMap, prefix, suffix).replace(this)
-}
+): String =
+  StringSubstitutor.replace(
+    this.replace(Pattern.quote(prefix).plus(".*?").plus(Pattern.quote(suffix)).toRegex()) {
+      it.value.replace("\\s+".toRegex(), "")
+    },
+    lookupMap,
+    prefix,
+    suffix
+  )
 
 /**
  * Wrapper method around the Java text formatter

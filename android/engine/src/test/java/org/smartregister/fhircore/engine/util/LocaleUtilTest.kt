@@ -140,4 +140,19 @@ class LocaleUtilTest : RobolectricTest() {
     val result = configRegistry.localeUtil.generateIdentifier("Home Address")
     Assert.assertEquals("home.address", result)
   }
+
+  @Test
+  fun testParseTemplateWithPlaceholderWhitespaceGeneratesCorrectlyTranslatedString() {
+
+    val templateString = "{{ person.gender }} from {{          person.address           }}"
+
+    val result =
+      configRegistry.localeUtil.parseTemplate(
+        LocaleUtil.STRINGS_BASE_BUNDLE_NAME,
+        Locale.ENGLISH,
+        templateString
+      )
+
+    Assert.assertEquals("Male from Nairobi, Kenya", result)
+  }
 }
