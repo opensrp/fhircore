@@ -164,7 +164,6 @@ constructor(
     }
   }
 
-  // TODO fix app crash when
   private fun retrieveAncPatients(): Flow<PagingData<MeasureReportPatientViewData>> =
     Pager(
         config = PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE),

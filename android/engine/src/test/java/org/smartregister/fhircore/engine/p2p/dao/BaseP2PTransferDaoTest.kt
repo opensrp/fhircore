@@ -79,7 +79,6 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
 
   @Test
   fun `getDataTypes() returns correct list of datatypes`() {
-    Faker.loadConfigurationRegistryTestData(defaultRepository, configurationRegistry)
 
     val actualDataTypes = baseP2PTransferDao.getDataTypes()
     assertEquals(9, actualDataTypes.size)

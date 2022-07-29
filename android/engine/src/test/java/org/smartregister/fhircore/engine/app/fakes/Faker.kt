@@ -17,16 +17,11 @@
 package org.smartregister.fhircore.engine.app.fakes
 
 import androidx.test.platform.app.InstrumentationRegistry
-import io.mockk.MockKAnswerScope
-import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
-import java.io.File
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
@@ -34,12 +29,11 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.readFile
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.toSha1
 
 object Faker {
+
+  private const val APP_DEBUG = "app/debug"
 
   val authCredentials =
     AuthCredentials(
@@ -48,48 +42,6 @@ object Faker {
       sessionToken = "49fad390491a5b547d0f782309b6a5b33f7ac087",
       refreshToken = "USrAgmSf5MJ8N_RLQODa7rZ3zNs1Sj1GkSIsTsb4n-Y"
     )
-
-  private val systemPath =
-    "${System.getProperty("user.dir")?.plus(File.separator) ?: "."}src${File.separator}test${File.separator}assets${File.separator}"
-
-  fun loadConfigurationRegistryTestData(
-    defaultRepository: DefaultRepository,
-    configurationRegistry: ConfigurationRegistry
-  ) {
-    val composition =
-      getBasePath("composition").readFile(systemPath).decodeResourceFromString() as Composition
-    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns composition
-
-    coEvery { defaultRepository.getBinary(any()) } answers
-      {
-        val configName = getSectionComponent(composition)?.focus?.identifier?.value
-        Binary().apply {
-          content = configName?.let { it1 -> getBasePath(it1).readFile(systemPath).toByteArray() }
-        }
-      }
-
-    runBlocking {
-      configurationRegistry.loadConfigurations(
-        context = InstrumentationRegistry.getInstrumentation().targetContext,
-        appId = "app"
-      ) {}
-    }
-  }
-
-  private fun MockKAnswerScope<Binary, Binary>.getSectionComponent(
-    composition: Composition
-  ): Composition.SectionComponent? {
-    composition.retrieveCompositionSections().forEach {
-      if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
-        if (this.args.first().toString() == it.focus.reference.substringAfter("Binary/")) {
-          return it
-        }
-      }
-    }
-    return null
-  }
-
-  private fun getBasePath(configName: String): String = "/configs/app/${configName}_config.json"
 
   fun buildTestConfigurationRegistry(
     defaultRepository: DefaultRepository = mockk()
@@ -104,7 +56,12 @@ object Faker {
         )
       )
 
-    loadConfigurationRegistryTestData(defaultRepository, configurationRegistry)
+    runBlocking {
+      configurationRegistry.loadConfigurations(
+        appId = APP_DEBUG,
+        context = InstrumentationRegistry.getInstrumentation().targetContext
+      ) {}
+    }
 
     return configurationRegistry
   }

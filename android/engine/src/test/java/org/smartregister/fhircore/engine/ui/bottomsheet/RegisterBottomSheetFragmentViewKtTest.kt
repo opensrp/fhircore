@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.bottomsheet
 
+import android.os.Looper
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -23,9 +24,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.mockk.spyk
 import io.mockk.verify
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
@@ -50,6 +53,11 @@ class RegisterBottomSheetFragmentViewKtTest : RobolectricTest() {
         onDismiss = {}
       )
     }
+  }
+
+  @After
+  fun tearDown() {
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
   }
 
   @Test
