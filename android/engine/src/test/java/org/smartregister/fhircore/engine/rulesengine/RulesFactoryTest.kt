@@ -1,0 +1,111 @@
+package org.smartregister.fhircore.engine.rulesengine
+
+import com.google.android.fhir.logicalId
+import io.mockk.*
+import io.mockk.InternalPlatformDsl.toArray
+import org.hl7.fhir.r4.model.*
+import org.jeasy.rules.api.Facts
+import org.jeasy.rules.api.Rule
+import org.jeasy.rules.api.Rules
+import org.jeasy.rules.core.DefaultRulesEngine
+import org.joda.time.LocalDate
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import java.util.*
+
+class RulesFactoryTest : RobolectricTest()  {
+
+    private lateinit var rulesEngine: DefaultRulesEngine
+    private lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+    private lateinit var configurationRegistry: ConfigurationRegistry
+    private lateinit var rulesFactory: RulesFactory
+    private lateinit var rulesEngineService: RulesEngineService
+
+    @Before
+    fun setUp() {
+        configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+        fhirPathDataExtractor = mockk(relaxed = true)
+        rulesEngine = mockk()//(relaxed = true)
+        rulesEngineService = mockk()
+        rulesFactory = spyk(RulesFactory(configurationRegistry = configurationRegistry, rulesEngineService = rulesEngineService))
+    }
+
+    @Test
+    fun `init() populates facts`() {
+        var facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
+        Assert.assertEquals(2, facts.asMap().size)
+        Assert.assertNotNull(facts.get("data"))
+        Assert.assertNotNull(facts.get("fhirPath"))
+    }
+
+    @Test
+    fun `beforeEvaluate() returns true`() {
+        Assert.assertTrue(rulesFactory.beforeEvaluate(mockk(), mockk()))
+    }
+
+    @Test
+    fun `fireRule() calls rulesEngine#fire`() {
+
+        val baseResource = populateTestPatient()
+        val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+        val ruleConfig = RuleConfig(name = "patientName", description = "Retrieve patient name", actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"))
+        val ruleConfigs =  listOf(ruleConfig)
+
+        ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
+        every { rulesEngine.fire(any(),any()) } just runs
+        rulesFactory.fireRule(ruleConfigs = ruleConfigs, baseResource = baseResource, relatedResourcesMap = relatedResourcesMap)
+
+        val factsSlot = slot<Facts>()
+        val rulesSlot = slot<Rules>()
+        verify { rulesEngine.fire(capture(rulesSlot),capture(factsSlot)) }
+
+        val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+        Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
+        Assert.assertTrue(capturedBaseResource.active)
+        Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
+        Assert.assertEquals(baseResource.name[0].given, capturedBaseResource.name[0].given)
+        Assert.assertEquals(baseResource.address[0].city, capturedBaseResource.address[0].city,)
+
+        val capturedRule = rulesSlot.captured.first()
+        Assert.assertEquals(ruleConfig.name, capturedRule.name)
+        Assert.assertEquals(ruleConfig.description, capturedRule.description)
+    }
+
+    private fun populateTestPatient(): Patient {
+        val patientId = "patient-123456"
+        val patient: Patient =
+            Patient().apply {
+                id = patientId
+                active = true
+                birthDate = LocalDate.parse("1999-10-03").toDate()
+                gender = Enumerations.AdministrativeGender.MALE
+                address =
+                    listOf(
+                        Address().apply {
+                            city = "Nairobi"
+                            country = "Kenya"
+                        }
+                    )
+                name =
+                    listOf(
+                        HumanName().apply {
+                            given = mutableListOf(StringType("Kiptoo"))
+                            family = "Maina"
+                        }
+                    )
+                telecom = listOf(ContactPoint().apply { value = "12345" })
+                meta = Meta().apply { lastUpdated = Date() }
+            }
+        return patient
+    }
+
+}
