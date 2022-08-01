@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
@@ -67,12 +67,12 @@ fun MeasureReportResultScreen(
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
 
   // Previously selected measure from the list of supported measures
-  val measureReportRowData = measureReportViewModel.measureReportRowData.value
+  val measureReportRowData = measureReportViewModel.measureReportConfig.value
 
   MeasureReportResultPage(
     screenTitle = measureReportRowData?.title ?: "",
     navController = navController,
-    measureReportRowData = measureReportRowData,
+    measureReportConfig = measureReportRowData,
     endDate = uiState.endDate,
     startDate = uiState.startDate,
     measureReportIndividualResult = measureReportViewModel.measureReportIndividualResult.value,
@@ -85,7 +85,7 @@ fun MeasureReportResultScreen(
 fun MeasureReportResultPage(
   screenTitle: String,
   navController: NavController,
-  measureReportRowData: MeasureReportRowConfig?,
+  measureReportConfig: MeasureReportConfig?,
   startDate: String,
   endDate: String,
   patientViewData: MeasureReportPatientViewData?,
@@ -121,9 +121,9 @@ fun MeasureReportResultPage(
               .wrapContentWidth(),
           contentAlignment = Alignment.Center
         ) {
-          if (measureReportRowData != null)
+          if (measureReportConfig != null)
             Text(
-              text = measureReportRowData.description,
+              text = measureReportConfig.description,
               textAlign = TextAlign.Start,
               fontSize = 16.sp
             )
@@ -165,8 +165,8 @@ private fun MeasureReportResultScreenForIndividualPreview() {
   MeasureReportResultPage(
     screenTitle = "First ANC",
     navController = rememberNavController(),
-    measureReportRowData =
-      MeasureReportRowConfig(
+    measureReportConfig =
+      MeasureReportConfig(
         title = "First ANC",
         description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
       ),
@@ -196,8 +196,8 @@ private fun MeasureReportResultScreenForPopulationPreview() {
   MeasureReportResultPage(
     screenTitle = "First ANC",
     navController = rememberNavController(),
-    measureReportRowData =
-      MeasureReportRowConfig(
+    measureReportConfig =
+      MeasureReportConfig(
         description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
       ),
     startDate = "25 Nov, 2021",

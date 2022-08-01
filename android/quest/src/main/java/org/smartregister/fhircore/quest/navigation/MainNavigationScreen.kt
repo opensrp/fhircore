@@ -25,16 +25,14 @@ sealed class MainNavigationScreen(
   val showInBottomNav: Boolean = false
 ) {
   object Home : MainNavigationScreen(R.string.clients, R.drawable.ic_home, "homeRoute", true)
-  object Tasks : MainNavigationScreen(R.string.visits, R.drawable.ic_tasks, "tasksRoute", true)
   object Reports :
     MainNavigationScreen(R.string.reports, R.drawable.ic_reports, "reportsRoute", true)
   object Settings :
     MainNavigationScreen(R.string.settings, R.drawable.ic_settings, "settingsRoute", true)
-  object PatientProfile :
-    MainNavigationScreen(titleResource = R.string.profile, route = "patientProfileRoute")
+  object Profile : MainNavigationScreen(titleResource = R.string.profile, route = "profileRoute")
   object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
 
   companion object {
-    val appScreens = listOf(Home, Tasks, Reports, Settings, PatientProfile, FamilyProfile)
+    val appScreens = listOf(Home, Reports, Settings, Profile, FamilyProfile)
   }
 }

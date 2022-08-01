@@ -1,8 +1,0 @@
-{
-  "appId": "quest",
-  "classification": "pin",
-  "applicationName": "QuestDefault",
-  "appLogoIconResourceFile": "ic_liberia",
-  "enablePin": true,
-  "showLogo": true
-}

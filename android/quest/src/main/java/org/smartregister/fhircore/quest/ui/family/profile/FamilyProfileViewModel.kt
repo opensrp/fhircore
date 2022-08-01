@@ -25,9 +25,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -51,7 +49,7 @@ class FamilyProfileViewModel
 @Inject
 constructor(
   val overflowMenuFactory: OverflowMenuFactory,
-  val patientRegisterRepository: PatientRegisterRepository,
+  val registerRepository: RegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper,
   val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
@@ -77,13 +75,11 @@ constructor(
       is FamilyProfileEvent.OpenMemberProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
-            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
             // TODO depending on client type, use relevant health module to load the correct content
-            Pair(NavigationArg.HEALTH_MODULE, HealthModule.DEFAULT.name),
             Pair(NavigationArg.PATIENT_ID, event.patientId),
             Pair(NavigationArg.FAMILY_ID, event.familyId)
           )
-        event.navController.navigate(route = MainNavigationScreen.PatientProfile.route + urlParams)
+        event.navController.navigate(route = MainNavigationScreen.Profile.route + urlParams)
       }
       is FamilyProfileEvent.OpenTaskForm ->
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
@@ -118,16 +114,16 @@ constructor(
   fun fetchFamilyProfileData(familyId: String?) {
     viewModelScope.launch(dispatcherProvider.io()) {
       if (!familyId.isNullOrEmpty()) {
-        patientRegisterRepository.loadPatientProfileData(
-            AppFeature.HouseholdManagement.name,
-            HealthModule.FAMILY,
-            familyId
-          )
-          ?.let {
-            familyMemberProfileData.value =
-              profileViewDataMapper.transformInputToOutputModel(it) as
-                ProfileViewData.FamilyProfileViewData
-          }
+        // TODO load family profile data
+        /* patientRegisterRepository.loadPatientProfileData(
+          profileId = profileId,
+          patientId = familyId
+        )
+        ?.let {
+          familyMemberProfileData.value =
+            profileViewDataMapper.transformInputToOutputModel(it) as
+              ProfileViewData.FamilyProfileViewData
+        }*/
       }
     }
   }
@@ -142,10 +138,11 @@ constructor(
 
   suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
     withContext(dispatcherProvider.io()) {
-      patientRegisterRepository.registerDaoFactory.familyRegisterDao.changeFamilyHead(
-        newFamilyHead = newFamilyHead,
-        oldFamilyHead = oldFamilyHead
-      )
+      // TODO handle change family head logic
+      //      patientRegisterRepository.registerDaoFactory.familyRegisterDao.changeFamilyHead(
+      //        newFamilyHead = newFamilyHead,
+      //        oldFamilyHead = oldFamilyHead
+      //      )
     }
   }
 

@@ -37,7 +37,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
@@ -46,19 +46,18 @@ import org.smartregister.fhircore.quest.R
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun MeasureReportRowPreview() {
-  val measureReportRowData =
-    MeasureReportRowConfig(
-      id = "fid",
+  val measureReportConfig =
+    MeasureReportConfig(
+      id = "1",
       title = "4+ ANC Contacts ",
       description = "Pregnant women with at least four ANC Contacts",
-      reportType = "4"
     )
-  MeasureReportRow(measureReportRowData = measureReportRowData, onRowClick = {})
+  MeasureReportRow(measureReportConfig = measureReportConfig, onRowClick = {})
 }
 
 @Composable
 fun MeasureReportRow(
-  measureReportRowData: MeasureReportRowConfig,
+  measureReportConfig: MeasureReportConfig,
   onRowClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -69,7 +68,7 @@ fun MeasureReportRow(
   ) {
     Column(modifier = modifier.padding(16.dp).weight(0.70f)) {
       Text(
-        text = measureReportRowData.title,
+        text = measureReportConfig.title,
         fontSize = 18.sp,
         modifier = modifier.wrapContentWidth()
       )
@@ -80,7 +79,7 @@ fun MeasureReportRow(
       ) {
         Text(
           color = SubtitleTextColor,
-          text = measureReportRowData.description,
+          text = measureReportConfig.description,
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )

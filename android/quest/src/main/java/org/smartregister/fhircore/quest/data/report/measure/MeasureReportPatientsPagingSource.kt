@@ -18,11 +18,9 @@ package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 
-/** Retrieve ANC patients data for measure reporting */
 class MeasureReportPatientsPagingSource(
   private val measureReportRepository: MeasureReportRepository,
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
@@ -34,14 +32,11 @@ class MeasureReportPatientsPagingSource(
     return try {
       val currentPage = params.key ?: 0
       val data =
-        measureReportRepository.retrievePatients(currentPage).map { registerData ->
-          measureReportPatientViewDataMapper.transformInputToOutputModel(
-            registerData as RegisterData.AncRegisterData
-          )
+        measureReportRepository.retrievePatients(currentPage).map { resourceData ->
+          measureReportPatientViewDataMapper.transformInputToOutputModel(resourceData)
         }
       val prevKey = if (currentPage == 0) null else currentPage - 1
       val nextKey = if (data.isNotEmpty()) currentPage + 1 else null
-
       LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
     } catch (exception: Exception) {
       LoadResult.Error(exception)

@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure
 
-import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.TextFieldValue
@@ -26,6 +25,7 @@ import androidx.navigation.NavController
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
@@ -38,14 +38,13 @@ import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Practitioner
-import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
@@ -80,7 +79,7 @@ constructor(
   private val measureReportDateFormatter =
     SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
 
-  val measureReportRowData: MutableState<MeasureReportRowConfig?> = mutableStateOf(null)
+  val measureReportConfig: MutableState<MeasureReportConfig?> = mutableStateOf(null)
 
   val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
     mutableStateOf(null)
@@ -99,8 +98,9 @@ constructor(
 
   val searchTextState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue())
 
-  val patientsData: MutableStateFlow<Flow<PagingData<MeasureReportPatientViewData>>> =
-    MutableStateFlow(emptyFlow())
+  val patientsData: MutableStateFlow<Flow<PagingData<MeasureReportPatientViewData>>> by lazy {
+    MutableStateFlow(retrieveAncPatients())
+  }
 
   private val loggedInPractitioner by lazy {
     sharedPreferencesHelper.read<Practitioner>(
@@ -109,32 +109,29 @@ constructor(
     )
   }
 
-  init {
-    patientsData.value = retrieveAncPatients()
-  }
-
   fun defaultDateRangeState() =
     androidx.core.util.Pair(
       MaterialDatePicker.thisMonthInUtcMilliseconds(),
       MaterialDatePicker.todayInUtcMilliseconds()
     )
 
-  fun reportMeasuresList(): Flow<PagingData<MeasureReportRowConfig>> =
+  fun reportMeasuresList(): Flow<PagingData<MeasureReportConfig>> =
     Pager(PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE)) { measureReportRepository }
       .flow
+      .cachedIn(viewModelScope)
 
   fun onEvent(event: MeasureReportEvent) {
     when (event) {
       is MeasureReportEvent.OnSelectMeasure -> {
-        measureReportRowData.value = event.measureReportRowData
+        measureReportConfig.value = event.measureReportConfig
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, event.measureReportRowData.title)
+              Pair(NavigationArg.SCREEN_TITLE, event.measureReportConfig.title)
             )
         ) { launchSingleTop = true }
       }
-      is MeasureReportEvent.GenerateReport -> evaluateMeasure(event.context, event.navController)
+      is MeasureReportEvent.GenerateReport -> evaluateMeasure(event.navController)
       is MeasureReportEvent.OnDateRangeSelected -> {
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
         dateRange.value = event.newDateRange
@@ -156,28 +153,20 @@ constructor(
           }
         }
       }
-      is MeasureReportEvent.OnPatientSelected -> {
+      is MeasureReportEvent.OnPatientSelected ->
         reportTypeSelectorUiState.value =
           reportTypeSelectorUiState.value.copy(patientViewData = event.patientViewData)
-      }
       is MeasureReportEvent.OnSearchTextChanged ->
         patientsData.value =
           retrieveAncPatients().map { pagingData: PagingData<MeasureReportPatientViewData> ->
-            pagingData.filter {
-              it.name.contains(event.searchText, ignoreCase = true) ||
-                it.logicalId.contentEquals(event.searchText, ignoreCase = true)
-            }
+            pagingData.filter { it.name.contains(event.searchText, ignoreCase = true) }
           }
     }
   }
 
   private fun retrieveAncPatients(): Flow<PagingData<MeasureReportPatientViewData>> =
     Pager(
-        config =
-          PagingConfig(
-            pageSize = PaginationConstant.DEFAULT_PAGE_SIZE,
-            initialLoadSize = PaginationConstant.DEFAULT_INITIAL_LOAD_SIZE
-          ),
+        config = PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE),
         pagingSourceFactory = {
           MeasureReportPatientsPagingSource(
             measureReportRepository,
@@ -186,12 +175,13 @@ constructor(
         }
       )
       .flow
+      .cachedIn(viewModelScope)
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
-  fun evaluateMeasure(context: Context, navController: NavController) {
+  fun evaluateMeasure(navController: NavController) {
     // Run evaluate measure only for existing report
-    if (measureReportRowData.value != null) {
-      val reportName = measureReportRowData.value!!.name
+    if (measureReportConfig.value != null) {
+      val measureUrl = measureReportConfig.value!!.url
       val individualEvaluation = reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL
       // Retrieve and parse dates from this format (16 Nov, 2020) to this (2020-11-16)
       val startDateFormatted =
@@ -206,7 +196,6 @@ constructor(
       viewModelScope.launch {
         kotlin
           .runCatching {
-            val measureUrl = reportName
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
 

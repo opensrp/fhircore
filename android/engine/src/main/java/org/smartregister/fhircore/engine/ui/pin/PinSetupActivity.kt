@@ -49,9 +49,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     pinViewModel.apply {
-      if (configurationRegistry.isAppIdInitialized()) {
-        loadData(isSetup = true)
-      }
+      setPinUiState(isSetup = true)
       val pinSetupActivity = this@PinSetupActivity
       navigateToHome.observe(pinSetupActivity) {
         loginService.navigateToHome()
