@@ -254,7 +254,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
   }
 
   @Test
-  fun `getDefaultDataTypes() returns correct list of datatypes`() {
+  fun getDefaultDataTypesReturnsCorrectListOfDataTypes() {
 
     val actualDataTypes = baseP2PTransferDao.getDefaultDataTypes()
     assertEquals(6, actualDataTypes.size)

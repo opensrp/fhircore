@@ -71,7 +71,7 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `initPopulatesFactsWithDataAndFhirPathValues`() {
+  fun initPopulatesFactsWithDataAndFhirPathValues() {
     var facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     Assert.assertEquals(2, facts.asMap().size)
     Assert.assertNotNull(facts.get("data"))
@@ -79,12 +79,12 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `beforeEvaluateReturnsTrue`() {
+  fun beforeEvaluateReturnsTrue() {
     Assert.assertTrue(rulesFactory.beforeEvaluate(mockk(), mockk()))
   }
 
   @Test
-  fun `fireRuleCallsRulesEngineFireWithCorrectRulesAndFacts`() {
+  fun fireRuleCallsRulesEngineFireWithCorrectRulesAndFacts() {
 
     val baseResource = populateTestPatient()
     val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
