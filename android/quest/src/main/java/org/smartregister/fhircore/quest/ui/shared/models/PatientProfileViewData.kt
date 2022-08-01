@@ -42,7 +42,7 @@ sealed class ProfileViewData(
     val address: String = "",
     val identifierKey: String = "",
     val showIdentifierInProfile: Boolean = false,
-    val carePlans: ArrayList<CarePlan> = ArrayList()
+    val carePlans: List<CarePlan> = emptyList()
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier)
 
   data class FamilyProfileViewData(

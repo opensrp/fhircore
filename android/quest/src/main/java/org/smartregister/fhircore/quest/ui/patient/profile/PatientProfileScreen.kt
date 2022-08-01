@@ -49,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import org.hl7.fhir.r4.model.CarePlan
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.FormButton
@@ -120,7 +121,7 @@ fun PatientProfileScreen(
                       it.id,
                       profileViewData.logicalId,
                       familyId,
-                      carePlans = profileViewData.carePlans
+                      carePlans = profileViewData.carePlans as ArrayList<CarePlan>
                     )
                   )
                 },
@@ -168,7 +169,7 @@ fun PatientProfileScreen(
                       taskFormId = taskFormId,
                       taskId = taskId,
                       patientId = profileViewData.logicalId,
-                      carePlans = profileViewData.carePlans
+                      carePlans = profileViewData.carePlans as ArrayList<CarePlan>
                     )
                   )
                 }
