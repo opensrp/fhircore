@@ -75,7 +75,13 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.viral_load_results, R.string.viral_load_results),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
-      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(
+        id = R.id.remove_hiv_patient,
+        titleResource = R.string.remove_active_person,
+        titleColor = DangerColor,
+        confirmAction = true
+      )
     )
   ),
   ART_CLIENT_PROFILE(
@@ -85,7 +91,13 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.viral_load_results, R.string.viral_load_results),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
-      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(
+        id = R.id.remove_hiv_patient,
+        titleResource = R.string.remove_active_person,
+        titleColor = DangerColor,
+        confirmAction = true
+      )
     )
   ),
   EXPOSED_INFANT_PROFILE(
@@ -95,7 +107,13 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.hiv_test_and_results, R.string.hiv_test_and_results),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
-      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(
+        id = R.id.remove_hiv_patient,
+        titleResource = R.string.remove_active_person,
+        titleColor = DangerColor,
+        confirmAction = true
+      )
     )
   ),
   CHILD_CONTACT_PROFILE(
@@ -103,14 +121,26 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
-      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(
+        id = R.id.remove_hiv_patient,
+        titleResource = R.string.remove_active_person,
+        titleColor = DangerColor,
+        confirmAction = true
+      )
     )
   ),
   SEXUAL_CONTACT_PROFILE(
     listOf(
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
-      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(
+        id = R.id.remove_hiv_patient,
+        titleResource = R.string.remove_active_person,
+        titleColor = DangerColor,
+        confirmAction = true
+      )
     )
   ),
   COMMUNITY_POSITIVE_PROFILE(
@@ -118,7 +148,13 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
-      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history)
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(
+        id = R.id.remove_hiv_patient,
+        titleResource = R.string.remove_active_person,
+        titleColor = DangerColor,
+        confirmAction = true
+      )
     )
   )
 }

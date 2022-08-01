@@ -42,12 +42,12 @@ class OverflowMenuFactoryTest : RobolectricTest() {
     val uiProfileNewlyDiagnosed =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE)
     Assert.assertNotNull(uiProfileNewlyDiagnosed)
-    Assert.assertEquals(6, uiProfileNewlyDiagnosed.size)
+    Assert.assertEquals(7, uiProfileNewlyDiagnosed.size)
 
     val uiProfileAlreadyOnART =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.ART_CLIENT_PROFILE)
     Assert.assertNotNull(uiProfileAlreadyOnART)
-    Assert.assertEquals(6, uiProfileAlreadyOnART.size)
+    Assert.assertEquals(7, uiProfileAlreadyOnART.size)
 
     val uiProfileExposedInfant =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.EXPOSED_INFANT_PROFILE)
@@ -57,17 +57,17 @@ class OverflowMenuFactoryTest : RobolectricTest() {
     val uiProfileChildContact =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.CHILD_CONTACT_PROFILE)
     Assert.assertNotNull(uiProfileChildContact)
-    Assert.assertEquals(4, uiProfileChildContact.size)
+    Assert.assertEquals(5, uiProfileChildContact.size)
 
     val uiProfileSexualContact =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.SEXUAL_CONTACT_PROFILE)
     Assert.assertNotNull(uiProfileSexualContact)
-    Assert.assertEquals(3, uiProfileSexualContact.size)
+    Assert.assertEquals(4, uiProfileSexualContact.size)
 
     val uiProfileHivPositive =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.COMMUNITY_POSITIVE_PROFILE)
     Assert.assertNotNull(uiProfileHivPositive)
-    Assert.assertEquals(4, uiProfileHivPositive.size)
+    Assert.assertEquals(5, uiProfileHivPositive.size)
 
     val uiProfileFamily =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)
