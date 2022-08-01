@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.apache.commons.jexl3.JexlException
@@ -29,21 +30,20 @@ import org.jeasy.rules.jexl.JexlRule
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
 
 @Singleton
-class RulesFactory
-@Inject
-constructor(
-  val configurationRegistry: ConfigurationRegistry,
-  val rulesEngineService: RulesEngineService
-) : RuleListener {
+class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationRegistry) :
+  RuleListener {
 
   private var facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val computedValuesMap = mutableMapOf<String, Any>()
   private val fhirPathDataExtractor = FhirPathDataExtractor
+  private val rulesEngineService = RulesEngineService()
 
   init {
     rulesEngine.registerRuleListener(this)
@@ -109,6 +109,21 @@ constructor(
     rulesEngine.fire(Rules(customRules), facts)
 
     return mutableMapOf<String, Any>().apply { putAll(computedValuesMap) }
+  }
+
+  /** Provide access to utility functions accessible to the users defining rules in JSON format. */
+  inner class RulesEngineService {
+
+    /**
+     * This function creates a property key from the string [value] and uses the key to retrieve the
+     * correct translation from the string.properties file.
+     */
+    fun translate(value: String): String =
+      configurationRegistry.localizationHelper.parseTemplate(
+        LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+        Locale.getDefault(),
+        "{{${value.translationPropertyKey()}}}"
+      )
   }
 
   companion object {

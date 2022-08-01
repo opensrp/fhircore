@@ -31,12 +31,14 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 class RulesEngineServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var rulesEngineService: RulesEngineService
+  @Inject lateinit var rulesFactory: RulesFactory
+
+  private lateinit var rulesEngineService: RulesFactory.RulesEngineService
 
   @Before
   fun setUp() {
     hiltRule.inject()
-
+    rulesEngineService = rulesFactory.RulesEngineService()
     Assert.assertNotNull(rulesEngineService)
   }
 
