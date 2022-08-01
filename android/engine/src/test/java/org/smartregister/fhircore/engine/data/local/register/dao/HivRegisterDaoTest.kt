@@ -233,7 +233,7 @@ class HivRegisterDaoTest : RobolectricTest() {
   }
 
   @Test
-  fun `test hiv patient identifier to be the 'secondary' identifier when no 'official' identifier found`() =
+  fun `test hiv patient identifier to be empty string when no 'official' identifier found`() =
       runTest {
     val identifierNumber = "149856"
     val patient =
@@ -247,7 +247,7 @@ class HivRegisterDaoTest : RobolectricTest() {
           }
         )
       }
-    assertEquals(identifierNumber, hivRegisterDao.hivPatientIdentifier(patient))
+    assertEquals("", hivRegisterDao.hivPatientIdentifier(patient))
   }
 
   @Test

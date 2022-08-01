@@ -31,6 +31,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
@@ -41,7 +42,6 @@ import org.smartregister.fhircore.engine.util.extension.extractGeneralPractition
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
-import org.smartregister.fhircore.engine.util.extension.extractSecondaryIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
@@ -56,14 +56,14 @@ constructor(
 ) : RegisterDao {
 
   fun isValidPatient(patient: Patient): Boolean =
-    patient.hasName() &&
+    patient.active &&
+      patient.hasName() &&
       patient.hasGender() &&
       patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }
 
   fun hivPatientIdentifier(patient: Patient): String =
     // would either be an ART or HCC number
-    patient.extractOfficialIdentifier()
-      ?: patient.extractSecondaryIdentifier() ?: patient.identifierFirstRep.value ?: ""
+    patient.extractOfficialIdentifier() ?: ""
 
   override suspend fun loadRegisterData(
     currentPage: Int,
@@ -80,25 +80,28 @@ constructor(
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return patients.filter(this::isValidPatient).map { patient ->
-      RegisterData.HivRegisterData(
-        logicalId = patient.logicalId,
-        identifier = hivPatientIdentifier(patient),
-        name = patient.extractName(),
-        gender = patient.gender,
-        age = patient.birthDate.toAgeDisplay(),
-        address = patient.extractAddress(),
-        familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
-        phoneContacts = patient.extractTelecom(),
-        practitioners = patient.generalPractitioner,
-        chwAssigned = patient.extractGeneralPractitionerReference(),
-        healthStatus =
-          patient.extractHealthStatusFromMeta(
-            getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
-          ),
-        isPregnant = patient.isPregnant()
-      )
-    }
+    return patients
+      .filter(this::isValidPatient)
+      .map { patient ->
+        RegisterData.HivRegisterData(
+          logicalId = patient.logicalId,
+          identifier = hivPatientIdentifier(patient),
+          name = patient.extractName(),
+          gender = patient.gender,
+          age = patient.birthDate.toAgeDisplay(),
+          address = patient.extractAddress(),
+          familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+          phoneContacts = patient.extractTelecom(),
+          practitioners = patient.generalPractitioner,
+          chwAssigned = patient.extractGeneralPractitionerReference(),
+          healthStatus =
+            patient.extractHealthStatusFromMeta(
+              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+            ),
+          isPregnant = patient.isPregnant()
+        )
+      }
+      .filterNot { it.healthStatus == HealthStatus.DEFAULT }
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
@@ -161,6 +164,15 @@ constructor(
 
   fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+  }
+
+  suspend fun removePatient(patientId: String) {
+    val patient =
+      defaultRepository.loadResource<Patient>(patientId)!!.apply {
+        if (!this.active) throw IllegalStateException("Patient already deleted")
+        this.active = false
+      }
+    defaultRepository.addOrUpdate(patient)
   }
 
   companion object {
