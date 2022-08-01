@@ -24,6 +24,7 @@ import java.math.BigDecimal
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
@@ -679,5 +680,30 @@ class ResourceExtensionTest : RobolectricTest() {
 
     resource.id = "1"
     Assert.assertTrue(resource.isPatient("1"))
+  }
+
+  @Test
+  fun `CarePlanList#asBaseResources() should return correct Resource List`() {
+
+    val carePlan1 = CarePlan()
+    carePlan1.id = "CarePlan/cp1"
+    carePlan1.careTeam = listOf(Reference("Ref11"), Reference("Ref12"))
+
+    val carePlan2 = CarePlan()
+    carePlan2.id = "CarePlan/cp2"
+    carePlan2.careTeam = listOf(Reference("Ref21"), Reference("Ref22"))
+
+    val carePlans = ArrayList<CarePlan>()
+    carePlans.add(carePlan1)
+    carePlans.add(carePlan2)
+
+    val resources = carePlans.asBaseResources()
+    val decodedCarePlans = resources.asCarePlanDomainResource()
+
+    Assert.assertEquals(carePlan1.id, decodedCarePlans.get(0).id)
+    Assert.assertEquals(
+      carePlan2.careTeam.get(0).reference,
+      decodedCarePlans.get(1).careTeam.get(0).reference
+    )
   }
 }
