@@ -118,9 +118,9 @@ class LoginScreenTest : RobolectricTest() {
 
   @Test
   fun testForgotPasswordDialog() {
-    composeRule.setContent { ForgotPasswordDialog(
-      forgotPassword = mockk(),
-      onDismissDialog = mockk()) }
+    composeRule.setContent {
+      ForgotPasswordDialog(forgotPassword = mockk(), onDismissDialog = mockk())
+    }
 
     composeRule.onNodeWithTag(PASSWORD_FORGOT_DIALOG).assertExists()
   }
