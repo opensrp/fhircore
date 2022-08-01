@@ -30,6 +30,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
@@ -91,6 +92,28 @@ class HivRegisterDaoTest : RobolectricTest() {
     )
       .apply { active = true }
 
+  private val testTask1 =
+    Task().apply {
+      this.id = "1"
+      this.meta.addTag(
+        Coding().apply {
+          system = "https://d-tree.org"
+          code = "clinic-visit-task-order-3"
+        }
+      )
+    }
+
+  private val testTask2 =
+    Task().apply {
+      this.id = "2"
+      this.meta.addTag(
+        Coding().apply {
+          system = "https://d-tree.org"
+          code = "clinic-visit-task-order-1"
+        }
+      )
+    }
+
   @Before
   fun setUp() {
 
@@ -101,7 +124,7 @@ class HivRegisterDaoTest : RobolectricTest() {
         val search = firstArg<Search>()
         when (search.type) {
           ResourceType.Patient -> listOf<Patient>(testPatient, testPatientGenderNull)
-          ResourceType.Task -> emptyList<Task>()
+          ResourceType.Task -> listOf<Task>(testTask1, testTask2)
           ResourceType.CarePlan -> emptyList<CarePlan>()
           else -> emptyList()
         }
@@ -168,6 +191,21 @@ class HivRegisterDaoTest : RobolectricTest() {
     assertEquals("practitioner/1234", hivProfileData.chwAssigned.reference)
     assertEquals(HealthStatus.EXPOSED_INFANT, hivProfileData.healthStatus)
     assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
+  }
+
+  @Test
+  fun `loadProfileData loads tasks in specified order from meta tag`() {
+    val data = runBlocking {
+      hivRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1")
+    }
+    assertNotNull(data)
+    val hivProfileData = data as ProfileData.HivProfileData
+    assertNotNull(hivProfileData.tasks)
+    assertEquals(2, hivProfileData.tasks.size)
+    // assert testTask2 comes before testTest1 according to meta tag
+    // 'clinic-visit-task-order-{order_number}'
+    assertEquals(testTask2, hivProfileData.tasks[0])
+    assertEquals(testTask1, hivProfileData.tasks[1])
   }
 
   @Test
