@@ -71,7 +71,7 @@ class RegisterRepositoryTest {
   }
 
   @Test
-  fun loadRegisterData_givenRelatedResource_hasNoFhirPathExpression() {
+  fun loadRegisterDataGivenRelatedResourceHasNoFhirPathExpression() {
     every { registerRepository.retrieveRegisterConfiguration("patientRegister") } returns
       Faker.generatePatientRegisterConfiguration()
 
@@ -134,7 +134,7 @@ class RegisterRepositoryTest {
   }
 
   @Test
-  fun loadRegisterData_givenRelatedResource_hasFhirPathExpression() {
+  fun loadRegisterDataGivenRelatedResourceHasFhirPathExpression() {
     every { registerRepository.retrieveRegisterConfiguration("householdRegister") } returns
       Faker.generateHouseholdRegisterConfiguration()
 
@@ -212,7 +212,7 @@ class RegisterRepositoryTest {
   }
 
   @Test
-  fun loadProfileData_isNotSupportedYet() {
+  fun loadProfileDataIsNotSupportedYet() {
     runBlocking {
       Assert.assertNull(
         registerRepository.loadProfileData(profileId = "12345", identifier = "485738")
