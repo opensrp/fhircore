@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.extension.asBaseResources
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
@@ -214,19 +215,22 @@ constructor(
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = VIRAL_LOAD_RESULTS_FORM,
               clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
+              questionnaireType = QuestionnaireType.DEFAULT,
+              populationResources = event.getActiveCarePlans().asBaseResources()
             )
           R.id.hiv_test_and_results ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = HIV_TEST_AND_RESULTS_FORM,
               clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
+              questionnaireType = QuestionnaireType.DEFAULT,
+              populationResources = event.getActiveCarePlans().asBaseResources()
             )
           R.id.hiv_test_and_next_appointment ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = HIV_TEST_AND_NEXT_APPOINTMENT_FORM,
               clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
+              questionnaireType = QuestionnaireType.DEFAULT,
+              populationResources = event.getActiveCarePlans().asBaseResources()
             )
           else -> {}
         }
@@ -235,7 +239,8 @@ constructor(
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,
-          backReference = event.taskId.asReference(ResourceType.Task).reference
+          backReference = event.taskId.asReference(ResourceType.Task).reference,
+          populationResources = event.getActiveCarePlans().asBaseResources()
         )
     }
 
