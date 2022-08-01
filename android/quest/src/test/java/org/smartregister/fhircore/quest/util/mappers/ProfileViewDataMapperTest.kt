@@ -95,8 +95,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
         chwAssigned = Reference("referenceKey")
       )
     val profileViewDataHiv =
-      profileViewDataMapper.transformInputToOutputModel(dto)
-        as ProfileViewData.AppointmentProfileViewData
+      profileViewDataMapper.transformInputToOutputModel(dto) as
+        ProfileViewData.AppointmentProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -124,8 +124,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
         visits = emptyList()
       )
     val profileViewDataHiv =
-      profileViewDataMapper.transformInputToOutputModel(dto)
-        as ProfileViewData.PatientProfileViewData
+      profileViewDataMapper.transformInputToOutputModel(dto) as
+        ProfileViewData.PatientProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -137,19 +137,20 @@ class ProfileViewDataMapperTest : RobolectricTest() {
 
   @Test
   fun testMapToDomainModelFamily() {
-    val dto = ProfileData.FamilyProfileData(
-      logicalId = "logicalId",
-      name = "testName",
-      identifier = "testIdentifier()",
-      address = "testAddress",
-      age = "5y",
-      services = emptyList(),
-      tasks = emptyList(),
-      members = emptyList()
-    )
+    val dto =
+      ProfileData.FamilyProfileData(
+        logicalId = "logicalId",
+        name = "testName",
+        identifier = "testIdentifier()",
+        address = "testAddress",
+        age = "5y",
+        services = emptyList(),
+        tasks = emptyList(),
+        members = emptyList()
+      )
     val profileViewDataHiv =
-      profileViewDataMapper.transformInputToOutputModel(dto)
-        as ProfileViewData.FamilyProfileViewData
+      profileViewDataMapper.transformInputToOutputModel(dto) as
+        ProfileViewData.FamilyProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName Family", name)
