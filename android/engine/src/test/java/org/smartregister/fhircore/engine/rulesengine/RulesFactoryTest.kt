@@ -60,7 +60,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun setUp() {
     configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
     fhirPathDataExtractor = mockk(relaxed = true)
-    rulesEngine = mockk() // (relaxed = true)
+    rulesEngine = mockk()
     rulesEngineService = mockk()
     rulesFactory =
       spyk(
