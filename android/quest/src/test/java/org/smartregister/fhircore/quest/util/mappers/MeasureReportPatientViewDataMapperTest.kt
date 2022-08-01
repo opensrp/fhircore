@@ -45,8 +45,8 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
     val dto =
       ResourceData(
         baseResource =
-          "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile()
-            as Patient
+          "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile() as
+            Patient
       )
     val profileViewDataHiv = measureReportPatientViewDataMapper.transformInputToOutputModel(dto)
     with(profileViewDataHiv) {
