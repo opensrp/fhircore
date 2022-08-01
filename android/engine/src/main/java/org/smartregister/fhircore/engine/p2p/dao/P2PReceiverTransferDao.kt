@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.sync.DataType
 import timber.log.Timber
@@ -47,7 +48,7 @@ constructor(
     (0 until jsonArray.length()).forEach {
       runBlocking {
         val resource =
-          jsonParser.parseResource(resourceClassType(type), jsonArray.get(it).toString())
+          jsonParser.parseResource(type.name.resourceClassType(), jsonArray.get(it).toString())
         addOrUpdate(resource = resource)
         maxLastUpdated =
           (if (resource.meta.lastUpdated.time > maxLastUpdated) resource.meta.lastUpdated.time

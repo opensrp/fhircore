@@ -23,30 +23,22 @@ import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.count
-import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
 import java.util.TreeSet
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.p2p.sync.DataType
@@ -62,9 +54,7 @@ constructor(
 
   open fun getDataTypes(): TreeSet<DataType> {
     val appRegistry =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
-      )
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
     val deviceToDeviceSyncConfigs = appRegistry.deviceToDeviceSync
 
     return if (deviceToDeviceSyncConfigs?.resourcesToSync != null &&
@@ -157,18 +147,14 @@ constructor(
     }
   }
 
-  fun resourceClassType(dataType: DataType): Class<out Resource> {
-    return Class.forName("org.hl7.fhir.r4.model.${dataType.name}") as Class<out Resource>
-  }
-
   suspend fun countTotalRecordsForSync(highestRecordIdMap: HashMap<String, Long>): Long {
     var recordCount: Long = 0
 
     getDataTypes().forEach {
-      resourceClassType(it)?.let { classType ->
+      it.name.resourceClassType().let { classType ->
         val lastRecordId = highestRecordIdMap[it.name] ?: 0L
-        var search = getSearchObjectForCount(lastRecordId, classType)
-        recordCount += fhirEngine.count(search)
+        val searchCount = getSearchObjectForCount(lastRecordId, classType)
+        recordCount += fhirEngine.count(searchCount)
       }
     }
     return recordCount

@@ -18,74 +18,28 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import ca.uhn.fhir.rest.gclient.IParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.filter.StringParamFilterCriterion
-import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.workflow.FhirOperator
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.slot
-import io.mockk.unmockkStatic
 import java.util.Calendar
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class ApplicationExtensionTest : RobolectricTest() {
-
-  @Test
-  fun `FhirEngine#loadPatientImmunizations() should return null when immunizations not found and ResourceNotFoundException is thrown`() {
-    val fhirEngine = mockk<FhirEngine>()
-    val patientId = "8912"
-
-    coEvery { fhirEngine.search<Immunization>(any()) } throws
-      ResourceNotFoundException(
-        "resource not found",
-        "immunizations for patient $patientId not found"
-      )
-
-    val immunizations: List<Immunization>?
-    runBlocking { immunizations = fhirEngine.loadPatientImmunizations(patientId) }
-
-    Assert.assertNull(immunizations)
-  }
-
-  @Test
-  fun `FhirEngine#loadRelatedPersons() should return null when related persons not found and ResourceNotFoundException is thrown`() {
-    val fhirEngine = mockk<FhirEngine>()
-    val patientId = "8912"
-
-    coEvery { fhirEngine.search<RelatedPerson>(any()) } throws
-      ResourceNotFoundException(
-        "resource not found",
-        "RelatedPersons for patient $patientId not found"
-      )
-
-    val relatedPersons: List<RelatedPerson>?
-    runBlocking { relatedPersons = fhirEngine.loadRelatedPersons(patientId) }
-
-    Assert.assertNull(relatedPersons)
-  }
 
   @Test
   fun `FhirEngine#loadResource() should call load and return resources`() {
@@ -115,140 +69,6 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     Assert.assertNull(patient)
-  }
-
-  @Test
-  fun `FhirEngine#countActivePatients() should call count with filter Patient#active`() {
-    val fhirEngine = mockk<FhirEngine>()
-    val expectedPatientCount = 2398L
-    val captureSlot = slot<Search>()
-    coEvery { fhirEngine.count(capture(captureSlot)) } returns expectedPatientCount
-
-    val patientsCount: Long?
-    runBlocking { patientsCount = fhirEngine.countActivePatients() }
-
-    coVerify { fhirEngine.count(any()) }
-    val search = captureSlot.captured
-    val tokenFilterParamCriterion: MutableList<Any> =
-      ReflectionHelpers.getField(search, "tokenFilterCriteria")
-    val tokenFilters: MutableList<TokenParamFilterCriterion> =
-      ReflectionHelpers.getField(tokenFilterParamCriterion[0], "filters")
-    Assert.assertEquals(Patient.ACTIVE, tokenFilters[0].parameter)
-    Assert.assertEquals(expectedPatientCount, patientsCount)
-  }
-
-  @Test
-  fun `FhirEngine#searchActivePatients() should call search with filter Patient#active`() {
-    val fhirEngine = mockk<FhirEngine>()
-    val captureSlot = slot<Search>()
-    val patient1 = Patient().apply { id = "patient-john-doe" }
-    val patient2 = Patient().apply { id = "patient-mary-joe" }
-    val expectedPatientList = listOf(patient1, patient2)
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
-
-    val patientsList: List<Patient>
-    runBlocking { patientsList = fhirEngine.searchActivePatients("", 0, false) }
-
-    coVerify { fhirEngine.search<Patient>(any()) }
-    val search = captureSlot.captured
-    val tokenFilterParamCriterion: MutableList<Any> =
-      ReflectionHelpers.getField(search, "tokenFilterCriteria")
-    val tokenFilters: MutableList<TokenParamFilterCriterion> =
-      ReflectionHelpers.getField(tokenFilterParamCriterion[0], "filters")
-    Assert.assertEquals(Patient.ACTIVE, tokenFilters[0].parameter)
-    Assert.assertEquals(expectedPatientList, patientsList)
-  }
-
-  @Test
-  fun `FhirEngine#searchActivePatients() should call search and sort results by name`() {
-    val fhirEngine = mockk<FhirEngine>()
-    val captureSlot = slot<Search>()
-    val expectedPatientList = listOf<Patient>()
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
-
-    runBlocking { fhirEngine.searchActivePatients("", 0, false) }
-
-    coVerify { fhirEngine.search<Patient>(any()) }
-    val search = captureSlot.captured
-    Assert.assertEquals(Patient.NAME, ReflectionHelpers.getField(search, "sort") as IParam)
-    Assert.assertEquals(Order.ASCENDING, ReflectionHelpers.getField(search, "order") as Order)
-  }
-
-  @Test
-  fun `FhirEngine#searchActivePatients() should call search and filter results by query when given query`() {
-    val fhirEngine = mockk<FhirEngine>()
-    val captureSlot = slot<Search>()
-    val expectedPatientList = listOf<Patient>()
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
-
-    runBlocking { fhirEngine.searchActivePatients("be", 0, false) }
-
-    coVerify { fhirEngine.search<Patient>(any()) }
-    val search = captureSlot.captured
-    val stringFilterParamCriterion: MutableList<Any> =
-      ReflectionHelpers.getField(search, "stringFilterCriteria")
-    val stringFilters: MutableList<StringParamFilterCriterion> =
-      ReflectionHelpers.getField(stringFilterParamCriterion[0], "filters")
-    Assert.assertEquals(Patient.NAME, stringFilters[0].parameter)
-    Assert.assertEquals("be", stringFilters[0].value)
-  }
-
-  @Test
-  fun `FhirEngine#searchActivePatients() should call search and set correct count when page is 0`() {
-    val fhirEngine = mockk<FhirEngine>()
-    val captureSlot = slot<Search>()
-    val expectedPatientList = listOf<Patient>()
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
-
-    runBlocking { fhirEngine.searchActivePatients("", 0, false) }
-
-    coVerify { fhirEngine.search<Patient>(any()) }
-    val search = captureSlot.captured
-    Assert.assertEquals(PaginationConstant.DEFAULT_PAGE_SIZE, search.count)
-    Assert.assertEquals(0, search.from)
-  }
-
-  @Test
-  fun `FhirEngine#searchActivePatients() should call search and set correct count when page is 3`() {
-    val fhirEngine = mockk<FhirEngine>()
-    val captureSlot = slot<Search>()
-    val expectedPatientList = listOf<Patient>()
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
-
-    runBlocking { fhirEngine.searchActivePatients("", 3, false) }
-
-    coVerify { fhirEngine.search<Patient>(any()) }
-    val search = captureSlot.captured
-    Assert.assertEquals(PaginationConstant.DEFAULT_PAGE_SIZE, search.count)
-    Assert.assertEquals(PaginationConstant.DEFAULT_PAGE_SIZE * 3, search.from)
-  }
-
-  @Test
-  fun `FhirEngine#searchActivePatients() should call search and countActivePatients with filter Patient#active when param loadAll is true`() {
-    mockkStatic(FhirEngine::countActivePatients)
-
-    val fhirEngine = mockk<FhirEngine>()
-    val captureSlot = slot<Search>()
-    val patient1 = Patient().apply { id = "patient-john-doe" }
-    val patient2 = Patient().apply { id = "patient-mary-joe" }
-    val expectedPatientList = listOf(patient1, patient2)
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
-    coEvery { fhirEngine.countActivePatients() } returns 923L
-
-    val patientsList: List<Patient>
-    runBlocking { patientsList = fhirEngine.searchActivePatients("", 0, true) }
-
-    coVerify { fhirEngine.search<Patient>(any()) }
-    coVerify { fhirEngine.countActivePatients() }
-    val search = captureSlot.captured
-    val tokenFilterParamCriterion: MutableList<Any> =
-      ReflectionHelpers.getField(search, "tokenFilterCriteria")
-    val tokenFilters: MutableList<TokenParamFilterCriterion> =
-      ReflectionHelpers.getField(tokenFilterParamCriterion[0], "filters")
-    Assert.assertEquals(Patient.ACTIVE, tokenFilters[0].parameter)
-    Assert.assertEquals(expectedPatientList, patientsList)
-
-    unmockkStatic(FhirEngine::countActivePatients)
   }
 
   @Test
@@ -289,11 +109,6 @@ class ApplicationExtensionTest : RobolectricTest() {
     dateTimeTypeObject.set(Calendar.YEAR, 2010)
     dateTimeTypeObject.set(Calendar.MONTH, 1)
     dateTimeTypeObject.set(Calendar.DAY_OF_YEAR, 1)
-    // dateTimeTypeObject.set(Calendar.HOUR, 1)
-    // dateTimeTypeObject.set(Calendar.MINUTE, 1)
-    // dateTimeTypeObject.set(Calendar.MILLISECOND, 1)
-    // dateTimeTypeObject.set(Calendar.ZONE_OFFSET, 1)
-    // dateTimeTypeObject.set(Calendar.DST_OFFSET, 1)
     val expectedDateTimeFormat = "2010-01-01"
     Assert.assertEquals(
       expectedDateTimeFormat,

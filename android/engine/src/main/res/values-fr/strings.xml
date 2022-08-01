@@ -35,7 +35,7 @@
     <string name="login_error">Erreur d\'identification %1$s</string>
     <string name="str_next">Suivant</string>
     <string name="str_previous">Précédent</string>
-    <string name="str_page_info">Page%1$dde%2$d</string>
+    <string name="str_page_info">Page %1$d de %2$d</string>
     <string name="search_result">%1$dRESULTAT(S)</string>
     <string name="no_results">Auncun resultat</string>
     <string name="no_results_message">Désolé, nous n\'arrivons pas à trouver le registre avec le nom ou l\'ID fourni</string>

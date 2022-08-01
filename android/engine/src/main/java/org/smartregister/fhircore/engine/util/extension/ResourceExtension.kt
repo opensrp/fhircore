@@ -22,12 +22,14 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
+import java.util.LinkedList
 import java.util.UUID
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -263,4 +265,32 @@ fun isValidResourceType(resourceCode: String): Boolean {
   } catch (exception: FHIRException) {
     false
   }
+}
+
+/**
+ * Composition sections can be nested. This function retrieves all the nested composition sections
+ * and returns a flattened list of all [Composition.SectionComponent] for the given [Composition]
+ * resource
+ */
+fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent> {
+  val sections = mutableListOf<Composition.SectionComponent>()
+  val sectionsQueue = LinkedList<Composition.SectionComponent>()
+  this.section.forEach {
+    if (!it.section.isNullOrEmpty()) {
+      it.section.forEach { sectionComponent -> sectionsQueue.addLast(sectionComponent) }
+    }
+    sections.add(it)
+  }
+  while (sectionsQueue.isNotEmpty()) {
+    val sectionComponent = sectionsQueue.removeFirst()
+    if (!sectionComponent.section.isNullOrEmpty()) {
+      sectionComponent.section.forEach { sectionsQueue.addLast(it) }
+    }
+    sections.add(sectionComponent)
+  }
+  return sections
+}
+
+fun String.resourceClassType(): Class<out Resource> {
+  return Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
 }

@@ -26,7 +26,7 @@ import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.ui.login.LoginErrorState
@@ -42,13 +42,13 @@ class LoginScreenWithLogoTest : RobolectricTest() {
   private val password = MutableLiveData("")
   private val loginErrorState: LiveData<LoginErrorState?> = MutableLiveData(null)
   private val showProgressBar = MutableLiveData(false)
-  private val loginConfig = loginViewConfigurationOf(showLogo = true)
 
   @Before
   fun setUp() {
     loginViewModelWithLogo =
       mockk {
-        every { loginViewConfiguration } returns MutableLiveData(loginConfig)
+        every { applicationConfiguration } returns
+          ApplicationConfiguration(appId = "testAppId", appTitle = "Sample App")
         every { username } returns this@LoginScreenWithLogoTest.username
         every { password } returns this@LoginScreenWithLogoTest.password
         every { loginErrorState } returns this@LoginScreenWithLogoTest.loginErrorState
@@ -68,7 +68,9 @@ class LoginScreenWithLogoTest : RobolectricTest() {
   @Test
   fun testLoginScreenComponentsWithLogo() {
 
-    composeRule.setContent { LoginScreen(loginViewModelWithLogo) }
+    composeRule.setContent {
+      LoginScreen(loginViewModelWithLogo, appVersionPair = Pair(1, "1.0.1"))
+    }
 
     // verifying app logo properties
     composeRule.onNodeWithTag(APP_LOGO_TAG).assertExists()

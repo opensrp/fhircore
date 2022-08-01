@@ -21,12 +21,12 @@ import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.view.SearchFilter
-import org.smartregister.fhircore.engine.configuration.view.asCodeableConcept
-import org.smartregister.fhircore.engine.configuration.view.asCoding
+import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 
 fun Search.filterByResourceTypeId(
   reference: ReferenceClientParam,
@@ -44,19 +44,7 @@ fun Search.filterByResourceTypeId(
   filter(token, { value = of("${resourceType.name}/$resourceId") })
 }
 
-fun Search.filterByPatientName(name: String?) {
-  if (name?.isNotBlank() == true) {
-    filter(
-      Patient.NAME,
-      {
-        modifier = StringFilterModifier.CONTAINS
-        value = name.trim()
-      }
-    )
-  }
-}
-
-fun Search.filterBy(filter: SearchFilter) {
+fun Search.filterBy(filter: DataQuery) {
   when (filter.filterType) {
     Enumerations.SearchParamType.TOKEN -> filterToken(filter)
     Enumerations.SearchParamType.STRING -> filterString(filter)
@@ -65,7 +53,7 @@ fun Search.filterBy(filter: SearchFilter) {
   }
 }
 
-fun Search.filterToken(filter: SearchFilter) {
+fun Search.filterToken(filter: DataQuery) {
   // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
   when (filter.valueType) {
     Enumerations.DataType.CODING ->
@@ -77,7 +65,7 @@ fun Search.filterToken(filter: SearchFilter) {
   }
 }
 
-fun Search.filterString(filter: SearchFilter) {
+fun Search.filterString(filter: DataQuery) {
   // TODO StringFilter in SDK is not fully implemented and ignores all types but String and Boolean
   when (filter.valueType) {
     Enumerations.DataType.STRING ->
@@ -100,3 +88,13 @@ fun Search.filterString(filter: SearchFilter) {
       throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
   }
 }
+
+fun Code.asCoding() = Coding(this.system, this.code, this.display)
+
+fun Coding.asCode() = Code(this.system, this.code, this.display)
+
+fun Code.asCodeableConcept() =
+  CodeableConcept().apply {
+    addCoding(this@asCodeableConcept.asCoding())
+    text = this@asCodeableConcept.display
+  }

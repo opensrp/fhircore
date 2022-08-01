@@ -21,8 +21,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.quest.ui.family.remove.BaseRemoveFamilyEntityViewModel
 import timber.log.Timber
 
@@ -30,8 +29,7 @@ import timber.log.Timber
 class RemoveFamilyMemberViewModel
 @Inject
 constructor(
-  override val repository: PatientRegisterRepository,
-  val appFeatureManager: AppFeatureManager
+  override val repository: RegisterRepository,
 ) : BaseRemoveFamilyEntityViewModel<Patient>(repository) {
 
   override fun fetch(profileId: String) {
@@ -41,7 +39,9 @@ constructor(
   override fun remove(profileId: String, familyId: String?) {
     viewModelScope.launch {
       try {
-        repository.registerDaoFactory.familyRegisterDao.removeFamilyMember(profileId, familyId)
+        // TODO handle remove family member logic
+        //        repository.registerDaoFactory.familyRegisterDao.removeFamilyMember(profileId,
+        // familyId)
         isRemoved.postValue(true)
       } catch (e: Exception) {
         Timber.e(e)

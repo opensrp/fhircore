@@ -25,16 +25,12 @@ import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
-import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
-class LoginActivity :
-  BaseMultiLanguageActivity(), ConfigurableComposableView<LoginViewConfiguration> {
+class LoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
 
@@ -47,16 +43,11 @@ class LoginActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
-
-    if (configurationRegistry.isAppIdInitialized()) {
-      configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
-    }
-
     loginViewModel.apply {
       // Run sync and navigate directly to home screen if session is active
       if (accountAuthenticator.hasActiveSession()) runSyncAndNavigateHome()
 
-      val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
+      val isPinEnabled = loginViewModel.applicationConfiguration.loginConfig?.enablePin ?: false
       navigateToHome.observe(this@LoginActivity) { launchHomeScreen ->
         when {
           launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() -> {
@@ -78,11 +69,6 @@ class LoginActivity :
 
   private fun runSyncAndNavigateHome() {
     loginService.navigateToHome()
-    syncBroadcaster.get().runSync()
-  }
-
-  override fun configureViews(viewConfiguration: LoginViewConfiguration) {
-    loginViewModel.updateViewConfigurations(viewConfiguration)
   }
 
   private fun launchDialPad(phone: String) {

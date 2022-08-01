@@ -1,0 +1,30 @@
+{
+	"appId": "app",
+	"configType": "application",
+	"theme": "DEFAULT",
+	"appTitle": "ECBIS",
+	"remoteSyncPageSize": 100,
+	"languages": [
+		"en",
+		"sw"
+	],
+	"useDarkTheme": false,
+	"syncInterval": 30,
+	"loginConfig": {
+		"showLogo": true,
+		"enablePin": true
+	},
+	"deviceToDeviceSync": {
+		"resourcesToSync": [
+			"Group",
+			"Patient",
+			"CarePlan",
+			"Task",
+			"Encounter",
+			"Observation",
+			"Condition",
+			"Questionnaire",
+			"QuestionnaireResponse"
+		]
+	}
+}

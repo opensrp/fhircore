@@ -27,7 +27,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 
 sealed class ProfileData(open val logicalId: String, open val name: String) {
   data class DefaultProfileData(
@@ -69,7 +69,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val age: String,
     val gender: Enumerations.AdministrativeGender,
     val address: String,
-    val visitStatus: VisitStatus,
+    val serviceStatus: ServiceStatus,
     val conditions: List<Condition> = listOf(),
     val flags: List<Flag> = listOf(),
     val services: List<CarePlan> = listOf(),

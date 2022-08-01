@@ -49,7 +49,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowIntent
-import org.smartregister.fhircore.engine.app.fakes.FakeModel
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.IS_NEW_ACCOUNT
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -68,12 +68,9 @@ import retrofit2.Response
 @HiltAndroidTest
 class AccountAuthenticatorTest : RobolectricTest() {
 
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
-
-  var accountManager: AccountManager = mockk()
-
-  var oAuthService: OAuthService = mockk()
 
   @Inject lateinit var configService: ConfigService
 
@@ -90,6 +87,10 @@ class AccountAuthenticatorTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   private val authTokenType = "authTokenType"
+
+  private val accountManager: AccountManager = mockk()
+
+  private val oAuthService: OAuthService = mockk()
 
   @Before
   fun setUp() {
@@ -319,10 +320,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { oAuthService.fetchToken(any()) } returns callMock
     val token =
       accountAuthenticator
-        .fetchToken(
-          FakeModel.authCredentials.username,
-          FakeModel.authCredentials.password.toCharArray()
-        )
+        .fetchToken(Faker.authCredentials.username, Faker.authCredentials.password.toCharArray())
         .execute()
     Assert.assertEquals("testToken", token.body()!!.accessToken)
   }
@@ -336,7 +334,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { callMock.execute() } returns mockResponse
 
     every { accountAuthenticator.oAuthService.fetchToken(any()) } returns callMock
-    val token = accountAuthenticator.refreshToken(FakeModel.authCredentials.refreshToken!!)
+    val token = accountAuthenticator.refreshToken(Faker.authCredentials.refreshToken!!)
     Assert.assertNotNull(token)
   }
 

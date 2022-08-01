@@ -1,8 +1,0 @@
-{
-  "appId": "ecbis",
-  "classification": "pin",
-  "applicationName": "eCBIS",
-  "appLogoIconResourceFile": "ic_liberia",
-  "enablePin": true,
-  "showLogo": true
-}

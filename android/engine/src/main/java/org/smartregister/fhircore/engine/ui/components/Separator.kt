@@ -16,33 +16,28 @@
 
 package org.smartregister.fhircore.engine.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
 const val SEPARATOR_TAG = "separatorTag"
 
 @Composable
-fun Separator(modifier: Modifier = Modifier, showSeparator: Boolean = true) {
-  if (showSeparator) {
-    Spacer(modifier = modifier.width(4.dp))
-    Box(
-      modifier =
-        modifier
-          .testTag(SEPARATOR_TAG)
-          .clip(CircleShape)
-          .size(2.6.dp)
-          .background(color = SubtitleTextColor)
+fun Separator(modifier: Modifier = Modifier, separator: String = "-") {
+  Box(contentAlignment = Alignment.Center) {
+    Text(
+      text = separator,
+      modifier = modifier.padding(horizontal = 4.dp),
+      color = SubtitleTextColor,
+      textAlign = TextAlign.Center,
+      fontSize = 18.sp
     )
-    Spacer(modifier = modifier.width(4.dp))
   }
 }

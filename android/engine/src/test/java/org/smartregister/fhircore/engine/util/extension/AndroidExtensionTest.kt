@@ -30,7 +30,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Shadows
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 
@@ -40,21 +39,6 @@ class AndroidExtensionTest : RobolectricTest() {
   @Before
   fun setup() {
     context = ApplicationProvider.getApplicationContext<Application>()
-  }
-
-  @Test
-  fun testGetDrawableShouldReturnDefaultIfInvalidNameSpecified() {
-    val result = context.getDrawable("invalid")
-    val expected = context.getDrawable(R.drawable.ic_app_logo)!!
-    assertEquals(expected.constantState, result.constantState)
-  }
-
-  @Test
-  fun testGetDrawableShouldReturnCorrectDrawable() {
-    val result = context.getDrawable("ic_menu")
-
-    val expected = context.getDrawable(R.drawable.ic_menu)!!
-    assertEquals(expected.constantState, result.constantState)
   }
 
   @Test

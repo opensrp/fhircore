@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package org.smartregister.fhircore.quest.ui.main
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
@@ -28,7 +25,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -36,16 +32,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.domain.model.SideMenuOption
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.navigation.NavigationArg.routePathsOf
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
-import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
-import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
+import org.smartregister.fhircore.quest.ui.profile.ProfileScreen
+import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
 
@@ -69,17 +66,10 @@ fun MainScreen(
     scaffoldState = scaffoldState,
     drawerContent = {
       AppDrawer(
-        appTitle = uiState.appTitle,
-        username = uiState.username,
-        lastSyncTime = uiState.lastSyncTime,
-        currentLanguage = uiState.currentLanguage,
-        languages = uiState.languages,
+        appUiState = uiState,
         openDrawer = openDrawer,
-        sideMenuOptions = uiState.sideMenuOptions,
         onSideMenuClick = appMainViewModel::onEvent,
-        navController = navController,
-        enableDeviceToDeviceSync = uiState.enableDeviceToDeviceSync,
-        enableReports = uiState.enableReports
+        navController = navController
       )
     },
     bottomBar = {
@@ -95,83 +85,98 @@ fun MainScreen(
         navController = navController,
         mainNavigationScreens = MainNavigationScreen.appScreens,
         openDrawer = openDrawer,
-        sideMenuOptions = uiState.sideMenuOptions,
-        appMainViewModel = appMainViewModel
+        appMainViewModel = appMainViewModel,
+        navigationConfiguration = uiState.navigationConfiguration
       )
     }
   }
 }
 
+/**
+ * The main screen composable function that includes the [NavHost] which provides a place for self
+ * contained navigation. The screens are provided via the list of [MainNavigationScreen] and are
+ * configured using the [NavigationConfiguration]. The main screen is composed of three parts
+ * including: the side menu (navigation drawer), mid content section and the bottom navigation bar.
+ * The [mainNavigationScreens] are rendered in the content section of the main screen depending on
+ * the [MainNavigationScreen.route]. [MeasureReportViewModel] and [AppMainViewModel] are provided to
+ * this composable function to handle any business logic. The [openDrawer] function is used to
+ * toggle between opening and closing the navigation drawer.
+ */
 @Composable
 private fun AppMainNavigationGraph(
   navController: NavHostController,
   mainNavigationScreens: List<MainNavigationScreen>,
   openDrawer: (Boolean) -> Unit,
-  sideMenuOptions: List<SideMenuOption>,
+  navigationConfiguration: NavigationConfiguration,
   measureReportViewModel: MeasureReportViewModel = hiltViewModel(),
   appMainViewModel: AppMainViewModel
 ) {
+  val firstNavigationMenu = navigationConfiguration.clientRegisters.first()
 
-  val firstSideMenuOption = sideMenuOptions.first()
-  val firstScreenTitle = stringResource(firstSideMenuOption.titleResource)
+  // The id of the register's click action, if it exists, otherwise the first navigation menu id
+  val firstRegisterId =
+    firstNavigationMenu.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id
+      ?: firstNavigationMenu.id
+
+  val homeUrlParams = routePathsOf(NavigationArg.SCREEN_TITLE, NavigationArg.REGISTER_ID)
   NavHost(
     navController = navController,
-    startDestination =
-      MainNavigationScreen.Home.route +
-        NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)
+    startDestination = MainNavigationScreen.Home.route + homeUrlParams
   ) {
     mainNavigationScreens.forEach {
-      val commonNavArgs =
-        NavigationArg.commonNavArgs(
-          firstSideMenuOption.appFeatureName,
-          firstSideMenuOption.healthModule
-        )
-
       when (it) {
         is MainNavigationScreen.Home ->
           composable(
-            route =
-              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)}",
+            route = it.route + homeUrlParams,
             arguments =
-              commonNavArgs.plus(
+              listOf(
                 navArgument(NavigationArg.SCREEN_TITLE) {
                   type = NavType.StringType
-                  nullable = true
-                  defaultValue = firstScreenTitle
+                  nullable = false
+                  defaultValue = firstNavigationMenu.display
+                },
+                navArgument(NavigationArg.REGISTER_ID) {
+                  type = NavType.StringType
+                  nullable = false
+                  defaultValue = firstRegisterId
                 }
               )
           ) { stackEntry ->
-            val appFeatureName = stackEntry.retrieveAppFeatureNameArg()
-            val healthModule = stackEntry.retrieveHealthModuleArg()
             val screenTitle: String =
               stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
                 ?: stringResource(R.string.all_clients)
-            PatientRegisterScreen(
+            val registerId: String =
+              stackEntry.arguments?.getString(NavigationArg.REGISTER_ID) ?: ""
+
+            RegisterScreen(
               navController = navController,
               openDrawer = openDrawer,
-              appFeatureName = appFeatureName,
-              healthModule = healthModule,
               screenTitle = screenTitle,
+              registerId = registerId,
               refreshDataState = appMainViewModel.refreshDataState
             )
           }
-        MainNavigationScreen.Tasks -> composable(MainNavigationScreen.Tasks.route) {}
         MainNavigationScreen.Reports ->
           measureReportNavigationGraph(navController, measureReportViewModel)
         MainNavigationScreen.Settings ->
           composable(MainNavigationScreen.Settings.route) { UserProfileScreen() }
-        MainNavigationScreen.PatientProfile ->
+        MainNavigationScreen.Profile ->
           composable(
             route =
-              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
+              "${it.route}${
+            routePathsOf(
+              NavigationArg.PATIENT_ID,
+              NavigationArg.FAMILY_ID
+            )
+            }",
+            arguments = patientIdNavArgument()
           ) { stackEntry ->
-            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
+            val profileId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID) ?: ""
+            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID) ?: ""
             val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
-            PatientProfileScreen(
+            ProfileScreen(
               navController = navController,
-              appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
-              healthModule = stackEntry.retrieveHealthModuleArg(),
+              profileId = profileId,
               patientId = patientId,
               familyId = familyId,
               refreshDataState = appMainViewModel.refreshDataState
@@ -179,9 +184,8 @@ private fun AppMainNavigationGraph(
           }
         MainNavigationScreen.FamilyProfile ->
           composable(
-            route =
-              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
+            route = "${it.route}${routePathsOf(NavigationArg.PATIENT_ID)}",
+            arguments = patientIdNavArgument()
           ) { stackEntry ->
             val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
             FamilyProfileScreen(
@@ -194,12 +198,6 @@ private fun AppMainNavigationGraph(
     }
   }
 }
-
-private fun NavBackStackEntry.retrieveAppFeatureNameArg() =
-  this.arguments?.getString(NavigationArg.FEATURE)
-
-private fun NavBackStackEntry.retrieveHealthModuleArg(): HealthModule =
-  (this.arguments?.get(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT) as HealthModule
 
 private fun patientIdNavArgument() =
   listOf(

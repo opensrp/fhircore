@@ -32,8 +32,8 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.FhirConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
@@ -87,18 +87,14 @@ interface ConfigService {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
     val syncConfig =
-      configurationRegistry.retrieveConfiguration<FhirConfiguration<Parameters>>(
-        AppConfigClassification.SYNC
-      )
+      configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
 
     val appConfig =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
-      )
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig.resource.parameter.map { it.resource as SearchParameter }.forEach { sp ->
+    syncConfig.parameter.map { it.resource as SearchParameter }.forEach { sp ->
       val paramName = sp.name // e.g. organization
       val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
       val paramExpression = sp.expression
@@ -107,7 +103,7 @@ interface ConfigService {
           ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
           ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
           ConfigurationRegistry.ID -> paramExpression
-          ConfigurationRegistry.COUNT -> appConfig.count
+          ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
           else -> null
         }?.let {
           // replace the evaluated value into expression for complex expressions
@@ -117,7 +113,8 @@ interface ConfigService {
         }
 
       // for each entity in base create and add param map
-      // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital ],..]
+      // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
+      // ],..]
       sp.base.forEach { base ->
         val resourceType = ResourceType.fromCode(base.code)
         val pair = pairs.find { it.first == resourceType }
