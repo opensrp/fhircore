@@ -90,6 +90,7 @@ const val LOGIN_BUTTON_TAG = "loginButtonTag"
 const val LOGIN_ERROR_TEXT_TAG = "loginErrorTextTag"
 const val LOGIN_FOOTER = "loginFooter"
 const val APP_LOGO_TAG = "appLogoTag"
+const val PASSWORD_FORGOT_DIALOG = "forgotPassWordDialog"
 
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String>? = null) {
@@ -375,7 +376,8 @@ fun ForgotPasswordDialog(
             }
         )
       }
-    }
+    },
+    modifier = Modifier.testTag(PASSWORD_FORGOT_DIALOG)
   )
 }
 

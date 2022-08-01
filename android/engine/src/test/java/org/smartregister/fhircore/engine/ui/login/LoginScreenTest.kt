@@ -115,4 +115,13 @@ class LoginScreenTest : RobolectricTest() {
 
     composeRule.onNodeWithTag(LOGIN_BUTTON_TAG).assertExists().assertHasClickAction()
   }
+
+  @Test
+  fun testForgotPasswordDialog() {
+    composeRule.setContent {
+      ForgotPasswordDialog(forgotPassword = mockk(), onDismissDialog = mockk())
+    }
+
+    composeRule.onNodeWithTag(PASSWORD_FORGOT_DIALOG).assertExists()
+  }
 }

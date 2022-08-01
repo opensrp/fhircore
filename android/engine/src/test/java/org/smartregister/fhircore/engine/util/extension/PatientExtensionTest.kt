@@ -18,12 +18,15 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
@@ -429,5 +432,77 @@ class PatientExtensionTest : RobolectricTest() {
       )
 
     Assert.assertEquals(DateTimeType(timeNow).toDisplay(), Patient().getLastSeen(immunizations))
+  }
+
+  @Test
+  fun testFormatLastSeen() {
+    val date: Date = SimpleDateFormat("dd/MM/yyyy").parse("31/12/2021")
+
+    Assert.assertEquals("12-31-2021", date.lastSeenFormat())
+  }
+
+  @Test
+  fun testExtractDeathDate() {
+    val date: Date = SimpleDateFormat("dd/MM/yyyy").parse("31/12/2021")
+    val patient = Patient().apply { deceased = DateTimeType(date) }
+
+    Assert.assertEquals(date, patient.extractDeathDate())
+  }
+
+  @Test
+  fun testExtractOfficialIdentifierReturnsValuewhenUseIsOfficial() {
+    val patient =
+      Patient().apply {
+        identifier =
+          mutableListOf(
+            Identifier().apply {
+              use = Identifier.IdentifierUse.OFFICIAL
+              value = "immunization"
+            }
+          )
+      }
+    Assert.assertEquals("immunization", patient.extractOfficialIdentifier())
+  }
+
+  @Test
+  fun testExtractOfficialIdentifierReturnsNullwhenUseIsNotOfficial() {
+    val patient =
+      Patient().apply {
+        identifier =
+          mutableListOf(
+            Identifier().apply {
+              use = Identifier.IdentifierUse.USUAL
+              value = "immunization"
+            }
+          )
+      }
+    Assert.assertNull(patient.extractOfficialIdentifier())
+  }
+
+  @Test
+  fun testTranslateMaleGender() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.MALE }
+    Assert.assertEquals(
+      "Male",
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext())
+    )
+  }
+
+  @Test
+  fun testTranslateFemaleGender() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
+    Assert.assertEquals(
+      "Female",
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext())
+    )
+  }
+
+  @Test
+  fun testTranslateGenderReturnsUnknownWhenValeIsNotMaleOrFemale() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.OTHER }
+    Assert.assertEquals(
+      "Unknown",
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext())
+    )
   }
 }
