@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
+import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
@@ -105,6 +106,7 @@ constructor(
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
     val patient = defaultRepository.loadResource<Patient>(resourceId)!!
+    val metaCodingSystemTag = getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
 
     return ProfileData.HivProfileData(
       logicalId = patient.logicalId,
@@ -117,17 +119,21 @@ constructor(
       phoneContacts = patient.extractTelecom(),
       chwAssigned = patient.generalPractitionerFirstRep,
       showIdentifierInProfile = true,
-      healthStatus =
-        patient.extractHealthStatusFromMeta(
-          getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
-        ),
+      healthStatus = patient.extractHealthStatusFromMeta(metaCodingSystemTag),
       tasks =
-        defaultRepository.searchResourceFor<Task>(
+        defaultRepository
+          .searchResourceFor<Task>(
             subjectId = resourceId,
             subjectType = ResourceType.Patient,
             subjectParam = Task.SUBJECT
           )
-          .sortedBy { it.executionPeriod.start.time },
+          .sortedWith(
+            compareBy<Task>(
+              { it.clinicVisitOrder(metaCodingSystemTag) ?: Integer.MAX_VALUE },
+              // tasks with no clinicVisitOrder, would be sorted with Task#description
+              { it.description }
+            )
+          ),
       services =
         defaultRepository.searchResourceFor<CarePlan>(
           subjectId = resourceId,
