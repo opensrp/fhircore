@@ -72,7 +72,6 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     fhirEngine = mockk()
     dispatcherProvider = DefaultDispatcherProvider()
-    //    configurationRegistry = mockk()
     rulesFactory = mockk()
     registerRepository =
       spyk(
