@@ -35,6 +35,7 @@
             android:name=".ui.patient.details.SimpleDetailsActivity"
             android:exported="false" />
         <activity android:name=".ui.main.AppMainActivity" />
+        <activity android:name=".ui.patient.remove.HivPatientQuestionnaireActivity" android:exported="false" />
         <!--        <activity-->
         <!--            android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"-->
         <!--            android:exported="false"-->
