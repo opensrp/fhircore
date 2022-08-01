@@ -40,7 +40,6 @@ import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentMatchers.any
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -72,7 +71,7 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `init() populates facts`() {
+  fun `initPopulatesFactsWithDataAndFhirPathValues`() {
     var facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     Assert.assertEquals(2, facts.asMap().size)
     Assert.assertNotNull(facts.get("data"))
@@ -80,12 +79,12 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `beforeEvaluate() returns true`() {
+  fun `beforeEvaluateReturnsTrue`() {
     Assert.assertTrue(rulesFactory.beforeEvaluate(mockk(), mockk()))
   }
 
   @Test
-  fun `fireRule() calls rulesEngine#fire`() {
+  fun `fireRuleCallsRulesEngineFireWithCorrectRulesAndFacts`() {
 
     val baseResource = populateTestPatient()
     val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
