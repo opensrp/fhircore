@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +46,11 @@ import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+
+const val PERSONAL_DETAILS_TEST_TAG = "personalDetailsTestTag"
+const val RESULT_VIEW_CHECK_ICON = "resultViewCheckIcon"
+const val RESULT_VIEW_STALLED_ICON = "resultViewStalledIcon"
+const val RESULT_VIEW_INDICATOR_STATUS = "resultViewIndicatorStatus"
 
 @Composable
 fun MeasureReportIndividualResultView(
@@ -71,7 +77,7 @@ fun MeasureReportIndividualResultView(
         color = SubtitleTextColor,
         text = patientViewData.personalDetails(),
         fontSize = 16.sp,
-        modifier = Modifier.wrapContentWidth()
+        modifier = Modifier.wrapContentWidth().testTag(PERSONAL_DETAILS_TEST_TAG)
       )
       Spacer(modifier = Modifier.height(12.dp))
       Divider(color = DividerColor)
@@ -84,13 +90,15 @@ fun MeasureReportIndividualResultView(
           Image(
             painter = painterResource(id = R.drawable.ic_check),
             contentDescription = null,
-            modifier = modifier.wrapContentWidth().requiredHeight(40.dp)
+            modifier =
+              modifier.wrapContentWidth().requiredHeight(40.dp).testTag(RESULT_VIEW_CHECK_ICON)
           )
         } else {
           Image(
             painter = painterResource(id = R.drawable.ic_stalled),
             contentDescription = null,
-            modifier = modifier.wrapContentWidth().requiredHeight(40.dp)
+            modifier =
+              modifier.wrapContentWidth().requiredHeight(40.dp).testTag(RESULT_VIEW_STALLED_ICON)
           )
         }
         Column(
@@ -102,7 +110,7 @@ fun MeasureReportIndividualResultView(
             text = indicatorStatus,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
-            modifier = Modifier.wrapContentWidth()
+            modifier = Modifier.wrapContentWidth().testTag(RESULT_VIEW_INDICATOR_STATUS)
           )
           Spacer(modifier = Modifier.height(4.dp))
           if (indicatorDescription.isNotEmpty()) {
