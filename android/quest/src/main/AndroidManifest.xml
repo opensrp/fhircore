@@ -22,33 +22,8 @@
         <activity
             android:name=".ui.family.remove.family.RemoveFamilyQuestionnaireActivity"
             android:exported="false" />
-        <activity
-            android:name="org.smartregister.fhircore.quest.ui.register.PatientRegisterActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.patient.details.QuestPatientDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.patient.details.QuestionnaireDataDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.patient.details.SimpleDetailsActivity"
-            android:exported="false" />
+
         <activity android:name=".ui.main.AppMainActivity" />
-        <!--        <activity-->
-        <!--            android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"-->
-        <!--            android:exported="false"-->
-        <!--            tools:node="merge" />-->
-
-        <!--        <activity-->
-        <!--            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity"-->
-        <!--            android:exported="false"-->
-        <!--            tools:node="merge" />-->
-
-        <!--        <activity-->
-        <!--            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyFloatingActivity"-->
-        <!--            android:exported="false"-->
-        <!--            tools:node="merge" />-->
 
         <service
             android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService"
@@ -65,6 +40,7 @@
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
 
             android:grantUriPermissions="true">
             <meta-data

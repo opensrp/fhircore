@@ -253,6 +253,33 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     assertEquals("Patient", search.type.name)
   }
 
+  @Test
+  fun getDefaultDataTypesReturnsCorrectListOfDataTypes() {
+
+    val actualDataTypes = baseP2PTransferDao.getDefaultDataTypes()
+    assertEquals(6, actualDataTypes.size)
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
+    )
+    assertTrue(
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
+      )
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+    )
+  }
+
   private fun populateTestPatient(): Patient {
     val patientId = "patient-123456"
     val patient: Patient =

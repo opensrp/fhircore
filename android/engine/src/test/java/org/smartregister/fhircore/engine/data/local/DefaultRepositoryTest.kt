@@ -32,7 +32,6 @@ import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.CarePlan
@@ -41,8 +40,11 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -52,13 +54,14 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.loadResource
 
 class DefaultRepositoryTest : RobolectricTest() {
 
-  private val dispatcherProvider = spyk(DefaultDispatcherProvider())
+  private val dispatcherProvider = DefaultDispatcherProvider()
 
   @Test
-  fun `loadResource() should get resource using id`() {
+  fun loadResourceShouldGetResourceUsingId() {
     val samplePatientId = "12345"
     val samplePatient: Patient = Patient().apply { id = samplePatientId }
 
@@ -77,7 +80,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `searchResourceFor(reference) should search CarePlan that is related to a Patient using patientId`() {
+  fun searchResourceForGivenReferenceShouldSearchCarePlanThatIsRelatedToAPatientUsingId() {
     val samplePatientId = "12345"
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<CarePlan> {} } returns listOf(mockk())
@@ -99,7 +102,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `searchResourceFor(token) should return 1 Patient using patientId`() {
+  fun searchResourceForGivenTokenShouldReturn1PatientUsingId() {
     val samplePatientId = "12345"
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<Patient> {} } returns listOf(mockk())
@@ -121,7 +124,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `search() should return 1 Condition given Condition type DataRequirement`() {
+  fun searchShouldReturn1ConditionGivenConditionTypeDataRequirement() {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<Condition> {} } returns listOf(mockk())
 
@@ -139,7 +142,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `addOrUpdate() should call fhirEngine#update when resource exists`() {
+  fun addOrUpdateShouldCallFhirEngineUpdateWhenResourceExists() {
     val patientId = "15672-9234"
     val patient: Patient =
       Patient().apply {
@@ -199,7 +202,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `save() should call Resource#generateMissingId()`() {
+  fun saveShouldCallResourceGenerateMissingId() {
     mockkStatic(Resource::generateMissingId)
     val resource = spyk(Patient())
 
@@ -218,7 +221,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `addOrUpdate() should call Resource#generateMissingId() when ResourceId is null`() {
+  fun addOrUpdateShouldCallResourceGenerateMissingIdWhenResourceIdIsNull() {
     mockkStatic(Resource::generateMissingId)
     val resource = Patient()
 
@@ -237,7 +240,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testSearchCompositionByIdentifier() = runBlockingTest {
+  fun searchCompositionByIdentifier() = runBlocking {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<Composition>(any()) } returns
       listOf(Composition().apply { id = "123" })
@@ -253,7 +256,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetBinaryResource() = runBlockingTest {
+  fun getBinaryResource() = runBlocking {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns Binary().apply { id = "111" }
 
@@ -265,5 +268,94 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.get(ResourceType.Binary, any()) }
 
     Assert.assertEquals("111", result.logicalId)
+  }
+
+  @Test
+  fun loadManagingEntityShouldReturnPatient() {
+    val fhirEngine: FhirEngine = mockk()
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    val group = Group().apply { managingEntity = Reference("RelatedPerson/12983") }
+
+    val relatedPerson =
+      RelatedPerson().apply {
+        id = "12983"
+        patient = Reference("Patient/12345")
+      }
+    coEvery { fhirEngine.search<RelatedPerson> {} } returns listOf(relatedPerson)
+
+    val patient = Patient().apply { id = "12345" }
+    coEvery { fhirEngine.search<Patient> {} } returns listOf(patient)
+
+    runBlocking {
+      val managingEntity = defaultRepository.loadManagingEntity(group)
+      Assert.assertEquals("12345", managingEntity?.logicalId)
+    }
+  }
+
+  @Test
+  fun changeManagingEntityShouldVerifyFhirEngineCalls() {
+    val fhirEngine: FhirEngine = mockk()
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    val patient =
+      Patient().apply {
+        id = "54321"
+        addName().apply {
+          addGiven("Sam")
+          family = "Smith"
+        }
+        addTelecom().apply { value = "ssmith@mail.com" }
+        addAddress().apply {
+          district = "Mawar"
+          city = "Jakarta"
+        }
+        gender = Enumerations.AdministrativeGender.MALE
+      }
+
+    coEvery { fhirEngine.get<Patient>("54321") } returns patient
+
+    coEvery { fhirEngine.create(any()) } returns listOf()
+
+    val group =
+      Group().apply {
+        id = "73847"
+        managingEntity = Reference("RelatedPerson/12983")
+      }
+    coEvery { fhirEngine.get<Group>("73847") } returns group
+
+    coEvery { fhirEngine.update(any()) } just runs
+
+    runBlocking {
+      defaultRepository.changeManagingEntity(newManagingEntityId = "54321", groupId = "73847")
+    }
+
+    coVerify { fhirEngine.get<Patient>("54321") }
+
+    coVerify { fhirEngine.create(any()) }
+
+    coVerify { fhirEngine.get<Group>("73847") }
+
+    coVerify { fhirEngine.update(any()) }
+  }
+
+  @Test
+  fun removeGroupGivenGroupAlreadyDeletedShouldThrowIllegalStateException() {
+    val fhirEngine: FhirEngine = mockk()
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    val group =
+      Group().apply {
+        id = "73847"
+        active = false
+      }
+    coEvery { fhirEngine.loadResource<Group>("73847") } returns group
+
+    Assert.assertThrows(IllegalStateException::class.java) {
+      runBlocking { defaultRepository.removeGroup(group.logicalId, false) }
+    }
   }
 }

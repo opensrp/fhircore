@@ -138,7 +138,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     }
   }
 
-  private suspend fun loadManagingEntity(group: Group) =
+  suspend fun loadManagingEntity(group: Group) =
     group.managingEntity?.let { reference ->
       searchResourceFor<RelatedPerson>(
         token = RelatedPerson.RES_ID,
@@ -156,7 +156,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         }
     }
 
-  suspend fun changeManagingEntity(newManagingEntityId: String, oldManagingEntityId: String) {
+  suspend fun changeManagingEntity(newManagingEntityId: String, groupId: String) {
 
     val patient = fhirEngine.get<Patient>(newManagingEntityId)
 
@@ -176,7 +176,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
 
     fhirEngine.create(relatedPerson)
     val group =
-      fhirEngine.get<Group>(oldManagingEntityId).apply {
+      fhirEngine.get<Group>(groupId).apply {
         managingEntity = relatedPerson.asReference()
         name = relatedPerson.name.first().nameAsSingleString
       }
