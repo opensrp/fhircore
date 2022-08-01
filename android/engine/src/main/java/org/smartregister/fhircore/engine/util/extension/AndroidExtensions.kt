@@ -28,6 +28,7 @@ import android.os.LocaleList
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import java.util.Locale
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -82,7 +83,8 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   clientIdentifier: String? = null,
   groupIdentifier: String? = null,
   questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-  intentBundle: Bundle = Bundle.EMPTY
+  intentBundle: Bundle = Bundle.EMPTY,
+  populationResources: ArrayList<Resource>? = null
 ) {
   this.startActivity(
     Intent(this, Q::class.java)
@@ -92,7 +94,8 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
           clientIdentifier = clientIdentifier,
           groupIdentifier = groupIdentifier,
           formName = questionnaireId,
-          questionnaireType = questionnaireType
+          questionnaireType = questionnaireType,
+          populationResources = populationResources ?: ArrayList()
         )
       )
   )
@@ -103,7 +106,8 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
   clientIdentifier: String? = null,
   questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
   backReference: String? = null,
-  intentBundle: Bundle = Bundle.EMPTY
+  intentBundle: Bundle = Bundle.EMPTY,
+  populationResources: ArrayList<Resource>? = null
 ) {
   (this as Activity).startActivityForResult(
     Intent(this, Q::class.java)
@@ -113,7 +117,8 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
           clientIdentifier = clientIdentifier,
           formName = questionnaireId,
           questionnaireType = questionnaireType,
-          backReference = backReference
+          backReference = backReference,
+          populationResources = populationResources ?: ArrayList()
         )
       ),
     0

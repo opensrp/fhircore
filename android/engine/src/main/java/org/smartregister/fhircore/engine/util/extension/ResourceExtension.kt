@@ -25,6 +25,8 @@ import java.util.Date
 import java.util.UUID
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
+import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
@@ -245,3 +247,27 @@ fun generateUniqueId() = UUID.randomUUID().toString()
 
 fun Base.extractWithFhirPath(expression: String) =
   FhirPathDataExtractor.extractData(this, expression).firstOrNull()?.primitiveValue() ?: ""
+
+fun ArrayList<CarePlan>.asBaseResources(): ArrayList<Resource> {
+  val list = ArrayList<Resource>()
+  this.forEach() { carePlan ->
+    val temp = Binary()
+    val jsonString: String = fhirR4JsonParser.encodeResourceToString(carePlan)
+    println(jsonString)
+    temp.data = jsonString.encodeToByteArray()
+    list.add(temp)
+  }
+  return list
+}
+
+fun ArrayList<Resource>.asCarePlanDomainResource(): ArrayList<CarePlan> {
+  val list = ArrayList<CarePlan>()
+  this.forEach() { resource ->
+    val tempBinary = resource as Binary
+    val tempStringJson = tempBinary.data.decodeToString()
+    println(tempStringJson)
+    val temp = fhirR4JsonParser.parseResource(tempStringJson) as CarePlan
+    list.add(temp)
+  }
+  return list
+}
