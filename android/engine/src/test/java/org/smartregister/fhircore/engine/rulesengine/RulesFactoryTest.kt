@@ -53,26 +53,18 @@ class RulesFactoryTest : RobolectricTest() {
   private lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var rulesFactory: RulesFactory
-  private lateinit var rulesEngineService: RulesEngineService
 
   @Before
   fun setUp() {
     configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
     fhirPathDataExtractor = mockk(relaxed = true)
     rulesEngine = mockk()
-    rulesEngineService = mockk()
-    rulesFactory =
-      spyk(
-        RulesFactory(
-          configurationRegistry = configurationRegistry,
-          rulesEngineService = rulesEngineService
-        )
-      )
+    rulesFactory = spyk(RulesFactory(configurationRegistry = configurationRegistry))
   }
 
   @Test
   fun initPopulatesFactsWithDataAndFhirPathValues() {
-    var facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
+    val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     Assert.assertEquals(3, facts.asMap().size)
     Assert.assertNotNull(facts.get("data"))
     Assert.assertNotNull(facts.get("fhirPath"))
