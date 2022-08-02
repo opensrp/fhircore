@@ -35,5 +35,6 @@ data class ServiceButton(
   val text: String? = null,
   val status: String,
   val smallSized: Boolean = false,
-  val questionnaire: QuestionnaireConfig? = null
+  val questionnaire: QuestionnaireConfig? = null,
+  val fontSize: Float = 12.0f
 )
