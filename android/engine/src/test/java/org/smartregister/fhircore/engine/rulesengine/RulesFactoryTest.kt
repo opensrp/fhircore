@@ -140,9 +140,9 @@ class RulesFactoryTest : RobolectricTest() {
     populateFactsWithResources()
     val result =
       rulesEngineService.retrieveParentResource(
-        parentResourceId = "patient-1",
+        childResource = populateCarePlan(),
         parentResourceType = "Patient",
-        fhirPathExpression = "Patient.id"
+        fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals("Patient", result!!.resourceType.name)
     Assert.assertEquals("patient-1", result!!.logicalId)

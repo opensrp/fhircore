@@ -154,25 +154,27 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
     }
 
     /**
-     * This method retrieve a parentResources for a given relatedResource from the facts map It
+     * This method retrieve a parentResource for a given relatedResource from the facts map It
      * fetches a list of facts of the given [parentResourceType] then iterates through this list in
-     * order to return a resource whose logical id matches the given [parentResourceId]
+     * order to return a resource whose logical id matches the subject reference retrieved via
+     * fhirPath from the [childResource]
      *
-     * [parentResourceId]
      * - The logical Id of the parentResource [parentResourceType]
      * - The ResourceType the parentResources belong to [fhirPathExpression]
      * - A fhir path expression used to retrieve the logical Id from the parent resources
      */
     fun retrieveParentResource(
-      parentResourceId: String,
+      childResource: Resource,
       parentResourceType: String,
       fhirPathExpression: String
     ): Resource? {
       val value = facts.getFact(parentResourceType).value as ArrayList<Resource>
+      val parentResourceId =
+        fhirPathDataExtractor
+          .extractValue(childResource, fhirPathExpression)
+          .substringAfterLast(delimiter = '/', missingDelimiterValue = "")
 
-      return value.find {
-        parentResourceId == fhirPathDataExtractor.extractValue(it, fhirPathExpression)
-      }
+      return value.find { it.logicalId == parentResourceId }
     }
   }
 
