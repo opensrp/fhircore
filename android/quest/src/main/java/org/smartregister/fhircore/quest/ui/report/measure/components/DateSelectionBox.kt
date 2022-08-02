@@ -50,7 +50,6 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import java.util.Calendar
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
-import timber.log.Timber
 
 const val DATE_RANGE_TITLE_TEST_TAG = "dateRangeTitleTestTag"
 const val DATE_RANGE_SEPARATOR_TEST_TAG = "dateRangeSeparatorTestTag"
