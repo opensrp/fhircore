@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import com.google.android.fhir.logicalId
+import java.util.ArrayList
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -124,6 +126,56 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
         Locale.getDefault(),
         "{{${value.translationPropertyKey()}}}"
       )
+
+    /**
+     * This method retrieves a list of relatedResources for a given resource from the facts map It
+     * fetches a list of facts of the given [relatedResourceType] then iterates through this list in
+     * order to return a list of all resources whose subject reference matches the logical Id of the
+     * [resource]
+     *
+     * [resource]
+     * - The parent resource for which the related resources will be retrieved [relatedResourceType]
+     * - The ResourceType the relatedResources belong to [fhirPathExpression]
+     * - A fhir path expression used to retrieve the subject reference Id from the related resources
+     */
+    fun retrieveRelatedResources(
+      resource: Resource,
+      relatedResourceType: String,
+      fhirPathExpression: String
+    ): List<Resource> {
+      val value = facts.getFact(relatedResourceType).value as ArrayList<Resource>
+
+      return value.filter {
+        resource.logicalId ==
+          fhirPathDataExtractor
+            .extractValue(it, fhirPathExpression)
+            .substringAfterLast(delimiter = '/', missingDelimiterValue = "")
+      }
+    }
+
+    /**
+     * This method retrieve a parentResource for a given relatedResource from the facts map It
+     * fetches a list of facts of the given [parentResourceType] then iterates through this list in
+     * order to return a resource whose logical id matches the subject reference retrieved via
+     * fhirPath from the [childResource]
+     *
+     * - The logical Id of the parentResource [parentResourceType]
+     * - The ResourceType the parentResources belong to [fhirPathExpression]
+     * - A fhir path expression used to retrieve the logical Id from the parent resources
+     */
+    fun retrieveParentResource(
+      childResource: Resource,
+      parentResourceType: String,
+      fhirPathExpression: String
+    ): Resource? {
+      val value = facts.getFact(parentResourceType).value as ArrayList<Resource>
+      val parentResourceId =
+        fhirPathDataExtractor
+          .extractValue(childResource, fhirPathExpression)
+          .substringAfterLast(delimiter = '/', missingDelimiterValue = "")
+
+      return value.find { it.logicalId == parentResourceId }
+    }
   }
 
   companion object {
