@@ -194,7 +194,8 @@ fun CompoundText(
       Text(
         text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap),
         color = compoundTextProperties.primaryTextColor.parseColor(),
-        modifier = modifier.wrapContentWidth(Alignment.Start)
+        modifier = modifier.wrapContentWidth(Alignment.Start),
+        fontSize = compoundTextProperties.fontSize.sp,
       )
     }
     if (compoundTextProperties.secondaryText != null) {
@@ -204,7 +205,8 @@ fun CompoundText(
       Text(
         text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap),
         color = compoundTextProperties.secondaryTextColor.parseColor(),
-        modifier = modifier.wrapContentWidth(Alignment.Start).padding(end = 8.dp)
+        modifier = modifier.wrapContentWidth(Alignment.Start).padding(end = 8.dp),
+        fontSize = compoundTextProperties.fontSize.sp,
       )
     }
   }
@@ -336,7 +338,7 @@ private fun SmallServiceButton(
     Text(
       text = serviceButton.text ?: "",
       color = contentColor,
-      fontSize = 12.sp,
+      fontSize = serviceButton.fontSize.sp,
       fontWeight = FontWeight.Bold,
       modifier = modifier.padding(4.dp).wrapContentHeight(Alignment.CenterVertically),
       overflow = TextOverflow.Visible,
@@ -360,7 +362,7 @@ private fun BigServiceButton(
     modifier =
       modifier
         .fillMaxSize()
-        .padding(8.dp)
+        .padding(4.dp)
         .clip(RoundedCornerShape(4.dp))
         .background(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
@@ -368,13 +370,20 @@ private fun BigServiceButton(
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    if (extractedStatus == ServiceStatus.COMPLETED)
-      Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
-    Text(
-      text = serviceButton.text?.interpolate(computedValuesMap) ?: "",
-      color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
-      textAlign = TextAlign.Center
-    )
+    Column(
+      verticalArrangement = Arrangement.Center,
+      modifier = modifier.fillMaxSize().padding(8.dp),
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      if (extractedStatus == ServiceStatus.COMPLETED)
+        Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
+      Text(
+        text = serviceButton.text?.interpolate(computedValuesMap) ?: "",
+        color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
+        textAlign = TextAlign.Center,
+        fontSize = serviceButton.fontSize.sp
+      )
+    }
   }
 }
 
