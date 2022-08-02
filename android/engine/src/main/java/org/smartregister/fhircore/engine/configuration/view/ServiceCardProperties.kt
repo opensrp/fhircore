@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
-import android.graphics.fonts.Font
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType

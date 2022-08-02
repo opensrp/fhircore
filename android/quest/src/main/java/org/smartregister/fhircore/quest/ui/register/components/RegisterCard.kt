@@ -370,19 +370,20 @@ private fun BigServiceButton(
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-  Column(verticalArrangement = Arrangement.Center,    modifier =
-  modifier
-    .fillMaxSize()
-    .padding(8.dp),horizontalAlignment = Alignment.CenterHorizontally) {
-    if (extractedStatus == ServiceStatus.COMPLETED)
-      Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
-    Text(
-      text = serviceButton.text?.interpolate(computedValuesMap) ?: "",
-      color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
-      textAlign = TextAlign.Center,
-      fontSize = serviceButton.fontSize.sp
-    )
-  }
+    Column(
+      verticalArrangement = Arrangement.Center,
+      modifier = modifier.fillMaxSize().padding(8.dp),
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      if (extractedStatus == ServiceStatus.COMPLETED)
+        Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
+      Text(
+        text = serviceButton.text?.interpolate(computedValuesMap) ?: "",
+        color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
+        textAlign = TextAlign.Center,
+        fontSize = serviceButton.fontSize.sp
+      )
+    }
   }
 }
 
