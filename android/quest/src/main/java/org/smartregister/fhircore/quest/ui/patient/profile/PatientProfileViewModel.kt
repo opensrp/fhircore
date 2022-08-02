@@ -166,7 +166,7 @@ constructor(
               patientProfileUiState.value.overflowMenuItems.map {
                 when (it.id) {
                   R.id.guardian_visit -> it.copy(hidden = true)
-                  R.id.client_visit, R.id.exposed_infant_visit -> it.copy(hidden = false)
+                  R.id.client_visit -> it.copy(hidden = false)
                   else -> it
                 }
               }
@@ -174,12 +174,12 @@ constructor(
               patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
             filterGuardianVisitTasks()
           }
-          R.id.client_visit, R.id.exposed_infant_visit -> {
+          R.id.client_visit -> {
             val updatedMenuItems =
               patientProfileUiState.value.overflowMenuItems.map {
                 when (it.id) {
                   R.id.guardian_visit -> it.copy(hidden = false)
-                  R.id.client_visit, R.id.exposed_infant_visit -> it.copy(hidden = true)
+                  R.id.client_visit -> it.copy(hidden = true)
                   else -> it
                 }
               }

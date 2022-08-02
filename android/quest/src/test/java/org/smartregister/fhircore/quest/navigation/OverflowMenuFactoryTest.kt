@@ -23,6 +23,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -52,7 +53,7 @@ class OverflowMenuFactoryTest : RobolectricTest() {
     val uiProfileExposedInfant =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.EXPOSED_INFANT_PROFILE)
     Assert.assertNotNull(uiProfileExposedInfant)
-    Assert.assertEquals(7, uiProfileExposedInfant.size)
+    Assert.assertEquals(5, uiProfileExposedInfant.size)
 
     val uiProfileChildContact =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.CHILD_CONTACT_PROFILE)
@@ -78,5 +79,18 @@ class OverflowMenuFactoryTest : RobolectricTest() {
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.PATIENT_PROFILE)
     Assert.assertNotNull(uiProfilePatient)
     Assert.assertEquals(4, uiProfilePatient.size)
+  }
+
+  @Test
+  fun `client_visit menu items should be hidden for new diagnosed and art clients`() {
+    val newlyDiagnosedClientVisitMenuItem =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE)
+        .first { it.id == R.id.client_visit }
+    val artClientClientVisitMenuItem =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.ART_CLIENT_PROFILE).first {
+        it.id == R.id.client_visit
+      }
+    Assert.assertTrue(newlyDiagnosedClientVisitMenuItem.hidden)
+    Assert.assertTrue(artClientClientVisitMenuItem.hidden)
   }
 }
