@@ -86,7 +86,8 @@ class QuestConfigServiceTest : RobolectricTest() {
           ResourceType.Questionnaire,
           ResourceType.QuestionnaireResponse,
           ResourceType.StructureMap,
-          ResourceType.Task
+          ResourceType.Task,
+          ResourceType.Practitioner
         )
         .sorted()
 
