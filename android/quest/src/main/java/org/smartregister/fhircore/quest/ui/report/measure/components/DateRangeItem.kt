@@ -29,10 +29,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+
+const val DATE_RANGE_TEXT_TEST_TAG = "dateRangeTextTestTag"
 
 @Composable
 fun DateRangeItem(text: String, showBackground: Boolean = true, modifier: Modifier = Modifier) {
@@ -48,7 +53,20 @@ fun DateRangeItem(text: String, showBackground: Boolean = true, modifier: Modifi
           .padding(horizontal = 16.dp, vertical = 4.dp),
       contentAlignment = Alignment.Center
     ) {
-      Text(text = text, textAlign = TextAlign.Start, fontSize = 16.sp, color = SubtitleTextColor)
+      Text(
+        text = text,
+        textAlign = TextAlign.Start,
+        fontSize = 16.sp,
+        color = SubtitleTextColor,
+        modifier = modifier.testTag(DATE_RANGE_TEXT_TEST_TAG)
+      )
     }
   }
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+private fun DateRangeItemPreview() {
+  DateRangeItem(text = "Date Range", showBackground = true)
 }
