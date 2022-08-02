@@ -33,16 +33,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.components.CircularPercentageIndicator
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
+
+const val POPULATION_TITLE_TEST_TAG = "populationTitleTestTag"
+const val POPULATION_COUNT_TEST_TAG = "populationCountTestTag"
+const val POPULATION_RESULT_CARD_DIVIDER_TEST_TAG = "populationResultCardDividerTestTag"
+const val POPULATION_RESULT_ITEM_PROGRESS_BAR_TEST_TAG = "populationResultItemProgressBarTestTag"
+const val POPULATION_REPORT_INDIVIDUAL_RESULT_TITLE_TEST_TAG =
+  "populationReportIndividualResultTitleTestTag"
+const val POPULATION_REPORT_INDIVIDUAL_RESULT_PERCENTAGE_TEST_TAG =
+  "populationReportIndividualResultPercentageTestTag"
+const val POPULATION_REPORT_INDIVIDUAL_RESULT_COUNT_TEST_TAG =
+  "populationReportIndividualResultCountTestTag"
 
 @Composable
 fun MeasureReportPopulationResultView(dataList: List<MeasureReportPopulationResult>) {
@@ -69,19 +83,23 @@ private fun PopulationResultCard(
             text = resultItem.title.uppercase(),
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
-            modifier = modifier.weight(1.0f),
+            modifier = modifier.weight(1.0f).testTag(POPULATION_TITLE_TEST_TAG),
             textAlign = TextAlign.Start
           )
           Text(
             text = resultItem.count.toString().uppercase(),
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
-            modifier = modifier.weight(1.0f),
+            modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),
             textAlign = TextAlign.End
           )
         }
         if (resultItem.dataList.isNotEmpty()) {
-          Divider(color = DividerColor, modifier = modifier.padding(vertical = 20.dp))
+          Divider(
+            color = DividerColor,
+            modifier =
+              modifier.padding(vertical = 20.dp).testTag(POPULATION_RESULT_CARD_DIVIDER_TEST_TAG)
+          )
           resultItem.dataList.forEach { item -> PopulationResultItem(item) }
         }
       }
@@ -103,13 +121,20 @@ private fun PopulationResultItem(
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically
     ) {
-      CircularPercentageIndicator(percentage = measureReportIndividualResult.percentage)
+      CircularPercentageIndicator(
+        percentage = measureReportIndividualResult.percentage,
+        modifier = modifier.testTag(POPULATION_RESULT_ITEM_PROGRESS_BAR_TEST_TAG)
+      )
 
       Text(
         text = measureReportIndividualResult.title,
         fontSize = 16.sp,
         fontWeight = FontWeight.Bold,
-        modifier = modifier.wrapContentWidth().padding(horizontal = 20.dp),
+        modifier =
+          modifier
+            .wrapContentWidth()
+            .padding(horizontal = 20.dp)
+            .testTag(POPULATION_REPORT_INDIVIDUAL_RESULT_TITLE_TEST_TAG),
       )
     }
 
@@ -122,14 +147,43 @@ private fun PopulationResultItem(
         text = "${measureReportIndividualResult.percentage}%",
         fontSize = 16.sp,
         fontWeight = FontWeight.Normal,
-        modifier = modifier.wrapContentWidth()
+        modifier =
+          modifier
+            .wrapContentWidth()
+            .testTag(POPULATION_REPORT_INDIVIDUAL_RESULT_PERCENTAGE_TEST_TAG),
       )
       Text(
         text = measureReportIndividualResult.count,
         fontSize = 16.sp,
         color = colorResource(id = R.color.darkGrayText),
-        modifier = modifier.wrapContentWidth()
+        modifier =
+          modifier.wrapContentWidth().testTag(POPULATION_REPORT_INDIVIDUAL_RESULT_COUNT_TEST_TAG)
       )
     }
   }
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun MeasureReportPopulationResultPreview() {
+  val dataList =
+    listOf(
+      MeasureReportPopulationResult(
+        title = "Population Title",
+        count = "2",
+        dataList =
+          listOf(
+            MeasureReportIndividualResult(
+              status = "Test Status",
+              isMatchedIndicator = false,
+              description = "This is sample description",
+              title = "Title Individual Result",
+              percentage = "50.0",
+              count = "1"
+            )
+          )
+      )
+    )
+  MeasureReportPopulationResultView(dataList = dataList)
 }
