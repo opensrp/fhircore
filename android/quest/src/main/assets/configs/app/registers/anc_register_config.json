@@ -45,7 +45,7 @@
     "visible": true,
     "display": "Search by name",
     "computedRules": [
-      "patientName"
+      "patientName", "patientId"
     ]
   },
   "registerCard": {
@@ -55,6 +55,13 @@
         "condition": "true",
         "actions": [
           "data.put('patientName', fhirPath.extractValue(Patient.get(0), \"Patient.name.select(given + ' ' + family)\"))"
+        ]
+      },
+      {
+        "name": "patientId",
+        "condition": "true",
+        "actions": [
+          "data.put('patientId', fhirPath.extractValue(Patient.get(0), 'Patient.identifier[0].value'))"
         ]
       }
     ],
@@ -68,6 +75,12 @@
               {
                 "viewType": "COMPOUND_TEXT",
                 "primaryText": "@{patientName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "ID: @{patientId}",
+                "fontSize": 14.0,
                 "primaryTextColor": "#000000"
               }
             ],
