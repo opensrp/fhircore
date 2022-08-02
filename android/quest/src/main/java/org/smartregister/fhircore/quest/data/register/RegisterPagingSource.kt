@@ -28,9 +28,8 @@ import timber.log.Timber
  * @property _registerPagingSourceState as state containing the properties used in the
  * [RegisterRepository] function for loading data to the paging source.
  */
-class RegisterPagingSource(
-  private val registerRepository: RegisterRepository,
-) : PagingSource<Int, ResourceData>() {
+class RegisterPagingSource(private val registerRepository: RegisterRepository) :
+  PagingSource<Int, ResourceData>() {
 
   private lateinit var _registerPagingSourceState: RegisterPagingSourceState
 
