@@ -5,13 +5,23 @@
   "fhirResource": {
     "baseResource": {
       "resource": "Task"
-    }
+    },
+    "relatedResources": [
+      {
+        "resource": "Patient",
+        "fhirPathExpression": "Task.for"
+      },
+      {
+        "resource": "Practitioner",
+        "fhirPathExpression": "Task.owner"
+      }
+    ]
   },
   "searchBar": {
     "visible": true,
-    "display": "Search task by name",
+    "display": "Search by Task, Practitioner & Patient Name",
     "computedRules": [
-      "taskName"
+      "taskName", "practitionerName", "patientName"
     ]
   },
   "registerCard": {
@@ -43,6 +53,20 @@
         "actions": [
           "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
         ]
+      },
+      {
+        "name": "patientName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientName', fhirPath.extractValue(Patient.get(0), \"Patient.name.select(given + ' ' + family)\"))"
+        ]
+      },
+      {
+        "name": "practitionerName",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerName', fhirPath.extractValue(Practitioner.get(0), \"Practitioner.name.select(given + ' ' + family)\"))"
+        ]
       }
     ],
     "views": [
@@ -60,7 +84,20 @@
               {
                 "viewType": "COMPOUND_TEXT",
                 "primaryText": "Start date: @{taskStartDate}",
-                "primaryTextColor": "#5A5A5A"
+                "primaryTextColor": "#5A5A5A",
+                "fontSize": 14.0
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Patient: @{patientName}",
+                "primaryTextColor": "#5A5A5A",
+                "fontSize": 14.0
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Practitioner: @{practitionerName}",
+                "primaryTextColor": "#5A5A5A",
+                "fontSize": 14.0
               }
             ],
             "showVerticalDivider": false,

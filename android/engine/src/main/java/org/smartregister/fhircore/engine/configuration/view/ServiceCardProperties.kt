@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.graphics.fonts.Font
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -35,5 +36,6 @@ data class ServiceButton(
   val text: String? = null,
   val status: String,
   val smallSized: Boolean = false,
-  val questionnaire: QuestionnaireConfig? = null
+  val questionnaire: QuestionnaireConfig? = null,
+  val fontSize: Float = 12.0f
 )
