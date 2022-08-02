@@ -26,11 +26,14 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.jeasy.rules.api.Facts
@@ -53,6 +56,7 @@ class RulesFactoryTest : RobolectricTest() {
   private lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var rulesFactory: RulesFactory
+  private lateinit var rulesEngineService: RulesFactory.RulesEngineService
 
   @Before
   fun setUp() {
@@ -60,6 +64,7 @@ class RulesFactoryTest : RobolectricTest() {
     fhirPathDataExtractor = mockk(relaxed = true)
     rulesEngine = mockk()
     rulesFactory = spyk(RulesFactory(configurationRegistry = configurationRegistry))
+    rulesEngineService = rulesFactory.RulesEngineService()
   }
 
   @Test
@@ -116,8 +121,45 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertEquals(ruleConfig.description, capturedRule.description)
   }
 
+  @Test
+  fun retrieveRelatedResourcesReturnsCorrectResource() {
+    populateFactsWithResources()
+    val result =
+      rulesEngineService.retrieveRelatedResources(
+        resource = populateTestPatient(),
+        relatedResourceType = "CarePlan",
+        fhirPathExpression = "CarePlan.subject.reference"
+      )
+    Assert.assertEquals(1, result.size)
+    Assert.assertEquals("CarePlan", result!![0].resourceType.name)
+    Assert.assertEquals("careplan-1", result!![0].logicalId)
+  }
+
+  @Test
+  fun retrieveParentResourcesReturnsCorrectResource() {
+    populateFactsWithResources()
+    val result =
+      rulesEngineService.retrieveParentResource(
+        childResource = populateCarePlan(),
+        parentResourceType = "Patient",
+        fhirPathExpression = "CarePlan.subject.reference"
+      )
+    Assert.assertEquals("Patient", result!!.resourceType.name)
+    Assert.assertEquals("patient-1", result!!.logicalId)
+  }
+  private fun populateFactsWithResources() {
+    val carePlanRelatedResource = mutableListOf(populateCarePlan())
+    val patientRelatedResource = mutableListOf(populateTestPatient())
+    val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
+    facts.apply {
+      put(carePlanRelatedResource[0].resourceType.name, carePlanRelatedResource)
+      put(patientRelatedResource[0].resourceType.name, patientRelatedResource)
+    }
+    ReflectionHelpers.setField(rulesFactory, "facts", facts)
+  }
+
   private fun populateTestPatient(): Patient {
-    val patientId = "patient-123456"
+    val patientId = "patient-1"
     val patient: Patient =
       Patient().apply {
         id = patientId
@@ -142,5 +184,21 @@ class RulesFactoryTest : RobolectricTest() {
         meta = Meta().apply { lastUpdated = Date() }
       }
     return patient
+  }
+
+  private fun populateCarePlan(): CarePlan {
+    val carePlan: CarePlan =
+      CarePlan().apply {
+        id = "careplan-1"
+        identifier =
+          mutableListOf(
+            Identifier().apply {
+              use = Identifier.IdentifierUse.OFFICIAL
+              value = "value-1"
+            }
+          )
+        subject = Reference().apply { reference = "Patient/patient-1" }
+      }
+    return carePlan
   }
 }
