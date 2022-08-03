@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
+import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
@@ -98,7 +99,8 @@ constructor(
             patient.extractHealthStatusFromMeta(
               getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
             ),
-          isPregnant = patient.isPregnant()
+          isPregnant = patient.isPregnant(),
+          isBreastfeeding = patient.isBreastfeeding()
         )
       }
       .filterNot { it.healthStatus == HealthStatus.DEFAULT }
@@ -152,6 +154,8 @@ constructor(
   }
 
   internal suspend fun Patient.isPregnant() = patientConditions(this.logicalId).hasActivePregnancy()
+  internal suspend fun Patient.isBreastfeeding() =
+    patientConditions(this.logicalId).activelyBreastfeeding()
 
   internal suspend fun patientConditions(patientId: String) =
     defaultRepository.searchResourceFor<Condition>(

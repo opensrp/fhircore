@@ -112,6 +112,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
             else FemalePinkColor,
           serviceTextIcon =
             when {
+              inputModel.isBreastfeeding -> R.drawable.ic_person_breastfeeding_solid
               inputModel.isPregnant -> R.drawable.baseline_pregnant_woman_24
               inputModel.healthStatus == HealthStatus.EXPOSED_INFANT ->
                 R.drawable.baseline_child_care_fill_48
