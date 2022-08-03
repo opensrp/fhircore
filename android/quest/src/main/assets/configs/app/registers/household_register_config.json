@@ -79,7 +79,8 @@
     "visible": true,
     "display": "Search name or ID",
     "computedRules": [
-      "familyName","familyId"
+      "familyName",
+      "familyId"
     ]
   },
   "registerCard": {

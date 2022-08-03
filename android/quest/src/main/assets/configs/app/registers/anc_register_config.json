@@ -45,7 +45,8 @@
     "visible": true,
     "display": "Search by name",
     "computedRules": [
-      "patientName", "patientId"
+      "patientName",
+      "patientId"
     ]
   },
   "registerCard": {

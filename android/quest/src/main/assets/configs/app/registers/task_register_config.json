@@ -21,7 +21,9 @@
     "visible": true,
     "display": "Search by Task, Practitioner & Patient Name",
     "computedRules": [
-      "taskName", "practitionerName", "patientName"
+      "taskName",
+      "practitionerName",
+      "patientName"
     ]
   },
   "registerCard": {
