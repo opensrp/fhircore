@@ -27,4 +27,5 @@ data class CompoundTextProperties(
   val secondaryText: String? = null,
   val secondaryTextColor: String? = null,
   val separator: String? = null,
+  val fontSize: Float = 16.0f
 ) : RegisterCardViewProperties()

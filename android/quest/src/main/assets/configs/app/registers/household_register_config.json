@@ -79,7 +79,7 @@
     "visible": true,
     "display": "Search name or ID",
     "computedRules": [
-      "familyName"
+      "familyName","familyId"
     ]
   },
   "registerCard": {
@@ -89,6 +89,13 @@
         "condition": "true",
         "actions": [
           "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
+        ]
+      },
+      {
+        "name": "familyId",
+        "condition": "true",
+        "actions": [
+          "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
         ]
       }
     ],
@@ -106,7 +113,14 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
+                "primaryText": "ID: @{familyId}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
                 "primaryText": "Village/Address",
+                "fontSize": 14.0,
                 "primaryTextColor": "#5A5A5A"
               }
             ],
