@@ -177,6 +177,48 @@ class PatientExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `return true for 'activelyBreastfeeding' when 'active' breastfeeding condition exist`() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "breastfeeding"
+        }
+      )
+
+    Assert.assertTrue(conditions.activelyBreastfeeding())
+  }
+
+  @Test
+  fun `return false for 'activelyBreastfeeding' when no breastfeeding conditions exist`() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "pregnant"
+        }
+      )
+
+    Assert.assertFalse(conditions.activelyBreastfeeding())
+  }
+
+  @Test
+  fun `return false for 'activelyBreastfeeding' when no 'active' breastfeeding conditions exist`() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "inactive"
+          this.code.addCoding().display = "breastfeeding"
+        }
+      )
+
+    Assert.assertFalse(conditions.activelyBreastfeeding())
+  }
+
+  @Test
   fun testPregnancyConditionShouldReturnCondition() {
     val conditions =
       listOf(

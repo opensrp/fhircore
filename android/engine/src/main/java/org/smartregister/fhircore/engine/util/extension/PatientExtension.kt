@@ -180,11 +180,22 @@ fun Patient.isFamilyHead() = this.extractFamilyTag() != null
 
 fun List<Condition>.hasActivePregnancy() =
   this.any { condition ->
-    // is active and any of the display / text into code is pregnant
+    // is active and any of the display / text in code is pregnant
     val active = condition.clinicalStatus.coding.any { it.code == "active" }
     val pregnancy =
       condition.code.coding.map { it.display }.plus(condition.code.text).any {
         it.contentEquals("pregnant", true)
+      }
+
+    active && pregnancy
+  }
+
+fun List<Condition>.activelyBreastfeeding() =
+  this.any { condition ->
+    val active = condition.clinicalStatus.coding.any { it.code == "active" }
+    val pregnancy =
+      condition.code.coding.map { it.display }.plus(condition.code.text).any {
+        it.contentEquals("breastfeeding", true)
       }
 
     active && pregnancy

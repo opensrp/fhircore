@@ -190,3 +190,22 @@ fun PreviewHivFemalePregnantPatientRegisterRowItem() {
     onItemClick = {}
   )
 }
+
+@Preview(showBackground = true)
+@Composable
+@ExcludeFromJacocoGeneratedReport
+fun PreviewHivFemaleBreastfeedingPatientRegisterRowItem() {
+  HivPatientRegisterListRow(
+    data =
+      RegisterViewData(
+        logicalId = "345667782",
+        identifier = "556637",
+        title = "Maggie Coyote(Mother Breastfeeding)",
+        serviceTextIcon = R.drawable.ic_person_breastfeeding_solid,
+        subtitle = "27yrs, ART Client",
+        serviceButtonBackgroundColor = FemalePinkColor,
+        registerType = RegisterData.HivRegisterData::class,
+      ),
+    onItemClick = {}
+  )
+}
