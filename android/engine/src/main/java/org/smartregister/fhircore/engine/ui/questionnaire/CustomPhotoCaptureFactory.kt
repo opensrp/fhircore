@@ -144,7 +144,7 @@ class CustomPhotoCaptureFactory(
           answers.add(QuestionnaireResponseItemAnswerComponent().apply { value = attachment })
         }
         if (!questionnaireItemViewItem.questionnaireItem.readOnly) {
-          questionnaireItemViewItem.setAnswer(answers.singleOrNull()!!)
+          answers.singleOrNull()?.let { questionnaireItemViewItem.setAnswer(it) }
         }
       }
 
