@@ -37,8 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -80,14 +78,6 @@ fun FamilyProfileRow(
         FamilyProfileTitleText(
           familyMemberViewState = familyMemberViewState,
           modifier = modifier.weight(0.6f)
-        )
-        Text(
-          text = stringResource(R.string.no_tasks),
-          color = Color.DarkGray.copy(alpha = 0.7f),
-          fontStyle = FontStyle.Italic,
-          fontSize = 18.sp,
-          textAlign = TextAlign.Center,
-          modifier = modifier.weight(0.4f)
         )
       }
     } else {

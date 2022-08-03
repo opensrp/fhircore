@@ -112,7 +112,7 @@ constructor(
    * This function creates a map of resource type against [Resource] from a list of nested
    * [RelatedResourceData].
    *
-   * Example: A list of [RelatedResourceData] with Patient as its resource and two nested
+   * Example: A list of [RelatedResourceData] with Patient as its base resource and two nested
    * [RelatedResourceData] of resource type Condition & CarePlan returns:
    *
    * ```
@@ -227,7 +227,7 @@ constructor(
     )
   }
 
-  override suspend fun loadProfileData(profileId: String, identifier: String): ProfileData? =
+  override suspend fun loadProfileData(registerId: String, resourceId: String): ProfileData? =
     withContext(dispatcherProvider.io()) {
       // TODO return profile data
       null

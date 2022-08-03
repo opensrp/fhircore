@@ -76,7 +76,7 @@ constructor(
         val urlParams =
           NavigationArg.bindArgumentsOf(
             // TODO depending on client type, use relevant health module to load the correct content
-            Pair(NavigationArg.PATIENT_ID, event.patientId),
+            Pair(NavigationArg.RESOURCE_ID, event.patientId),
             Pair(NavigationArg.FAMILY_ID, event.familyId)
           )
         event.navController.navigate(route = MainNavigationScreen.Profile.route + urlParams)

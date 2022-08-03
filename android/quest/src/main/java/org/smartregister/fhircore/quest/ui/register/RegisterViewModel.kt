@@ -145,7 +145,10 @@ constructor(
         )
       is RegisterEvent.OpenProfile -> {
         val urlParams =
-          NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, event.patientId))
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.REGISTER_ID, event.registerId),
+            Pair(NavigationArg.RESOURCE_ID, event.patientId)
+          )
         // TODO conditionally navigate to either family or patient profile
         //        if (event.registerId)
         //          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route +

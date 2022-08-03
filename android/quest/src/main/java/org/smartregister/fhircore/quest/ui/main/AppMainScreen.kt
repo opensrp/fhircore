@@ -163,16 +163,16 @@ private fun AppMainNavigationGraph(
         MainNavigationScreen.Profile ->
           composable(
             route =
-              "${it.route}${
-            routePathsOf(
-              NavigationArg.PATIENT_ID,
-              NavigationArg.FAMILY_ID
-            )
-            }",
-            arguments = patientIdNavArgument()
+              it.route +
+                routePathsOf(
+                  NavigationArg.REGISTER_ID,
+                  NavigationArg.RESOURCE_ID,
+                  NavigationArg.FAMILY_ID
+                ),
+            arguments = resourceIdNavArgument()
           ) { stackEntry ->
-            val profileId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID) ?: ""
-            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID) ?: ""
+            val profileId = stackEntry.arguments?.getString(NavigationArg.REGISTER_ID) ?: ""
+            val patientId = stackEntry.arguments?.getString(NavigationArg.RESOURCE_ID) ?: ""
             val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
             ProfileScreen(
               navController = navController,
@@ -184,12 +184,12 @@ private fun AppMainNavigationGraph(
           }
         MainNavigationScreen.FamilyProfile ->
           composable(
-            route = "${it.route}${routePathsOf(NavigationArg.PATIENT_ID)}",
-            arguments = patientIdNavArgument()
+            route = "${it.route}${routePathsOf(NavigationArg.FAMILY_ID)}",
+            arguments = resourceIdNavArgument()
           ) { stackEntry ->
-            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
+            val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
             FamilyProfileScreen(
-              familyId = patientId,
+              familyId = familyId,
               navController = navController,
               refreshDataState = appMainViewModel.refreshDataState
             )
@@ -199,9 +199,9 @@ private fun AppMainNavigationGraph(
   }
 }
 
-private fun patientIdNavArgument() =
+private fun resourceIdNavArgument() =
   listOf(
-    navArgument(NavigationArg.PATIENT_ID) {
+    navArgument(NavigationArg.RESOURCE_ID) {
       type = NavType.StringType
       nullable = true
       defaultValue = null

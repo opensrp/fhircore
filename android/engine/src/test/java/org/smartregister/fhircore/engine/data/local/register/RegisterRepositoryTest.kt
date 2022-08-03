@@ -225,7 +225,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   fun loadProfileDataIsNotSupportedYet() {
     runBlocking {
       Assert.assertNull(
-        registerRepository.loadProfileData(profileId = "12345", identifier = "485738")
+        registerRepository.loadProfileData(registerId = "12345", resourceId = "485738")
       )
     }
   }

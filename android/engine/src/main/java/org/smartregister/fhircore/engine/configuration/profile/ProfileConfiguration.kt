@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.navigation
+package org.smartregister.fhircore.engine.configuration.profile
 
-object NavigationArg {
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.Configuration
 
-  const val FAMILY_ID = "familyId"
-  const val REGISTER_ID = "registerId"
-  const val FEATURE = "feature"
-  const val SCREEN_TITLE = "screenTitle"
-  const val RESOURCE_ID = "resourceId"
-
-  /** Create route paths */
-  fun routePathsOf(vararg navArg: String): String =
-    "?" + navArg.toList().joinToString("&") { "$it={$it}" }
-
-  /** Bind nav arguments values */
-  fun bindArgumentsOf(vararg navArg: Pair<String, String?>): String =
-    "?" + navArg.joinToString("&") { "${it.first}=${it.second}" }
-}
+@Serializable
+data class ProfileConfiguration(
+  override var appId: String,
+  override var configType: String = ConfigType.Profile.name,
+  val id: String
+) : Configuration()

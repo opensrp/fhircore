@@ -60,7 +60,7 @@ constructor(
   fun fetchPatientProfileData(profileId: String, patientId: String) {
     if (patientId.isNotEmpty()) {
       viewModelScope.launch {
-        registerRepository.loadProfileData(profileId = profileId, identifier = patientId)?.let {
+        registerRepository.loadProfileData(registerId = profileId, resourceId = patientId)?.let {
           patientProfileViewData.value =
             profileViewDataMapper.transformInputToOutputModel(it) as
               ProfileViewData.PatientProfileViewData
@@ -118,7 +118,7 @@ constructor(
           R.id.view_family -> {
             event.familyId?.let { familyId ->
               val urlParams =
-                NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, familyId))
+                NavigationArg.bindArgumentsOf(Pair(NavigationArg.RESOURCE_ID, familyId))
               event.navController.navigate(
                 route = MainNavigationScreen.FamilyProfile.route + urlParams
               )

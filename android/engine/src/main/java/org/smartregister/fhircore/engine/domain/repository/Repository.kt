@@ -27,5 +27,5 @@ interface Repository {
   suspend fun countRegisterData(registerId: String): Long
 
   /** This function returns data displayed on the users profile */
-  suspend fun loadProfileData(profileId: String, identifier: String): ProfileData?
+  suspend fun loadProfileData(registerId: String, resourceId: String): ProfileData?
 }
