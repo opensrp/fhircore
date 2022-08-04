@@ -48,24 +48,28 @@ class HivFormQuestionnaireActivity : QuestionnaireActivity() {
     viewModel.fetch(profileId)
   }
 
-  //  override fun populateInitialValues(questionnaire: Questionnaire) {
-  //    //    initialResource: Array<Resource>
-  //    //  ) {
+  //  override fun populateInitialValues(
+  //    questionnaire: Questionnaire,
+  //    initialResource: Array<Resource>
+  //  ) {
   //
-  //    val binaryItems = initialResource.filterIsInstance<Binary>()
-  //    val targetResource = binaryItems[0]
-  //    val carePlan: CarePlan = targetResource.asCarePlanResource()
-  //    println("careplan-id===" + carePlan.id)
-  //    //    val resourceList: ArrayList<CarePlan> =  (binaryItems as
-  //    // ArrayList<Binary>).asCarePlanResource()
-  //    if (initialResource.isNotEmpty() && questionnaireConfig.form == VIRAL_LOAD_RESULTS_FORM ||
-  //        questionnaireConfig.form == HIV_TEST_AND_RESULTS_FORM ||
-  //        questionnaireConfig.form == HIV_TEST_AND_NEXT_APPOINTMENT_FORM
-  //    ) {
-  //      questionnaire.find(CARE_PLAN_ID_KEY)!!.initialFirstRep.value = StringType(carePlan.id)
+  //    val carePlanItems = initialResource.filterIsInstance<CarePlan>()
+  //    if (carePlanItems.isNotEmpty() ) {
+  //      val targetResource = carePlanItems[0]
+  //
+  //      val carePlan: CarePlan = targetResource //.asCarePlanResource()
+  //      println("careplan-id===" + carePlan.id)
+  //      //    val resourceList: ArrayList<CarePlan> =  (binaryItems as
+  //      // ArrayList<Binary>).asCarePlanResource()
+  //      if (initialResource.isNotEmpty() && questionnaireConfig.form == VIRAL_LOAD_RESULTS_FORM ||
+  //              questionnaireConfig.form == HIV_TEST_AND_RESULTS_FORM ||
+  //              questionnaireConfig.form == HIV_TEST_AND_NEXT_APPOINTMENT_FORM
+  //      ) {
+  //        questionnaire.find(CARE_PLAN_ID_KEY)!!.initialFirstRep.value = StringType(carePlan.id)
+  //      }
+  //      //      super.populateInitialValues(questionnaire)
   //    }
-  //    super.populateInitialValues(questionnaire)
-  //    //    super.populateInitialValues(questionnaire, initialResource)
+  //    super.populateInitialValues(questionnaire, initialResource)
   //  }
 
   //  @OptIn(ExperimentalMaterialApi::class)

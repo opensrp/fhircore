@@ -121,7 +121,7 @@ fun PatientProfileScreen(
                       it.id,
                       profileViewData.logicalId,
                       familyId,
-                      carePlans = profileViewData.carePlans as ArrayList<CarePlan>,
+                      carePlans = profileViewData.carePlans,
                       patientConditions = profileViewData.conditions
                     )
                   )

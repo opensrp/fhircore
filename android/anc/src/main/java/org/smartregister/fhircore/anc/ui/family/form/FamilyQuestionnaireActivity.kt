@@ -25,7 +25,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
@@ -75,10 +74,11 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     )
   }
 
-  override fun populateInitialValues(
-    questionnaire: Questionnaire,
-    initialResource: Array<Resource>
-  ) {
+  override fun populateInitialValues(questionnaire: Questionnaire) {
+    //  override fun populateInitialValues(
+    //    questionnaire: Questionnaire,
+    //    initialResource: Array<Resource>
+    //  ) {
     if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
       questionnaire.find(HEAD_RECORD_ID_KEY)!!.initialFirstRep.value =
         StringType(intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!)

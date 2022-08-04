@@ -130,12 +130,7 @@ constructor(
             subjectParam = Task.SUBJECT
           )
           .sortedBy { it.executionPeriod.start.time },
-      services =
-        defaultRepository.searchResourceFor<CarePlan>(
-          subjectId = resourceId,
-          subjectType = ResourceType.Patient,
-          subjectParam = CarePlan.SUBJECT
-        ),
+      services = patient.activeCarePlans(),
       conditions = patient.activeConditions()
     )
   }
@@ -162,6 +157,18 @@ constructor(
       subjectId = patientId,
       subjectParam = Condition.SUBJECT,
       subjectType = ResourceType.Patient
+    )
+
+  internal suspend fun Patient.activeCarePlans() =
+    patientCarePlan(this.logicalId).filter { carePlan ->
+      carePlan.status.equals(CarePlan.CarePlanStatus.ACTIVE)
+    }
+
+  internal suspend fun patientCarePlan(patientId: String) =
+    defaultRepository.searchResourceFor<CarePlan>(
+      subjectId = patientId,
+      subjectType = ResourceType.Patient,
+      subjectParam = CarePlan.SUBJECT
     )
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
