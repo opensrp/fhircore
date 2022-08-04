@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.navigation
 
+import androidx.compose.ui.graphics.Color
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
@@ -23,6 +24,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -92,5 +94,28 @@ class OverflowMenuFactoryTest : RobolectricTest() {
       }
     Assert.assertTrue(newlyDiagnosedClientVisitMenuItem.hidden)
     Assert.assertTrue(artClientClientVisitMenuItem.hidden)
+  }
+
+  @Test
+  fun `first newly_diagnosed_profile menuitem should be client_visit`() {
+    val firstMenuItem =
+      overflowMenuFactory
+        .retrieveOverflowMenuItems(OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE)
+        .first()
+    Assert.assertEquals(
+      OverflowMenuItem(R.id.client_visit, R.string.client_visit).apply { hidden = true },
+      firstMenuItem
+    )
+  }
+
+  @Test
+  fun testOverflowMenuItemConstructor() {
+    val overflowItem =
+      OverflowMenuItem(R.id.client_visit, R.string.client_visit).apply { hidden = true }
+    Assert.assertEquals(R.id.client_visit, overflowItem.id)
+    Assert.assertEquals(R.string.client_visit, overflowItem.titleResource)
+    Assert.assertEquals(false, overflowItem.confirmAction)
+    Assert.assertEquals(true, overflowItem.hidden)
+    Assert.assertEquals(Color.Black.copy(alpha = 0.7f), overflowItem.titleColor)
   }
 }

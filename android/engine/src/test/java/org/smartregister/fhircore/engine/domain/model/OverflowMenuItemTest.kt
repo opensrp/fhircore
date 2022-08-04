@@ -16,13 +16,23 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-import androidx.compose.ui.graphics.Color
+import org.junit.Assert
+import org.junit.Test
+import org.smartregister.fhircore.engine.R
 
-data class OverflowMenuItem(
-  val id: Int,
-  val titleResource: Int,
-  val confirmAction: Boolean = false,
-  val titleColor: Color = Color.Black.copy(alpha = 0.7f)
-) {
-  var hidden: Boolean = false
+class OverflowMenuItemTest {
+
+  @Test
+  fun `default OverflowMenuItem hidden state false`() {
+    val overflowMenuItem = OverflowMenuItem(R.id.menu_item_logout, R.string.logout)
+    Assert.assertFalse(overflowMenuItem.hidden)
+  }
+
+  @Test
+  fun `setHidden updates hidden`() {
+    val overflowMenuItem = OverflowMenuItem(R.id.menu_item_logout, R.string.logout)
+    Assert.assertFalse(overflowMenuItem.hidden)
+    overflowMenuItem.hidden = true
+    Assert.assertTrue(overflowMenuItem.hidden)
+  }
 }
