@@ -42,6 +42,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.patient.remove.HivFormQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.patient.remove.HivPatientQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
@@ -152,21 +153,21 @@ constructor(
               questionnaireType = QuestionnaireType.DEFAULT
             )
           R.id.viral_load_results ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            event.context.launchQuestionnaire<HivFormQuestionnaireActivity>(
               questionnaireId = VIRAL_LOAD_RESULTS_FORM,
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = event.getActiveCarePlans().asBaseResources()
             )
           R.id.hiv_test_and_results ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            event.context.launchQuestionnaire<HivFormQuestionnaireActivity>(
               questionnaireId = HIV_TEST_AND_RESULTS_FORM,
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = event.getActiveCarePlans().asBaseResources()
             )
           R.id.hiv_test_and_next_appointment ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            event.context.launchQuestionnaire<HivFormQuestionnaireActivity>(
               questionnaireId = HIV_TEST_AND_NEXT_APPOINTMENT_FORM,
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
@@ -181,7 +182,7 @@ constructor(
         }
       }
       is PatientProfileEvent.OpenTaskForm ->
-        event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
+        event.context.launchQuestionnaireForResult<HivFormQuestionnaireActivity>(
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,
           backReference = event.taskId.asReference(ResourceType.Task).reference,

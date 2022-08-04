@@ -271,3 +271,23 @@ fun ArrayList<Resource>.asCarePlanDomainResource(): ArrayList<CarePlan> {
   }
   return list
 }
+
+fun Binary.asCarePlanResource(): CarePlan {
+  val tempBinary = this
+  val tempStringJson = tempBinary.data.decodeToString()
+  println(tempStringJson)
+  val temp = fhirR4JsonParser.parseResource(tempStringJson) as CarePlan
+  return temp
+}
+
+fun ArrayList<Binary>.asCarePlanResource(): ArrayList<CarePlan> {
+  val list = ArrayList<CarePlan>()
+  this.forEach() { resource ->
+    val tempBinary = resource as Binary
+    val tempStringJson = tempBinary.data.decodeToString()
+    println(tempStringJson)
+    val temp = fhirR4JsonParser.parseResource(tempStringJson) as CarePlan
+    list.add(temp)
+  }
+  return list
+}
