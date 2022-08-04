@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.robolectric
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import org.robolectric.Shadows
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
@@ -26,4 +28,8 @@ import org.robolectric.annotation.Implements
 class AccountManagerShadow : Shadows() {
 
   @Implementation fun notifyAccountAuthenticated(account: Account) = true
+
+  @Implementation
+  fun getAccounts(): Array<Account> =
+    arrayOf(Account("demo", ApplicationProvider.getApplicationContext<Application>().packageName))
 }

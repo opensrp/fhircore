@@ -50,8 +50,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -124,22 +123,19 @@ constructor(
       this.url = this.url ?: this.referenceValue()
     }
 
-  suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
+  suspend fun getQuestionnaireConfig(
+    questionnaireId: String,
+    context: Context
+  ): QuestionnaireConfig {
     val loadConfig =
       loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    questionnaireConfig = loadConfig!!.first { it.form == form || it.identifier == form }
+    questionnaireConfig = loadConfig!!.first { it.id == questionnaireId }
     return questionnaireConfig
   }
 
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
-    return kotlin
-      .runCatching {
-        configurationRegistry.retrieveConfiguration<FormConfiguration>(
-          AppConfigClassification.FORMS
-        )
-      }
-      .getOrNull()
-      ?.forms
+    // TODO form configs are no longer loaded separately fix this
+    return null
   }
 
   private suspend fun loadQuestionnaireConfigFromAssets(
@@ -171,6 +167,7 @@ constructor(
 
       if (resource is Patient) resource.managingOrganization = organizationRef
       else if (resource is Group) resource.managingEntity = organizationRef
+      else if (resource is Encounter) resource.serviceProvider = organizationRef
     }
   }
 
@@ -214,7 +211,18 @@ constructor(
     questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
     questionnaire: Questionnaire
   ) {
+    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
+
+    if (questionnaireResponse.logicalId.isEmpty()) {
+      questionnaireResponse.id = UUID.randomUUID().toString()
+      questionnaireResponse.authored = Date()
+    }
+
     viewModelScope.launch(dispatcherProvider.io()) {
+      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+        it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
+      }
+
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
@@ -224,15 +232,15 @@ constructor(
         bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-            if (questionnaireConfig.setOrganizationDetails) {
-              appendOrganizationInfo(bundleEntry.resource)
-            }
             // if it is new registration set response subject
             if (resourceId == null)
               questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
+          }
+          if (questionnaireConfig.setOrganizationDetails) {
+            appendOrganizationInfo(bundleEntry.resource)
           }
 
           if (questionnaireType != QuestionnaireType.EDIT &&
@@ -302,7 +310,7 @@ constructor(
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
 
-    questionnaireConfig.planDefinitions.forEach { planId ->
+    questionnaireConfig.planDefinitions?.forEach { planId ->
       val data =
         Bundle().apply {
           bundle?.entry?.map { this.addEntry(it) }
@@ -372,17 +380,6 @@ constructor(
 
     questionnaireResponse.assertSubject() // should not allow further flow without subject
 
-    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
-
-    if (questionnaireResponse.logicalId.isEmpty()) {
-      questionnaireResponse.id = UUID.randomUUID().toString()
-      questionnaireResponse.authored = Date()
-    }
-
-    questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-      it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
-    }
-
     defaultRepository.addOrUpdate(questionnaireResponse)
   }
 
@@ -424,8 +421,12 @@ constructor(
     return defaultRepository.loadResource(patientId)
   }
 
-  suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
-    return defaultRepository.loadRelatedPersons(patientId)
+  suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson> {
+    return defaultRepository.searchResourceFor(
+      token = RelatedPerson.RES_ID,
+      subjectType = ResourceType.RelatedPerson,
+      subjectId = patientId
+    )
   }
 
   fun saveResource(resource: Resource) {

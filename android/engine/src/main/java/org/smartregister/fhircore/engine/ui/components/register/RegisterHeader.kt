@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.components.register
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -27,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
+import org.smartregister.fhircore.engine.ui.theme.SearchHeaderColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val SEARCH_HEADER_TEXT_TAG = "searchHeaderTestTag"
@@ -39,7 +41,8 @@ fun RegisterHeader(modifier: Modifier = Modifier, resultCount: Int) {
     modifier =
       modifier
         .testTag(SEARCH_HEADER_TEXT_TAG)
-        .padding(horizontal = 16.dp, vertical = 8.dp)
+        .background(SearchHeaderColor)
+        .padding(horizontal = 16.dp, vertical = 16.dp)
         .fillMaxWidth()
   )
 }

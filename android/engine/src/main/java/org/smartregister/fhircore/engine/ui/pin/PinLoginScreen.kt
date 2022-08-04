@@ -66,7 +66,6 @@ import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val PIN_TOOLBAR_MENU = "toolbarMenuTag"
@@ -83,14 +82,15 @@ const val PIN_SET_PIN_CONFIRM_BUTTON = "setPinConfirmButton"
 fun PinLoginScreen(viewModel: PinViewModel) {
 
   val showError by viewModel.showError.observeAsState(initial = false)
+  val pinUiState by remember { mutableStateOf(viewModel.pinUiState.value) }
 
   PinLoginPage(
     onPinChanged = viewModel::onPinChanged,
     showError = showError,
-    enterUserPinMessage = viewModel.enterUserLoginMessage,
-    onMenuLoginClicked = { viewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
+    enterUserPinMessage = pinUiState.enterUserLoginMessage,
+    onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
     forgotPin = viewModel::forgotPin,
-    appName = viewModel.appName,
+    appName = pinUiState.appName,
   )
 }
 

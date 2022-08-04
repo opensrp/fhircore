@@ -64,7 +64,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
   @Test
   fun `getP2PDataTypes() returns correct list of datatypes`() {
     val actualDataTypes = p2PSenderTransferDao.getDataTypes()
-    Assert.assertEquals(6, actualDataTypes.size)
+    Assert.assertEquals(9, actualDataTypes.size)
     Assert.assertTrue(
       actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
     )
@@ -104,7 +104,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
     val actualPatient: Patient =
       jsonParser.parseResource(actualJsonData!!.getJsonArray()!!.get(0).toString()) as Patient
 
-    Assert.assertEquals(currentDate.time, actualJsonData!!.getHighestRecordId())
+    Assert.assertEquals(currentDate.time, actualJsonData.getHighestRecordId())
     Assert.assertEquals(expectedPatient.logicalId, actualPatient.logicalId)
     Assert.assertEquals(expectedPatient.birthDate, actualPatient.birthDate)
     Assert.assertEquals(expectedPatient.gender, actualPatient.gender)
@@ -143,7 +143,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
   }
 
   fun `getTotalRecordCount() calls countTotalRecordsForSync()`() {
-    var highestRecordIdMap: HashMap<String, Long> = HashMap()
+    val highestRecordIdMap: HashMap<String, Long> = HashMap()
     highestRecordIdMap.put("Patient", 25)
 
     runBlocking { p2PSenderTransferDao.countTotalRecordsForSync(highestRecordIdMap) }

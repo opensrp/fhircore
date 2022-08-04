@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import org.hl7.fhir.r4.model.Task
 
 data class PatientProfileRowItem(
-  val id: String,
+  val logicalId: String,
   val actionFormId: String? = null,
   val startIcon: Int? = null,
   val startIconBackgroundColor: Color? = null,

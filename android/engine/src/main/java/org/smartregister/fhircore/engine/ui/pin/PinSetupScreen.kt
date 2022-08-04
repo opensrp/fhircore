@@ -59,7 +59,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
 import org.smartregister.fhircore.engine.ui.components.PinView
 import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
@@ -74,7 +73,7 @@ fun PinSetupScreen(viewModel: PinViewModel) {
     setPinEnabled = enableSetPin ?: false,
     onPinConfirmed = viewModel::onPinConfirmed,
     onMenuSettingClicked = { viewModel.onMenuSettingClicked() },
-    onMenuLoginClicked = { viewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP) },
+    onMenuLoginClicked = { viewModel.onMenuLoginClicked() },
   )
 }
 

@@ -80,6 +80,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -123,7 +124,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider))
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
-    every { configurationRegistry.appId } returns "appId"
+    sharedPreferencesHelper.write(APP_ID_KEY, "appId")
 
     questionnaireViewModel =
       spyk(
@@ -351,9 +352,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val result = runBlocking {
       questionnaireViewModel.getQuestionnaireConfig("patient-registration", context)
     }
-    Assert.assertEquals("patient-registration", result.form)
+    Assert.assertEquals("patient-registration", result.id)
     Assert.assertEquals("Add Patient", result.title)
-    Assert.assertEquals("207", result.identifier)
+    Assert.assertEquals("Submit", result.saveButtonText)
   }
 
   @Test
@@ -543,17 +544,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
       }
 
-    coEvery { defaultRepo.loadRelatedPersons("1") } returns listOf(relatedPerson)
+    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns listOf(relatedPerson)
 
     runBlocking {
       val list = questionnaireViewModel.loadRelatedPerson("1")
-      Assert.assertEquals(1, list?.size)
-      val result = list?.get(0)
+      Assert.assertEquals(1, list.size)
+      val result = list.first()
       Assert.assertEquals(
         relatedPerson.name.first().given.first().value,
-        result?.name?.first()?.given?.first()?.value
+        result.name?.first()?.given?.first()?.value
       )
-      Assert.assertEquals(relatedPerson.name.first().family, result?.name?.first()?.family)
+      Assert.assertEquals(relatedPerson.name.first().family, result.name?.first()?.family)
     }
   }
 
@@ -568,8 +569,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testGetPopulationResourcesShouldReturnListOfResources() {
 
     coEvery { questionnaireViewModel.loadPatient("2") } returns Patient().apply { id = "2" }
-    coEvery { defaultRepo.loadRelatedPersons("2") } returns
-      listOf(RelatedPerson().apply { id = "3" })
+    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+      listOf(RelatedPerson().apply { id = "2" })
 
     val intent = Intent()
     intent.putStringArrayListExtra(
@@ -643,7 +644,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveQuestionnaireResponseShouldAddIdAndAuthoredWhenQuestionnaireResponseDoesNotHaveId() {
+  fun testExtractQuestionnaireResponseShouldAddIdAndAuthoredWhenQuestionnaireResponseDoesNotHaveId() {
 
     val questionnaire = Questionnaire().apply { id = "qId" }
     val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
@@ -653,7 +654,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertNull(questionnaireResponse.authored)
 
     runBlocking {
-      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+      questionnaireViewModel.extractAndSaveResources(
+        context,
+        "abc",
+        "cde",
+        questionnaireResponse,
+        QuestionnaireType.EDIT,
+        questionnaire
+      )
     }
 
     Assert.assertNotNull(questionnaireResponse.id)
@@ -661,7 +669,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveQuestionnaireResponseShouldRetainIdAndAuthoredWhenQuestionnaireResponseHasId() {
+  fun testExtractQuestionnaireResponseShouldRetainIdAndAuthoredWhenQuestionnaireResponseHasId() {
 
     val authoredDate = Date()
     val questionnaire = Questionnaire().apply { id = "qId" }
@@ -674,7 +682,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
     runBlocking {
-      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+      questionnaireViewModel.extractAndSaveResources(
+        context,
+        "abc",
+        "cde",
+        questionnaireResponse,
+        QuestionnaireType.EDIT,
+        questionnaire
+      )
     }
 
     Assert.assertEquals("qrId", questionnaireResponse.id)

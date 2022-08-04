@@ -32,46 +32,43 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.engine.configuration.view.MeasureReportRowConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
 
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun MeasureReportRowPreview() {
-  val measureReportRowData =
-    MeasureReportRowConfig(
-      id = "fid",
-      title = "4+ ANC Contacts ",
-      description = "Pregnant women with at least four ANC Contacts",
-      reportType = "4"
-    )
-  MeasureReportRow(measureReportRowData = measureReportRowData, onRowClick = {})
-}
+const val MEASURE_ROW_TITLE_TEST_TAG = "measureRowTitleTestTag"
+const val MEASURE_ROW_DESCRIPTION_TEST_TAG = "measureRowDescriptionTestTag"
+const val MEASURE_ROW_FORWARD_ARROW_TEST_TAG = "measureRowForwardArrowTestTag"
+const val MEASURE_ROW_TEST_TAG = "measureRowTestTag"
 
 @Composable
 fun MeasureReportRow(
-  measureReportRowData: MeasureReportRowConfig,
+  measureReportConfig: MeasureReportConfig,
   onRowClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.clickable { onRowClick() }.fillMaxWidth().height(IntrinsicSize.Min)
+    modifier =
+      modifier
+        .clickable { onRowClick() }
+        .fillMaxWidth()
+        .height(IntrinsicSize.Min)
+        .testTag(MEASURE_ROW_TEST_TAG)
   ) {
     Column(modifier = modifier.padding(16.dp).weight(0.70f)) {
       Text(
-        text = measureReportRowData.title,
+        text = measureReportConfig.title,
         fontSize = 18.sp,
-        modifier = modifier.wrapContentWidth()
+        modifier = modifier.wrapContentWidth().testTag(MEASURE_ROW_TITLE_TEST_TAG)
       )
       Spacer(modifier = modifier.height(8.dp))
       Row(
@@ -80,9 +77,9 @@ fun MeasureReportRow(
       ) {
         Text(
           color = SubtitleTextColor,
-          text = measureReportRowData.description,
+          text = measureReportConfig.description,
           fontSize = 14.sp,
-          modifier = modifier.wrapContentWidth()
+          modifier = modifier.wrapContentWidth().testTag(MEASURE_ROW_DESCRIPTION_TEST_TAG)
         )
       }
     }
@@ -90,7 +87,20 @@ fun MeasureReportRow(
       painter = painterResource(id = R.drawable.ic_forward_arrow),
       contentDescription = "",
       colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray)),
-      modifier = Modifier.padding(end = 12.dp)
+      modifier = Modifier.padding(end = 12.dp).testTag(MEASURE_ROW_FORWARD_ARROW_TEST_TAG)
     )
   }
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun MeasureReportRowPreview() {
+  val measureReportConfig =
+    MeasureReportConfig(
+      id = "1",
+      title = "4+ ANC Contacts ",
+      description = "Pregnant women with at least four ANC Contacts",
+    )
+  MeasureReportRow(measureReportConfig = measureReportConfig, onRowClick = {})
 }

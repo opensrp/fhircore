@@ -36,7 +36,9 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 class PinLoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   val pinViewModel by viewModels<PinViewModel>()
@@ -48,11 +50,12 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     pinViewModel.apply {
-      if (configurationRegistry.isAppIdInitialized()) {
-        loadData(isSetup = false)
-      }
+      setPinUiState(isSetup = false)
       val pinLoginActivity = this@PinLoginActivity
-      navigateToHome.observe(pinLoginActivity) { pinLoginActivity.moveToHome() }
+      navigateToHome.observe(pinLoginActivity) {
+        loginService.navigateToHome()
+        syncBroadcaster.get().runSync()
+      }
       launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
       navigateToLogin.observe(pinLoginActivity) { pinLoginActivity.moveToLoginViaUsername() }
     }
@@ -61,12 +64,6 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
 
   private fun launchDialPad(phone: String) {
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
-  }
-
-  private fun moveToHome() {
-    configurationRegistry.fetchNonWorkflowConfigResources()
-    syncBroadcaster.get().runSync()
-    loginService.navigateToHome()
   }
 
   private fun moveToLoginViaUsername() {

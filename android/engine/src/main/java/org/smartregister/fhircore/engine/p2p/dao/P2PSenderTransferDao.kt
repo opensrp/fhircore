@@ -24,6 +24,7 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
@@ -48,13 +49,11 @@ constructor(
     Timber.e("Last updated at value is $lastUpdated")
     var highestRecordId = lastUpdated
 
-    val records =
-      runBlocking {
-        resourceClassType(dataType)?.let { classType ->
-          loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize, classType)
-        }
+    val records = runBlocking {
+      dataType.name.resourceClassType().let { classType ->
+        loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize, classType)
       }
-        ?: listOf()
+    }
 
     Timber.e("Fetching resources from base dao of type  $dataType.name")
     highestRecordId =

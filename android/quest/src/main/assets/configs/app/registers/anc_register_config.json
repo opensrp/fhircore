@@ -1,0 +1,99 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "ancRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Condition",
+      "dataQueries": [
+        {
+          "id": "ancQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "77386006"
+          }
+        },
+        {
+          "id": "ancQueryByClinicalStatus",
+          "filterType": "TOKEN",
+          "key": "clinical-status",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+            "code": "active"
+          }
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "Patient",
+        "fhirPathExpression": "Condition.subject",
+        "relatedResources": [
+          {
+            "resource": "CarePlan",
+            "searchParameter": "subject"
+          }
+        ]
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "Search by name",
+    "computedRules": [
+      "patientName", "patientId"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "patientName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientName', fhirPath.extractValue(Patient.get(0), \"Patient.name.select(given + ' ' + family)\"))"
+        ]
+      },
+      {
+        "name": "patientId",
+        "condition": "true",
+        "actions": [
+          "data.put('patientId', fhirPath.extractValue(Patient.get(0), 'Patient.identifier[0].value'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{patientName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "ID: @{patientId}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              }
+            ],
+            "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": true,
+              "text": "ANC Visit",
+              "status": "DUE",
+              "smallSized": true
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

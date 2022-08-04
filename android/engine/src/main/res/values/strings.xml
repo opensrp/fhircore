@@ -49,7 +49,8 @@
     <string name="syncing_retry">Retry sync</string>
     <string name="syncing_in_progress">Sync in progress</string>
     <string name="loading">Loading</string>
-    <string name="error_contacting_server">Error contacting server. Error code %1$s</string>
+    <string name="error_logging_out">Logout error message: %1$s</string>
+    <string name="cannot_logout_user">Unable to logout. Check if device is offline.</string>
     <string name="error_loading_config">Error loading configuration. Details: %1$s</string>
     <string name="error_loading_form">Error loading form</string>
     <string name="error_saving_form">Error encountered cannot save form</string>
@@ -98,7 +99,7 @@
     <string name="application_not_supported">Application %1$s not found</string>
     <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">username or password is invalid</string>
-    <string name="invalid_form_id">"Invalid form id attached"</string>
+    <string name="invalid_form_id">Invalid form ID attached</string>
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="required_constraint_validation_error_msg">There is no response to the required field.</string>
@@ -110,16 +111,19 @@
     <string name="pin_menu_login">Login</string>
     <string name="forgot_pin">Forgot pin?</string>
     <string name="please_contact_supervisor">Please contact your supervisor.</string>
-    <string name="percentage">%</string>
-    <string name="logging_out">Please wait.... Logging out</string>
+    <string name="percentage" translatable="false">%</string>
+    <string name="logging_out">Please wait... Logging out</string>
     <string name="session_expired">Session has been expired and must login again</string>
     <string name="sex">Sex</string>
     <string name="age">Age</string>
     <string name="dob">DOB</string>
-    <string name="id">ID: %1$s</string>
+    <string name="id" translatable="false">ID: %1$s</string>
     <string name="see_all">SEE ALL</string>
     <string name="forms">FORMS</string>
     <string name="medical_history">MEDICAL HISTORY</string>
     <string name="upcoming_services">UPCOMING SERVICES</string>
     <string name="service_card">SERVICE CARD</string>
+    <string name="other_patients">Other patients</string>
+    <string name="responses">RESPONSES (%1$s)</string>
+    <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
 </resources>

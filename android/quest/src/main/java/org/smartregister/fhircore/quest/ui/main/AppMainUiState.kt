@@ -17,8 +17,8 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import java.util.Locale
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
-import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 
 data class AppMainUiState(
   val appTitle: String,
@@ -26,9 +26,8 @@ data class AppMainUiState(
   val lastSyncTime: String,
   val currentLanguage: String,
   val languages: List<Language>,
-  val sideMenuOptions: List<SideMenuOption>,
-  val enableDeviceToDeviceSync: Boolean = false,
-  val enableReports: Boolean = false
+  val navigationConfiguration: NavigationConfiguration,
+  val registerCountMap: Map<String, Long> = emptyMap()
 )
 
 fun appMainUiStateOf(
@@ -37,9 +36,8 @@ fun appMainUiStateOf(
   lastSyncTime: String = "",
   currentLanguage: String = Locale.ENGLISH.displayName,
   languages: List<Language> = emptyList(),
-  sideMenuOptions: List<SideMenuOption> = emptyList(),
-  enableDeviceToDeviceSync: Boolean = false,
-  enableReports: Boolean = false
+  navigationConfiguration: NavigationConfiguration,
+  registerCountMap: Map<String, Long> = emptyMap()
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,
@@ -47,8 +45,7 @@ fun appMainUiStateOf(
     lastSyncTime = lastSyncTime,
     currentLanguage = currentLanguage,
     languages = languages,
-    sideMenuOptions = sideMenuOptions,
-    enableDeviceToDeviceSync = enableDeviceToDeviceSync,
-    enableReports = enableReports
+    navigationConfiguration = navigationConfiguration,
+    registerCountMap = registerCountMap
   )
 }

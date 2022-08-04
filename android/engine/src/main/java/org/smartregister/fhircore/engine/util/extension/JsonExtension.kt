@@ -24,12 +24,13 @@ val json = Json {
   encodeDefaults = true
   ignoreUnknownKeys = true
   isLenient = true
+  useAlternativeNames = true
 }
 
 /** Decode string to an entity of type [T] */
-inline fun <reified T> String.decodeJson(jsonSerializer: Json? = null): T =
-  jsonSerializer?.decodeFromString(this) ?: json.decodeFromString(this)
+inline fun <reified T> String.decodeJson(jsonInstance: Json? = null): T =
+  jsonInstance?.decodeFromString(this) ?: json.decodeFromString(this)
 
 /** Encode the type [T] into a Json string */
-inline fun <reified T> T.encodeJson(jsonSerializer: Json? = null): String =
-  jsonSerializer?.encodeToString(this) ?: json.encodeToString(this)
+inline fun <reified T> T.encodeJson(jsonInstance: Json? = null): String =
+  jsonInstance?.encodeToString(this) ?: json.encodeToString(this)

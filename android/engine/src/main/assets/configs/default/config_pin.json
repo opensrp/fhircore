@@ -1,8 +1,0 @@
-{
-  "appId": "default",
-  "classification": "pin",
-  "applicationName": "Sample App",
-  "appLogoIconResourceFile": "ic_launcher",
-  "enablePin": true,
-  "showLogo": true
-}

@@ -35,8 +35,9 @@ import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -60,7 +61,8 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
   val sharedPreferences: SharedPreferencesHelper,
-  val fhirResourceDataSource: FhirResourceDataSource
+  val fhirResourceDataSource: FhirResourceDataSource,
+  val configurationRegistry: ConfigurationRegistry
 ) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -131,7 +133,7 @@ constructor(
       override fun handleFailure(call: Call<OAuthResponse>, throwable: Throwable) {
         Timber.e(throwable.stackTraceToString())
         if (attemptLocalLogin()) {
-          _navigateToHome.postValue(true)
+          _navigateToHome.value = true
           _showProgressBar.postValue(false)
           return
         }
@@ -160,9 +162,9 @@ constructor(
   val showProgressBar
     get() = _showProgressBar
 
-  private val _loginViewConfiguration = MutableLiveData(loginViewConfigurationOf())
-  val loginViewConfiguration: LiveData<LoginViewConfiguration>
-    get() = _loginViewConfiguration
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
 
   fun fetchLoggedInPractitioner(userInfo: UserInfo) {
     if (!userInfo.keycloakUuid.isNullOrEmpty() &&
@@ -213,10 +215,6 @@ constructor(
     }
   }
 
-  fun updateViewConfigurations(registerViewConfiguration: LoginViewConfiguration) {
-    _loginViewConfiguration.value = registerViewConfiguration
-  }
-
   fun onUsernameUpdated(username: String) {
     _loginErrorState.postValue(null)
     _username.postValue(username)
@@ -240,9 +238,18 @@ constructor(
     if (!username.value.isNullOrBlank() && !password.value.isNullOrBlank()) {
       _loginErrorState.postValue(null)
       _showProgressBar.postValue(true)
-      accountAuthenticator
-        .fetchToken(username.value!!.trim(), password.value!!.trim().toCharArray())
-        .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})
+
+      // For subsequent logins only allow previously logged in accounts
+      accountAuthenticator.run {
+        val trimmedUsername = username.value!!.trim()
+        if (validatePreviousLogin(trimmedUsername)) {
+          fetchToken(trimmedUsername, password.value!!.trim().toCharArray())
+            .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})
+        } else {
+          _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+          _showProgressBar.postValue(false)
+        }
+      }
     }
   }
 
@@ -253,7 +260,6 @@ constructor(
 
   @TestOnly
   fun navigateToHome(navigateHome: Boolean = true) {
-    _navigateToHome.value = navigateHome
     _navigateToHome.postValue(navigateHome)
   }
 

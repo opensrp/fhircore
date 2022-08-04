@@ -16,8 +16,8 @@
     <string name="no_test_results_found">No test results found</string>
     <string name="patient_test_results">TEST RESULTS</string>
     <string name="last_test"> Last Test - %1$s</string>
-    <string name="sample_distance">2.4 km</string>
-    <string name="hash_sign">#</string>
+    <string name="sample_distance" translatable="false">2.4 km</string>
+    <string name="hash_sign" translatable="false">#</string>
     <string name="menu_tasks">Tasks</string>
     <string name="household">Household</string>
     <string name="routine_visit">Routine visit</string>
@@ -56,11 +56,9 @@
 
     <!--remove family questionnaire strings-->
     <string name="remove_family_warning">Removing %1$s will remove their entire health record from your device. This action can’t be undone.</string>
-    <string name="confirm_remove_family_title">Remove Family</string>
 
     <!--remove family member questionnaire strings-->
     <string name="remove_family_member_warning">%1$s will be removed permanently from this family. This action can’t be undone.</string>
-    <string name="confirm_remove_family_member_title">Remove member</string>
     <string name="remove_member">Remove member</string>
 
     <!--Reporting strings -->
@@ -76,7 +74,6 @@
     <string name="end_date">End date</string>
     <string name="select_date">Select dates</string>
 
-
     <!--Change family head strings -->
     <string name="no_eligible_family_members">No eligible family members found for family head.</string>
     <string name="label_select_new_head">Select a new family head</string>
@@ -90,6 +87,8 @@
     <string name="visit_overdue">%1$s overdue %2$s ago</string>
     <string name="record_as_anc">Record as ANC</string>
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
+    <string name="registers">Registers</string>
 
+    <string name="questionnaire_response_name">%1$s (%2$s)</string>
 
 </resources>

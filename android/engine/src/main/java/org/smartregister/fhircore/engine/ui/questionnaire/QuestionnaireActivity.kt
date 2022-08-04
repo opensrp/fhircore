@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -138,7 +139,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     supportActionBar?.apply {
       setDisplayHomeAsUpEnabled(true)
-      title = questionnaireViewModel.questionnaireConfig.title
+      title =
+        if (questionnaireType.isEditMode())
+          "${getString(R.string.edit)} ${questionnaireViewModel.questionnaireConfig.title}"
+        else questionnaireViewModel.questionnaireConfig.title
     }
   }
 
@@ -185,20 +189,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         val questionnaireConfig =
           questionnaireViewModel.getQuestionnaireConfig(formName, this@QuestionnaireActivity)
         questionnaire =
-          questionnaireViewModel.loadQuestionnaire(
-            questionnaireConfig.identifier,
-            questionnaireType
-          )!!
+          questionnaireViewModel.loadQuestionnaire(questionnaireConfig.id, questionnaireType)!!
       }
       .onFailure {
         // load questionnaire from db and build config
         questionnaire = questionnaireViewModel.loadQuestionnaire(formName, questionnaireType)!!
         questionnaireViewModel.questionnaireConfig =
-          QuestionnaireConfig(
-            form = questionnaire.name ?: "",
-            title = questionnaire.title ?: "",
-            identifier = questionnaire.logicalId
-          )
+          QuestionnaireConfig(title = questionnaire.title ?: "", id = questionnaire.logicalId)
       }
       .also { populateInitialValues(questionnaire) }
 
@@ -222,7 +219,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
-        loadQuestionnaireAndConfig(questionnaireViewModel.questionnaireConfig.identifier)
+        loadQuestionnaireAndConfig(questionnaireViewModel.questionnaireConfig.id)
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
         withContext(dispatcherProvider.main()) {
@@ -384,7 +381,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_GROUP_KEY = "questionnaire_group_item_id"
-    const val FORM_CONFIGURATIONS = "configurations/form/form_configurations.json"
+    const val FORM_CONFIGURATIONS = "configurations/form/form_config.json"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
     const val QUESTIONNAIRE_ARG_TYPE = "questionnaire-type"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"

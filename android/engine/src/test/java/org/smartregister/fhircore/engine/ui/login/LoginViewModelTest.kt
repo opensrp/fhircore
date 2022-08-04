@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
+import android.accounts.Account
+import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -42,8 +45,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
+import org.smartregister.fhircore.engine.app.fakes.Faker.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
@@ -74,6 +78,8 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   private lateinit var loginViewModel: LoginViewModel
 
   private lateinit var accountAuthenticatorSpy: AccountAuthenticator
@@ -88,6 +94,8 @@ internal class LoginViewModelTest : RobolectricTest() {
     // Spy needed to control interaction with the real injected dependency
     accountAuthenticatorSpy = spyk(accountAuthenticator)
 
+    every { accountAuthenticatorSpy.accountManager.accounts } returns
+      arrayOf(Account("demo", ApplicationProvider.getApplicationContext<Application>().packageName))
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
 
     loginViewModel =
@@ -95,7 +103,8 @@ internal class LoginViewModelTest : RobolectricTest() {
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        fhirResourceDataSource = fhirResourceDataSource
+        fhirResourceDataSource = fhirResourceDataSource,
+        configurationRegistry = configurationRegistry
       )
   }
 

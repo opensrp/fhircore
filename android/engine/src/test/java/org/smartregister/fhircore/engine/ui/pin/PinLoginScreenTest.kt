@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Application
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
@@ -26,6 +27,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -38,19 +40,19 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 
 @ExperimentalCoroutinesApi
 class PinLoginScreensTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
+  private val testPin = MutableLiveData("1234")
 
   private val listenerObjectSpy =
     spyk(
       object {
         // Imitate click action by doing nothing
         fun onPinChanged() {}
-        fun onMenuLoginClicked(value: String) {}
+        fun onMenuLoginClicked() {}
         fun forgotPin() {}
         fun onDismissForgotDialog() {}
       }
@@ -62,12 +64,11 @@ class PinLoginScreensTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    pinViewModel =
-      mockk {
-        every { appName } returns "TestApp"
-        every { showError } returns MutableLiveData(true)
-        every { enterUserLoginMessage } returns "Enter PIN for DemoUser"
-      }
+    pinViewModel = mockk()
+    every { pinViewModel.pinUiState } returns
+      mutableStateOf(PinUiState(savedPin = "1234", enterUserLoginMessage = "demo", appName = "Anc"))
+    every { pinViewModel.showError } returns MutableLiveData(false)
+    coEvery { pinViewModel.pin } returns testPin
   }
 
   @Test
@@ -84,7 +85,7 @@ class PinLoginScreensTest : RobolectricTest() {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = false,
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
         appName = "anc"
@@ -105,7 +106,7 @@ class PinLoginScreensTest : RobolectricTest() {
       .assertHasClickAction()
       .performClick()
 
-    verify { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) }
+    verify { listenerObjectSpy.onMenuLoginClicked() }
   }
 
   @Test
@@ -114,7 +115,7 @@ class PinLoginScreensTest : RobolectricTest() {
       PinLoginPage(
         onPinChanged = { listenerObjectSpy.onPinChanged() },
         showError = true,
-        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
+        onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked() },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
         appName = "g6pd"

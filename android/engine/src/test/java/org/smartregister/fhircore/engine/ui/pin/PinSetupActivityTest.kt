@@ -20,9 +20,11 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -38,13 +40,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -53,6 +54,8 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @BindValue
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -69,15 +72,20 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
     hiltRule.inject()
 
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
-    pinSetupActivity =
-      Robolectric.buildActivity(PinSetupActivity::class.java).create().resume().get()
+    val controller = Robolectric.buildActivity(PinSetupActivity::class.java)
+    pinSetupActivity = controller.create().resume().get()
 
     pinSetupActivitySpy = spyk(pinSetupActivity, recordPrivateCalls = true)
     every { pinSetupActivitySpy.finish() } returns Unit
 
     pinViewModel = mockk()
-    coEvery { pinViewModel.savedPin } returns "1234"
-    coEvery { pinViewModel.enterUserLoginMessage } returns "demo"
+    every { pinViewModel.pinUiState } returns
+      mutableStateOf(
+        PinUiState(
+          savedPin = "1234",
+          enterUserLoginMessage = "demo",
+        )
+      )
     coEvery { pinViewModel.pin } returns testPin
   }
 
@@ -108,16 +116,10 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToLoginShouldVerifyExpectedIntent() {
-    pinSetupActivity.pinViewModel.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
+    pinSetupActivity.pinViewModel.onMenuLoginClicked()
     val expectedIntent = Intent(pinSetupActivity, LoginActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  }
-
-  @Test
-  fun testMoveToHome() {
-    ReflectionHelpers.callInstanceMethod<Any>(pinSetupActivity, "moveToHome")
-    Assert.assertNotNull(sharedPreferencesHelper.read(FORCE_LOGIN_VIA_USERNAME, false))
   }
 
   override fun getActivity(): Activity {
