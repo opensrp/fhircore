@@ -73,5 +73,62 @@
         "data.put('familyId', fhirPath.extractValue(Task, 'Task.description'))"
       ]
     }
+  ],
+  "overFlowMenuItems": [
+    {
+      "title" : "Family details",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE"
+        }
+      ]
+    },
+    {
+      "title" : "Change family head",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE"
+        }
+      ]
+    },
+    {
+      "title" : "Family activity",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE"
+        }
+      ]
+    },
+    {
+      "title" : "View past encounters",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": ""
+        }
+      ]
+    },
+    {
+      "title" : "Remove family",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK"
+        }
+      ]
+    }
   ]
 }

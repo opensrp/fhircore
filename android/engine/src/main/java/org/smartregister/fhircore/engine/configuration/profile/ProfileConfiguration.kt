@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.register.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
@@ -28,5 +29,6 @@ data class ProfileConfiguration(
   override var configType: String = ConfigType.Profile.name,
   val id: String,
   val fhirResource: FhirResourceConfig,
-  val rules: List<RuleConfig> = emptyList()
+  val rules: List<RuleConfig> = emptyList(),
+  val overFlowMenuItems: List<OverflowMenuItemConfig> = emptyList()
 ) : Configuration()

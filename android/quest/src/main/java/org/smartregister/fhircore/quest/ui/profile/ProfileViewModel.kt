@@ -25,20 +25,19 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
-import org.smartregister.fhircore.engine.util.extension.ACTIVE_ANC_REGEX
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.monthsPassed
-import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
-import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
@@ -47,7 +46,7 @@ import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 class ProfileViewModel
 @Inject
 constructor(
-  val overflowMenuFactory: OverflowMenuFactory,
+  val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper
 ) : ViewModel() {
@@ -66,7 +65,7 @@ constructor(
   // TODO handle dynamic profile menu with configurations; avoid string comparison
   fun getProfileUiState(profileData: ProfileViewData.PatientProfileViewData? = null) =
     ProfileUiState(
-      overflowMenuFactory.retrieveOverflowMenuItems(
+      /*overflowMenuFactory.retrieveOverflowMenuItems(
         OverflowMenuHost.PATIENT_PROFILE,
         listOfNotNull(
           Pair(R.id.record_sick_child, profileData?.dob?.let { it.yearsPassed() >= 5 } ?: false),
@@ -85,7 +84,11 @@ constructor(
             profileData?.tasks?.none { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } ?: false
           )
         )
-      )
+      )*/
+      configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
+        ConfigType.Profile,
+        "defaultProfile" //TODO Pass profile id dynamically
+      ).overFlowMenuItems
     )
 
   fun onEvent(event: ProfileEvent) =

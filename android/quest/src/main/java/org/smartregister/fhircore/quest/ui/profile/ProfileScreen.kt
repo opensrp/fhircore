@@ -54,6 +54,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.profile.components.ProfileActionableItem
@@ -131,10 +132,10 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .background(
                       color =
-                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
+                        if (it.confirmAction) it.titleColor.parseColor().copy(alpha = 0.1f)
                         else Color.Transparent
                     )
-              ) { Text(text = stringResource(id = it.titleResource), color = it.titleColor) }
+              ) { Text(text = it.titleResource, color = it.titleColor.parseColor()) }
             }
           }
         }

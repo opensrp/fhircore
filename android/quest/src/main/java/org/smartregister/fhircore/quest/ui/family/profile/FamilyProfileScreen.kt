@@ -73,6 +73,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionableButtonData
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.profile.components.ChangeFamilyHeadBottomSheet
 import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyMemberBottomSheet
@@ -234,10 +235,10 @@ fun FamilyProfileScreen(
                       .fillMaxWidth()
                       .background(
                         color =
-                          if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
+                          if (it.confirmAction) it.titleColor.parseColor().copy(alpha = 0.1f)
                           else Color.Transparent
                       )
-                ) { Text(text = stringResource(it.titleResource), color = it.titleColor) }
+                ) { Text(text = it.titleResource, color = it.titleColor.parseColor()) }
               }
             }
           }
