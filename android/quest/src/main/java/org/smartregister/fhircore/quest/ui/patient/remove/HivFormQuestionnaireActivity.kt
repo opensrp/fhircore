@@ -20,20 +20,10 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
-import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.asCarePlanResource
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileViewModel.Companion.HIV_TEST_AND_NEXT_APPOINTMENT_FORM
-import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileViewModel.Companion.HIV_TEST_AND_RESULTS_FORM
-import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileViewModel.Companion.VIRAL_LOAD_RESULTS_FORM
 
 class HivFormQuestionnaireActivity : QuestionnaireActivity() {
 
@@ -58,25 +48,25 @@ class HivFormQuestionnaireActivity : QuestionnaireActivity() {
     viewModel.fetch(profileId)
   }
 
-  override fun populateInitialValues(
-    questionnaire: Questionnaire,
-    initialResource: Array<Resource>
-  ) {
-
-    val binaryItems = initialResource.filterIsInstance<Binary>()
-    val targetResource = binaryItems[0]
-    val carePlan: CarePlan = targetResource.asCarePlanResource()
-    println("careplan-id===" + carePlan.id)
-    //    val resourceList: ArrayList<CarePlan> =  (binaryItems as
-    // ArrayList<Binary>).asCarePlanResource()
-    if (initialResource.isNotEmpty() && questionnaireConfig.form == VIRAL_LOAD_RESULTS_FORM ||
-        questionnaireConfig.form == HIV_TEST_AND_RESULTS_FORM ||
-        questionnaireConfig.form == HIV_TEST_AND_NEXT_APPOINTMENT_FORM
-    ) {
-      questionnaire.find(CARE_PLAN_ID_KEY)!!.initialFirstRep.value = StringType(carePlan.id)
-    }
-    super.populateInitialValues(questionnaire, initialResource)
-  }
+  //  override fun populateInitialValues(questionnaire: Questionnaire) {
+  //    //    initialResource: Array<Resource>
+  //    //  ) {
+  //
+  //    val binaryItems = initialResource.filterIsInstance<Binary>()
+  //    val targetResource = binaryItems[0]
+  //    val carePlan: CarePlan = targetResource.asCarePlanResource()
+  //    println("careplan-id===" + carePlan.id)
+  //    //    val resourceList: ArrayList<CarePlan> =  (binaryItems as
+  //    // ArrayList<Binary>).asCarePlanResource()
+  //    if (initialResource.isNotEmpty() && questionnaireConfig.form == VIRAL_LOAD_RESULTS_FORM ||
+  //        questionnaireConfig.form == HIV_TEST_AND_RESULTS_FORM ||
+  //        questionnaireConfig.form == HIV_TEST_AND_NEXT_APPOINTMENT_FORM
+  //    ) {
+  //      questionnaire.find(CARE_PLAN_ID_KEY)!!.initialFirstRep.value = StringType(carePlan.id)
+  //    }
+  //    super.populateInitialValues(questionnaire)
+  //    //    super.populateInitialValues(questionnaire, initialResource)
+  //  }
 
   //  @OptIn(ExperimentalMaterialApi::class)
   //  fun onRemove() {

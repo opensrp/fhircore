@@ -22,18 +22,12 @@ import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
-import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.asCarePlanDomainResource
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 
@@ -60,20 +54,22 @@ class HivPatientQuestionnaireActivity : QuestionnaireActivity() {
     viewModel.fetch(profileId)
   }
 
-  override fun populateInitialValues(
-    questionnaire: Questionnaire,
-    initialResource: Array<Resource>
-  ) {
-    val resourceList = (initialResource.toList() as ArrayList<Resource>).asCarePlanDomainResource()
-    if (resourceList.isNotEmpty() &&
-        questionnaireConfig.form == FormConstants.VIRAL_LOAD_RESULTS_FORM ||
-        questionnaireConfig.form == FormConstants.HIV_TEST_AND_RESULTS_FORM ||
-        questionnaireConfig.form == FormConstants.HIV_TEST_AND_NEXT_APPOINTMENT_FORM
-    ) {
-      questionnaire.find(CARE_PLAN_ID_KEY)!!.initialFirstRep.value = StringType(resourceList[0].id)
-    }
-    super.populateInitialValues(questionnaire, initialResource)
-  }
+  //  override fun populateInitialValues(
+  //    questionnaire: Questionnaire,
+  //    initialResource: Array<Resource>
+  //  ) {
+  //    val resourceList = (initialResource.toList() as
+  // ArrayList<Resource>).asCarePlanDomainResource()
+  //    if (resourceList.isNotEmpty() &&
+  //        questionnaireConfig.form == FormConstants.VIRAL_LOAD_RESULTS_FORM ||
+  //        questionnaireConfig.form == FormConstants.HIV_TEST_AND_RESULTS_FORM ||
+  //        questionnaireConfig.form == FormConstants.HIV_TEST_AND_NEXT_APPOINTMENT_FORM
+  //    ) {
+  //      questionnaire.find(CARE_PLAN_ID_KEY)!!.initialFirstRep.value =
+  // StringType(resourceList[0].id)
+  //    }
+  //    super.populateInitialValues(questionnaire, initialResource)
+  //  }
 
   @OptIn(ExperimentalMaterialApi::class)
   fun onRemove() {
@@ -125,15 +121,4 @@ class HivPatientQuestionnaireActivity : QuestionnaireActivity() {
 
   fun setRemoveDialogMessage(profileName: String): String =
     getString(R.string.remove_hiv_patient_warning, profileName)
-
-  @Serializable
-  object FormConstants {
-    const val VIRAL_LOAD_RESULTS_FORM = "family-member-registration"
-    const val HIV_TEST_AND_RESULTS_FORM = "family-member-registration"
-    const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM = "family-member-registration"
-  }
-
-  companion object {
-    const val CARE_PLAN_ID_KEY = "care-plan-id"
-  }
 }
