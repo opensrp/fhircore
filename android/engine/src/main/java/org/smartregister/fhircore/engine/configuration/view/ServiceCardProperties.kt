@@ -29,7 +29,7 @@ data class ServiceCardProperties(
   val serviceMemberIcons: String? = null,
   val serviceButton: ServiceButton? = null,
   val actions: List<ActionConfig> = emptyList()
-) : RegisterCardViewProperties()
+) : ViewProperties()
 
 @Serializable
 data class ServiceButton(

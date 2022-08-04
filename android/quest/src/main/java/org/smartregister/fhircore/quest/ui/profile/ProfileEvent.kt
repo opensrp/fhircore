@@ -17,9 +17,11 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import android.content.Context
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 sealed class ProfileEvent {
 
@@ -41,5 +43,10 @@ sealed class ProfileEvent {
     val patientId: String,
     val familyId: String? = null,
     val patient: ProfileViewData.PatientProfileViewData
+  ) : ProfileEvent()
+
+  data class OnViewComponentEvent(
+    val viewComponentEvent: ViewComponentEvent,
+    val navController: NavController
   ) : ProfileEvent()
 }

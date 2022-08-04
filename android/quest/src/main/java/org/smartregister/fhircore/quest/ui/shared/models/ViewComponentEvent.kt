@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.view
-
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.ViewType
+package org.smartregister.fhircore.quest.ui.shared.models
 
 /**
- * An abstract for view properties. This is needed so we can serialize/deserialize view properties
- * map into different data classes. Common view properties MUST be implemented by subclasses for
- * access.
+ * This sealed class is used to represent various click events of the configurable view components
  */
-@Serializable(with = RegisterCardViewPropertiesSerializer::class)
-abstract class RegisterCardViewProperties {
-  abstract val viewType: ViewType
+sealed class ViewComponentEvent {
+
+  /**
+   * Event triggered when user clicks a service card. Uses [profileId] to fetch the profile
+   * configurations and [resourceId] to fetch the data for the current profile.
+   */
+  data class ServiceCardClick(val profileId: String, val resourceId: String) : ViewComponentEvent()
 }

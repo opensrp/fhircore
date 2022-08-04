@@ -23,7 +23,6 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -57,32 +56,31 @@ constructor(
 ) :
   Repository, DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
 
-  override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> =
-    withContext(dispatcherProvider.io()) {
-      val registerConfiguration = retrieveRegisterConfiguration(registerId)
-      val baseResourceConfig = registerConfiguration.fhirResource.baseResource
-      val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
-      val baseResourceClass = baseResourceConfig.resource.resourceClassType()
-      val baseResourceType = baseResourceClass.newInstance().resourceType
+  override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> {
+    val registerConfiguration = retrieveRegisterConfiguration(registerId)
+    val baseResourceConfig = registerConfiguration.fhirResource.baseResource
+    val relatedResourcesConfig = registerConfiguration.fhirResource.relatedResources
+    val baseResourceClass = baseResourceConfig.resource.resourceClassType()
+    val baseResourceType = baseResourceClass.newInstance().resourceType
 
-      val baseResources: List<Resource> =
-        searchResource(
-          baseResourceClass = baseResourceClass,
-          dataQueries = baseResourceConfig.dataQueries,
-          currentPage = currentPage
-        )
+    val baseResources: List<Resource> =
+      searchResource(
+        baseResourceClass = baseResourceClass,
+        dataQueries = baseResourceConfig.dataQueries,
+        currentPage = currentPage
+      )
 
-      // Retrieve data for each of the configured related resources
-      // Also retrieve data for nested related resources for each of the related resource
-      baseResources.map { baseResource: Resource ->
-        retrieveRelatedResources(
-          relatedResourcesConfig = relatedResourcesConfig,
-          baseResourceType = baseResourceType,
-          baseResource = baseResource,
-          rules = registerConfiguration.registerCard.rules
-        )
-      }
+    // Retrieve data for each of the configured related resources
+    // Also retrieve data for nested related resources for each of the related resource
+    return baseResources.map { baseResource: Resource ->
+      retrieveRelatedResources(
+        relatedResourcesConfig = relatedResourcesConfig,
+        baseResourceType = baseResourceType,
+        baseResource = baseResource,
+        rules = registerConfiguration.registerCard.rules
+      )
     }
+  }
 
   private suspend fun retrieveRelatedResources(
     relatedResourcesConfig: List<ResourceConfig>,
@@ -237,27 +235,26 @@ constructor(
     )
   }
 
-  override suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData =
-    withContext(dispatcherProvider.io()) {
-      val profileConfiguration =
-        configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
-          ConfigType.Profile,
-          profileId
-        )
-      val baseResourceConfig = profileConfiguration.fhirResource.baseResource
-      val relatedResourcesConfig = profileConfiguration.fhirResource.relatedResources
-      val baseResourceClass = baseResourceConfig.resource.resourceClassType()
-      val baseResourceType = baseResourceClass.newInstance().resourceType
-
-      val baseResource: Resource = fhirEngine.get(baseResourceType, resourceId)
-
-      retrieveRelatedResources(
-        relatedResourcesConfig = relatedResourcesConfig,
-        baseResourceType = baseResourceType,
-        baseResource = baseResource,
-        rules = profileConfiguration.rules
+  override suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData {
+    val profileConfiguration =
+      configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
+        ConfigType.Profile,
+        profileId
       )
-    }
+    val baseResourceConfig = profileConfiguration.fhirResource.baseResource
+    val relatedResourcesConfig = profileConfiguration.fhirResource.relatedResources
+    val baseResourceClass = baseResourceConfig.resource.resourceClassType()
+    val baseResourceType = baseResourceClass.newInstance().resourceType
+
+    val baseResource: Resource = fhirEngine.get(baseResourceType, resourceId)
+
+    return retrieveRelatedResources(
+      relatedResourcesConfig = relatedResourcesConfig,
+      baseResourceType = baseResourceType,
+      baseResource = baseResource,
+      rules = profileConfiguration.rules
+    )
+  }
 
   fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration =
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)

@@ -158,7 +158,7 @@ constructor(
         }
       }
       is AppMainEvent.TriggerWorkflow -> {
-        val navigationAction = evet.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+        val navigationAction = event.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
 
         when (navigationAction?.workflow) {
           ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(context = event.context)
@@ -177,7 +177,7 @@ constructor(
           ApplicationWorkflow.LAUNCH_PROFILE ->
             // TODO bind the necessary patient profile url params
             event.navController.navigate(MainNavigationScreen.Profile.route)
-          null -> return
+          else -> return
         }
       }
     }

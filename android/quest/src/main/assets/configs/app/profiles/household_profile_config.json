@@ -65,13 +65,27 @@
       }
     ]
   },
-  "rules": [
+  "fabActions": [
     {
-      "name": "familyId",
-      "condition": "true",
+      "id": "ActionButton",
+      "visible": true,
+      "display": "Add New Household",
       "actions": [
-        "data.put('familyId', fhirPath.extractValue(Task, 'Task.description'))"
-      ]
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "householdRegister"
+        }
+      ],
+      "questionnaire": {
+        "id": "82952",
+        "title": "Add Family",
+        "saveButtonText": "ADD FAMILY",
+        "setPractitionerDetails": true,
+        "setOrganizationDetails": true
+      }
     }
-  ]
+  ],
+  "rules": [],
+  "views": []
 }
