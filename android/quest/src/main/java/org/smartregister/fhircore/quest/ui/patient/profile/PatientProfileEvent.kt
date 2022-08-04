@@ -19,6 +19,9 @@ package org.smartregister.fhircore.quest.ui.patient.profile
 import android.content.Context
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.util.extension.asBaseResources
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 sealed class PatientProfileEvent {
@@ -34,11 +37,17 @@ sealed class PatientProfileEvent {
     val taskFormId: String,
     val taskId: String,
     val patientId: String,
-    val carePlans: ArrayList<CarePlan>? = null
+    val carePlans: ArrayList<CarePlan>? = null,
+    val patientConditions: List<Condition> = emptyList()
   ) : PatientProfileEvent() {
     fun getActiveCarePlans(): ArrayList<CarePlan> {
       if (carePlans.isNullOrEmpty()) return ArrayList()
       return carePlans.filter { it.status.equals(CarePlan.CarePlanStatus.ACTIVE) } as ArrayList
+    }
+
+    fun getActivePopulationResources(): ArrayList<Resource> {
+      val resources = getActiveCarePlans().asBaseResources() + patientConditions
+      return ArrayList(resources)
     }
   }
 
@@ -48,11 +57,17 @@ sealed class PatientProfileEvent {
     val menuId: Int,
     val patientId: String,
     val familyId: String? = null,
-    val carePlans: ArrayList<CarePlan>? = null
+    val carePlans: ArrayList<CarePlan>? = null,
+    val patientConditions: List<Condition> = emptyList()
   ) : PatientProfileEvent() {
     fun getActiveCarePlans(): ArrayList<CarePlan> {
       if (carePlans.isNullOrEmpty()) return ArrayList()
       return carePlans.filter { it.status.equals(CarePlan.CarePlanStatus.ACTIVE) } as ArrayList
+    }
+
+    fun getActivePopulationResources(): ArrayList<Resource> {
+      val resources = getActiveCarePlans().asBaseResources() + patientConditions
+      return ArrayList(resources)
     }
   }
 }
