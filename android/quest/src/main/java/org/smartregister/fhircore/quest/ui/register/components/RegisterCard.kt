@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -76,6 +77,20 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.p2p.utils.capitalize
+
+const val TEST_TAG_VIEW_GROUP_COLUMN = "test_tag_view_group_column"
+const val TEST_TAG_VIEW_GROUP_ROW = "test_tag_view_group_row"
+const val TEST_TAG_COMPOUND_TEXT = "test_tag_compound_text"
+const val TEST_TAG_COMPOUND_TEXT_PRIMARY = "test_tag_compound_text_primary"
+const val TEST_TAG_COMPOUND_TEXT_SECONDARY = "test_tag_compound_text_secondary"
+const val TEST_TAG_COMPOUND_TEXT_SEPARATOR = "test_tag_compound_text_separator"
+const val TEST_TAG_SERVICE_CARD = "test_tag_service_card"
+const val TEST_TAG_SERVICE_VERTICAL_DIVIDER = "test_tag_service_vertical_divider"
+const val TEST_TAG_SERVICE_ICONS = "test_tag_service_icons"
+const val TEST_TAG_SERVICE_MORE_ICONS = "test_tag_service_more_icons"
+const val TEST_TAG_SERVICE_SMALL_BUTTON = "test_tag_service_small_button"
+const val TEST_TAG_SERVICE_BIG_BUTTON = "test_tag_service_big_button"
+const val TEST_TAG_SERVICE_BUTTON_TEXT = "test_tag_service_button_text"
 
 /**
  * A register card is a configurable view component that renders views for every of the rows of the
@@ -129,7 +144,7 @@ private fun RenderViewGroup(
   viewProperties.children.forEach { childViewProperty ->
     if (childViewProperty is ViewGroupProperties) {
       if (childViewProperty.viewType == ViewType.COLUMN) {
-        FlowColumn {
+        FlowColumn(modifier = modifier.testTag(TEST_TAG_VIEW_GROUP_COLUMN)) {
           RegisterCard(
             modifier = modifier,
             registerCardViewProperties = childViewProperty.children,
@@ -138,7 +153,7 @@ private fun RenderViewGroup(
           )
         }
       } else if (childViewProperty.viewType == ViewType.ROW) {
-        FlowRow {
+        FlowRow(modifier = modifier.testTag(TEST_TAG_VIEW_GROUP_ROW)) {
           RegisterCard(
             modifier = modifier,
             registerCardViewProperties = childViewProperty.children,
@@ -188,24 +203,28 @@ fun CompoundText(
 ) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.padding(bottom = 8.dp),
+    modifier = modifier.padding(bottom = 8.dp).testTag(TEST_TAG_COMPOUND_TEXT),
   ) {
     if (compoundTextProperties.primaryText != null) {
       Text(
         text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap),
         color = compoundTextProperties.primaryTextColor.parseColor(),
-        modifier = modifier.wrapContentWidth(Alignment.Start),
+        modifier = modifier.wrapContentWidth(Alignment.Start).testTag(TEST_TAG_COMPOUND_TEXT_PRIMARY),
         fontSize = compoundTextProperties.fontSize.sp,
       )
     }
     if (compoundTextProperties.secondaryText != null) {
       // Separate the primary and secondary text
-      Separator(separator = compoundTextProperties.separator ?: "-")
+      Separator(
+        modifier = modifier.testTag(TEST_TAG_COMPOUND_TEXT_SEPARATOR),
+        separator = compoundTextProperties.separator ?: "-"
+      )
 
       Text(
         text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap),
         color = compoundTextProperties.secondaryTextColor.parseColor(),
-        modifier = modifier.wrapContentWidth(Alignment.Start).padding(end = 8.dp),
+        modifier = modifier.wrapContentWidth(Alignment.Start).padding(end = 8.dp).testTag(
+          TEST_TAG_COMPOUND_TEXT_SECONDARY),
         fontSize = compoundTextProperties.fontSize.sp,
       )
     }
@@ -222,7 +241,7 @@ fun ServiceCard(
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.height(IntrinsicSize.Min)
+    modifier = modifier.height(IntrinsicSize.Min).testTag(TEST_TAG_SERVICE_CARD)
   ) {
     // Show service card details in a column layout (occupies 75% of row width)
     // Display optional service member icons
@@ -253,7 +272,7 @@ fun ServiceCard(
     // Display a vertical divider to separate service card details from action button
     if (serviceCardProperties.showVerticalDivider) {
       Divider(
-        modifier = modifier.fillMaxHeight().width(1.dp),
+        modifier = modifier.fillMaxHeight().width(1.dp).testTag(TEST_TAG_SERVICE_VERTICAL_DIVIDER),
         thickness = 1.dp,
         color = DividerColor
       )
@@ -298,14 +317,15 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
           Icon(
             painter = painterResource(id = ServiceMemberIcon.valueOf(it).icon),
             contentDescription = null,
-            modifier = modifier.size(20.dp).padding(0.dp),
+            modifier = modifier.size(20.dp).padding(0.dp).testTag(TEST_TAG_SERVICE_ICONS),
             tint = Color.Unspecified
           )
       }
       if (twoMemberIcons.size == 2 && iconsSplit.size > 2) {
         Box(
           contentAlignment = Alignment.Center,
-          modifier = modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
+          modifier = modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f)).testTag(
+            TEST_TAG_SERVICE_MORE_ICONS)
         ) { Text(text = "+${iconsSplit.size - 2}", fontSize = 12.sp, color = Color.DarkGray) }
       }
     }
@@ -326,7 +346,7 @@ private fun SmallServiceButton(
         .padding(horizontal = 8.dp)
         .clip(RoundedCornerShape(8.dp))
         .clickable { /*TODO Provide the given service*/}
-        .background(color = statusColor.copy(alpha = 0.1f)),
+        .background(color = statusColor.copy(alpha = 0.1f)).testTag(TEST_TAG_SERVICE_SMALL_BUTTON),
     verticalAlignment = Alignment.CenterVertically
   ) {
     Icon(
@@ -340,7 +360,8 @@ private fun SmallServiceButton(
       color = contentColor,
       fontSize = serviceButton.fontSize.sp,
       fontWeight = FontWeight.Bold,
-      modifier = modifier.padding(4.dp).wrapContentHeight(Alignment.CenterVertically),
+      modifier = modifier.padding(4.dp).wrapContentHeight(Alignment.CenterVertically).testTag(
+        TEST_TAG_SERVICE_BUTTON_TEXT),
       overflow = TextOverflow.Visible,
     )
   }
@@ -366,7 +387,7 @@ private fun BigServiceButton(
         .clip(RoundedCornerShape(4.dp))
         .background(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
-        ),
+        ).testTag(TEST_TAG_SERVICE_BIG_BUTTON),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
@@ -378,6 +399,8 @@ private fun BigServiceButton(
       if (extractedStatus == ServiceStatus.COMPLETED)
         Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
       Text(
+        modifier = modifier.testTag(
+          TEST_TAG_SERVICE_BUTTON_TEXT),
         text = serviceButton.text?.interpolate(computedValuesMap) ?: "",
         color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
         textAlign = TextAlign.Center,
