@@ -16,6 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
-import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 
-data class ProfileUiState(val overflowMenuItems: List<OverflowMenuItem> = emptyList())
+data class ProfileUiState(val overflowMenuItemConfigs: List<OverflowMenuItemConfig> = emptyList())

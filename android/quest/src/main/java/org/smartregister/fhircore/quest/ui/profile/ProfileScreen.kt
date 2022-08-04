@@ -110,7 +110,7 @@ fun ProfileScreen(
             expanded = showOverflowMenu,
             onDismissRequest = { showOverflowMenu = false }
           ) {
-            viewState.overflowMenuItems.forEach {
+            viewState.overflowMenuItemConfigs.forEach {
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false

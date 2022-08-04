@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile
 
-import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 
-data class FamilyProfileUiState(val overflowMenuItems: List<OverflowMenuItem> = emptyList())
+data class FamilyProfileUiState(
+  val overflowMenuItemConfigs: List<OverflowMenuItemConfig> = emptyList()
+)

@@ -1,0 +1,11 @@
+{
+  "appId": "app",
+  "configType": "profile",
+  "id": "defaultProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Patient"
+    }
+  },
+  "rules": []
+}

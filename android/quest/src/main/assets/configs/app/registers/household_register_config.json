@@ -2,7 +2,6 @@
   "appId": "app",
   "configType": "register",
   "id": "householdRegister",
-  "profileId": "householdProfile",
   "fhirResource": {
     "baseResource": {
       "resource": "Group",
@@ -131,8 +130,28 @@
               "visible": true,
               "text": "1",
               "status": "OVERDUE",
-              "smallSized": false
-            }
+              "smallSized": false,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_QUESTIONNAIRE",
+                  "questionnaire": {
+                    "id": "82952",
+                    "title": "Add Family",
+                    "saveButtonText": "ADD FAMILY",
+                    "setPractitionerDetails": true,
+                    "setOrganizationDetails": true
+                  }
+                }
+              ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "householdProfile"
+              }
+            ]
           }
         ]
       }

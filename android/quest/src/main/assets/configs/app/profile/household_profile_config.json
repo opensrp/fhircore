@@ -1,5 +1,77 @@
 {
   "appId": "app",
   "configType": "profile",
-  "id": "householdProfile"
+  "id": "householdProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "id": "householdQueryByType",
+          "filterType": "TOKEN",
+          "key": "type",
+          "valueType": "CODING",
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/group-type",
+            "code": "person"
+          }
+        },
+        {
+          "id": "householdQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "35359004"
+          }
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "Patient",
+        "fhirPathExpression": "Group.member.entity",
+        "relatedResources": [
+          {
+            "resource": "Condition",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "CarePlan",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "Task",
+            "searchParameter": "subject"
+          }
+        ]
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "id": "filterHouseholdCarePlans",
+            "filterType": "TOKEN",
+            "key": "_tag",
+            "valueType": "CODING",
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "35359004"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "rules": [
+    {
+      "name": "familyId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyId', fhirPath.extractValue(Task, 'Task.description'))"
+      ]
+    }
+  ]
 }

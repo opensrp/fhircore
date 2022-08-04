@@ -37,5 +37,8 @@ enum class ApplicationWorkflow {
   LAUNCH_SETTINGS,
 
   /** A workflow to trigger device to device sync */
-  DEVICE_TO_DEVICE_SYNC
+  DEVICE_TO_DEVICE_SYNC,
+
+  /** A workflow that opens a new questionnaire form or an existing questionnaire for editing */
+  LAUNCH_QUESTIONNAIRE
 }

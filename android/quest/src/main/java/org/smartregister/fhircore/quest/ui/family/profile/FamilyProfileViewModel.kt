@@ -57,7 +57,7 @@ constructor(
   val familyProfileUiState: MutableState<FamilyProfileUiState> =
     mutableStateOf(
       FamilyProfileUiState(
-        overflowMenuItems =
+        overflowMenuItemConfigs =
           overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)
       )
     )

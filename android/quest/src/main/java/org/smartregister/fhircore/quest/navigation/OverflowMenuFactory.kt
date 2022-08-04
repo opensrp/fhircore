@@ -17,20 +17,20 @@
 package org.smartregister.fhircore.quest.navigation
 
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.quest.R
 
 class OverflowMenuFactory @Inject constructor() {
-  private val overflowMenuMap: Map<OverflowMenuHost, MutableList<OverflowMenuItem>> by lazy {
-    OverflowMenuHost.values().associate { Pair(it, it.overflowMenuItems.toMutableList()) }
+  private val overflowMenuMap: Map<OverflowMenuHost, MutableList<OverflowMenuItemConfig>> by lazy {
+    OverflowMenuHost.values().associate { Pair(it, it.overflowMenuItemConfigs.toMutableList()) }
   }
 
   /** Retrieve [overflowMenuHost]. Remove any menu ids that satisfy the [conditions] */
   fun retrieveOverflowMenuItems(
     overflowMenuHost: OverflowMenuHost,
     conditions: List<Pair<Int, Boolean>> = emptyList()
-  ): MutableList<OverflowMenuItem> {
+  ): MutableList<OverflowMenuItemConfig> {
     val overflowMenuItems = overflowMenuMap.getValue(overflowMenuHost)
     conditions.forEach { conditionPair: Pair<Int, Boolean> ->
       overflowMenuItems.removeIf { it.id == conditionPair.first && conditionPair.second }
@@ -40,14 +40,14 @@ class OverflowMenuFactory @Inject constructor() {
 }
 
 /** Refers to an a screen that contains */
-enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
+enum class OverflowMenuHost(val overflowMenuItemConfigs: List<OverflowMenuItemConfig>) {
   FAMILY_PROFILE(
     listOf(
-      OverflowMenuItem(R.id.family_details, R.string.family_details),
-      OverflowMenuItem(R.id.change_family_head, R.string.change_family_head),
-      OverflowMenuItem(R.id.family_activity, R.string.family_activity),
-      OverflowMenuItem(R.id.view_past_encounters, R.string.view_past_encounters),
-      OverflowMenuItem(
+      OverflowMenuItemConfig(R.id.family_details, R.string.family_details),
+      OverflowMenuItemConfig(R.id.change_family_head, R.string.change_family_head),
+      OverflowMenuItemConfig(R.id.family_activity, R.string.family_activity),
+      OverflowMenuItemConfig(R.id.view_past_encounters, R.string.view_past_encounters),
+      OverflowMenuItemConfig(
         id = R.id.remove_family,
         titleResource = R.string.remove_family,
         titleColor = DangerColor,
@@ -57,12 +57,12 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
   ),
   PATIENT_PROFILE(
     listOf(
-      OverflowMenuItem(R.id.individual_details, R.string.individual_details),
-      OverflowMenuItem(R.id.view_family, R.string.view_family),
-      OverflowMenuItem(R.id.record_sick_child, R.string.record_sick_child),
-      OverflowMenuItem(R.id.record_as_anc, R.string.record_as_anc),
-      OverflowMenuItem(R.id.pregnancy_outcome, R.string.pregnancy_outcome),
-      OverflowMenuItem(
+      OverflowMenuItemConfig(R.id.individual_details, R.string.individual_details),
+      OverflowMenuItemConfig(R.id.view_family, R.string.view_family),
+      OverflowMenuItemConfig(R.id.record_sick_child, R.string.record_sick_child),
+      OverflowMenuItemConfig(R.id.record_as_anc, R.string.record_as_anc),
+      OverflowMenuItemConfig(R.id.pregnancy_outcome, R.string.pregnancy_outcome),
+      OverflowMenuItemConfig(
         id = R.id.remove_family_member,
         titleResource = R.string.remove_this_person,
         titleColor = DangerColor,

@@ -200,7 +200,7 @@ fun FamilyProfileScreen(
               onDismissRequest = { showOverflowMenu = false },
               modifier = modifier.padding(0.dp)
             ) {
-              viewState.overflowMenuItems.forEach {
+              viewState.overflowMenuItemConfigs.forEach {
                 DropdownMenuItem(
                   onClick = {
                     showOverflowMenu = false

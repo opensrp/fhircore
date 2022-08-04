@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
-import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** Common repository for register. */
@@ -27,5 +26,5 @@ interface Repository {
   suspend fun countRegisterData(registerId: String): Long
 
   /** This function returns data displayed on the users profile */
-  suspend fun loadProfileData(registerId: String, resourceId: String): ProfileData?
+  suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData?
 }

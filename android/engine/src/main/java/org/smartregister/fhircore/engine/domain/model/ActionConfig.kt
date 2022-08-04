@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.navigation
+package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
-data class NavigationActionConfig(
+data class ActionConfig(
   val trigger: ActionTrigger,
   val workflow: ApplicationWorkflow? = null,
   val id: String? = null,
-  val rules: List<RuleConfig>? = null
+  val rules: List<RuleConfig>? = null,
+  val questionnaire: QuestionnaireConfig? = null
 )

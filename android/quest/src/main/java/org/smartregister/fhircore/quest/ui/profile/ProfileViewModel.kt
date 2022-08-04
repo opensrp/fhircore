@@ -59,17 +59,7 @@ constructor(
 
   fun fetchPatientProfileData(profileId: String, patientId: String) {
     if (patientId.isNotEmpty()) {
-      viewModelScope.launch {
-        registerRepository.loadProfileData(registerId = profileId, resourceId = patientId)?.let {
-          patientProfileViewData.value =
-            profileViewDataMapper.transformInputToOutputModel(it) as
-              ProfileViewData.PatientProfileViewData
-
-          // TODO only display some overflow menu items when certain conditions are met
-          // dynamically from config
-          profileUiState.value = getProfileUiState(patientProfileViewData.value)
-        }
-      }
+      viewModelScope.launch {}
     }
   }
 
