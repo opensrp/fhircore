@@ -120,8 +120,10 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
         },
         QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
           addAnswer().value = Attachment().apply { data = "image".encodeToByteArray() }
-        }
-      ) {}
+        },
+        validationResult = null,
+        answersChangedCallback = { _, _, _ -> },
+      )
 
     val tvPrefix = mockk<TextView>(relaxed = true)
     every { photoCaptureFactory.tvPrefix } returns tvPrefix
@@ -163,8 +165,10 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
         },
         QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
           addAnswer().value = Attachment().apply { data = "image".encodeToByteArray() }
-        }
-      ) {}
+        },
+        validationResult = null,
+        answersChangedCallback = { _, _, _ -> },
+      )
 
     val tvPrefix = mockk<TextView>(relaxed = true)
     every { photoCaptureFactory.tvPrefix } returns tvPrefix
