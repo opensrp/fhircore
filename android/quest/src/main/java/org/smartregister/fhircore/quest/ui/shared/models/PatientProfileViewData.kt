@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.shared.models
 
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Observation
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
@@ -44,7 +45,8 @@ sealed class ProfileViewData(
     val identifierKey: String = "",
     val showIdentifierInProfile: Boolean = false,
     val carePlans: List<CarePlan> = emptyList(),
-    val conditions: List<Condition> = emptyList()
+    val conditions: List<Condition> = emptyList(),
+    val observations: List<Observation> = emptyList()
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier)
 
   data class FamilyProfileViewData(

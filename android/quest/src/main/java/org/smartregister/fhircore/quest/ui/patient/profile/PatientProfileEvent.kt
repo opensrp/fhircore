@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.extension.asBaseResources
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
@@ -38,7 +39,8 @@ sealed class PatientProfileEvent {
     val taskId: String,
     val patientId: String,
     val carePlans: ArrayList<CarePlan>? = null,
-    val patientConditions: List<Condition> = emptyList()
+    val patientConditions: List<Condition> = emptyList(),
+    val patientObservations: List<Observation> = emptyList()
   ) : PatientProfileEvent() {
     fun getActiveCarePlans(): ArrayList<CarePlan> {
       if (carePlans.isNullOrEmpty()) return ArrayList()
@@ -46,7 +48,8 @@ sealed class PatientProfileEvent {
     }
 
     fun getActivePopulationResources(): ArrayList<Resource> {
-      val resources = getActiveCarePlans().asBaseResources() + patientConditions
+      val resources =
+        getActiveCarePlans().asBaseResources() + patientConditions + patientObservations
       return ArrayList(resources)
     }
   }
@@ -58,7 +61,8 @@ sealed class PatientProfileEvent {
     val patientId: String,
     val familyId: String? = null,
     val carePlans: ArrayList<CarePlan>? = null,
-    val patientConditions: List<Condition> = emptyList()
+    val patientConditions: List<Condition> = emptyList(),
+    val patientObservations: List<Observation> = emptyList()
   ) : PatientProfileEvent() {
     fun getActiveCarePlans(): ArrayList<CarePlan> {
       if (carePlans.isNullOrEmpty()) return ArrayList()
@@ -66,7 +70,8 @@ sealed class PatientProfileEvent {
     }
 
     fun getActivePopulationResources(): ArrayList<Resource> {
-      val resources = getActiveCarePlans().asBaseResources() + patientConditions
+      val resources =
+        getActiveCarePlans().asBaseResources() + patientConditions + patientObservations
       return ArrayList(resources)
     }
   }

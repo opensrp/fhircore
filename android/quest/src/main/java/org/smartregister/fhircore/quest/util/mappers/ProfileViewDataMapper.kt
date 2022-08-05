@@ -74,6 +74,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           showIdentifierInProfile = inputModel.showIdentifierInProfile,
           showListsHighlights = false,
           conditions = inputModel.conditions,
+          observations = inputModel.observations,
           carePlans = inputModel.services,
           tasks =
             inputModel.tasks.sortedWith(compareBy<Task> { it.description }).map {

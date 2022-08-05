@@ -122,7 +122,8 @@ fun PatientProfileScreen(
                       profileViewData.logicalId,
                       familyId,
                       carePlans = profileViewData.carePlans as ArrayList<CarePlan>,
-                      patientConditions = profileViewData.conditions
+                      patientConditions = profileViewData.conditions,
+                      patientObservations = profileViewData.observations
                     )
                   )
                 },
@@ -171,7 +172,8 @@ fun PatientProfileScreen(
                       taskId = taskId,
                       patientId = profileViewData.logicalId,
                       carePlans = profileViewData.carePlans as ArrayList<CarePlan>,
-                      patientConditions = profileViewData.conditions
+                      patientConditions = profileViewData.conditions,
+                      patientObservations = profileViewData.observations
                     )
                   )
                 }
