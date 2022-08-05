@@ -136,12 +136,8 @@ constructor(
               { it.description }
             )
           ),
-      services =
-        defaultRepository.searchResourceFor<CarePlan>(
-          subjectId = resourceId,
-          subjectType = ResourceType.Patient,
-          subjectParam = CarePlan.SUBJECT
-        )
+      services = patient.activeCarePlans(),
+      conditions = patient.activeConditions()
     )
   }
 
@@ -157,11 +153,28 @@ constructor(
   internal suspend fun Patient.isBreastfeeding() =
     patientConditions(this.logicalId).activelyBreastfeeding()
 
+  internal suspend fun Patient.activeConditions() =
+    patientConditions(this.logicalId).filter { condition ->
+      condition.clinicalStatus.coding.any { it.code == "active" }
+    }
+
   internal suspend fun patientConditions(patientId: String) =
     defaultRepository.searchResourceFor<Condition>(
       subjectId = patientId,
       subjectParam = Condition.SUBJECT,
       subjectType = ResourceType.Patient
+    )
+
+  internal suspend fun Patient.activeCarePlans() =
+    patientCarePlan(this.logicalId).filter { carePlan ->
+      carePlan.status.equals(CarePlan.CarePlanStatus.ACTIVE)
+    }
+
+  internal suspend fun patientCarePlan(patientId: String) =
+    defaultRepository.searchResourceFor<CarePlan>(
+      subjectId = patientId,
+      subjectType = ResourceType.Patient,
+      subjectParam = CarePlan.SUBJECT
     )
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)

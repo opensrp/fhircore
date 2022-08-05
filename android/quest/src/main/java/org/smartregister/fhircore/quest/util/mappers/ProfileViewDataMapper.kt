@@ -73,6 +73,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = inputModel.showIdentifierInProfile,
           showListsHighlights = false,
+          conditions = inputModel.conditions,
           carePlans = inputModel.services,
           tasks =
             inputModel.tasks.map {
