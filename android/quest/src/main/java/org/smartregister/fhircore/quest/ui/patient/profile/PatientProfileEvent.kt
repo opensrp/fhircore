@@ -22,7 +22,6 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.util.extension.asBaseResources
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 sealed class PatientProfileEvent {
@@ -38,18 +37,12 @@ sealed class PatientProfileEvent {
     val taskFormId: String,
     val taskId: String,
     val patientId: String,
-    val carePlans: ArrayList<CarePlan>? = null,
+    val carePlans: List<CarePlan> = emptyList(),
     val patientConditions: List<Condition> = emptyList(),
     val patientObservations: List<Observation> = emptyList()
   ) : PatientProfileEvent() {
-    fun getActiveCarePlans(): ArrayList<CarePlan> {
-      if (carePlans.isNullOrEmpty()) return ArrayList()
-      return carePlans.filter { it.status.equals(CarePlan.CarePlanStatus.ACTIVE) } as ArrayList
-    }
-
     fun getActivePopulationResources(): ArrayList<Resource> {
-      val resources =
-        getActiveCarePlans().asBaseResources() + patientConditions + patientObservations
+      val resources = carePlans + patientConditions + patientObservations
       return ArrayList(resources)
     }
   }
@@ -60,18 +53,12 @@ sealed class PatientProfileEvent {
     val menuId: Int,
     val patientId: String,
     val familyId: String? = null,
-    val carePlans: ArrayList<CarePlan>? = null,
+    val carePlans: List<CarePlan> = emptyList(),
     val patientConditions: List<Condition> = emptyList(),
     val patientObservations: List<Observation> = emptyList()
   ) : PatientProfileEvent() {
-    fun getActiveCarePlans(): ArrayList<CarePlan> {
-      if (carePlans.isNullOrEmpty()) return ArrayList()
-      return carePlans.filter { it.status.equals(CarePlan.CarePlanStatus.ACTIVE) } as ArrayList
-    }
-
     fun getActivePopulationResources(): ArrayList<Resource> {
-      val resources =
-        getActiveCarePlans().asBaseResources() + patientConditions + patientObservations
+      val resources = carePlans + patientConditions + patientObservations
       return ArrayList(resources)
     }
   }

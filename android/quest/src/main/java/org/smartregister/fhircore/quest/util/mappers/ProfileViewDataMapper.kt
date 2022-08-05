@@ -77,7 +77,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           observations = inputModel.observations,
           carePlans = inputModel.services,
           tasks =
-            inputModel.tasks.sortedWith(compareBy<Task> { it.description }).map {
+            inputModel.tasks.map {
               PatientProfileRowItem(
                 id = it.logicalId,
                 actionFormId =
