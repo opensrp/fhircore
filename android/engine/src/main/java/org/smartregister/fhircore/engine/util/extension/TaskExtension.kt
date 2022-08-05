@@ -23,6 +23,8 @@ import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.DateUtils.isToday
 import org.smartregister.fhircore.engine.util.DateUtils.today
 
+const val GUARDIAN_VISIT_CODE = "guardian-visit"
+
 fun Task.hasPastEnd() =
   this.hasExecutionPeriod() &&
     this.executionPeriod.hasEnd() &&
@@ -45,3 +47,8 @@ fun Task.clinicVisitOrder(systemTag: String) =
     .filter { it.isDigitsOnly() }
     .map { it.toInt() }
     .firstOrNull()
+
+fun Task.isGuardianVisit(systemTag: String) =
+  this.meta.tag.filter { it.system.equals(systemTag, true) }.any {
+    it.code.replace("_", "-").equals(GUARDIAN_VISIT_CODE, true)
+  }
