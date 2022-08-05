@@ -89,6 +89,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val chwAssigned: Reference,
     val healthStatus: HealthStatus,
     val phoneContacts: List<String> = listOf(),
-    val showIdentifierInProfile: Boolean = false
+    val showIdentifierInProfile: Boolean = false,
+    val conditions: List<Condition> = emptyList()
   ) : ProfileData(logicalId = logicalId, name = name)
 }
