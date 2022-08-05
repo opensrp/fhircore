@@ -83,8 +83,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private lateinit var saveProcessingAlertDialog: AlertDialog
 
-  //  lateinit var initialResource: Array<Resource>
-
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     outState.clear()
@@ -195,11 +193,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
         questionnaireConfig = resultPair.first
         questionnaire = resultPair.second
-        //        initialResource = questionnaireViewModel.getPopulationResources(intent)
       }
       .onFailure { Timber.e(it) }
       .also { populateInitialValues(questionnaire) }
-  //      .also { populateInitialValues(questionnaire, initialResource) }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
@@ -296,10 +292,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit
-  //  open fun populateInitialValues(
-  //    questionnaire: Questionnaire,
-  //    initialResource: Array<Resource> = emptyArray()
-  //  ) = Unit
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     val message = questionnaireViewModel.extractionProgressMessage.value

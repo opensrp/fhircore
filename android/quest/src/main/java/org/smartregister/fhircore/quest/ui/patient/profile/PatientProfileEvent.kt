@@ -39,12 +39,6 @@ sealed class PatientProfileEvent {
     val carePlans: List<CarePlan> = emptyList(),
     val patientConditions: List<Condition> = emptyList()
   ) : PatientProfileEvent() {
-    //    fun getActiveCarePlans(): ArrayList<CarePlan> {
-    //      if (carePlans.isNullOrEmpty()) return ArrayList()
-    //      return carePlans.filter { it.status.equals(CarePlan.CarePlanStatus.ACTIVE) } as
-    // ArrayList
-    //    }
-
     fun getActivePopulationResources(): ArrayList<Resource> {
       val resources = carePlans + patientConditions
       return ArrayList(resources)
@@ -60,12 +54,6 @@ sealed class PatientProfileEvent {
     val carePlans: List<CarePlan> = emptyList(),
     val patientConditions: List<Condition> = emptyList()
   ) : PatientProfileEvent() {
-    //    fun getActiveCarePlans(): ArrayList<CarePlan> {
-    //      if (carePlans.isNullOrEmpty()) return ArrayList()
-    //      return carePlans.filter { it.status.equals(CarePlan.CarePlanStatus.ACTIVE) } as
-    // ArrayList
-    //    }
-
     fun getActivePopulationResources(): ArrayList<Resource> {
       val resources = carePlans + patientConditions
       return ArrayList(resources)

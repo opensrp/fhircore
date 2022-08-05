@@ -54,23 +54,6 @@ class HivPatientQuestionnaireActivity : QuestionnaireActivity() {
     viewModel.fetch(profileId)
   }
 
-  //  override fun populateInitialValues(
-  //    questionnaire: Questionnaire,
-  //    initialResource: Array<Resource>
-  //  ) {
-  //    val resourceList = (initialResource.toList() as
-  // ArrayList<Resource>).asCarePlanDomainResource()
-  //    if (resourceList.isNotEmpty() &&
-  //        questionnaireConfig.form == FormConstants.VIRAL_LOAD_RESULTS_FORM ||
-  //        questionnaireConfig.form == FormConstants.HIV_TEST_AND_RESULTS_FORM ||
-  //        questionnaireConfig.form == FormConstants.HIV_TEST_AND_NEXT_APPOINTMENT_FORM
-  //    ) {
-  //      questionnaire.find(CARE_PLAN_ID_KEY)!!.initialFirstRep.value =
-  // StringType(resourceList[0].id)
-  //    }
-  //    super.populateInitialValues(questionnaire, initialResource)
-  //  }
-
   @OptIn(ExperimentalMaterialApi::class)
   fun onRemove() {
     val intent =
