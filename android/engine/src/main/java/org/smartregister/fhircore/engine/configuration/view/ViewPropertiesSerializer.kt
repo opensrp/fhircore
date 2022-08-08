@@ -25,11 +25,11 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 
 private const val VIEW_TYPE = "viewType"
 
-object RegisterCardViewPropertiesSerializer :
-  JsonContentPolymorphicSerializer<RegisterCardViewProperties>(RegisterCardViewProperties::class) {
+object ViewPropertiesSerializer :
+  JsonContentPolymorphicSerializer<ViewProperties>(ViewProperties::class) {
   override fun selectDeserializer(
     element: JsonElement
-  ): DeserializationStrategy<out RegisterCardViewProperties> {
+  ): DeserializationStrategy<out ViewProperties> {
     val jsonObject = element.jsonObject
     val viewType = jsonObject[VIEW_TYPE]?.jsonPrimitive?.content
     require(viewType != null && ViewType.values().contains(ViewType.valueOf(viewType))) {

@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.ViewType
 
-@Serializable
-data class RegisterCardConfig(
-  val rules: List<RuleConfig> = emptyList(),
-  val views: List<ViewProperties> = emptyList()
-)
+/**
+ * An abstract for view properties. This is needed so we can serialize/deserialize view properties
+ * map into different data classes. Common view properties MUST be implemented by subclasses for
+ * access.
+ */
+@Serializable(with = ViewPropertiesSerializer::class)
+abstract class ViewProperties {
+  abstract val viewType: ViewType
+}

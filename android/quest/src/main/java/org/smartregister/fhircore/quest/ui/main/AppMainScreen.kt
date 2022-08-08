@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -39,9 +40,9 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.NavigationArg.routePathsOf
-import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.profile.ProfileScreen
+import org.smartregister.fhircore.quest.ui.profile.ProfileViewModel
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
@@ -162,53 +163,36 @@ private fun AppMainNavigationGraph(
           composable(MainNavigationScreen.Settings.route) { UserProfileScreen() }
         MainNavigationScreen.Profile ->
           composable(
-            route =
-              it.route +
-                routePathsOf(
-                  NavigationArg.REGISTER_ID,
-                  NavigationArg.RESOURCE_ID,
-                  NavigationArg.FAMILY_ID
-                ),
-            arguments = resourceIdNavArgument()
+            route = it.route + routePathsOf(NavigationArg.PROFILE_ID, NavigationArg.RESOURCE_ID),
+            arguments =
+              listOf(
+                navArgument(NavigationArg.PROFILE_ID) {
+                  type = NavType.StringType
+                  nullable = false
+                },
+                navArgument(NavigationArg.RESOURCE_ID) {
+                  type = NavType.StringType
+                  nullable = false
+                }
+              )
           ) { stackEntry ->
-            val profileId = stackEntry.arguments?.getString(NavigationArg.REGISTER_ID) ?: ""
-            val patientId = stackEntry.arguments?.getString(NavigationArg.RESOURCE_ID) ?: ""
-            val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
-            ProfileScreen(
-              navController = navController,
-              profileId = profileId,
-              patientId = patientId,
-              familyId = familyId,
-              refreshDataState = appMainViewModel.refreshDataState
-            )
-          }
-        MainNavigationScreen.FamilyProfile ->
-          composable(
-            route = "${it.route}${routePathsOf(NavigationArg.FAMILY_ID)}",
-            arguments = resourceIdNavArgument()
-          ) { stackEntry ->
-            val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
-            FamilyProfileScreen(
-              familyId = familyId,
-              navController = navController,
-              refreshDataState = appMainViewModel.refreshDataState
-            )
+            val profileId = stackEntry.arguments?.getString(NavigationArg.PROFILE_ID)
+            val resourceId = stackEntry.arguments?.getString(NavigationArg.RESOURCE_ID)
+            if (!profileId.isNullOrEmpty() && !resourceId.isNullOrEmpty()) {
+              val profileViewModel = hiltViewModel<ProfileViewModel>()
+              profileViewModel.retrieveProfileUiState(
+                profileId = profileId,
+                resourceId = resourceId
+              )
+              val profileUiState = remember { profileViewModel.profileUiState.value }
+              ProfileScreen(
+                navController = navController,
+                profileUiState = profileUiState,
+                onEvent = profileViewModel::onEvent
+              )
+            }
           }
       }
     }
   }
 }
-
-private fun resourceIdNavArgument() =
-  listOf(
-    navArgument(NavigationArg.RESOURCE_ID) {
-      type = NavType.StringType
-      nullable = true
-      defaultValue = null
-    },
-    navArgument(NavigationArg.FAMILY_ID) {
-      type = NavType.StringType
-      nullable = true
-      defaultValue = null
-    }
-  )

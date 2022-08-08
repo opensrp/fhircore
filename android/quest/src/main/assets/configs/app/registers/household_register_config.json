@@ -149,7 +149,13 @@
               {
                 "trigger": "ON_CLICK",
                 "workflow": "LAUNCH_PROFILE",
-                "id": "householdProfile"
+                "id": "householdProfile",
+                "params": [
+                  {
+                    "key": "familyId",
+                    "value": "@{familyId}"
+                  }
+                ]
               }
             ]
           }

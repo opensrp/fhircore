@@ -22,5 +22,5 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 @Serializable
 class ViewGroupProperties(
   override val viewType: ViewType,
-  val children: List<RegisterCardViewProperties> = emptyList()
-) : RegisterCardViewProperties()
+  val children: List<ViewProperties> = emptyList()
+) : ViewProperties()

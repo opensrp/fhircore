@@ -7,6 +7,11 @@
       "resource": "Patient"
     }
   },
+  "profileParams": [
+    "familyId"
+  ],
+  "rules": [],
+  "views": [],
   "rules": [],
   "overFlowMenuItems": [
     {

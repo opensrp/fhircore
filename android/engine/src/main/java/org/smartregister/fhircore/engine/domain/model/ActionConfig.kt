@@ -27,5 +27,8 @@ data class ActionConfig(
   val workflow: ApplicationWorkflow? = null,
   val id: String? = null,
   val rules: List<RuleConfig>? = null,
-  val questionnaire: QuestionnaireConfig? = null
+  val questionnaire: QuestionnaireConfig? = null,
+  val params: List<ActionParameter> = emptyList()
 )
+
+@Serializable data class ActionParameter(val key: String, val value: String)
