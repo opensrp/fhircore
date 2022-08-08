@@ -20,8 +20,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class OverflowMenuItemConfig(
-  val id: Int,
-  val titleResource: String,
+  val id: Int = 1,
+  val titleResource: String = "",
   val confirmAction: Boolean = false,
   val titleColor: String? = null,
   val visible:String,

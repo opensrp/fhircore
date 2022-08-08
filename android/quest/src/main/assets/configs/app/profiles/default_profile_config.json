@@ -68,7 +68,7 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "LAUNCH_QUESTIONNAIRE",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "82952",
             "title": "Add Family",
@@ -86,7 +86,7 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "LAUNCH_QUESTIONNAIRE",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "82952",
             "title": "Add Family",
