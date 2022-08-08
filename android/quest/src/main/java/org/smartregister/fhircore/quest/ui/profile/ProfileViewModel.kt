@@ -124,6 +124,7 @@ constructor(
           clientIdentifier = event.patientId,
           backReference = event.taskId?.asReference(ResourceType.Task)?.reference
         )
+      else -> {}
     }
 
   companion object {
