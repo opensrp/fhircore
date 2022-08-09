@@ -238,7 +238,7 @@ fun FamilyProfileScreen(
                           if (it.confirmAction) it.titleColor.parseColor().copy(alpha = 0.1f)
                           else Color.Transparent
                       )
-                ) { Text(text = it.titleResource, color = it.titleColor.parseColor()) }
+                ) { Text(text = it.title, color = it.titleColor.parseColor()) }
               }
             }
           }
