@@ -40,7 +40,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testRetrieveResourceBundleConfigurationReturnsNull() {
-    configRegistry.configsJsonMap["strings_en"] = "name.title=Mr.\n" + "gender.male=Male"
+    configRegistry.configsJsonMap["stringsEn"] = "name.title=Mr.\n" + "gender.male=Male"
     val resource = configRegistry.retrieveResourceBundleConfiguration("nonexistent")
     Assert.assertNull(resource)
   }
@@ -56,7 +56,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testRetrieveResourceBundleConfigurationReturnsCorrectBundle() {
-    configRegistry.configsJsonMap["strings_sw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
+    configRegistry.configsJsonMap["stringsSw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
     val resource = configRegistry.retrieveResourceBundleConfiguration("strings_sw")
     Assert.assertNotNull(resource)
     Assert.assertEquals("Bwana.", resource?.getString("name.title"))
@@ -65,7 +65,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testRetrieveResourceBundleConfigurationWithLocaleVariantReturnsCorrectBundle() {
-    configRegistry.configsJsonMap["strings_sw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
+    configRegistry.configsJsonMap["stringsSw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
     val resource = configRegistry.retrieveResourceBundleConfiguration("strings_sw_KE")
     Assert.assertNotNull(resource)
     Assert.assertEquals("Bwana.", resource?.getString("name.title"))
