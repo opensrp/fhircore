@@ -19,7 +19,7 @@
   },
   "searchBar": {
     "visible": true,
-    "display": "Search by Task, Practitioner & Patient Name",
+    "display": "{{ search.by.task.practitioner.patient }}",
     "computedRules": [
       "taskName",
       "practitionerName",
@@ -85,19 +85,19 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "Start date: @{taskStartDate}",
+                "primaryText": "{{ task.start.date }}",
                 "primaryTextColor": "#5A5A5A",
                 "fontSize": 14.0
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "Patient: @{patientName}",
+                "primaryText": "{{ patient.col.name }}",
                 "primaryTextColor": "#5A5A5A",
                 "fontSize": 14.0
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "Practitioner: @{practitionerName}",
+                "primaryText": "{{ practitioner.col.name}}",
                 "primaryTextColor": "#5A5A5A",
                 "fontSize": 14.0
               }

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.sync
 
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
@@ -64,7 +65,8 @@ class SyncBroadcaster(
                   )
                   .toMap()
             ),
-          subscribeTo = sharedSyncStatus
+          subscribeTo = sharedSyncStatus,
+          resolver = AcceptLocalConflictResolver
         )
       } catch (exception: Exception) {
         Timber.e("Error syncing data")
