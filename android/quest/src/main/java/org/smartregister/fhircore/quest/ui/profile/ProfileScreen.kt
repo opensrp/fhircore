@@ -38,7 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
-import androidx.ui.core.Text
+import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 
@@ -83,11 +84,9 @@ fun ProfileScreen(
             .verticalScroll(rememberScrollState())
             .background(PatientProfileSectionsBackgroundColor)
       ) {
-        // TODO display profile views dynamically
-        Text(profileUiState.profileConfiguration?.id ?: "Nothing")
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-          resourceData = profileUiState.resourceData!!,
+          resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
           onViewComponentClick = {
             /** TODO provide click events */
           }

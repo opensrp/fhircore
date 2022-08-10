@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -178,16 +178,18 @@ private fun AppMainNavigationGraph(
           ) { stackEntry ->
             val profileId = stackEntry.arguments?.getString(NavigationArg.PROFILE_ID)
             val resourceId = stackEntry.arguments?.getString(NavigationArg.RESOURCE_ID)
+
             if (!profileId.isNullOrEmpty() && !resourceId.isNullOrEmpty()) {
               val profileViewModel = hiltViewModel<ProfileViewModel>()
-              profileViewModel.retrieveProfileUiState(
-                profileId = profileId,
-                resourceId = resourceId
-              )
-              val profileUiState = remember { profileViewModel.profileUiState.value }
+              LaunchedEffect(Unit) {
+                profileViewModel.retrieveProfileUiState(
+                  profileId = profileId,
+                  resourceId = resourceId
+                )
+              }
               ProfileScreen(
                 navController = navController,
-                profileUiState = profileUiState,
+                profileUiState = profileViewModel.profileUiState.value,
                 onEvent = profileViewModel::onEvent
               )
             }
