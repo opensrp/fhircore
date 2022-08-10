@@ -11,5 +11,175 @@
     "familyId"
   ],
   "rules": [],
-  "views": []
+  "views": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "ROW",
+          "children": [
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "Patient name",
+              "primaryTextColor": "#000000"
+            }
+          ]
+        },
+        {
+          "viewType": "ROW",
+          "children": [
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "Careplan1",
+              "primaryTextColor": "#000000"
+            },
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "Careplan1",
+              "primaryTextColor": "#000000"
+            },
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "Careplan1",
+              "primaryTextColor": "#000000"
+            }
+          ]
+        },
+        {
+          "viewType": "ROW",
+          "children": [
+            {
+              "viewType": "COLUMN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Careplan1",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Careplan1",
+                  "primaryTextColor": "#000000"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewType": "ROW",
+          "children": [
+            {
+              "viewType": "COLUMN",
+              "primaryBackgroundTextColor": "#000000",
+              "radius": 3,
+              "children": [
+                {
+                  "viewType": "ROW",
+                  "children": [
+                    {
+                      "viewType": "COLUMN",
+                      "children": [
+                        {
+                          "viewType": "COMPOUND_TEXT",
+                          "primaryText": "Age",
+                          "primaryTextColor": "#000000"
+                        },
+                        {
+                          "viewType": "COMPOUND_TEXT",
+                          "primaryText": "",
+                          "primaryTextColor": "#000000"
+                        }
+                      ]
+                    },
+                    {
+                      "viewType": "COLUMN",
+                      "children": [
+                        {
+                          "viewType": "COMPOUND_TEXT",
+                          "primaryText": "DOB",
+                          "primaryTextColor": "#000000"
+                        },
+                        {
+                          "viewType": "COMPOUND_TEXT",
+                          "primaryText": "",
+                          "primaryTextColor": "#000000"
+                        }
+                      ]
+                    },
+                    {
+                      "viewType": "COLUMN",
+                      "children": [
+                        {
+                          "viewType": "COMPOUND_TEXT",
+                          "primaryText": "Gender",
+                          "primaryTextColor": "#000000"
+                        },
+                        {
+                          "viewType": "COMPOUND_TEXT",
+                          "primaryText": "",
+                          "primaryTextColor": "#000000"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "COLUMN",
+              "children": [
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "personalDataCardProperties": [
+    {
+      "personalDataItem": [
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "Sex",
+          "primaryTextColor": "#000000"
+        },
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "Female",
+          "fontSize": 14,
+          "primaryTextColor": "#000000"
+        }
+      ]
+    },
+    {
+      "personalDataItem": [
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "Age",
+          "primaryTextColor": "#000000"
+        },
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "20Y",
+          "fontSize": 14,
+          "primaryTextColor": "#000000"
+        }
+      ]
+    },
+    {
+      "personalDataItem": [
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "DOB",
+          "primaryTextColor": "#000000"
+        },
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "01 2002",
+          "fontSize": 14,
+          "primaryTextColor": "#000000"
+        }
+      ]
+    }
+  ]
 }

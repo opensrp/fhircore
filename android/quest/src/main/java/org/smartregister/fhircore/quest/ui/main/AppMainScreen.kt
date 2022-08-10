@@ -184,7 +184,9 @@ private fun AppMainNavigationGraph(
                 profileId = profileId,
                 resourceId = resourceId
               )
-              val profileUiState = remember { profileViewModel.profileUiState.value }
+              //TODO fix commented out [remember].
+              // [remember] is causing profileViewModel.profileUiState.value to have null values
+              val profileUiState = /*remember {*/ profileViewModel.profileUiState.value //}
               ProfileScreen(
                 navController = navController,
                 profileUiState = profileUiState,
