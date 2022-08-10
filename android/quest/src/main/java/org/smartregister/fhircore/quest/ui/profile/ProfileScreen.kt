@@ -84,18 +84,13 @@ fun ProfileScreen(
             .verticalScroll(rememberScrollState())
             .background(PatientProfileSectionsBackgroundColor)
       ) {
-        // TODO display profile views dynamically
-        //Text(profileUiState.profileConfiguration?.id ?: "Nothing")
-        //TODO wrap inside a card
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-          resourceData = ResourceData(Patient()),//profileUiState.resourceData!!, //TODO Fix fetching of resource Data
+          resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
           onViewComponentClick = {
             /** TODO provide click events */
           }
         )
-
-        //profileUiState.profileConfiguration?.personalDataCardProperties?.let { PersonalDataCard(personalDataCardProperties = it) }
       }
     }
   }
