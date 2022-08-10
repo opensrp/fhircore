@@ -42,6 +42,8 @@ object ViewPropertiesSerializer :
       ViewType.COLUMN, ViewType.ROW -> ViewGroupProperties.serializer()
       ViewType.COMPOUND_TEXT -> CompoundTextProperties.serializer()
       ViewType.SERVICE_CARD -> ServiceCardProperties.serializer()
+      ViewType.CARD -> CardViewProperties.serializer()
+      ViewType.PERSONAL_DATA -> PersonalDataProperties.serializer()
     }
   }
 }
