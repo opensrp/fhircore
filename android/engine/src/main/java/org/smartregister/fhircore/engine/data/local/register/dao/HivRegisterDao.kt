@@ -123,12 +123,8 @@ constructor(
       showIdentifierInProfile = true,
       healthStatus = patient.extractHealthStatusFromMeta(metaCodingSystemTag),
       tasks =
-        defaultRepository
-          .searchResourceFor<Task>(
-            subjectId = resourceId,
-            subjectType = ResourceType.Patient,
-            subjectParam = Task.SUBJECT
-          )
+        patient
+          .activeTasks()
           .sortedWith(
             compareBy<Task>(
               { it.clinicVisitOrder(metaCodingSystemTag) ?: Integer.MAX_VALUE },
@@ -164,6 +160,14 @@ constructor(
       subjectParam = Condition.SUBJECT,
       subjectType = ResourceType.Patient
     )
+
+  internal suspend fun Patient.activeTasks(): List<Task> {
+    return this.activeCarePlans()
+      .flatMap { it.activity }
+      .flatMap { it.outcomeReference }
+      .filter { it.reference.startsWith(ResourceType.Task.name) }
+      .map { defaultRepository.loadResource(it) as Task }
+  }
 
   internal suspend fun Patient.activeCarePlans() =
     patientCarePlan(this.logicalId).filter { carePlan ->
