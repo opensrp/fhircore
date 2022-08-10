@@ -43,34 +43,23 @@ fun PersonalDataView(
     Column(modifier = modifier.padding(16.dp)) {
       FlowRow(
         modifier =
-        modifier
-          .clip(RoundedCornerShape(size = 8.dp))
-          .background(PersonalDataBackgroundColor)
-      ) {
-        detailsItem(personalDataCardProperties = personalDataCardProperties)
-
-      }
+          modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
+      ) { PersonalDataItem(personalDataCardProperties = personalDataCardProperties) }
     }
   }
 }
 
 @Composable
-private fun detailsItem (personalDataCardProperties: PersonalDataProperties, modifier: Modifier = Modifier){
+private fun PersonalDataItem(
+  personalDataCardProperties: PersonalDataProperties,
+  modifier: Modifier = Modifier
+) {
   personalDataCardProperties.personalDataItems.forEach {
     Column(modifier = modifier.padding(vertical = 16.dp, horizontal = 24.dp)) {
-      CompoundText(
-        compoundTextProperties =
-        it.label,
-        computedValuesMap = emptyMap()
-      )
-      CompoundText(
-        compoundTextProperties =
-        it.displayValue,
-        computedValuesMap = emptyMap()
-      )
+      CompoundText(compoundTextProperties = it.label, computedValuesMap = emptyMap())
+      CompoundText(compoundTextProperties = it.displayValue, computedValuesMap = emptyMap())
     }
   }
-
 }
 
 @Composable

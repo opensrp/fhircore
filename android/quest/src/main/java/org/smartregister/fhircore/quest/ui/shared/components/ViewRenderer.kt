@@ -27,7 +27,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
-import org.smartregister.fhircore.engine.configuration.view.*
+import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
+import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
@@ -132,12 +137,20 @@ private fun RenderChildView(
     is CardViewProperties ->
       Card(
         elevation = viewProperties.elevation.dp,
-        modifier = modifier
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
-          .padding(viewProperties.padding.dp)
-      ) { Column { ViewRenderer(viewProperties = viewProperties.content, resourceData = resourceData, onViewComponentClick = onViewComponentClick) } }
-    is PersonalDataProperties -> 
-      PersonalDataView(personalDataCardProperties = viewProperties)
+        modifier =
+          modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
+            .padding(viewProperties.padding.dp)
+      ) {
+        Column {
+          ViewRenderer(
+            viewProperties = viewProperties.content,
+            resourceData = resourceData,
+            onViewComponentClick = onViewComponentClick
+          )
+        }
+      }
+    is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
   }
 }
