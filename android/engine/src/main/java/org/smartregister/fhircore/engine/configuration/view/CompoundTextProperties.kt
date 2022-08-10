@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import androidx.compose.ui.text.font.FontWeight
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
@@ -27,5 +28,8 @@ data class CompoundTextProperties(
   val secondaryText: String? = null,
   val secondaryTextColor: String? = null,
   val separator: String? = null,
-  val fontSize: Float = 16.0f
+  val fontSize: Float = 16.0f,
+  val primaryTextBackgroundColor: String? = null,
+  val secondaryTextBackgroundColor: String? = null,
+  val fontWeight: String? = null
 ) : ViewProperties()
