@@ -52,3 +52,7 @@ fun Task.isGuardianVisit(systemTag: String) =
   this.meta.tag.filter { it.system.equals(systemTag, true) }.any {
     it.code.replace("_", "-").equals(GUARDIAN_VISIT_CODE, true)
   }
+
+fun Task.isNotCompleted() = this.status != Task.TaskStatus.COMPLETED
+
+fun Task.canBeCompleted() = this.hasReasonReference().and(this.isNotCompleted())
