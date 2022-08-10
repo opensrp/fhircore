@@ -90,5 +90,21 @@ private fun detailsItem (personalDataCardProperties: List<PersonalDataCardProper
 @Composable
 @Preview(showBackground = true)
 fun PersonalDataCardPreview() {
-  PersonalDataCard()
+  val genderTitle = CompoundTextProperties(primaryText = "Sex")
+  val genderValue = CompoundTextProperties(primaryText = "Female")
+  val genderDataItem:List<CompoundTextProperties> = listOf(genderTitle,genderValue)
+  val genderPersonalCardProperty = PersonalDataCardProperties(personalDataItem = genderDataItem)
+
+  val dobTitle = CompoundTextProperties(primaryText = "DOB")
+  val dobValue = CompoundTextProperties(primaryText = "01 2000")
+  val dobDataItem:List<CompoundTextProperties> = listOf(dobTitle,dobValue)
+  val dobPersonalCardProperty = PersonalDataCardProperties(personalDataItem = dobDataItem)
+
+  val ageTitle = CompoundTextProperties(primaryText = "Age")
+  val ageValue = CompoundTextProperties(primaryText = "22y")
+  val ageDataItem:List<CompoundTextProperties> = listOf(ageTitle,ageValue)
+  val agePersonalCardProperty = PersonalDataCardProperties(personalDataItem = ageDataItem)
+
+  val personalDataCardProperties:List<PersonalDataCardProperties> = listOf(genderPersonalCardProperty, agePersonalCardProperty, dobPersonalCardProperty)
+  PersonalDataCard(personalDataCardProperties = personalDataCardProperties)
 }
