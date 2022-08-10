@@ -20,7 +20,6 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.register.FhirResourceConfig
-import org.smartregister.fhircore.engine.configuration.view.PersonalDataCardProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
@@ -32,6 +31,5 @@ data class ProfileConfiguration(
   val fhirResource: FhirResourceConfig,
   val profileParams: List<String> = emptyList(),
   val rules: List<RuleConfig> = emptyList(),
-  val views: List<ViewProperties> = emptyList(),
-  val personalDataCardProperties: List<PersonalDataCardProperties> = emptyList()
+  val views: List<ViewProperties> = emptyList()
 ) : Configuration()

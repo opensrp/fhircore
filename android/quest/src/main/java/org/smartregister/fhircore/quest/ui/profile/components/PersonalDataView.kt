@@ -20,42 +20,29 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import java.util.Date
-import org.smartregister.fhircore.engine.R
+import com.google.accompanist.flowlayout.FlowRow
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.view.PersonalDataCardProperties
+import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
-import org.smartregister.fhircore.engine.ui.theme.StatusTextColor
-import org.smartregister.fhircore.engine.util.extension.asDdMmm
-import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
-import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 @Composable
 fun PersonalDataCard(
   modifier: Modifier = Modifier,
-  personalDataCardProperties: List<PersonalDataCardProperties> = emptyList()
+  personalDataCardProperties: PersonalDataProperties
 ) {
   Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
     Column(modifier = modifier.padding(16.dp)) {
-      Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+      FlowRow(
         modifier =
         modifier
           .clip(RoundedCornerShape(size = 8.dp))
@@ -69,9 +56,9 @@ fun PersonalDataCard(
 }
 
 @Composable
-private fun detailsItem (personalDataCardProperties: List<PersonalDataCardProperties> = emptyList(),modifier: Modifier = Modifier){
+private fun detailsItem (personalDataCardProperties: PersonalDataProperties, modifier: Modifier = Modifier){
   personalDataCardProperties.forEach {
-    Column(modifier = modifier.padding(16.dp)) {
+    Column(modifier = modifier.padding(vertical = 16.dp, horizontal = 24.dp)) {
       CompoundText(
         compoundTextProperties =
         it.personalDataItem[0],
@@ -93,18 +80,18 @@ fun PersonalDataCardPreview() {
   val genderTitle = CompoundTextProperties(primaryText = "Sex")
   val genderValue = CompoundTextProperties(primaryText = "Female")
   val genderDataItem:List<CompoundTextProperties> = listOf(genderTitle,genderValue)
-  val genderPersonalCardProperty = PersonalDataCardProperties(personalDataItem = genderDataItem)
+  val genderPersonalCardProperty = PersonalDataProperties(personalDataItem = genderDataItem)
 
   val dobTitle = CompoundTextProperties(primaryText = "DOB")
   val dobValue = CompoundTextProperties(primaryText = "01 2000")
   val dobDataItem:List<CompoundTextProperties> = listOf(dobTitle,dobValue)
-  val dobPersonalCardProperty = PersonalDataCardProperties(personalDataItem = dobDataItem)
+  val dobPersonalCardProperty = PersonalDataProperties(personalDataItem = dobDataItem)
 
   val ageTitle = CompoundTextProperties(primaryText = "Age")
   val ageValue = CompoundTextProperties(primaryText = "22y")
   val ageDataItem:List<CompoundTextProperties> = listOf(ageTitle,ageValue)
-  val agePersonalCardProperty = PersonalDataCardProperties(personalDataItem = ageDataItem)
+  val agePersonalCardProperty = PersonalDataProperties(personalDataItem = ageDataItem)
 
-  val personalDataCardProperties:List<PersonalDataCardProperties> = listOf(genderPersonalCardProperty, agePersonalCardProperty, dobPersonalCardProperty)
+  val personalDataCardProperties:List<PersonalDataProperties> = listOf(genderPersonalCardProperty, agePersonalCardProperty, dobPersonalCardProperty)
   PersonalDataCard(personalDataCardProperties = personalDataCardProperties)
 }

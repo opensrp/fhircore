@@ -20,7 +20,7 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
-class ViewGroupProperties(
+open class ViewGroupProperties(
   override val viewType: ViewType,
-  val children: List<ViewProperties> = emptyList()
+  open val children: List<ViewProperties> = emptyList()
 ) : ViewProperties()

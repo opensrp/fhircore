@@ -31,5 +31,5 @@ data class CompoundTextProperties(
   val fontSize: Float = 16.0f,
   val primaryTextBackgroundColor: String? = null,
   val secondaryTextBackgroundColor: String? = null,
-  val fontWeight: String? = null
+  val fontWeight: String? = null //TODO make this an enum
 ) : ViewProperties()

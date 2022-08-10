@@ -32,9 +32,9 @@ enum class ViewType {
   /** A card like view with an actionable service button used register list rows */
   @JsonNames("service_card", "ServiceCard") SERVICE_CARD,
 
-  /** A card like view with an actionable service button used in profile */
-  //@JsonNames("demographics_card", "DemographicsCard") DEMOGRAPHICS_CARD,
+  /** Display a pair of compund texts with the formats label and displayValue */
+  @JsonNames("personal_data", "PersonalData") PERSONAL_DATA,
 
-  /** A card like view with an actionable service button used in profile */
-  @JsonNames("personal_data_card", "PersonalDataCard") PERSONAL_DATA_CARD
+  /** Renders a card */
+  @JsonNames("card", "Card") CARD
 }
