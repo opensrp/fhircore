@@ -38,15 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
-import androidx.ui.core.Text
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
-import org.smartregister.fhircore.engine.util.extension.plusYears
-import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataCard
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
-import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
-import java.util.*
 
 @Composable
 fun ProfileScreen(
@@ -91,6 +86,7 @@ fun ProfileScreen(
       ) {
         // TODO display profile views dynamically
         //Text(profileUiState.profileConfiguration?.id ?: "Nothing")
+        //TODO wrap inside a card
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
           resourceData = ResourceData(Patient()),//profileUiState.resourceData!!, //TODO Fix fetching of resource Data
@@ -99,7 +95,7 @@ fun ProfileScreen(
           }
         )
 
-        profileUiState.profileConfiguration?.personalDataCardProperties?.let { PersonalDataCard(personalDataCardProperties = it) }
+        //profileUiState.profileConfiguration?.personalDataCardProperties?.let { PersonalDataCard(personalDataCardProperties = it) }
       }
     }
   }

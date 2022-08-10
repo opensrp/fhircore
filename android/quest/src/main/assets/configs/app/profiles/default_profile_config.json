@@ -127,57 +127,58 @@
             },
             {
               "viewType": "COLUMN",
-              "children": [
+              "children": []
+            }
+          ]
+        },
+        {
+          "viewType": "CARD",
+          "content": [
+            {
+              "viewType": "PERSONAL_DATA",
+              "personalDataItems": [
+                {
+                  "label": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "Sex",
+                    "primaryTextColor": "#000000"
+                  },
+                  "displayValue": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "Female",
+                    "fontSize": 14,
+                    "primaryTextColor": "#000000"
+                  }
+                },
+                {
+                  "label": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "Age",
+                    "primaryTextColor": "#000000"
+                  },
+                  "displayValue": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "20Y",
+                    "fontSize": 14,
+                    "primaryTextColor": "#000000"
+                  }
+                },
+                {
+                  "label": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "DOB",
+                    "primaryTextColor": "#000000"
+                  },
+                  "displayValue": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "01 2002",
+                    "fontSize": 14,
+                    "primaryTextColor": "#000000"
+                  }
+                }
               ]
             }
           ]
-        }
-      ]
-    }
-  ],
-  "personalDataCardProperties": [
-    {
-      "personalDataItem": [
-        {
-          "viewType": "COMPOUND_TEXT",
-          "primaryText": "Sex",
-          "primaryTextColor": "#000000"
-        },
-        {
-          "viewType": "COMPOUND_TEXT",
-          "primaryText": "Female",
-          "fontSize": 14,
-          "primaryTextColor": "#000000"
-        }
-      ]
-    },
-    {
-      "personalDataItem": [
-        {
-          "viewType": "COMPOUND_TEXT",
-          "primaryText": "Age",
-          "primaryTextColor": "#000000"
-        },
-        {
-          "viewType": "COMPOUND_TEXT",
-          "primaryText": "20Y",
-          "fontSize": 14,
-          "primaryTextColor": "#000000"
-        }
-      ]
-    },
-    {
-      "personalDataItem": [
-        {
-          "viewType": "COMPOUND_TEXT",
-          "primaryText": "DOB",
-          "primaryTextColor": "#000000"
-        },
-        {
-          "viewType": "COMPOUND_TEXT",
-          "primaryText": "01 2002",
-          "fontSize": 14,
-          "primaryTextColor": "#000000"
         }
       ]
     }

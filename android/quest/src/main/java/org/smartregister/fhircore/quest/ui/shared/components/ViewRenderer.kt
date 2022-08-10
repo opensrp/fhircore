@@ -16,16 +16,21 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
-import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
-import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
+import org.smartregister.fhircore.engine.configuration.view.*
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
 import org.smartregister.fhircore.quest.ui.register.components.ServiceCard
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
@@ -124,5 +129,15 @@ private fun RenderChildView(
         resourceData = resourceData,
         onViewComponentClick = onViewComponentClick
       )
+    is CardViewProperties ->
+      Card(
+        elevation = viewProperties.elevation.dp,
+        modifier = modifier
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
+          .padding(viewProperties.padding.dp)
+      ) { Column { ViewRenderer(viewProperties = viewProperties.content, resourceData = resourceData, onViewComponentClick = onViewComponentClick) } }
+    is PersonalDataProperties -> 
+      PersonalDataView(personalDataCardProperties = viewProperties)
   }
 }

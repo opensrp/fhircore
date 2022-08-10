@@ -17,9 +17,7 @@
 package org.smartregister.fhircore.quest.ui.profile.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,12 +29,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowRow
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.PersonalDataItem
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
 import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
 
 @Composable
-fun PersonalDataCard(
+fun PersonalDataView(
   modifier: Modifier = Modifier,
   personalDataCardProperties: PersonalDataProperties
 ) {
@@ -57,16 +56,16 @@ fun PersonalDataCard(
 
 @Composable
 private fun detailsItem (personalDataCardProperties: PersonalDataProperties, modifier: Modifier = Modifier){
-  personalDataCardProperties.forEach {
+  personalDataCardProperties.personalDataItems.forEach {
     Column(modifier = modifier.padding(vertical = 16.dp, horizontal = 24.dp)) {
       CompoundText(
         compoundTextProperties =
-        it.personalDataItem[0],
+        it.label,
         computedValuesMap = emptyMap()
       )
       CompoundText(
         compoundTextProperties =
-        it.personalDataItem[1],
+        it.displayValue,
         computedValuesMap = emptyMap()
       )
     }
@@ -77,21 +76,20 @@ private fun detailsItem (personalDataCardProperties: PersonalDataProperties, mod
 @Composable
 @Preview(showBackground = true)
 fun PersonalDataCardPreview() {
-  val genderTitle = CompoundTextProperties(primaryText = "Sex")
+  val genderLabel = CompoundTextProperties(primaryText = "Sex")
   val genderValue = CompoundTextProperties(primaryText = "Female")
-  val genderDataItem:List<CompoundTextProperties> = listOf(genderTitle,genderValue)
-  val genderPersonalCardProperty = PersonalDataProperties(personalDataItem = genderDataItem)
+  val genderDataItem = PersonalDataItem(label = genderLabel, displayValue = genderValue)
 
-  val dobTitle = CompoundTextProperties(primaryText = "DOB")
+  val dobLabel = CompoundTextProperties(primaryText = "DOB")
   val dobValue = CompoundTextProperties(primaryText = "01 2000")
-  val dobDataItem:List<CompoundTextProperties> = listOf(dobTitle,dobValue)
-  val dobPersonalCardProperty = PersonalDataProperties(personalDataItem = dobDataItem)
+  val dobDataItem = PersonalDataItem(label = dobLabel, displayValue = dobValue)
 
   val ageTitle = CompoundTextProperties(primaryText = "Age")
   val ageValue = CompoundTextProperties(primaryText = "22y")
-  val ageDataItem:List<CompoundTextProperties> = listOf(ageTitle,ageValue)
-  val agePersonalCardProperty = PersonalDataProperties(personalDataItem = ageDataItem)
+  val ageDataItem = PersonalDataItem(label = ageTitle, displayValue = ageValue)
 
-  val personalDataCardProperties:List<PersonalDataProperties> = listOf(genderPersonalCardProperty, agePersonalCardProperty, dobPersonalCardProperty)
-  PersonalDataCard(personalDataCardProperties = personalDataCardProperties)
+  val personaDataItems = listOf(genderDataItem, dobDataItem, ageDataItem)
+  val personalDataCardProperties = PersonalDataProperties(personalDataItems = personaDataItems)
+
+  PersonalDataView(personalDataCardProperties = personalDataCardProperties)
 }
