@@ -16,12 +16,17 @@
 
 package org.smartregister.fhircore.engine.util
 
-const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
-const val USER_INFO_SHARED_PREFERENCE_KEY = "user_info"
-const val LOGGED_IN_PRACTITIONER = "logged_in_practitioner"
-const val APP_ID_KEY = "app_id"
-const val KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY = "KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY"
-const val PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY =
-  "PRACTITIONER_PARAMETERS_SHARED_PREFERENCE_KEY"
-const val APP_ID_CONFIG = "app_id_config"
-const val FORCE_LOGIN_VIA_USERNAME = "force_login_with_username"
+import ca.uhn.fhir.parser.IParser
+import org.junit.Assert
+import org.junit.Test
+
+class FhirContextUtilsTest {
+
+  @Test
+  fun `getPractitionerDetailParser() should return IParser`() {
+    val iParser = FhirContextUtil.getPractitionerDetailParser()
+
+    Assert.assertNotNull(iParser)
+    Assert.assertTrue(iParser is IParser)
+  }
+}

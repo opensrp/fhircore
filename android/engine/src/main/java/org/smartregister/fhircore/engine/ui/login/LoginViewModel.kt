@@ -25,10 +25,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJob
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.hl7.fhir.r4.model.Practitioner
@@ -39,17 +43,21 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+//import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
+//import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.PractitionerDetailsUtils
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -58,16 +66,21 @@ import timber.log.Timber
 class LoginViewModel
 @Inject
 constructor(
+  val fhirEngine: FhirEngine,
+  val syncJob: SyncJob,
+  val fhirResourceDataSource: FhirResourceDataSource,
+  val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
+  val practitionerDetailsUtils: PractitionerDetailsUtils,
   val sharedPreferences: SharedPreferencesHelper,
-  val fhirResourceDataSource: FhirResourceDataSource,
-  val configurationRegistry: ConfigurationRegistry
 ) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
   val launchDialPad
     get() = _launchDialPad
+
+  val sharedSyncStatus = MutableSharedFlow<State>()
 
   /**
    * Fetch the user info after verifying credentials with flow.
@@ -79,9 +92,15 @@ constructor(
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         if (response.isSuccessful) {
           response.body()?.let {
+            Timber.d(it.string())
             with(it.string().decodeJson<UserInfo>()) {
-              sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, this.encodeJson())
+              storeUserPreferences(this)
+              viewModelScope.launch(dispatcher.io()) {
+                callPractitionerDetails(this@with)
+              }
               fetchLoggedInPractitioner(this)
+//              _showProgressBar.postValue(false)
+//              _navigateToHome.postValue(true)
             }
           }
         } else {
@@ -96,6 +115,38 @@ constructor(
         _showProgressBar.postValue(false)
       }
     }
+
+  private fun storeUserPreferences(userInfo: UserInfo) {
+    sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson())
+  }
+
+  suspend fun callPractitionerDetails(userResponse: UserInfo) {
+    val bundle = accountAuthenticator.getPractitionerDetails(userResponse.keyclockuuid!!)
+    if (bundle.hasEntry()) {
+      val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
+      val careTeamList = practitionerDetails.fhirPractitionerDetails.careTeams
+      val organizationList = practitionerDetails.fhirPractitionerDetails.organizations
+      val locationList = practitionerDetails.fhirPractitionerDetails.locations
+      practitionerDetailsUtils.updateUserDetailsFromPractitionerDetails(
+        practitionerDetails,
+        userResponse
+      )
+      practitionerDetailsUtils.storeKeyClockInfo(practitionerDetails)
+
+      practitionerDetailsUtils.saveParameter(
+        practitionerId = practitionerDetails.userDetail.id,
+        careTeamList = careTeamList,
+        organizationList = organizationList,
+        locationList = locationList
+      )
+
+      locationList.forEach { fhirEngine.save(it) }
+
+      organizationList.forEach { fhirEngine.save(it) }
+
+      careTeamList.forEach { fhirEngine.save(it) }
+    }
+  }
 
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}

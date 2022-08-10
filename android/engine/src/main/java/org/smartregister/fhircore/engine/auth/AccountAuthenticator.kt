@@ -29,6 +29,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.core.os.bundleOf
+import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
@@ -37,9 +38,11 @@ import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.FhirContextUtil
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -56,6 +59,7 @@ constructor(
   @ApplicationContext val context: Context,
   val accountManager: AccountManager,
   val oAuthService: OAuthService,
+  val fhirResourceService: FhirResourceService,
   val configService: ConfigService,
   val secureSharedPreference: SecureSharedPreference,
   val tokenManagerService: TokenManagerService,
@@ -171,6 +175,18 @@ constructor(
   }
 
   fun getUserInfo(): Call<ResponseBody> = oAuthService.userInfo()
+
+  // TODO move to some external file
+  suspend fun getPractitionerDetails(keycloak_uuid: String): org.hl7.fhir.r4.model.Bundle {
+
+    val iParser: IParser = FhirContextUtil.getPractitionerDetailParser()
+
+    val qJson =
+      context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }
+
+    return iParser.parseResource(qJson) as org.hl7.fhir.r4.model.Bundle
+  }
+  //    fhirResourceService.getResource("practitioner-details/$keycloak_uuid")
 
   fun refreshToken(refreshToken: String): OAuthResponse? {
     val data = buildOAuthPayload(REFRESH_TOKEN)
