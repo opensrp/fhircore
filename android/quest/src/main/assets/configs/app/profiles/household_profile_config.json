@@ -89,44 +89,29 @@
   "rules": [],
   "views": [
     {
-      "viewType": "COLUMN",
-      "children": [
+      "viewType": "CARD",
+      "content": [
         {
-          "viewType": "ROW",
+          "viewType": "COLUMN",
           "children": [
             {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Patient name",
-              "primaryTextColor": "#000000"
-            }
-          ]
-        },
-        {
-          "viewType": "ROW",
-          "children": [
-            {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Careplan1",
-              "primaryTextColor": "#000000"
-            },
-            {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Careplan1",
-              "primaryTextColor": "#000000"
-            },
-            {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Careplan1",
-              "primaryTextColor": "#000000"
-            }
-          ]
-        },
-        {
-          "viewType": "ROW",
-          "children": [
-            {
-              "viewType": "COLUMN",
+              "viewType": "ROW",
               "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Patient name",
+                  "primaryTextColor": "#000000"
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Careplan1",
+                  "primaryTextColor": "#000000"
+                },
                 {
                   "viewType": "COMPOUND_TEXT",
                   "primaryText": "Careplan1",
@@ -138,78 +123,93 @@
                   "primaryTextColor": "#000000"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "viewType": "ROW",
-          "children": [
+            },
             {
-              "viewType": "COLUMN",
-              "primaryBackgroundTextColor": "#000000",
-              "radius": 3,
+              "viewType": "ROW",
               "children": [
                 {
-                  "viewType": "ROW",
+                  "viewType": "COLUMN",
                   "children": [
                     {
-                      "viewType": "COLUMN",
-                      "children": [
-                        {
-                          "viewType": "COMPOUND_TEXT",
-                          "primaryText": "Age",
-                          "primaryTextColor": "#000000"
-                        },
-                        {
-                          "viewType": "COMPOUND_TEXT",
-                          "primaryText": "",
-                          "primaryTextColor": "#000000"
-                        }
-                      ]
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
                     },
                     {
-                      "viewType": "COLUMN",
-                      "children": [
-                        {
-                          "viewType": "COMPOUND_TEXT",
-                          "primaryText": "DOB",
-                          "primaryTextColor": "#000000"
-                        },
-                        {
-                          "viewType": "COMPOUND_TEXT",
-                          "primaryText": "",
-                          "primaryTextColor": "#000000"
-                        }
-                      ]
-                    },
-                    {
-                      "viewType": "COLUMN",
-                      "children": [
-                        {
-                          "viewType": "COMPOUND_TEXT",
-                          "primaryText": "Gender",
-                          "primaryTextColor": "#000000"
-                        },
-                        {
-                          "viewType": "COMPOUND_TEXT",
-                          "primaryText": "",
-                          "primaryTextColor": "#000000"
-                        }
-                      ]
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
                     }
                   ]
                 }
               ]
             },
             {
-              "viewType": "COLUMN",
-              "children": []
-            }
-          ]
-        },
-        {
-          "viewType": "CARD",
-          "content": [
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "primaryBackgroundTextColor": "#000000",
+                  "radius": 3,
+                  "children": [
+                    {
+                      "viewType": "ROW",
+                      "children": [
+                        {
+                          "viewType": "COLUMN",
+                          "children": [
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "Age",
+                              "primaryTextColor": "#000000"
+                            },
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "",
+                              "primaryTextColor": "#000000"
+                            }
+                          ]
+                        },
+                        {
+                          "viewType": "COLUMN",
+                          "children": [
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "DOB",
+                              "primaryTextColor": "#000000"
+                            },
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "",
+                              "primaryTextColor": "#000000"
+                            }
+                          ]
+                        },
+                        {
+                          "viewType": "COLUMN",
+                          "children": [
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "Gender",
+                              "primaryTextColor": "#000000"
+                            },
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "",
+                              "primaryTextColor": "#000000"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "children": []
+                }
+              ]
+            },
             {
               "viewType": "PERSONAL_DATA",
               "personalDataItems": [
