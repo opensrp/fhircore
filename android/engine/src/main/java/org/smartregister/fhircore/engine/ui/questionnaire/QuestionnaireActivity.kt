@@ -23,6 +23,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
@@ -193,9 +194,19 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
         questionnaireConfig = resultPair.first
         questionnaire = resultPair.second
+
+        populateInitialValues(questionnaire)
       }
-      .onFailure { Timber.e(it) }
-      .also { populateInitialValues(questionnaire) }
+      .onFailure {
+        Timber.e(it)
+
+        withContext(dispatcherProvider.main()) {
+          if (it is QuestionnaireNotFoundException) {
+            Toast.makeText(this@QuestionnaireActivity, it.message, Toast.LENGTH_LONG).show()
+            finish()
+          }
+        }
+      }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
