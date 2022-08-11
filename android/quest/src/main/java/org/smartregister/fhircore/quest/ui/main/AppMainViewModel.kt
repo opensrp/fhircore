@@ -177,6 +177,9 @@ constructor(
           ApplicationWorkflow.LAUNCH_PROFILE ->
             // TODO bind the necessary patient profile url params
             event.navController.navigate(MainNavigationScreen.Profile.route)
+          ApplicationWorkflow.LAUNCH_MAP ->
+            // TODO Launch map
+            event.navController.navigate(MainNavigationScreen.Profile.route)
           null -> return
         }
       }
