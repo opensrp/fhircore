@@ -17,15 +17,18 @@
 package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
-data class ServiceCardProperties(
-  override val viewType: ViewType = ViewType.SERVICE_CARD,
-  val details: List<CompoundTextProperties> = emptyList(),
-  val showVerticalDivider: Boolean = false,
-  val serviceMemberIcons: String? = null,
-  val serviceButton: ButtonProperties? = null,
+data class ButtonProperties(
+  override val viewType: ViewType = ViewType.BUTTON,
+  val visible: Boolean? = null,
+  val text: String? = null,
+  val status: String,
+  val smallSized: Boolean = false,
+  val questionnaire: QuestionnaireConfig? = null,
+  val fontSize: Float = 12.0f,
   val actions: List<ActionConfig> = emptyList()
 ) : ViewProperties()

@@ -44,6 +44,7 @@ object ViewPropertiesSerializer :
       ViewType.SERVICE_CARD -> ServiceCardProperties.serializer()
       ViewType.CARD -> CardViewProperties.serializer()
       ViewType.PERSONAL_DATA -> PersonalDataProperties.serializer()
+      ViewType.BUTTON -> ButtonProperties.serializer()
     }
   }
 }
