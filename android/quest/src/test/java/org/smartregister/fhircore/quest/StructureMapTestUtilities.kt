@@ -27,9 +27,8 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.Test
-import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire.json and the respective
@@ -39,338 +38,366 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
  */
 class StructureMapTestUtilities : RobolectricTest() {
 
-    @Test
-    fun `perform immunization extraction`() {
-        val immunizationQuestionnaireResponseString: String =
-            "content/questionnaire-response-standard.json".readFile()
-        val immunizationStructureMap =
-            "content/structure-map.txt".readFile()
+  @Test
+  fun `perform immunization extraction`() {
+    val immunizationQuestionnaireResponseString: String =
+      "content/questionnaire-response-standard.json".readFile()
+    val immunizationStructureMap = "content/structure-map.txt".readFile()
 
-        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
-        // Package name manually checked from
-        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
 
-        contextR4.setExpansionProfile(Parameters())
-        contextR4.isCanRunWithoutTerminology = true
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
 
-        val outputs: MutableList<Base> = ArrayList()
-        val transformSupportServices = TransformSupportServices(contextR4)
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(contextR4)
 
-        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-        val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
 
-        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-        val mapString = iParser.encodeResourceToString(map)
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
 
-        System.out.println(mapString)
+    System.out.println(mapString)
 
-        val targetResource = Bundle()
+    val targetResource = Bundle()
 
-        val baseElement =
-            iParser.parseResource(
-                QuestionnaireResponse::class.java,
-                immunizationQuestionnaireResponseString
-            )
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        immunizationQuestionnaireResponseString
+      )
 
-        scu.transform(contextR4, baseElement, map, targetResource)
+    scu.transform(contextR4, baseElement, map, targetResource)
 
-        System.out.println(iParser.encodeResourceToString(targetResource))
-    }
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
 
-//    @Test
-//    fun `populate immunization Questionnaire`() {
-//        val patientJson = "structure-map-questionnaires/eir/immunization/patient.json".readFile()
-//        val immunizationJson =
-//            "structure-map-questionnaires/eir/immunization/immunization-1.json".readFile()
-//        val immunizationStructureMap =
-//            "structure-map-questionnaires/eir/immunization/structure-map.txt".readFile()
-//
-//        val questionnaireJson =
-//            "structure-map-questionnaires/eir/immunization/questionnaire.json".readFile()
-//
-//        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
-//        // Package name manually checked from
-//        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-//        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-//
-//        contextR4.setExpansionProfile(Parameters())
-//        contextR4.isCanRunWithoutTerminology = true
-//
-//        val outputs: MutableList<Base> = ArrayList()
-//        val transformSupportServices = TransformSupportServices(contextR4)
-//
-//        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-//        val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
-//
-//        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-//        val mapString = iParser.encodeResourceToString(map)
-//
-//        System.out.println(mapString)
-//
-//        val targetResource = Bundle()
-//
-//        val patient = iParser.parseResource(Patient::class.java, patientJson)
-//        val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
-//        val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaireJson)
-//
-//        val questionnaireResponse: QuestionnaireResponse
-//        runBlocking {
-//            questionnaireResponse = ResourceMapper.populate(questionnaire, patient, immunization)
-//        }
-//
-//        scu.transform(contextR4, questionnaireResponse, map, targetResource)
-//
-//        System.out.println(iParser.encodeResourceToString(targetResource))
-//    }
+  //    @Test
+  //    fun `populate immunization Questionnaire`() {
+  //        val patientJson =
+  // "structure-map-questionnaires/eir/immunization/patient.json".readFile()
+  //        val immunizationJson =
+  //            "structure-map-questionnaires/eir/immunization/immunization-1.json".readFile()
+  //        val immunizationStructureMap =
+  //            "structure-map-questionnaires/eir/immunization/structure-map.txt".readFile()
+  //
+  //        val questionnaireJson =
+  //            "structure-map-questionnaires/eir/immunization/questionnaire.json".readFile()
+  //
+  //        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+  //        // Package name manually checked from
+  //        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+  //        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core",
+  // "4.0.1"))
+  //
+  //        contextR4.setExpansionProfile(Parameters())
+  //        contextR4.isCanRunWithoutTerminology = true
+  //
+  //        val outputs: MutableList<Base> = ArrayList()
+  //        val transformSupportServices = TransformSupportServices(contextR4)
+  //
+  //        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4,
+  // transformSupportServices)
+  //        val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
+  //
+  //        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  //        val mapString = iParser.encodeResourceToString(map)
+  //
+  //        System.out.println(mapString)
+  //
+  //        val targetResource = Bundle()
+  //
+  //        val patient = iParser.parseResource(Patient::class.java, patientJson)
+  //        val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
+  //        val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaireJson)
+  //
+  //        val questionnaireResponse: QuestionnaireResponse
+  //        runBlocking {
+  //            questionnaireResponse = ResourceMapper.populate(questionnaire, patient,
+  // immunization)
+  //        }
+  //
+  //        scu.transform(contextR4, questionnaireResponse, map, targetResource)
+  //
+  //        System.out.println(iParser.encodeResourceToString(targetResource))
+  //    }
 
-//    @Test
-//    fun `populate patient registration Questionnaire and extract Resources`() {
-//        val patientRegistrationQuestionnaire =
-//            "structure-map-questionnaires/eir/patient-registration/questionnaire.json".readFile()
-//        val patientRegistrationStructureMap =
-//            "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
-//        val relatedPersonJson =
-//            "structure-map-questionnaires/eir/patient-registration/related-person.json".readFile()
-//        val patientJson =
-//            "structure-map-questionnaires/eir/patient-registration/patient.json".readFile()
-//
-//        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-//        val questionnaire =
-//            iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
-//        val patient = iParser.parseResource(Patient::class.java, patientJson)
-//        val relatedPerson = iParser.parseResource(RelatedPerson::class.java, relatedPersonJson)
-//
-//        var questionnaireResponse: QuestionnaireResponse
-//        runBlocking {
-//            questionnaireResponse = ResourceMapper.populate(questionnaire, patient, relatedPerson)
-//        }
-//
-//        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
-//        // Package name manually checked from
-//        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-//        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-//
-//        contextR4.setExpansionProfile(Parameters())
-//        contextR4.isCanRunWithoutTerminology = true
-//
-//        val outputs: MutableList<Base> = ArrayList()
-//        val transformSupportServices = TransformSupportServices(contextR4)
-//
-//        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-//        val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
-//        val mapString = iParser.encodeResourceToString(map)
-//
-//        System.out.println(mapString)
-//
-//        val targetResource = Bundle()
-//
-//        scu.transform(contextR4, questionnaireResponse, map, targetResource)
-//        System.out.println(iParser.encodeResourceToString(targetResource))
-//    }
-//
-//    @Test
-//    fun `populate adverse event Questionnaire and extract Resources`() {
-//        val adverseEventQuestionnaire =
-//            "structure-map-questionnaires/eir/adverse-event/questionnaire.json".readFile()
-//        val adverseEventStructureMap =
-//            "structure-map-questionnaires/eir/adverse-event/structure-map.txt".readFile()
-//        val immunizationJson =
-//            "structure-map-questionnaires/eir/adverse-event/immunization.json".readFile()
-//
-//        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-//        val questionnaire = iParser.parseResource(Questionnaire::class.java, adverseEventQuestionnaire)
-//        val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
-//
-//        var questionnaireResponse: QuestionnaireResponse
-//        runBlocking { questionnaireResponse = ResourceMapper.populate(questionnaire, immunization) }
-//
-//        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
-//        // Package name manually checked from
-//        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-//        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-//
-//        contextR4.setExpansionProfile(Parameters())
-//        contextR4.isCanRunWithoutTerminology = true
-//
-//        val outputs: MutableList<Base> = ArrayList()
-//        val transformSupportServices = TransformSupportServices(contextR4)
-//
-//        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-//        val map = scu.parse(adverseEventStructureMap, "AdverseEvent")
-//        val mapString = iParser.encodeResourceToString(map)
-//
-//        System.out.println(mapString)
-//
-//        val targetResource = Bundle()
-//
-//        scu.transform(contextR4, questionnaireResponse, map, targetResource)
-//        System.out.println(iParser.encodeResourceToString(targetResource))
-//    }
+  //    @Test
+  //    fun `populate patient registration Questionnaire and extract Resources`() {
+  //        val patientRegistrationQuestionnaire =
+  //
+  // "structure-map-questionnaires/eir/patient-registration/questionnaire.json".readFile()
+  //        val patientRegistrationStructureMap =
+  //            "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
+  //        val relatedPersonJson =
+  //
+  // "structure-map-questionnaires/eir/patient-registration/related-person.json".readFile()
+  //        val patientJson =
+  //            "structure-map-questionnaires/eir/patient-registration/patient.json".readFile()
+  //
+  //        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  //        val questionnaire =
+  //            iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
+  //        val patient = iParser.parseResource(Patient::class.java, patientJson)
+  //        val relatedPerson = iParser.parseResource(RelatedPerson::class.java, relatedPersonJson)
+  //
+  //        var questionnaireResponse: QuestionnaireResponse
+  //        runBlocking {
+  //            questionnaireResponse = ResourceMapper.populate(questionnaire, patient,
+  // relatedPerson)
+  //        }
+  //
+  //        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+  //        // Package name manually checked from
+  //        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+  //        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core",
+  // "4.0.1"))
+  //
+  //        contextR4.setExpansionProfile(Parameters())
+  //        contextR4.isCanRunWithoutTerminology = true
+  //
+  //        val outputs: MutableList<Base> = ArrayList()
+  //        val transformSupportServices = TransformSupportServices(contextR4)
+  //
+  //        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4,
+  // transformSupportServices)
+  //        val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
+  //        val mapString = iParser.encodeResourceToString(map)
+  //
+  //        System.out.println(mapString)
+  //
+  //        val targetResource = Bundle()
+  //
+  //        scu.transform(contextR4, questionnaireResponse, map, targetResource)
+  //        System.out.println(iParser.encodeResourceToString(targetResource))
+  //    }
+  //
+  //    @Test
+  //    fun `populate adverse event Questionnaire and extract Resources`() {
+  //        val adverseEventQuestionnaire =
+  //            "structure-map-questionnaires/eir/adverse-event/questionnaire.json".readFile()
+  //        val adverseEventStructureMap =
+  //            "structure-map-questionnaires/eir/adverse-event/structure-map.txt".readFile()
+  //        val immunizationJson =
+  //            "structure-map-questionnaires/eir/adverse-event/immunization.json".readFile()
+  //
+  //        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  //        val questionnaire = iParser.parseResource(Questionnaire::class.java,
+  // adverseEventQuestionnaire)
+  //        val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
+  //
+  //        var questionnaireResponse: QuestionnaireResponse
+  //        runBlocking { questionnaireResponse = ResourceMapper.populate(questionnaire,
+  // immunization) }
+  //
+  //        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+  //        // Package name manually checked from
+  //        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+  //        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core",
+  // "4.0.1"))
+  //
+  //        contextR4.setExpansionProfile(Parameters())
+  //        contextR4.isCanRunWithoutTerminology = true
+  //
+  //        val outputs: MutableList<Base> = ArrayList()
+  //        val transformSupportServices = TransformSupportServices(contextR4)
+  //
+  //        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4,
+  // transformSupportServices)
+  //        val map = scu.parse(adverseEventStructureMap, "AdverseEvent")
+  //        val mapString = iParser.encodeResourceToString(map)
+  //
+  //        System.out.println(mapString)
+  //
+  //        val targetResource = Bundle()
+  //
+  //        scu.transform(contextR4, questionnaireResponse, map, targetResource)
+  //        System.out.println(iParser.encodeResourceToString(targetResource))
+  //    }
 
-//    @Test
-//    fun `convert StructureMap to JSON`() {
-//        val patientRegistrationStructureMap =
-//            "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
-//        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
-//        // Package name manually checked from
-//        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-//        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-//        contextR4.isCanRunWithoutTerminology = true
-//
-//        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-//        val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
-//
-//        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-//        val mapString = iParser.encodeResourceToString(map)
-//
-//        System.out.println(mapString)
-//    }
+  //    @Test
+  //    fun `convert StructureMap to JSON`() {
+  //        val patientRegistrationStructureMap =
+  //            "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
+  //        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+  //        // Package name manually checked from
+  //        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+  //        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core",
+  // "4.0.1"))
+  //        contextR4.isCanRunWithoutTerminology = true
+  //
+  //        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
+  //        val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
+  //
+  //        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  //        val mapString = iParser.encodeResourceToString(map)
+  //
+  //        System.out.println(mapString)
+  //    }
 
-//    @Test
-//    fun `perform extraction from patient registration Questionnaire`() {
-//        val patientRegistrationQuestionnaireResponse =
-//            "structure-map-questionnaires/eir/patient-registration/questionnaire-response.json".readFile()
-//        val patientRegistrationStructureMap =
-//            "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
-//
-//        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
-//        // Package name manually checked from
-//        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-//        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-//
-//        contextR4.setExpansionProfile(Parameters())
-//        contextR4.isCanRunWithoutTerminology = true
-//
-//        val outputs: MutableList<Base> = ArrayList()
-//        val transformSupportServices = TransformSupportServices(contextR4)
-//
-//        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-//        val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
-//
-//        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-//        val mapString = iParser.encodeResourceToString(map)
-//
-//        System.out.println(mapString)
-//
-//        val targetResource = Bundle()
-//
-//        val baseElement =
-//            iParser.parseResource(
-//                QuestionnaireResponse::class.java,
-//                patientRegistrationQuestionnaireResponse
-//            )
-//
-//        scu.transform(contextR4, baseElement, map, targetResource)
-//
-//        System.out.println(iParser.encodeResourceToString(targetResource))
-//    }
-//
-//    @Test
-//    fun `perform extraction from adverse event Questionnaire`() {
-//        val adverseEventQuestionnaireResponse =
-//            "structure-map-questionnaires/eir/adverse-event/questionnaire-response.json".readFile()
-//        val adverseEventStructureMap =
-//            "structure-map-questionnaires/eir/adverse-event/structure-map.txt".readFile()
-//
-//        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
-//        // Package name manually checked from
-//        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-//        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-//
-//        contextR4.setExpansionProfile(Parameters())
-//        contextR4.isCanRunWithoutTerminology = true
-//
-//        val outputs: MutableList<Base> = ArrayList()
-//        val transformSupportServices = TransformSupportServices(contextR4)
-//
-//        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-//        val map = scu.parse(adverseEventStructureMap, "AdverseEvent")
-//
-//        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-//        val mapString = iParser.encodeResourceToString(map)
-//
-//        System.out.println(mapString)
-//
-//        val targetResource = Bundle()
-//
-//        val baseElement =
-//            iParser.parseResource(QuestionnaireResponse::class.java, adverseEventQuestionnaireResponse)
-//
-//        scu.transform(contextR4, baseElement, map, targetResource)
-//
-//        System.out.println(iParser.encodeResourceToString(targetResource))
-//    }
-//
-//    @Test
-//    fun `perform extraction from  vital signs metric Questionnaire`() {
-//        val vitalSignQuestionnaireResponse =
-//            "structure-map-questionnaires/anc/vital-signs/metric/questionnaire-response-pulse-rate.json".readFile()
-//        val vitalSignStructureMap =
-//            "structure-map-questionnaires/anc/vital-signs/metric/structure-map.txt".readFile()
-//
-//        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
-//        // Package name manually checked from
-//        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-//        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-//
-//        contextR4.setExpansionProfile(Parameters())
-//        contextR4.isCanRunWithoutTerminology = true
-//
-//        val outputs: MutableList<Base> = ArrayList()
-//        val transformSupportServices = TransformSupportServices(contextR4)
-//
-//        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-//        val map = scu.parse(vitalSignStructureMap, "VitalSigns")
-//
-//        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-//        val mapString = iParser.encodeResourceToString(map)
-//
-//        System.out.println(mapString)
-//
-//        val targetResource = Bundle()
-//
-//        val baseElement =
-//            iParser.parseResource(QuestionnaireResponse::class.java, vitalSignQuestionnaireResponse)
-//
-//        scu.transform(contextR4, baseElement, map, targetResource)
-//
-//        System.out.println(iParser.encodeResourceToString(targetResource))
-//    }
-//
-//    @Test
-//    fun `perform extraction from  vital signs standard Questionnaire`() {
-//        val vitalSignQuestionnaireResponse =
-//            "structure-map-questionnaires/anc/vital-signs/standard/questionnaire-response-pulse-rate.json".readFile()
-//        val vitalSignStructureMap =
-//            "structure-map-questionnaires/anc/vital-signs/standard/structure-map.txt".readFile()
-//
-//        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
-//        // Package name manually checked from
-//        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-//        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-//
-//        contextR4.setExpansionProfile(Parameters())
-//        contextR4.isCanRunWithoutTerminology = true
-//
-//        val outputs: MutableList<Base> = ArrayList()
-//        val transformSupportServices = TransformSupportServices(contextR4)
-//
-//        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-//        val map = scu.parse(vitalSignStructureMap, "VitalSigns")
-//
-//        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-//        val mapString = iParser.encodeResourceToString(map)
-//
-//        System.out.println(mapString)
-//
-//        val targetResource = Bundle()
-//
-//        val baseElement =
-//            iParser.parseResource(QuestionnaireResponse::class.java, vitalSignQuestionnaireResponse)
-//
-//        scu.transform(contextR4, baseElement, map, targetResource)
-//
-//        System.out.println(iParser.encodeResourceToString(targetResource))
-//    }
+  //    @Test
+  //    fun `perform extraction from patient registration Questionnaire`() {
+  //        val patientRegistrationQuestionnaireResponse =
+  //
+  // "structure-map-questionnaires/eir/patient-registration/questionnaire-response.json".readFile()
+  //        val patientRegistrationStructureMap =
+  //            "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
+  //
+  //        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+  //        // Package name manually checked from
+  //        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+  //        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core",
+  // "4.0.1"))
+  //
+  //        contextR4.setExpansionProfile(Parameters())
+  //        contextR4.isCanRunWithoutTerminology = true
+  //
+  //        val outputs: MutableList<Base> = ArrayList()
+  //        val transformSupportServices = TransformSupportServices(contextR4)
+  //
+  //        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4,
+  // transformSupportServices)
+  //        val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
+  //
+  //        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  //        val mapString = iParser.encodeResourceToString(map)
+  //
+  //        System.out.println(mapString)
+  //
+  //        val targetResource = Bundle()
+  //
+  //        val baseElement =
+  //            iParser.parseResource(
+  //                QuestionnaireResponse::class.java,
+  //                patientRegistrationQuestionnaireResponse
+  //            )
+  //
+  //        scu.transform(contextR4, baseElement, map, targetResource)
+  //
+  //        System.out.println(iParser.encodeResourceToString(targetResource))
+  //    }
+  //
+  //    @Test
+  //    fun `perform extraction from adverse event Questionnaire`() {
+  //        val adverseEventQuestionnaireResponse =
+  //
+  // "structure-map-questionnaires/eir/adverse-event/questionnaire-response.json".readFile()
+  //        val adverseEventStructureMap =
+  //            "structure-map-questionnaires/eir/adverse-event/structure-map.txt".readFile()
+  //
+  //        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+  //        // Package name manually checked from
+  //        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+  //        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core",
+  // "4.0.1"))
+  //
+  //        contextR4.setExpansionProfile(Parameters())
+  //        contextR4.isCanRunWithoutTerminology = true
+  //
+  //        val outputs: MutableList<Base> = ArrayList()
+  //        val transformSupportServices = TransformSupportServices(contextR4)
+  //
+  //        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4,
+  // transformSupportServices)
+  //        val map = scu.parse(adverseEventStructureMap, "AdverseEvent")
+  //
+  //        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  //        val mapString = iParser.encodeResourceToString(map)
+  //
+  //        System.out.println(mapString)
+  //
+  //        val targetResource = Bundle()
+  //
+  //        val baseElement =
+  //            iParser.parseResource(QuestionnaireResponse::class.java,
+  // adverseEventQuestionnaireResponse)
+  //
+  //        scu.transform(contextR4, baseElement, map, targetResource)
+  //
+  //        System.out.println(iParser.encodeResourceToString(targetResource))
+  //    }
+  //
+  //    @Test
+  //    fun `perform extraction from  vital signs metric Questionnaire`() {
+  //        val vitalSignQuestionnaireResponse =
+  //
+  // "structure-map-questionnaires/anc/vital-signs/metric/questionnaire-response-pulse-rate.json".readFile()
+  //        val vitalSignStructureMap =
+  //            "structure-map-questionnaires/anc/vital-signs/metric/structure-map.txt".readFile()
+  //
+  //        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+  //        // Package name manually checked from
+  //        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+  //        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core",
+  // "4.0.1"))
+  //
+  //        contextR4.setExpansionProfile(Parameters())
+  //        contextR4.isCanRunWithoutTerminology = true
+  //
+  //        val outputs: MutableList<Base> = ArrayList()
+  //        val transformSupportServices = TransformSupportServices(contextR4)
+  //
+  //        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4,
+  // transformSupportServices)
+  //        val map = scu.parse(vitalSignStructureMap, "VitalSigns")
+  //
+  //        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  //        val mapString = iParser.encodeResourceToString(map)
+  //
+  //        System.out.println(mapString)
+  //
+  //        val targetResource = Bundle()
+  //
+  //        val baseElement =
+  //            iParser.parseResource(QuestionnaireResponse::class.java,
+  // vitalSignQuestionnaireResponse)
+  //
+  //        scu.transform(contextR4, baseElement, map, targetResource)
+  //
+  //        System.out.println(iParser.encodeResourceToString(targetResource))
+  //    }
+  //
+  //    @Test
+  //    fun `perform extraction from  vital signs standard Questionnaire`() {
+  //        val vitalSignQuestionnaireResponse =
+  //
+  // "structure-map-questionnaires/anc/vital-signs/standard/questionnaire-response-pulse-rate.json".readFile()
+  //        val vitalSignStructureMap =
+  //            "structure-map-questionnaires/anc/vital-signs/standard/structure-map.txt".readFile()
+  //
+  //        val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+  //        // Package name manually checked from
+  //        // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+  //        val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core",
+  // "4.0.1"))
+  //
+  //        contextR4.setExpansionProfile(Parameters())
+  //        contextR4.isCanRunWithoutTerminology = true
+  //
+  //        val outputs: MutableList<Base> = ArrayList()
+  //        val transformSupportServices = TransformSupportServices(contextR4)
+  //
+  //        val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4,
+  // transformSupportServices)
+  //        val map = scu.parse(vitalSignStructureMap, "VitalSigns")
+  //
+  //        val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  //        val mapString = iParser.encodeResourceToString(map)
+  //
+  //        System.out.println(mapString)
+  //
+  //        val targetResource = Bundle()
+  //
+  //        val baseElement =
+  //            iParser.parseResource(QuestionnaireResponse::class.java,
+  // vitalSignQuestionnaireResponse)
+  //
+  //        scu.transform(contextR4, baseElement, map, targetResource)
+  //
+  //        System.out.println(iParser.encodeResourceToString(targetResource))
+  //    }
 }
