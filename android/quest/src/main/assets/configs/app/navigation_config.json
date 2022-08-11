@@ -4,7 +4,7 @@
   "menuActionButton": {
     "id": "mainActionButton",
     "visible": true,
-    "display": "Add New Household",
+    "display": "{{ add.new.household }}",
     "actions": [
       {
         "trigger": "ON_CLICK",
@@ -14,7 +14,7 @@
     ],
     "questionnaire": {
       "id": "82952",
-      "title": "Add Family",
+      "title": "{{add.family}}",
       "saveButtonText": "ADD FAMILY",
       "setPractitionerDetails": true,
       "setOrganizationDetails": true
@@ -24,7 +24,7 @@
     {
       "id": "reports",
       "visible": true,
-      "display": "Reports",
+      "display": "{{reports}}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -36,7 +36,7 @@
     {
       "id": "p2p_sync",
       "visible": true,
-      "display": "Transfer Data",
+      "display": "{{transfer.data}}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -48,7 +48,7 @@
     {
       "id": "profile",
       "visible": true,
-      "display": "Profile",
+      "display": "{{profile }}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -61,7 +61,7 @@
   "clientRegisters": [
     {
       "id": "householdRegister",
-      "display": "All Households",
+      "display": "{{ all.households }}",
       "icon": "",
       "showCount": true,
       "actions": [

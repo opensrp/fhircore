@@ -43,7 +43,7 @@
   },
   "searchBar": {
     "visible": true,
-    "display": "Search by name",
+    "display": "{{ search.by.name }}",
     "computedRules": [
       "patientName", "patientId"
     ]
@@ -79,7 +79,7 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "ID: @{patientId}",
+                "primaryText": "{{ id.patient.id }}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#000000"
               }
@@ -87,7 +87,7 @@
             "showVerticalDivider": false,
             "serviceButton": {
               "visible": true,
-              "text": "ANC Visit",
+              "text": "{{ anc.visit }}",
               "status": "DUE",
               "smallSized": true
             }

@@ -99,7 +99,8 @@ constructor(
    * from [configsJsonMap] can be directly converted to a ResourceBundle.
    */
   fun retrieveResourceBundleConfiguration(bundleName: String): ResourceBundle? {
-    val resourceBundle = configsJsonMap[bundleName]
+    val resourceBundle =
+      configsJsonMap[bundleName.camelCase()] // Convention for config map keys is now Camel Case
     if (resourceBundle != null) {
       return PropertyResourceBundle(resourceBundle.byteInputStream())
     }
