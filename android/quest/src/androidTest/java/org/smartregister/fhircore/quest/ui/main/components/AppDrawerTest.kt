@@ -22,7 +22,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -31,10 +34,11 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationBott
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 
 class AppDrawerTest {
-
+  private val mockAppMainEventListener: (AppMainEvent) -> Unit = spyk({})
   @get:Rule val composeTestRule = createComposeRule()
 
   private val navigationConfiguration =
@@ -73,7 +77,7 @@ class AppDrawerTest {
           ),
         navController = rememberNavController(),
         openDrawer = {},
-        onSideMenuClick = {},
+        onSideMenuClick = mockAppMainEventListener,
         appVersionPair = Pair(1, "0.0.1")
       )
     }
@@ -110,6 +114,7 @@ class AppDrawerTest {
       .assertExists()
       .assertIsDisplayed()
   }
+
   @Test
   fun testAppDrawerRendersSideMenuItemsCorrectly() {
     composeTestRule
@@ -154,11 +159,20 @@ class AppDrawerTest {
   @Test
   fun testAppDrawerRendersClientRegisterMenusCorrectly() {
     composeTestRule.onNodeWithTag(NAV_CLIENT_REGISTER_MENUS_LIST).assertExists().assertIsDisplayed()
+    composeTestRule
+      .onNodeWithText("Register 1", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeTestRule
+      .onNodeWithText("Register 2", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
-  /*  val DrawableId = SemanticsPropertyKey<Int>("DrawableResId")
-  var SemanticsPropertyReceiver.drawableId by DrawableId
-
-  fun hasDrawable(@DrawableRes id: Int): SemanticsMatcher =
-    SemanticsMatcher.expectValue(DrawableId, id)*/
+  @Test
+  fun testThatSideMenuClickCallsTheListener() {
+    val sideMenuItem = composeTestRule.onAllNodesWithTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG)
+    sideMenuItem[0].performClick()
+    verify { mockAppMainEventListener(any()) }
+  }
 }

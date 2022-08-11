@@ -140,8 +140,8 @@ fun AppDrawer(
             openDrawer = openDrawer,
             onSideMenuClick = onSideMenuClick
           )
-          if (
-            appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true
+          if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() ==
+              true
           ) {
             OtherPatientsItem(
               navigationConfiguration = appUiState.navigationConfiguration,
