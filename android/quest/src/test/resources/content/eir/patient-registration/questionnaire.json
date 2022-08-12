@@ -1,0 +1,700 @@
+{
+    "resourceType": "Questionnaire",
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+        "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/1902"
+      }
+    ],
+    "status": "active",
+    "subjectType": [
+      "Patient"
+    ],
+    "date": "2020-11-18T07:24:47.111Z",
+    "item": [
+      {
+        "linkId": "patient-barcode",
+        "text": "Barcode",
+        "type": "text",
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "Patient.id"
+            }
+          }
+        ]
+      },
+      {
+        "linkId": "PR",
+        "text": "Client Info",
+        "_text": {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+              "extension": [
+                {
+                  "url": "lang",
+                  "valueCode": "sw"
+                },
+                {
+                  "url": "content",
+                  "valueString": "Maelezo ya mteja"
+                }
+              ]
+            }
+          ]
+        },
+        "type": "group",
+        "item": [
+          {
+            "linkId": "PR-name",
+            "type": "group",
+            "item": [
+              {
+                "linkId": "PR-name-given",
+                "text": "First Name",
+                "_text": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Jina la kwanza"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "name": "patientName",
+                      "language": "text/fhirpath",
+                      "expression": "Patient.name.given"
+                    }
+                  }
+                ],
+                "type": "string",
+                "required": true
+              },
+              {
+                "linkId": "PR-name-family",
+                "text": "Family Name",
+                "_text": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Jina la ukoo"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "type": "string",
+                "required": true,
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "name": "patientFamily",
+                      "language": "text/fhirpath",
+                      "expression": "Patient.name.family"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "linkId": "patient-0-birth-date",
+            "text": "Date of Birth",
+            "_text": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "sw"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Tarehe ya kuzaliwa"
+                    }
+                  ]
+                }
+              ]
+            },
+            "type": "date",
+            "required": true,
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "name": "patientBirthDate",
+                  "language": "text/fhirpath",
+                  "expression": "Patient.birthDate"
+                }
+              }
+            ]
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "http://hl7.org/fhir/questionnaire-item-control",
+                      "code": "radio-button",
+                      "display": "Radio Button"
+                    }
+                  ],
+                  "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+                }
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+                "valueCode": "horizontal"
+              },
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "name": "patientGender",
+                  "language": "text/fhirpath",
+                  "expression": "Patient.gender"
+                }
+              }
+            ],
+            "linkId": "patient-0-gender",
+            "text": "Gender",
+            "type": "choice",
+            "answerOption": [
+              {
+                "valueCoding": {
+                  "system": "http://hl7.org/fhir/administrative-gender",
+                  "code": "female",
+                  "display": "Female"
+                }
+              },
+              {
+                "valueCoding": {
+                  "system": "http://hl7.org/fhir/administrative-gender",
+                  "code": "male",
+                  "display": "Male"
+                }
+              }
+            ],
+            "initial": [
+              {
+                "valueCoding": {
+                  "system": "http://hl7.org/fhir/administrative-gender",
+                  "code": "female",
+                  "display": "Female"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "PR-telecom",
+            "type": "group",
+            "item": [
+              {
+                "linkId": "PR-telecom-system",
+                "text": "system",
+                "type": "string",
+                "enableWhen": [
+                  {
+                    "question": "patient-0-gender",
+                    "operator": "=",
+                    "answerString": "ok"
+                  }
+                ],
+                "initial": [
+                  {
+                    "valueString": "phone"
+                  }
+                ]
+              },
+              {
+                "linkId": "PR-telecom-value",
+                "text": "Phone Number",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "name": "patientTelecom",
+                      "language": "text/fhirpath",
+                      "expression": "Patient.telecom.value"
+                    }
+                  }
+                ],
+                "_text": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Nambari ya simu"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "type": "string",
+                "required": true
+              }
+            ]
+          },
+          {
+            "linkId": "PR-address",
+            "type": "group",
+            "item": [
+              {
+                "linkId": "PR-address-city",
+                "text": "City",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "name": "patientCity",
+                      "language": "text/fhirpath",
+                      "expression": "Patient.address.city"
+                    }
+                  }
+                ],
+                "_text": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Mji"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "type": "string"
+              },
+              {
+                "linkId": "PR-address-country",
+                "text": "Country",
+                "_text": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Nchi"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "name": "patientCountry",
+                      "language": "text/fhirpath",
+                      "expression": "Patient.address.country"
+                    }
+                  }
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "linkId": "PR-active",
+            "text": "Is Active?",
+            "_text": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "sw"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Inatumika?"
+                    }
+                  ]
+                }
+              ]
+            },
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "name": "patientActive",
+                  "language": "text/fhirpath",
+                  "expression": "Patient.active"
+                }
+              }
+            ],
+            "type": "boolean"
+          }
+        ]
+      },
+      {
+        "linkId": "RP",
+        "text": "Related person",
+        "type": "group",
+        "item": [
+          {
+            "linkId": "RP-family-name",
+            "text": "Family name",
+            "type": "text",
+            "required": true,
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "RelatedPerson.name.family"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "RP-first-name",
+            "text": "First name",
+            "type": "text",
+            "required": true,
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "RelatedPerson.name.given"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "RP-relationship",
+            "text": "Relationship to patient",
+            "type": "text",
+            "required": true,
+            "answerValueSet": "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype",
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "RelatedPerson.relationship.coding.code"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "RP-contact-1",
+            "text": "Phone number",
+            "type": "text",
+            "required": true,
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "RelatedPerson.telecom[0].value"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "RP-contact-alternate",
+            "text": "Alternative phone number",
+            "type": "text",
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "RelatedPerson.telecom[1].value"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/questionnaire-item-control",
+                  "code": "check-box"
+                }
+              ]
+            }
+          }
+        ],
+        "linkId": "comorbidities",
+        "code": [
+          {
+            "system": "https://www.snomed.org",
+            "code": "991381000000107"
+          }
+        ],
+        "text": "Do you have any of the following conditions?",
+        "type": "choice",
+        "required": true,
+        "repeats": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "73211009",
+              "display": "Diabetes Mellitus (DM)"
+            }
+          },
+          {
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "59621000",
+              "display": "HyperTension (HT)"
+            }
+          },
+          {
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "414545008",
+              "display": "Ischemic Heart Disease (IHD / CHD / CCF)"
+            }
+          },
+          {
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "56717001",
+              "display": "Tuberculosis (TB)"
+            }
+          },
+          {
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "195967001",
+              "display": "Asthma/COPD"
+            }
+          },
+          {
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "709044004",
+              "display": "Chronic Kidney Disease"
+            }
+          },
+          {
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "363346000",
+              "display": "Cancer"
+            }
+          },
+          {
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "74964007",
+              "display": "Others"
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "RP-id",
+            "operator": "exists",
+            "answerBoolean": false
+          }
+        ]
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+            "valueBoolean": true
+          }
+        ],
+        "linkId": "other_comorbidities",
+        "code": [
+          {
+            "system": "https://www.snomed.org",
+            "code": "38651000000103"
+          }
+        ],
+        "text": "If other, specify: ",
+        "type": "string",
+        "enableWhen": [
+          {
+            "question": "comorbidities",
+            "operator": "=",
+            "answerCoding": {
+              "system": "https://www.snomed.org",
+              "code": "74964007",
+              "display": "Others"
+            }
+          },
+          {
+            "question": "RP-id",
+            "operator": "exists",
+            "answerBoolean": false
+          }
+        ],
+        "enableBehavior": "all"
+      },
+      {
+        "linkId": "risk_assessment",
+        "code": [
+          {
+            "system": "https://www.snomed.org",
+            "code": "225338004",
+            "display": "Risk Assessment"
+          }
+        ],
+        "text": "Client is at risk for serious illness from COVID-19",
+        "type": "choice",
+        "enableWhen": [
+          {
+            "question": "comorbidities",
+            "operator": "=",
+            "answerCoding": {
+              "system": "https://www.snomed.org",
+              "code": "74964007",
+              "display": "Others"
+            }
+          },
+          {
+            "question": "comorbidities",
+            "operator": "=",
+            "answerCoding": {
+              "system": "https://www.snomed.org",
+              "code": "363346000",
+              "display": "Cancer"
+            }
+          },
+          {
+            "question": "comorbidities",
+            "operator": "=",
+            "answerCoding": {
+              "system": "https://www.snomed.org",
+              "code": "709044004",
+              "display": "Chronic Kidney Disease"
+            }
+          },
+          {
+            "question": "comorbidities",
+            "operator": "=",
+            "answerCoding": {
+              "system": "https://www.snomed.org",
+              "code": "195967001",
+              "display": "Asthma/COPD"
+            }
+          },
+          {
+            "question": "comorbidities",
+            "operator": "=",
+            "answerCoding": {
+              "system": "https://www.snomed.org",
+              "code": "56717001",
+              "display": "Tuberculosis (TB)"
+            }
+          },
+          {
+            "question": "comorbidities",
+            "operator": "=",
+            "answerCoding": {
+              "system": "https://www.snomed.org",
+              "code": "414545008",
+              "display": "Ischemic Heart Disease (IHD / CHD / CCF)"
+            }
+          },
+          {
+            "question": "comorbidities",
+            "operator": "=",
+            "answerCoding": {
+              "system": "https://www.snomed.org",
+              "code": "59621000",
+              "display": "HyperTension (HT)"
+            }
+          },
+          {
+            "question": "comorbidities",
+            "operator": "=",
+            "answerCoding": {
+              "system": "https://www.snomed.org",
+              "code": "73211009",
+              "display": "Diabetes Mellitus (DM)"
+            }
+          },
+          {
+            "question": "RP-id",
+            "operator": "exists",
+            "answerBoolean": false
+          }
+        ],
+        "enableBehavior": "any",
+        "initial": [
+          {
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "870577009",
+              "display": "High Risk for COVID-19"
+            }
+          }
+        ]
+      },
+      {
+        "linkId": "RP-id",
+        "text": "Related person id",
+        "type": "text",
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+            "valueBoolean": true
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "RelatedPerson.id"
+            }
+          }
+        ]
+      }
+    ]
+  }
