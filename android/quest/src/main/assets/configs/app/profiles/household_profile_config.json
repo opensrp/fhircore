@@ -312,7 +312,13 @@
       "showSeparator": "true",
       "actions": [
         {
-          "trigger": "ON_CLICK"
+          "trigger": "ON_CLICK",
+          "params": [
+            {
+              "key": "familyId",
+              "value": "@{familyId}"
+            }
+          ]
         }
       ]
     }

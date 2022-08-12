@@ -18,12 +18,14 @@ package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -81,13 +83,17 @@ constructor(
           overFlowMenuItem.actions.forEach { actionConfig ->
             when (actionConfig.workflow) {
               ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+                var intentBundle: android.os.Bundle = android.os.Bundle.EMPTY
+                if (actionConfig.params.isNotEmpty()) {
+                  intentBundle =
+                    bundleOf(Pair(actionConfig.params[0].key, actionConfig.params[0].value))
+                }
                 event.context.launchQuestionnaire<QuestionnaireActivity>(
                   questionnaireId = actionConfig.questionnaire!!.id,
                   clientIdentifier = event.resourceData?.baseResource?.logicalId,
-                  questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type)
-                  // TODO handle remove family member that has an intent bundle i.e
-                  // intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
-                  )
+                  questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type),
+                  intentBundle = intentBundle
+                )
               }
             }
           }
