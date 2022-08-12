@@ -18,9 +18,9 @@ package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -28,16 +28,13 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
-import org.smartregister.fhircore.engine.util.extension.monthsPassed
-import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
 
 @HiltViewModel
 class ProfileViewModel
@@ -80,42 +77,20 @@ constructor(
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
       is ProfileEvent.OverflowMenuClick -> {
-        // TODO use navigation items from config and handle these actions dynamically
-        // https://github.com/opensrp/fhircore/issues/1371
-        when (event.menuId) {
-          R.id.individual_details ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
-              clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.EDIT
-            )
-          R.id.remove_family_member ->
-            event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
-              questionnaireId = REMOVE_FAMILY_FORM,
-              clientIdentifier = event.patientId,
-              intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
-            )
-          R.id.record_as_anc ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId = ANC_ENROLLMENT_FORM,
-              clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
-            )
-          R.id.pregnancy_outcome ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId = PREGNANCY_OUTCOME_FORM,
-              clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
-            )
-          R.id.record_sick_child ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
-              questionnaireId =
-                if (event.patient.dob!!.monthsPassed() < 2) SICK_CHILD_UNDER_2M_FORM
-                else SICK_CHILD_ABOVE_2M_FORM,
-              clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
-            )
-          else -> {}
+        profileConfiguration.overFlowMenuItems.forEach { overFlowMenuItem ->
+          overFlowMenuItem.actions.forEach { actionConfig ->
+            when (actionConfig.workflow) {
+              ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+                event.context.launchQuestionnaire<QuestionnaireActivity>(
+                  questionnaireId = actionConfig.questionnaire!!.id,
+                  clientIdentifier = event.resourceData?.baseResource?.logicalId,
+                  questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type)
+                  // TODO handle remove family member that has an intent bundle i.e
+                  // intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
+                  )
+              }
+            }
+          }
         }
       }
       is ProfileEvent.OpenTaskForm ->

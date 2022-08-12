@@ -19,9 +19,9 @@ package org.smartregister.fhircore.quest.ui.profile
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
@@ -29,6 +29,7 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -40,7 +41,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -53,9 +56,11 @@ fun ProfileScreen(
   modifier: Modifier = Modifier,
   navController: NavHostController,
   profileUiState: ProfileUiState,
-  onEvent: (ProfileEvent) -> Unit
+  onEvent: (ProfileEvent) -> Unit,
+  profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
   var showOverflowMenu by remember { mutableStateOf(false) }
+  val context = LocalContext.current
 
   Scaffold(
     topBar = {
@@ -78,25 +83,31 @@ fun ProfileScreen(
             expanded = showOverflowMenu,
             onDismissRequest = { showOverflowMenu = false }
           ) {
-            profileUiState.profileConfiguration?.overFlowMenuItems?.forEach{
+            profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
+                  profileViewModel.onEvent(
+                    ProfileEvent.OverflowMenuClick(
+                      navController = navController,
+                      context = context,
+                      menuId = it.id,
+                      resourceData = profileUiState.resourceData,
+                      profileConfiguration = profileUiState.profileConfiguration
+                    )
+                  )
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier =
-                modifier
-                  .fillMaxWidth()
-                  .background(
-                    color = if (it.confirmAction) it.titleColor.parseColor().copy(alpha = 0.1f)
-                    else Color.Transparent
-                  )
-
-              ) {
-                Text(text = it.title, color = it.titleColor.parseColor())
-              }
+                  modifier
+                    .fillMaxWidth()
+                    .background(
+                      color =
+                        if (it.confirmAction) it.titleColor.parseColor().copy(alpha = 0.1f)
+                        else Color.Transparent
+                    )
+              ) { Text(text = it.title, color = it.titleColor.parseColor()) }
             }
-
           }
         }
       )

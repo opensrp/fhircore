@@ -24,6 +24,6 @@ data class OverflowMenuItemConfig(
   val title: String = "",
   val confirmAction: Boolean = false,
   val titleColor: String? = null,
-  val visible:String,
+  val visible: String,
   val actions: List<ActionConfig> = emptyList()
 )

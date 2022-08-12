@@ -59,12 +59,13 @@ constructor(
     mutableStateOf(
       FamilyProfileUiState(
         overflowMenuItemConfigs =
-        configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
-          ConfigType.Profile,
-          "householdProfile" //TODO Pass profile id dynamically
-        ).overFlowMenuItems
-          //overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)
-      )
+          configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
+              ConfigType.Profile,
+              "householdProfile" // TODO Pass profile id dynamically
+            )
+            .overFlowMenuItems
+        // overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)
+        )
     )
 
   val familyMemberProfileData: MutableState<ProfileViewData.FamilyProfileViewData> =
