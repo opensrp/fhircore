@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -47,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
@@ -103,10 +105,11 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .background(
                       color =
-                        if (it.confirmAction) it.titleColor.parseColor().copy(alpha = 0.1f)
+                        if (it.confirmAction) it.backgroundColor.parseColor().copy(alpha = 0.1f)
                         else Color.Transparent
                     )
               ) { Text(text = it.title, color = it.titleColor.parseColor()) }
+              if (it.visible.toBoolean()) Divider(color = DividerColor, thickness = 1.dp)
             }
           }
         }
