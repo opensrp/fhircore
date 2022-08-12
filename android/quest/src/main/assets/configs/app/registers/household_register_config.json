@@ -63,7 +63,7 @@
   },
   "filter": {
     "visible": true,
-    "display": "Show overdue",
+    "display": "{{ show.overdue }}",
     "rules": [
       {
         "name": "filter",
@@ -76,7 +76,7 @@
   },
   "searchBar": {
     "visible": true,
-    "display": "Search name or ID",
+    "display": "{{ search.name.or.id }}",
     "computedRules": [
       "familyName",
       "familyId"
@@ -108,18 +108,18 @@
             "details": [
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "@{familyName} Family",
+                "primaryText": "{{ family.name.family }}",
                 "primaryTextColor": "#000000"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "ID: @{familyId}",
+                "primaryText": "{{ id.family.id }}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#000000"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "Village/Address",
+                "primaryText": "{{ village.or.address }}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#5A5A5A"
               }

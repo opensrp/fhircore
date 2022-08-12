@@ -11,11 +11,181 @@
     "familyId"
   ],
   "rules": [],
-  "views": [],
-  "rules": [],
+  "views": [
+    {
+      "viewType": "CARD",
+      "content": [
+        {
+          "viewType": "COLUMN",
+          "children": [
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Patient name",
+                  "primaryTextColor": "#000000"
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Careplan1",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Careplan1",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Careplan1",
+                  "primaryTextColor": "#000000"
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    },
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "COLUMN",
+                  "primaryBackgroundTextColor": "#000000",
+                  "radius": 3,
+                  "children": [
+                    {
+                      "viewType": "ROW",
+                      "children": [
+                        {
+                          "viewType": "COLUMN",
+                          "children": [
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "Age",
+                              "primaryTextColor": "#000000"
+                            },
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "",
+                              "primaryTextColor": "#000000"
+                            }
+                          ]
+                        },
+                        {
+                          "viewType": "COLUMN",
+                          "children": [
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "DOB",
+                              "primaryTextColor": "#000000"
+                            },
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "",
+                              "primaryTextColor": "#000000"
+                            }
+                          ]
+                        },
+                        {
+                          "viewType": "COLUMN",
+                          "children": [
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "Gender",
+                              "primaryTextColor": "#000000"
+                            },
+                            {
+                              "viewType": "COMPOUND_TEXT",
+                              "primaryText": "",
+                              "primaryTextColor": "#000000"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "viewType": "PERSONAL_DATA",
+              "personalDataItems": [
+                {
+                  "label": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "Sex",
+                    "primaryTextColor": "#000000"
+                  },
+                  "displayValue": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "Female",
+                    "fontSize": 14,
+                    "primaryTextColor": "#000000"
+                  }
+                },
+                {
+                  "label": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "Age",
+                    "primaryTextColor": "#000000"
+                  },
+                  "displayValue": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "20Y",
+                    "fontSize": 14,
+                    "primaryTextColor": "#000000"
+                  }
+                },
+                {
+                  "label": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "DOB",
+                    "primaryTextColor": "#000000"
+                  },
+                  "displayValue": {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "01 2002",
+                    "fontSize": 14,
+                    "primaryTextColor": "#000000"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "overFlowMenuItems": [
     {
-      "title" : "Individual details",
+      "title": "Individual details",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
@@ -33,7 +203,7 @@
       ]
     },
     {
-      "title" : "View family",
+      "title": "View family",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
@@ -44,7 +214,7 @@
       ]
     },
     {
-      "title" : "Record sick child",
+      "title": "Record sick child",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
@@ -62,7 +232,7 @@
       ]
     },
     {
-      "title" : "Record as ANC",
+      "title": "Record as ANC",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
@@ -80,7 +250,7 @@
       ]
     },
     {
-      "title" : "Pregnancy Outcome",
+      "title": "Pregnancy Outcome",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
@@ -98,7 +268,7 @@
       ]
     },
     {
-      "title" : "Remove this person",
+      "title": "Remove this person",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [

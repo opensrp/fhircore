@@ -17,18 +17,18 @@
 package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
-data class CompoundTextProperties(
-  override val viewType: ViewType = ViewType.COMPOUND_TEXT,
-  val primaryText: String? = null,
-  val primaryTextColor: String? = null,
-  val secondaryText: String? = null,
-  val secondaryTextColor: String? = null,
-  val separator: String? = null,
-  val fontSize: Float = 16.0f,
-  val primaryTextBackgroundColor: String? = null,
-  val secondaryTextBackgroundColor: String? = null,
-  val fontWeight: String? = null // TODO make this an enum
+data class ButtonProperties(
+  override val viewType: ViewType = ViewType.BUTTON,
+  val visible: Boolean? = null,
+  val text: String? = null,
+  val status: String,
+  val smallSized: Boolean = false,
+  val questionnaire: QuestionnaireConfig? = null,
+  val fontSize: Float = 12.0f,
+  val actions: List<ActionConfig> = emptyList()
 ) : ViewProperties()

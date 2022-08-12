@@ -77,6 +77,21 @@
           }
         }
       ]
+    },
+    {
+      "title": "Translation configurations",
+      "mode": "working",
+      "section": [
+        {
+          "title": "Translation English",
+          "focus": {
+            "reference": "Binary/21111111",
+            "identifier": {
+              "value": "strings_de"
+            }
+          }
+        }
+      ]
     }
   ]
 }

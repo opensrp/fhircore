@@ -54,8 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.view.ServiceButton
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
@@ -148,13 +148,13 @@ fun ServiceCard(
         if (serviceCardProperties.serviceButton!!.smallSized) {
           SmallServiceButton(
             modifier = modifier,
-            serviceButton = serviceCardProperties.serviceButton!!,
+            buttonProperties = serviceCardProperties.serviceButton!!,
             computedValuesMap = resourceData.computedValuesMap
           )
         } else {
           BigServiceButton(
             modifier = modifier,
-            serviceButton = serviceCardProperties.serviceButton!!,
+            buttonProperties = serviceCardProperties.serviceButton!!,
             computedValuesMap = resourceData.computedValuesMap,
           )
         }
@@ -192,10 +192,10 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
 @Composable
 private fun SmallServiceButton(
   modifier: Modifier = Modifier,
-  serviceButton: ServiceButton,
+  buttonProperties: ButtonProperties,
   computedValuesMap: Map<String, Any>
 ) {
-  val statusColor = serviceButton.statusColor(computedValuesMap)
+  val statusColor = buttonProperties.statusColor(computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   Row(
     modifier =
@@ -213,9 +213,9 @@ private fun SmallServiceButton(
       modifier = modifier.size(16.dp).padding(horizontal = 1.dp)
     )
     Text(
-      text = serviceButton.text ?: "",
+      text = buttonProperties.text ?: "",
       color = contentColor,
-      fontSize = serviceButton.fontSize.sp,
+      fontSize = buttonProperties.fontSize.sp,
       fontWeight = FontWeight.Bold,
       modifier = modifier.padding(4.dp).wrapContentHeight(Alignment.CenterVertically),
       overflow = TextOverflow.Visible,
@@ -226,13 +226,13 @@ private fun SmallServiceButton(
 @Composable
 private fun BigServiceButton(
   modifier: Modifier = Modifier,
-  serviceButton: ServiceButton,
+  buttonProperties: ButtonProperties,
   computedValuesMap: Map<String, Any>
 ) {
-  val statusColor = serviceButton.statusColor(computedValuesMap)
+  val statusColor = buttonProperties.statusColor(computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   val extractedStatus = remember {
-    ServiceStatus.valueOf(serviceButton.status.interpolate(computedValuesMap))
+    ServiceStatus.valueOf(buttonProperties.status.interpolate(computedValuesMap))
   }
 
   Column(
@@ -255,17 +255,17 @@ private fun BigServiceButton(
       if (extractedStatus == ServiceStatus.COMPLETED)
         Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
       Text(
-        text = serviceButton.text?.interpolate(computedValuesMap) ?: "",
+        text = buttonProperties.text?.interpolate(computedValuesMap) ?: "",
         color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
         textAlign = TextAlign.Center,
-        fontSize = serviceButton.fontSize.sp
+        fontSize = buttonProperties.fontSize.sp
       )
     }
   }
 }
 
 @Composable
-private fun ServiceButton.statusColor(computedValuesMap: Map<String, Any>): Color = remember {
+private fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color = remember {
   // Status color is determined from the service status
   when (ServiceStatus.valueOf(this.status.interpolate(computedValuesMap))) {
     ServiceStatus.DUE -> InfoColor
@@ -309,7 +309,7 @@ private fun RegisterCardServiceOverduePreview() {
               serviceMemberIcons = "CHILD",
               showVerticalDivider = true,
               serviceButton =
-                ServiceButton(
+                ButtonProperties(
                   visible = true,
                   status = ServiceStatus.OVERDUE.name,
                   text = "1",
@@ -363,7 +363,7 @@ private fun RegisterCardServiceDuePreview() {
               serviceMemberIcons = "CHILD,PREGNANT_WOMAN,CHILD,CHILD",
               showVerticalDivider = true,
               serviceButton =
-                ServiceButton(
+                ButtonProperties(
                   visible = true,
                   status = ServiceStatus.DUE.name,
                   text = "Issue Bed net",
@@ -417,7 +417,7 @@ private fun RegisterCardServiceUpcomingPreview() {
               serviceMemberIcons = "CHILD,CHILD,CHILD,CHILD",
               showVerticalDivider = true,
               serviceButton =
-                ServiceButton(
+                ButtonProperties(
                   visible = true,
                   status = ServiceStatus.UPCOMING.name,
                   text = "Next visit 09-10-2022",
@@ -470,7 +470,7 @@ private fun RegisterCardServiceCompletedPreview() {
                 ),
               showVerticalDivider = true,
               serviceButton =
-                ServiceButton(
+                ButtonProperties(
                   visible = true,
                   status = ServiceStatus.COMPLETED.name,
                   text = "Fully Vaccinated",
@@ -518,7 +518,7 @@ private fun RegisterCardANCServiceDuePreview() {
                 ),
               showVerticalDivider = false,
               serviceButton =
-                ServiceButton(
+                ButtonProperties(
                   visible = true,
                   status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
@@ -566,7 +566,7 @@ private fun RegisterCardANCServiceOverduePreview() {
                 ),
               showVerticalDivider = false,
               serviceButton =
-                ServiceButton(
+                ButtonProperties(
                   visible = true,
                   status = ServiceStatus.OVERDUE.name,
                   text = "ANC Visit",
