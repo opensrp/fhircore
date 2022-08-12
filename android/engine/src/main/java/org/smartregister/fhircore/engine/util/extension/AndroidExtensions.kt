@@ -31,6 +31,7 @@ import java.util.Locale
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.LightColors
 import timber.log.Timber
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
@@ -128,8 +129,21 @@ fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "dr
 }
 
 /**
- * Parse this [String] to a color code to be used in compose. Color code must begin with pound sign
- * ('#') and should be of 6 valid characters
+ * Parse this [String] to a color code to be used in compose. Color code must either a). begin with
+ * pound sign ('#') and should be of 6 valid characters or b). be equal to 'primaryColor',
+ * 'primaryVariantColor' or 'errorColor'
  */
-fun String?.parseColor() =
-  if (this.isNullOrEmpty()) DefaultColor else ComposeColor(Color.parseColor(this))
+fun String?.parseColor(): androidx.compose.ui.graphics.Color {
+  if (this.isNullOrEmpty()) {
+    return DefaultColor
+  } else if (this.startsWith("#")) {
+    return ComposeColor(Color.parseColor(this))
+  } else {
+    when {
+      this.equals("primaryColor", ignoreCase = true) -> return LightColors.primary
+      this.equals("primaryVariantColor", ignoreCase = true) -> return LightColors.primaryVariant
+      this.equals("errorColor", ignoreCase = true) -> return LightColors.error
+    }
+  }
+  return DefaultColor
+}
