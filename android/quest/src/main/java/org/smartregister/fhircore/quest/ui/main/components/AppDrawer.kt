@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -73,6 +74,18 @@ import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
+const val NAV_TOP_SECTION_TEST_TAG = "navTopSectionTestTag"
+const val MENU_BUTTON_TEST_TAG = "menuButtonTestTag"
+const val MENU_BUTTON_ICON_TEST_TAG = "menuButtonIconTestTag"
+const val MENU_BUTTON_TEXT_TEST_TAG = "menuButtonTextTestTag"
+const val SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG = "sideMenuItemMainRowTestTag"
+const val SIDE_MENU_ITEM_INNER_ROW_TEST_TAG = "sideMenuItemInnerRowTestTag"
+const val SIDE_MENU_ITEM_ICON_TEST_TAG = "sideMenuItemIconTestTag"
+const val SIDE_MENU_ITEM_END_ICON_TEST_TAG = "sideMenuItemEndIconTestTag"
+const val SIDE_MENU_ITEM_TEXT_TEST_TAG = "sideMenuItemTextTestTag"
+const val NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG = "navBottomSectionSideMenuItemTestTag"
+const val NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG = "navBottomSectionMainBoxTestTag"
+const val NAV_CLIENT_REGISTER_MENUS_LIST = "navClientRegisterMenusList"
 
 @Composable
 fun AppDrawer(
@@ -165,10 +178,14 @@ private fun NavBottomSection(
 ) {
   Box(
     modifier =
-      modifier.background(SideMenuBottomItemDarkColor).padding(horizontal = 16.dp, vertical = 4.dp)
+      modifier
+        .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
+        .background(SideMenuBottomItemDarkColor)
+        .padding(horizontal = 16.dp, vertical = 4.dp)
   ) {
     SideMenuItem(
-      iconResource = R.drawable.ic_sync,
+      modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
+      iconResource = R.drawable.ic_right_arrow,
       title = stringResource(R.string.sync),
       endText = appUiState.lastSyncTime,
       showEndText = true,
@@ -216,7 +233,11 @@ private fun NavTopSection(
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier =
-      modifier.fillMaxWidth().background(SideMenuTopItemDarkColor).padding(horizontal = 16.dp)
+      modifier
+        .fillMaxWidth()
+        .background(SideMenuTopItemDarkColor)
+        .padding(horizontal = 16.dp)
+        .testTag(NAV_TOP_SECTION_TEST_TAG)
   ) {
     Text(
       text = appUiState.appTitle,
@@ -241,7 +262,7 @@ private fun ClientRegisterMenus(
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit
 ) {
-  LazyColumn {
+  LazyColumn(modifier = Modifier.testTag(NAV_CLIENT_REGISTER_MENUS_LIST)) {
     items(appUiState.navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
       SideMenuItem(
         iconResource = context.retrieveResourceId(navigationMenu.icon),
@@ -319,7 +340,8 @@ private fun MenuActionButton(
               )
             )
           }
-          .padding(16.dp),
+          .padding(16.dp)
+          .testTag(MENU_BUTTON_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically
     ) {
       Box(
@@ -328,11 +350,13 @@ private fun MenuActionButton(
       ) {
         Icon(
           imageVector = Icons.Filled.Add,
+          modifier = modifier.testTag(MENU_BUTTON_ICON_TEST_TAG),
           contentDescription = null,
         )
       }
       Spacer(modifier.width(16.dp))
       Text(
+        modifier = modifier.testTag(MENU_BUTTON_TEXT_TEST_TAG),
         text = navigationConfiguration.menuActionButton?.display?.uppercase()
             ?: stringResource(id = R.string.register_new_client),
         color = MenuActionButtonTextColor,
@@ -355,13 +379,18 @@ private fun SideMenuItem(
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier.fillMaxWidth().clickable { onSideMenuClick() },
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .clickable { onSideMenuClick() }
+        .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    Row(modifier = modifier.padding(vertical = 16.dp)) {
+    Row(modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp)) {
       if (iconResource != null) {
         Icon(
-          modifier = modifier.padding(end = 10.dp).size(24.dp),
+          modifier =
+            modifier.testTag(SIDE_MENU_ITEM_ICON_TEST_TAG).padding(end = 10.dp).size(24.dp),
           painter = painterResource(id = iconResource),
           contentDescription = SIDE_MENU_ICON,
           tint = MenuItemColor
@@ -375,7 +404,7 @@ private fun SideMenuItem(
     }
     endIconResource?.let { icon ->
       Icon(
-        modifier = modifier.padding(end = 10.dp),
+        modifier = modifier.testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG).padding(end = 10.dp),
         painter = painterResource(id = icon),
         contentDescription = SIDE_MENU_ICON,
         tint = MenuItemColor
@@ -386,10 +415,15 @@ private fun SideMenuItem(
 
 @Composable
 private fun SideMenuItemText(title: String, textColor: Color) {
-  Text(text = title, color = textColor, fontSize = 18.sp)
+  Text(
+    text = title,
+    color = textColor,
+    fontSize = 18.sp,
+    modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG)
+  )
 }
 
-@Preview(showBackground = false)
+/*@Preview(showBackground = false)
 @ExcludeFromJacocoGeneratedReport
 @Composable
 fun PreviewSideMenuItem() {
@@ -401,7 +435,7 @@ fun PreviewSideMenuItem() {
     endIconResource = R.drawable.ic_right_arrow,
     onSideMenuClick = {}
   )
-}
+}*/
 
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
