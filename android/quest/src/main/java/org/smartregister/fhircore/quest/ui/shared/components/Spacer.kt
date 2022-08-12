@@ -43,14 +43,14 @@ fun Spacer(
 
 @Preview(showBackground = true)
 @Composable
-private fun verticalSpacerPreview() {
+private fun VerticalSpacerPreview() {
   val spacerProperties = SpacerProperties(height = 16F, width = null, backgroundColor = "#EE4B2B")
   Spacer(spacerProperties = spacerProperties)
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun horizontalSpacerPreview() {
+private fun HorizontalSpacerPreview() {
   val spacerProperties = SpacerProperties(height = null, width = 16F, backgroundColor = "#EE4B2B")
   Spacer(spacerProperties = spacerProperties)
 }
