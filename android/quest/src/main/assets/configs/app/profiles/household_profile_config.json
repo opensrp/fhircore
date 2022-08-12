@@ -307,8 +307,9 @@
     },
     {
       "title": "Remove family",
-      "titleColor": "#000000",
+      "titleColor": "#FF0000",
       "visible": "true",
+      "showSeparator": "true",
       "actions": [
         {
           "trigger": "ON_CLICK"

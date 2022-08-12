@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import org.apache.commons.lang3.BooleanUtils.toBoolean
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -86,6 +87,8 @@ fun ProfileScreen(
             onDismissRequest = { showOverflowMenu = false }
           ) {
             profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
+              if (!it.visible.toBoolean()) return@forEach
+              if (it.showSeparator.toBoolean()) Divider(color = DividerColor, thickness = 1.dp)
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
@@ -109,7 +112,6 @@ fun ProfileScreen(
                         else Color.Transparent
                     )
               ) { Text(text = it.title, color = it.titleColor.parseColor()) }
-              if (it.visible.toBoolean()) Divider(color = DividerColor, thickness = 1.dp)
             }
           }
         }
