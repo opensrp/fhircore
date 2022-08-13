@@ -79,22 +79,20 @@ constructor(
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
       is ProfileEvent.OverflowMenuClick -> {
-        profileConfiguration.overFlowMenuItems.forEach { overFlowMenuItem ->
-          overFlowMenuItem.actions.forEach { actionConfig ->
-            when (actionConfig.workflow) {
-              ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
-                var intentBundle: android.os.Bundle = android.os.Bundle.EMPTY
-                if (actionConfig.params.isNotEmpty()) {
-                  intentBundle =
-                    bundleOf(Pair(actionConfig.params[0].key, actionConfig.params[0].value))
-                }
-                event.context.launchQuestionnaire<QuestionnaireActivity>(
-                  questionnaireId = actionConfig.questionnaire!!.id,
-                  clientIdentifier = event.resourceData?.baseResource?.logicalId,
-                  questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type),
-                  intentBundle = intentBundle
-                )
+        event.overflowMenuItemConfig?.actions?.forEach { actionConfig ->
+          when (actionConfig.workflow) {
+            ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+              var intentBundle: android.os.Bundle = android.os.Bundle.EMPTY
+              if (actionConfig.params.isNotEmpty()) {
+                intentBundle =
+                  bundleOf(Pair(actionConfig.params[0].key, actionConfig.params[0].value))
               }
+              event.context.launchQuestionnaire<QuestionnaireActivity>(
+                questionnaireId = actionConfig.questionnaire!!.id,
+                clientIdentifier = event.resourceData?.baseResource?.logicalId,
+                questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type),
+                intentBundle = intentBundle
+              )
             }
           }
         }

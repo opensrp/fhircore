@@ -96,9 +96,8 @@ fun ProfileScreen(
                     ProfileEvent.OverflowMenuClick(
                       navController = navController,
                       context = context,
-                      menuId = it.id,
                       resourceData = profileUiState.resourceData,
-                      profileConfiguration = profileUiState.profileConfiguration
+                      overflowMenuItemConfig = it
                     )
                   )
                 },
