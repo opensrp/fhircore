@@ -153,6 +153,6 @@ private fun RenderChildView(
         }
       }
     is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
-    is SpacerProperties -> Spacer(spacerProperties = viewProperties)
+    is SpacerProperties -> SpacerView(spacerProperties = viewProperties)
   }
 }
