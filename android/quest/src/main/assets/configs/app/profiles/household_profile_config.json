@@ -69,12 +69,11 @@
     {
       "id": "ActionButton",
       "visible": true,
-      "display": "Add New Household",
+      "display": "{{ add.member }}",
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": "householdRegister"
+          "workflow": "LAUNCH_QUESTIONNAIRE"
         }
       ],
       "questionnaire": {

@@ -17,17 +17,22 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
+import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
@@ -51,6 +56,7 @@ fun ProfileScreen(
   onEvent: (ProfileEvent) -> Unit
 ) {
   var showOverflowMenu by remember { mutableStateOf(false) }
+  val mutableInteractionSource = remember { MutableInteractionSource() }
 
   Scaffold(
     topBar = {
@@ -74,6 +80,19 @@ fun ProfileScreen(
             onDismissRequest = { showOverflowMenu = false }
           ) {}
         }
+      )
+    },
+    floatingActionButton = {
+      val fabAction = profileUiState.profileConfiguration?.fabActions?.get(0)
+      ExtendedFloatingActionButton(
+        contentColor = Color.White,
+        text = { fabAction?.display?.let { Text(text = it.uppercase()) } },
+        onClick = {
+          /** TODO handle onclick action */
+        },
+        backgroundColor = MaterialTheme.colors.primary,
+        icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
+        interactionSource = mutableInteractionSource
       )
     }
   ) { innerPadding ->
