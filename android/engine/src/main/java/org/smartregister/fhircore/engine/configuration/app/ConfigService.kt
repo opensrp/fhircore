@@ -34,9 +34,9 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import timber.log.Timber
 
 /** An interface that provides the application configurations. */
@@ -82,7 +82,7 @@ interface ConfigService {
   /** Retrieve registry sync params */
   fun loadRegistrySyncParams(
     configurationRegistry: ConfigurationRegistry,
-    authenticatedUserInfo: UserInfo?,
+    paramsMap: Map<String, List<String>>?,
   ): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
@@ -100,8 +100,12 @@ interface ConfigService {
       val paramExpression = sp.expression
       val expressionValue =
         when (paramName) {
-          ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
-          ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
+          // TODO: Does not support multi organization yet
+          ConfigurationRegistry.ORGANIZATION ->
+            paramsMap
+              ?.get(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
+              ?.first()
+              ?.substringAfter("/")
           ConfigurationRegistry.ID -> paramExpression
           ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
           else -> null
