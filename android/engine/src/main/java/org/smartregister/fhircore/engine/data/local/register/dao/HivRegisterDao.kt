@@ -137,7 +137,8 @@ constructor(
             )
           ),
       services = patient.activeCarePlans(),
-      conditions = patient.activeConditions()
+      conditions = patient.activeConditions(),
+      otherPatients = patient.otherPatients()
     )
   }
 
@@ -175,6 +176,16 @@ constructor(
       subjectId = patientId,
       subjectType = ResourceType.Patient,
       subjectParam = CarePlan.SUBJECT
+    )
+
+  internal suspend fun Patient.otherPatients() =
+    fetchOtherPatients(this.logicalId).filter { other -> other.active }
+
+  internal suspend fun fetchOtherPatients(patientId: String) =
+    defaultRepository.searchResourceFor<Patient>(
+      subjectId = patientId,
+      subjectType = ResourceType.Patient,
+      subjectParam = Patient.LINK
     )
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
