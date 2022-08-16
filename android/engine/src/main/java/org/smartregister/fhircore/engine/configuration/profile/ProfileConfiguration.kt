@@ -22,6 +22,7 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.FhirResourceConfig
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
@@ -33,5 +34,6 @@ data class ProfileConfiguration(
   val profileParams: List<String> = emptyList(),
   val rules: List<RuleConfig> = emptyList(),
   val views: List<ViewProperties> = emptyList(),
-  val fabActions: List<NavigationMenuConfig> = emptyList()
+  val fabActions: List<NavigationMenuConfig> = emptyList(),
+  val overFlowMenuItems: List<OverflowMenuItemConfig> = emptyList()
 ) : Configuration()
