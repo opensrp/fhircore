@@ -21,7 +21,6 @@ import okhttp3.ResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
-import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -29,26 +28,39 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.QueryMap
 import retrofit2.http.Url
 
 /** [Retrofit] Service for communication with HAPI FHIR server. Used for querying FHIR Resources */
 interface FhirResourceService {
 
   @GET suspend fun getResource(@Url url: String): Bundle
-  @PUT("{type}/{id}")
+
+  @PUT("{resourceType}/{id}")
   suspend fun insertResource(
-    @Path("type") type: String,
+    @Path("resourceType") resourceType: String,
     @Path("id") id: String,
     @Body body: RequestBody
   ): Resource
-  @PATCH("{type}/{id}")
+
+  @PATCH("{resourceType}/{id}")
   suspend fun updateResource(
-    @Path("type") type: String,
+    @Path("resourceType") resourceType: String,
     @Path("id") id: String,
     @Body body: RequestBody
   ): OperationOutcome
-  @DELETE("{type}/{id}")
-  suspend fun deleteResource(@Path("type") type: String, @Path("id") id: String): OperationOutcome
 
-  @GET fun fetchImage(@Url url: String): Call<ResponseBody?>
+  @DELETE("{resourceType}/{id}")
+  suspend fun deleteResource(
+    @Path("resourceType") resourceType: String,
+    @Path("id") id: String
+  ): OperationOutcome
+
+  @GET suspend fun fetchImage(@Url url: String): ResponseBody?
+
+  @GET("{resourceType}/_search")
+  suspend fun searchResource(
+    @Path("resourceType") resourceType: String,
+    @QueryMap(encoded = false) searchParameters: Map<String, String>
+  ): Bundle
 }

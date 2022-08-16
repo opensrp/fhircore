@@ -47,7 +47,13 @@ constructor(
   fun Request.hasPaths(paths: List<String>) = this.url.pathSegments.containsAll(paths)
 
   fun Request.hasOpenResources() =
-    this.url.pathSegments.any {
-      it.contentEquals(ResourceType.Composition.name) || it.contentEquals(ResourceType.Binary.name)
-    }
+    this.method.contentEquals(REQUEST_METHOD_GET) &&
+      this.url.pathSegments.any {
+        it.contentEquals(ResourceType.Composition.name) ||
+          it.contentEquals(ResourceType.Binary.name)
+      }
+
+  companion object {
+    const val REQUEST_METHOD_GET = "GET"
+  }
 }

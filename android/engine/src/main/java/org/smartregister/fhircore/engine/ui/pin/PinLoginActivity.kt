@@ -22,9 +22,11 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
@@ -34,7 +36,10 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 class PinLoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   val pinViewModel by viewModels<PinViewModel>()
 
@@ -45,11 +50,12 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     pinViewModel.apply {
-      if (configurationRegistry.isAppIdInitialized()) {
-        loadData(isSetup = false)
-      }
+      setPinUiState(isSetup = false)
       val pinLoginActivity = this@PinLoginActivity
-      navigateToHome.observe(pinLoginActivity) { pinLoginActivity.moveToHome() }
+      navigateToHome.observe(pinLoginActivity) {
+        loginService.navigateToHome()
+        syncBroadcaster.get().runSync()
+      }
       launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
       navigateToLogin.observe(pinLoginActivity) { pinLoginActivity.moveToLoginViaUsername() }
     }
@@ -58,10 +64,6 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
 
   private fun launchDialPad(phone: String) {
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
-  }
-
-  private fun moveToHome() {
-    loginService.navigateToHome()
   }
 
   private fun moveToLoginViaUsername() {

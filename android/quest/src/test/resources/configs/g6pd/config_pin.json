@@ -1,8 +1,0 @@
-{
-  "appId": "g6pd",
-  "classification": "pin",
-  "applicationName": "G6PD Test Reader",
-  "appLogoIconResourceFile": "ic_logo_g6pd",
-  "enablePin": true,
-  "showLogo": true
-}

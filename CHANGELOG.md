@@ -5,8 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2021-xx-xx
+## [Unreleased] - 2022-xx-xx
+### Added
+- Adds internationalization(MLS) for App configs
+- Add registers and navigation menus configurable using JSON files
 
+## [0.0.9 Quest, 0.0.10 EIR, 0.0.4 - ANC] - 2022-07-04, 2021-11-24, 2022-04-01
 ### Added
 - ANC | Updated show search bar to true for family and anc register
 - ANC | Added individual measure reporting results to the ResultHome page
@@ -25,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Activate language switcher on profile page
 - ANC | Implement vital signs observation extraction from questionnaires
 - ANC | Login Add Pin Setup and Login for eCBIS config only
+- ANC | Remove Family with Questionnaire Form
+- DOC | Adding the CarePlan & Task sample
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
@@ -40,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Swahili localization
 - Quest | Added G6PD Patient Details page to show G6PD Status and Test Results
 - Quest | Add tasking list
+- Quest | Added ability to reference Related Persons and Patients to the Groups representing families
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
@@ -49,6 +56,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Fixed login authentication issue.
 - Engine | Implement language switcher on profile page
 - Engine | Add tasking abstraction
+- Engine | Integrate Group resource for family representation
+- Engine | Performance improvement when openning questionnaires and saving QRs
+- Engine | Add debug mode to optionally load local config
+- Engine | Add support for Group.Characteristic model in StructureMap extraction
+- Engine | Make the list of resources to be synced via P2P configurable 
 
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected

@@ -17,20 +17,21 @@
 package org.smartregister.fhircore.engine.ui.pin
 
 import android.app.Application
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltViewModel
@@ -72,50 +73,25 @@ constructor(
   val enableSetPin
     get() = _enableSetPin
 
-  lateinit var savedPin: String
-  lateinit var enterUserLoginMessage: String
+  val pinUiState: MutableState<PinUiState> = mutableStateOf(PinUiState())
 
-  lateinit var appId: String
-  lateinit var appName: String
-  lateinit var appLogoResFile: String
-
-  lateinit var pinViewConfiguration: PinViewConfiguration
-
-  var isSetupPage: Boolean = false
-
-  val onBackClick = MutableLiveData(false)
-
-  fun onAppBackClick() {
-    onBackClick.value = true
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  fun loadData(isSetup: Boolean = false) {
-    appId = retrieveAppId()
-    pinViewConfiguration = getPinConfiguration()
-    appName = retrieveAppName()
-    appLogoResFile = retrieveAppLogoIconResourceFile()
-    savedPin = secureSharedPreference.retrieveSessionPin() ?: ""
-    isSetupPage = isSetup
-    enterUserLoginMessage =
-      retrieveUsername().let {
-        if (it.isNullOrEmpty()) {
-          app.getString(R.string.enter_login_pin)
-        } else {
-          app.getString(R.string.enter_pin_for_user, it)
-        }
-      }
+  fun setPinUiState(isSetup: Boolean = false) {
+    val username = secureSharedPreference.retrieveSessionUsername()
+    pinUiState.value =
+      PinUiState(
+        appId = sharedPreferences.read(SharedPreferenceKey.APP_ID.name, "")!!,
+        appName = applicationConfiguration.appTitle,
+        savedPin = secureSharedPreference.retrieveSessionPin() ?: "",
+        isSetupPage = isSetup,
+        enterUserLoginMessage =
+          if (username.isNullOrEmpty()) app.getString(R.string.enter_login_pin)
+          else app.getString(R.string.enter_pin_for_user, username)
+      )
   }
-
-  fun getPinConfiguration(): PinViewConfiguration =
-    configurationRegistry.retrieveConfiguration(AppConfigClassification.PIN)
-
-  fun retrieveAppId(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!
-
-  fun retrieveAppName(): String = pinViewConfiguration.applicationName
-
-  fun retrieveAppLogoIconResourceFile(): String = pinViewConfiguration.appLogoIconResourceFile
-
-  fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun onPinConfirmed() {
     val newPin = pin.value ?: ""
@@ -123,7 +99,6 @@ constructor(
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
       _showError.postValue(false)
       secureSharedPreference.saveSessionPin(newPin)
-      secureSharedPreference.savePinCredentials()
       _navigateToHome.postValue(true)
     } else {
       _showError.postValue(true)
@@ -131,16 +106,12 @@ constructor(
   }
 
   fun onPinChanged(newPin: String) {
-
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
-      val pinMatched = newPin.equals(savedPin, false)
+      val pinMatched = newPin == secureSharedPreference.retrieveSessionPin()
       enableSetPin.value = true
       showError.value = !pinMatched
       _pin.postValue(newPin)
-      if (pinMatched && !isSetupPage) {
-        secureSharedPreference.saveCredentials(secureSharedPreference.retrievePinCredentials()!!)
-        _navigateToHome.value = true
-      }
+      if (pinMatched && !pinUiState.value.isSetupPage) _navigateToHome.value = true
     } else {
       showError.value = false
       enableSetPin.value = false
@@ -148,20 +119,17 @@ constructor(
   }
 
   fun onMenuLoginClicked() {
-    sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, true)
     _navigateToLogin.value = true
   }
 
   fun forgotPin() {
     // Todo: disable dialer action for now
     //  plus load supervisor contact from config
-    // _launchDialPad.value = "tel:####"
+    _launchDialPad.value = "tel:####"
   }
 
-  // Todo: discuss with ben, whether we need user to redirect to settings or not,
-  //  considering Maimoona's data syncing concerns
   fun onMenuSettingClicked() {
-    sharedPreferences.remove(APP_ID_CONFIG)
+    sharedPreferences.remove(SharedPreferenceKey.APP_ID.name)
     _navigateToSettings.value = true
   }
 }

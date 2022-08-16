@@ -18,12 +18,15 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
@@ -47,6 +50,59 @@ class PatientExtensionTest : RobolectricTest() {
       }
 
     Assert.assertEquals("12 B, Gulshan, Karimabad Sindh", patient.extractAddress())
+  }
+
+  @Test
+  fun testExtractAddressAttributes() {
+    val patient =
+      Patient().apply {
+        addAddress().apply {
+          this.addLine("12 B")
+          this.addLine("Gulshan")
+          this.district = "Karimabad"
+          this.state = "Sindh"
+          this.text = "home location Karachi"
+        }
+      }
+
+    Assert.assertEquals("12 B, Gulshan, Karimabad Sindh", patient.extractAddress())
+    Assert.assertEquals("Karimabad", patient.extractAddressDistrict())
+    Assert.assertEquals("Sindh", patient.extractAddressState())
+    Assert.assertEquals("home location Karachi", patient.extractAddressText())
+  }
+
+  @Test
+  fun testExtractTelecomShouldReturnTelecom() {
+    val patient =
+      Patient().apply {
+        addTelecom().apply { this.value = "+1234" }
+        addTelecom().apply { this.value = "+5678" }
+      }
+    val expectedList: List<String> = listOf("+1234", "+5678")
+    Assert.assertEquals(expectedList, patient.extractTelecom())
+    if (!patient.hasManagingOrganization()) {
+      Assert.assertEquals("", patient.extractManagingOrganizationReference())
+    }
+    if (!patient.hasGeneralPractitioner()) {
+      Assert.assertEquals("", patient.extractGeneralPractitionerReference())
+    }
+  }
+
+  @Test
+  fun testExtractGeneralPractitionerShouldReturnReference() {
+    val patient =
+      Patient().apply { addGeneralPractitioner().apply { this.reference = "practitioner/1234" } }
+    Assert.assertEquals("practitioner/1234", patient.extractGeneralPractitionerReference())
+    if (!patient.hasTelecom()) {
+      Assert.assertEquals(null, patient.extractTelecom())
+    }
+  }
+
+  @Test
+  fun testExtractManagingOrganizationShouldReturnReference() {
+    val patient =
+      Patient().apply { managingOrganization.apply { this.reference = "reference/1234" } }
+    Assert.assertEquals("reference/1234", patient.extractManagingOrganizationReference())
   }
 
   @Test
@@ -376,5 +432,77 @@ class PatientExtensionTest : RobolectricTest() {
       )
 
     Assert.assertEquals(DateTimeType(timeNow).toDisplay(), Patient().getLastSeen(immunizations))
+  }
+
+  @Test
+  fun testFormatLastSeen() {
+    val date: Date = SimpleDateFormat("dd/MM/yyyy").parse("31/12/2021")
+
+    Assert.assertEquals("12-31-2021", date.lastSeenFormat())
+  }
+
+  @Test
+  fun testExtractDeathDate() {
+    val date: Date = SimpleDateFormat("dd/MM/yyyy").parse("31/12/2021")
+    val patient = Patient().apply { deceased = DateTimeType(date) }
+
+    Assert.assertEquals(date, patient.extractDeathDate())
+  }
+
+  @Test
+  fun testExtractOfficialIdentifierReturnsValuewhenUseIsOfficial() {
+    val patient =
+      Patient().apply {
+        identifier =
+          mutableListOf(
+            Identifier().apply {
+              use = Identifier.IdentifierUse.OFFICIAL
+              value = "immunization"
+            }
+          )
+      }
+    Assert.assertEquals("immunization", patient.extractOfficialIdentifier())
+  }
+
+  @Test
+  fun testExtractOfficialIdentifierReturnsNullwhenUseIsNotOfficial() {
+    val patient =
+      Patient().apply {
+        identifier =
+          mutableListOf(
+            Identifier().apply {
+              use = Identifier.IdentifierUse.USUAL
+              value = "immunization"
+            }
+          )
+      }
+    Assert.assertNull(patient.extractOfficialIdentifier())
+  }
+
+  @Test
+  fun testTranslateMaleGender() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.MALE }
+    Assert.assertEquals(
+      "Male",
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext())
+    )
+  }
+
+  @Test
+  fun testTranslateFemaleGender() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
+    Assert.assertEquals(
+      "Female",
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext())
+    )
+  }
+
+  @Test
+  fun testTranslateGenderReturnsUnknownWhenValeIsNotMaleOrFemale() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.OTHER }
+    Assert.assertEquals(
+      "Unknown",
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext())
+    )
   }
 }

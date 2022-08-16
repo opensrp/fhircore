@@ -81,22 +81,4 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
     secureSharedPreference.deleteSessionPin()
     Assert.assertNull(secureSharedPreference.retrieveSessionPin())
   }
-
-  @Test
-  fun testSaveAndRetrievePinCredentials() {
-    secureSharedPreference.saveCredentials(
-      AuthCredentials(
-        username = "userName",
-        password = "!@#$",
-        sessionToken = "sessionToken",
-        refreshToken = "refreshToken"
-      )
-    )
-    secureSharedPreference.savePinCredentials()
-    Assert.assertEquals(
-      "sessionToken",
-      secureSharedPreference.retrievePinCredentials()!!.sessionToken
-    )
-    Assert.assertEquals("userName", secureSharedPreference.retrieveSessionUsername()!!)
-  }
 }

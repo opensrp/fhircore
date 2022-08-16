@@ -1,0 +1,97 @@
+{
+  "resourceType": "Composition",
+  "id": "11111110",
+  "meta": {
+    "versionId": "35",
+    "lastUpdated": "2022-06-09T10:15:39.127+00:00",
+    "source": "#50da05d62fb8a208"
+  },
+  "identifier": {
+    "use": "official",
+    "value": "app"
+  },
+  "status": "final",
+  "type": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "1156600005",
+        "display": "Device setting parameter"
+      }
+    ]
+  },
+  "date": "2022-07-28",
+  "title": "Device configurations",
+  "confidentiality": "L",
+  "section": [
+    {
+      "title": "Application configuration",
+      "focus": {
+        "reference": "Binary/11111111",
+        "identifier": {
+          "value": "application"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Sync configuration",
+      "focus": {
+        "reference": "Binary/11111112",
+        "identifier": {
+          "value": "sync"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Navigation configuration",
+      "focus": {
+        "reference": "Binary/11111114",
+        "identifier": {
+          "value": "navigation"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Register configurations",
+      "mode": "working",
+      "section": [
+        {
+          "title": "Patient register",
+          "focus": {
+            "reference": "Binary/11111115",
+            "identifier": {
+              "value": "patientRegister"
+            }
+          }
+        },
+        {
+          "title": "Task register configuration",
+          "focus": {
+            "reference": "Binary/11111116",
+            "identifier": {
+              "value": "taskRegister"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Translation configurations",
+      "mode": "working",
+      "section": [
+        {
+          "title": "Translation English",
+          "focus": {
+            "reference": "Binary/21111111",
+            "identifier": {
+              "value": "strings_de"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

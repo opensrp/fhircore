@@ -35,15 +35,16 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import okhttp3.ResponseBody
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.FhirContextUtil
+import org.smartregister.fhircore.engine.util.PractitionerDetailsUtil
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
 import retrofit2.Callback
@@ -58,10 +59,11 @@ constructor(
   val accountManager: AccountManager,
   val oAuthService: OAuthService,
   val fhirResourceService: FhirResourceService,
+  val parser: IParser,
   val configService: ConfigService,
   val secureSharedPreference: SecureSharedPreference,
   val tokenManagerService: TokenManagerService,
-  val sharedPreference: SharedPreferencesHelper
+  val sharedPreference: SharedPreferencesHelper,
 ) : AbstractAccountAuthenticator(context) {
 
   override fun addAccount(
@@ -74,7 +76,7 @@ constructor(
     Timber.i("Adding account of type $accountType with auth token of type $authTokenType")
 
     val intent =
-      Intent(context, getLoginActivityClass()).apply {
+      Intent(context, LoginActivity::class.java).apply {
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, getAccountType())
         putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
         putExtra(AUTH_TOKEN_TYPE, authTokenType)
@@ -154,7 +156,7 @@ constructor(
     Timber.i("Updating credentials for ${account.name} from auth activity")
 
     val intent =
-      Intent(context, getLoginActivityClass()).apply {
+      Intent(context, LoginActivity::class.java).apply {
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type)
         putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name)
         putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
@@ -173,18 +175,6 @@ constructor(
 
   fun getUserInfo(): Call<ResponseBody> = oAuthService.userInfo()
 
-  // TODO move to some external file
-  suspend fun getPractitionerDetails(keycloak_uuid: String): org.hl7.fhir.r4.model.Bundle {
-
-    val iParser: IParser = FhirContextUtil.getPractitionerDetailParser()
-
-    val qJson =
-      context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }
-
-    return iParser.parseResource(qJson) as org.hl7.fhir.r4.model.Bundle
-  }
-  //    fhirResourceService.getResource("practitioner-details/$keycloak_uuid")
-
   fun refreshToken(refreshToken: String): OAuthResponse? {
     val data = buildOAuthPayload(REFRESH_TOKEN)
     data[REFRESH_TOKEN] = refreshToken
@@ -194,6 +184,16 @@ constructor(
       Timber.e("Failed to refresh token, refresh token may have expired", exception)
       return null
     }
+  }
+
+  fun getPractitionerDetailsFromAssets(): org.hl7.fhir.r4.model.Bundle {
+    val jsonPayload =
+      context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }
+    return parser.parseResource(jsonPayload) as org.hl7.fhir.r4.model.Bundle
+  }
+
+  suspend fun getPractitionerDetails(keycloakUuid: String): org.hl7.fhir.r4.model.Bundle {
+    return fhirResourceService.getResource(url = PractitionerDetailsUtil.getUrl(keycloakUuid))
   }
 
   @Throws(NetworkErrorException::class)
@@ -234,11 +234,11 @@ constructor(
 
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
     Timber.v("Validating credentials with local storage")
-    return secureSharedPreference.retrieveCredentials()?.let {
-      it.username.contentEquals(username) &&
-        it.password.contentEquals(password.concatToString().toSha1())
-    }
-      ?: false
+    return if (accountExists(username)) {
+      val credentials = secureSharedPreference.retrieveCredentials()
+      credentials?.username.contentEquals(username, true) &&
+        credentials?.password.contentEquals(password.concatToString().toSha1())
+    } else false
   }
 
   fun updateSession(successResponse: OAuthResponse) {
@@ -290,34 +290,34 @@ constructor(
   }
 
   fun logout() {
-    val account = tokenManagerService.getActiveAccount()
-
-    val refreshToken = getRefreshToken()
-    if (refreshToken != null) {
-      oAuthService
-        .logout(clientId(), clientSecret(), refreshToken)
-        .enqueue(
-          object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-              accountManager.clearPassword(account)
-              secureSharedPreference.deleteCredentials()
-              launchScreen(AppSettingActivity::class.java)
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-              secureSharedPreference.deleteCredentials()
-              launchScreen(AppSettingActivity::class.java)
+    getRefreshToken()?.run {
+      val logoutService: Call<ResponseBody> = oAuthService.logout(clientId(), clientSecret(), this)
+      logoutService.enqueue(
+        object : Callback<ResponseBody> {
+          override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+            if (response.isSuccessful) {
+              // Invalidate access token then launch login screen
+              accountManager.invalidateAuthToken(
+                getAccountType(),
+                tokenManagerService.getLocalSessionToken()
+              )
+              // Reset session and refresh tokens to null to force re-login
+              secureSharedPreference.deleteSessionTokens()
+              launchScreen(LoginActivity::class.java)
+            } else {
+              context.showToast(context.getString(R.string.cannot_logout_user))
             }
           }
-        )
-    } else {
-      secureSharedPreference.deleteCredentials()
-      launchScreen(AppSettingActivity::class.java)
-    }
-  }
 
-  fun launchLoginScreen() {
-    launchScreen(getLoginActivityClass())
+          override fun onFailure(call: Call<ResponseBody>, throwable: Throwable) {
+            Timber.w(throwable)
+            context.run {
+              showToast(getString(R.string.error_logging_out, throwable.localizedMessage))
+            }
+          }
+        }
+      )
+    }
   }
 
   fun launchScreen(clazz: Class<*>) {
@@ -333,8 +333,6 @@ constructor(
     )
   }
 
-  fun getLoginActivityClass(): Class<*> = LoginActivity::class.java
-
   fun getAccountType(): String = configService.provideAuthConfiguration().accountType
 
   fun clientSecret(): String = configService.provideAuthConfiguration().clientSecret
@@ -342,6 +340,16 @@ constructor(
   fun clientId(): String = configService.provideAuthConfiguration().clientId
 
   fun providerScope(): String = configService.provideAuthConfiguration().scope
+
+  fun validatePreviousLogin(username: String): Boolean {
+    if (secureSharedPreference.retrieveCredentials() == null) return true
+    return accountExists(username)
+  }
+
+  private fun accountExists(username: String) =
+    accountManager.accounts.find {
+      it.name.equals(username, true) && it.type == getAccountType()
+    } != null && secureSharedPreference.retrieveCredentials()?.username.equals(username, true)
 
   companion object {
     const val AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE"

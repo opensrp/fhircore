@@ -8,6 +8,9 @@ build/
 # Local configuration file (sdk path, etc)
 local.properties
 
+# Keystore configuration file
+keystore.properties
+
 # Log Files
 *.log
 

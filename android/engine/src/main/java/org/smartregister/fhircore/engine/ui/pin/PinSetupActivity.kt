@@ -21,21 +21,24 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 
 @AndroidEntryPoint
 class PinSetupActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   val pinViewModel by viewModels<PinViewModel>()
 
@@ -46,12 +49,14 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
     pinViewModel.apply {
-      if (configurationRegistry.isAppIdInitialized()) {
-        loadData(isSetup = true)
-      }
+      setPinUiState(isSetup = true)
       val pinSetupActivity = this@PinSetupActivity
-      navigateToHome.observe(pinSetupActivity) { pinSetupActivity.moveToHome() }
+      navigateToHome.observe(pinSetupActivity) {
+        loginService.navigateToHome()
+        syncBroadcaster.get().runSync()
+      }
       navigateToSettings.observe(pinSetupActivity) { pinSetupActivity.moveToSettings() }
+      navigateToLogin.observe(pinSetupActivity) { pinSetupActivity.moveToLoginViaUsername() }
       pin.observe(pinSetupActivity) {
         it.let { enableSetPin.postValue(it.length >= PIN_INPUT_MAX_THRESHOLD) }
       }
@@ -59,14 +64,22 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
     setContent { AppTheme { PinSetupScreen(pinViewModel) } }
   }
 
-  private fun moveToHome() {
-    sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME, false)
-    loginService.navigateToHome()
-  }
-
   private fun moveToSettings() {
     startActivity(
       Intent(this, AppSettingActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addCategory(Intent.CATEGORY_LAUNCHER)
+      }
+    )
+    finish()
+  }
+
+  private fun moveToLoginViaUsername() {
+    startActivity(
+      Intent(this, LoginActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)

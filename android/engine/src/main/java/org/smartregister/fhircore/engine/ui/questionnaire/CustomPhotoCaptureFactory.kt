@@ -59,7 +59,7 @@ class CustomPhotoCaptureFactory(
   lateinit var btnTakePhoto: MaterialButton
   lateinit var tvError: TextView
   var context: Context = fragment.requireContext()
-  var cameraLauncher: ActivityResultLauncher<Void>
+  var cameraLauncher: ActivityResultLauncher<Void?>
   var answers: MutableList<QuestionnaireResponseItemAnswerComponent> = mutableListOf()
   lateinit var onAnswerChanged: () -> Unit
 
@@ -67,7 +67,7 @@ class CustomPhotoCaptureFactory(
     cameraLauncher = registerCameraLauncher()
   }
 
-  internal fun registerCameraLauncher(): ActivityResultLauncher<Void> {
+  internal fun registerCameraLauncher(): ActivityResultLauncher<Void?> {
     return fragment.registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap
       ->
       if (bitmap != null) {
@@ -124,7 +124,7 @@ class CustomPhotoCaptureFactory(
           btnTakePhoto = binding.btnTakePhoto
           tvError = binding.tvError as TextView
         }
-        onAnswerChanged = { onAnswerChanged(context) }
+        onAnswerChanged = { onAnswerChanged() }
       }
 
       override fun bind(questionnaireItemViewItem: QuestionnaireItemViewItem) {
@@ -138,13 +138,13 @@ class CustomPhotoCaptureFactory(
         }
         tvHeader.text = questionnaireItemViewItem.questionnaireItem.text
         btnTakePhoto.setOnClickListener { launchCamera() }
-        questionnaireItemViewItem.singleAnswerOrNull?.valueAttachment?.let { attachment ->
+        questionnaireItemViewItem.answers.singleOrNull()?.valueAttachment?.let { attachment ->
           loadThumbnail(attachment.data.decodeToBitmap())
           answers.clear()
           answers.add(QuestionnaireResponseItemAnswerComponent().apply { value = attachment })
         }
         if (!questionnaireItemViewItem.questionnaireItem.readOnly) {
-          questionnaireItemViewItem.questionnaireResponseItem.answer = answers
+          answers.singleOrNull()?.let { questionnaireItemViewItem.setAnswer(it) }
         }
       }
 

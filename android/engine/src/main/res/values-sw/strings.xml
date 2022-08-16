@@ -6,7 +6,7 @@
         <string name="search_hint">Tafuta jina ama ID</string>
         <string name="str_next">Ijayo</string>
         <string name="str_previous">Iliyopita</string>
-        <string name="str_page_info">Ukurasa %1$d of %2$d</string>
+        <string name="str_page_info">Ukurasa %1$d wa %2$d</string>
         <string name="status_vaccinated">Amechanjwa</string>
         <string name="status_overdue">Imechelewa</string>
         <string name="status_received_vaccine">Chanjo %1$d \n%2$s</string>
@@ -69,7 +69,7 @@
         <string name="cancel">GHAIRI</string>
         <string name="dial_number">PIGA NAMBA</string>
         <string name="register">Sajili</string>
-        <string name="tasks">Kazi</string>
+        <string name="visits">Kazi</string>
         <string name="reports">Riporti</string>
         <string name="profile">Wasifu</string>
         <string name="settings">Mipangilio</string>
@@ -102,4 +102,18 @@
         <string name="pin_menu_login">Ingia</string>
         <string name="forgot_pin">Umesahau pini?</string>
         <string name="please_contact_supervisor">Tafadhali wasiliana na msimamizi wako.</string>
+    <string name="logging_out">Tafadhali subiri... Inatoka kwenye mfumo</string>
+        <string name="session_expired">Muda wa kipindi chako umeisha. Tafadhali ingia tena.</string>
+        <string name="sex">Jinsia</string>
+    <string name="age">Umri</string>
+        <string name="see_all">ONA YOTE</string>
+    <string name="forms">FOMU</string>
+        <string name="medical_history">HISTORIA YA MATIBABU</string>
+        <string name="upcoming_services">HUDUMA ZIJAZO</string>
+        <string name="service_card">KADI YA HUDUMA</string>
+        <string name="dob">Tarehe ya Kuzaliwa</string>
+        <string name="invalid_form_id">ID ya fomu iliyoambatishwa si sahihi</string>
+        <string name="error_loading_config">Hitilafu katika kupakia usanidi. Maelezo: %1$s</string>
+        <string name="error_contacting_server">Hitilafu katika kuwasiliana na seva. Msimbo wa hitilafu %1$s</string>
+        <string name="date_last_visited">Ziara ya mwisho %1$s</string>
 </resources>

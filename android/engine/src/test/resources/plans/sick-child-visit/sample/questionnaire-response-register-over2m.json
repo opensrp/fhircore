@@ -1,0 +1,132 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "f49b1bac-57ac-4912-96c3-d454701c9509",
+  "meta": {
+    "lastUpdated": "2022-06-15T14:37:17.740+05:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+        "display": "eCBIS Sick Child Registration form (Over 2 Months)"
+      }
+    ]
+  },
+  "questionnaire": "Questionnaire/131879",
+  "subject": {
+    "reference": "Patient/5717ec7d-5874-46c7-8816-a6fb502b4f14"
+  },
+  "authored": "2022-06-15T14:37:17+05:00",
+  "item": [
+    {
+      "linkId": "9af686f7-8fc7-4ef8-815b-99bd4ea5bb79",
+      "answer": [
+        {
+          "valueInteger": 12
+        }
+      ]
+    },
+    {
+      "linkId": "17cd35ef-a107-4747-84c1-b686a6f6aaea",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "d4352004-4708-4210-a697-811cfd663978",
+            "system": "urn:uuid:c171913a-ae44-4bd9-a027-1b935a01b8c1",
+            "code": "active",
+            "display": "Active"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "ba8ac52f-7fc2-4ab9-9e67-ee4473c57b48",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "a5e734d2-f542-4d9a-8453-a8dd2d62f591",
+            "system": "urn:uuid:407a6758-24c6-420c-f41d-cc8ca4dbc4c4",
+            "code": "sick",
+            "display": "Not well, has sick symptoms"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "cf0093a9-1e38-422b-fc81-273caa0bb48a",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "8f8cf0b9-0043-4b9f-8ac6-50668e6ee1a1",
+            "system": "urn:uuid:d3051c21-8668-412e-a2dd-105cf274b260",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "94357450-e603-49f7-899c-464ecd10ddd1",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "e55a53f6-f763-4893-8313-e9ac7a1b8037",
+            "system": "urn:uuid:4ae66618-142d-4e2c-dd66-5d63c14b83a9",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "14648d8c-c88f-40be-9f25-66d7ba621482",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "cd363c0f-ca7c-4f78-976c-88f091d88c4e",
+            "system": "urn:uuid:08516020-d926-4463-863e-d6f45b0d317b",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "60e8812f-9741-4fb0-8e9e-035b860f42b5",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "bf7adff1-e7ab-43d5-dccd-f088a88fed4f",
+            "system": "urn:uuid:77130d5d-c082-4dc1-8e75-6468596a8fe0",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "6edf0853-bb17-466e-80ec-0e0aacec4cb3",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "c6a3f29e-f27b-4fa8-8427-ad516d11e852",
+            "system": "urn:uuid:0d7aef28-883d-4b70-82fc-8a6d2d4027e3",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "bfb58202-642d-482e-9eb2-c80f86ececb1",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "095d9516-8989-4442-eec0-e4640e3ce3b6",
+            "system": "urn:uuid:c8a36f45-edf4-4860-9b99-5c591c1553c0",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    }
+  ]
+}

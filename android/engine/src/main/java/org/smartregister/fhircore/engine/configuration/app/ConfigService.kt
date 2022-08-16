@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
-import com.google.android.fhir.FhirEngine
+import android.content.Context
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
@@ -29,21 +32,15 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
-import org.smartregister.fhircore.engine.configuration.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.FhirConfiguration
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import timber.log.Timber
 
-/**
- * An interface that provides the application configurations.
- * @property resourceSyncParams Set [FhirEngine] resource sync params needed for syncing data from
- * the server
- */
+/** An interface that provides the application configurations. */
 interface ConfigService {
-
-  val resourceSyncParams: Map<ResourceType, Map<String, String>>
 
   /** Provide [AuthConfiguration] for the Application */
   fun provideAuthConfiguration(): AuthConfiguration
@@ -56,7 +53,7 @@ interface ConfigService {
     syncJob: SyncJob,
     configurationRegistry: ConfigurationRegistry,
     syncBroadcaster: SyncBroadcaster,
-    syncInterval: Long = 30
+    syncInterval: Long = DEFAULT_SYNC_INTERVAL,
   ) {
     CoroutineScope(Dispatchers.Main).launch {
       syncBroadcaster.sharedSyncStatus.emitAll(syncJob.stateFlow())
@@ -69,34 +66,48 @@ interface ConfigService {
     )
   }
 
+  fun schedulePlan(context: Context) {
+    WorkManager.getInstance(context)
+      .enqueueUniquePeriodicWork(
+        FhirTaskPlanWorker.WORK_ID,
+        ExistingPeriodicWorkPolicy.REPLACE,
+        PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
+      )
+  }
+
+  fun unschedulePlan(context: Context) {
+    WorkManager.getInstance(context).cancelUniqueWork(FhirTaskPlanWorker.WORK_ID)
+  }
+
+  /** Retrieve registry sync params */
   fun loadRegistrySyncParams(
     configurationRegistry: ConfigurationRegistry,
-    authenticatedUserInfo: UserInfo?
+    paramsMap: Map<String, List<String>>?,
   ): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
     val syncConfig =
-      configurationRegistry.retrieveConfiguration<FhirConfiguration<Parameters>>(
-        AppConfigClassification.SYNC
-      )
+      configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
 
     val appConfig =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
-      )
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig.resource.parameter.map { it.resource as SearchParameter }.forEach { sp ->
-      val paramName = sp.name!! // e.g. organization
+    syncConfig.parameter.map { it.resource as SearchParameter }.forEach { sp ->
+      val paramName = sp.name // e.g. organization
       val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
       val paramExpression = sp.expression
       val expressionValue =
         when (paramName) {
-          ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
-          ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
+          // TODO: Does not support multi organization yet
+          ConfigurationRegistry.ORGANIZATION ->
+            paramsMap
+              ?.get(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
+              ?.first()
+              ?.substringAfter("/")
           ConfigurationRegistry.ID -> paramExpression
-          ConfigurationRegistry.COUNT -> appConfig.count
+          ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
           else -> null
         }?.let {
           // replace the evaluated value into expression for complex expressions
@@ -106,7 +117,8 @@ interface ConfigService {
         }
 
       // for each entity in base create and add param map
-      // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital ],..]
+      // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
+      // ],..]
       sp.base.forEach { base ->
         val resourceType = ResourceType.fromCode(base.code)
         val pair = pairs.find { it.first == resourceType }
@@ -132,5 +144,9 @@ interface ConfigService {
     Timber.i("SYNC CONFIG $pairs")
 
     return mapOf(*pairs.toTypedArray())
+  }
+
+  companion object {
+    const val DEFAULT_SYNC_INTERVAL: Long = 30
   }
 }

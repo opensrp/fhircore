@@ -1,0 +1,127 @@
+{
+  "resourceType": "Parameters",
+  "configType": "sync",
+  "parameter": [
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "organization",
+        "base": [
+          "Patient"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "managing-entity.patient.organization",
+        "base": [
+          "Group"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "subject.organization",
+        "base": [
+          "Encounter",
+          "Observation",
+          "Condition",
+          "CarePlan",
+          "QuestionnaireResponse",
+          "Task"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Practitioner"
+        ]
+      },
+      "type": "token",
+      "expression": "130845,94398"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "publisher",
+        "code": "publisher",
+        "base": [
+          "Questionnaire"
+        ],
+        "type": "token",
+        "expression": "#publisher"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "StructureMap",
+          "PlanDefinition"
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Library"
+        ]
+      },
+      "type": "token",
+      "expression": "1753,133081,133105"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "Measure"
+        ]
+      },
+      "type": "token",
+      "expression": "133082,133104"
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "count",
+        "code": "_count",
+        "base": [
+          "Patient",
+          "Encounter",
+          "Observation",
+          "Condition",
+          "CarePlan",
+          "QuestionnaireResponse",
+          "Questionnaire",
+          "StructureMap",
+          "Task",
+          "Group"
+        ],
+        "type": "token",
+        "expression": "#count"
+      }
+    }
+  ]
+}

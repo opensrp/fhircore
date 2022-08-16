@@ -17,112 +17,308 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.LinkedList
+import java.util.Locale
+import java.util.PropertyResourceBundle
+import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.fileExtension
+import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
 
-/**
- * A configuration store used to store all the application configurations. Application
- * configurations are to be downloaded and synced from the server. This registry provides a map with
- * different [Configuration] implementations. The ensures that all the application configurations
- * are accessible from one place. If no configurations are retrieved from the server, then the
- * defaults are used.
- */
 @Singleton
 class ConfigurationRegistry
 @Inject
 constructor(
-  @ApplicationContext val context: Context,
+  val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val dispatcherProvider: DispatcherProvider,
   val repository: DefaultRepository
 ) {
 
-  val configurationsMap = mutableMapOf<String, Configuration>()
-
-  val workflowPointsMap = mutableMapOf<String, WorkflowPoint>()
-
-  lateinit var appId: String
-
-  /**
-   * Retrieve configuration for the provided [ConfigClassification]. Populate the map when the
-   * config is loaded for the first time. File name containing configs MUST start with the workflow
-   * resource in snake_case
-   *
-   * E.g. for a workflow resource RegisterViewConfiguration, the name of the file containing configs
-   * becomes register_view_configurations.json
-   */
-  inline fun <reified T : Configuration> retrieveConfiguration(
-    configClassification: ConfigClassification,
-    jsonSerializer: Json? = null
-  ): T =
-    workflowPointName(configClassification.classification).let { workflowName ->
-      val workflowPoint = workflowPointsMap[workflowName]
-      if (workflowPoint == null) {
-        Timber.w("No configuration found for $workflowName. Initializing default instance")
-        return T::class.java.newInstance()
-      }
-      configurationsMap.getOrPut(workflowName) {
-        // Binary content could be either a Configuration or a FHIR Resource
-        (workflowPoint.resource as Binary).content.decodeToString().let {
-          if (T::class.java.isAssignableFrom(FhirConfiguration::class.java))
-            FhirConfiguration(appId, workflowPoint.classification, it.decodeResourceFromString())
-          else it.decodeJson<T>(jsonSerializer)
-        }
-      } as
-        T
-    }
-
-  suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
-    this.appId = appId
-
-    // appId is identifier of Composition
-    repository
-      .searchCompositionByIdentifier(appId)
-      .also { if (it == null) configsLoadedCallback(false) }
-      ?.section
-      ?.forEach {
-        // each section in composition represents workflow
-        // { "title": "register configuration",
-        //   "mode": "working",
-        //   "focus": { "reference": "Binary/11111", "identifier: { "value": "registration" } }
-        // }
-
-        // A workflow point would be mapped like
-        //   "workflowPoint": "registration",
-        //   "resource": "RegisterViewConfiguration",
-        //   "classification": "patient_register",
-        //   "description": "register configuration"
-
-        val workflowPointName = workflowPointName(it.focus.identifier.value)
-        val workflowPoint =
-          WorkflowPoint(
-            classification = it.focus.identifier.value,
-            description = it.title,
-            resource = repository.getBinary(it.focus.extractId()),
-            workflowPoint = it.focus.identifier.value
-          )
-        workflowPointsMap[workflowPointName] = workflowPoint
-      }
-      ?.also { configsLoadedCallback(true) }
+  val json = Json {
+    encodeDefaults = true
+    ignoreUnknownKeys = true
+    isLenient = true
   }
 
-  fun workflowPointName(key: String) = "$appId|$key"
+  val configsJsonMap = mutableMapOf<String, String>()
+  val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
+  val supportedFileExtensions = listOf("json", "properties")
 
-  fun isAppIdInitialized() = this::appId.isInitialized
+  /**
+   * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
+   * can be directly converted to a FHIR resource or hard coded custom model.
+   */
+  // TODO optimize to use a map to avoid decoding configuration everytime a config is retrieved
+  inline fun <reified T : Configuration> retrieveConfiguration(
+    configType: ConfigType,
+    configId: String? = null
+  ): T {
+    val configKey = if (configType.multiConfig && configId != null) configId else configType.name
+    return if (configType.parseAsResource)
+      configsJsonMap.getValue(configKey).decodeResourceFromString()
+    else
+      localizationHelper
+        .parseTemplate(
+          LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+          Locale.getDefault(),
+          configsJsonMap.getValue(configKey)
+        )
+        .decodeJson(jsonInstance = json)
+  }
+
+  /**
+   * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
+   * can be directly converted to a FHIR resource or hard coded custom model.
+   */
+  inline fun <reified T : Base> retrieveResourceConfiguration(configType: ConfigType): T {
+    require(configType.parseAsResource) { "Configuration MUST be a supported FHIR Resource" }
+    return configsJsonMap.getValue(configType.name).decodeResourceFromString()
+  }
+
+  /**
+   * Retrieve translation configuration for the provided [bundleName]. The Bundle value is retrieved
+   * from [configsJsonMap] can be directly converted to a ResourceBundle.
+   */
+  fun retrieveResourceBundleConfiguration(bundleName: String): ResourceBundle? {
+    val resourceBundle =
+      configsJsonMap[bundleName.camelCase()] // Convention for config map keys is now Camel Case
+    if (resourceBundle != null) {
+      return PropertyResourceBundle(resourceBundle.byteInputStream())
+    }
+    if (bundleName.contains("_")) {
+      return retrieveResourceBundleConfiguration(
+        bundleName.substring(0, bundleName.lastIndexOf('_'))
+      )
+    }
+    return null
+  }
+
+  /**
+   * Populate application's configurations from the composition resource. Only Binary and Parameter
+   * Resources are used to represent application configurations.
+   *
+   * Sections in Composition with Binary or Parameter represents a valid application configuration.
+   * Example below is represents an application configuration uniquely identified by the
+   * [ConfigType]'application'. Sections can be nested like in the registers case.
+   *
+   * ```
+   *  {
+   *    "title": "Application configuration",
+   *    "mode": "working",
+   *    "focus": {
+   *      "reference": "Binary/11111",
+   *      "identifier: {
+   *      "value": "application"
+   *      }
+   *    }
+   *  }
+   * ```
+   *
+   * Nested section example
+   *
+   * ```
+   *  {
+   *     "title": "Register configurations",
+   *     "mode": "working",
+   *     "section": [
+   *        {
+   *          "title": "Household register configuration",
+   *          "focus": {
+   *             "reference": "Binary/11111115",
+   *             "identifier": {
+   *                "value": "all_household_register_config"
+   *              }
+   *          }
+   *        }
+   *     ]
+   * }
+   * ```
+   *
+   * [appId] is a unique identifier for the application. Typically written in human readable form
+   *
+   * [context] is the targeted Android context
+   *
+   * [configsLoadedCallback] is a callback function called once configs have been loaded.
+   */
+  suspend fun loadConfigurations(
+    appId: String,
+    context: Context,
+    configsLoadedCallback: (Boolean) -> Unit = {}
+  ) {
+    // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
+    // extract appId by removing the suffix e.g. app from above example
+    val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
+    if (loadFromAssets) {
+      val parsedAppId = appId.substringBefore("/").trim()
+      context
+        .assets
+        .open(String.format(COMPOSITION_CONFIG_PATH, parsedAppId))
+        .bufferedReader()
+        .readText()
+        .decodeResourceFromString<Composition>()
+        .run {
+          populateConfigurationsMap(
+            composition = this,
+            loadFromAssets = loadFromAssets,
+            appId = parsedAppId,
+            configsLoadedCallback = configsLoadedCallback,
+            context = context
+          )
+        }
+    } else {
+      repository.searchCompositionByIdentifier(appId)?.run {
+        populateConfigurationsMap(context, this, loadFromAssets, appId, configsLoadedCallback)
+      }
+    }
+  }
+
+  private suspend fun populateConfigurationsMap(
+    context: Context,
+    composition: Composition,
+    loadFromAssets: Boolean,
+    appId: String,
+    configsLoadedCallback: (Boolean) -> Unit
+  ) {
+    if (loadFromAssets) {
+      retrieveAssetConfigs(context, appId).forEach { fileName ->
+        // Create binary config from asset and add to map, skip composition resource
+        // Use file name as the key. Conventionally navigation configs MUST end with
+        // "_config.<extension>"
+        // File names in asset should match the configType/id (MUST be unique) in the config JSON
+        if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
+          val configKey =
+            fileName
+              .lowercase(Locale.ENGLISH)
+              .substring(
+                fileName.indexOfLast { it == '/' }.plus(1),
+                fileName.lastIndexOf(CONFIG_SUFFIX)
+              )
+              .camelCase()
+
+          val configJson = context.assets.open(fileName).bufferedReader().readText()
+          configsJsonMap[configKey] = configJson
+        }
+      }
+    } else {
+      composition.retrieveCompositionSections().forEach {
+        if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
+          val configKey = it.focus.identifier.value
+          val referenceResourceType = it.focus.reference.substringBeforeLast("/")
+          if (isAppConfig(referenceResourceType)) {
+            val configBinary = repository.getBinary(it.focus.extractId())
+            configsJsonMap[configKey] = configBinary.content.decodeToString()
+          }
+        }
+      }
+    }
+    configsLoadedCallback(true)
+  }
+
+  private fun isAppConfig(referenceResourceType: String) =
+    referenceResourceType in arrayOf(ResourceType.Binary.name, ResourceType.Parameters.name)
+
+  private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
+    // Reads supported files from asset/config/* directory recursively
+    // Populates all sub directory in a queue then reads all the nested files for each
+    val filesQueue = LinkedList<String>()
+    val configFiles = mutableListOf<String>()
+    context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
+      if (!supportedFileExtensions.contains(it.fileExtension))
+        filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+      else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+    }
+    while (filesQueue.isNotEmpty()) {
+      val currentPath = filesQueue.removeFirst()
+      context.assets.list(currentPath)?.onEach {
+        if (!supportedFileExtensions.contains(it.fileExtension))
+          filesQueue.addLast("$currentPath/$it")
+        else configFiles.add("$currentPath/$it")
+      }
+    }
+    return configFiles
+  }
+
+  /**
+   * Fetch non-patient Resources for the application that are not application configurations
+   * resources such as [ResourceType.Questionnaire] and [ResourceType.StructureMap]. (
+   * [ResourceType.Binary] and [ResourceType.Parameters] are currently the only FHIR HL7 resources
+   * used to represent application configurations). These non-patients resource identifiers are also
+   * set in the section components of the [Composition] resource.
+   *
+   * This function retrieves the composition based on the appId and groups the non-patient resources
+   * ( [ResourceType.Questionnaire] or [ResourceType.StructureMap]) based on their type.
+   *
+   * Searching is done using the _id search parameter of these not patient resources; the
+   * composition section components are grouped by resource type ,then the ids concatenated (as
+   * comma separated values), thus generating a search query like the following 'Resource
+   * Type'?_id='comma,separated,list,of,ids'
+   */
+  fun fetchNonWorkflowConfigResources() {
+    // TODO load these type of configs from assets too
+    CoroutineScope(dispatcherProvider.io()).launch {
+      try {
+        sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
+          repository.searchCompositionByIdentifier(appId)?.let { composition ->
+            composition
+              .retrieveCompositionSections()
+              .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
+              .filterNot { isAppConfig(it.key) }
+              .forEach { resourceGroup ->
+                val resourceIds =
+                  resourceGroup.value.joinToString(",") { sectionComponent ->
+                    sectionComponent.focus.extractId()
+                  }
+                val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
+                fhirResourceDataSource.loadData(searchPath).entry.forEach {
+                  repository.addOrUpdate(it.resource)
+                }
+              }
+          }
+        }
+      } catch (exception: Exception) {
+        Timber.e(exception)
+      }
+    }
+  }
+
+  /**
+   * Application configurations are represented with only [ResourceType.Binary] and
+   * [ResourceType.Parameters]
+   */
+  fun Composition.SectionComponent.isApplicationConfig(): Boolean {
+    this.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.first().let { resourceType ->
+      return resourceType in arrayOf(ResourceType.Parameters.name, ResourceType.Binary.name)
+    }
+  }
 
   companion object {
+    const val BASE_CONFIG_PATH = "configs/%s"
+    const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
+    const val DEBUG_SUFFIX = "/debug"
     const val ORGANIZATION = "organization"
     const val PUBLISHER = "publisher"
     const val ID = "_id"
     const val COUNT = "count"
-    const val DEFAULT_COUNT = "100"
+    const val TYPE_REFERENCE_DELIMITER = "/"
+    const val CONFIG_SUFFIX = "_config"
   }
 }

@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'de.mannodermaus.android-junit5'
-    id 'kotlin-android-extensions'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
@@ -14,19 +13,18 @@ apply from: '../jacoco.gradle'
 apply from: '../properties.gradle'
 
 android {
-    compileSdkVersion 30
-    compileSdk 30
+    compileSdkVersion sdk_versions.compile_sdk
 
     dataBinding {
         enabled true
     }
 
     defaultConfig {
-        applicationId "org.smartregister.fhircore.quest"
-        minSdk 21
-        targetSdk 30
-        versionCode 3
-        versionName "0.0.3"
+        applicationId "org.smartregister.fhircore"
+        minSdkVersion sdk_versions.min_sdk
+        targetSdkVersion sdk_versions.target_sdk
+        versionCode 4
+        versionName "0.0.4"
         multiDexEnabled true
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
@@ -36,20 +34,18 @@ android {
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        minSdkVersion 21
-        targetSdkVersion 30
+        testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
     }
-    
+
     signingConfigs {
         release {
 
-            v1SigningEnabled true
+            v1SigningEnabled false
             v2SigningEnabled true
 
-            keyAlias System.getenv("KEYSTORE_ALIAS")
-            keyPassword System.getenv("KEY_PASSWORD")
-            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEYSTORE_ALIAS") ?: project.KEYSTORE_ALIAS
+            keyPassword System.getenv("KEY_PASSWORD") ?: project.KEY_PASSWORD
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: project.KEYSTORE_PASSWORD
             storeFile file(System.getProperty("user.home") + "/fhircore.keystore.jks")
         }
     }
@@ -91,12 +87,13 @@ android {
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_11.toString()
+        freeCompilerArgs = ['-Xjvm-default=compatibility', '-opt-in=kotlin.RequiresOptIn']
     }
 
     buildFeatures {
@@ -105,7 +102,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.0.4'
+        kotlinCompilerExtensionVersion '1.1.1'
     }
 
     testOptions {
@@ -123,22 +120,57 @@ android {
         }
     }
 
-    compileSdkVersion 30
-
     lintOptions {
         abortOnError false
+    }
+
+    flavorDimensions "apps"
+
+    productFlavors {
+        quest {
+            dimension "apps"
+            applicationIdSuffix ".quest"
+            versionNameSuffix "-quest"
+            getIsDefault().set(true)
+        }
+        ecbis {
+            dimension "apps"
+            applicationIdSuffix ".ecbis"
+            versionNameSuffix "-ecbis"
+            versionCode 3
+            versionName "0.1.1"
+        }
+        g6pd {
+            dimension "apps"
+            applicationIdSuffix ".g6pd"
+            versionNameSuffix "-g6pd"
+        }
+        mwcore {
+            dimension "apps"
+            applicationIdSuffix ".mwcore"
+            versionNameSuffix "-mwcore"
+        }
+        afyayangu {
+            dimension "apps"
+            applicationIdSuffix ".afyayangu"
+            versionNameSuffix "-afyayangu"
+            versionCode 1
+            versionName "0.0.1"
+        }
     }
 }
 
 dependencies {
     coreLibraryDesugaring deps.desugar
     implementation(project(":engine"))
-    implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.work:work-runtime-ktx:2.6.0'
+    implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
+    implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
+    implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
@@ -155,19 +187,28 @@ dependencies {
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
+    testImplementation deps.kotlin.test
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1'
 
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
     kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
+    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
-    def composeVersion = "1.0.5"
+
+    def composeVersion = "1.3.0-alpha01"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    androidTestUtil 'androidx.test:orchestrator:1.4.2-alpha04'
+
+    androidTestImplementation deps.mockk_android
+
 //     debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 
-    testImplementation 'info.cqframework:cql-to-elm:1.5.0'
+    testImplementation 'info.cqframework:cql-to-elm:1.5.6'
 }

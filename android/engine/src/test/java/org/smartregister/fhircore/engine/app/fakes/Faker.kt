@@ -16,41 +16,78 @@
 
 package org.smartregister.fhircore.engine.app.fakes
 
-import io.mockk.coEvery
+import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.mockk
 import io.mockk.spyk
+import java.util.Calendar
+import java.util.Date
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.readFile
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.toSha1
 
 object Faker {
-  fun loadTestConfigurationRegistryData(
-    defaultRepository: DefaultRepository,
-    configurationRegistry: ConfigurationRegistry
-  ) {
-    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns
-      "/configs/config_composition.json".readFile().decodeResourceFromString() as Composition
 
-    coEvery { defaultRepository.getBinary(any()) } answers
-      {
-        val idArg = this.args.first().toString().replace("b_", "")
-        Binary().apply {
-          content = "/configs/${idArg}_configurations.json".readFile().toByteArray()
-        }
-      }
+  private const val APP_DEBUG = "app/debug"
 
-    runBlocking { configurationRegistry.loadConfigurations(appId = "appId") {} }
-  }
+  val authCredentials =
+    AuthCredentials(
+      username = "demo",
+      password = "51r1K4l1".toSha1(),
+      sessionToken = "49fad390491a5b547d0f782309b6a5b33f7ac087",
+      refreshToken = "USrAgmSf5MJ8N_RLQODa7rZ3zNs1Sj1GkSIsTsb4n-Y"
+    )
 
-  fun buildTestConfigurationRegistry(defaultRepository: DefaultRepository): ConfigurationRegistry {
-    val configurationRegistry = spyk(ConfigurationRegistry(mockk(), mockk(), defaultRepository))
+  fun buildTestConfigurationRegistry(
+    defaultRepository: DefaultRepository = mockk()
+  ): ConfigurationRegistry {
+    val configurationRegistry =
+      spyk(
+        ConfigurationRegistry(
+          fhirResourceDataSource = mockk(),
+          sharedPreferencesHelper = mockk(),
+          dispatcherProvider = mockk(),
+          repository = defaultRepository
+        )
+      )
 
-    loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+    runBlocking {
+      configurationRegistry.loadConfigurations(
+        appId = APP_DEBUG,
+        context = InstrumentationRegistry.getInstrumentation().targetContext
+      ) {}
+    }
 
     return configurationRegistry
+  }
+
+  fun buildPatient(
+    id: String = "sampleId",
+    family: String = "Mandela",
+    given: String = "Nelson",
+    age: Int = 78,
+    gender: Enumerations.AdministrativeGender = Enumerations.AdministrativeGender.MALE
+  ): Patient {
+    return Patient().apply {
+      this.id = id
+      this.active = true
+      this.identifierFirstRep.value = id
+      this.addName().apply {
+        this.family = family
+        this.given.add(StringType(given))
+      }
+      this.gender = gender
+      this.birthDate = DateType(Date()).apply { add(Calendar.YEAR, -age) }.dateTimeValue().value
+
+      this.addAddress().apply {
+        district = "Dist 1"
+        city = "City 1"
+      }
+    }
   }
 }

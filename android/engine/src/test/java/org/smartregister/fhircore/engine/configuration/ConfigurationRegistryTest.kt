@@ -16,140 +16,59 @@
 
 package org.smartregister.fhircore.engine.configuration
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
-import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coVerify
-import io.mockk.mockk
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-  val context = ApplicationProvider.getApplicationContext<Context>()
-
-  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
-
-  private val testAppId = "appId"
-
-  lateinit var configurationRegistry: ConfigurationRegistry
-  val defaultRepository: DefaultRepository = mockk()
+  @Inject lateinit var configRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
+
     hiltRule.inject()
-
-    configurationRegistry = ConfigurationRegistry(context, mockk(), defaultRepository)
+    Assert.assertNotNull(configRegistry)
   }
 
   @Test
-  fun testLoadConfiguration() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
-    Assert.assertEquals(testAppId, configurationRegistry.appId)
-    Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
-    Assert.assertTrue(configurationRegistry.workflowPointsMap.containsKey("appId|application"))
+  fun testRetrieveResourceBundleConfigurationReturnsNull() {
+    configRegistry.configsJsonMap["stringsEn"] = "name.title=Mr.\n" + "gender.male=Male"
+    val resource = configRegistry.retrieveResourceBundleConfiguration("nonexistent")
+    Assert.assertNull(resource)
   }
 
   @Test
-  fun testRetrieveConfigurationShouldReturnLoginViewConfiguration() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
-    val retrievedConfiguration =
-      configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
-        AppConfigClassification.LOGIN
-      )
-
-    Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
-    val configurationsMap = configurationRegistry.configurationsMap
-    Assert.assertTrue(configurationsMap.isNotEmpty())
-    Assert.assertTrue(configurationsMap.containsKey("appId|login"))
-    Assert.assertTrue(configurationsMap["appId|login"]!! is LoginViewConfiguration)
-
-    Assert.assertFalse(retrievedConfiguration.darkMode)
-    Assert.assertFalse(retrievedConfiguration.showLogo)
-    Assert.assertEquals("appId", retrievedConfiguration.appId)
-    Assert.assertEquals("login", retrievedConfiguration.classification)
-    Assert.assertEquals("Sample App", retrievedConfiguration.applicationName)
-    Assert.assertEquals("0.0.1", retrievedConfiguration.applicationVersion)
+  fun testRetrieveResourceBundleConfigurationMissingVariantReturnsBaseResourceBundle() {
+    configRegistry.configsJsonMap["strings"] = "name.title=Mr.\n" + "gender.male=Male"
+    val resource = configRegistry.retrieveResourceBundleConfiguration("strings_en")
+    Assert.assertNotNull(resource)
+    Assert.assertEquals("Mr.", resource?.getString("name.title"))
+    Assert.assertEquals("Male", resource?.getString("gender.male"))
   }
 
   @Test
-  fun testRetrievePinConfigurationShouldReturnLoginViewConfiguration() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
-    val retrievedConfiguration =
-      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
-
-    Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
-    val configurationsMap = configurationRegistry.configurationsMap
-    Assert.assertTrue(configurationsMap.isNotEmpty())
-    Assert.assertTrue(configurationsMap.containsKey("appId|pin"))
-    Assert.assertTrue(configurationsMap["appId|pin"]!! is PinViewConfiguration)
-
-    Assert.assertEquals("appId", retrievedConfiguration.appId)
-    Assert.assertEquals("pin", retrievedConfiguration.classification)
-    Assert.assertEquals("Sample App", retrievedConfiguration.applicationName)
-    Assert.assertEquals("ic_launcher", retrievedConfiguration.appLogoIconResourceFile)
-    Assert.assertTrue(retrievedConfiguration.enablePin)
-    Assert.assertTrue(retrievedConfiguration.showLogo)
+  fun testRetrieveResourceBundleConfigurationReturnsCorrectBundle() {
+    configRegistry.configsJsonMap["stringsSw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
+    val resource = configRegistry.retrieveResourceBundleConfiguration("strings_sw")
+    Assert.assertNotNull(resource)
+    Assert.assertEquals("Bwana.", resource?.getString("name.title"))
+    Assert.assertEquals("Kijana", resource?.getString("gender.male"))
   }
 
   @Test
-  fun testRetrieveConfigurationWithNoEntryShouldReturnNewConfiguration() {
-    configurationRegistry.appId = "testApp"
-
-    Assert.assertTrue(configurationRegistry.workflowPointsMap.isEmpty())
-    Assert.assertTrue(configurationRegistry.configurationsMap.isEmpty())
-
-    val retrievedConfiguration =
-      configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
-
-    Assert.assertNotNull(retrievedConfiguration)
-  }
-
-  @Test
-  fun testLoadConfigurationRegistry() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
-    coVerify { defaultRepository.searchCompositionByIdentifier(testAppId) }
-    coVerify { defaultRepository.getBinary("b_application") }
-    coVerify { defaultRepository.getBinary("b_login") }
-    coVerify { defaultRepository.getBinary("b_pin_view") }
-    coVerify { defaultRepository.getBinary("b_patient_register") }
-    coVerify { defaultRepository.getBinary("b_sync") }
-  }
-
-  @Test
-  fun testIsAppIdInitialized() {
-    Assert.assertFalse(configurationRegistry.isAppIdInitialized())
-
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
-    Assert.assertTrue(configurationRegistry.isAppIdInitialized())
-  }
-
-  @Test
-  fun testIsWorkflowPointName() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
-    Assert.assertEquals("$testAppId|123", configurationRegistry.workflowPointName("123"))
-    Assert.assertEquals("$testAppId|abbb", configurationRegistry.workflowPointName("abbb"))
+  fun testRetrieveResourceBundleConfigurationWithLocaleVariantReturnsCorrectBundle() {
+    configRegistry.configsJsonMap["stringsSw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
+    val resource = configRegistry.retrieveResourceBundleConfiguration("strings_sw_KE")
+    Assert.assertNotNull(resource)
+    Assert.assertEquals("Bwana.", resource?.getString("name.title"))
+    Assert.assertEquals("Kijana", resource?.getString("gender.male"))
   }
 }

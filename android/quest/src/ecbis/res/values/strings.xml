@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">MOH eCBIS</string>
+    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.ecbis</string>
+</resources>

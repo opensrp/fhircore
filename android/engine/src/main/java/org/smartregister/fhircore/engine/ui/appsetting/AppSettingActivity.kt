@@ -27,12 +27,15 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -43,6 +46,7 @@ class AppSettingActivity : AppCompatActivity() {
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+  @Inject lateinit var loginService: LoginService
 
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
@@ -50,74 +54,99 @@ class AppSettingActivity : AppCompatActivity() {
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
 
-    appSettingViewModel.loadConfigs.observe(this) { loadConfigs ->
-      if (loadConfigs == true) {
-        val applicationId = appSettingViewModel.appId.value!!
-        lifecycleScope.launch {
-          configurationRegistry.loadConfigurations(applicationId) { loadSuccessful: Boolean ->
-            if (loadSuccessful) {
-              sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
-              accountAuthenticator.launchLoginScreen()
-              finish()
-            } else {
-              showToast(
-                getString(R.string.application_not_supported, appSettingViewModel.appId.value)
-              )
-            }
-          }
-        }
-      } else if (loadConfigs != null && !loadConfigs)
-        showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
-    }
+    val isLoggedIn = accountAuthenticator.hasActiveSession()
 
     with(appSettingViewModel) {
-      this.fetchConfigs.observe(this@AppSettingActivity) {
-        val viewModel = this
-        if (it == true && this.appId.value?.isNotBlank() == true)
+      val appSettingActivity = this@AppSettingActivity
+      loadConfigs.observe(appSettingActivity) { loadConfigs ->
+        if (loadConfigs == false) {
+          showToast(getString(R.string.application_not_supported, appId.value))
+          return@observe
+        }
+
+        if (appId.value.isNullOrBlank()) return@observe
+
+        val appId = appId.value!!.trimEnd()
+
+        if (hasDebugSuffix() && BuildConfig.DEBUG) {
           lifecycleScope.launch(dispatcherProvider.io()) {
-            viewModel.fetchConfigurations(viewModel.appId.value!!, this@AppSettingActivity)
-          }
-      }
-    }
-
-    appSettingViewModel.error.observe(this) {
-      if (it.isNotBlank()) showToast(getString(R.string.error_loading_config, it))
-    }
-
-    /* will require in future enhancement
-    appSettingViewModel.rememberApp.observe(
-      this,
-      { doRememberApp ->
-        doRememberApp?.let {
-          if (doRememberApp) {
-            if (!appSettingViewModel.appId.value.isNullOrEmpty()) {
-              sharedPreferencesHelper.write(APP_ID_CONFIG, appSettingViewModel.appId.value ?: "")
+            configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
+              loadSuccessful: Boolean ->
+              if (loadSuccessful) {
+                sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+                if (!isLoggedIn) {
+                  accountAuthenticator.launchScreen(LoginActivity::class.java)
+                } else {
+                  loginService.loginActivity = appSettingActivity
+                  loginService.navigateToHome()
+                }
+                finish()
+              } else {
+                launch(dispatcherProvider.main()) {
+                  showToast(getString(R.string.application_not_supported, appId))
+                }
+              }
             }
-          } else {
-            sharedPreferencesHelper.remove(APP_ID_CONFIG)
+          }
+          return@observe
+        }
+
+        lifecycleScope.launch(dispatcherProvider.io()) {
+          configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
+            loadSuccessful: Boolean ->
+            if (loadSuccessful) {
+              sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+              accountAuthenticator.launchScreen(LoginActivity::class.java)
+              finish()
+            } else {
+              launch(dispatcherProvider.main()) {
+                showToast(getString(R.string.application_not_supported, appId))
+              }
+            }
           }
         }
       }
-    )
-    */
 
-    val lastAppId = sharedPreferencesHelper.read(APP_ID_CONFIG, null)
+      fetchConfigs.observe(appSettingActivity) { fetchConfigs ->
+        if (fetchConfigs == false) {
+          loadConfigurations(true)
+          return@observe
+        }
+
+        if (hasDebugSuffix() && BuildConfig.DEBUG) {
+          loadConfigurations(true)
+          return@observe
+        }
+
+        if (appId.value.isNullOrBlank()) return@observe
+
+        lifecycleScope.launch(dispatcherProvider.io()) {
+          fetchConfigurations(appId.value!!, appSettingActivity)
+        }
+      }
+
+      error.observe(appSettingActivity) { error ->
+        if (error.isNotBlank()) showToast(getString(R.string.error_loading_config, error))
+      }
+    }
+
+    val lastAppId = sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
     lastAppId?.let {
-      appSettingViewModel.onApplicationIdChanged(it)
-      appSettingViewModel.fetchConfigurations(true)
-      appSettingViewModel.loadConfigurations(true)
+      with(appSettingViewModel) {
+        onApplicationIdChanged(it)
+        fetchConfigurations(!isLoggedIn)
+      }
     }
       ?: run {
         setContent {
           AppTheme {
             val appId by appSettingViewModel.appId.observeAsState("")
-            val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
+            val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
             AppSettingScreen(
               appId = appId,
-              rememberApp = rememberApp ?: false,
               onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
-              onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
-              onLoadConfigurations = appSettingViewModel::fetchConfigurations
+              onLoadConfigurations = appSettingViewModel::fetchConfigurations,
+              showProgressBar = showProgressBar
             )
           }
         }

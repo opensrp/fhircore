@@ -17,8 +17,16 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
+import ca.uhn.fhir.rest.gclient.StringClientParam
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.StringFilterModifier
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 
 fun Search.filterByResourceTypeId(
   reference: ReferenceClientParam,
@@ -27,3 +35,66 @@ fun Search.filterByResourceTypeId(
 ) {
   filter(reference, { value = "${resourceType.name}/$resourceId" })
 }
+
+fun Search.filterByResourceTypeId(
+  token: TokenClientParam,
+  resourceType: ResourceType,
+  resourceId: String
+) {
+  filter(token, { value = of("${resourceType.name}/$resourceId") })
+}
+
+fun Search.filterBy(filter: DataQuery) {
+  when (filter.filterType) {
+    Enumerations.SearchParamType.TOKEN -> filterToken(filter)
+    Enumerations.SearchParamType.STRING -> filterString(filter)
+    else ->
+      throw UnsupportedOperationException("Can not apply ${filter.filterType} as search filter")
+  }
+}
+
+fun Search.filterToken(filter: DataQuery) {
+  // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
+  when (filter.valueType) {
+    Enumerations.DataType.CODING ->
+      filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
+    Enumerations.DataType.CODEABLECONCEPT ->
+      filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCodeableConcept()) })
+    else ->
+      throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
+  }
+}
+
+fun Search.filterString(filter: DataQuery) {
+  // TODO StringFilter in SDK is not fully implemented and ignores all types but String and Boolean
+  when (filter.valueType) {
+    Enumerations.DataType.STRING ->
+      filter(
+        StringClientParam(filter.key),
+        {
+          this.modifier = StringFilterModifier.MATCHES_EXACTLY
+          this.value = filter.valueString!!
+        }
+      )
+    Enumerations.DataType.BOOLEAN ->
+      filter(
+        StringClientParam(filter.key),
+        {
+          this.modifier = StringFilterModifier.MATCHES_EXACTLY
+          this.value = filter.valueBoolean.toString()
+        }
+      )
+    else ->
+      throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
+  }
+}
+
+fun Code.asCoding() = Coding(this.system, this.code, this.display)
+
+fun Coding.asCode() = Code(this.system, this.code, this.display)
+
+fun Code.asCodeableConcept() =
+  CodeableConcept().apply {
+    addCoding(this@asCodeableConcept.asCoding())
+    text = this@asCodeableConcept.display
+  }

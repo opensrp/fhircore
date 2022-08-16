@@ -26,42 +26,38 @@ class ApplicationConfigurationTest {
     val applicationConfiguration =
       ApplicationConfiguration(
         appId = "ancApp",
-        classification = "classification",
+        configType = "classification",
         theme = "dark theme",
         languages = listOf("en"),
         syncInterval = 15,
-        applicationName = "Test App",
-        appLogoIconResourceFile = "ic_launcher",
-        count = "100"
+        appTitle = "Test App",
+        remoteSyncPageSize = 100
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
-    Assert.assertEquals("classification", applicationConfiguration.classification)
+    Assert.assertEquals("classification", applicationConfiguration.configType)
     Assert.assertEquals("dark theme", applicationConfiguration.theme)
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
-    Assert.assertEquals("Test App", applicationConfiguration.applicationName)
-    Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
-    Assert.assertEquals("100", applicationConfiguration.count)
+    Assert.assertEquals("Test App", applicationConfiguration.appTitle)
+    Assert.assertEquals(100, applicationConfiguration.remoteSyncPageSize)
   }
 
   @Test
   fun testApplicationConfigurationOf() {
     val applicationConfiguration =
-      applicationConfigurationOf(
+      ApplicationConfiguration(
         appId = "ancApp",
-        classification = "classification",
+        configType = "classification",
         theme = "dark theme",
         languages = listOf("en"),
         syncInterval = 15,
-        applicationName = "Test App",
-        appLogoIconResourceFile = "ic_launcher",
-        count = "100"
+        appTitle = "Test App",
+        remoteSyncPageSize = 100
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
-    Assert.assertEquals("classification", applicationConfiguration.classification)
+    Assert.assertEquals("classification", applicationConfiguration.configType)
     Assert.assertEquals("dark theme", applicationConfiguration.theme)
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
-    Assert.assertEquals("Test App", applicationConfiguration.applicationName)
-    Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
-    Assert.assertEquals("100", applicationConfiguration.count)
+    Assert.assertEquals("Test App", applicationConfiguration.appTitle)
+    Assert.assertEquals(100, applicationConfiguration.remoteSyncPageSize)
   }
 }
