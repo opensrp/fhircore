@@ -20,17 +20,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 
 @Composable
@@ -67,21 +69,40 @@ fun ActionableButton(
       horizontalArrangement = Arrangement.Center,
       modifier = modifier.fillMaxWidth()
     ) {
+      Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
       Icon(
-        modifier = modifier.wrapContentSize(),
+        modifier = modifier.size(16.dp),
         imageVector =
-          if (buttonProperties.isCheckIcon == true) Icons.Filled.Check else Icons.Filled.Add,
+          if (buttonProperties.status == ServiceStatus.COMPLETED.name) Icons.Filled.Check
+          else Icons.Filled.Add,
         contentDescription = null,
         tint =
-          if (buttonProperties.isCheckIcon == true) SuccessColor.copy(alpha = 0.9f)
-          else buttonProperties.statusColor().copy(alpha = 0.9f)
+          when (buttonProperties.status) {
+            ServiceStatus.COMPLETED.name -> SuccessColor.copy(alpha = 0.9f)
+            ServiceStatus.DUE.name -> DefaultColor.copy(alpha = 0.9f)
+            else -> buttonProperties.statusColor().copy(alpha = 0.9f)
+          }
       )
       Spacer(modifier = modifier.width(6.dp))
       Text(
         text = buttonProperties.text.toString(),
         fontWeight = FontWeight.Medium,
-        color = buttonProperties.statusColor().copy(alpha = 0.9f)
+        color =
+          if (
+            buttonProperties.status == ServiceStatus.COMPLETED.name ||
+              buttonProperties.status == ServiceStatus.DUE.name
+          )
+            DefaultColor.copy(0.8f)
+          else buttonProperties.statusColor().copy(alpha = 0.9f)
       )
+      Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
+      if (buttonProperties.status == ServiceStatus.COMPLETED.name) {
+        Icon(
+          imageVector = Icons.Filled.ArrowDropDown,
+          contentDescription = null,
+          tint = DefaultColor.copy(alpha = 0.9f)
+        )
+      }
     }
   }
 }
@@ -90,10 +111,10 @@ fun ActionableButton(
 fun ButtonProperties.statusColor(): Color = remember {
   // Status color is determined from the service status
   when (this.status) {
-    ServiceStatus.DUE.name -> InfoColor
+    ServiceStatus.DUE.name -> PersonalDataBackgroundColor
     ServiceStatus.OVERDUE.name -> DangerColor
     ServiceStatus.UPCOMING.name -> DefaultColor
-    ServiceStatus.COMPLETED.name -> SuccessColor
+    ServiceStatus.COMPLETED.name -> PersonalDataBackgroundColor
     else -> InfoColor
   }
 }

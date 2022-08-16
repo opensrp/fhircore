@@ -51,7 +51,6 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.domain.model.ActionableButtonData
 import org.smartregister.fhircore.engine.ui.components.ActionableButton
-import org.smartregister.fhircore.engine.ui.components.ActionableButtonOld
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
@@ -104,10 +103,7 @@ fun FamilyMemberBottomSheet(
     if (actionableButtonData.isNotEmpty()) {
       Spacer(modifier = modifier.height(8.dp))
       actionableButtonData.forEach {
-        ActionableButton(
-          buttonProperties = ButtonProperties(status = "OVERDUE"),
-          onAction = {}
-        )
+        ActionableButton(buttonProperties = ButtonProperties(status = "OVERDUE"), onAction = {})
       }
       Spacer(modifier = modifier.height(8.dp))
     }
@@ -120,6 +116,7 @@ fun FamilyMemberBottomSheet(
       modifier =
         modifier
           .fillMaxWidth()
+
           .clickable { onViewProfile() }
           .padding(horizontal = 16.dp, vertical = 16.dp)
     )

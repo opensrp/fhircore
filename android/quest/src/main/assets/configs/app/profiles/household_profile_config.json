@@ -260,7 +260,6 @@
                 {
                   "viewType": "BUTTON",
                   "visible": true,
-                  "isCheckIcon": true,
                   "text": "household heading",
                   "status": "COMPLETED"
                 }

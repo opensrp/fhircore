@@ -34,5 +34,4 @@ data class ButtonProperties(
   val questionnaire: QuestionnaireConfig? = null,
   val fontSize: Float = 10.0f,
   val actions: List<ActionConfig> = emptyList(),
-  val isCheckIcon: Boolean? = null,
 ) : ViewProperties()
