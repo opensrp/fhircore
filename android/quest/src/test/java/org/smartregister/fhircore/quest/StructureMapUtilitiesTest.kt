@@ -32,7 +32,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -57,7 +56,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
@@ -94,7 +92,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val outputs: MutableList<Base> = ArrayList()
     val transformSupportServices = TransformSupportServices(contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
@@ -121,18 +118,14 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     System.out.println(iParser.encodeResourceToString(targetResource))
   }
 
-  // TODO failing test - QuestionnaireItem item is not allowed to have both initial.value and
-  // initial expression. See rule at
-  // http://build.fhir.org/ig/HL7/sdc/expressions.html#initialExpression.
   @Test
-  @Ignore("See comment above")
   fun `populate patient registration Questionnaire and extract Resources`() {
     val patientRegistrationQuestionnaire =
-      "content/eir/patient-registration/questionnaire.json".readFile()
+      "patient-registration-questionnaire/questionnaire.json".readFile()
     val patientRegistrationStructureMap =
-      "content/eir/patient-registration/structure-map.txt".readFile()
-    val relatedPersonJson = "content/eir/patient-registration/related-person.json".readFile()
-    val patientJson = "content/eir/patient-registration/patient.json".readFile()
+      "patient-registration-questionnaire/structure-map.txt".readFile()
+    val relatedPersonJson = "patient-registration-questionnaire/related-person.json".readFile()
+    val patientJson = "patient-registration-questionnaire/sample/patient.json".readFile()
 
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val questionnaire =
@@ -207,7 +200,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `convert StructureMap to JSON`() {
     val patientRegistrationStructureMap =
-      "content/eir/patient-registration/structure-map.txt".readFile()
+      "patient-registration-questionnaire/structure-map.txt".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -226,9 +219,9 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `perform extraction from patient registration Questionnaire`() {
     val patientRegistrationQuestionnaireResponse =
-      "content/eir/patient-registration/questionnaire-response.json".readFile()
+      "patient-registration-questionnaire/questionnaire-response.json".readFile()
     val patientRegistrationStructureMap =
-      "content/eir/patient-registration/structure-map.txt".readFile()
+      "patient-registration-questionnaire/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from

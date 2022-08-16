@@ -77,7 +77,7 @@ jobs:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: false
+          force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew :engine:clean && ./gradlew :engine:fhircoreJacocoReport --stacktrace
@@ -133,7 +133,7 @@ jobs:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: true
+          force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
