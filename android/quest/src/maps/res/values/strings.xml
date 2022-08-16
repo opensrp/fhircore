@@ -1,4 +1,0 @@
-<resources>
-    <string name="app_name" translatable="false">Maps POC</string>
-    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.maps</string>
-</resources>
