@@ -82,6 +82,7 @@ constructor(
         event.overflowMenuItemConfig?.actions?.forEach { actionConfig ->
           when (actionConfig.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+              if (actionConfig.questionnaire == null) return@forEach
               var intentBundle: android.os.Bundle = android.os.Bundle.EMPTY
               if (actionConfig.params.isNotEmpty()) {
                 var actionParamList: MutableList<Pair<String, String>> =
@@ -91,7 +92,6 @@ constructor(
                 }
                 intentBundle = bundleOf(*actionParamList.toTypedArray())
               }
-              if (actionConfig.questionnaire == null) return@forEach
               event.context.launchQuestionnaire<QuestionnaireActivity>(
                 questionnaireId = actionConfig.questionnaire!!.id,
                 clientIdentifier = event.resourceData?.baseResource?.logicalId,
