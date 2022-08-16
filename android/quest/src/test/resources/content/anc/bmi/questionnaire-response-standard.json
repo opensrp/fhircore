@@ -1,0 +1,55 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "status": "in-progress",
+  "item": [
+    {
+      "linkId": "7133a736-f901-4ef3-8861-2d0d00b1856e",
+      "text": "FAMILY"
+    },
+    {
+      "linkId": "family.name",
+      "text": "Family name",
+      "answer": [
+        {
+          "valueString": "Doe Family"
+        }
+      ]
+    },
+    {
+      "linkId": "family.id",
+      "text": "Household ID",
+      "answer": [
+        {
+          "valueString": "1234567"
+        }
+      ]
+    },
+    {
+      "linkId": "family.village",
+      "text": "Village",
+      "answer": [
+        {
+          "valueString": "Kerio"
+        }
+      ]
+    },
+    {
+      "linkId": "family.landmark",
+      "text": "Landmark/ description of house location",
+      "answer": [
+        {
+          "valueString": "Escapement "
+        }
+      ]
+    },
+    {
+      "linkId": "family.nearest_hf",
+      "text": "Nearest health facility",
+      "answer": [
+        {
+          "valueString": "Kerio Valley Hospital"
+        }
+      ]
+    }
+  ]
+}

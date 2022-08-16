@@ -1,0 +1,71 @@
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/2357" = 'ImmunizationRegistration'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Immunization" as target
+uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
+uses "http://hl7.org/fhir/StructureDefinition/positiveInt" as target
+
+group ImmunizationRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.id = uuid() "rule_a";
+    src -> bundle.type = 'collection' "rule_b";
+    src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then
+        ExtractEncounter(src, encounter), ExtractImmunization(src, bundle, encounter) "rule_c";
+}
+
+group ExtractEncounter(source src : QuestionnaireResponse, target encounter : Encounter) {
+    src -> encounter.id = uuid() "rule_ee_1";
+    src -> encounter.status = "finished" "rule_ee_2";
+    src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "AMB", "ambulatory") "rule_ee_3";
+    src -> encounter.serviceType = cc("http://terminology.hl7.org/CodeSystem/service-type", "57", "Immunization") "rule_ee_4";
+}
+
+
+group ExtractImmunization(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src -> bundle.entry as entry, entry.resource = create('Immunization') as immunization then {
+      src -> immunization.id = uuid() "rule_ei_2";
+      src -> immunization.recorded = evaluate(immunization, now()) "rule_ei_2";
+      src -> immunization.status = "completed" "rule_ei_3";
+      src.item as vaccineItem where(linkId = 'vaccine') -> immunization.vaccineCode = create('CodeableConcept') as codeableConcept then {
+        vaccineItem -> codeableConcept.text = evaluate(vaccineItem,$this.answer.value.code) "rule_ei_4_1";
+        vaccineItem -> codeableConcept.coding = evaluate(vaccineItem,$this.answer.value) "rule_ei_4_2";
+      } "rule_ei_4";
+      src -> immunization.occurrence = evaluate(immunization, now()) "rule_ei_5";
+      src -> immunization.patient = create('Reference') as reference then {
+        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+      } "rule_ei_6";
+      src.item as doseNoItem where(linkId = 'dose-number') -> immunization.protocolApplied = create('Immunization_VaccinationProtocol') as vacProtocol then {
+        doseNoItem -> vacProtocol.doseNumber = create('positiveInt') as doseNo then {
+          src-> doseNo.value = "1" "rule_ei_7_1_1";
+          doseNoItem.answer as doseNoItemAns where(empty().not()) then {
+            src-> doseNo.value = evaluate(doseNoItem, ($this.answer.value.toInteger() + 1).toString()) "rule_ei_7_1_3";
+          } "rule_ei_7_1_2";
+        } "rule_ei_7_1";
+        doseNoItem -> vacProtocol.seriesDoses =  create('positiveInt') as seriesDoses then {
+          src -> seriesDoses.value = "2" "rule_ei_7_2_1";
+        } "rule_ei_7_2";
+        doseNoItem -> vacProtocol.series = "2-dose" "rule_ei_7_3";
+        doseNoItem -> vacProtocol.authority = create('Reference') as reference then {
+          src -> reference.type = "Organization" "rule_ei_7_4_1";
+          src -> reference.identifier = create('Identifier') as identifier then {
+            src -> identifier.system = "wA69g8VD512TfTTdkTNSsG" "rule_ei_7_4_2_1";
+          } "rule_ei_7_4_2";
+        } "rule_ei_7_4";
+        doseNoItem -> vacProtocol.targetDisease = cc("http://snomed.info/sct", "840539006", "COVID 19") "rule_ei_7_5";
+      } "rule_ei_7";
+      src -> immunization.manufacturer = create('Reference') as reference then {
+        src -> reference.identifier = create('Identifier') as identifier then {
+          src -> identifier.system = "http://worldhealthorganization.github.io/ddcc/CodeSystem/DDCC-Example-Test-CodeSystem" "rule_ei_8_1_ 1";
+        } "rule_ei_8_1";
+        src -> reference.display = "Biotech" "rule_ei_8_2";
+      } "rule_ei_8";
+      src -> immunization.lotNumber = "PT123F" "rule_ei_9";
+      src -> immunization.expirationDate = evaluate(src, today() + 6 'months') "rule_ei_10";
+      src -> immunization.encounter = reference(encounter) "rule_ei_11";
+      src -> immunization.doseQuantity = create("SimpleQuantity") as simpleQty then {
+        src -> simpleQty.value = "2" "rule_ei_12_1";
+        src -> simpleQty.system = "http://unitsofmeasure.org" "rule_ei_12_2";
+        src -> simpleQty.code = "mg" "rule_ei_12_3";
+      } "rule_ei_12";
+    } "rule_ei_13";
+}

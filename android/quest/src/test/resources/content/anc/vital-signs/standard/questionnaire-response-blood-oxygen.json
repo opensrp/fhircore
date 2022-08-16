@@ -1,0 +1,32 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "item": [
+    {
+      "linkId": "select-vital-sign",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "blood-oxygen-level",
+            "display": "Blood Oxygen Level"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-blood-oxygen-level",
+      "answer": [
+        {
+          "valueInteger": 97
+        }
+      ]
+    },
+    {
+      "linkId": "patient-id",
+      "answer": [
+        {
+          "valueString": "923948023470"
+        }
+      ]
+    }
+  ]
+}
