@@ -25,7 +25,7 @@ jobs:
         working-directory: android
 
       - name: Document code with dokka
-        run: ./gradlew :eir:dokkaHtml
+        run: ./gradlew :quest:dokkaHtml
         working-directory: android
         env:
          FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
