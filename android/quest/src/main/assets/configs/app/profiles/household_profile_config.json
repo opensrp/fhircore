@@ -268,5 +268,74 @@
         }
       ]
     }
+  ],
+  "overFlowMenuItems": [
+    {
+      "title": "Family details",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "82952",
+            "title": "Add Family",
+            "type": "EDIT"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Change family head",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE"
+        }
+      ]
+    },
+    {
+      "title": "Family activity",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE"
+        }
+      ]
+    },
+    {
+      "title": "View past encounters",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": ""
+        }
+      ]
+    },
+    {
+      "title": "Remove family",
+      "titleColor": "#FF0000",
+      "visible": "true",
+      "showSeparator": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "params": [
+            {
+              "key": "familyId",
+              "value": "@{familyId}"
+            }
+          ]
+        }
+      ]
+    }
   ]
 }

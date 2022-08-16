@@ -16,11 +16,16 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-import androidx.compose.ui.graphics.Color
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class OverflowMenuItemConfig(
-  val id: Int,
-  val titleResource: Int,
+  val id: Int = 1,
+  val title: String = "",
   val confirmAction: Boolean = false,
-  val titleColor: Color = Color.Black.copy(alpha = 0.7f),
+  val titleColor: String? = null,
+  val backgroundColor: String? = null,
+  val visible: String,
+  val showSeparator: String = "false",
+  val actions: List<ActionConfig> = emptyList()
 )
