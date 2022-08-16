@@ -34,6 +34,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -54,6 +55,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HivRegisterDaoTest : RobolectricTest() {
@@ -114,10 +116,37 @@ class HivRegisterDaoTest : RobolectricTest() {
       )
     }
 
+  private val carePlan1 =
+    CarePlan().apply {
+      id = "CarePlan/cp1"
+      status = CarePlan.CarePlanStatus.ACTIVE
+      careTeam = listOf(Reference("Ref11"), Reference("Ref12"))
+      addActivity(
+        CarePlan.CarePlanActivityComponent().apply {
+          outcomeReference.add(Reference(testTask1.referenceValue()))
+        }
+      )
+    }
+
+  private val carePlan2 =
+    CarePlan().apply {
+      id = "CarePlan/cp2"
+      status = CarePlan.CarePlanStatus.ACTIVE
+      careTeam = listOf(Reference("Ref21"), Reference("Ref22"))
+      addActivity(
+        CarePlan.CarePlanActivityComponent().apply {
+          outcomeReference.add(Reference(testTask2.referenceValue()))
+        }
+      )
+    }
+
   @Before
   fun setUp() {
 
     coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns testPatient
+
+    coEvery { fhirEngine.get(ResourceType.Task, testTask1.logicalId) } returns testTask1
+    coEvery { fhirEngine.get(ResourceType.Task, testTask2.logicalId) } returns testTask2
 
     coEvery { fhirEngine.search<Resource>(any()) } answers
       {
@@ -125,7 +154,7 @@ class HivRegisterDaoTest : RobolectricTest() {
         when (search.type) {
           ResourceType.Patient -> listOf<Patient>(testPatient, testPatientGenderNull)
           ResourceType.Task -> listOf<Task>(testTask1, testTask2)
-          ResourceType.CarePlan -> emptyList<CarePlan>()
+          ResourceType.CarePlan -> listOf<CarePlan>(carePlan1, carePlan2)
           else -> emptyList()
         }
       }
