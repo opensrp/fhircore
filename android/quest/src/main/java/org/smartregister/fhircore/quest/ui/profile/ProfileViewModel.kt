@@ -91,6 +91,7 @@ constructor(
                 }
                 intentBundle = bundleOf(*actionParamList.toTypedArray())
               }
+              if (actionConfig.questionnaire == null) return@forEach
               event.context.launchQuestionnaire<QuestionnaireActivity>(
                 questionnaireId = actionConfig.questionnaire!!.id,
                 clientIdentifier = event.resourceData?.baseResource?.logicalId,
