@@ -84,8 +84,12 @@ constructor(
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               var intentBundle: android.os.Bundle = android.os.Bundle.EMPTY
               if (actionConfig.params.isNotEmpty()) {
-                intentBundle =
-                  bundleOf(Pair(actionConfig.params[0].key, actionConfig.params[0].value))
+                var actionParamList: MutableList<Pair<String, String>> =
+                  emptyList<Pair<String, String>>().toMutableList()
+                actionConfig.params.forEach { actionParameter ->
+                  actionParamList.add(Pair(actionParameter.key, actionParameter.value))
+                }
+                intentBundle = bundleOf(*actionParamList.toTypedArray())
               }
               event.context.launchQuestionnaire<QuestionnaireActivity>(
                 questionnaireId = actionConfig.questionnaire!!.id,

@@ -64,8 +64,7 @@ constructor(
               "householdProfile" // TODO Pass profile id dynamically
             )
             .overFlowMenuItems
-        // overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)
-        )
+      )
     )
 
   val familyMemberProfileData: MutableState<ProfileViewData.FamilyProfileViewData> =
