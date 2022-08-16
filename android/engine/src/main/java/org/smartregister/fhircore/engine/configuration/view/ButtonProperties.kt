@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -29,6 +32,7 @@ data class ButtonProperties(
   val status: String,
   val smallSized: Boolean = false,
   val questionnaire: QuestionnaireConfig? = null,
-  val fontSize: Float = 12.0f,
-  val actions: List<ActionConfig> = emptyList()
+  val fontSize: Float = 10.0f,
+  val actions: List<ActionConfig> = emptyList(),
+  val isCheckIcon: Boolean? = null,
 ) : ViewProperties()

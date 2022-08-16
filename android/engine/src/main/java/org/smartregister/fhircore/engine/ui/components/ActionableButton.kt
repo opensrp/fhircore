@@ -16,60 +16,97 @@
 
 package org.smartregister.fhircore.engine.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.smartregister.fhircore.engine.domain.model.ActionableButtonData
+import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 
 @Composable
 fun ActionableButton(
-  actionableButtonData: ActionableButtonData,
+  buttonProperties: ButtonProperties,
   modifier: Modifier = Modifier,
-  onAction: (String, String?) -> Unit
+  onAction: () -> Unit
 ) {
   OutlinedButton(
-    onClick = {
-      if (actionableButtonData.questionnaireId != null)
-        onAction(
-          actionableButtonData.questionnaireId,
-          actionableButtonData.backReference?.reference
-        )
-    },
+    onClick = { if (buttonProperties.questionnaire?.id != null) onAction() },
     colors =
       ButtonDefaults.buttonColors(
-        backgroundColor = actionableButtonData.contentColor.copy(alpha = 0.1f),
-        contentColor = actionableButtonData.contentColor.copy(alpha = 0.9f)
+        backgroundColor = buttonProperties.statusColor().copy(alpha = 0.1f),
+        contentColor = buttonProperties.statusColor().copy(alpha = 0.1f)
       ),
-    modifier = modifier.fillMaxWidth().padding(top = 0.dp, start = 16.dp, end = 16.dp)
+    modifier = modifier.fillMaxWidth().padding(top = 0.dp, start = 12.dp, end = 12.dp)
   ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.Center,
+      modifier = modifier.fillMaxWidth()
+    ) {
       Icon(
-        imageVector = actionableButtonData.iconStart,
+        modifier = modifier.wrapContentSize(),
+        imageVector =
+          if (buttonProperties.isCheckIcon == true) Icons.Filled.Check else Icons.Filled.Add,
         contentDescription = null,
-        tint = actionableButtonData.iconColor.copy(alpha = 0.9f)
+        tint =
+          if (buttonProperties.isCheckIcon == true) SuccessColor.copy(alpha = 0.9f)
+          else buttonProperties.statusColor().copy(alpha = 0.9f)
       )
-      Text(text = actionableButtonData.action, fontWeight = FontWeight.Medium)
+      Spacer(modifier = modifier.width(6.dp))
+      Text(
+        text = buttonProperties.text.toString(),
+        fontWeight = FontWeight.Medium,
+        color = buttonProperties.statusColor().copy(alpha = 0.9f)
+      )
     }
   }
 }
 
 @Composable
+fun ButtonProperties.statusColor(): Color = remember {
+  // Status color is determined from the service status
+  when (this.status) {
+    ServiceStatus.DUE.name -> InfoColor
+    ServiceStatus.OVERDUE.name -> DangerColor
+    ServiceStatus.UPCOMING.name -> DefaultColor
+    ServiceStatus.COMPLETED.name -> SuccessColor
+    else -> InfoColor
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun ActionableButtonPreview() {
+  Column {
+    ActionableButton(buttonProperties = ButtonProperties(status = "OVERDUE"), onAction = {})
+  }
+}
+
+/*@Composable
 @Preview(showBackground = true)
 fun PatientFormPreview() {
   Column {
@@ -111,4 +148,4 @@ fun PatientFormPreview() {
       onAction = { _, _ -> }
     )
   }
-}
+}*/

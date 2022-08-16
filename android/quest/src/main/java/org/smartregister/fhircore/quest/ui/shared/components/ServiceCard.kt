@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.register.components
+package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,13 +23,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,7 +37,6 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -46,9 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,14 +61,11 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
-import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.engine.ui.components.ActionableButton
+import org.smartregister.fhircore.engine.ui.components.statusColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.engine.ui.theme.InfoColor
-import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
-import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import org.smartregister.p2p.utils.capitalize
 
@@ -110,7 +104,7 @@ fun ServiceCard(
             }
           }
           .padding(top = 24.dp, bottom = 24.dp)
-          .weight(0.75f)
+          .weight(0.65f)
     ) {
       Column(modifier = modifier.wrapContentWidth(Alignment.Start).weight(0.7f)) {
         serviceCardProperties.details.forEach {
@@ -136,27 +130,37 @@ fun ServiceCard(
       )
     }
 
-    // Show action button (occupies 25% of the row width)
+    // Show action button (occupies 35% of the row width)
     Box(
-      modifier = modifier.weight(0.25f).padding(top = 24.dp, bottom = 24.dp),
+      modifier = modifier.weight(0.35f).padding(top = 24.dp, bottom = 24.dp),
       contentAlignment = Alignment.Center
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
-      if (serviceCardProperties.serviceButton != null &&
-          serviceCardProperties.serviceButton!!.visible == true
-      ) {
-        if (serviceCardProperties.serviceButton!!.smallSized) {
-          SmallServiceButton(
-            modifier = modifier,
-            buttonProperties = serviceCardProperties.serviceButton!!,
-            computedValuesMap = resourceData.computedValuesMap
-          )
-        } else {
-          BigServiceButton(
-            modifier = modifier,
-            buttonProperties = serviceCardProperties.serviceButton!!,
-            computedValuesMap = resourceData.computedValuesMap,
-          )
+      if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
+        if (
+          serviceCardProperties.serviceButton != null &&
+            serviceCardProperties.serviceButton!!.visible == true
+        ) {
+          if (serviceCardProperties.serviceButton!!.smallSized) {
+            ActionableButton(
+              modifier = modifier,
+              buttonProperties = serviceCardProperties.serviceButton!!,
+              onAction = {}
+            )
+          } else {
+            BigServiceButton(
+              modifier = modifier,
+              buttonProperties = serviceCardProperties.serviceButton!!,
+              computedValuesMap = resourceData.computedValuesMap,
+            )
+          }
+        } else if (serviceCardProperties.services?.isNotEmpty() == true) {
+          Column {
+            serviceCardProperties.services?.forEach { buttonProperties ->
+              ActionableButton(buttonProperties = buttonProperties, onAction = {})
+              Spacer(modifier = modifier.height(8.dp))
+            }
+          }
         }
       }
     }
@@ -190,50 +194,14 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
 }
 
 @Composable
-private fun SmallServiceButton(
-  modifier: Modifier = Modifier,
-  buttonProperties: ButtonProperties,
-  computedValuesMap: Map<String, Any>
-) {
-  val statusColor = buttonProperties.statusColor(computedValuesMap)
-  val contentColor = remember { statusColor.copy(alpha = 0.85f) }
-  Row(
-    modifier =
-      modifier
-        .padding(horizontal = 8.dp)
-        .clip(RoundedCornerShape(8.dp))
-        .clickable { /*TODO Provide the given service*/}
-        .background(color = statusColor.copy(alpha = 0.1f)),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Icon(
-      imageVector = Icons.Filled.Add,
-      contentDescription = null,
-      tint = contentColor,
-      modifier = modifier.size(16.dp).padding(horizontal = 1.dp)
-    )
-    Text(
-      text = buttonProperties.text ?: "",
-      color = contentColor,
-      fontSize = buttonProperties.fontSize.sp,
-      fontWeight = FontWeight.Bold,
-      modifier = modifier.padding(4.dp).wrapContentHeight(Alignment.CenterVertically),
-      overflow = TextOverflow.Visible,
-    )
-  }
-}
-
-@Composable
 private fun BigServiceButton(
   modifier: Modifier = Modifier,
   buttonProperties: ButtonProperties,
   computedValuesMap: Map<String, Any>
 ) {
-  val statusColor = buttonProperties.statusColor(computedValuesMap)
+  val statusColor = buttonProperties.statusColor()
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
-  val extractedStatus = remember {
-    ServiceStatus.valueOf(buttonProperties.status.interpolate(computedValuesMap))
-  }
+  val extractedStatus = remember { ServiceStatus.valueOf(buttonProperties.status) }
 
   Column(
     modifier =
@@ -264,20 +232,9 @@ private fun BigServiceButton(
   }
 }
 
-@Composable
-private fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color = remember {
-  // Status color is determined from the service status
-  when (ServiceStatus.valueOf(this.status.interpolate(computedValuesMap))) {
-    ServiceStatus.DUE -> InfoColor
-    ServiceStatus.OVERDUE -> DangerColor
-    ServiceStatus.UPCOMING -> DefaultColor
-    ServiceStatus.COMPLETED -> SuccessColor
-  }
-}
-
 @Preview(showBackground = true)
 @Composable
-private fun RegisterCardServiceOverduePreview() {
+private fun ServiceCardServiceOverduePreview() {
   val viewProperties =
     listOf<ViewProperties>(
       ViewGroupProperties(
@@ -331,7 +288,7 @@ private fun RegisterCardServiceOverduePreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun RegisterCardServiceDuePreview() {
+private fun ServiceCardServiceDuePreview() {
   val viewProperties =
     listOf<ViewProperties>(
       ViewGroupProperties(
@@ -385,7 +342,7 @@ private fun RegisterCardServiceDuePreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun RegisterCardServiceUpcomingPreview() {
+private fun ServiceCardServiceUpcomingPreview() {
   val viewProperties =
     listOf<ViewProperties>(
       ViewGroupProperties(
@@ -439,7 +396,7 @@ private fun RegisterCardServiceUpcomingPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun RegisterCardServiceCompletedPreview() {
+private fun ServiceCardServiceCompletedPreview() {
   val viewProperties =
     listOf<ViewProperties>(
       ViewGroupProperties(
@@ -492,7 +449,7 @@ private fun RegisterCardServiceCompletedPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun RegisterCardANCServiceDuePreview() {
+private fun ServiceCardANCServiceDuePreview() {
   val viewProperties =
     listOf<ViewProperties>(
       ViewGroupProperties(
@@ -540,7 +497,7 @@ private fun RegisterCardANCServiceDuePreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun RegisterCardANCServiceOverduePreview() {
+private fun ServiceCardANCServiceOverduePreview() {
   val viewProperties =
     listOf<ViewProperties>(
       ViewGroupProperties(
@@ -565,12 +522,20 @@ private fun RegisterCardANCServiceOverduePreview() {
                   )
                 ),
               showVerticalDivider = false,
-              serviceButton =
-                ButtonProperties(
-                  visible = true,
-                  status = ServiceStatus.OVERDUE.name,
-                  text = "ANC Visit",
-                  smallSized = true
+              services =
+                listOf(
+                  ButtonProperties(
+                    visible = true,
+                    status = ServiceStatus.COMPLETED.name,
+                    text = "Pregnancy Outcome 1",
+                    smallSized = true
+                  ),
+                  ButtonProperties(
+                    visible = true,
+                    status = ServiceStatus.OVERDUE.name,
+                    text = "ANC Visit 2",
+                    smallSized = true
+                  )
                 )
             )
           )

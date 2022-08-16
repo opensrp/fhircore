@@ -253,6 +253,83 @@
                   }
                 }
               ]
+            },
+            {
+              "viewType": "ROW",
+              "children": [
+                {
+                  "viewType": "BUTTON",
+                  "visible": true,
+                  "isCheckIcon": true,
+                  "text": "household heading",
+                  "status": "COMPLETED"
+                }
+              ]
+            },
+            {
+              "viewType": "SERVICE_CARD",
+              "details": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Family Name",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Family ID",
+                  "fontSize": 14.0,
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "Village/Address",
+                  "fontSize": 14.0,
+                  "primaryTextColor": "#5A5A5A"
+                }
+              ],
+              "showVerticalDivider": false,
+              "serviceMemberIcons": "PREGNANT_WOMAN,CHILD,CHILD",
+              "services": [
+                {
+                  "visible": true,
+                  "text": "List1",
+                  "status": "OVERDUE",
+                  "smallSized": false,
+                  "actions": [
+                    {
+                      "trigger": "ON_CLICK",
+                      "workflow": "LAUNCH_QUESTIONNAIRE",
+                      "questionnaire": {
+                        "id": "82952",
+                        "title": "Add Family",
+                        "saveButtonText": "ADD FAMILY",
+                        "setPractitionerDetails": true,
+                        "setOrganizationDetails": true
+                      }
+                    }
+                  ]
+                },
+                {
+                  "visible": true,
+                  "text": "List1",
+                  "status": "OVERDUE",
+                  "smallSized": false,
+                  "actions": [
+                    {
+                      "trigger": "ON_CLICK",
+                      "workflow": "LAUNCH_QUESTIONNAIRE",
+                      "questionnaire": {
+                        "id": "82952",
+                        "title": "Add Family",
+                        "saveButtonText": "ADD FAMILY",
+                        "setPractitionerDetails": true,
+                        "setOrganizationDetails": true
+                      }
+                    }
+                  ]
+                }
+              ],
+              "actions": []
             }
           ]
         }

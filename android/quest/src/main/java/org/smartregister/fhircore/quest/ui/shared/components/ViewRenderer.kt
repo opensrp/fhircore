@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
+import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
@@ -35,8 +36,8 @@ import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
-import org.smartregister.fhircore.quest.ui.register.components.ServiceCard
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 /**
@@ -61,8 +62,8 @@ fun ViewRenderer(
     if (properties is ViewGroupProperties) {
       if (properties.children.isEmpty()) return
       when (properties.viewType) {
-        ViewType.COLUMN, ViewType.ROW ->
-          RenderViewGroup(modifier, properties, resourceData, onViewComponentClick)
+        ViewType.COLUMN,
+        ViewType.ROW -> RenderViewGroup(modifier, properties, resourceData, onViewComponentClick)
         else -> return
       }
     } else {
@@ -139,9 +140,9 @@ private fun RenderChildView(
         elevation = viewProperties.elevation.dp,
         modifier =
           modifier
+            .padding(viewProperties.padding.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
-            .padding(viewProperties.padding.dp)
       ) {
         Column {
           ViewRenderer(
@@ -152,5 +153,6 @@ private fun RenderChildView(
         }
       }
     is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
+    is ButtonProperties -> ActionableButton(buttonProperties = viewProperties, onAction = {})
   }
 }
