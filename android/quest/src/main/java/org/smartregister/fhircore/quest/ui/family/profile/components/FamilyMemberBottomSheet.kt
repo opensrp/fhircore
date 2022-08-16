@@ -116,7 +116,6 @@ fun FamilyMemberBottomSheet(
       modifier =
         modifier
           .fillMaxWidth()
-
           .clickable { onViewProfile() }
           .padding(horizontal = 16.dp, vertical = 16.dp)
     )

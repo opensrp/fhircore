@@ -20,7 +20,6 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
-
 @Serializable
 data class ServiceCardProperties(
   override val viewType: ViewType = ViewType.SERVICE_CARD,

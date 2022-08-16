@@ -88,8 +88,7 @@ fun ActionableButton(
         text = buttonProperties.text.toString(),
         fontWeight = FontWeight.Medium,
         color =
-          if (
-            buttonProperties.status == ServiceStatus.COMPLETED.name ||
+          if (buttonProperties.status == ServiceStatus.COMPLETED.name ||
               buttonProperties.status == ServiceStatus.DUE.name
           )
             DefaultColor.copy(0.8f)

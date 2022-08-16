@@ -137,8 +137,7 @@ fun ServiceCard(
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
       if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
-        if (
-          serviceCardProperties.serviceButton != null &&
+        if (serviceCardProperties.serviceButton != null &&
             serviceCardProperties.serviceButton!!.visible == true
         ) {
           if (serviceCardProperties.serviceButton!!.smallSized) {

@@ -62,8 +62,8 @@ fun ViewRenderer(
     if (properties is ViewGroupProperties) {
       if (properties.children.isEmpty()) return
       when (properties.viewType) {
-        ViewType.COLUMN,
-        ViewType.ROW -> RenderViewGroup(modifier, properties, resourceData, onViewComponentClick)
+        ViewType.COLUMN, ViewType.ROW ->
+          RenderViewGroup(modifier, properties, resourceData, onViewComponentClick)
         else -> return
       }
     } else {
