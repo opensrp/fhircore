@@ -22,9 +22,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
@@ -38,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,6 +51,11 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+
+const val ACTIONABLE_BUTTON_TEXT_TEST_TAG = "actionable_button_text_test_tag"
+const val ACTIONABLE_BUTTON_START_ICON_TEST_TAG = "actionableButtonStartIconTestTag"
+const val ACTIONABLE_BUTTON_END_ICON_TEST_TAG = "actionableButtonEndIconTestTag"
+const val ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG = "actionableButtonOutlinedButtonTestTag"
 
 @Composable
 fun ActionableButton(
@@ -62,7 +70,12 @@ fun ActionableButton(
         backgroundColor = buttonProperties.statusColor().copy(alpha = 0.1f),
         contentColor = buttonProperties.statusColor().copy(alpha = 0.1f)
       ),
-    modifier = modifier.fillMaxWidth().padding(top = 0.dp, start = 12.dp, end = 12.dp)
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .padding(top = 0.dp, start = 12.dp, end = 12.dp)
+        .wrapContentHeight()
+        .testTag(ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG)
   ) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
@@ -71,7 +84,7 @@ fun ActionableButton(
     ) {
       Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
       Icon(
-        modifier = modifier.size(16.dp),
+        modifier = modifier.size(16.dp).testTag(ACTIONABLE_BUTTON_START_ICON_TEST_TAG),
         imageVector =
           if (buttonProperties.status == ServiceStatus.COMPLETED.name) Icons.Filled.Check
           else Icons.Filled.Add,
@@ -85,6 +98,7 @@ fun ActionableButton(
       )
       Spacer(modifier = modifier.width(6.dp))
       Text(
+        modifier = modifier.testTag(ACTIONABLE_BUTTON_TEXT_TEST_TAG),
         text = buttonProperties.text.toString(),
         fontWeight = FontWeight.Medium,
         color =
@@ -97,6 +111,7 @@ fun ActionableButton(
       Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
       if (buttonProperties.status == ServiceStatus.COMPLETED.name) {
         Icon(
+          modifier = modifier.testTag(ACTIONABLE_BUTTON_END_ICON_TEST_TAG),
           imageVector = Icons.Filled.ArrowDropDown,
           contentDescription = null,
           tint = DefaultColor.copy(alpha = 0.9f)
@@ -121,8 +136,11 @@ fun ButtonProperties.statusColor(): Color = remember {
 @Composable
 @Preview(showBackground = true)
 fun ActionableButtonPreview() {
-  Column {
-    ActionableButton(buttonProperties = ButtonProperties(status = "OVERDUE"), onAction = {})
+  Column(modifier = Modifier.height(50.dp)) {
+    ActionableButton(
+      buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
+      onAction = {}
+    )
   }
 }
 
