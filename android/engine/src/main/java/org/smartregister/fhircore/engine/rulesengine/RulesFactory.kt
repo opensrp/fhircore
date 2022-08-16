@@ -138,6 +138,7 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
      * - The ResourceType the relatedResources belong to [fhirPathExpression]
      * - A fhir path expression used to retrieve the subject reference Id from the related resources
      */
+    @Suppress("UNCHECKED_CAST")
     fun retrieveRelatedResources(
       resource: Resource,
       relatedResourceType: String,

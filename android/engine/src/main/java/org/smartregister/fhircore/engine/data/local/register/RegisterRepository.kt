@@ -105,12 +105,7 @@ constructor(
     val relatedResourcesMap = currentRelatedResources.createRelatedResourcesMap()
 
     // Compute values via rules engine and return a map. Rule names MUST be unique
-    val computedValuesMap =
-      rulesFactory.fireRule(
-        ruleConfigs = rules,
-        baseResource = baseResource,
-        relatedResourcesMap = relatedResourcesMap
-      )
+    val computedValuesMap = rulesFactory.fireRule(rules, baseResource, relatedResourcesMap)
 
     return ResourceData(baseResource, relatedResourcesMap, computedValuesMap)
   }

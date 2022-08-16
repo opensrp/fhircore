@@ -29,6 +29,7 @@ import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
@@ -154,5 +155,6 @@ private fun RenderChildView(
       }
     is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
     is SpacerProperties -> SpacerView(spacerProperties = viewProperties)
+    is ListProperties -> {}
   }
 }
