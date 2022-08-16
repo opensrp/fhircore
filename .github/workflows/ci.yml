@@ -71,7 +71,7 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
       
-      - name: Run Unit and Instrumentation tests and generate coverage report
+      - name: Run Engine module unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
         with: 
           working-directory: android
@@ -82,7 +82,7 @@ jobs:
           disable-animations: true
           script: ./gradlew :engine:clean && ./gradlew :engine:fhircoreJacocoReport --stacktrace
 
-      - name: Upload Combined Engine Test Report to Codecov
+      - name: Upload Engine module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
@@ -138,7 +138,7 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Run Unit and Instrumentation tests and generate coverage report
+      - name: Run Quest module unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
         with: 
           working-directory: android
@@ -149,7 +149,7 @@ jobs:
           disable-animations: true
           script: ./gradlew :quest:clean && ./gradlew :quest:fhircoreJacocoReport --stacktrace
 
-      - name: Upload Quest Test Report to Codecov
+      - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
