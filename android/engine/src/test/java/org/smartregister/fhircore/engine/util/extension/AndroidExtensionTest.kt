@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Application
 import android.content.Intent
 import android.os.Looper
+import androidx.compose.ui.graphics.Color
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.just
@@ -32,6 +33,8 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.LightColors
 
 class AndroidExtensionTest : RobolectricTest() {
   private lateinit var context: Application
@@ -59,5 +62,22 @@ class AndroidExtensionTest : RobolectricTest() {
 
     // Fixes a compose and activity test failure
     Shadows.shadowOf(Looper.getMainLooper()).idle()
+  }
+
+  @Test
+  fun testParseColorReturnsDefaultColorWhenStringIsEmpty() {
+    assertEquals(DefaultColor, "".parseColor())
+  }
+
+  @Test
+  fun testParseColorReturnsCorrectColorWhenHexColorIsParsed() {
+    assertEquals(Color.White, "#ffffff".parseColor())
+  }
+
+  @Test
+  fun testParseColorReturnsCorrectColorForThemeColorStrings() {
+    assertEquals(LightColors.primary, PRIMARY_COLOR.parseColor())
+    assertEquals(LightColors.primaryVariant, PRIMARY_VARIANT_COLOR.parseColor())
+    assertEquals(LightColors.error, ERROR_COLOR.parseColor())
   }
 }

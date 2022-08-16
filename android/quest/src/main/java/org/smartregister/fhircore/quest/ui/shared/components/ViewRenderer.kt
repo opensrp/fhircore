@@ -31,6 +31,7 @@ import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
+import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -152,5 +153,6 @@ private fun RenderChildView(
         }
       }
     is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
+    is SpacerProperties -> SpacerView(spacerProperties = viewProperties)
   }
 }

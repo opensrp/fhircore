@@ -39,5 +39,8 @@ enum class ViewType {
   @JsonNames("card", "Card") CARD,
 
   /** View component used to render a button for click actions */
-  @JsonNames("button", "Button") BUTTON
+  @JsonNames("button", "Button") BUTTON,
+
+  /** View component used to render a space between views */
+  @JsonNames("spacer", "Spacer") SPACER
 }
