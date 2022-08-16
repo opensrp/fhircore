@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -57,6 +58,8 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
+
+const val ICON_BUTTON_TEST_TAG = "iconButton"
 
 @Composable
 fun ProfileScreen(
@@ -80,7 +83,10 @@ fun ProfileScreen(
           }
         },
         actions = {
-          IconButton(onClick = { showOverflowMenu = !showOverflowMenu }) {
+          IconButton(
+            onClick = { showOverflowMenu = !showOverflowMenu },
+            modifier = Modifier.testTag(ICON_BUTTON_TEST_TAG)
+          ) {
             Icon(
               imageVector = Icons.Outlined.MoreVert,
               contentDescription = null,
