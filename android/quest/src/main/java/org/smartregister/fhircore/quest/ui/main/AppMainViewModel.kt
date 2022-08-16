@@ -78,7 +78,7 @@ constructor(
     mutableStateOf(
       appMainUiStateOf(
         navigationConfiguration =
-        NavigationConfiguration(sharedPreferencesHelper.read(APP_ID_KEY) ?: "")
+          NavigationConfiguration(sharedPreferencesHelper.read(APP_ID_KEY) ?: "")
       )
     )
 
@@ -129,19 +129,19 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> {
         (event.context as AppCompatActivity).let { activity ->
           RegisterBottomSheetFragment(
-            navigationMenuConfigs = event.registersList,
-            registerCountMap = appMainUiState.value.registerCountMap,
-            menuClickListener = {
-              onEvent(
-                AppMainEvent.TriggerWorkflow(
-                  context = event.context,
-                  navController = event.navController,
-                  actions = it.actions,
-                  navMenu = it
+              navigationMenuConfigs = event.registersList,
+              registerCountMap = appMainUiState.value.registerCountMap,
+              menuClickListener = {
+                onEvent(
+                  AppMainEvent.TriggerWorkflow(
+                    context = event.context,
+                    navController = event.navController,
+                    actions = it.actions,
+                    navMenu = it
+                  )
                 )
-              )
-            }
-          )
+              }
+            )
             .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
         }
       }
@@ -210,9 +210,9 @@ constructor(
 
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
-      sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
-        ?: Locale.ENGLISH.toLanguageTag()
-    )
+        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+          ?: Locale.ENGLISH.toLanguageTag()
+      )
       .displayName
 
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
