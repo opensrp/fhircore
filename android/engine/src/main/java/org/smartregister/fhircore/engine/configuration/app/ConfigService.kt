@@ -104,7 +104,7 @@ interface ConfigService {
           ConfigurationRegistry.ORGANIZATION ->
             paramsMap
               ?.get(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
-              ?.first()
+              ?.firstOrNull()
               ?.substringAfter("/")
           ConfigurationRegistry.ID -> paramExpression
           ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
