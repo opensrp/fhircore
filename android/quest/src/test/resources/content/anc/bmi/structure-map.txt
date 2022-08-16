@@ -1,0 +1,58 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/5667cfbd-13c4-4111-b952-7cee58bdb9d5" = 'AfyaYangu Family Registration'
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Group" as target
+group AfyaYanguFamilyRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.id = uuid() "rule_bundle_id";
+    src -> bundle.type = 'collection' "rule_bundle_type";
+    src -> bundle.entry as entry, entry.resource = create('Group') as group then
+        ExtractGroup(src, group) "rule_bundle_entries";
+}
+group ExtractGroup(source src : QuestionnaireResponse, target group : Group) {
+       src -> group.id = uuid() "rule_group_id_generation";
+       src -> group.name = evaluate(src, $this.item.where(linkId = 'family.name').answer.value) "rule_group_name";
+       src -> group.identifier = create('Identifier') as groupIdentifierHouseholdId then {
+         src -> groupIdentifierHouseholdId.value = evaluate(src, $this.item.where(linkId = 'family.id').answer.value)
+         "rule_group_identifier_national_id_value";
+         src -> groupIdentifierHouseholdId.use = "official" "rule_group_identifier_national_id_use";
+       } "rule_group_identifier_national_id";
+       src -> group.identifier = create('Identifier') as groupIdentifier then {
+          src -> groupIdentifier.value = uuid() "rule_group_identifier_value";
+          src -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
+       } "rule_group_identifier";
+       src -> group.active = true "r_grp_status_data";
+       src -> group.type = 'person' "r_grp_type_data";
+       src -> group.code = create('CodeableConcept') as concept then ExtractFamilyCode(src, concept) "r_grp_code_data";
+       src.item as groupCharVillage where(linkId='family.village') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
+           groupCharVillage -> groupChar.code = create('CodeableConcept') as villCode then{
+                src -> villCode.coding = c("http://ona.io/codes", "hh_village") as coding then {
+                src -> coding.display = 'Household Village' "r_cp_cod_disp_v";
+                } "r_grp_vcode";
+                src -> villCode.text = evaluate(src, $this.item.where(linkId = 'family.village').answer.value) "r_vcc_hh_village";
+           } "r_cp_cc_coding_v";
+           groupCharVillage -> groupChar.exclude = false "r_cp_cc_exclude_v";
+       } "r_group_char_v";
+       src.item as groupCharlandmark where(linkId='family.landmark') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
+                  groupCharlandmark -> groupChar.code = create('CodeableConcept') as landmarkCode then{
+                       src -> landmarkCode.coding = c("http://ona.io/codes", "hh_landmark") as coding then {
+                       src -> coding.display = 'Household Landmark' "r_cp_cod_disp_l";
+                       } "r_grp_lcode";
+                       src -> landmarkCode.text = evaluate(src, $this.item.where(linkId = 'family.landmark').answer.value) "r_vcc_hh_landmark";
+                  } "r_cp_cc_coding_l";
+                  groupCharlandmark -> groupChar.exclude = false "r_cp_cc_exclude_l";
+       } "r_group_char_l";
+       src.item as groupCharNHF where(linkId='family.nearest_hf') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
+                  groupCharNHF -> groupChar.code = create('CodeableConcept') as HFCode then{
+                       src -> HFCode.coding = c("http://ona.io/codes", "hh_nearest_hf") as coding then {
+                       src -> coding.display = 'Household Nearest Health Facility' "r_cp_cod_disp_hf";
+                       } "r_grp_hfcode";
+                       src -> HFCode.text = evaluate(src, $this.item.where(linkId = 'family.nearest_hf').answer.value) "r_vcc_hh_hf";
+                  } "r_cp_cc_coding_hf";
+                  groupCharNHF -> groupChar.exclude = false "r_cp_cc_exclude_hf";
+       } "r_group_char_hf";
+}
+group ExtractFamilyCode(source src : Group, target concept: CodeableConcept) {
+    src -> concept.coding = c("https://www.snomed.org", "35359004") as coding then {
+        src -> coding.display = 'Family' "r_cp_cod_disp";
+    } "r_cp_cc_cod";
+}
