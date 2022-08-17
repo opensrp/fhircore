@@ -131,8 +131,8 @@ class RulesFactoryTest : RobolectricTest() {
         fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals(1, result.size)
-    Assert.assertEquals("CarePlan", result!![0].resourceType.name)
-    Assert.assertEquals("careplan-1", result!![0].logicalId)
+    Assert.assertEquals("CarePlan", result[0].resourceType.name)
+    Assert.assertEquals("careplan-1", result[0].logicalId)
   }
 
   @Test
@@ -145,7 +145,7 @@ class RulesFactoryTest : RobolectricTest() {
         fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals("Patient", result!!.resourceType.name)
-    Assert.assertEquals("patient-1", result!!.logicalId)
+    Assert.assertEquals("patient-1", result.logicalId)
   }
   private fun populateFactsWithResources() {
     val carePlanRelatedResource = mutableListOf(populateCarePlan())

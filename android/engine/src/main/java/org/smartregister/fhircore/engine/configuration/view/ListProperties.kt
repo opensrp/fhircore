@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration
+package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
+import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
-data class QuestionnaireConfig(
-  val id: String,
-  val title: String,
-  val saveButtonText: String? = null,
-  val setPractitionerDetails: Boolean = false,
-  val setOrganizationDetails: Boolean = false,
-  val planDefinitions: List<String>? = null,
-  val type: String = "DEFAULT"
-)
+data class ListProperties(
+  override val viewType: ViewType,
+  val baseResource: String,
+  val relatedResources: List<RelatedResource>,
+  val registerCard: RegisterCardConfig,
+  val showDivider: Boolean = true
+) : ViewProperties()
+
+@Serializable data class RelatedResource(val resourceType: String, val fhirPathExpression: String)

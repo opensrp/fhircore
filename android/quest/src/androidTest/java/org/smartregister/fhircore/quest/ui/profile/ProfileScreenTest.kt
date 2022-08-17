@@ -18,11 +18,14 @@ package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.navigation.NavHostController
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -39,9 +42,10 @@ class ProfileScreenTest {
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  private val profileViewModel = mockk<ProfileViewModel>()
   private lateinit var navController: NavHostController
   private lateinit var profileUiState: ProfileUiState
-  private val APP_DEBUG = "app/debug"
+  private val appDebug = "app/debug"
 
   @Before
   fun setUp() {
@@ -50,7 +54,7 @@ class ProfileScreenTest {
     runBlocking {
       configurationRegistry.loadConfigurations(
         context = InstrumentationRegistry.getInstrumentation().targetContext,
-        appId = APP_DEBUG
+        appId = appDebug
       ) {}
       val profileConfiguration =
         configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
@@ -59,17 +63,30 @@ class ProfileScreenTest {
         )
       profileUiState = ProfileUiState(profileConfiguration = profileConfiguration)
     }
-    composeTestRule.setContent {
-      ProfileScreen(
-        navController = navController,
-        profileUiState = profileUiState,
-        onEvent = mockk()
-      )
-    }
+
+    every { profileViewModel.onEvent(any()) } returns
+      composeTestRule.setContent {
+        ProfileScreen(
+          navController = navController,
+          profileUiState = profileUiState,
+          onEvent = mockk()
+        )
+      }
   }
 
   @Test
   fun testFloatingActionButtonIsDisplayed() {
     composeTestRule.onNodeWithText("ADD MEMBER").assertExists().assertIsDisplayed()
+  }
+
+  @Test
+  fun testOverFlowMenuItemsListedInTheHouseHoldProfileConfigAreDisplayed() {
+    composeTestRule.onNodeWithTag(ICON_BUTTON_TEST_TAG).assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ICON_BUTTON_TEST_TAG).performClick()
+    composeTestRule.onNodeWithText("Family details").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Change family head").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Family activity").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Family details").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Remove family").assertExists().assertIsDisplayed()
   }
 }

@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration
+package org.smartregister.fhircore.quest.ui.shared.components
 
-import kotlinx.serialization.Serializable
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 
-@Serializable
-data class QuestionnaireConfig(
-  val id: String,
-  val title: String,
-  val saveButtonText: String? = null,
-  val setPractitionerDetails: Boolean = false,
-  val setOrganizationDetails: Boolean = false,
-  val planDefinitions: List<String>? = null,
-  val type: String = "DEFAULT"
-)
+@HiltViewModel
+class ViewRendererViewModel @Inject constructor(val rulesFactory: RulesFactory) : ViewModel()
