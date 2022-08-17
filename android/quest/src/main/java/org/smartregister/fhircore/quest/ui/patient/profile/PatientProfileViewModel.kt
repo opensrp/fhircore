@@ -102,6 +102,15 @@ constructor(
           Pair(
             R.id.pregnancy_outcome,
             profileData?.tasks?.none { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } ?: false
+          ),
+          Pair(
+            R.id.add_to_family_planning,
+            profileData?.let {
+              it.sex.startsWith("F", true).not() &&
+               it.tasks.none { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } &&
+               (it.dob?.yearsPassed() in 15..45).not()
+            }
+              ?: false
           )
         )
       )
@@ -163,6 +172,12 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
+          R.id.add_to_family_planning ->
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = FAMILY_PLANNING,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
           else -> {}
         }
       }
@@ -181,5 +196,6 @@ constructor(
     const val PREGNANCY_OUTCOME_FORM = "pregnancy-outcome"
     const val SICK_CHILD_UNDER_2M_FORM = "sick-child-under-2m"
     const val SICK_CHILD_ABOVE_2M_FORM = "sick-child-above-2m"
+    const val FAMILY_PLANNING = "137649"
   }
 }
