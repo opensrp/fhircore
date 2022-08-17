@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -73,6 +75,8 @@ constructor(
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
+
+  lateinit var getLocationPos: ActivityResultLauncher<Intent>
 
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(

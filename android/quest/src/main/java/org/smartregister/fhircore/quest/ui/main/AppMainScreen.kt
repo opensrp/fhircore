@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
@@ -69,7 +71,8 @@ fun MainScreen(
         appUiState = uiState,
         openDrawer = openDrawer,
         onSideMenuClick = appMainViewModel::onEvent,
-        navController = navController
+        navController = navController,
+        getLocationPos = appMainViewModel.getLocationPos
       )
     },
     bottomBar = {

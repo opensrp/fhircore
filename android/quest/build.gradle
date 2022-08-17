@@ -54,6 +54,11 @@ android {
         debug {
             testCoverageEnabled true
         }
+
+        geowidget {
+            initWith debug
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -133,6 +138,7 @@ android {
             versionNameSuffix "-quest"
             getIsDefault().set(true)
         }
+
         ecbis {
             dimension "apps"
             applicationIdSuffix ".ecbis"
@@ -140,16 +146,19 @@ android {
             versionCode 3
             versionName "0.1.1"
         }
+
         g6pd {
             dimension "apps"
             applicationIdSuffix ".g6pd"
             versionNameSuffix "-g6pd"
         }
+
         mwcore {
             dimension "apps"
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
         }
+
         afyayangu {
             dimension "apps"
             applicationIdSuffix ".afyayangu"
@@ -170,6 +179,19 @@ dependencies {
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
+
+
+    // Geowidget dependency
+    if (geowidgetEnabled) {
+        implementation(project(":geowidget")) {
+            transitive = true
+        }
+        //implementation "com.android.volley:volley:1.2.1"
+        implementation ('io.ona.kujaku:library:0.10.0') {
+            transitive = true
+            exclude group: 'stax', module: 'stax-api'
+        }
+    }
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"

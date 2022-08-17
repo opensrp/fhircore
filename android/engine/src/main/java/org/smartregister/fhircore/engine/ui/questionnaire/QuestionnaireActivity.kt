@@ -169,13 +169,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
               if (clientIdentifier != null) {
                 setBarcode(questionnaire, clientIdentifier!!, true)
-                questionnaireResponse =
-                  questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
-                this.putString(
-                  QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
-                  questionnaireResponse.encodeResourceToString()
-                )
               }
+
+              questionnaireResponse =
+                questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+
+              this.putString(
+                QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
+                questionnaireResponse.encodeResourceToString()
+              )
             }
       }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
@@ -371,6 +373,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         R.string.questionnaire_alert_back_pressed_button_title
       )
     }
+  }
+
+  override fun onResume() {
+    super.onResume()
   }
 
   open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message
