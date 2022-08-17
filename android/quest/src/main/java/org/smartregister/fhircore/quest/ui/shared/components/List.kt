@@ -47,7 +47,7 @@ fun List(
       val relatedResources =
         produceState(initialValue = emptyMap()) {
             value =
-              viewProperties.extractedResources.associate {
+              viewProperties.relatedResources.associate {
                 Pair(
                   it.resourceType,
                   viewModel.rulesFactory.rulesEngineService.retrieveRelatedResources(
