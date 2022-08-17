@@ -1,0 +1,32 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "item": [
+    {
+      "linkId": "select-vital-sign",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "blood-glucose",
+            "display": "Blood Glucose"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-blood_glucose",
+      "answer": [
+        {
+          "valueDecimal": 34.0
+        }
+      ]
+    },
+    {
+      "linkId": "patient-id",
+      "answer": [
+        {
+          "valueString": "923948023470"
+        }
+      ]
+    }
+  ]
+}

@@ -40,5 +40,8 @@ enum class ApplicationWorkflow {
   DEVICE_TO_DEVICE_SYNC,
 
   /** A workflow that opens a new questionnaire form or an existing questionnaire for editing */
-  LAUNCH_QUESTIONNAIRE
+  LAUNCH_QUESTIONNAIRE,
+
+  /** A workflow for navigating to maps */
+  LAUNCH_MAP,
 }
