@@ -111,13 +111,4 @@ constructor(
         )
       else -> {}
     }
-
-  companion object {
-    const val REMOVE_FAMILY_FORM = "remove-family"
-    const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-    const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
-    const val PREGNANCY_OUTCOME_FORM = "pregnancy-outcome"
-    const val SICK_CHILD_UNDER_2M_FORM = "sick-child-under-2m"
-    const val SICK_CHILD_ABOVE_2M_FORM = "sick-child-above-2m"
-  }
 }
