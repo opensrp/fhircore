@@ -1,0 +1,36 @@
+{
+    "resourceType": "Immunization",
+    "id": "74dee251-be1e-48ee-a727-e4204cd54ee7",
+    "meta": {
+      "versionId": "1",
+      "lastUpdated": "2021-09-10T17:55:31.609+00:00",
+      "source": "#1ba9b4b2f1fbdeae"
+    },
+    "status": "completed",
+    "vaccineCode": {
+      "coding": [
+        {
+          "code": "Moderna"
+        }
+      ],
+      "text": "Moderna"
+    },
+    "patient": {
+      "reference": "Patient/9f2ec87c-93c4-4274-a73b-191b92bfe7ac"
+    },
+    "occurrenceDateTime": "2021-09-10",
+    "recorded": "2021-09-10T20:29:48+03:00",
+    "protocolApplied": [
+      {
+        "doseNumberPositiveInt": 2
+      }
+    ],
+    "reaction": [
+      {
+        "date": "2021-09-08T14:47:00+05:00",
+        "detail": {
+          "reference": "Observation/aef00410-df7d-4978-a98a-a28ff2a439c3"
+        }
+      }
+    ]
+  }

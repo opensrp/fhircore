@@ -22,6 +22,17 @@
   },
   "staticMenu": [
     {
+      "id": "maps",
+      "visible": true,
+      "display": "{{maps}}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_MAP",
+          "id": "navigateToMapsScreen"
+        }
+      ]
+    },{
       "id": "reports",
       "visible": true,
       "display": "{{reports}}",
