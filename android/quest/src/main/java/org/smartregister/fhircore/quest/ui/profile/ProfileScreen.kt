@@ -147,9 +147,7 @@ fun ProfileScreen(
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
           resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
-          onViewComponentClick = {
-            /** TODO provide click events */
-          }
+          onViewComponentClick = { onEvent(ProfileEvent.OnViewComponentEvent(it, navController)) }
         )
       }
     }

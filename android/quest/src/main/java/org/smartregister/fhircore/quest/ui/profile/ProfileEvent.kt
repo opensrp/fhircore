@@ -21,12 +21,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 sealed class ProfileEvent {
-
-  data class SeeAll(val patientProfileViewSection: PatientProfileViewSection) : ProfileEvent()
 
   data class OverflowMenuClick(
     val navController: NavHostController,

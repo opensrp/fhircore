@@ -70,9 +70,6 @@ constructor(
 
   fun onEvent(event: ProfileEvent) =
     when (event) {
-      is ProfileEvent.SeeAll -> {
-        /* TODO(View all records in this category e.g. all medical history, tasks etc) */
-      }
       is ProfileEvent.OverflowMenuClick -> {
         event.overflowMenuItemConfig?.actions?.forEach { actionConfig ->
           when (actionConfig.workflow) {
