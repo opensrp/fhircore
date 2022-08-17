@@ -20,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -46,9 +45,6 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
-import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
-import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 @HiltViewModel
 class RegisterViewModel
@@ -145,24 +141,8 @@ constructor(
           "provide-questionnaire-id"
         )
       is RegisterEvent.OnViewComponentEvent ->
-        handleViewComponentEvents(event.viewComponentEvent, event.navController)
+        event.viewComponentEvent.handleEvent(event.navController)
     }
-
-  private fun handleViewComponentEvents(
-    viewComponentEvent: ViewComponentEvent,
-    navController: NavController
-  ) {
-    when (viewComponentEvent) {
-      is ViewComponentEvent.ServiceCardClick -> {
-        val urlParams =
-          NavigationArg.bindArgumentsOf(
-            NavigationArg.PROFILE_ID to viewComponentEvent.profileId,
-            NavigationArg.RESOURCE_ID to viewComponentEvent.resourceId
-          )
-        navController.navigate(MainNavigationScreen.Profile.route + urlParams)
-      }
-    }
-  }
 
   private fun filterRegisterData(event: RegisterEvent.SearchRegister) {
     val searchBar = retrieveRegisterConfiguration(event.registerId).searchBar

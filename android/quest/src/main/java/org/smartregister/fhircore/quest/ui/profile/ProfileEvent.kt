@@ -28,15 +28,6 @@ sealed class ProfileEvent {
 
   data class SeeAll(val patientProfileViewSection: PatientProfileViewSection) : ProfileEvent()
 
-  data class LoadQuestionnaire(val questionnaireId: String, val context: Context) : ProfileEvent()
-
-  data class OpenTaskForm(
-    val context: Context,
-    val taskFormId: String,
-    val taskId: String?,
-    val patientId: String
-  ) : ProfileEvent()
-
   data class OverflowMenuClick(
     val navController: NavHostController,
     val context: Context,

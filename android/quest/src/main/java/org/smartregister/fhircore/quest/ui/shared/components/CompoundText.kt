@@ -43,7 +43,15 @@ fun CompoundText(
 ) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.padding(bottom = 8.dp),
+    modifier =
+      modifier
+        .background(
+          compoundTextProperties.backgroundColor?.interpolate(computedValuesMap).parseColor()
+        )
+        .padding(
+          horizontal = compoundTextProperties.padding.dp,
+          vertical = compoundTextProperties.padding.div(2).dp
+        ),
   ) {
     if (compoundTextProperties.primaryText != null) {
       Text(

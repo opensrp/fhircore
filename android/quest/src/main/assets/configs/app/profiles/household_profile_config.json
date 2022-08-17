@@ -113,153 +113,103 @@
       "viewType": "COLUMN",
       "children": [
         {
-          "viewType": "CARD",
-          "padding": 0,
-          "content": [
+          "viewType": "COLUMN",
+          "backgroundColor": "primaryColor",
+          "padding": 8,
+          "children": [
             {
-              "viewType": "COLUMN",
-              "children": [
-                {
-                  "viewType": "COMPOUND_TEXT",
-                  "primaryText": "@{familyName} Family",
-                  "primaryTextColor": "#000000"
-                },
-                {
-                  "viewType": "COMPOUND_TEXT",
-                  "primaryText": "ID: @{familyId}",
-                  "primaryTextColor": "#000000"
-                },
-                {
-                  "viewType": "ROW",
-                  "children": [
-                    {
-                      "viewType": "COMPOUND_TEXT",
-                      "primaryText": "Careplan1",
-                      "primaryTextColor": "#000000"
-                    },
-                    {
-                      "viewType": "COMPOUND_TEXT",
-                      "primaryText": "Careplan1",
-                      "primaryTextColor": "#000000"
-                    }
-                  ]
-                },
-                {
-                  "viewType": "COLUMN",
-                  "children": [
-                    {
-                      "viewType": "COMPOUND_TEXT",
-                      "primaryText": "Careplan1",
-                      "primaryTextColor": "#000000"
-                    },
-                    {
-                      "viewType": "COMPOUND_TEXT",
-                      "primaryText": "Careplan1",
-                      "primaryTextColor": "#000000"
-                    }
-                  ]
-                },
-                {
-                  "viewType": "PERSONAL_DATA",
-                  "personalDataItems": [
-                    {
-                      "label": {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "Sex",
-                        "primaryTextColor": "#000000"
-                      },
-                      "displayValue": {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "Female",
-                        "fontSize": 14,
-                        "primaryTextColor": "#000000"
-                      }
-                    },
-                    {
-                      "label": {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "Age",
-                        "primaryTextColor": "#000000"
-                      },
-                      "displayValue": {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "20Y",
-                        "fontSize": 14,
-                        "primaryTextColor": "#000000"
-                      }
-                    },
-                    {
-                      "label": {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "DOB",
-                        "primaryTextColor": "#000000"
-                      },
-                      "displayValue": {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "01 2002",
-                        "fontSize": 14,
-                        "primaryTextColor": "#000000"
-                      }
-                    }
-                  ]
-                }
-              ]
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "@{familyName} Family",
+              "primaryTextColor": "#FFFFFF",
+              "fontSize": 20.0
+            },
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "ID: @{familyId}",
+              "primaryTextColor": "#FFFFFF",
+              "fontSize": 20.0
             }
           ]
         },
         {
-          "viewType": "SPACER",
-          "height": 16
-        },
-        {
           "viewType": "CARD",
+          "padding": 0,
           "content": [
             {
-              "viewType": "LIST",
-              "baseResource": "Patient",
-              "relatedResources": [
-                {
-                  "resourceType": "CarePlan",
-                  "fhirPathExpression": "CarePlan.subject.reference"
-                }
-              ],
-              "registerCard": {
-                "rules": [
+              "viewType": "BUTTON",
+              "smallSized": true,
+              "text": "Routine household visit",
+              "status": "COMPLETED"
+            }
+          ]
+        },
+        {
+          "viewType": "COLUMN",
+          "backgroundColor": "#F2F4F7",
+          "children": [
+            {
+              "viewType": "SPACER",
+              "height": 8
+            },
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "HOUSEHOLD MEMBERS",
+              "primaryTextColor": "#6F7274",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            {
+              "viewType": "SPACER",
+              "height": 16
+            }
+          ]
+        },
+        {
+          "viewType": "LIST",
+          "baseResource": "Patient",
+          "padding": 16,
+          "relatedResources": [
+            {
+              "resourceType": "CarePlan",
+              "fhirPathExpression": "CarePlan.subject.reference"
+            }
+          ],
+          "registerCard": {
+            "rules": [
+              {
+                "name": "patientName",
+                "condition": "true",
+                "actions": [
+                  "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
+                ]
+              }
+            ],
+            "views": [
+              {
+                "viewType": "SERVICE_CARD",
+                "details": [
                   {
-                    "name": "patientName",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
-                    ]
-                  },
-                  {
-                    "name": "patientId",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
-                    ]
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "@{patientName}",
+                    "primaryTextColor": "#000000"
                   }
                 ],
-                "views": [
+                "actions": [
                   {
-                    "viewType": "COLUMN",
-                    "children": [
+                    "trigger": "ON_CLICK",
+                    "workflow": "LAUNCH_PROFILE",
+                    "id": "householdProfile",
+                    "params": [
                       {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "@{patientName}",
-                        "primaryTextColor": "#000000"
-                      },
-                      {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "@{patientId}",
-                        "primaryTextColor": "#0C0C0C"
+                        "key": "familyId",
+                        "value": "@{familyId}"
                       }
                     ]
                   }
                 ]
               }
-            }
-          ]
+            ]
+          }
         }
       ]
     }

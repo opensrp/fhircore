@@ -25,8 +25,6 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
@@ -34,9 +32,8 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
-import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 
 @HiltViewModel
 class ProfileViewModel
@@ -73,8 +70,6 @@ constructor(
 
   fun onEvent(event: ProfileEvent) =
     when (event) {
-      is ProfileEvent.LoadQuestionnaire ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(event.questionnaireId)
       is ProfileEvent.SeeAll -> {
         /* TODO(View all records in this category e.g. all medical history, tasks etc) */
       }
@@ -83,19 +78,27 @@ constructor(
           when (actionConfig.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               if (actionConfig.questionnaire == null) return@forEach
-              var intentBundle: android.os.Bundle = android.os.Bundle.EMPTY
-              if (actionConfig.params.isNotEmpty()) {
-                val actionParamList: MutableList<Pair<String, String>> =
-                  emptyList<Pair<String, String>>().toMutableList()
-                actionConfig.params.forEach { actionParameter ->
-                  actionParamList.add(Pair(actionParameter.key, actionParameter.value))
-                }
-                intentBundle = bundleOf(*actionParamList.toTypedArray())
-              }
+              val actionParamList =
+                actionConfig
+                  .params
+                  .map { actionParameter ->
+                    Pair(
+                      actionParameter.key,
+                      actionParameter.value.interpolate(
+                        event.resourceData?.computedValuesMap ?: emptyMap()
+                      )
+                    )
+                  }
+                  .toTypedArray()
+
+              val intentBundle = bundleOf(*actionParamList)
+              val questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type)
               event.context.launchQuestionnaire<QuestionnaireActivity>(
                 questionnaireId = actionConfig.questionnaire!!.id,
-                clientIdentifier = event.resourceData?.baseResource?.logicalId,
-                questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type),
+                clientIdentifier =
+                  if (questionnaireType == QuestionnaireType.DEFAULT) null
+                  else event.resourceData?.baseResource?.logicalId,
+                questionnaireType = questionnaireType,
                 intentBundle = intentBundle
               )
             }
@@ -103,12 +106,7 @@ constructor(
           }
         }
       }
-      is ProfileEvent.OpenTaskForm ->
-        event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
-          questionnaireId = event.taskFormId,
-          clientIdentifier = event.patientId,
-          backReference = event.taskId?.asReference(ResourceType.Task)?.reference
-        )
-      else -> {}
+      is ProfileEvent.OnViewComponentEvent ->
+        event.viewComponentEvent.handleEvent(event.navController)
     }
 }

@@ -24,7 +24,7 @@
     {
       "id": "maps",
       "visible": true,
-      "display": "{{maps}}",
+      "display": "Maps",
       "actions": [
         {
           "trigger": "ON_CLICK",

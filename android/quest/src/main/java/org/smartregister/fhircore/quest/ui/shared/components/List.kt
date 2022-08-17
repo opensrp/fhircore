@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
@@ -28,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 @Composable
@@ -39,7 +43,17 @@ fun List(
   onViewComponentClick: (ViewComponentEvent) -> Unit
 ) {
   val resources = remember { resourceData.relatedResourcesMap[viewProperties.baseResource] }
-  Column {
+  Column(
+    modifier =
+      modifier
+        .background(
+          viewProperties.backgroundColor.interpolate(resourceData.computedValuesMap).parseColor()
+        )
+        .padding(
+          horizontal = viewProperties.padding.dp,
+          vertical = viewProperties.padding.div(4).dp
+        )
+  ) {
     resources?.forEachIndexed { index, resource ->
       // Retrieve all the related resources from the already provided resource data
       val relatedResources =
@@ -49,9 +63,9 @@ fun List(
                 Pair(
                   it.resourceType,
                   viewModel.rulesFactory.rulesEngineService.retrieveRelatedResources(
-                    resource,
-                    it.resourceType,
-                    it.fhirPathExpression
+                    resource = resource,
+                    relatedResourceType = it.resourceType,
+                    fhirPathExpression = it.fhirPathExpression
                   )
                 )
               }
@@ -70,13 +84,13 @@ fun List(
           .value
 
       Column {
-        Spacer(modifier = modifier.height(16.dp))
+        Spacer(modifier = modifier.height(8.dp))
         ViewRenderer(
           viewProperties = viewProperties.registerCard.views,
           resourceData = ResourceData(resource, relatedResources, computedValuesMap),
           onViewComponentClick = onViewComponentClick,
         )
-        Spacer(modifier = modifier.height(16.dp))
+        Spacer(modifier = modifier.height(8.dp))
         if ((index < resources.lastIndex) && viewProperties.showDivider)
           Divider(color = DividerColor)
       }

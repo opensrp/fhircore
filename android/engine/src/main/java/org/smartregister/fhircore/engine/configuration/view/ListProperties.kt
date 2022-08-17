@@ -27,5 +27,7 @@ data class ListProperties(
   val baseResource: String,
   val relatedResources: List<ExtractedResource>,
   val registerCard: RegisterCardConfig,
-  val showDivider: Boolean = true
+  val showDivider: Boolean = true,
+  val padding: Int = 0,
+  val backgroundColor: String = "#FFFFFF"
 ) : ViewProperties()
