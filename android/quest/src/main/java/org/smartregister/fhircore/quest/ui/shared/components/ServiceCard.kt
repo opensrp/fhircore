@@ -92,12 +92,12 @@ fun ServiceCard(
             // Ensure the service card has a click action
             val profileId =
               serviceCardProperties.actions.find {
-                it.trigger == ActionTrigger.ON_CLICK && !it.id.isNullOrEmpty()
+                it.trigger == ActionTrigger.ON_CLICK && !it.questionnaire?.id.isNullOrEmpty()
               }
             profileId?.let {
               onViewComponentClick(
                 ViewComponentEvent.ServiceCardClick(
-                  profileId = it.id!!,
+                  profileId = it.questionnaire!!.id,
                   resourceId = resourceData.baseResource.logicalId
                 )
               )

@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -26,7 +25,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.google.android.fhir.logicalId
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -60,7 +58,7 @@ fun List(
           }
           .value
 
-      // Fire rules engine to compute values from the rules
+      // Fire rules engine to compute values
       val computedValuesMap =
         produceState<Map<String, Any>>(initialValue = emptyMap()) {
             value =
@@ -71,17 +69,7 @@ fun List(
           }
           .value
 
-      Column(
-        modifier =
-          modifier.clickable {
-            onViewComponentClick(
-              ViewComponentEvent.ServiceCardClick(
-                profileId = "",
-                resourceId = resource.logicalId,
-              )
-            )
-          }
-      ) {
+      Column {
         Spacer(modifier = modifier.height(16.dp))
         ViewRenderer(
           viewProperties = viewProperties.registerCard.views,

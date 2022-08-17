@@ -55,7 +55,7 @@ fun CompoundText(
             .background(
               compoundTextProperties.primaryTextBackgroundColor?.parseColor() ?: Color.Unspecified
             )
-            .padding(6.dp),
+            .padding(2.dp),
         fontSize = compoundTextProperties.fontSize.sp,
       )
     }
@@ -71,7 +71,7 @@ fun CompoundText(
             .background(
               compoundTextProperties.secondaryTextBackgroundColor?.parseColor() ?: Color.Unspecified
             )
-            .padding(6.dp),
+            .padding(2.dp),
         fontSize = compoundTextProperties.fontSize.sp,
       )
     }
