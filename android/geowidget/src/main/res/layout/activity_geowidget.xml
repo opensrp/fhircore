@@ -20,7 +20,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:text="Register Family"
+        android:text="@string/register_family"
+        android:visibility="gone"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"/>
 

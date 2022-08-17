@@ -9,12 +9,19 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.MultiPoint
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import com.mapbox.turf.TurfMeasurement
 import io.ona.kujaku.callbacks.AddPointCallback
+import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
 import java.math.BigDecimal
+import java.util.LinkedList
 import java.util.UUID
 import org.hl7.fhir.r4.model.Location
 import org.json.JSONObject
@@ -38,10 +45,7 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    Mapbox.getInstance(
-      this,
-      BuildConfig.MAPBOX_SDK_TOKEN
-    )
+    Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_TOKEN)
 
     setContentView(R.layout.activity_geowidget)
 
@@ -52,20 +56,19 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
       Timber.e("Get Map async finished")
       val builder = Style.Builder().fromUri("asset://fhircore_style.json")
 
-      mapboxMap.setStyle(
-        builder,
-        { style ->
-          Timber.e("Finished setting the style")
-          geoJsonSource = style.getSourceAs<GeoJsonSource>("reveal-data-set")
+      mapboxMap.setStyle(builder) { style ->
+        Timber.e("Finished setting the style")
+        geoJsonSource = style.getSourceAs<GeoJsonSource>("reveal-data-set")
 
-          geoJsonSource?.also { source ->
-            featureCollection?.also { collection ->
-              Timber.e("Setting the feature collection")
-              source.setGeoJson(collection)
-            }
+        geoJsonSource?.also { source ->
+          featureCollection?.also { collection ->
+            Timber.e("Setting the feature collection")
+            source.setGeoJson(collection)
+
+            zoomToPointsOnMap(featureCollection)
           }
         }
-      )
+      }
     }
 
     kujakuMapView.setOnFeatureClickListener(
@@ -82,54 +85,49 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
       "reveal-data-points"
     )
 
-    // Add the onclick listener
-    findViewById<Button>(R.id.register_family).setOnClickListener {
-        // TODO: Possibly disable the register_family button
-      if (registerFamilyMode) {
-          registerFamilyMode = false;
+    kujakuMapView.addPoint(
+      true,
+      object : AddPointCallback {
 
-          // TODO: FIND A WAY TO DISABLE THIS MODE
-      } else {
+        override fun onPointAdd(featureJSONObject: JSONObject?) {
+          // Open the family registration with the coordinates
 
-        registerFamilyMode = true
-        kujakuMapView.addPoint(
-          true,
-          object : AddPointCallback {
+          featureJSONObject ?: return
 
-            override fun onPointAdd(featureJSONObject: JSONObject?) {
-              // Open the family registration with the coordinates
+          val coordinates = featureJSONObject.coordinates() ?: return
 
-              featureJSONObject ?: return
-
-              val coordinates = featureJSONObject.coordinates() ?: return
-
-              val location =
-                Location().apply {
-                  id = UUID.randomUUID().toString()
-                  status = Location.LocationStatus.INACTIVE
-                  position =
-                    Location.LocationPositionComponent().apply {
-                      longitude = BigDecimal(coordinates.longitude)
-                      latitude = BigDecimal(coordinates.latitude)
-                    }
+          val location =
+            Location().apply {
+              id = UUID.randomUUID().toString()
+              status = Location.LocationStatus.INACTIVE
+              position =
+                Location.LocationPositionComponent().apply {
+                  longitude = BigDecimal(coordinates.longitude)
+                  latitude = BigDecimal(coordinates.latitude)
                 }
-
-              // Save it in the viewModel
-              geowidgetViewModel.saveLocation(location).observe(this@GeowidgetActivity) {
-                if (it) {
-                  val intentData = Intent().apply { putExtra(LOCATION_ID, location.idElement.value) }
-
-                  setResult(RESULT_OK, intentData)
-                  this@GeowidgetActivity.finish()
-                }
-              }
             }
 
-            override fun onCancel() {}
+          Toast.makeText(this@GeowidgetActivity, "Please wait...", Toast.LENGTH_LONG)
+            .show()
+
+          // Save it in the viewModel
+          geowidgetViewModel.saveLocation(location).observe(this@GeowidgetActivity) {
+            if (it) {
+              Toast.makeText(this@GeowidgetActivity, "Openning the family registration form", Toast.LENGTH_LONG)
+                .show()
+
+              val intentData =
+                Intent().apply { putExtra(LOCATION_ID, location.idElement.value) }
+
+              setResult(RESULT_OK, intentData)
+              this@GeowidgetActivity.finish()
+            }
           }
-        )
+        }
+
+        override fun onCancel() {}
       }
-    }
+    )
 
     findViewById<Button>(R.id.register_family)
 
@@ -146,8 +144,38 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
         Timber.e("Feature loaded : ${featureCollection.toJson()}")
 
         source.setGeoJson(collection)
-        this.featureCollection = null
+        //this.featureCollection = null
+
+        zoomToPointsOnMap(featureCollection)
       }
+    }
+  }
+
+  fun zoomToPointsOnMap(featureCollection: FeatureCollection?) {
+    featureCollection ?: return
+
+    val points = LinkedList<Point>()
+
+    featureCollection.features()?.forEach { feature ->
+      val geometry = feature.geometry()
+
+      if (geometry is Point) {
+        points.add(geometry)
+      }
+    }
+
+    val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(points))
+
+    // Generate the padded bbox
+    val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
+
+    kujakuMapView.getMapAsync { mapboxMap ->
+      mapboxMap.easeCamera(
+        CameraUpdateFactory.newLatLngBounds(
+          LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0]),
+          50
+        )
+      )
     }
   }
 
