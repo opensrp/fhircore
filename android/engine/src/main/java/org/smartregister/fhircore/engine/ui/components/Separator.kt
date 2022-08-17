@@ -27,8 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
-const val SEPARATOR_TAG = "separatorTag"
-
 @Composable
 fun Separator(modifier: Modifier = Modifier, separator: String = "-") {
   Box(contentAlignment = Alignment.Center) {
