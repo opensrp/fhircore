@@ -100,7 +100,8 @@ interface ConfigService {
       val paramExpression = sp.expression
       val expressionValue =
         when (paramName) {
-          // TODO: Does not support multi organization yet
+          // TODO: Does not support multi organization yet,
+          // https://github.com/opensrp/fhircore/issues/1550
           ConfigurationRegistry.ORGANIZATION ->
             paramsMap
               ?.get(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
