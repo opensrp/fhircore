@@ -188,7 +188,7 @@ constructor(
 
   fun getPractitionerDetailsFromAssets(): org.hl7.fhir.r4.model.Bundle {
     val jsonPayload =
-      context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }
+      context.assets.open(PATH_PRACTITIONER_DETAILS_PAYLOAD).bufferedReader().use { it.readText() }
     return parser.parseResource(jsonPayload) as org.hl7.fhir.r4.model.Bundle
   }
 
@@ -361,5 +361,6 @@ constructor(
     const val USERNAME = "username"
     const val PASSWORD = "password"
     const val REFRESH_TOKEN = "refresh_token"
+    const val PATH_PRACTITIONER_DETAILS_PAYLOAD = "sample_practitioner_payload.json"
   }
 }
