@@ -52,7 +52,7 @@ import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 
-const val ACTIONABLE_BUTTON_TEXT_TEST_TAG = "actionable_button_text_test_tag"
+const val ACTIONABLE_BUTTON_TEXT_TEST_TAG = "actionableButtonTextTestTag"
 const val ACTIONABLE_BUTTON_START_ICON_TEST_TAG = "actionableButtonStartIconTestTag"
 const val ACTIONABLE_BUTTON_END_ICON_TEST_TAG = "actionableButtonEndIconTestTag"
 const val ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG = "actionableButtonOutlinedButtonTestTag"

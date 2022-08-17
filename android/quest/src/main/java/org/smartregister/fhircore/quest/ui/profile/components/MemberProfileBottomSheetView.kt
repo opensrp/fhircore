@@ -16,7 +16,7 @@
 
 @file:OptIn(ExperimentalMaterialApi::class)
 
-package org.smartregister.fhircore.quest.ui.family.profile.components
+package org.smartregister.fhircore.quest.ui.profile.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,23 +49,21 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
-import org.smartregister.fhircore.engine.domain.model.ActionableButtonData
 import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
-import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.quest.R
 
 @Composable
-fun FamilyMemberBottomSheet(
+fun MemberProfileBottomSheetView(
+  modifier: Modifier = Modifier,
   coroutineScope: CoroutineScope,
   bottomSheetScaffoldState: BottomSheetScaffoldState,
   title: String,
-  actionableButtonData: List<ActionableButtonData>,
-  onFormClick: (String, String?) -> Unit,
-  onViewProfile: () -> Unit,
-  modifier: Modifier = Modifier
+  buttonProperties: List<ButtonProperties>,
+  onButtonClick: () -> Unit,
+  onViewProfile: () -> Unit
 ) {
   Column(modifier = modifier.verticalScroll(rememberScrollState())) {
 
@@ -100,11 +98,10 @@ fun FamilyMemberBottomSheet(
     Spacer(modifier = modifier.height(8.dp))
     Divider(color = DividerColor)
 
-    if (actionableButtonData.isNotEmpty()) {
+    if (buttonProperties.isNotEmpty()) {
       Spacer(modifier = modifier.height(8.dp))
-      actionableButtonData.forEach {
-        ActionableButton(buttonProperties = ButtonProperties(status = "OVERDUE"), onAction = {})
-      }
+
+      buttonProperties.forEach { ActionableButton(buttonProperties = it, onAction = onButtonClick) }
       Spacer(modifier = modifier.height(8.dp))
     }
 
@@ -125,31 +122,31 @@ fun FamilyMemberBottomSheet(
 
 @Preview(showBackground = true)
 @Composable
-private fun FamilyMemberBottomSheetWithoutFormDataPreview() {
-  FamilyMemberBottomSheet(
+private fun MemberProfileBottomSheetViewPreview() {
+  MemberProfileBottomSheetView(
     coroutineScope = rememberCoroutineScope(),
     bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     title = "John Doe, M, 35y",
-    actionableButtonData = emptyList(),
-    onFormClick = { _, _ -> /*Do nothing*/ },
+    buttonProperties = emptyList(),
+    onButtonClick = { /*Do nothing*/},
     onViewProfile = { /*Do nothing*/}
   )
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun FamilyMemberBottomSheetWithFormDataPreview() {
-  FamilyMemberBottomSheet(
+private fun MemberProfileBottomSheetViewWithFormDataPreview() {
+  MemberProfileBottomSheetView(
     coroutineScope = rememberCoroutineScope(),
     bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     title = "John Doe, M, 35y",
-    actionableButtonData =
+    buttonProperties =
       listOf(
-        ActionableButtonData("Issue bednet", "12344", null, OverdueColor),
-        ActionableButtonData("Sick child", "12345", null, OverdueColor),
-        ActionableButtonData("Pregnancy visit", "12008")
+        ButtonProperties(text = "Issue bednet", status = "OVERDUE"),
+        ButtonProperties(text = "Sick child", status = "UPCOMING"),
+        ButtonProperties(text = "Pregnancy visit", status = "COMPLETED")
       ),
-    onFormClick = { _, _ -> /*Do nothing*/ },
+    onButtonClick = { /*Do nothing*/},
     onViewProfile = { /*Do nothing*/}
   )
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.profile.components
+package org.smartregister.fhircore.quest.ui.profile.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -61,25 +61,22 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
-import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMemberViewState
-import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
+import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 
 const val TEST_TAG_SAVE = "saveTestTag"
 const val TEST_TAG_CANCEL = "cancelTestTag"
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ChangeFamilyHeadBottomSheet(
+fun ChangeManagingEntityView(
+  modifier: Modifier = Modifier,
   coroutineScope: CoroutineScope,
   bottomSheetScaffoldState: BottomSheetScaffoldState,
-  familyMembers: EligibleFamilyHeadMember?,
-  onSaveClick: (FamilyMemberViewState) -> Unit,
-  modifier: Modifier = Modifier
+  eligibleManagingEntities: List<EligibleManagingEntity> = emptyList(),
+  onSaveClick: (EligibleManagingEntity) -> Unit
 ) {
-
-  var source by remember { mutableStateOf(familyMembers) }
   var isEnabled by remember { mutableStateOf(false) }
+
   Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
     Column(modifier = modifier.fillMaxWidth()) {
       Row(
@@ -148,13 +145,12 @@ fun ChangeFamilyHeadBottomSheet(
         modifier = Modifier.fillMaxWidth()
       ) {
         itemsIndexed(
-          items = source!!.list,
-          itemContent = { index, item ->
-            BottomListItem(item) {
+          items = eligibleManagingEntities,
+          itemContent = { _, item ->
+            BottomListItem(modifier, item) { managingEntity ->
+              eligibleManagingEntities.forEach { it.selected = false }
+              managingEntity.selected = true
               isEnabled = true
-              source!!.list.forEach { it.selected = false }
-              source!!.list[index].selected = true
-              source = source!!.copy(reselect = source!!.reselect.not())
             }
             Divider(color = DividerColor, thickness = 1.dp)
           }
@@ -186,7 +182,7 @@ fun ChangeFamilyHeadBottomSheet(
         }
         TextButton(
           enabled = isEnabled,
-          onClick = { onSaveClick(source!!.list.first { it.selected }.familyMember) },
+          onClick = { onSaveClick(eligibleManagingEntities.first { it.selected }) },
           modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_SAVE),
           colors =
             ButtonDefaults.textButtonColors(
@@ -207,20 +203,12 @@ fun ChangeFamilyHeadBottomSheet(
 
 @Composable
 fun BottomListItem(
-  model: EligibleFamilyHeadMemberViewState,
   modifier: Modifier = Modifier,
-  onClick: (FamilyMemberViewState) -> Unit
+  managingEntity: EligibleManagingEntity,
+  onClick: (EligibleManagingEntity) -> Unit
 ) {
-  Row(modifier = modifier.fillMaxWidth().padding(14.dp).clickable { onClick(model.familyMember) }) {
-    RadioButton(
-      selected = model.selected,
-      modifier = modifier.testTag(model.familyMember.patientId),
-      onClick = { onClick(model.familyMember) }
-    )
-    Text(
-      text =
-        listOf(model.familyMember.name, model.familyMember.age, model.familyMember.gender)
-          .joinToString(", ")
-    )
+  Row(modifier = modifier.fillMaxWidth().clickable { onClick(managingEntity) }) {
+    RadioButton(selected = managingEntity.selected, onClick = { onClick(managingEntity) })
+    Text(text = managingEntity.name)
   }
 }

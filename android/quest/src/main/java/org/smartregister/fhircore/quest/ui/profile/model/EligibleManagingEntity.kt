@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.family.profile
+package org.smartregister.fhircore.quest.ui.profile.model
 
-import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
-
-data class FamilyProfileUiState(
-  val overflowMenuItemConfigs: List<OverflowMenuItemConfig> = emptyList()
-)
+data class EligibleManagingEntity(val logicalId: String, val name: String, var selected: Boolean)
