@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
+import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
@@ -38,8 +39,8 @@ import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
-import org.smartregister.fhircore.quest.ui.register.components.ServiceCard
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 /**
@@ -149,9 +150,9 @@ private fun RenderChildView(
         elevation = viewProperties.elevation.dp,
         modifier =
           modifier
+            .padding(viewProperties.padding.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
-            .padding(viewProperties.padding.dp)
       ) {
         Column(modifier = modifier.padding(16.dp)) {
           ViewRenderer(
@@ -162,6 +163,7 @@ private fun RenderChildView(
         }
       }
     is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
+    is ButtonProperties -> ActionableButton(buttonProperties = viewProperties, onAction = {})
     is SpacerProperties -> SpacerView(spacerProperties = viewProperties)
     is ListProperties ->
       List(modifier, resourceData, viewProperties, viewModel, onViewComponentClick)

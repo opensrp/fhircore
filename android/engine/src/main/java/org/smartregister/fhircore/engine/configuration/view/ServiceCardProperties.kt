@@ -27,5 +27,6 @@ data class ServiceCardProperties(
   val showVerticalDivider: Boolean = false,
   val serviceMemberIcons: String? = null,
   val serviceButton: ButtonProperties? = null,
+  val services: List<ButtonProperties>? = null,
   val actions: List<ActionConfig> = emptyList()
 ) : ViewProperties()

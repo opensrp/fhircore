@@ -29,6 +29,6 @@ data class ButtonProperties(
   val status: String,
   val smallSized: Boolean = false,
   val questionnaire: QuestionnaireConfig? = null,
-  val fontSize: Float = 12.0f,
-  val actions: List<ActionConfig> = emptyList()
+  val fontSize: Float = 10.0f,
+  val actions: List<ActionConfig> = emptyList(),
 ) : ViewProperties()
