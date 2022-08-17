@@ -68,7 +68,7 @@ fun ActionableButton(
     colors =
       ButtonDefaults.buttonColors(
         backgroundColor = buttonProperties.statusColor().copy(alpha = 0.1f),
-        contentColor = buttonProperties.statusColor().copy(alpha = 0.1f)
+        contentColor = buttonProperties.statusColor().copy(alpha = 0.9f)
       ),
     modifier =
       modifier
