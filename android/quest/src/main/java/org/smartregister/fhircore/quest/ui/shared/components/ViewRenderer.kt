@@ -163,7 +163,12 @@ private fun RenderChildView(
         }
       }
     is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
-    is ButtonProperties -> ActionableButton(buttonProperties = viewProperties, onAction = {})
+    is ButtonProperties ->
+      ActionableButton(
+        buttonProperties = viewProperties,
+        onAction = {},
+        computedValuesMap = resourceData.computedValuesMap
+      )
     is SpacerProperties -> SpacerView(spacerProperties = viewProperties)
     is ListProperties ->
       List(modifier, resourceData, viewProperties, viewModel, onViewComponentClick)

@@ -62,6 +62,7 @@ fun MemberProfileBottomSheetView(
   bottomSheetScaffoldState: BottomSheetScaffoldState,
   title: String,
   buttonProperties: List<ButtonProperties>,
+  computedValuesMap: Map<String, Any>,
   onButtonClick: () -> Unit,
   onViewProfile: () -> Unit
 ) {
@@ -100,8 +101,13 @@ fun MemberProfileBottomSheetView(
 
     if (buttonProperties.isNotEmpty()) {
       Spacer(modifier = modifier.height(8.dp))
-
-      buttonProperties.forEach { ActionableButton(buttonProperties = it, onAction = onButtonClick) }
+      buttonProperties.forEach {
+        ActionableButton(
+          buttonProperties = it,
+          onAction = onButtonClick,
+          computedValuesMap = computedValuesMap
+        )
+      }
       Spacer(modifier = modifier.height(8.dp))
     }
 
@@ -129,7 +135,8 @@ private fun MemberProfileBottomSheetViewPreview() {
     title = "John Doe, M, 35y",
     buttonProperties = emptyList(),
     onButtonClick = { /*Do nothing*/},
-    onViewProfile = { /*Do nothing*/}
+    onViewProfile = { /*Do nothing*/},
+    computedValuesMap = emptyMap()
   )
 }
 
@@ -147,6 +154,7 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
         ButtonProperties(text = "Pregnancy visit", status = "COMPLETED")
       ),
     onButtonClick = { /*Do nothing*/},
-    onViewProfile = { /*Do nothing*/}
+    onViewProfile = { /*Do nothing*/},
+    computedValuesMap = emptyMap()
   )
 }

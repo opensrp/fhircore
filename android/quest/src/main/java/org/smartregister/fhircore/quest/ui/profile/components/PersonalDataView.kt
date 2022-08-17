@@ -58,7 +58,7 @@ private fun PersonalDataItem(
 
 @Composable
 @Preview(showBackground = true)
-fun PersonalDataCardPreview() {
+fun PersonalDataViewPreview() {
   val genderLabel = CompoundTextProperties(primaryText = "Sex")
   val genderValue = CompoundTextProperties(primaryText = "Female")
   val genderDataItem = PersonalDataItem(label = genderLabel, displayValue = genderValue)

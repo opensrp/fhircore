@@ -209,6 +209,6 @@ fun BottomListItem(
 ) {
   Row(modifier = modifier.fillMaxWidth().clickable { onClick(managingEntity) }) {
     RadioButton(selected = managingEntity.selected, onClick = { onClick(managingEntity) })
-    Text(text = managingEntity.name)
+    Text(text = managingEntity.memberInfo)
   }
 }

@@ -104,7 +104,7 @@ fun ServiceCard(
             }
           }
           .padding(top = 24.dp, bottom = 24.dp)
-          .weight(0.65f)
+          .weight(0.75f)
     ) {
       Column(modifier = modifier.wrapContentWidth(Alignment.Start).weight(0.7f)) {
         serviceCardProperties.details.forEach {
@@ -130,9 +130,9 @@ fun ServiceCard(
       )
     }
 
-    // Show action button (occupies 35% of the row width)
+    // Show action button (occupies 25% of the row width)
     Box(
-      modifier = modifier.weight(0.35f).padding(top = 24.dp, bottom = 24.dp),
+      modifier = modifier.weight(0.25f).padding(top = 24.dp, bottom = 24.dp),
       contentAlignment = Alignment.Center
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
@@ -144,7 +144,8 @@ fun ServiceCard(
             ActionableButton(
               modifier = modifier,
               buttonProperties = serviceCardProperties.serviceButton!!,
-              onAction = {}
+              onAction = {},
+              computedValuesMap = resourceData.computedValuesMap
             )
           } else {
             BigServiceButton(
@@ -156,7 +157,11 @@ fun ServiceCard(
         } else if (serviceCardProperties.services?.isNotEmpty() == true) {
           Column {
             serviceCardProperties.services?.forEach { buttonProperties ->
-              ActionableButton(buttonProperties = buttonProperties, onAction = {})
+              ActionableButton(
+                buttonProperties = buttonProperties,
+                onAction = {},
+                computedValuesMap = resourceData.computedValuesMap
+              )
               Spacer(modifier = modifier.height(8.dp))
             }
           }
@@ -198,14 +203,16 @@ private fun BigServiceButton(
   buttonProperties: ButtonProperties,
   computedValuesMap: Map<String, Any>
 ) {
-  val statusColor = buttonProperties.statusColor()
+  val statusColor = buttonProperties.statusColor(computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
-  val extractedStatus = remember { ServiceStatus.valueOf(buttonProperties.status) }
+  val extractedStatus = remember {
+    ServiceStatus.valueOf(buttonProperties.status.interpolate(computedValuesMap))
+  }
 
   Column(
     modifier =
       modifier
-        .fillMaxSize()
+        .fillMaxSize(0.9f)
         .padding(4.dp)
         .clip(RoundedCornerShape(4.dp))
         .background(

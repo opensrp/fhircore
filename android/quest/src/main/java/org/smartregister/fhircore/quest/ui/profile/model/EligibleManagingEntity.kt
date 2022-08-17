@@ -16,4 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.profile.model
 
-data class EligibleManagingEntity(val logicalId: String, val name: String, var selected: Boolean)
+data class EligibleManagingEntity(
+  val groupId: String,
+  val logicalId: String,
+  val memberInfo: String,
+  var selected: Boolean
+)

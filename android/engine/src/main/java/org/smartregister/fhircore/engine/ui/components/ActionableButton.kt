@@ -49,8 +49,8 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
-import org.smartregister.fhircore.engine.ui.theme.PersonalDataBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 const val ACTIONABLE_BUTTON_TEXT_TEST_TAG = "actionableButtonTextTestTag"
 const val ACTIONABLE_BUTTON_START_ICON_TEST_TAG = "actionableButtonStartIconTestTag"
@@ -61,14 +61,15 @@ const val ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG = "actionableButtonOutlined
 fun ActionableButton(
   buttonProperties: ButtonProperties,
   modifier: Modifier = Modifier,
+  computedValuesMap: Map<String, Any>,
   onAction: () -> Unit
 ) {
   OutlinedButton(
     onClick = { if (buttonProperties.questionnaire?.id != null) onAction() },
     colors =
       ButtonDefaults.buttonColors(
-        backgroundColor = buttonProperties.statusColor().copy(alpha = 0.1f),
-        contentColor = buttonProperties.statusColor().copy(alpha = 0.9f)
+        backgroundColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.1f),
+        contentColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
       ),
     modifier =
       modifier
@@ -93,7 +94,7 @@ fun ActionableButton(
           when (buttonProperties.status) {
             ServiceStatus.COMPLETED.name -> SuccessColor.copy(alpha = 0.9f)
             ServiceStatus.DUE.name -> DefaultColor.copy(alpha = 0.9f)
-            else -> buttonProperties.statusColor().copy(alpha = 0.9f)
+            else -> buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
           }
       )
       Spacer(modifier = modifier.width(6.dp))
@@ -106,7 +107,7 @@ fun ActionableButton(
               buttonProperties.status == ServiceStatus.DUE.name
           )
             DefaultColor.copy(0.8f)
-          else buttonProperties.statusColor().copy(alpha = 0.9f)
+          else buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
       )
       Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
       if (buttonProperties.status == ServiceStatus.COMPLETED.name) {
@@ -122,14 +123,13 @@ fun ActionableButton(
 }
 
 @Composable
-fun ButtonProperties.statusColor(): Color = remember {
+fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color = remember {
   // Status color is determined from the service status
-  when (this.status) {
-    ServiceStatus.DUE.name -> PersonalDataBackgroundColor
-    ServiceStatus.OVERDUE.name -> DangerColor
-    ServiceStatus.UPCOMING.name -> DefaultColor
-    ServiceStatus.COMPLETED.name -> PersonalDataBackgroundColor
-    else -> InfoColor
+  when (ServiceStatus.valueOf(this.status.interpolate(computedValuesMap))) {
+    ServiceStatus.DUE -> InfoColor
+    ServiceStatus.OVERDUE -> DangerColor
+    ServiceStatus.UPCOMING -> DefaultColor
+    ServiceStatus.COMPLETED -> DefaultColor
   }
 }
 
@@ -139,7 +139,8 @@ fun ActionableButtonPreview() {
   Column(modifier = Modifier.height(50.dp)) {
     ActionableButton(
       buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
-      onAction = {}
+      onAction = {},
+      computedValuesMap = emptyMap()
     )
   }
 }
