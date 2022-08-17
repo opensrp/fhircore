@@ -20,10 +20,8 @@ import android.accounts.Account
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -34,10 +32,6 @@ import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Practitioner
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -51,11 +45,9 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.Call
@@ -100,10 +92,10 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel =
       LoginViewModel(
+        fhirEngine = mockk(),
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        fhirResourceDataSource = fhirResourceDataSource,
         configurationRegistry = configurationRegistry
       )
   }
@@ -242,77 +234,5 @@ internal class LoginViewModelTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(Throwable::class.java, IOException())
     )
     Assert.assertEquals(LoginErrorState.INVALID_CREDENTIALS, loginViewModel.loginErrorState.value)
-  }
-
-  @Test
-  fun testFetchLoggedInPractitionerShouldRetrieveAndSavePractitioner() {
-    coroutineTestRule.runBlockingTest {
-      val userInfo =
-        UserInfo(
-          questionnairePublisher = "quesP1",
-          keycloakUuid = "keyck1",
-          organization = "org",
-          location = "Nairobi"
-        )
-
-      val practitionerId = "12123"
-
-      coEvery { resourceService.searchResource(ResourceType.Practitioner.name, any()) } returns
-        Bundle().apply {
-          entry.add(
-            Bundle.BundleEntryComponent().apply {
-              resource = Practitioner().apply { id = practitionerId }
-            }
-          )
-        }
-
-      loginViewModel.fetchLoggedInPractitioner(userInfo)
-
-      // Shared preference contains practitioner details
-      val practitioner =
-        sharedPreferencesHelper.read<Practitioner>(
-          LOGGED_IN_PRACTITIONER,
-          decodeFhirResource = true
-        )
-      Assert.assertNotNull(practitioner)
-      Assert.assertEquals(practitionerId, practitioner!!.logicalId)
-
-      // Eventually dismisses the progress dialog and navigates home
-      Assert.assertNotNull(loginViewModel.showProgressBar.value)
-      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
-      Assert.assertNotNull(loginViewModel.navigateToHome.value)
-      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
-    }
-  }
-  @Test
-  fun testFetchLoggedInPractitionerWithNullKeycloakUuid() {
-    coroutineTestRule.runBlockingTest {
-      val userInfo =
-        UserInfo(
-          questionnairePublisher = "quesP1",
-          keycloakUuid = null,
-          organization = "org",
-          location = "Nairobi"
-        )
-
-      val practitionerId = "12123"
-
-      coEvery { resourceService.searchResource(ResourceType.Practitioner.name, any()) } returns
-        Bundle().apply {
-          entry.add(
-            Bundle.BundleEntryComponent().apply {
-              resource = Practitioner().apply { id = practitionerId }
-            }
-          )
-        }
-
-      loginViewModel.fetchLoggedInPractitioner(userInfo)
-
-      // Eventually dismisses the progress dialog and navigates home
-      Assert.assertNotNull(loginViewModel.showProgressBar.value)
-      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
-      Assert.assertNotNull(loginViewModel.navigateToHome.value)
-      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
-    }
   }
 }

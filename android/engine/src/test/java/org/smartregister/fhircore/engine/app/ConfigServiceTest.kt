@@ -35,21 +35,29 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.util.ReflectionHelpers.setStaticField
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.isIn
 
 @HiltAndroidTest
 class ConfigServiceTest : RobolectricTest() {
+
   val configService = AppConfigService(ApplicationProvider.getApplicationContext())
   val configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
 
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
-    val syncParam =
-      configService.loadRegistrySyncParams(configurationRegistry, UserInfo("samplep", "sampleo"))
+
+    val paramsMap =
+      mutableMapOf<String, List<String>>().apply {
+        put(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
+          listOf("Organization/105")
+        )
+      }
+    val syncParam = configService.loadRegistrySyncParams(configurationRegistry, paramsMap)
 
     Assert.assertTrue(syncParam.isNotEmpty())
 

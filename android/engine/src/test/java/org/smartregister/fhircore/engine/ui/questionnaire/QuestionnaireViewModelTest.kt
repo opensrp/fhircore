@@ -58,7 +58,6 @@ import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -77,16 +76,12 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.encodeJson
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
+import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -115,16 +110,22 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
-      getUserInfo().encodeJson()
+    every {
+      sharedPreferencesHelper.read<KeycloakUserDetails>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+      )
+    } returns getKeycloakUserDetails()
 
-    every { sharedPreferencesHelper.read(LOGGED_IN_PRACTITIONER, null) } returns
-      Practitioner().apply { id = "123" }.encodeResourceToString()
+    every {
+      sharedPreferencesHelper.read<List<String>>(
+        SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+      )
+    } returns listOf("Organization/105")
 
     defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider))
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
-    sharedPreferencesHelper.write(APP_ID_KEY, "appId")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "appId")
 
     questionnaireViewModel =
       spyk(
@@ -1000,14 +1001,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("Organization/1111", questionnaireResponse.subject.reference)
   }
 
-  private fun getUserInfo(): UserInfo {
-    val userInfo =
-      UserInfo().apply {
-        questionnairePublisher = "ab"
-        organization = "1111"
-        keycloakUuid = "123"
-      }
-    return userInfo
+  private fun getKeycloakUserDetails(): KeycloakUserDetails {
+    return KeycloakUserDetails().apply { id = "12345" }
   }
 
   private fun samplePatient() =
