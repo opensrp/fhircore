@@ -25,12 +25,14 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
@@ -136,7 +138,8 @@ constructor(
           ),
       services = patient.activeCarePlans(),
       conditions = patient.activeConditions(),
-      otherPatients = patient.otherChildren()
+      otherPatients = patient.otherChildren(),
+      guardians = patient.guardians()
     )
   }
 
@@ -221,6 +224,16 @@ constructor(
     }
     return false
   }
+
+  internal suspend fun Patient.guardians(): List<Guardian> =
+    this.link
+      .filter {
+        (it.other.referenceElement.resourceType == ResourceType.RelatedPerson.name).or(
+          it.type == Patient.LinkType.REFER &&
+            it.other.referenceElement.resourceType == ResourceType.Patient.name
+        )
+      }
+      .map { defaultRepository.loadResource(it.other) }
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
 

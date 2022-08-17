@@ -53,6 +53,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
+import org.smartregister.fhircore.quest.R as R2
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
@@ -135,11 +136,19 @@ fun PatientProfileScreen(
                         else Color.Transparent
                     )
               ) {
-                val titleTextResource = it.titleResource
-                if (it.id == org.smartregister.fhircore.quest.R.id.view_children) {
-                  Text(text = profileViewData.viewChildText, color = it.titleColor)
-                } else {
-                  Text(text = stringResource(id = it.titleResource), color = it.titleColor)
+                when (it.id) {
+                  R2.id.view_children -> {
+                    Text(text = profileViewData.viewChildText, color = it.titleColor)
+                  }
+                  R2.id.view_guardians -> {
+                    Text(
+                      text = context.getString(it.titleResource, profileViewData.guardians.size),
+                      color = it.titleColor
+                    )
+                  }
+                  else -> {
+                    Text(text = stringResource(id = it.titleResource), color = it.titleColor)
+                  }
                 }
               }
             }

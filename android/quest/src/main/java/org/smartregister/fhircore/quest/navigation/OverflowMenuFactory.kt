@@ -74,8 +74,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.guardian_visit, R.string.guardian_visit),
       OverflowMenuItem(R.id.viral_load_results, R.string.viral_load_results),
       OverflowMenuItem(R.id.view_children, R.string.view_children_x),
+      OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
-      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
@@ -91,8 +91,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.guardian_visit, R.string.guardian_visit),
       OverflowMenuItem(R.id.viral_load_results, R.string.viral_load_results),
       OverflowMenuItem(R.id.view_children, R.string.view_children_x),
+      OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
-      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
@@ -105,8 +105,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
   EXPOSED_INFANT_PROFILE(
     listOf(
       OverflowMenuItem(R.id.hiv_test_and_results, R.string.hiv_test_and_results),
+      OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
-      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
@@ -119,8 +119,8 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
   CHILD_CONTACT_PROFILE(
     listOf(
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
+      OverflowMenuItem(R.id.view_guardians, R.string.view_guardians_x),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
-      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
@@ -147,7 +147,6 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
     listOf(
       OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
-      OverflowMenuItem(R.id.guardian_management, R.string.guardian_management),
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(
         id = R.id.remove_hiv_patient,
