@@ -97,10 +97,6 @@ constructor(
     prefs.edit().remove(key).apply()
   }
 
-  inline fun <reified T> read(key: String, decodeFhirResource: Boolean = false): T? =
-    if (decodeFhirResource) this.read(key, null)?.decodeResourceFromString()
-    else this.read(key, null)?.decodeJson<T>()
-
   companion object {
     const val PREFS_NAME = "params"
   }
