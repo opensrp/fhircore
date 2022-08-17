@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.view
+package org.smartregister.fhircore.engine.configuration.profile
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ExtractedResource
-import org.smartregister.fhircore.engine.domain.model.ViewType
 
 @Serializable
-data class ListProperties(
-  override val viewType: ViewType,
-  val baseResource: String,
-  val extractedResources: List<ExtractedResource>,
-  val registerCard: RegisterCardConfig,
-  val showDivider: Boolean = true
-) : ViewProperties()
+data class ManagingEntityConfig(
+  val infoFhirPathExpression: String,
+  val fhirPathResource: ExtractedResource
+)

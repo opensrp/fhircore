@@ -20,5 +20,5 @@ data class EligibleManagingEntity(
   val groupId: String,
   val logicalId: String,
   val memberInfo: String,
-  var selected: Boolean
+  var selected: Boolean = false
 )

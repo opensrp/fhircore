@@ -85,7 +85,7 @@ constructor(
               if (actionConfig.questionnaire == null) return@forEach
               var intentBundle: android.os.Bundle = android.os.Bundle.EMPTY
               if (actionConfig.params.isNotEmpty()) {
-                var actionParamList: MutableList<Pair<String, String>> =
+                val actionParamList: MutableList<Pair<String, String>> =
                   emptyList<Pair<String, String>>().toMutableList()
                 actionConfig.params.forEach { actionParameter ->
                   actionParamList.add(Pair(actionParameter.key, actionParameter.value))
@@ -99,6 +99,7 @@ constructor(
                 intentBundle = intentBundle
               )
             }
+            else -> {}
           }
         }
       }

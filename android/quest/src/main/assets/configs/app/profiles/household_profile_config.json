@@ -65,6 +65,13 @@
       }
     ]
   },
+  "managingEntity": {
+    "infoFhirPathExpression": "Patient.name.given",
+    "fhirPathResource": {
+      "resourceType": "Patient",
+      "fhirPathExpression": ""
+    }
+  },
   "fabActions": [
     {
       "id": "ActionButton",
