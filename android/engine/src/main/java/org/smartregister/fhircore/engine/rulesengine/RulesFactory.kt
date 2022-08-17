@@ -45,13 +45,10 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val computedValuesMap = mutableMapOf<String, Any>()
   private val fhirPathDataExtractor = FhirPathDataExtractor
-  private val rulesEngineService = RulesEngineService()
+  val rulesEngineService = RulesEngineService()
 
   init {
     rulesEngine.registerRuleListener(this)
-    // Uncomment to include configurations in the facts map
-    //    configurationRegistry.configsJsonMap.forEach { entry -> facts.put(entry.key, entry.value)
-    // }
     facts.apply {
       put(FHIR_PATH, fhirPathDataExtractor)
       put(DATA, computedValuesMap)

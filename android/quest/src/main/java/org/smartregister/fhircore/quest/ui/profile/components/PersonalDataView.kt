@@ -18,10 +18,8 @@ package org.smartregister.fhircore.quest.ui.profile.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,14 +37,10 @@ fun PersonalDataView(
   modifier: Modifier = Modifier,
   personalDataCardProperties: PersonalDataProperties
 ) {
-  Card(elevation = 3.dp, modifier = modifier.fillMaxWidth()) {
-    Column(modifier = modifier.padding(16.dp)) {
-      FlowRow(
-        modifier =
-          modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
-      ) { PersonalDataItem(personalDataCardProperties = personalDataCardProperties) }
-    }
-  }
+  FlowRow(
+    modifier =
+      modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
+  ) { PersonalDataItem(personalDataCardProperties = personalDataCardProperties) }
 }
 
 @Composable

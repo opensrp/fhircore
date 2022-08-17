@@ -21,6 +21,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -49,9 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import org.apache.commons.lang3.BooleanUtils.toBoolean
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -66,8 +65,7 @@ fun ProfileScreen(
   modifier: Modifier = Modifier,
   navController: NavHostController,
   profileUiState: ProfileUiState,
-  onEvent: (ProfileEvent) -> Unit,
-  profileViewModel: ProfileViewModel = hiltViewModel()
+  onEvent: (ProfileEvent) -> Unit
 ) {
   var showOverflowMenu by remember { mutableStateOf(false) }
   val mutableInteractionSource = remember { MutableInteractionSource() }
@@ -103,7 +101,7 @@ fun ProfileScreen(
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
-                  profileViewModel.onEvent(
+                  onEvent(
                     ProfileEvent.OverflowMenuClick(
                       navController = navController,
                       context = context,
@@ -128,7 +126,7 @@ fun ProfileScreen(
       )
     },
     floatingActionButton = {
-      val fabAction = profileUiState.profileConfiguration?.fabActions?.get(0)
+      val fabAction = profileUiState.profileConfiguration?.fabActions?.first()
       ExtendedFloatingActionButton(
         contentColor = Color.White,
         text = { fabAction?.display?.let { Text(text = it.uppercase()) } },
@@ -141,7 +139,7 @@ fun ProfileScreen(
       )
     }
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) {
+    Box(modifier = modifier.fillMaxHeight().padding(innerPadding)) {
       Column(
         modifier =
           modifier

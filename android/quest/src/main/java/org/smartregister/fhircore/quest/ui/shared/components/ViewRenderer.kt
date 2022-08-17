@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
@@ -56,7 +57,8 @@ fun ViewRenderer(
   modifier: Modifier = Modifier,
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
-  onViewComponentClick: (ViewComponentEvent) -> Unit
+  onViewComponentClick: (ViewComponentEvent) -> Unit,
+  viewModel: ViewRendererViewModel = hiltViewModel()
 ) {
   viewProperties.forEach { properties ->
     // Render views recursively
@@ -64,7 +66,7 @@ fun ViewRenderer(
       if (properties.children.isEmpty()) return
       when (properties.viewType) {
         ViewType.COLUMN, ViewType.ROW ->
-          RenderViewGroup(modifier, properties, resourceData, onViewComponentClick)
+          RenderViewGroup(modifier, properties, resourceData, onViewComponentClick, viewModel)
         else -> return
       }
     } else {
@@ -72,7 +74,8 @@ fun ViewRenderer(
         modifier = modifier,
         viewProperties = properties,
         resourceData = resourceData,
-        onViewComponentClick = onViewComponentClick
+        onViewComponentClick = onViewComponentClick,
+        viewModel = viewModel
       )
     }
   }
@@ -83,7 +86,8 @@ private fun RenderViewGroup(
   modifier: Modifier = Modifier,
   viewProperties: ViewGroupProperties,
   resourceData: ResourceData,
-  onViewComponentClick: (ViewComponentEvent) -> Unit
+  onViewComponentClick: (ViewComponentEvent) -> Unit,
+  viewModel: ViewRendererViewModel
 ) {
   viewProperties.children.forEach { childViewProperty ->
     if (childViewProperty is ViewGroupProperties) {
@@ -94,6 +98,7 @@ private fun RenderViewGroup(
             viewProperties = childViewProperty.children,
             resourceData = resourceData,
             onViewComponentClick = onViewComponentClick,
+            viewModel = viewModel
           )
         }
       } else if (childViewProperty.viewType == ViewType.ROW) {
@@ -103,6 +108,7 @@ private fun RenderViewGroup(
             viewProperties = childViewProperty.children,
             resourceData = resourceData,
             onViewComponentClick = onViewComponentClick,
+            viewModel = viewModel
           )
         }
       }
@@ -111,7 +117,8 @@ private fun RenderViewGroup(
       modifier = modifier,
       viewProperties = childViewProperty,
       resourceData = resourceData,
-      onViewComponentClick = onViewComponentClick
+      onViewComponentClick = onViewComponentClick,
+      viewModel = viewModel
     )
   }
 }
@@ -121,7 +128,8 @@ private fun RenderChildView(
   modifier: Modifier = Modifier,
   viewProperties: ViewProperties,
   resourceData: ResourceData,
-  onViewComponentClick: (ViewComponentEvent) -> Unit
+  onViewComponentClick: (ViewComponentEvent) -> Unit,
+  viewModel: ViewRendererViewModel
 ) {
   when (viewProperties) {
     is CompoundTextProperties ->
@@ -145,7 +153,7 @@ private fun RenderChildView(
             .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
             .padding(viewProperties.padding.dp)
       ) {
-        Column {
+        Column(modifier = modifier.padding(16.dp)) {
           ViewRenderer(
             viewProperties = viewProperties.content,
             resourceData = resourceData,
@@ -155,6 +163,7 @@ private fun RenderChildView(
       }
     is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
     is SpacerProperties -> SpacerView(spacerProperties = viewProperties)
-    is ListProperties -> {}
+    is ListProperties ->
+      List(modifier, resourceData, viewProperties, viewModel, onViewComponentClick)
   }
 }

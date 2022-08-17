@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.view
+package org.smartregister.fhircore.quest.ui.shared.components
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
-import org.smartregister.fhircore.engine.domain.model.ViewType
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 
-@Serializable
-data class ListProperties(
-  override val viewType: ViewType,
-  val baseResource: String,
-  val relatedResources: List<RelatedResource>,
-  val registerCard: RegisterCardConfig,
-  val showDivider: Boolean = true
-) : ViewProperties()
-
-@Serializable data class RelatedResource(val resourceType: String, val fhirPathExpression: String)
+@HiltViewModel
+class ViewRendererViewModel @Inject constructor(val rulesFactory: RulesFactory) : ViewModel()

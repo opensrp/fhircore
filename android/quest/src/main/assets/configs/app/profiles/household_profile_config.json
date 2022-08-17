@@ -85,30 +85,46 @@
       }
     }
   ],
-  "rules": [],
+  "rules": [
+    {
+      "name": "familyName",
+      "condition": "true",
+      "actions": [
+        "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
+      ]
+    },
+    {
+      "name": "familyId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+      ]
+    }
+  ],
   "views": [
     {
       "viewType": "COLUMN",
       "children": [
         {
           "viewType": "CARD",
+          "padding": 0,
           "content": [
             {
               "viewType": "COLUMN",
               "children": [
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "Patient name",
+                  "primaryText": "@{familyName} Family",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "ID: @{familyId}",
                   "primaryTextColor": "#000000"
                 },
                 {
                   "viewType": "ROW",
                   "children": [
-                    {
-                      "viewType": "COMPOUND_TEXT",
-                      "primaryText": "Careplan1",
-                      "primaryTextColor": "#000000"
-                    },
                     {
                       "viewType": "COMPOUND_TEXT",
                       "primaryText": "Careplan1",
@@ -133,72 +149,6 @@
                       "viewType": "COMPOUND_TEXT",
                       "primaryText": "Careplan1",
                       "primaryTextColor": "#000000"
-                    }
-                  ]
-                },
-                {
-                  "viewType": "ROW",
-                  "children": [
-                    {
-                      "viewType": "COLUMN",
-                      "primaryBackgroundTextColor": "#000000",
-                      "radius": 3,
-                      "children": [
-                        {
-                          "viewType": "ROW",
-                          "children": [
-                            {
-                              "viewType": "COLUMN",
-                              "children": [
-                                {
-                                  "viewType": "COMPOUND_TEXT",
-                                  "primaryText": "Age",
-                                  "primaryTextColor": "#000000"
-                                },
-                                {
-                                  "viewType": "COMPOUND_TEXT",
-                                  "primaryText": "",
-                                  "primaryTextColor": "#000000"
-                                }
-                              ]
-                            },
-                            {
-                              "viewType": "COLUMN",
-                              "children": [
-                                {
-                                  "viewType": "COMPOUND_TEXT",
-                                  "primaryText": "DOB",
-                                  "primaryTextColor": "#000000"
-                                },
-                                {
-                                  "viewType": "COMPOUND_TEXT",
-                                  "primaryText": "",
-                                  "primaryTextColor": "#000000"
-                                }
-                              ]
-                            },
-                            {
-                              "viewType": "COLUMN",
-                              "children": [
-                                {
-                                  "viewType": "COMPOUND_TEXT",
-                                  "primaryText": "Gender",
-                                  "primaryTextColor": "#000000"
-                                },
-                                {
-                                  "viewType": "COMPOUND_TEXT",
-                                  "primaryText": "",
-                                  "primaryTextColor": "#000000"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "viewType": "COLUMN",
-                      "children": []
                     }
                   ]
                 },
@@ -251,17 +201,55 @@
           ]
         },
         {
+          "viewType": "SPACER",
+          "height": 16
+        },
+        {
           "viewType": "CARD",
           "content": [
             {
               "viewType": "LIST",
               "baseResource": "Patient",
               "relatedResources": [
-                "CarePlan"
+                {
+                  "resourceType": "CarePlan",
+                  "fhirPathExpression": "CarePlan.subject.reference"
+                }
               ],
               "registerCard": {
-                "rules": [],
-                "views": []
+                "rules": [
+                  {
+                    "name": "patientName",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
+                    ]
+                  },
+                  {
+                    "name": "patientId",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+                    ]
+                  }
+                ],
+                "views": [
+                  {
+                    "viewType": "COLUMN",
+                    "children": [
+                      {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{patientName}",
+                        "primaryTextColor": "#000000"
+                      },
+                      {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{patientId}",
+                        "primaryTextColor": "#0C0C0C"
+                      }
+                    ]
+                  }
+                ]
               }
             }
           ]

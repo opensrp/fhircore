@@ -185,7 +185,7 @@ private fun NavBottomSection(
   ) {
     SideMenuItem(
       modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
-      iconResource = R.drawable.ic_right_arrow,
+      iconResource = R.drawable.ic_sync,
       title = stringResource(R.string.sync),
       endText = appUiState.lastSyncTime,
       showEndText = true,
@@ -422,20 +422,6 @@ private fun SideMenuItemText(title: String, textColor: Color) {
     modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG)
   )
 }
-
-/*@Preview(showBackground = false)
-@ExcludeFromJacocoGeneratedReport
-@Composable
-fun PreviewSideMenuItem() {
-  SideMenuItem(
-    iconResource = null,
-    title = "Other Patients",
-    endText = "End Text",
-    showEndText = false,
-    endIconResource = R.drawable.ic_right_arrow,
-    onSideMenuClick = {}
-  )
-}*/
 
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport

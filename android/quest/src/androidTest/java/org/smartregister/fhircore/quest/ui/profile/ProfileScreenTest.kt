@@ -45,7 +45,7 @@ class ProfileScreenTest {
   private val profileViewModel = mockk<ProfileViewModel>()
   private lateinit var navController: NavHostController
   private lateinit var profileUiState: ProfileUiState
-  private val APP_DEBUG = "app/debug"
+  private val appDebug = "app/debug"
 
   @Before
   fun setUp() {
@@ -54,7 +54,7 @@ class ProfileScreenTest {
     runBlocking {
       configurationRegistry.loadConfigurations(
         context = InstrumentationRegistry.getInstrumentation().targetContext,
-        appId = APP_DEBUG
+        appId = appDebug
       ) {}
       val profileConfiguration =
         configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
@@ -69,8 +69,7 @@ class ProfileScreenTest {
         ProfileScreen(
           navController = navController,
           profileUiState = profileUiState,
-          onEvent = mockk(),
-          profileViewModel = profileViewModel
+          onEvent = mockk()
         )
       }
   }
