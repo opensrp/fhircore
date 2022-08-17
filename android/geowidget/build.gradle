@@ -36,10 +36,11 @@ android {
 
 dependencies {
 
-    implementation ('io.ona.kujaku:library:0.10.0') {
+    implementation ('io.ona.kujaku:library:0.9.0') {
         transitive = true
         exclude group: 'stax', module: 'stax-api'
     }
+    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0'
 
     api('org.smartregister:data-capture:0.1.0-beta03-preview7-SNAPSHOT') {
         transitive = true
