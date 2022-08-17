@@ -25,7 +25,6 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -35,6 +34,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 
@@ -88,7 +88,12 @@ constructor(
                 val actionParamList: MutableList<Pair<String, String>> =
                   emptyList<Pair<String, String>>().toMutableList()
                 actionConfig.params.forEach { actionParameter ->
-                  actionParamList.add(Pair(actionParameter.key, actionParameter.value))
+                  actionParamList.add(
+                    Pair(
+                      actionParameter.key,
+                      actionParameter.value.interpolate(event.resourceData!!.computedValuesMap)
+                    )
+                  )
                 }
                 intentBundle = bundleOf(*actionParamList.toTypedArray())
               }

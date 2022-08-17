@@ -323,12 +323,18 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
           "params": [
             {
               "key": "familyId",
               "value": "@{familyId}"
             }
-          ]
+          ],
+          "questionnaire": {
+            "id": "101644",
+            "title": "eCBIS Remove Family Form",
+            "type": "DEFAULT"
+          }
         }
       ]
     }
