@@ -17,6 +17,10 @@
 package org.smartregister.fhircore.quest.ui.shared.models
 
 import androidx.navigation.NavController
+import com.google.android.fhir.logicalId
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -33,7 +37,8 @@ sealed class ViewComponentEvent {
    */
   data class OpenProfile(val profileId: String, val resourceId: String) : ViewComponentEvent()
 
-  data class LaunchQuestionnaire(val questionnaireId: String) : ViewComponentEvent()
+  data class LaunchQuestionnaire(val actionConfig: ActionConfig, val resourceData: ResourceData) :
+    ViewComponentEvent()
 
   fun handleEvent(navController: NavController) {
     when (this) {
@@ -46,7 +51,17 @@ sealed class ViewComponentEvent {
         navController.navigate(MainNavigationScreen.Profile.route + urlParams)
       }
       is LaunchQuestionnaire -> {
-        navController.context.launchQuestionnaire<QuestionnaireActivity>(this.questionnaireId)
+        actionConfig.questionnaire?.let { questionnaireConfig ->
+          val questionnaireType = questionnaireConfig.type
+          navController.context.launchQuestionnaire<QuestionnaireActivity>(
+            questionnaireId = questionnaireConfig.id,
+            clientIdentifier =
+              if (questionnaireType == QuestionnaireType.DEFAULT) null
+              else resourceData.baseResource.logicalId,
+            questionnaireType = questionnaireType,
+            intentBundle = actionConfig.paramsBundle(resourceData.computedValuesMap)
+          )
+        }
       }
     }
   }

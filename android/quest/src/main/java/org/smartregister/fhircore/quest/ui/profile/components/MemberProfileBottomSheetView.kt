@@ -48,12 +48,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
-import org.smartregister.fhircore.engine.ui.components.ActionableButton
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
+import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 @Composable
 fun MemberProfileBottomSheetView(
@@ -62,8 +65,8 @@ fun MemberProfileBottomSheetView(
   bottomSheetScaffoldState: BottomSheetScaffoldState,
   title: String,
   buttonProperties: List<ButtonProperties>,
-  computedValuesMap: Map<String, Any>,
-  onButtonClick: () -> Unit,
+  resourceData: ResourceData,
+  onViewComponent: (ViewComponentEvent) -> Unit,
   onViewProfile: () -> Unit
 ) {
   Column(modifier = modifier.verticalScroll(rememberScrollState())) {
@@ -104,8 +107,8 @@ fun MemberProfileBottomSheetView(
       buttonProperties.forEach {
         ActionableButton(
           buttonProperties = it,
-          onAction = onButtonClick,
-          computedValuesMap = computedValuesMap
+          resourceData = resourceData,
+          onViewComponentEvent = onViewComponent
         )
       }
       Spacer(modifier = modifier.height(8.dp))
@@ -134,9 +137,9 @@ private fun MemberProfileBottomSheetViewPreview() {
     bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     title = "John Doe, M, 35y",
     buttonProperties = emptyList(),
-    onButtonClick = { /*Do nothing*/},
+    onViewComponent = { /*Do nothing*/},
     onViewProfile = { /*Do nothing*/},
-    computedValuesMap = emptyMap()
+    resourceData = ResourceData(Patient())
   )
 }
 
@@ -153,8 +156,8 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
         ButtonProperties(text = "Sick child", status = "UPCOMING"),
         ButtonProperties(text = "Pregnancy visit", status = "COMPLETED")
       ),
-    onButtonClick = { /*Do nothing*/},
+    onViewComponent = { /*Do nothing*/},
     onViewProfile = { /*Do nothing*/},
-    computedValuesMap = emptyMap()
+    resourceData = ResourceData(Patient())
   )
 }
