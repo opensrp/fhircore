@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
-import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
@@ -169,7 +168,7 @@ private fun RenderChildView(
       ServiceCard(
         serviceCardProperties = viewProperties,
         resourceData = resourceData,
-        onViewComponentClick = onViewComponentClick
+        onViewComponentEvent = onViewComponentClick
       )
     is CardViewProperties ->
       Card(
@@ -192,7 +191,7 @@ private fun RenderChildView(
     is ButtonProperties ->
       ActionableButton(
         buttonProperties = viewProperties,
-        onAction = { /*TODO provide click action event*/},
+        onViewComponentEvent = onViewComponentClick,
         resourceData = resourceData
       )
     is SpacerProperties -> SpacerView(spacerProperties = viewProperties)

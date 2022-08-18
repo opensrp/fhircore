@@ -59,8 +59,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
-import org.smartregister.fhircore.engine.ui.components.ActionableButton
-import org.smartregister.fhircore.engine.ui.components.statusColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -73,7 +71,7 @@ fun ServiceCard(
   modifier: Modifier = Modifier,
   serviceCardProperties: ServiceCardProperties,
   resourceData: ResourceData,
-  onViewComponentClick: (ViewComponentEvent) -> Unit
+  onViewComponentEvent: (ViewComponentEvent) -> Unit
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -88,7 +86,7 @@ fun ServiceCard(
       modifier =
         modifier
           .clickable {
-            serviceCardProperties.actions.handleClickEvent(onViewComponentClick, resourceData)
+            serviceCardProperties.actions.handleClickEvent(onViewComponentEvent, resourceData)
           }
           .padding(top = 24.dp, bottom = 24.dp)
           .weight(0.75f)
@@ -131,9 +129,7 @@ fun ServiceCard(
             ActionableButton(
               modifier = modifier,
               buttonProperties = serviceCardProperties.serviceButton!!,
-              onAction = {
-                serviceCardProperties.actions.handleClickEvent(onViewComponentClick, resourceData)
-              },
+              onViewComponentEvent = onViewComponentEvent,
               resourceData = resourceData
             )
           } else {
@@ -148,7 +144,7 @@ fun ServiceCard(
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
-                onAction = { /*TODO provide click action event*/},
+                onViewComponentEvent = onViewComponentEvent,
                 resourceData = resourceData
               )
               Spacer(modifier = modifier.height(8.dp))

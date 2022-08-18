@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.components
+package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
@@ -34,9 +34,8 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class ActionableButtonTest : RobolectricTest() {
+class ActionableButtonTest {
 
   private val mockListener: () -> Unit = spyk({})
 
@@ -53,8 +52,8 @@ class ActionableButtonTest : RobolectricTest() {
               text = "Button Text",
               questionnaire = QuestionnaireConfig(id = "23", title = "Add Family")
             ),
-          onAction = mockListener,
-          resourceData = ResourceData(Patient())
+          resourceData = ResourceData(Patient()),
+          onViewComponentEvent = {}
         )
       }
     }

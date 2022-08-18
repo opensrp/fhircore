@@ -22,7 +22,7 @@ import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 @Serializable
 data class QuestionnaireConfig(
   val id: String,
-  val title: String,
+  val title: String? = null,
   val saveButtonText: String? = null,
   val setPractitionerDetails: Boolean = false,
   val setOrganizationDetails: Boolean = false,

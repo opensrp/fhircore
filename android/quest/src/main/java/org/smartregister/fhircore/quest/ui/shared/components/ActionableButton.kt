@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.components
+package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,6 +53,8 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val ACTIONABLE_BUTTON_TEXT_TEST_TAG = "actionableButtonTextTestTag"
 const val ACTIONABLE_BUTTON_START_ICON_TEST_TAG = "actionableButtonStartIconTestTag"
@@ -61,15 +63,15 @@ const val ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG = "actionableButtonOutlined
 
 @Composable
 fun ActionableButton(
-  buttonProperties: ButtonProperties,
   modifier: Modifier = Modifier,
+  buttonProperties: ButtonProperties,
   resourceData: ResourceData,
-  onAction: () -> Unit
+  onViewComponentEvent: (ViewComponentEvent) -> Unit,
 ) {
   val computedValuesMap = remember { resourceData.computedValuesMap }
 
   OutlinedButton(
-    onClick = onAction,
+    onClick = { buttonProperties.actions.handleClickEvent(onViewComponentEvent, resourceData) },
     colors =
       ButtonDefaults.buttonColors(
         backgroundColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.1f),
@@ -139,8 +141,8 @@ fun ActionableButtonPreview() {
   Column(modifier = Modifier.height(50.dp)) {
     ActionableButton(
       buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
-      onAction = {},
-      resourceData = ResourceData(Patient())
+      resourceData = ResourceData(Patient()),
+      onViewComponentEvent = {}
     )
   }
 }
