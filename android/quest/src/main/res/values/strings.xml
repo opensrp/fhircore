@@ -39,6 +39,7 @@
     <string name="remove_this_person">Remove this person</string>
     <string name="individual_details">Individual details</string>
     <string name="view_family">View family</string>
+    <string name="guardians_screen_title">%1$s\'s Guardians</string>
 
     <string name="client_visit">Client Visit</string>
     <string name="guardian_visit">Guardian Visit</string>
