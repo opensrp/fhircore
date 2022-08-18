@@ -26,19 +26,17 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
-import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
@@ -48,7 +46,9 @@ class ProfileViewModel
 @Inject
 constructor(
   val registerRepository: RegisterRepository,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
+  val defaultRepository: DefaultRepository,
+  val dispatcherProvider: DefaultDispatcherProvider,
 ) : ViewModel() {
 
   val profileUiState: MutableState<ProfileUiState> = mutableStateOf(ProfileUiState())
@@ -137,7 +137,12 @@ constructor(
               (event.context as AppCompatActivity).let { activity ->
                 ProfileBottomSheetFragment(
                     eligibleManagingEntities = eligibleManagingEntityList!!,
-                    onSaveClick = {}
+                    onSaveClick = {
+                      ProfileEvent.OnChangeManagingEntity(
+                        newManagingEntityId = it.logicalId,
+                        oldManagingEntityId = it.groupId
+                      )
+                    }
                   )
                   .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
               }
@@ -148,5 +153,13 @@ constructor(
       }
       is ProfileEvent.OnViewComponentEvent ->
         event.viewComponentEvent.handleEvent(event.navController)
+      is ProfileEvent.OnChangeManagingEntity -> {
+        viewModelScope.launch(dispatcherProvider.io()) {
+          defaultRepository.changeManagingEntity(
+            event.newManagingEntityId,
+            event.oldManagingEntityId
+          )
+        }
+      }
     }
 }
