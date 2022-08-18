@@ -53,9 +53,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
+import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 
@@ -125,36 +129,42 @@ fun ProfileScreen(
               ) { Text(text = it.title, color = it.titleColor.parseColor()) }
             }
           }
-        }
+        },
+        elevation = 0.dp
       )
     },
     floatingActionButton = {
-      val fabAction = profileUiState.profileConfiguration?.fabActions?.first()
-      ExtendedFloatingActionButton(
-        contentColor = Color.White,
-        text = { fabAction?.display?.let { Text(text = it.uppercase()) } },
-        onClick = {
-          /** TODO handle onclick action */
-        },
-        backgroundColor = MaterialTheme.colors.primary,
-        icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-        interactionSource = mutableInteractionSource
-      )
+      val fabActions = profileUiState.profileConfiguration?.fabActions
+      if (!fabActions.isNullOrEmpty()) {
+        ExtendedFloatingActionButton(
+          contentColor = Color.White,
+          text = { fabActions.first().display?.let { Text(text = it.uppercase()) } },
+          onClick = {
+            val clickAction =
+              fabActions.first().actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+            when (clickAction?.workflow) {
+              ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+                clickAction.questionnaire?.id?.let { questionnaireId ->
+                  navController.context.launchQuestionnaire<QuestionnaireActivity>(questionnaireId)
+                }
+              }
+            }
+          },
+          backgroundColor = MaterialTheme.colors.primary,
+          icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
+          interactionSource = mutableInteractionSource
+        )
+      }
     }
   ) { innerPadding ->
-    Box(modifier = modifier.fillMaxHeight().padding(innerPadding)) {
-      Column(
-        modifier =
-          modifier
-            .verticalScroll(rememberScrollState())
-            .background(PatientProfileSectionsBackgroundColor)
-      ) {
+    Box(
+      modifier = modifier.background(ProfileBackgroundColor).fillMaxHeight().padding(innerPadding)
+    ) {
+      Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
           resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
-          onViewComponentClick = {
-            /** TODO provide click events */
-          }
+          onViewComponentClick = { onEvent(ProfileEvent.OnViewComponentEvent(it, navController)) }
         )
       }
     }

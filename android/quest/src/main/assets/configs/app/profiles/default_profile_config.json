@@ -5,52 +5,74 @@
   "fhirResource": {
     "baseResource": {
       "resource": "Patient"
-    }
+    },
+    "relatedResources": [
+      {
+        "resource": "Condition",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Task",
+        "searchParameter": "subject"
+      }
+    ]
   },
-  "profileParams": [
-    "familyId"
+  "rules": [
+    {
+      "name": "patientName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
+      ]
+    },
+    {
+      "name": "patientId",
+      "condition": "true",
+      "actions": [
+        "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+      ]
+    }
   ],
-  "rules": [],
   "views": [
     {
-      "viewType": "CARD",
-      "content": [
+      "viewType": "COLUMN",
+      "children": [
         {
-          "viewType": "COLUMN",
-          "children": [
+          "viewType": "CARD",
+          "padding": 0,
+          "content": [
             {
-              "viewType": "ROW",
+              "viewType": "COLUMN",
               "children": [
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "Patient name",
-                  "primaryTextColor": "#000000"
-                }
-              ]
-            },
-            {
-              "viewType": "ROW",
-              "children": [
-                {
-                  "viewType": "COMPOUND_TEXT",
-                  "primaryText": "Careplan1",
+                  "primaryText": "@{patientName}",
                   "primaryTextColor": "#000000"
                 },
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "Careplan1",
+                  "primaryText": "ID: @{patientId}",
                   "primaryTextColor": "#000000"
                 },
                 {
-                  "viewType": "COMPOUND_TEXT",
-                  "primaryText": "Careplan1",
-                  "primaryTextColor": "#000000"
-                }
-              ]
-            },
-            {
-              "viewType": "ROW",
-              "children": [
+                  "viewType": "ROW",
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    },
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    }
+                  ]
+                },
                 {
                   "viewType": "COLUMN",
                   "children": [
@@ -65,217 +87,68 @@
                       "primaryTextColor": "#000000"
                     }
                   ]
-                }
-              ]
-            },
-            {
-              "viewType": "ROW",
-              "children": [
+                },
                 {
-                  "viewType": "COLUMN",
-                  "primaryBackgroundTextColor": "#000000",
-                  "radius": 3,
-                  "children": [
+                  "viewType": "PERSONAL_DATA",
+                  "personalDataItems": [
                     {
-                      "viewType": "ROW",
-                      "children": [
-                        {
-                          "viewType": "COLUMN",
-                          "children": [
-                            {
-                              "viewType": "COMPOUND_TEXT",
-                              "primaryText": "Age",
-                              "primaryTextColor": "#000000"
-                            },
-                            {
-                              "viewType": "COMPOUND_TEXT",
-                              "primaryText": "",
-                              "primaryTextColor": "#000000"
-                            }
-                          ]
-                        },
-                        {
-                          "viewType": "COLUMN",
-                          "children": [
-                            {
-                              "viewType": "COMPOUND_TEXT",
-                              "primaryText": "DOB",
-                              "primaryTextColor": "#000000"
-                            },
-                            {
-                              "viewType": "COMPOUND_TEXT",
-                              "primaryText": "",
-                              "primaryTextColor": "#000000"
-                            }
-                          ]
-                        },
-                        {
-                          "viewType": "COLUMN",
-                          "children": [
-                            {
-                              "viewType": "COMPOUND_TEXT",
-                              "primaryText": "Gender",
-                              "primaryTextColor": "#000000"
-                            },
-                            {
-                              "viewType": "COMPOUND_TEXT",
-                              "primaryText": "",
-                              "primaryTextColor": "#000000"
-                            }
-                          ]
-                        }
-                      ]
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Sex",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Female",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    },
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Age",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "20Y",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    },
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "DOB",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "01 2002",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
                     }
                   ]
-                },
-                {
-                  "viewType": "COLUMN",
-                  "children": []
-                }
-              ]
-            },
-            {
-              "viewType": "PERSONAL_DATA",
-              "personalDataItems": [
-                {
-                  "label": {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryText": "Sex",
-                    "primaryTextColor": "#000000"
-                  },
-                  "displayValue": {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryText": "Female",
-                    "fontSize": 14,
-                    "primaryTextColor": "#000000"
-                  }
-                },
-                {
-                  "label": {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryText": "Age",
-                    "primaryTextColor": "#000000"
-                  },
-                  "displayValue": {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryText": "20Y",
-                    "fontSize": 14,
-                    "primaryTextColor": "#000000"
-                  }
-                },
-                {
-                  "label": {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryText": "DOB",
-                    "primaryTextColor": "#000000"
-                  },
-                  "displayValue": {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryText": "01 2002",
-                    "fontSize": 14,
-                    "primaryTextColor": "#000000"
-                  }
                 }
               ]
             }
           ]
+        },
+        {
+          "viewType": "SPACER",
+          "height": 16
         }
       ]
     }
   ],
   "overFlowMenuItems": [
     {
-      "title": "Individual details",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "82952",
-            "title": "Add Family",
-            "saveButtonText": "ADD FAMILY",
-            "setPractitionerDetails": true,
-            "setOrganizationDetails": true
-          }
-        }
-      ]
-    },
-    {
       "title": "View family",
-      "titleColor": "#000000",
+      "titleColor": "#FF0000",
       "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_PROFILE"
-        }
-      ]
-    },
-    {
-      "title": "Record sick child",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "82952",
-            "title": "Add Family",
-            "saveButtonText": "ADD FAMILY",
-            "setPractitionerDetails": true,
-            "setOrganizationDetails": true
-          }
-        }
-      ]
-    },
-    {
-      "title": "Record as ANC",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "82952",
-            "title": "Add Family",
-            "saveButtonText": "ADD FAMILY",
-            "setPractitionerDetails": true,
-            "setOrganizationDetails": true
-          }
-        }
-      ]
-    },
-    {
-      "title": "Pregnancy Outcome",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "82952",
-            "title": "Add Family",
-            "saveButtonText": "ADD FAMILY",
-            "setPractitionerDetails": true,
-            "setOrganizationDetails": true
-          }
-        }
-      ]
-    },
-    {
-      "title": "Remove this person",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK"
-        }
-      ]
+      "showSeparator": "true"
     }
   ]
 }

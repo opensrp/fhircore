@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
@@ -77,34 +78,32 @@ constructor(
 
   fun onEvent(event: ProfileEvent) =
     when (event) {
-      is ProfileEvent.LoadQuestionnaire ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(event.questionnaireId)
-      is ProfileEvent.SeeAll -> {
-        /* TODO(View all records in this category e.g. all medical history, tasks etc) */
-      }
       is ProfileEvent.OverflowMenuClick -> {
         event.overflowMenuItemConfig?.actions?.forEach { actionConfig ->
           when (actionConfig.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               if (actionConfig.questionnaire == null) return@forEach
-              var intentBundle: android.os.Bundle = android.os.Bundle.EMPTY
-              if (actionConfig.params.isNotEmpty()) {
-                val actionParamList: MutableList<Pair<String, String>> =
-                  emptyList<Pair<String, String>>().toMutableList()
-                actionConfig.params.forEach { actionParameter ->
-                  actionParamList.add(
+              val actionParamList =
+                actionConfig
+                  .params
+                  .map { actionParameter ->
                     Pair(
                       actionParameter.key,
-                      actionParameter.value.interpolate(event.resourceData!!.computedValuesMap)
+                      actionParameter.value.interpolate(
+                        event.resourceData?.computedValuesMap ?: emptyMap()
+                      )
                     )
-                  )
-                }
-                intentBundle = bundleOf(*actionParamList.toTypedArray())
-              }
+                  }
+                  .toTypedArray()
+
+              val intentBundle = bundleOf(*actionParamList)
+              val questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type)
               event.context.launchQuestionnaire<QuestionnaireActivity>(
                 questionnaireId = actionConfig.questionnaire!!.id,
-                clientIdentifier = event.resourceData?.baseResource?.logicalId,
-                questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type),
+                clientIdentifier =
+                  if (questionnaireType == QuestionnaireType.DEFAULT) null
+                  else event.resourceData?.baseResource?.logicalId,
+                questionnaireType = questionnaireType,
                 intentBundle = intentBundle
               )
             }
@@ -147,12 +146,7 @@ constructor(
           }
         }
       }
-      is ProfileEvent.OpenTaskForm ->
-        event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
-          questionnaireId = event.taskFormId,
-          clientIdentifier = event.patientId,
-          backReference = event.taskId?.asReference(ResourceType.Task)?.reference
-        )
-      else -> {}
+      is ProfileEvent.OnViewComponentEvent ->
+        event.viewComponentEvent.handleEvent(event.navController)
     }
 }

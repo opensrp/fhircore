@@ -30,13 +30,22 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 import java.util.Locale
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.LightColors
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import timber.log.Timber
 
 const val ERROR_COLOR = "errorColor"
 const val PRIMARY_COLOR = "primaryColor"
 const val PRIMARY_VARIANT_COLOR = "primaryVariantColor"
+const val DEFAULT_COLOR = "defaultColor"
+const val SUCCESS_COLOR = "successColor"
+const val WARNING_COLOR = "warningColor"
+const val DANGER_COLOR = "dangerColor"
+const val INFO_COLOR = "infoColor"
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
   Toast.makeText(this, message, toastLength).show()
@@ -139,7 +148,7 @@ fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "dr
  */
 fun String?.parseColor(): androidx.compose.ui.graphics.Color {
   if (this.isNullOrEmpty()) {
-    return DefaultColor
+    return ComposeColor.Unspecified
   } else if (this.startsWith("#")) {
     return ComposeColor(Color.parseColor(this))
   } else {
@@ -147,7 +156,12 @@ fun String?.parseColor(): androidx.compose.ui.graphics.Color {
       this.equals(PRIMARY_COLOR, ignoreCase = true) -> return LightColors.primary
       this.equals(PRIMARY_VARIANT_COLOR, ignoreCase = true) -> return LightColors.primaryVariant
       this.equals(ERROR_COLOR, ignoreCase = true) -> return LightColors.error
+      this.equals(DANGER_COLOR, ignoreCase = true) -> return DangerColor
+      this.equals(WARNING_COLOR, ignoreCase = true) -> return WarningColor
+      this.equals(INFO_COLOR, ignoreCase = true) -> return InfoColor
+      this.equals(SUCCESS_COLOR, ignoreCase = true) -> return SuccessColor
+      this.equals(DEFAULT_COLOR, ignoreCase = true) -> return DefaultColor
     }
   }
-  return DefaultColor
+  return ComposeColor.Unspecified
 }

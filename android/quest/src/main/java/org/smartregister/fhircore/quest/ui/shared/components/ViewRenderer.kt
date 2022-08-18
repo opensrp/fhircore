@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -40,6 +41,8 @@ import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.components.ActionableButton
+import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
@@ -90,10 +93,22 @@ private fun RenderViewGroup(
   onViewComponentClick: (ViewComponentEvent) -> Unit,
   viewModel: ViewRendererViewModel
 ) {
+
   viewProperties.children.forEach { childViewProperty ->
     if (childViewProperty is ViewGroupProperties) {
       if (childViewProperty.viewType == ViewType.COLUMN) {
-        FlowColumn {
+        FlowColumn(
+          modifier =
+            modifier
+              .background(
+                childViewProperty
+                  .backgroundColor
+                  ?.interpolate(resourceData.computedValuesMap)
+                  .parseColor()
+              )
+              .fillMaxWidth()
+              .padding(childViewProperty.padding.dp)
+        ) {
           ViewRenderer(
             modifier = modifier,
             viewProperties = childViewProperty.children,
@@ -103,7 +118,18 @@ private fun RenderViewGroup(
           )
         }
       } else if (childViewProperty.viewType == ViewType.ROW) {
-        FlowRow {
+        FlowRow(
+          modifier =
+            modifier
+              .background(
+                childViewProperty
+                  .backgroundColor
+                  ?.interpolate(resourceData.computedValuesMap)
+                  .parseColor()
+              )
+              .fillMaxWidth()
+              .padding(childViewProperty.padding.dp)
+        ) {
           ViewRenderer(
             modifier = modifier,
             viewProperties = childViewProperty.children,
