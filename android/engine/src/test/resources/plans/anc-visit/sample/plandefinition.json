@@ -1,0 +1,192 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "07200c16-b2d6-4d7d-a53f-128115b0ab2f",
+  "name": "PNC Follow Up visit",
+  "title": "PNC Follow Up visit",
+  "status": "active",
+  "description": "This action will be performed on the patient's PNC Follow Up visit",
+  "goal": [
+    {
+      "category": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-category.html",
+            "code": "nursing",
+            "display": "Nursing"
+          }
+        ]
+      },
+      "priority": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-priority.html",
+            "code": "high-priority",
+            "display": "High Priority"
+          }
+        ]
+      },
+      "start": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "32485007",
+            "display": "Admission to hospital"
+          }
+        ]
+      }
+    }
+  ],
+  "action": [
+    {
+      "prefix": "pnc-normal-weight-visit",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/132170').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='6cf13e80-af2f-40fe-f70d-00fbdc331ba8') and answer.value.code = 'normal').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#pnc-visit-activity-definition",
+      "transform": "http://hl7.org/fhir/StructureMap/e71e7a6-194f-11ed-861d-0242ac120002"
+    },
+    {
+      "prefix": "pnc-underweight-weight-visit",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/132170').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='6cf13e80-af2f-40fe-f70d-00fbdc331ba8') and answer.value.code = 'under-weight').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#pnc-visit-activity-definition",
+      "transform": "http://hl7.org/fhir/StructureMap/9fcb7a6a-4809-4f26-a379-c92bb783e5e0"
+    },
+    {
+      "prefix": "pnc-visit-completion",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/8a1f9578-5b88-45ea-8120-8f8557e01d8c'"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-visit-activity"
+    },
+    {
+      "prefix": "pnc-referral-visit",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='9135d01c-aa0c-4be4-8dd8-71613ccea304') and answer.value.code='yes').exists()"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-referral-activity",
+      "transform": "http://hl7.org/fhir/StructureMap/2dc36363-a627-4fe6-b3c4-490f34389629"
+    }
+  ],
+  "contained": [
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "pnc-visit-activity-definition",
+      "title": "PNC Follow Up visit",
+      "status": "active",
+      "description": "This action will be performed on the patient's PNC Follow Up visit",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "countMax": 5,
+          "duration": 2,
+          "durationMax": 4,
+          "durationUnit": "h",
+          "frequency": 1,
+          "frequencyMax": 1,
+          "period": 1,
+          "periodMax": 1,
+          "periodUnit": "d"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-visit-activity",
+      "title": "PNC Follow Up visit Handler Activity",
+      "status": "active",
+      "description": "This action will assess CarePlan every time a followup happens on a task generated by plan",
+      "kind": "CarePlan",
+      "dynamicValue": [
+        {
+          "path": "CarePlan.status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'completed'"
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-referral-activity",
+      "title": "PNC Referral Handler Activity",
+      "status": "active",
+      "description": "This action will assess CarePlan and generate referral task every time a followup happens on a task generated by plan",
+      "kind": "Task"
+    }
+  ]
+}
