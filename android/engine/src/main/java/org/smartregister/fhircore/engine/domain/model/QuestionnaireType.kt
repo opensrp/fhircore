@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire
+package org.smartregister.fhircore.engine.domain.model
 
 enum class QuestionnaireType {
   READ_ONLY,
