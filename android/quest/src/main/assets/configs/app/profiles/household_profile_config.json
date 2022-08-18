@@ -69,7 +69,7 @@
     "infoFhirPathExpression": "Patient.name.given",
     "fhirPathResource": {
       "resourceType": "Patient",
-      "fhirPathExpression": ""
+      "fhirPathExpression": "Patient.active"
     }
   },
   "fabActions": [
@@ -288,7 +288,7 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_PROFILE"
+          "workflow": "CHANGE_MANAGING_ENTITY"
         }
       ]
     },

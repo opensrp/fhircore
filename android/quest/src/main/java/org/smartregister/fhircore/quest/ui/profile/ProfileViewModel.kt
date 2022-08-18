@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.os.bundleOf
@@ -37,6 +38,9 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
+import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 
 @HiltViewModel
 class ProfileViewModel
@@ -103,6 +107,41 @@ constructor(
                 questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type),
                 intentBundle = intentBundle
               )
+            }
+            ApplicationWorkflow.CHANGE_MANAGING_ENTITY -> {
+              if (event.managingEntity == null) return@forEach
+              val resourceTypeToFilter = event.managingEntity.fhirPathResource.resourceType
+
+              val eligibleManagingEntityList =
+                event
+                  .resourceData
+                  ?.relatedResourcesMap
+                  ?.get(resourceTypeToFilter)
+                  ?.filter {
+                    FhirPathDataExtractor.extractValue(
+                        it,
+                        event.managingEntity.fhirPathResource.fhirPathExpression
+                      )
+                      .toBoolean()
+                  }
+                  ?.map {
+                    EligibleManagingEntity(
+                      groupId = event.resourceData.baseResource.logicalId,
+                      logicalId = it.logicalId,
+                      memberInfo =
+                        FhirPathDataExtractor.extractValue(
+                          it,
+                          event.managingEntity.infoFhirPathExpression
+                        )
+                    )
+                  }
+              (event.context as AppCompatActivity).let { activity ->
+                ProfileBottomSheetFragment(
+                    eligibleManagingEntities = eligibleManagingEntityList!!,
+                    onSaveClick = {}
+                  )
+                  .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
+              }
             }
             else -> {}
           }

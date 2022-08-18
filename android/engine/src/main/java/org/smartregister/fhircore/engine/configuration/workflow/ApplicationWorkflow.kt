@@ -44,4 +44,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow for navigating to maps */
   LAUNCH_MAP,
+
+  /** A workflow for changing a managing entity */
+  CHANGE_MANAGING_ENTITY
 }

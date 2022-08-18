@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.profile
 import android.content.Context
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
@@ -41,7 +42,8 @@ sealed class ProfileEvent {
     val navController: NavHostController,
     val context: Context,
     val resourceData: ResourceData?,
-    val overflowMenuItemConfig: OverflowMenuItemConfig?
+    val overflowMenuItemConfig: OverflowMenuItemConfig?,
+    val managingEntity: ManagingEntityConfig? = null
   ) : ProfileEvent()
 
   data class OnViewComponentEvent(
