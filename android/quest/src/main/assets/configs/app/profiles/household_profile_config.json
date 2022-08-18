@@ -80,16 +80,16 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE"
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "82952",
+            "title": "Add Family",
+            "saveButtonText": "ADD FAMILY",
+            "setPractitionerDetails": true,
+            "setOrganizationDetails": true
+          }
         }
-      ],
-      "questionnaire": {
-        "id": "82952",
-        "title": "Add Family",
-        "saveButtonText": "ADD FAMILY",
-        "setPractitionerDetails": true,
-        "setOrganizationDetails": true
-      }
+      ]
     }
   ],
   "rules": [

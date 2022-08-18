@@ -147,7 +147,32 @@ fun ServiceCard(
             ActionableButton(
               modifier = modifier,
               buttonProperties = serviceCardProperties.serviceButton!!,
-              onAction = {},
+              onAction = {
+                val onClickAction =
+                  serviceCardProperties.serviceButton!!.actions.find {
+                    it.trigger == ActionTrigger.ON_CLICK
+                  }
+                onClickAction?.let {
+                  when (onClickAction.workflow) {
+                    ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+                      onViewComponentClick(
+                        ViewComponentEvent.LaunchQuestionnaire(
+                          onClickAction.questionnaire?.id.toString()
+                        )
+                      )
+                    }
+                    ApplicationWorkflow.LAUNCH_PROFILE -> {
+                      ViewComponentEvent.OpenProfile(
+                        profileId = it.id!!,
+                        resourceId = resourceData.baseResource.logicalId
+                      )
+                    }
+                    else -> {
+                      // Todo Handle other workflows on demand
+                    }
+                  }
+                }
+              },
               computedValuesMap = resourceData.computedValuesMap
             )
           } else {

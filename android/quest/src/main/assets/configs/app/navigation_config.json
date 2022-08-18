@@ -9,16 +9,16 @@
       {
         "trigger": "ON_CLICK",
         "workflow": "LAUNCH_REGISTER",
-        "id": "householdRegister"
+        "id": "householdRegister",
+        "questionnaire": {
+          "id": "82952",
+          "title": "{{add.family}}",
+          "saveButtonText": "ADD FAMILY",
+          "setPractitionerDetails": true,
+          "setOrganizationDetails": true
+        }
       }
-    ],
-    "questionnaire": {
-      "id": "82952",
-      "title": "{{add.family}}",
-      "saveButtonText": "ADD FAMILY",
-      "setPractitionerDetails": true,
-      "setOrganizationDetails": true
-    }
+    ]
   },
   "staticMenu": [
     {

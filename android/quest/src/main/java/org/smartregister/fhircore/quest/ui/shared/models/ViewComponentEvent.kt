@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest.ui.shared.models
 
 import androidx.navigation.NavController
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 
@@ -31,6 +33,8 @@ sealed class ViewComponentEvent {
    */
   data class OpenProfile(val profileId: String, val resourceId: String) : ViewComponentEvent()
 
+  data class LaunchQuestionnaire(val questionnaireId: String) : ViewComponentEvent()
+
   fun handleEvent(navController: NavController) {
     when (this) {
       is OpenProfile -> {
@@ -40,6 +44,9 @@ sealed class ViewComponentEvent {
             NavigationArg.RESOURCE_ID to this.resourceId
           )
         navController.navigate(MainNavigationScreen.Profile.route + urlParams)
+      }
+      is LaunchQuestionnaire -> {
+        navController.context.launchQuestionnaire<QuestionnaireActivity>(this.questionnaireId)
       }
     }
   }
