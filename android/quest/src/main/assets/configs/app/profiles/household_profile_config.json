@@ -69,7 +69,7 @@
     "infoFhirPathExpression": "Patient.name.given",
     "fhirPathResource": {
       "resourceType": "Patient",
-      "fhirPathExpression": "Patient.active"
+      "fhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')"
     }
   },
   "fabActions": [
