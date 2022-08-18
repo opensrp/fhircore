@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
+
 /**
  * This sealed class is used to represent various click events of the configurable view components
  */
@@ -26,4 +28,6 @@ sealed class ViewComponentEvent {
    * configurations and [resourceId] to fetch the data for the current profile.
    */
   data class ServiceCardClick(val profileId: String, val resourceId: String) : ViewComponentEvent()
+
+  data class ActionableButtonClick(val clickAction: ActionConfig) : ViewComponentEvent()
 }

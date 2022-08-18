@@ -52,6 +52,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
@@ -131,7 +133,14 @@ fun ProfileScreen(
         contentColor = Color.White,
         text = { fabAction?.display?.let { Text(text = it.uppercase()) } },
         onClick = {
-          /** TODO handle onclick action */
+          val clickAction = fabAction?.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+          when (clickAction?.workflow) {
+            ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+              clickAction.questionnaire?.id?.let { questionnaireId ->
+                onEvent(ProfileEvent.LoadQuestionnaire(questionnaireId, context))
+              }
+            }
+          }
         },
         backgroundColor = MaterialTheme.colors.primary,
         icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },

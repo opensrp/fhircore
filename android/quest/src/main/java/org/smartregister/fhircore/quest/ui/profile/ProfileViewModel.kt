@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
+import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 @HiltViewModel
 class ProfileViewModel
@@ -109,6 +110,21 @@ constructor(
           clientIdentifier = event.patientId,
           backReference = event.taskId?.asReference(ResourceType.Task)?.reference
         )
-      else -> {}
+      is ProfileEvent.OnViewComponentEvent -> {
+        when (event.viewComponentEvent) {
+          is ViewComponentEvent.ActionableButtonClick -> {
+            val action = event.viewComponentEvent.clickAction
+            when (action.workflow) {
+              ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+                action.questionnaire?.id?.let {
+                  event.context.launchQuestionnaire<QuestionnaireActivity>(it)
+                }
+              }
+              else -> {}
+            }
+          }
+          else -> {}
+        }
+      }
     }
 }

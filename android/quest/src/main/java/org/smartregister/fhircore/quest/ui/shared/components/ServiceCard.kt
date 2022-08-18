@@ -144,7 +144,17 @@ fun ServiceCard(
             ActionableButton(
               modifier = modifier,
               buttonProperties = serviceCardProperties.serviceButton!!,
-              onAction = {},
+              onAction = {
+                val onClickAction =
+                  serviceCardProperties.serviceButton!!.actions.find {
+                    it.trigger == ActionTrigger.ON_CLICK
+                  }
+                onClickAction?.let {
+                  onViewComponentClick(
+                    ViewComponentEvent.ActionableButtonClick(clickAction = onClickAction)
+                  )
+                }
+              },
               computedValuesMap = resourceData.computedValuesMap
             )
           } else {
