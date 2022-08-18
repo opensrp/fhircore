@@ -20,9 +20,11 @@ import android.content.Context
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
@@ -36,14 +38,18 @@ const val DAYS_IN_YEAR = 365
 const val DAYS_IN_MONTH = 30
 const val DAYS_IN_WEEK = 7
 
-fun Patient.extractName(): String {
-  if (!hasName()) return ""
-  val humanName = this.name.firstOrNull()
+fun List<HumanName>.canonicalName(): String {
+  val humanName = this.firstOrNull()
   return if (humanName != null) {
     (humanName.given + humanName.family).filterNotNull().joinToString(" ") {
       it.toString().trim().capitalizeFirstLetter()
     }
   } else ""
+}
+
+fun Patient.extractName(): String {
+  if (!hasName()) return ""
+  return this.name.canonicalName()
 }
 
 fun Patient.extractFamilyName(): String {
@@ -123,9 +129,8 @@ fun Date?.lastSeenFormat(): String {
   } else ""
 }
 
-fun Patient.extractAddress(): String {
-  if (!hasAddress()) return ""
-  return with(addressFirstRep) {
+fun Address.canonical(): String {
+  return with(this) {
     val addressLine =
       if (this.hasLine()) this.line.joinToString(separator = ", ", postfix = ", ") else ""
 
@@ -136,6 +141,11 @@ fun Patient.extractAddress(): String {
       .join(this.country, " ")
       .trim()
   }
+}
+
+fun Patient.extractAddress(): String {
+  if (!hasAddress()) return ""
+  return addressFirstRep.canonical()
 }
 
 fun Patient.extractAddressDistrict(): String {

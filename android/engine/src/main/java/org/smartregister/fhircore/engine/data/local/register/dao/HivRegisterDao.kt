@@ -37,9 +37,12 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
+import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
+import org.smartregister.fhircore.engine.util.extension.canonical
+import org.smartregister.fhircore.engine.util.extension.canonicalName
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
@@ -48,6 +51,7 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
 
@@ -58,7 +62,7 @@ constructor(
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry
-) : RegisterDao {
+) : RegisterDao, PatientDao {
 
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
@@ -68,7 +72,7 @@ constructor(
 
   fun hivPatientIdentifier(patient: Patient): String =
     // would either be an ART or HCC number
-    patient.extractOfficialIdentifier() ?: ""
+    patient.extractOfficialIdentifier() ?: ResourceValue.BLANK
 
   override suspend fun loadRegisterData(
     currentPage: Int,
@@ -87,26 +91,7 @@ constructor(
 
     return patients
       .filter(this::isValidPatient)
-      .map { patient ->
-        RegisterData.HivRegisterData(
-          logicalId = patient.logicalId,
-          identifier = hivPatientIdentifier(patient),
-          name = patient.extractName(),
-          gender = patient.gender,
-          age = patient.birthDate.toAgeDisplay(),
-          address = patient.extractAddress(),
-          familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
-          phoneContacts = patient.extractTelecom(),
-          practitioners = patient.generalPractitioner,
-          chwAssigned = patient.extractGeneralPractitionerReference(),
-          healthStatus =
-            patient.extractHealthStatusFromMeta(
-              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
-            ),
-          isPregnant = patient.isPregnant(),
-          isBreastfeeding = patient.isBreastfeeding()
-        )
-      }
+      .map { transformPatientToHivRegisterData(it) }
       .filterNot { it.healthStatus == HealthStatus.DEFAULT }
   }
 
@@ -150,6 +135,53 @@ constructor(
       .size
       .toLong()
   }
+
+  override suspend fun loadPatient(patientId: String) = fhirEngine.loadResource<Patient>(patientId)
+
+  override suspend fun loadGuardiansRegisterData(patient: Patient) =
+    patient
+      .guardians()
+      .filterIsInstance<Patient>()
+      .map { transformPatientToHivRegisterData(it) }
+      .plus(
+        patient.guardians().filterIsInstance<RelatedPerson>().map {
+          transformRelatedPersonToHivRegisterData(it)
+        }
+      )
+
+  private fun transformRelatedPersonToHivRegisterData(person: RelatedPerson) =
+    RegisterData.HivRegisterData(
+      logicalId = person.logicalId,
+      identifier = ResourceValue.BLANK,
+      name = person.name.canonicalName(),
+      gender = person.gender,
+      age = person.birthDate.toAgeDisplay(),
+      address = person.addressFirstRep.canonical(),
+      familyName = if (person.hasName()) person.nameFirstRep.family else null,
+      phoneContacts = if (person.hasTelecom()) person.telecom.map { it.value } else emptyList(),
+      chwAssigned = ResourceValue.BLANK,
+      healthStatus = HealthStatus.DEFAULT.apply { display = "Not on ART" },
+    )
+
+  private suspend fun transformPatientToHivRegisterData(patient: Patient) =
+    RegisterData.HivRegisterData(
+      logicalId = patient.logicalId,
+      identifier = hivPatientIdentifier(patient),
+      name = patient.extractName(),
+      gender = patient.gender,
+      age = patient.birthDate.toAgeDisplay(),
+      address = patient.extractAddress(),
+      familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+      phoneContacts = patient.extractTelecom(),
+      practitioners = patient.generalPractitioner,
+      chwAssigned = patient.extractGeneralPractitionerReference(),
+      healthStatus =
+        patient.extractHealthStatusFromMeta(
+          getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+        ),
+      isPregnant = patient.isPregnant(),
+      isBreastfeeding = patient.isBreastfeeding()
+    )
 
   internal suspend fun Patient.isPregnant() = patientConditions(this.logicalId).hasActivePregnancy()
   internal suspend fun Patient.isBreastfeeding() =
@@ -248,6 +280,10 @@ constructor(
         this.active = false
       }
     defaultRepository.addOrUpdate(patient)
+  }
+
+  object ResourceValue {
+    const val BLANK = ""
   }
 
   companion object {

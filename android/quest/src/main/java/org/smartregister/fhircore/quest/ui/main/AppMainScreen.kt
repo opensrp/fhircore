@@ -46,6 +46,7 @@ import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
+import org.smartregister.fhircore.quest.ui.patient.register.guardians.GuardiansRoute
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
 
@@ -128,7 +129,7 @@ private fun AppMainNavigationGraph(
         )
 
       when (it) {
-        is MainNavigationScreen.Home ->
+        MainNavigationScreen.Home ->
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)}",
@@ -177,6 +178,11 @@ private fun AppMainNavigationGraph(
               refreshDataState = appMainViewModel.refreshDataState
             )
           }
+        MainNavigationScreen.PatientGuardians ->
+          composable(
+            route = "${it.route}/{${NavigationArg.PATIENT_ID}}",
+            arguments = listOf(navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType })
+          ) { GuardiansRoute(onBackPress = { navController.popBackStack() }) }
         MainNavigationScreen.FamilyProfile ->
           composable(
             route =

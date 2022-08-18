@@ -186,6 +186,11 @@ constructor(
               patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
             undoGuardianVisitTasksFilter()
           }
+          R.id.view_guardians -> {
+            event.navController.navigate(
+              route = "${MainNavigationScreen.PatientGuardians.route}/${event.patientId}"
+            ) { launchSingleTop = true }
+          }
           R.id.view_family -> {
             event.familyId?.let { familyId ->
               val urlParams =

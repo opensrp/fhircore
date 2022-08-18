@@ -142,7 +142,7 @@ fun PatientProfileScreen(
                   }
                   R2.id.view_guardians -> {
                     Text(
-                      text = context.getString(it.titleResource, profileViewData.guardians.size),
+                      text = stringResource(it.titleResource, profileViewData.guardians.size),
                       color = it.titleColor
                     )
                   }
