@@ -153,9 +153,13 @@ fun ServiceCard(
                     it.trigger == ActionTrigger.ON_CLICK
                   }
                 onClickAction?.let {
-                  onViewComponentClick(
-                    ViewComponentEvent.ActionableButtonClick(clickAction = onClickAction)
-                  )
+                  when (onClickAction.workflow) {
+                    ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+                      onViewComponentClick(
+                        ViewComponentEvent.OpenTask(onClickAction.questionnaire?.id.toString())
+                      )
+                    }
+                  }
                 }
               },
               computedValuesMap = resourceData.computedValuesMap

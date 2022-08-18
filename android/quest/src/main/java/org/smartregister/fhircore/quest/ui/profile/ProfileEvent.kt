@@ -33,7 +33,6 @@ sealed class ProfileEvent {
   ) : ProfileEvent()
 
   data class OnViewComponentEvent(
-    val context: Context,
     val viewComponentEvent: ViewComponentEvent,
     val navController: NavController
   ) : ProfileEvent()

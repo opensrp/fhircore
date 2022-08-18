@@ -55,8 +55,10 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 
@@ -138,7 +140,7 @@ fun ProfileScreen(
           when (clickAction?.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               clickAction.questionnaire?.id?.let { questionnaireId ->
-                onEvent(ProfileEvent.LoadQuestionnaire(questionnaireId, context))
+                navController.context.launchQuestionnaire<QuestionnaireActivity>(questionnaireId)
               }
             }
           }
