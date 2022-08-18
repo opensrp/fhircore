@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.extension.canBeCompleted
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.translateGender
@@ -80,10 +81,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
             inputModel.tasks.map {
               PatientProfileRowItem(
                 id = it.logicalId,
-                actionFormId =
-                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                    it.reasonReference.extractId()
-                  else null,
+                actionFormId = if (it.canBeCompleted()) it.reasonReference.extractId() else null,
                 title = "", // it.description,
                 subtitle = "", // context.getString(R.string.due_on,
                 // it.executionPeriod.start.makeItReadable()),

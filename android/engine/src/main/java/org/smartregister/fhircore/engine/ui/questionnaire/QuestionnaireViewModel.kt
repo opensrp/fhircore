@@ -131,6 +131,7 @@ constructor(
     return questionnaireConfig
   }
 
+  @Throws(QuestionnaireNotFoundException::class)
   suspend fun getQuestionnaireConfigPair(
     context: Context,
     formName: String,
@@ -142,7 +143,8 @@ constructor(
       Pair(config, questionnaire)
     } catch (e: Exception) {
       // load questionnaire from db and build config
-      val questionnaire = loadQuestionnaire(formName, type)!!
+      val questionnaire =
+        loadQuestionnaire(formName, type) ?: throw QuestionnaireNotFoundException(formName)
       questionnaireConfig =
         QuestionnaireConfig(
           form = questionnaire.name ?: "",
