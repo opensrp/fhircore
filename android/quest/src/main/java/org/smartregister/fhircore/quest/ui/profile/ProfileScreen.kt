@@ -56,7 +56,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
+import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 
@@ -124,7 +124,8 @@ fun ProfileScreen(
               ) { Text(text = it.title, color = it.titleColor.parseColor()) }
             }
           }
-        }
+        },
+        elevation = 0.dp
       )
     },
     floatingActionButton = {
@@ -148,19 +149,14 @@ fun ProfileScreen(
       )
     }
   ) { innerPadding ->
-    Box(modifier = modifier.fillMaxHeight().padding(innerPadding)) {
-      Column(
-        modifier =
-          modifier
-            .verticalScroll(rememberScrollState())
-            .background(PatientProfileSectionsBackgroundColor)
-      ) {
+    Box(
+      modifier = modifier.background(ProfileBackgroundColor).fillMaxHeight().padding(innerPadding)
+    ) {
+      Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
           resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
-          onViewComponentClick = {
-            /** TODO provide click events */
-          }
+          onViewComponentClick = { onEvent(ProfileEvent.OnViewComponentEvent(it, navController)) }
         )
       }
     }

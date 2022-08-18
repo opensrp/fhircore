@@ -24,5 +24,4 @@ data class SpacerProperties(
   override val viewType: ViewType = ViewType.BUTTON,
   val height: Float? = null,
   val width: Float? = null,
-  val backgroundColor: String? = null
 ) : ViewProperties()

@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
-import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import androidx.navigation.NavController
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 
 /**
  * This sealed class is used to represent various click events of the configurable view components
@@ -24,10 +26,21 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 sealed class ViewComponentEvent {
 
   /**
-   * Event triggered when user clicks a service card. Uses [profileId] to fetch the profile
-   * configurations and [resourceId] to fetch the data for the current profile.
+   * Event triggered when user clicks a service card to open a profile. Uses [profileId] to fetch
+   * the profile configurations and [resourceId] to fetch the data for the current profile.
    */
-  data class ServiceCardClick(val profileId: String, val resourceId: String) : ViewComponentEvent()
+  data class OpenProfile(val profileId: String, val resourceId: String) : ViewComponentEvent()
 
-  data class ActionableButtonClick(val clickAction: ActionConfig) : ViewComponentEvent()
+  fun handleEvent(navController: NavController) {
+    when (this) {
+      is OpenProfile -> {
+        val urlParams =
+          NavigationArg.bindArgumentsOf(
+            NavigationArg.PROFILE_ID to this.profileId,
+            NavigationArg.RESOURCE_ID to this.resourceId
+          )
+        navController.navigate(MainNavigationScreen.Profile.route + urlParams)
+      }
+    }
+  }
 }

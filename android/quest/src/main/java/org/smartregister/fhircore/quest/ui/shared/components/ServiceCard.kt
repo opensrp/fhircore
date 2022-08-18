@@ -57,6 +57,7 @@ import org.smartregister.fhircore.engine.configuration.view.ServiceCardPropertie
 import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
@@ -89,14 +90,16 @@ fun ServiceCard(
       modifier =
         modifier
           .clickable {
-            // Ensure the service card has a click action
+            // Ensure the service card has a click action with workflow for opening profile
             val profileId =
               serviceCardProperties.actions.find {
-                it.trigger == ActionTrigger.ON_CLICK && !it.id.isNullOrEmpty()
+                it.trigger == ActionTrigger.ON_CLICK &&
+                  it.workflow == ApplicationWorkflow.LAUNCH_PROFILE
+                !it.id.isNullOrEmpty()
               }
             profileId?.let {
               onViewComponentClick(
-                ViewComponentEvent.ServiceCardClick(
+                ViewComponentEvent.OpenProfile(
                   profileId = it.id!!,
                   resourceId = resourceData.baseResource.logicalId
                 )

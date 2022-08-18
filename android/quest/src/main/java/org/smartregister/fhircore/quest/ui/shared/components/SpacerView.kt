@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -26,7 +25,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
-import org.smartregister.fhircore.engine.util.extension.parseColor
 
 const val VERTICAL_SPACER_TEST_TAG = "verticalSpacerTestTag"
 const val HORIZONTAL_SPACER_TEST_TAG = "verticalSpacerTestTag"
@@ -36,8 +34,6 @@ fun SpacerView(
   modifier: Modifier = Modifier,
   spacerProperties: SpacerProperties,
 ) {
-
-  modifier.background(color = spacerProperties.backgroundColor.parseColor())
   if (spacerProperties.height != null) {
     Spacer(
       modifier = modifier.height(spacerProperties.height!!.dp).testTag(VERTICAL_SPACER_TEST_TAG)
@@ -52,13 +48,11 @@ fun SpacerView(
 @Preview(showBackground = true)
 @Composable
 private fun VerticalSpacerPreview() {
-  val spacerProperties = SpacerProperties(height = 16F, width = null, backgroundColor = "#EE4B2B")
-  SpacerView(spacerProperties = spacerProperties)
+  SpacerView(spacerProperties = SpacerProperties(height = 16f, width = null))
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun HorizontalSpacerPreview() {
-  val spacerProperties = SpacerProperties(height = null, width = 16F, backgroundColor = "#EE4B2B")
-  SpacerView(spacerProperties = spacerProperties)
+  SpacerView(spacerProperties = SpacerProperties(height = null, width = 16f))
 }

@@ -93,7 +93,6 @@ fun ActionableButton(
         tint =
           when (buttonProperties.status) {
             ServiceStatus.COMPLETED.name -> SuccessColor.copy(alpha = 0.9f)
-            ServiceStatus.DUE.name -> DefaultColor.copy(alpha = 0.9f)
             else -> buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
           }
       )
@@ -103,10 +102,7 @@ fun ActionableButton(
         text = buttonProperties.text.toString(),
         fontWeight = FontWeight.Medium,
         color =
-          if (buttonProperties.status == ServiceStatus.COMPLETED.name ||
-              buttonProperties.status == ServiceStatus.DUE.name
-          )
-            DefaultColor.copy(0.8f)
+          if (buttonProperties.status == ServiceStatus.COMPLETED.name) DefaultColor.copy(0.9f)
           else buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
       )
       Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
