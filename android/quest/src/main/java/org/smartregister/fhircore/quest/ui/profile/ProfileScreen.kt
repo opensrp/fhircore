@@ -21,6 +21,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -40,10 +42,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -56,10 +60,12 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.quest.ui.profile.components.ChangeManagingEntityView
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 
 const val ICON_BUTTON_TEST_TAG = "iconButton"
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ProfileScreen(
   modifier: Modifier = Modifier,
@@ -152,6 +158,13 @@ fun ProfileScreen(
           onViewComponentClick = {
             /** TODO provide click events */
           }
+        )
+      }
+      Row(modifier = modifier) {
+        ChangeManagingEntityView(
+          coroutineScope = rememberCoroutineScope(),
+          bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+          onSaveClick = {}
         )
       }
     }
