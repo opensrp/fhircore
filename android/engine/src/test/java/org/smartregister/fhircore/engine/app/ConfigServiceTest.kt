@@ -107,7 +107,6 @@ class ConfigServiceTest : RobolectricTest() {
       }
 
     syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("publisher"))
       Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
   }

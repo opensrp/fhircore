@@ -120,7 +120,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       sharedPreferencesHelper.read<List<String>>(
         SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
       )
-    } returns listOf("Organization/105")
+    } returns listOf("105")
 
     defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider))
 
@@ -998,7 +998,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireResponse
     )
 
-    Assert.assertEquals("Organization/1111", questionnaireResponse.subject.reference)
+    Assert.assertEquals("Organization/105", questionnaireResponse.subject.reference)
   }
 
   private fun getKeycloakUserDetails(): KeycloakUserDetails {
@@ -1017,7 +1017,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.appendPractitionerInfo(patient)
 
-    Assert.assertEquals("Practitioner/123", patient.generalPractitioner[0].reference)
+    Assert.assertEquals("12345", patient.generalPractitioner[0].reference)
   }
 
   @Test
@@ -1025,19 +1025,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // For patient
     val patient = samplePatient()
     questionnaireViewModel.appendOrganizationInfo(patient)
-    Assert.assertNotNull("Organization/1111", patient.managingOrganization.reference)
+    Assert.assertNotNull("Organization/105", patient.managingOrganization.reference)
 
     // For group
     val group = Group().apply { id = "123" }
     questionnaireViewModel.appendOrganizationInfo(group)
-    Assert.assertEquals("Organization/1111", group.managingEntity.reference)
+    Assert.assertEquals("Organization/105", group.managingEntity.reference)
   }
 
   @Test
   fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
     questionnaireViewModel.appendPractitionerInfo(encounter)
-    Assert.assertEquals("Practitioner/123", encounter.participant[0].individual.reference)
+    Assert.assertEquals("12345", encounter.participant[0].individual.reference)
   }
 
   @Test
