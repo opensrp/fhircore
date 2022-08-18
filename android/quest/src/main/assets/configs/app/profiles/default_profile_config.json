@@ -1,103 +1,39 @@
 {
   "appId": "app",
   "configType": "profile",
-  "id": "householdProfile",
+  "id": "defaultProfile",
   "fhirResource": {
     "baseResource": {
-      "resource": "Group",
-      "dataQueries": [
-        {
-          "id": "householdQueryByType",
-          "filterType": "TOKEN",
-          "key": "type",
-          "valueType": "CODING",
-          "valueCoding": {
-            "system": "http://hl7.org/fhir/group-type",
-            "code": "person"
-          }
-        },
-        {
-          "id": "householdQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "https://www.snomed.org",
-            "code": "35359004"
-          }
-        }
-      ]
+      "resource": "Patient"
     },
     "relatedResources": [
       {
-        "resource": "Patient",
-        "fhirPathExpression": "Group.member.entity",
-        "relatedResources": [
-          {
-            "resource": "Condition",
-            "searchParameter": "subject"
-          },
-          {
-            "resource": "CarePlan",
-            "searchParameter": "subject"
-          },
-          {
-            "resource": "Task",
-            "searchParameter": "subject"
-          }
-        ]
+        "resource": "Condition",
+        "searchParameter": "subject"
       },
       {
         "resource": "CarePlan",
-        "searchParameter": "subject",
-        "dataQueries": [
-          {
-            "id": "filterHouseholdCarePlans",
-            "filterType": "TOKEN",
-            "key": "_tag",
-            "valueType": "CODING",
-            "valueCoding": {
-              "system": "https://www.snomed.org",
-              "code": "35359004"
-            }
-          }
-        ]
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Task",
+        "searchParameter": "subject"
       }
     ]
   },
-  "fabActions": [
-    {
-      "id": "ActionButton",
-      "visible": true,
-      "display": "{{ add.member }}",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE"
-        }
-      ],
-      "questionnaire": {
-        "id": "82952",
-        "title": "Add Family",
-        "saveButtonText": "ADD FAMILY",
-        "setPractitionerDetails": true,
-        "setOrganizationDetails": true
-      }
-    }
-  ],
   "rules": [
     {
-      "name": "familyName",
+      "name": "patientName",
       "condition": "true",
       "actions": [
-        "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
+        "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
       ]
     },
     {
-      "name": "familyId",
+      "name": "patientId",
       "condition": "true",
       "actions": [
-        "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+        "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
       ]
     }
   ],
@@ -114,12 +50,12 @@
               "children": [
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "@{familyName} Family",
+                  "primaryText": "@{patientName}",
                   "primaryTextColor": "#000000"
                 },
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "ID: @{familyId}",
+                  "primaryText": "ID: @{patientId}",
                   "primaryTextColor": "#000000"
                 },
                 {
@@ -203,127 +139,16 @@
         {
           "viewType": "SPACER",
           "height": 16
-        },
-        {
-          "viewType": "CARD",
-          "content": [
-            {
-              "viewType": "LIST",
-              "baseResource": "Patient",
-              "relatedResources": [
-                {
-                  "resourceType": "CarePlan",
-                  "fhirPathExpression": "CarePlan.subject.reference"
-                }
-              ],
-              "registerCard": {
-                "rules": [
-                  {
-                    "name": "patientName",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
-                    ]
-                  },
-                  {
-                    "name": "patientId",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
-                    ]
-                  }
-                ],
-                "views": [
-                  {
-                    "viewType": "COLUMN",
-                    "children": [
-                      {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "@{patientName}",
-                        "primaryTextColor": "#000000"
-                      },
-                      {
-                        "viewType": "COMPOUND_TEXT",
-                        "primaryText": "@{patientId}",
-                        "primaryTextColor": "#0C0C0C"
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          ]
         }
       ]
     }
   ],
   "overFlowMenuItems": [
     {
-      "title": "Family details",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "82952",
-            "title": "Add Family",
-            "type": "EDIT"
-          }
-        }
-      ]
-    },
-    {
-      "title": "Change family head",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_PROFILE"
-        }
-      ]
-    },
-    {
-      "title": "Family activity",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_PROFILE"
-        }
-      ]
-    },
-    {
-      "title": "View past encounters",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": ""
-        }
-      ]
-    },
-    {
-      "title": "Remove family",
+      "title": "View family",
       "titleColor": "#FF0000",
       "visible": "true",
-      "showSeparator": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "params": [
-            {
-              "key": "familyId",
-              "value": "@{familyId}"
-            }
-          ]
-        }
-      ]
+      "showSeparator": "true"
     }
   ]
 }

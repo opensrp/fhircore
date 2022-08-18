@@ -198,7 +198,7 @@
                   {
                     "trigger": "ON_CLICK",
                     "workflow": "LAUNCH_PROFILE",
-                    "id": "householdProfile",
+                    "id": "defaultProfile",
                     "params": [
                       {
                         "key": "familyId",

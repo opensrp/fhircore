@@ -127,17 +127,19 @@ fun ProfileScreen(
       )
     },
     floatingActionButton = {
-      val fabAction = profileUiState.profileConfiguration?.fabActions?.first()
-      ExtendedFloatingActionButton(
-        contentColor = Color.White,
-        text = { fabAction?.display?.let { Text(text = it.uppercase()) } },
-        onClick = {
-          /** TODO handle onclick action */
-        },
-        backgroundColor = MaterialTheme.colors.primary,
-        icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-        interactionSource = mutableInteractionSource
-      )
+      val fabActions = profileUiState.profileConfiguration?.fabActions
+      if (!fabActions.isNullOrEmpty()) {
+        ExtendedFloatingActionButton(
+          contentColor = Color.White,
+          text = { Text(text = fabActions.first().display.uppercase()) },
+          onClick = {
+            /** TODO handle onclick action */
+          },
+          backgroundColor = MaterialTheme.colors.primary,
+          icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
+          interactionSource = mutableInteractionSource
+        )
+      }
     }
   ) { innerPadding ->
     Box(
