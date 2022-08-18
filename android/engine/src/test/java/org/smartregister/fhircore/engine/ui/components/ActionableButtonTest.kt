@@ -27,11 +27,13 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.Patient
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class ActionableButtonTest : RobolectricTest() {
@@ -51,7 +53,8 @@ class ActionableButtonTest : RobolectricTest() {
               text = "Button Text",
               questionnaire = QuestionnaireConfig(id = "23", title = "Add Family")
             ),
-          onAction = mockListener
+          onAction = mockListener,
+          resourceData = ResourceData(Patient())
         )
       }
     }

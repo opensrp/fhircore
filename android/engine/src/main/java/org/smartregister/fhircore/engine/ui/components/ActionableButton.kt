@@ -44,7 +44,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -61,11 +63,13 @@ const val ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG = "actionableButtonOutlined
 fun ActionableButton(
   buttonProperties: ButtonProperties,
   modifier: Modifier = Modifier,
-  computedValuesMap: Map<String, Any>,
+  resourceData: ResourceData,
   onAction: () -> Unit
 ) {
+  val computedValuesMap = remember { resourceData.computedValuesMap }
+
   OutlinedButton(
-    onClick = { if (buttonProperties.questionnaire?.id != null) onAction() },
+    onClick = onAction,
     colors =
       ButtonDefaults.buttonColors(
         backgroundColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.1f),
@@ -83,7 +87,7 @@ fun ActionableButton(
       horizontalArrangement = Arrangement.Center,
       modifier = modifier.fillMaxWidth()
     ) {
-      Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
+      Spacer(modifier = modifier.weight(0.5f).fillMaxHeight())
       Icon(
         modifier = modifier.size(16.dp).testTag(ACTIONABLE_BUTTON_START_ICON_TEST_TAG),
         imageVector =
@@ -136,7 +140,7 @@ fun ActionableButtonPreview() {
     ActionableButton(
       buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
       onAction = {},
-      computedValuesMap = emptyMap()
+      resourceData = ResourceData(Patient())
     )
   }
 }

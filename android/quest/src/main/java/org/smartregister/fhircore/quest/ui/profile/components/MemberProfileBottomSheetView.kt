@@ -48,7 +48,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.ActionableButton
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -62,7 +64,7 @@ fun MemberProfileBottomSheetView(
   bottomSheetScaffoldState: BottomSheetScaffoldState,
   title: String,
   buttonProperties: List<ButtonProperties>,
-  computedValuesMap: Map<String, Any>,
+  resourceData: ResourceData,
   onButtonClick: () -> Unit,
   onViewProfile: () -> Unit
 ) {
@@ -105,7 +107,7 @@ fun MemberProfileBottomSheetView(
         ActionableButton(
           buttonProperties = it,
           onAction = onButtonClick,
-          computedValuesMap = computedValuesMap
+          resourceData = resourceData
         )
       }
       Spacer(modifier = modifier.height(8.dp))
@@ -136,7 +138,7 @@ private fun MemberProfileBottomSheetViewPreview() {
     buttonProperties = emptyList(),
     onButtonClick = { /*Do nothing*/},
     onViewProfile = { /*Do nothing*/},
-    computedValuesMap = emptyMap()
+    resourceData = ResourceData(Patient())
   )
 }
 
@@ -155,6 +157,6 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
       ),
     onButtonClick = { /*Do nothing*/},
     onViewProfile = { /*Do nothing*/},
-    computedValuesMap = emptyMap()
+    resourceData = ResourceData(Patient())
   )
 }

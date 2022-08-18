@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.logicalId
@@ -30,9 +29,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 
 @HiltViewModel
@@ -74,30 +72,18 @@ constructor(
         event.overflowMenuItemConfig?.actions?.forEach { actionConfig ->
           when (actionConfig.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
-              if (actionConfig.questionnaire == null) return@forEach
-              val actionParamList =
-                actionConfig
-                  .params
-                  .map { actionParameter ->
-                    Pair(
-                      actionParameter.key,
-                      actionParameter.value.interpolate(
-                        event.resourceData?.computedValuesMap ?: emptyMap()
-                      )
-                    )
-                  }
-                  .toTypedArray()
-
-              val intentBundle = bundleOf(*actionParamList)
-              val questionnaireType = QuestionnaireType.valueOf(actionConfig.questionnaire!!.type)
-              event.context.launchQuestionnaire<QuestionnaireActivity>(
-                questionnaireId = actionConfig.questionnaire!!.id,
-                clientIdentifier =
-                  if (questionnaireType == QuestionnaireType.DEFAULT) null
-                  else event.resourceData?.baseResource?.logicalId,
-                questionnaireType = questionnaireType,
-                intentBundle = intentBundle
-              )
+              actionConfig.questionnaire?.let { questionnaireConfig ->
+                val questionnaireType = questionnaireConfig.type
+                event.context.launchQuestionnaire<QuestionnaireActivity>(
+                  questionnaireId = questionnaireConfig.id,
+                  clientIdentifier =
+                    if (questionnaireType == QuestionnaireType.DEFAULT) null
+                    else event.resourceData?.baseResource?.logicalId,
+                  questionnaireType = questionnaireType,
+                  intentBundle =
+                    actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
+                )
+              }
             }
             else -> {}
           }

@@ -82,9 +82,9 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "82952",
-            "title": "Add Family",
-            "saveButtonText": "ADD FAMILY",
+            "id": "82953",
+            "title": "Add family member",
+            "saveButtonText": "ADD MEMBER",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true
           }

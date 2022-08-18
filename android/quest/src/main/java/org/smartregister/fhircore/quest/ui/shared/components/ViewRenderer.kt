@@ -192,8 +192,8 @@ private fun RenderChildView(
     is ButtonProperties ->
       ActionableButton(
         buttonProperties = viewProperties,
-        onAction = {},
-        computedValuesMap = resourceData.computedValuesMap
+        onAction = { /*TODO provide click action event*/},
+        resourceData = resourceData
       )
     is SpacerProperties -> SpacerView(spacerProperties = viewProperties)
     is ListProperties ->

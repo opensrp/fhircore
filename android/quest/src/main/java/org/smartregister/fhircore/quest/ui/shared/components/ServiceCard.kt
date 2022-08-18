@@ -49,15 +49,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewGroupProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
-import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
@@ -68,6 +65,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
 @Composable
@@ -90,21 +88,7 @@ fun ServiceCard(
       modifier =
         modifier
           .clickable {
-            // Ensure the service card has a click action with workflow for opening profile
-            val profileId =
-              serviceCardProperties.actions.find {
-                it.trigger == ActionTrigger.ON_CLICK &&
-                  it.workflow == ApplicationWorkflow.LAUNCH_PROFILE
-                !it.id.isNullOrEmpty()
-              }
-            profileId?.let {
-              onViewComponentClick(
-                ViewComponentEvent.OpenProfile(
-                  profileId = it.id!!,
-                  resourceId = resourceData.baseResource.logicalId
-                )
-              )
-            }
+            serviceCardProperties.actions.handleClickEvent(onViewComponentClick, resourceData)
           }
           .padding(top = 24.dp, bottom = 24.dp)
           .weight(0.75f)
@@ -148,32 +132,9 @@ fun ServiceCard(
               modifier = modifier,
               buttonProperties = serviceCardProperties.serviceButton!!,
               onAction = {
-                val onClickAction =
-                  serviceCardProperties.serviceButton!!.actions.find {
-                    it.trigger == ActionTrigger.ON_CLICK
-                  }
-                onClickAction?.let {
-                  when (onClickAction.workflow) {
-                    ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
-                      onViewComponentClick(
-                        ViewComponentEvent.LaunchQuestionnaire(
-                          onClickAction.questionnaire?.id.toString()
-                        )
-                      )
-                    }
-                    ApplicationWorkflow.LAUNCH_PROFILE -> {
-                      ViewComponentEvent.OpenProfile(
-                        profileId = it.id!!,
-                        resourceId = resourceData.baseResource.logicalId
-                      )
-                    }
-                    else -> {
-                      // Todo Handle other workflows on demand
-                    }
-                  }
-                }
+                serviceCardProperties.actions.handleClickEvent(onViewComponentClick, resourceData)
               },
-              computedValuesMap = resourceData.computedValuesMap
+              resourceData = resourceData
             )
           } else {
             BigServiceButton(
@@ -187,8 +148,8 @@ fun ServiceCard(
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
-                onAction = {},
-                computedValuesMap = resourceData.computedValuesMap
+                onAction = { /*TODO provide click action event*/},
+                resourceData = resourceData
               )
               Spacer(modifier = modifier.height(8.dp))
             }

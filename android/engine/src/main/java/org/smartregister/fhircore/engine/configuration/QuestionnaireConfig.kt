@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 
 @Serializable
 data class QuestionnaireConfig(
@@ -26,5 +27,5 @@ data class QuestionnaireConfig(
   val setPractitionerDetails: Boolean = false,
   val setOrganizationDetails: Boolean = false,
   val planDefinitions: List<String>? = null,
-  val type: String = "DEFAULT"
+  val type: QuestionnaireType = QuestionnaireType.DEFAULT
 )
