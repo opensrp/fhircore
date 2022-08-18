@@ -25,6 +25,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.BindValue
@@ -44,8 +45,10 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
@@ -85,8 +88,10 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
 
@@ -354,6 +359,36 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("patient-registration", result.form)
     Assert.assertEquals("Add Patient", result.title)
     Assert.assertEquals("207", result.identifier)
+  }
+
+  @Test(expected = QuestionnaireNotFoundException::class)
+  fun `getQuestionnaireConfigPair throws 'QuestionnaireNotFoundException' when questionnaire not found`() =
+      runTest {
+    val formName = "missing_form"
+    coEvery { fhirEngine.get<Questionnaire>(formName) } throws
+      ResourceNotFoundException(ResourceType.Questionnaire.name, formName)
+    questionnaireViewModel.getQuestionnaireConfigPair(
+      context,
+      formName,
+      type = QuestionnaireType.DEFAULT
+    )
+  }
+
+  @Test
+  fun `getQuestionnaireConfigPair returns correct config and questionnaire`() = runTest {
+    val formName = "patient-registration"
+    val config = questionnaireViewModel.getQuestionnaireConfig(formName, context)
+    coEvery { fhirEngine.loadResource<Questionnaire>(eq(config.identifier)) } returns
+      samplePatientRegisterQuestionnaire
+
+    val result =
+      questionnaireViewModel.getQuestionnaireConfigPair(
+        context,
+        formName,
+        type = QuestionnaireType.DEFAULT
+      )
+    Assert.assertEquals(config, result.first)
+    Assert.assertEquals(samplePatientRegisterQuestionnaire, result.second)
   }
 
   @Test
