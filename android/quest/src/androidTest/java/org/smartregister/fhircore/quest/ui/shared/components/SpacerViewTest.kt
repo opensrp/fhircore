@@ -27,14 +27,14 @@ class SpacerViewTest {
 
   @Test
   fun testSpacerVerticalSpacerIsRendered() {
-    val spacerProperties = SpacerProperties(height = 16F, width = null, backgroundColor = "#EE4B2B")
+    val spacerProperties = SpacerProperties(height = 16F, width = null)
     composeTestRule.setContent { SpacerView(spacerProperties = spacerProperties) }
     composeTestRule.onNodeWithTag(VERTICAL_SPACER_TEST_TAG).assertExists()
   }
 
   @Test
   fun testHorizontalSpacerIsRendered() {
-    val spacerProperties = SpacerProperties(height = null, width = 16F, backgroundColor = "#EE4B2B")
+    val spacerProperties = SpacerProperties(height = null, width = 16F)
     composeTestRule.setContent { SpacerView(spacerProperties = spacerProperties) }
     composeTestRule.onNodeWithTag(HORIZONTAL_SPACER_TEST_TAG, useUnmergedTree = true).assertExists()
   }
