@@ -33,7 +33,7 @@ sealed class ViewComponentEvent {
    */
   data class OpenProfile(val profileId: String, val resourceId: String) : ViewComponentEvent()
 
-  data class OpenTask(val questionnaireId: String) : ViewComponentEvent()
+  data class LaunchQuestionnaire(val questionnaireId: String) : ViewComponentEvent()
 
   fun handleEvent(navController: NavController) {
     when (this) {
@@ -45,7 +45,7 @@ sealed class ViewComponentEvent {
           )
         navController.navigate(MainNavigationScreen.Profile.route + urlParams)
       }
-      is OpenTask -> {
+      is LaunchQuestionnaire -> {
         navController.context.launchQuestionnaire<QuestionnaireActivity>(this.questionnaireId)
       }
     }

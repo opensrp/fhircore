@@ -156,8 +156,19 @@ fun ServiceCard(
                   when (onClickAction.workflow) {
                     ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
                       onViewComponentClick(
-                        ViewComponentEvent.OpenTask(onClickAction.questionnaire?.id.toString())
+                        ViewComponentEvent.LaunchQuestionnaire(
+                          onClickAction.questionnaire?.id.toString()
+                        )
                       )
+                    }
+                    ApplicationWorkflow.LAUNCH_PROFILE -> {
+                      ViewComponentEvent.OpenProfile(
+                        profileId = it.id!!,
+                        resourceId = resourceData.baseResource.logicalId
+                      )
+                    }
+                    else -> {
+                      // Todo Handle other workflows on demand
                     }
                   }
                 }
