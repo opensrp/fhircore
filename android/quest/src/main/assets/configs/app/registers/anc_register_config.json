@@ -91,7 +91,20 @@
               "text": "{{ anc.visit }}",
               "status": "DUE",
               "smallSized": true
-            }
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "defaultProfile",
+                "params": [
+                  {
+                    "key": "patientId",
+                    "value": "@{patientId}"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
