@@ -88,12 +88,8 @@
     <string name="visit_due_today">%1$s due today</string>
     <string name="visit_overdue">%1$s overdue %2$s ago</string>
     <string name="record_as_anc">Record as ANC</string>
-<<<<<<< HEAD
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
     <string name="family_planning">Add to Family Planning</string>
     <string name="questionnaire_response_name">%1$s (%2$s)</string>
-=======
-
->>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
 
 </resources>
