@@ -72,7 +72,7 @@ constructor(
     return profileConfiguration
   }
 
-  fun onEvent(event: ProfileEvent): Any? =
+  fun onEvent(event: ProfileEvent) {
     when (event) {
       is ProfileEvent.OverflowMenuClick -> {
         event.overflowMenuItemConfig?.actions?.forEach { actionConfig ->
@@ -143,4 +143,5 @@ constructor(
         }
       }
     }
+  }
 }

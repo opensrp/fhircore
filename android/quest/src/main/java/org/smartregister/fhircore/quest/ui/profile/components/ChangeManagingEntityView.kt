@@ -193,7 +193,10 @@ fun BottomListItem(
   managingEntity: EligibleManagingEntity,
   onClick: (EligibleManagingEntity) -> Unit
 ) {
-  Row(modifier = modifier.fillMaxWidth().clickable { onClick(managingEntity) }) {
+  Row(
+    modifier = modifier.fillMaxWidth().clickable { onClick(managingEntity) },
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
     RadioButton(selected = managingEntity.selected, onClick = { onClick(managingEntity) })
     Text(text = managingEntity.memberInfo)
   }
