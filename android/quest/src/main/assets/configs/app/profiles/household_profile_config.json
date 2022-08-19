@@ -254,18 +254,6 @@
       ]
     },
     {
-      "title": "View past encounters",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": ""
-        }
-      ]
-    },
-    {
       "title": "Remove family",
       "titleColor": "#FF0000",
       "visible": "true",

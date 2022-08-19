@@ -108,7 +108,14 @@
               "text": "@{taskStatus}",
               "status": "@{taskStatusColorCode}",
               "smallSized": false
-            }
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "taskProfile"
+              }
+            ]
           }
         ]
       }

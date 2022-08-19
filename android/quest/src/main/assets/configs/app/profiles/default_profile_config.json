@@ -146,6 +146,40 @@
   "overFlowMenuItems": [
     {
       "title": "View family",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "defaultProfile",
+          "params": [
+            {
+              "key": "familyId",
+              "value": "@{familyId}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Register Pregnancy",
+      "titleColor": "#000000",
+      "visible": "true",
+      "showSeparator": "true"
+    },
+    {
+      "title": "Pregnancy Outcome",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "Enrol to FP",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "Remove Patient",
       "titleColor": "#FF0000",
       "visible": "true",
       "showSeparator": "true"
