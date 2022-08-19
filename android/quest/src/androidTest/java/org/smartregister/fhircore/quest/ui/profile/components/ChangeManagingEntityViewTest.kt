@@ -23,6 +23,8 @@ import androidx.compose.ui.test.onNodeWithText
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 
 class ChangeManagingEntityViewTest {
@@ -43,7 +45,16 @@ class ChangeManagingEntityViewTest {
       ChangeManagingEntityView(
         onSaveClick = {},
         eligibleManagingEntities = eligibleManagingEntities,
-        onDismiss = {}
+        onDismiss = {},
+        managingEntity =
+          ManagingEntityConfig(
+            infoFhirPathExpression = "Patient.name",
+            fhirPathResource =
+              ExtractedResource(resourceType = "Patient", fhirPathExpression = "Patient.active"),
+            dialogTitle = "Assign new family head",
+            dialogWarningMessage = "Are you sure you want to abort this operation?",
+            dialogContentMessage = "Select a new family head"
+          )
       )
     }
   }
