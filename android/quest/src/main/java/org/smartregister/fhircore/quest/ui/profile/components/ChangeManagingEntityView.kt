@@ -56,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.R
@@ -220,6 +221,15 @@ fun ChangeManagingEntityViewPreview() {
           memberInfo = "James Doe"
         )
       ),
-    onDismiss = {}
+    onDismiss = {},
+    managingEntity =
+      ManagingEntityConfig(
+        infoFhirPathExpression = "Patient.name",
+        fhirPathResource =
+          ExtractedResource(resourceType = "Patient", fhirPathExpression = "Patient.active"),
+        dialogTitle = "Assign new family head",
+        dialogWarningMessage = "Are you sure you want to abort this operation?",
+        dialogContentMessage = "Select a new family head"
+      )
   )
 }
