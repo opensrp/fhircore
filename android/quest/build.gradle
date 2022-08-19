@@ -164,6 +164,13 @@ android {
             versionCode 1
             versionName "0.0.1"
         }
+        ecbisSc {
+            dimension "apps"
+            applicationIdSuffix ".ecbis-sc"
+            versionNameSuffix "-ecbis-sc"
+            versionCode 1
+            versionName "0.0.1"
+        }
     }
 }
 
