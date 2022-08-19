@@ -19,14 +19,17 @@ package org.smartregister.fhircore.engine.util
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 internal class SharedPreferencesHelperTest : RobolectricTest() {
@@ -39,9 +42,12 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
+  @Inject lateinit var gson: Gson
+
   @Before
   fun setUp() {
-    sharedPreferencesHelper = SharedPreferencesHelper(context = application, gson = mockk())
+    hiltRule.inject()
+    sharedPreferencesHelper = SharedPreferencesHelper(context = application, gson = gson)
   }
 
   @Test
@@ -75,5 +81,25 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
   fun testWriteLong() {
     sharedPreferencesHelper.write("anyLongKey", 123456789)
     Assert.assertEquals(123456789, sharedPreferencesHelper.read("anyLongKey", 0))
+  }
+
+  @Test
+  fun writeObjectUsingSerialized() {
+    val questionnaireConfig = QuestionnaireConfig(id = "123", title = "my-questionnaire")
+    sharedPreferencesHelper.write("object", questionnaireConfig)
+    Assert.assertEquals(
+      questionnaireConfig.id,
+      sharedPreferencesHelper.read<QuestionnaireConfig>("object", isSerialized = true)?.id
+    )
+  }
+
+  @Test
+  fun writeObjectUsingGson() {
+    val keycloakUserDetails = KeycloakUserDetails().apply { id = "12345" }
+    sharedPreferencesHelper.write("object", keycloakUserDetails)
+    Assert.assertEquals(
+      keycloakUserDetails.id,
+      sharedPreferencesHelper.read<KeycloakUserDetails>("object")?.id
+    )
   }
 }
