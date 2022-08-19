@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("UNUSED", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package org.smartregister.fhircore.quest
 
 import androidx.test.core.app.ApplicationProvider
@@ -23,6 +21,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before

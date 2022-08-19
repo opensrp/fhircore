@@ -75,9 +75,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   override fun populateInitialValues(questionnaire: Questionnaire) {
-    if (questionnaireViewModel.questionnaireConfig.form ==
-        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
-    ) {
+    if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
       questionnaire.find(HEAD_RECORD_ID_KEY)!!.initialFirstRep.value =
         StringType(intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!)
     }
@@ -87,8 +85,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     lifecycleScope.launch {
       val patientId = questionnaireResponse.subject.extractId()
 
-      if (questionnaireViewModel.questionnaireConfig.form == FamilyFormConstants.ANC_ENROLLMENT_FORM
-      ) {
+      if (questionnaireConfig.form == FamilyFormConstants.ANC_ENROLLMENT_FORM) {
         finish()
       } else {
         handlePregnancy(patientId, questionnaireResponse)

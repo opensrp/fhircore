@@ -61,7 +61,10 @@ import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
+<<<<<<< HEAD
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
+=======
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
@@ -254,7 +257,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Passing local failing CI")
+  @Ignore("Passing on local failing CI")
   fun testGenerateCarePlanForSickChildOver2m() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
@@ -279,7 +282,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .also { println(it.encodeResourceToString()) }
 
     val structureMapReferral =
-      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+      structureMapUtilities.parse(
+          "plans/sick-child-visit/structure-map-referral.txt".readFile(),
+          "ReferralTask"
+        )
         .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
@@ -304,10 +310,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.description
         )
         Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
-        Assert.assertEquals(
-          DateTimeType.now().value.makeItReadable(),
-          carePlan.created.makeItReadable()
-        )
+        Assert.assertEquals(Date().makeItReadable(), carePlan.created.makeItReadable())
         Assert.assertEquals(
           patient.generalPractitionerFirstRep.extractId(),
           carePlan.author.extractId()
@@ -396,7 +399,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapReferral =
-      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+      structureMapUtilities.parse(
+          "plans/sick-child-visit/structure-map-referral.txt".readFile(),
+          "ReferralTask"
+        )
         .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
@@ -441,7 +447,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapReferral =
-      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+      structureMapUtilities.parse(
+          "plans/sick-child-visit/structure-map-referral.txt".readFile(),
+          "ReferralTask"
+        )
         .also { println(it.encodeResourceToString()) }
 
     coEvery { fhirEngine.create(any()) } returns emptyList()
@@ -510,14 +519,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "plans/sick-child-visit/sample/patient.json"
         .readFile()
         .decodeResourceFromString<Patient>()
-        .apply { this.birthDate = Date().plusMonths(-1).plusDays(-15) }
-
+        .apply { this.birthDate = Date() }
     val questionnaireResponse =
       "plans/sick-child-visit/sample/questionnaire-response-register-under2m.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
 
-    val structureMapScript = "plans/structure-map-referral.txt".readFile()
+    val structureMapScript = "plans/sick-child-visit/structure-map-referral.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "ReferralTask").also {
         println(it.encodeResourceToString())
@@ -555,6 +563,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           }
       }
   }
+<<<<<<< HEAD
 
   @Test
   fun testGenerateCarePlanForANCVisit() = runTest {
@@ -651,4 +660,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           }
       }
   }
+=======
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
 }

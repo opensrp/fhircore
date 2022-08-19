@@ -25,7 +25,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
@@ -88,6 +87,7 @@ constructor(
       overflowMenuFactory.retrieveOverflowMenuItems(
         OverflowMenuHost.PATIENT_PROFILE,
         listOfNotNull(
+<<<<<<< HEAD
           Pair(R.id.record_sick_child, profileData?.dob?.let { it.yearsPassed() >= 5 } ?: false),
           Pair(
             R.id.record_as_anc,
@@ -112,6 +112,9 @@ constructor(
             }
               ?: false
           )
+=======
+          Pair(R.id.record_sick_child, profileData?.dob?.let { it.yearsPassed() >= 5 } ?: false)
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
         )
       )
     )
@@ -158,6 +161,7 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
+<<<<<<< HEAD
           R.id.pregnancy_outcome ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = PREGNANCY_OUTCOME_FORM,
@@ -173,6 +177,9 @@ constructor(
               questionnaireType = QuestionnaireType.DEFAULT
             )
           R.id.add_to_family_planning ->
+=======
+          R.id.record_sick_child ->
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = FAMILY_PLANNING,
               clientIdentifier = event.patientId,
@@ -193,7 +200,6 @@ constructor(
     const val REMOVE_FAMILY_FORM = "remove-family"
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
     const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
-    const val PREGNANCY_OUTCOME_FORM = "pregnancy-outcome"
     const val SICK_CHILD_UNDER_2M_FORM = "sick-child-under-2m"
     const val SICK_CHILD_ABOVE_2M_FORM = "sick-child-above-2m"
     const val FAMILY_PLANNING = "family-planning"

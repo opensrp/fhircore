@@ -122,6 +122,7 @@ dependencies {
     implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
     implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
     implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
+<<<<<<< HEAD
 
     def cqlEngineVersion = '1.5.4'
     implementation "org.opencds.cqf.cql:engine:$cqlEngineVersion"
@@ -136,6 +137,16 @@ dependencies {
 
 
     api('org.smartregister:workflow:0.1.0-alpha01-preview6-SNAPSHOT') {
+=======
+    implementation 'org.opencds.cqf.cql:engine:1.5.4-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.builder:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.activitydefinition:1.4.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.plandefinition:1.4.2-SNAPSHOT'
+    implementation ('org.opencds.cqf.cql:evaluator.dagger:1.4.2-SNAPSHOT'){}
+    api('org.smartregister:workflow:0.1.0-alpha01-preview5-SNAPSHOT') {
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
         transitive = true
         exclude group: 'xerces'
         exclude group: 'com.github.java-json-tools'
@@ -179,9 +190,13 @@ dependencies {
     def coroutineVersion = '1.6.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
+<<<<<<< HEAD
     api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
 
     api('org.smartregister:data-capture:0.1.0-beta03-preview6-SNAPSHOT') {
+=======
+    api('org.smartregister:data-capture:0.1.0-beta03-preview4-SNAPSHOT') {
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -190,16 +205,20 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api('org.smartregister:common:0.1.0-alpha03-preview2-SNAPSHOT') {
+    api('org.smartregister:common:0.1.0-alpha03-preview-SNAPSHOT') {
         transitive = true
     }
 
+<<<<<<< HEAD
     api('org.smartregister:contrib-barcode:0.1.0-beta3-preview-SNAPSHOT') {
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
     api('org.smartregister:engine:0.1.0-beta01-preview10.4-SNAPSHOT') {
+=======
+    api('org.smartregister:engine:0.1.0-beta01-preview9-SNAPSHOT') {
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -250,8 +269,12 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+<<<<<<< HEAD
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 
     androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
 }
+=======
+}
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))

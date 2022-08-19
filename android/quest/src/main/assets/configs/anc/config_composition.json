@@ -1,0 +1,252 @@
+{
+  "resourceType": "Composition",
+  "id": "105305",
+  "meta": {
+    "versionId": "35",
+    "lastUpdated": "2022-06-09T10:15:39.127+00:00",
+    "source": "#50da05d62fb8a208"
+  },
+  "identifier": {
+    "use": "official",
+    "value": "ecbis-saa"
+  },
+  "status": "final",
+  "type": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "1156600005",
+        "display": "Device setting parameter"
+      }
+    ]
+  },
+  "date": "2022-06-09",
+  "title": "Device configurations",
+  "confidentiality": "L",
+  "section": [
+    {
+      "title": "App configuration",
+      "focus": {
+        "reference": "Binary/105300",
+        "identifier": {
+          "value": "application"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "App Feature configuration",
+      "focus": {
+        "reference": "Binary/105306",
+        "identifier": {
+          "value": "app_feature"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Login configuration",
+      "focus": {
+        "reference": "Binary/105301",
+        "identifier": {
+          "value": "login"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Pin View configuration",
+      "focus": {
+        "reference": "Binary/105302",
+        "identifier": {
+          "value": "pin"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Patient Register configuration",
+      "focus": {
+        "reference": "Binary/105303",
+        "identifier": {
+          "value": "patient_register"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Patient Register configuration",
+      "focus": {
+        "reference": "Binary/108218",
+        "identifier": {
+          "value": "data_filters"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Forms configuration",
+      "focus": {
+        "reference": "Binary/105307",
+        "identifier": {
+          "value": "forms"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Sync configuration",
+      "focus": {
+        "reference": "Binary/105304",
+        "identifier": {
+          "value": "sync"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Add Family Member",
+      "focus": {
+        "reference": "Questionnaire/82953",
+        "identifier": {
+          "value": "family-member-registration"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Add Family",
+      "focus": {
+        "reference": "Questionnaire/82952",
+        "identifier": {
+          "value": "family-registration"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Remove Family",
+      "focus": {
+        "reference": "Questionnaire/101644",
+        "identifier": {
+          "value": "remove-family"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Enroll as ANC Patient",
+      "focus": {
+        "reference": "Questionnaire/1924",
+        "identifier": {
+          "value": "anc-patient-registration"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Add Vital Signs - Metric",
+      "focus": {
+        "reference": "Questionnaire/1921",
+        "identifier": {
+          "value": "non-anc-patient-vital-signs_metric"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Add Vital Signs - Standard",
+      "focus": {
+        "reference": "Questionnaire/2007",
+        "identifier": {
+          "value": "non-anc-patient-vital-signs_standard"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Compute BMI",
+      "focus": {
+        "reference": "Questionnaire/1999",
+        "identifier": {
+          "value": "family-patient_bmi_compute"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Sick child under 2 months",
+      "focus": {
+        "reference": "Questionnaire/131880",
+        "identifier": {
+          "value": "sick-child-under-2m"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Sick child above 2 months",
+      "focus": {
+        "reference": "Questionnaire/131879",
+        "identifier": {
+          "value": "sick-child-above-2m"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "eCBIS Sick Child Follow Up",
+      "focus": {
+        "reference": "Questionnaire/131898",
+        "identifier": {
+          "value": "sick-child-followup"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "eCBIS Sick Child Follow Up",
+      "focus": {
+        "reference": "StructureMap/131900"
+      },
+      "mode": "working"
+    },
+    {
+      "title": "eCBIS Sick Child Referral",
+      "focus": {
+        "reference": "Questionnaire/132049",
+        "identifier": {
+          "value": "sick-child-referral"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "eCBIS Sick Child Referral",
+      "focus": {
+        "reference": "StructureMap/132067"
+      },
+      "mode": "working"
+    },
+    {
+      "title": "eCBIS Add Family Member Registration",
+      "focus": {
+        "reference": "StructureMap/103346",
+        "identifier": {
+          "value": "eCBISAddFamilyMemberRegistration"
+        }
+      },
+      "mode": "working"
+    },
+    {
+      "title": "Child Monthly Routine Visit",
+      "focus": {
+        "reference": "StructureMap/131373",
+        "identifier": {
+          "value": "ChildRoutineCarePlan"
+        }
+      },
+      "mode": "working"
+    }
+  ]
+}

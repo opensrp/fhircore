@@ -13,6 +13,9 @@
     <item name="view_family" type="id"/>
     <item name="record_sick_child" type="id"/>
     <item name="record_as_anc" type="id" />
+<<<<<<< HEAD
     <item name="pregnancy_outcome" type="id" />
     <item name="add_to_family_planning" type="id"/>
+=======
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
 </resources>

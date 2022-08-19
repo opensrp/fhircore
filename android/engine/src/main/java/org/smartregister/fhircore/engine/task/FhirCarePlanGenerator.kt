@@ -122,14 +122,6 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
                 this.resource = definition
               }
             )
-
-            // TODO find some other way (activity definition based) to pass additional data
-            addParameter(
-              Parameters.ParametersParameterComponent().apply {
-                this.name = PlanDefinition.SP_DEPENDS_ON
-                this.resource = data
-              }
-            )
           }
 
         if (action.hasTransform()) {

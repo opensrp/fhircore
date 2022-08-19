@@ -36,8 +36,12 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.engine.util.extension.extractId
+<<<<<<< HEAD
 import org.smartregister.fhircore.engine.util.extension.hasStarted
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
+=======
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberTask
@@ -84,6 +88,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           dob = inputModel.birthdate,
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
+<<<<<<< HEAD
               ActionableButtonData(
                 action =
                   when (it.status) {
@@ -107,6 +112,11 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                       )
                   },
                 questionnaireId =
+=======
+              PatientProfileRowItem(
+                id = it.logicalId,
+                actionFormId =
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
                   if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
                     it.reasonReference.extractId()
                   else null,
@@ -115,11 +125,19 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 iconStart =
                   if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
                   else Icons.Filled.Add,
+<<<<<<< HEAD
                 iconColor =
                   it.status.retrieveColorCode(
                     hasStarted = it.hasStarted(),
                     changeCompleteStatusColor = true
                   ),
+=======
+                actionIconColor =
+                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
+                  else it.status.retrieveColorCode(),
+                actionButtonColor = it.status.retrieveColorCode(),
+                actionButtonText = it.description,
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
               )
             }
         )
@@ -147,12 +165,9 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                         taskId = it.logicalId,
                         task = it.description,
                         taskStatus = it.status,
-                        colorCode = it.status.retrieveColorCode(it.hasStarted()),
+                        colorCode = it.status.retrieveColorCode(),
                         taskFormId =
-                          if (it.status == Task.TaskStatus.READY &&
-                              it.hasStarted() &&
-                              it.hasReasonReference()
-                          )
+                          if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
                             it.reasonReference.extractId()
                           else null
                       )
@@ -163,13 +178,17 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
     }
   }
 
+<<<<<<< HEAD
   private fun Task.TaskStatus.retrieveColorCode(
     hasStarted: Boolean,
     changeCompleteStatusColor: Boolean = false
   ): Color =
+=======
+  private fun Task.TaskStatus.retrieveColorCode(): Color =
+>>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
     when (this) {
-      Task.TaskStatus.READY -> if (hasStarted) InfoColor else DefaultColor
-      Task.TaskStatus.CANCELLED -> DefaultColor
+      Task.TaskStatus.READY -> InfoColor
+      Task.TaskStatus.CANCELLED -> OverdueColor
       Task.TaskStatus.FAILED -> OverdueColor
       Task.TaskStatus.COMPLETED -> if (changeCompleteStatusColor) SuccessColor else DefaultColor
       else -> DefaultColor
