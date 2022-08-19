@@ -143,7 +143,8 @@ constructor(
               newManagingEntityId = it.logicalId,
               groupId = it.groupId
             )
-          }
+          },
+          managingEntity = event.managingEntity
         )
         .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
     }

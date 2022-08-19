@@ -70,7 +70,10 @@
     "fhirPathResource": {
       "resourceType": "Patient",
       "fhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')"
-    }
+    },
+    "dialogTitle": "{{ assign.new.family.head }}",
+    "dialogWarningMessage": "{{ abort.operation.question }}",
+    "dialogContentMessage": "{{ select.new.family.head }}"
   },
   "fabActions": [
     {

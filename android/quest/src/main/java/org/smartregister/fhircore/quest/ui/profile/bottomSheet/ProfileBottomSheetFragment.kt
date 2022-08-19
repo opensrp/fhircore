@@ -22,6 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.profile.components.ChangeManagingEntityView
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
@@ -29,7 +30,8 @@ import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 class ProfileBottomSheetFragment
 constructor(
   val eligibleManagingEntities: List<EligibleManagingEntity> = emptyList(),
-  val onSaveClick: (EligibleManagingEntity) -> Unit
+  val onSaveClick: (EligibleManagingEntity) -> Unit,
+  val managingEntity: ManagingEntityConfig? = null,
 ) : BottomSheetDialogFragment() {
 
   override fun onCreateView(
@@ -43,7 +45,8 @@ constructor(
           ChangeManagingEntityView(
             onSaveClick = onSaveClick,
             eligibleManagingEntities = eligibleManagingEntities,
-            onDismiss = { dismiss() }
+            onDismiss = { dismiss() },
+            managingEntity = managingEntity
           )
         }
       }
