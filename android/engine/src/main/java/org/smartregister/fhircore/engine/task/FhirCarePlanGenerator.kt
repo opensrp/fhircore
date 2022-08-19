@@ -55,7 +55,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
   }
   val fhirPathEngine = FHIRPathEngine(transformSupportServices.simpleWorkerContext)
-  
+
   suspend fun generateOrUpdateCarePlan(
     planDefinitionId: String,
     subject: Resource,
@@ -63,7 +63,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
   ): CarePlan? {
     return generateOrUpdateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
   }
-  
+
   suspend fun generateOrUpdateCarePlan(
     planDefinition: PlanDefinition,
     subject: Resource,
@@ -81,23 +81,23 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
           this.description = planDefinition.description
           this.instantiatesCanonical = listOf(CanonicalType(planDefinition.asReference().reference))
         }
-    
+
     var careplanModified = false
-    
+
     planDefinition.action.forEach { action ->
       val input = Bundle().apply { entry.addAll(data?.entry ?: listOf()) }
-      
+
       if (action.condition.all {
           if (it.kind != PlanDefinition.ActionConditionKind.APPLICABILITY)
             throw UnsupportedOperationException(
               "PlanDefinition.action.kind=${it.kind} not supported"
             )
-          
+
           if (it.expression.language != Expression.ExpressionLanguage.TEXT_FHIRPATH.toCode())
             throw UnsupportedOperationException(
               "PlanDefinition.expression.language=${it.expression.language} not supported"
             )
-          
+
           fhirPathEngine.evaluateToBoolean(input, null, subject, it.expression.expression)
         }
       ) {
@@ -105,8 +105,8 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
           planDefinition.contained.first {
             it.id.substringBefore("/_history") == action.definitionCanonicalType.value
           } as
-                  ActivityDefinition
-        
+            ActivityDefinition
+
         val source =
           Parameters().apply {
             addParameter(
@@ -115,14 +115,14 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
                 this.resource = subject
               }
             )
-            
+
             addParameter(
               Parameters.ParametersParameterComponent().apply {
                 this.name = PlanDefinition.SP_DEFINITION
                 this.resource = definition
               }
             )
-            
+
             // TODO find some other way (activity definition based) to pass additional data
             addParameter(
               Parameters.ParametersParameterComponent().apply {
@@ -131,7 +131,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
               }
             )
           }
-        
+
         if (action.hasTransform()) {
           val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
           structureMapUtilities.transform(
@@ -141,7 +141,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
             output
           )
         }
-        
+
         if (definition.hasDynamicValue()) {
           definition.dynamicValue.forEach { dynamicValue ->
             if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN)
@@ -159,24 +159,24 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
         careplanModified = true
       }
     }
-    
+
     if (careplanModified) saveCarePlan(output)
-    
+
     return if (output.hasActivity()) output else null
   }
-  
+
   suspend fun saveCarePlan(output: CarePlan) {
     output.also { Timber.d(it.encodeResourceToString()) }.also { careplan ->
       // save embedded resources inside as independent entries, clear embedded and save careplan
       val dependents = careplan.contained.map { it.copy() }
-      
+
       careplan.contained.clear()
-      
+
       // save careplan only if it has activity, otherwise just save contained/dependent resources
       if (output.hasActivity()) fhirEngine.create(careplan)
-      
+
       dependents.forEach { fhirEngine.create(it) }
-      
+
       if (careplan.status == CarePlan.CarePlanStatus.COMPLETED)
         careplan
           .activity
@@ -195,7 +195,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
           }
     }
   }
-  
+
   suspend fun completeTask(id: String) {
     fhirEngine.run {
       create(
@@ -206,7 +206,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
       )
     }
   }
-  
+
   suspend fun cancelTask(id: String, reason: String) {
     fhirEngine.run {
       create(
@@ -218,7 +218,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
       )
     }
   }
-  
+
   suspend fun getTask(id: String) =
     kotlin.runCatching { fhirEngine.get<Task>(id) }.getOrNull() ?: fhirEngine.get<Task>("#$id")
 }

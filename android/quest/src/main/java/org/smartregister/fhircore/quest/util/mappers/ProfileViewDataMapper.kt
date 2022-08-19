@@ -46,7 +46,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<ProfileData, ProfileViewData> {
-  
+
   override fun transformInputToOutputModel(inputModel: ProfileData): ProfileViewData {
     return when (inputModel) {
       is ProfileData.AncProfileData ->
@@ -83,45 +83,45 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           sex = inputModel.gender.translateGender(context),
           dob = inputModel.birthdate,
           tasks =
-          inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
-            ActionableButtonData(
-              action =
-              when (it.status) {
-                Task.TaskStatus.CANCELLED, Task.TaskStatus.FAILED ->
-                  context.getString(
-                    R.string.visit_overdue,
-                    it.description.capitalizeFirstLetter(),
-                    it.executionPeriod.start.prettifyDate()
-                  )
-                Task.TaskStatus.READY ->
-                  context.getString(
-                    R.string.visit_due_today,
-                    it.description.capitalizeFirstLetter()
-                  )
-                Task.TaskStatus.COMPLETED -> it.description.capitalizeFirstLetter()
-                else ->
-                  context.getString(
-                    R.string.visit_due_on,
-                    it.description.capitalizeFirstLetter(),
-                    it.executionPeriod.start.prettifyDate()
-                  )
-              },
-              questionnaireId =
-              if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                it.reasonReference.extractId()
-              else null,
-              backReference = it.logicalId.asReference(ResourceType.Task),
-              contentColor = it.status.retrieveColorCode(it.hasStarted()),
-              iconStart =
-              if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-              else Icons.Filled.Add,
-              iconColor =
-              it.status.retrieveColorCode(
-                hasStarted = it.hasStarted(),
-                changeCompleteStatusColor = true
-              ),
-            )
-          }
+            inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
+              ActionableButtonData(
+                action =
+                  when (it.status) {
+                    Task.TaskStatus.CANCELLED, Task.TaskStatus.FAILED ->
+                      context.getString(
+                        R.string.visit_overdue,
+                        it.description.capitalizeFirstLetter(),
+                        it.executionPeriod.start.prettifyDate()
+                      )
+                    Task.TaskStatus.READY ->
+                      context.getString(
+                        R.string.visit_due_today,
+                        it.description.capitalizeFirstLetter()
+                      )
+                    Task.TaskStatus.COMPLETED -> it.description.capitalizeFirstLetter()
+                    else ->
+                      context.getString(
+                        R.string.visit_due_on,
+                        it.description.capitalizeFirstLetter(),
+                        it.executionPeriod.start.prettifyDate()
+                      )
+                  },
+                questionnaireId =
+                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                    it.reasonReference.extractId()
+                  else null,
+                backReference = it.logicalId.asReference(ResourceType.Task),
+                contentColor = it.status.retrieveColorCode(it.hasStarted()),
+                iconStart =
+                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+                  else Icons.Filled.Add,
+                iconColor =
+                  it.status.retrieveColorCode(
+                    hasStarted = it.hasStarted(),
+                    changeCompleteStatusColor = true
+                  ),
+              )
+            }
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(
@@ -130,39 +130,39 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           address = inputModel.address,
           age = inputModel.age,
           familyMemberViewStates =
-          inputModel.members.map { memberProfileData ->
-            FamilyMemberViewState(
-              patientId = memberProfileData.id,
-              birthDate = memberProfileData.birthdate,
-              age = memberProfileData.age,
-              gender = memberProfileData.gender.translateGender(context),
-              name = memberProfileData.name,
-              memberTasks =
-              memberProfileData
-                .tasks
-                .filter { it.status == Task.TaskStatus.READY }
-                .take(DEFAULT_TASKS_COUNT)
-                .map {
-                  FamilyMemberTask(
-                    taskId = it.logicalId,
-                    task = it.description,
-                    taskStatus = it.status,
-                    colorCode = it.status.retrieveColorCode(it.hasStarted()),
-                    taskFormId =
-                    if (it.status == Task.TaskStatus.READY &&
-                      it.hasStarted() &&
-                      it.hasReasonReference()
-                    )
-                      it.reasonReference.extractId()
-                    else null
-                  )
-                }
-            )
-          }
+            inputModel.members.map { memberProfileData ->
+              FamilyMemberViewState(
+                patientId = memberProfileData.id,
+                birthDate = memberProfileData.birthdate,
+                age = memberProfileData.age,
+                gender = memberProfileData.gender.translateGender(context),
+                name = memberProfileData.name,
+                memberTasks =
+                  memberProfileData
+                    .tasks
+                    .filter { it.status == Task.TaskStatus.READY }
+                    .take(DEFAULT_TASKS_COUNT)
+                    .map {
+                      FamilyMemberTask(
+                        taskId = it.logicalId,
+                        task = it.description,
+                        taskStatus = it.status,
+                        colorCode = it.status.retrieveColorCode(it.hasStarted()),
+                        taskFormId =
+                          if (it.status == Task.TaskStatus.READY &&
+                              it.hasStarted() &&
+                              it.hasReasonReference()
+                          )
+                            it.reasonReference.extractId()
+                          else null
+                      )
+                    }
+              )
+            }
         )
     }
   }
-  
+
   private fun Task.TaskStatus.retrieveColorCode(
     hasStarted: Boolean,
     changeCompleteStatusColor: Boolean = false
@@ -174,7 +174,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       Task.TaskStatus.COMPLETED -> if (changeCompleteStatusColor) SuccessColor else DefaultColor
       else -> DefaultColor
     }
-  
+
   companion object {
     const val DEFAULT_TASKS_COUNT = 5 // TODO Configure tasks to display
   }

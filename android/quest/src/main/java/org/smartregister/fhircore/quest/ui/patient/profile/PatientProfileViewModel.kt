@@ -54,13 +54,13 @@ constructor(
   val patientRegisterRepository: PatientRegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper
 ) : ViewModel() {
-  
+
   val patientProfileUiState: MutableState<PatientProfileUiState> =
     mutableStateOf(getProfileUiState())
-  
+
   val patientProfileViewData: MutableState<ProfileViewData.PatientProfileViewData> =
     mutableStateOf(ProfileViewData.PatientProfileViewData())
-  
+
   fun fetchPatientProfileData(
     appFeatureName: String?,
     healthModule: HealthModule,
@@ -72,8 +72,8 @@ constructor(
           ?.let {
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
-                      ProfileViewData.PatientProfileViewData
-            
+                ProfileViewData.PatientProfileViewData
+
             // TODO only display some overflow menu items when certain conditions are met
             // dynamically from config
             patientProfileUiState.value = getProfileUiState(patientProfileViewData.value)
@@ -81,7 +81,7 @@ constructor(
       }
     }
   }
-  
+
   // TODO handle dynamic profile menu with configurations; avoid string comparison
   fun getProfileUiState(profileData: ProfileViewData.PatientProfileViewData? = null) =
     PatientProfileUiState(
@@ -94,8 +94,8 @@ constructor(
             profileData?.let {
               // hide menu item for people not female | not reproductive age | enrolled into anc
               it.sex.startsWith("F", true).not() ||
-                      (it.dob?.yearsPassed() in 15..45).not() ||
-                      it.tasks.any { it.action.matches(Regex(ACTIVE_ANC_REGEX)) }
+                (it.dob?.yearsPassed() in 15..45).not() ||
+                it.tasks.any { it.action.matches(Regex(ACTIVE_ANC_REGEX)) }
             }
               ?: false
           ),
@@ -107,15 +107,15 @@ constructor(
             R.id.add_to_family_planning,
             profileData?.let {
               it.sex.startsWith("F", true).not() &&
-                      it.tasks.none { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } &&
-                      (it.dob?.yearsPassed() in 15..45).not()
+                it.tasks.none { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } &&
+                (it.dob?.yearsPassed() in 15..45).not()
             }
               ?: false
           )
         )
       )
     )
-  
+
   fun onEvent(event: PatientProfileEvent) =
     when (event) {
       is PatientProfileEvent.LoadQuestionnaire ->
@@ -167,8 +167,8 @@ constructor(
           R.id.record_sick_child ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId =
-              if (event.patient.dob!!.monthsPassed() < 2) SICK_CHILD_UNDER_2M_FORM
-              else SICK_CHILD_ABOVE_2M_FORM,
+                if (event.patient.dob!!.monthsPassed() < 2) SICK_CHILD_UNDER_2M_FORM
+                else SICK_CHILD_ABOVE_2M_FORM,
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
@@ -188,7 +188,7 @@ constructor(
           backReference = event.taskId?.asReference(ResourceType.Task)?.reference
         )
     }
-  
+
   companion object {
     const val REMOVE_FAMILY_FORM = "remove-family"
     const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"

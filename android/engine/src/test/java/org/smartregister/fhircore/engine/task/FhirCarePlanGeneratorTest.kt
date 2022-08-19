@@ -73,47 +73,47 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 @HiltAndroidTest
 class FhirCarePlanGeneratorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  
+
   val fhirEngine: FhirEngine = mockk()
   val now = DateTimeType("2022-03-14") // 3 months ahead patient birthdate in sample
-  
+
   lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-  
+
   @Inject lateinit var transformSupportServices: TransformSupportServices
-  
+
   lateinit var structureMapUtilities: StructureMapUtilities
-  
+
   @Before
   fun setup() {
     hiltRule.inject()
-    
+
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
-    
+
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
         transformSupportServices = transformSupportServices
       )
-    
+
     mockkStatic(DateTimeType::class)
     every { DateTimeType.now() } returns now
   }
-  
+
   @After
   fun cleanup() {
     unmockkStatic(DateTimeType::class)
   }
-  
+
   @Test
   fun testGenerateCarePlanForPatient() = runTest {
     val plandefinition =
       "plans/child-routine-visit/plandefinition.json"
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
-    
+
     val patient =
       "plans/child-routine-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
-    
+
     val structureMapScript = "plans/child-routine-visit/structure-map.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "ChildRoutineCarePlan").also {
@@ -121,16 +121,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         //  so use only months and that would have the unit replaced with 'months'
         println(it.encodeResourceToString().replace("''", "'month'"))
       }
-    
+
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
-    
+
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-      plandefinition,
-      patient,
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
-    )!!
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+      )!!
       .also { println(it.encodeResourceToString()) }
       .also {
         val carePlan = it
@@ -161,11 +161,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
         // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
-        
+
         val resourcesSlot = mutableListOf<Resource>()
-        
+
         coVerify { fhirEngine.create(capture(resourcesSlot)) }
-        
+
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
@@ -173,11 +173,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .all { task ->
             // TODO
             task.status == Task.TaskStatus.REQUESTED &&
-                    LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
-                      localDate.dayOfMonth == localDate.lengthOfMonth()
-                    }
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
           }
-        
+
         val task1 = resourcesSlot[1] as Task
         Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
         // TODO Fix issue with task start date updating relative to today's date
@@ -186,17 +186,17 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         // Assert.assertEquals("30-Apr-2022", task1.executionPeriod.end.makeItReadable())
       }
   }
-  
+
   @Test
   fun testGenerateCarePlanForGroup() = runTest {
     val plandefinition =
       "plans/household-routine-visit/plandefinition.json"
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
-    
+
     val group =
       "plans/household-routine-visit/sample/group.json".readFile().decodeResourceFromString<Group>()
-    
+
     val structureMapScript = "plans/household-routine-visit/structure-map.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "HHRoutineCarePlan").also {
@@ -204,21 +204,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         //  so use only months and that would have the unit replaced with 'months'
         println(it.encodeResourceToString().replace("''", "'month'"))
       }
-    
+
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
-    
+
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-      plandefinition,
-      group,
-      Bundle()
-        .addEntry(
-          Bundle.BundleEntryComponent().apply {
-            resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
-          }
-        )
-    )!!
+        plandefinition,
+        group,
+        Bundle()
+          .addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
+            }
+          )
+      )!!
       .also { println(it.encodeResourceToString()) }
       .also {
         val carePlan = it
@@ -234,27 +234,27 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
         Assert.assertNotNull(carePlan.period.start)
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
-        
+
         val resourcesSlot = mutableListOf<Resource>()
-        
+
         coVerify { fhirEngine.create(capture(resourcesSlot)) }
-        
+
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
           .also { list -> Assert.assertTrue(list.isNotEmpty()) }
           .all { task ->
             task.status == Task.TaskStatus.REQUESTED &&
-                    LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
-                      localDate.dayOfMonth == localDate.lengthOfMonth()
-                    }
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
+              }
           }
-        
+
         val task1 = resourcesSlot[1] as Task
         Assert.assertEquals(Task.TaskStatus.REQUESTED, task1.status)
       }
   }
-  
+
   @Test
   @Ignore("Passing local failing CI")
   fun testGenerateCarePlanForSickChildOver2m() = runTest {
@@ -262,7 +262,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "plans/sick-child-visit/plandefinition.json"
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
-    
+
     val patient =
       "plans/sick-child-visit/sample/patient.json"
         .readFile()
@@ -272,28 +272,28 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "plans/sick-child-visit/sample/questionnaire-response-register-over2m.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
-    
+
     val structureMapRegister =
       structureMapUtilities.parse(
-        "plans/sick-child-visit/structure-map-register.txt".readFile(),
-        "SickChildCarePlan"
-      )
+          "plans/sick-child-visit/structure-map-register.txt".readFile(),
+          "SickChildCarePlan"
+        )
         .also { println(it.encodeResourceToString()) }
-    
+
     val structureMapReferral =
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
-    
+
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("131900") } returns structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
-    
+
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-      plandefinition,
-      patient,
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
-    )!!
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )!!
       .also { println(it.encodeResourceToString()) }
       .also {
         val carePlan = it
@@ -321,15 +321,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
         Assert.assertEquals(3, carePlan.activityFirstRep.outcomeReference.size)
-        
+
         val resourcesSlot = mutableListOf<Resource>()
-        
+
         coVerify { fhirEngine.create(capture(resourcesSlot)) }
-        
+
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
-        
+
         val careplan = resourcesSlot.first() as CarePlan
-        
+
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
@@ -379,14 +379,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           }
       }
   }
-  
+
   @Test
   fun testGenerateCarePlanForSickChildUnder2m() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
-    
+
     val patient =
       "plans/sick-child-visit/sample/patient.json"
         .readFile()
@@ -396,29 +396,29 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "plans/sick-child-visit/sample/questionnaire-response-register-under2m.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
-    
+
     val structureMapReferral =
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
-    
+
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
-    
+
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-      plandefinition,
-      patient,
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
-    )
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )
       .also {
         Assert.assertNull(it)
-        
+
         val resourcesSlot = mutableListOf<Resource>()
-        
+
         coVerify { fhirEngine.create(capture(resourcesSlot)) }
-        
+
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
-        
+
         resourcesSlot.map { it as Task }.also { Assert.assertEquals(1, it.size) }.first().let {
           Assert.assertTrue(it.status == Task.TaskStatus.READY)
           Assert.assertTrue(it.basedOn.first().reference == plandefinition.asReference().reference)
@@ -427,57 +427,57 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         }
       }
   }
-  
+
   @Test
   fun testCompleteCarePlanForSickChildFollowup() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
-    
+
     val patient =
       "plans/sick-child-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
     val questionnaireResponse =
       "plans/sick-child-visit/sample/questionnaire-response-followup.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
-    
+
     val structureMapReferral =
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
-    
+
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.update(any()) } just runs
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
-    
+
     coEvery { fhirEngine.search<CarePlan>(any()) } returns
-            listOf(
-              CarePlan().apply {
-                instantiatesCanonical = listOf(CanonicalType(plandefinition.asReference().reference))
-                addActivity().apply { this.addOutcomeReference().apply { this.reference = "Task/1111" } }
-              }
-            )
+      listOf(
+        CarePlan().apply {
+          instantiatesCanonical = listOf(CanonicalType(plandefinition.asReference().reference))
+          addActivity().apply { this.addOutcomeReference().apply { this.reference = "Task/1111" } }
+        }
+      )
     coEvery { fhirEngine.get<Task>(any()) } returns
-            Task().apply {
-              id = "1111"
-              status = Task.TaskStatus.READY
-            }
-    
+      Task().apply {
+        id = "1111"
+        status = Task.TaskStatus.READY
+      }
+
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-      plandefinition,
-      patient,
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
-    )!!
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )!!
       .also { println(it.encodeResourceToString()) }
       .also {
         val carePlan = it
         Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
-        
+
         val resourcesSlot = mutableListOf<Resource>()
         coVerify { fhirEngine.create(capture(resourcesSlot)) }
-        
+
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
-        
+
         resourcesSlot
           .filter { it.resourceType == ResourceType.Task }
           .map { it as Task }
@@ -500,47 +500,47 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           }
       }
   }
-  
+
   @Test
   fun testUpdateCarePlanForSickChildReferral() = runTest {
     val plandefinition =
       "plans/sick-child-visit/plandefinition.json"
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
-    
+
     val patient =
       "plans/sick-child-visit/sample/patient.json"
         .readFile()
         .decodeResourceFromString<Patient>()
         .apply { this.birthDate = Date().plusMonths(-1).plusDays(-15) }
-    
+
     val questionnaireResponse =
       "plans/sick-child-visit/sample/questionnaire-response-register-under2m.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
-    
+
     val structureMapScript = "plans/structure-map-referral.txt".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "ReferralTask").also {
         println(it.encodeResourceToString())
       }
-    
+
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMap
-    
+
     coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf()
-    
+
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-      plandefinition,
-      patient,
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
-    )
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )
       .also {
         val resourcesSlot = mutableListOf<Resource>()
-        
+
         coVerify { fhirEngine.create(capture(resourcesSlot)) }
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
-        
+
         resourcesSlot
           .filter { it.resourceType == ResourceType.Task }
           .map { it as Task }
@@ -557,47 +557,47 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           }
       }
   }
-  
+
   @Test
   fun testGenerateCarePlanForANCVisit() = runTest {
     val plandefinition =
       "plans/anc-visit/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
-    
+
     val patient =
       "plans/anc-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
-    
+
     val questionnaireResponse =
       "plans/anc-visit/sample/questionnaire-response-register.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
-    
+
     // start of plan is lmp date | set lmp date to 4 months , and 15th of month
     val lmp = Date().plusMonths(-4).apply { date = 15 }
-    
+
     questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first().value =
       DateType(lmp)
-    
+
     val structureMapRegister =
       structureMapUtilities.parse(
-        "plans/anc-visit/structure-map-register.txt".readFile(),
-        "ANCCarePlan"
-      )
+          "plans/anc-visit/structure-map-register.txt".readFile(),
+          "ANCCarePlan"
+        )
         .also { println(it.encodeResourceToString()) }
-    
+
     val structureMapReferral =
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
-    
+
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("132156") } returns structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
-    
+
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
-      plandefinition,
-      patient,
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
-    )!!
+        plandefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )!!
       .also { println(it.encodeResourceToString()) }
       .also {
         val carePlan = it
@@ -618,7 +618,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient.generalPractitionerFirstRep.extractId(),
           carePlan.author.extractId()
         )
-        
+
         Assert.assertEquals(
           questionnaireResponse.find("245679f2-6172-456e-8ff3-425f5cea3243")!!
             .answer
@@ -637,15 +637,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           6,
           carePlan.activityFirstRep.outcomeReference.size
         ) // 6 visits as 4th month is passing (15th day) as per lmp
-        
+
         val resourcesSlot = mutableListOf<Resource>()
-        
+
         coVerify { fhirEngine.create(capture(resourcesSlot)) }
-        
+
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
-        
+
         val careplan = resourcesSlot.first() as CarePlan
-        
+
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
@@ -660,7 +660,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               Assert.assertTrue(
                 this.all {
                   it.executionPeriod.end.asYyyyMmDd() ==
-                          it.executionPeriod.start.lastDayOfMonth().asYyyyMmDd()
+                    it.executionPeriod.start.lastDayOfMonth().asYyyyMmDd()
                 }
               )
               Assert.assertTrue(
@@ -680,19 +680,19 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             it.elementAt(0).let {
               Assert.assertTrue(
                 it.executionPeriod.start.asYyyyMmDd() ==
-                        Date().asYyyyMmDd() // first task is today | 4th month
+                  Date().asYyyyMmDd() // first task is today | 4th month
               )
             }
             it.elementAt(1).let {
               Assert.assertTrue(
                 it.executionPeriod.start.asYyyyMmDd() ==
-                        lmp.plusMonths(5, true).asYyyyMmDd() // 5th month
+                  lmp.plusMonths(5, true).asYyyyMmDd() // 5th month
               )
             }
             it.elementAt(2).let {
               Assert.assertTrue(
                 it.executionPeriod.start.asYyyyMmDd() ==
-                        lmp.plusMonths(6, true).asYyyyMmDd() // 6th month
+                  lmp.plusMonths(6, true).asYyyyMmDd() // 6th month
               )
             }
             it.elementAt(3).let {

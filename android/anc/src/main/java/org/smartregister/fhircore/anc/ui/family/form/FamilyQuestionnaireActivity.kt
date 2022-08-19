@@ -36,22 +36,22 @@ import org.smartregister.fhircore.engine.util.extension.hide
 
 @AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
-  
+
   @Inject lateinit var familyRepository: FamilyRepository
-  
+
   lateinit var saveBtn: Button
   private var isEditFamily: Boolean = false
-  
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    
+
     isEditFamily = questionnaireType.isEditMode()
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
-    
+
     val action =
       if (isEditFamily) getString(R.string.form_action_edit)
       else getString(R.string.form_action_save)
-    
+
     when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
       FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_anc_client)
       FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
@@ -60,10 +60,10 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
         saveBtn.text = getString(R.string.family_save_label, action)
     }
   }
-  
+
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     saveBtn.hide(false)
-    
+
     questionnaireViewModel.extractAndSaveResources(
       context = this,
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
@@ -73,20 +73,20 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       questionnaire = questionnaire
     )
   }
-  
+
   override fun populateInitialValues(questionnaire: Questionnaire) {
     if (questionnaireViewModel.questionnaireConfig.form ==
-      FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
     ) {
       questionnaire.find(HEAD_RECORD_ID_KEY)!!.initialFirstRep.value =
         StringType(intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!)
     }
   }
-  
+
   override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       val patientId = questionnaireResponse.subject.extractId()
-      
+
       if (questionnaireViewModel.questionnaireConfig.form == FamilyFormConstants.ANC_ENROLLMENT_FORM
       ) {
         finish()
@@ -95,7 +95,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       }
     }
   }
-  
+
   override fun onBackPressed() {
     AlertDialog.Builder(this, R.style.AlertDialogTheme)
       .setMessage(R.string.unsaved_changes_message_alert)
@@ -109,7 +109,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       }
       .show()
   }
-  
+
   private fun handlePregnancy(patientId: String, questionnaireResponse: QuestionnaireResponse) {
     val pregnancy =
       questionnaireResponse
@@ -124,7 +124,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       finish()
     }
   }
-  
+
   companion object {
     const val QUESTIONNAIRE_RELATED_TO_KEY = "questionnaire-related-to"
     const val QUESTIONNAIRE_CALLING_ACTIVITY = "questionnaire-calling-activity"

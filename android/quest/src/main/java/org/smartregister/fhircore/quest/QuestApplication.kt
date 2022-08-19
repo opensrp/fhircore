@@ -25,18 +25,18 @@ import timber.log.Timber
 
 @HiltAndroidApp
 class QuestApplication : Application(), DataCaptureConfig.Provider {
-  
+
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
-  
+
   private var configuration: DataCaptureConfig? = null
-  
+
   override fun onCreate() {
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
   }
-  
+
   override fun getDataCaptureConfig(): DataCaptureConfig {
     configuration =
       configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
