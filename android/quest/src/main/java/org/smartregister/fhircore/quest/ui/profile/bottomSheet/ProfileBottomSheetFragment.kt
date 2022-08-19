@@ -48,7 +48,8 @@ constructor(
             coroutineScope = rememberCoroutineScope(),
             bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
             onSaveClick = onSaveClick,
-            eligibleManagingEntities = eligibleManagingEntities
+            eligibleManagingEntities = eligibleManagingEntities,
+            bottomSheetDialogFragment = this@ProfileBottomSheetFragment
           )
         }
       }
