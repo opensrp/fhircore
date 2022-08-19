@@ -47,7 +47,6 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Spotless check engine module
-<<<<<<< HEAD
         run: ./gradlew :engine:spotlessCheck --stacktrace
         working-directory: android 
       
@@ -59,14 +58,6 @@ jobs:
             ~/.android/avd/*
             ~/.android/adb*
           key: avd-${{ matrix.api-level }}
-=======
-        run: ./gradlew :engine:spotlessCheck
-        working-directory: android
-         
-      - name: Run Engine unit tests with Gradle
-        run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x :engine:testReleaseUnitTest --stacktrace
-        working-directory: android
->>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'

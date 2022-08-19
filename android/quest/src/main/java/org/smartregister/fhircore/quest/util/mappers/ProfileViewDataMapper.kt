@@ -36,12 +36,8 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
 import org.smartregister.fhircore.engine.util.extension.extractId
-<<<<<<< HEAD
 import org.smartregister.fhircore.engine.util.extension.hasStarted
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
-=======
-import org.smartregister.fhircore.engine.util.extension.makeItReadable
->>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberTask
@@ -50,7 +46,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<ProfileData, ProfileViewData> {
-
+  
   override fun transformInputToOutputModel(inputModel: ProfileData): ProfileViewData {
     return when (inputModel) {
       is ProfileData.AncProfileData ->
@@ -87,59 +83,45 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           sex = inputModel.gender.translateGender(context),
           dob = inputModel.birthdate,
           tasks =
-            inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
-<<<<<<< HEAD
-              ActionableButtonData(
-                action =
-                  when (it.status) {
-                    Task.TaskStatus.CANCELLED, Task.TaskStatus.FAILED ->
-                      context.getString(
-                        R.string.visit_overdue,
-                        it.description.capitalizeFirstLetter(),
-                        it.executionPeriod.start.prettifyDate()
-                      )
-                    Task.TaskStatus.READY ->
-                      context.getString(
-                        R.string.visit_due_today,
-                        it.description.capitalizeFirstLetter()
-                      )
-                    Task.TaskStatus.COMPLETED -> it.description.capitalizeFirstLetter()
-                    else ->
-                      context.getString(
-                        R.string.visit_due_on,
-                        it.description.capitalizeFirstLetter(),
-                        it.executionPeriod.start.prettifyDate()
-                      )
-                  },
-                questionnaireId =
-=======
-              PatientProfileRowItem(
-                id = it.logicalId,
-                actionFormId =
->>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
-                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                    it.reasonReference.extractId()
-                  else null,
-                backReference = it.logicalId.asReference(ResourceType.Task),
-                contentColor = it.status.retrieveColorCode(it.hasStarted()),
-                iconStart =
-                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-                  else Icons.Filled.Add,
-<<<<<<< HEAD
-                iconColor =
-                  it.status.retrieveColorCode(
-                    hasStarted = it.hasStarted(),
-                    changeCompleteStatusColor = true
-                  ),
-=======
-                actionIconColor =
-                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
-                  else it.status.retrieveColorCode(),
-                actionButtonColor = it.status.retrieveColorCode(),
-                actionButtonText = it.description,
->>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
-              )
-            }
+          inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
+            ActionableButtonData(
+              action =
+              when (it.status) {
+                Task.TaskStatus.CANCELLED, Task.TaskStatus.FAILED ->
+                  context.getString(
+                    R.string.visit_overdue,
+                    it.description.capitalizeFirstLetter(),
+                    it.executionPeriod.start.prettifyDate()
+                  )
+                Task.TaskStatus.READY ->
+                  context.getString(
+                    R.string.visit_due_today,
+                    it.description.capitalizeFirstLetter()
+                  )
+                Task.TaskStatus.COMPLETED -> it.description.capitalizeFirstLetter()
+                else ->
+                  context.getString(
+                    R.string.visit_due_on,
+                    it.description.capitalizeFirstLetter(),
+                    it.executionPeriod.start.prettifyDate()
+                  )
+              },
+              questionnaireId =
+              if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                it.reasonReference.extractId()
+              else null,
+              backReference = it.logicalId.asReference(ResourceType.Task),
+              contentColor = it.status.retrieveColorCode(it.hasStarted()),
+              iconStart =
+              if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
+              else Icons.Filled.Add,
+              iconColor =
+              it.status.retrieveColorCode(
+                hasStarted = it.hasStarted(),
+                changeCompleteStatusColor = true
+              ),
+            )
+          }
         )
       is ProfileData.FamilyProfileData ->
         ProfileViewData.FamilyProfileViewData(
@@ -148,52 +130,51 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           address = inputModel.address,
           age = inputModel.age,
           familyMemberViewStates =
-            inputModel.members.map { memberProfileData ->
-              FamilyMemberViewState(
-                patientId = memberProfileData.id,
-                birthDate = memberProfileData.birthdate,
-                age = memberProfileData.age,
-                gender = memberProfileData.gender.translateGender(context),
-                name = memberProfileData.name,
-                memberTasks =
-                  memberProfileData
-                    .tasks
-                    .filter { it.status == Task.TaskStatus.READY }
-                    .take(DEFAULT_TASKS_COUNT)
-                    .map {
-                      FamilyMemberTask(
-                        taskId = it.logicalId,
-                        task = it.description,
-                        taskStatus = it.status,
-                        colorCode = it.status.retrieveColorCode(),
-                        taskFormId =
-                          if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                            it.reasonReference.extractId()
-                          else null
-                      )
-                    }
-              )
-            }
+          inputModel.members.map { memberProfileData ->
+            FamilyMemberViewState(
+              patientId = memberProfileData.id,
+              birthDate = memberProfileData.birthdate,
+              age = memberProfileData.age,
+              gender = memberProfileData.gender.translateGender(context),
+              name = memberProfileData.name,
+              memberTasks =
+              memberProfileData
+                .tasks
+                .filter { it.status == Task.TaskStatus.READY }
+                .take(DEFAULT_TASKS_COUNT)
+                .map {
+                  FamilyMemberTask(
+                    taskId = it.logicalId,
+                    task = it.description,
+                    taskStatus = it.status,
+                    colorCode = it.status.retrieveColorCode(it.hasStarted()),
+                    taskFormId =
+                    if (it.status == Task.TaskStatus.READY &&
+                      it.hasStarted() &&
+                      it.hasReasonReference()
+                    )
+                      it.reasonReference.extractId()
+                    else null
+                  )
+                }
+            )
+          }
         )
     }
   }
-
-<<<<<<< HEAD
+  
   private fun Task.TaskStatus.retrieveColorCode(
     hasStarted: Boolean,
     changeCompleteStatusColor: Boolean = false
   ): Color =
-=======
-  private fun Task.TaskStatus.retrieveColorCode(): Color =
->>>>>>> parent of 395d7b378 (1345 | ANC care plan (#1359))
     when (this) {
-      Task.TaskStatus.READY -> InfoColor
-      Task.TaskStatus.CANCELLED -> OverdueColor
+      Task.TaskStatus.READY -> if (hasStarted) InfoColor else DefaultColor
+      Task.TaskStatus.CANCELLED -> DefaultColor
       Task.TaskStatus.FAILED -> OverdueColor
       Task.TaskStatus.COMPLETED -> if (changeCompleteStatusColor) SuccessColor else DefaultColor
       else -> DefaultColor
     }
-
+  
   companion object {
     const val DEFAULT_TASKS_COUNT = 5 // TODO Configure tasks to display
   }

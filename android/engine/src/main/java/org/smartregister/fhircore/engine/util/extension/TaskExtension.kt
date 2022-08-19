@@ -22,14 +22,20 @@ import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.DateUtils.isToday
 import org.smartregister.fhircore.engine.util.DateUtils.today
 
+const val ACTIVE_ANC_REGEX = "^(.*[\\s-.])?(ANC|Pregnan[tcy]{1,2})([\\s-.].*)?$"
+
 fun Task.hasPastEnd() =
   this.hasExecutionPeriod() &&
-    this.executionPeriod.hasEnd() &&
-    this.executionPeriod.end.before(DateUtils.yesterday())
+          this.executionPeriod.hasEnd() &&
+          this.executionPeriod.end.before(DateUtils.yesterday())
 
 fun Task.hasStarted() =
   this.hasExecutionPeriod() &&
-    this.executionPeriod.hasStart() &&
-    with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
+          this.executionPeriod.hasStart() &&
+          with(this.executionPeriod.start) { this.before(today()) || this.isToday() }
 
 fun Task.TaskStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
+
+fun Task.isActiveAnc() =
+  this.status.isIn(Task.TaskStatus.READY, Task.TaskStatus.REQUESTED, Task.TaskStatus.INPROGRESS) &&
+          this.description.matches(Regex(ACTIVE_ANC_REGEX))
