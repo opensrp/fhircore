@@ -69,8 +69,11 @@
     "infoFhirPathExpression": "Patient.name.given",
     "fhirPathResource": {
       "resourceType": "Patient",
-      "fhirPathExpression": ""
-    }
+      "fhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')"
+    },
+    "dialogTitle": "{{ assign.new.family.head }}",
+    "dialogWarningMessage": "{{ abort.operation.question }}",
+    "dialogContentMessage": "{{ select.new.family.head }}"
   },
   "fabActions": [
     {
@@ -238,7 +241,7 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_PROFILE"
+          "workflow": "CHANGE_MANAGING_ENTITY"
         }
       ]
     },
@@ -261,12 +264,18 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
           "params": [
             {
               "key": "familyId",
               "value": "@{familyId}"
             }
-          ]
+          ],
+          "questionnaire": {
+            "id": "101644",
+            "title": "eCBIS Remove Family Form",
+            "type": "DEFAULT"
+          }
         }
       ]
     }

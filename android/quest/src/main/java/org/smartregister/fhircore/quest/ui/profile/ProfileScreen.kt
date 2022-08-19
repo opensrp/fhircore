@@ -110,7 +110,8 @@ fun ProfileScreen(
                       navController = navController,
                       context = context,
                       resourceData = profileUiState.resourceData,
-                      overflowMenuItemConfig = it
+                      overflowMenuItemConfig = it,
+                      managingEntity = profileUiState.profileConfiguration.managingEntity
                     )
                   )
                 },

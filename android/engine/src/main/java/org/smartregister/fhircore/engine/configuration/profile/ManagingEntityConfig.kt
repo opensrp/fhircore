@@ -22,5 +22,8 @@ import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 @Serializable
 data class ManagingEntityConfig(
   val infoFhirPathExpression: String,
-  val fhirPathResource: ExtractedResource
+  val fhirPathResource: ExtractedResource,
+  val dialogTitle: String? = null,
+  val dialogWarningMessage: String? = null,
+  val dialogContentMessage: String? = null
 )

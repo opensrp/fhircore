@@ -30,10 +30,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Surface
@@ -54,10 +52,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.R
@@ -66,14 +65,13 @@ import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 const val TEST_TAG_SAVE = "saveTestTag"
 const val TEST_TAG_CANCEL = "cancelTestTag"
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ChangeManagingEntityView(
   modifier: Modifier = Modifier,
-  coroutineScope: CoroutineScope,
-  bottomSheetScaffoldState: BottomSheetScaffoldState,
   eligibleManagingEntities: List<EligibleManagingEntity> = emptyList(),
-  onSaveClick: (EligibleManagingEntity) -> Unit
+  onSaveClick: (EligibleManagingEntity) -> Unit,
+  managingEntity: ManagingEntityConfig? = null,
+  onDismiss: () -> Unit
 ) {
   var isEnabled by remember { mutableStateOf(false) }
 
@@ -89,7 +87,7 @@ fun ChangeManagingEntityView(
             .padding(horizontal = 16.dp, vertical = 16.dp)
       ) {
         Text(
-          text = stringResource(id = R.string.label_assign_new_family_head),
+          text = managingEntity?.dialogTitle ?: "",
           textAlign = TextAlign.Start,
           fontWeight = FontWeight.Light,
           fontSize = 20.sp,
@@ -98,13 +96,7 @@ fun ChangeManagingEntityView(
           imageVector = Icons.Filled.Clear,
           contentDescription = null,
           tint = DefaultColor.copy(0.8f),
-          modifier =
-            modifier.clickable {
-              coroutineScope.launch {
-                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
-                  bottomSheetScaffoldState.bottomSheetState.collapse()
-              }
-            }
+          modifier = modifier.clickable { onDismiss() }
         )
       }
       Divider()
@@ -126,7 +118,7 @@ fun ChangeManagingEntityView(
           modifier = modifier.padding(horizontal = 12.dp)
         )
         Text(
-          text = stringResource(id = R.string.alert_message_abort_operation),
+          text = managingEntity?.dialogWarningMessage ?: "",
           textAlign = TextAlign.Start,
           fontWeight = FontWeight.Medium,
           fontSize = 16.sp,
@@ -134,7 +126,7 @@ fun ChangeManagingEntityView(
         )
       }
       Text(
-        text = stringResource(id = R.string.label_select_new_head),
+        text = managingEntity?.dialogContentMessage ?: "",
         modifier = modifier.padding(horizontal = 12.dp),
         textAlign = TextAlign.Start,
         fontWeight = FontWeight.Light,
@@ -166,12 +158,7 @@ fun ChangeManagingEntityView(
             .padding(horizontal = 16.dp, vertical = 16.dp)
       ) {
         TextButton(
-          onClick = {
-            coroutineScope.launch {
-              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
-                bottomSheetScaffoldState.bottomSheetState.collapse()
-            }
-          },
+          onClick = { onDismiss() },
           modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_CANCEL)
         ) {
           Text(
@@ -207,8 +194,42 @@ fun BottomListItem(
   managingEntity: EligibleManagingEntity,
   onClick: (EligibleManagingEntity) -> Unit
 ) {
-  Row(modifier = modifier.fillMaxWidth().clickable { onClick(managingEntity) }) {
+  Row(
+    modifier = modifier.fillMaxWidth().clickable { onClick(managingEntity) },
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
     RadioButton(selected = managingEntity.selected, onClick = { onClick(managingEntity) })
     Text(text = managingEntity.memberInfo)
   }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ChangeManagingEntityViewPreview() {
+  ChangeManagingEntityView(
+    onSaveClick = {},
+    eligibleManagingEntities =
+      listOf(
+        EligibleManagingEntity(
+          groupId = "group-1",
+          logicalId = "patient-1",
+          memberInfo = "Jane Doe"
+        ),
+        EligibleManagingEntity(
+          groupId = "group-1",
+          logicalId = "patient-2",
+          memberInfo = "James Doe"
+        )
+      ),
+    onDismiss = {},
+    managingEntity =
+      ManagingEntityConfig(
+        infoFhirPathExpression = "Patient.name",
+        fhirPathResource =
+          ExtractedResource(resourceType = "Patient", fhirPathExpression = "Patient.active"),
+        dialogTitle = "Assign new family head",
+        dialogWarningMessage = "Are you sure you want to abort this operation?",
+        dialogContentMessage = "Select a new family head"
+      )
+  )
 }
