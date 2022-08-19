@@ -21,8 +21,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.rememberBottomSheetScaffoldState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.ComposeView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -45,8 +43,6 @@ constructor(
       setContent {
         AppTheme {
           ChangeManagingEntityView(
-            coroutineScope = rememberCoroutineScope(),
-            bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
             onSaveClick = onSaveClick,
             eligibleManagingEntities = eligibleManagingEntities,
             bottomSheetDialogFragment = this@ProfileBottomSheetFragment
