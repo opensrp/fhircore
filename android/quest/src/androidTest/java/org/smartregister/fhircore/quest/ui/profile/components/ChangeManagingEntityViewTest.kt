@@ -43,7 +43,7 @@ class ChangeManagingEntityViewTest {
       ChangeManagingEntityView(
         onSaveClick = {},
         eligibleManagingEntities = eligibleManagingEntities,
-        bottomSheetDialogFragment = null
+        onDismiss = {}
       )
     }
   }

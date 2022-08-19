@@ -20,14 +20,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.platform.ComposeView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.profile.components.ChangeManagingEntityView
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 
-@OptIn(ExperimentalMaterialApi::class)
 class ProfileBottomSheetFragment
 constructor(
   val eligibleManagingEntities: List<EligibleManagingEntity> = emptyList(),
@@ -45,7 +43,7 @@ constructor(
           ChangeManagingEntityView(
             onSaveClick = onSaveClick,
             eligibleManagingEntities = eligibleManagingEntities,
-            bottomSheetDialogFragment = this@ProfileBottomSheetFragment
+            onDismiss = { dismiss() }
           )
         }
       }

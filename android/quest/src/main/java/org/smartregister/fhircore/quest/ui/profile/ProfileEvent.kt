@@ -39,8 +39,6 @@ sealed class ProfileEvent {
     val navController: NavController
   ) : ProfileEvent()
 
-  data class OnChangeManagingEntity(
-    val newManagingEntityId: String,
-    val oldManagingEntityId: String
-  ) : ProfileEvent()
+  data class OnChangeManagingEntity(val newManagingEntityId: String, val groupId: String) :
+    ProfileEvent()
 }

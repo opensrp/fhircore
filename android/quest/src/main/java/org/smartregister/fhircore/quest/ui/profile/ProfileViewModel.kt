@@ -29,7 +29,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -45,7 +44,6 @@ class ProfileViewModel
 constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val defaultRepository: DefaultRepository,
   val dispatcherProvider: DefaultDispatcherProvider,
 ) : ViewModel() {
 
@@ -74,7 +72,7 @@ constructor(
     return profileConfiguration
   }
 
-  fun onEvent(event: ProfileEvent) =
+  fun onEvent(event: ProfileEvent): Any? =
     when (event) {
       is ProfileEvent.OverflowMenuClick -> {
         event.overflowMenuItemConfig?.actions?.forEach { actionConfig ->
@@ -126,7 +124,7 @@ constructor(
                     onSaveClick = {
                       ProfileEvent.OnChangeManagingEntity(
                         newManagingEntityId = it.logicalId,
-                        oldManagingEntityId = it.groupId
+                        groupId = it.groupId
                       )
                     }
                   )
@@ -141,10 +139,7 @@ constructor(
         event.viewComponentEvent.handleEvent(event.navController)
       is ProfileEvent.OnChangeManagingEntity -> {
         viewModelScope.launch(dispatcherProvider.io()) {
-          defaultRepository.changeManagingEntity(
-            event.newManagingEntityId,
-            event.oldManagingEntityId
-          )
+          registerRepository.changeManagingEntity(event.newManagingEntityId, event.groupId)
         }
       }
     }

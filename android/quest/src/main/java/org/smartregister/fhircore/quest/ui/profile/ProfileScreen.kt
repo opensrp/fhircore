@@ -29,7 +29,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -65,7 +64,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 
 const val ICON_BUTTON_TEST_TAG = "iconButton"
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ProfileScreen(
   modifier: Modifier = Modifier,

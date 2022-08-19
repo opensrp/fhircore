@@ -56,7 +56,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.R
@@ -71,7 +70,7 @@ fun ChangeManagingEntityView(
   modifier: Modifier = Modifier,
   eligibleManagingEntities: List<EligibleManagingEntity> = emptyList(),
   onSaveClick: (EligibleManagingEntity) -> Unit,
-  bottomSheetDialogFragment: BottomSheetDialogFragment?
+  onDismiss: () -> Unit
 ) {
   var isEnabled by remember { mutableStateOf(false) }
 
@@ -96,7 +95,7 @@ fun ChangeManagingEntityView(
           imageVector = Icons.Filled.Clear,
           contentDescription = null,
           tint = DefaultColor.copy(0.8f),
-          modifier = modifier.clickable { bottomSheetDialogFragment?.dismiss() }
+          modifier = modifier.clickable { onDismiss() }
         )
       }
       Divider()
@@ -158,7 +157,7 @@ fun ChangeManagingEntityView(
             .padding(horizontal = 16.dp, vertical = 16.dp)
       ) {
         TextButton(
-          onClick = { bottomSheetDialogFragment?.dismiss() },
+          onClick = { onDismiss() },
           modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_CANCEL)
         ) {
           Text(
@@ -219,6 +218,6 @@ fun ChangeManagingEntityViewPreview() {
           memberInfo = "James Doe"
         )
       ),
-    bottomSheetDialogFragment = null
+    onDismiss = {}
   )
 }
