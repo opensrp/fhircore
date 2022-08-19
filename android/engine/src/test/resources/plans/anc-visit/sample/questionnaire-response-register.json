@@ -1,185 +1,242 @@
 {
   "resourceType": "QuestionnaireResponse",
-  "id": "0e6d7938-b566-4d0e-b294-5771825e1a87",
+  "id": "88f6b8d7-ebb7-484e-809b-84d88767100b",
   "meta": {
-    "lastUpdated": "2022-08-18T16:19:35.823+00:00",
+    "lastUpdated": "2022-06-20T05:18:38.789+05:00",
     "tag": [
       {
         "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
-        "display": "eCBIS Pregnancy Outcome & Child Registration"
+        "display": "eCBIS New Pregnancy Registration"
       }
     ]
   },
-  "contained": [
+  "questionnaire": "Questionnaire/132152",
+  "subject": {
+    "reference": "Patient/21b5f74c-6fea-4998-bfc3-6b2c3670c88b"
+  },
+  "authored": "2022-06-20T05:18:38+05:00",
+  "item": [
     {
-      "resourceType": "Condition",
-      "id": "f1d1c301-83ee-46ac-bbe2-f08b8c0b63aa",
-      "meta": {},
-      "clinicalStatus": {
-        "coding": [
-          {
-            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-            "code": "active"
-          }
-        ]
-      },
-      "verificationStatus": {
-        "coding": [
-          {
-            "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
-            "code": "confirmed"
-          }
-        ]
-      },
-      "category": [
+      "linkId": "1aa4d0b3-8c3e-47b7-8fa5-effcb5130fac",
+      "answer": [
         {
-          "coding": [
+          "valueCoding": {
+            "id": "63c19222-b589-449f-b371-b85ba449fdd9",
+            "system": "urn:uuid:8dc97476-74cc-4c57-8cbf-f0799cfd2ba9",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "da999955-2174-4219-825e-8ae2b948b7e7",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "30862a15-03b0-42af-8703-857e579aa2b9",
+            "system": "urn:uuid:de9ef3e8-be6b-4639-b196-63905d15c8c6",
+            "code": "yes",
+            "display": "Yes"
+          },
+          "item": [
             {
-              "system": "http://terminology.hl7.org/CodeSystem/condition-category",
-              "code": "encounter-diagnosis"
+              "linkId": "1b5d6e5e-dd55-4b30-8f77-79da15c53269",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "id": "6eb83dd3-178a-45e7-c6c9-96d9335d0072",
+                    "system": "urn:uuid:1fcf2bfd-0bcb-4278-f86a-d403866a01cb",
+                    "code": "yes",
+                    "display": "Yes"
+                  },
+                  "item": [
+                    {
+                      "linkId": "008b354b-3f6f-4402-8d6d-4de27b6e2071",
+                      "answer": [
+                        {
+                          "valueCoding": {
+                            "id": "997f9216-f310-4e8e-88f7-93fb783d5611",
+                            "system": "urn:uuid:01dd5475-5280-42b2-87a5-6d9b7ec374c3",
+                            "code": "add-location-hierachy",
+                            "display": "Add location hierachy"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "linkId": "1272863d-8d9d-4167-86d1-38f5e074607e",
+                      "answer": [
+                        {
+                          "valueDate": "2022-05-02"
+                        }
+                      ]
+                    },
+                    {
+                      "linkId": "92e8f830-210a-49f6-8d1a-6d01f5bc72b9",
+                      "answer": [
+                        {
+                          "valueInteger": 2
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "234234234"
-          }
-        ],
-        "text": "PNC"
-      },
-      "subject": {
-        "reference": "Patient/2a18662d-a500-4457-8e1b-efd5eada1cda"
-      },
-      "onsetDateTime": "2022-08-18T16:19:35+00:00",
-      "recordedDate": "2022-08-18T16:19:35+00:00"
+      ]
     },
     {
-      "resourceType": "Task",
-      "id": "adfca87c-c799-45ec-be1a-d2e1e3f8c9e0",
-      "meta": {},
-      "identifier": [
+      "linkId": "245679f2-6172-456e-8ff3-425f5cea3243",
+      "answer": [
         {
-          "use": "official",
-          "value": "4bbc7c86-d6da-4878-80c9-4045ddbd67a1"
+          "valueDate": "2022-02-04",
+          "item": [
+            {
+              "linkId": "b00a7b16-e9ef-446d-daf9-fca839bae7d6",
+              "answer": [
+                {
+                  "valueInteger": 3
+                }
+              ]
+            },
+            {
+              "linkId": "a887e708-85d8-4fb2-871a-9c9d90887a50",
+              "answer": [
+                {
+                  "valueInteger": 6
+                }
+              ]
+            },
+            {
+              "linkId": "4f04affb-22a8-4da5-88d8-78bc6d0454e7",
+              "answer": [
+                {
+                  "valueDate": "2022-08-31"
+                }
+              ]
+            }
+          ]
         }
-      ],
-      "status": "ready",
-      "intent": "plan",
-      "priority": "routine",
-      "description": "New Born registration task",
-      "for": {
-        "reference": "Patient/2a18662d-a500-4457-8e1b-efd5eada1cda"
-      },
-      "executionPeriod": {
-        "start": "2022-08-18T00:00:00",
-        "end": "2022-08-20T00:00:00"
-      },
-      "authoredOn": "2022-08-18T16:19:35+00:00",
-      "reasonReference": {
-        "reference": "Questionnaire/f0a04fc4-4179-4df4-b2dc-8b2eac444d0b"
-      }
-    }
-  ],
-  "questionnaire": "Questionnaire/132170",
-  "subject": {
-    "reference": "Patient/2a18662d-a500-4457-8e1b-efd5eada1cda"
-  },
-  "authored": "2022-08-18T16:19:32+00:00",
-  "item": [
+      ]
+    },
     {
-      "linkId": "dd90825d-c161-480a-8f9f-ab2921155be2",
+      "linkId": "84d77d0b-754d-48ed-800e-905cf47b9ba6",
       "answer": [
         {
           "valueCoding": {
-            "id": "a67a4c44-8505-4dfa-b026-41619e0f51a2",
-            "system": "urn:uuid:1329ec3a-f409-4a8b-cae0-8c0911dc3a0c",
-            "code": "live-birth",
-            "display": "Live birth"
-          }
+            "id": "fff11283-6334-4b73-858e-34dd01e199b1",
+            "system": "urn:uuid:8711d963-b2bd-445b-8fb1-e19d999dbc81",
+            "code": "yes",
+            "display": "Yes"
+          },
+          "item": [
+            {
+              "linkId": "d065ac2c-31af-4bbb-8706-2c6a632c5e7a",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "id": "c65d215c-7809-4637-8932-c7b7788ef421",
+                    "system": "urn:uuid:52bafe9a-870c-48c2-cdd5-e6d880d7206a",
+                    "code": "fever/chill",
+                    "display": "Fever/chill"
+                  },
+                  "item": [
+                    {
+                      "linkId": "1b625d5c-d0bc-44d5-8eed-3efc37c51f84",
+                      "answer": [
+                        {
+                          "valueCoding": {
+                            "id": "90708b0f-de8f-4345-872e-61d9e1589047",
+                            "system": "urn:uuid:5733187d-83d0-449c-e4a6-e60f1bbe26d7",
+                            "code": "yes",
+                            "display": "Yes"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     {
-      "linkId": "5c9a5b34-04ed-4f41-8614-9fb42333871a",
-      "answer": [
-        {
-          "valueDate": "2022-08-18"
-        }
-      ]
-    },
-    {
-      "linkId": "91df4f8b-69ff-44f9-bd45-1648f326fd22",
-      "answer": [
-        {
-          "valueCoding": {
-            "id": "aaceba95-a2c2-43d1-e5ac-e2551fb2ce65",
-            "system": "urn:uuid:8c375172-d44b-42d4-e166-70c2157b3843",
-            "code": "home",
-            "display": "Home"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "a9e50fc1-8d74-42e2-8185-fae889afcb55",
-      "answer": [
-        {
-          "valueInteger": 1
-        }
-      ]
-    },
-    {
-      "linkId": "6cf13e80-af2f-40fe-f70d-00fbdc331ba8",
-      "answer": [
-        {
-          "valueCoding": {
-            "id": "f03a9990-3e6d-4498-8dca-c4135f30f1df",
-            "system": "urn:uuid:61d9d3d6-8832-494a-8f3a-5b97b88cfb79",
-            "code": "under-weight",
-            "display": "Normal (2kgs and above)"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "b5de9ea9-b01b-4cde-8114-bea0759b84ee",
+      "linkId": "31009ee0-a0c9-46f0-8ef6-e65b34777aa1",
       "answer": [
         {
           "valueCoding": {
-            "id": "7ec752f2-452d-4e08-c29e-c9b6d080a1a0",
-            "system": "urn:uuid:dbb08802-9aa9-4e41-b7b4-1c63eb713ef5",
-            "code": "no",
-            "display": "No"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "8d52a178-2dba-45f7-9973-a56c94329f77",
-      "answer": [
-        {
-          "valueCoding": {
-            "id": "7409195f-cdad-4126-bc3b-f5594bfbdf81",
-            "system": "urn:uuid:9e54da28-eefb-4f21-dce4-20123c2a4f3e",
-            "code": "no",
-            "display": "No"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "d26cf25a-5811-47dc-bfe9-84899c0e9825",
-      "answer": [
-        {
-          "valueCoding": {
-            "id": "29811a23-896f-4415-9a95-914e8ef464cf",
-            "system": "urn:uuid:b2cab913-6d12-4252-8a0f-3ae684122571",
-            "code": "none",
-            "display": "None"
-          }
+            "id": "0ac2b549-2300-46f4-9159-5178f9d81f85",
+            "system": "urn:uuid:11f0c610-8a18-41ef-814b-401aa71e9f0a",
+            "code": "yes",
+            "display": "Yes"
+          },
+          "item": [
+            {
+              "linkId": "ac9e4bf3-4691-45d1-93cd-d4d5b293661e",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "id": "03601957-24e3-49ef-82d7-9d5483401908",
+                    "system": "urn:uuid:c952513f-6cf1-4866-a909-ff273045b4c9",
+                    "code": "walking",
+                    "display": "Walking"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "1f94941a-616b-432b-dca6-a5bf12c475ef",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "id": "4b9a3cfe-3ba9-4e1b-e4c9-cf172d038864",
+                    "system": "urn:uuid:345a5eae-ab81-4a0c-9e47-141d5d2b2b25",
+                    "code": "yes",
+                    "display": "Yes"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "d79e1518-f96c-4268-884b-39f63950f578",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "id": "2f768bbb-f9b3-41b3-8347-97c42c1de5c5",
+                    "system": "urn:uuid:3bc0f36f-ca18-44c0-8646-a8402e6e688a",
+                    "code": "yes",
+                    "display": "Yes"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "07736486-4e2a-4c98-ea71-e351f279ff18",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "id": "ef2d6d4c-575d-43ac-8887-ee9dc0f9dc12",
+                    "system": "urn:uuid:b6aa81ee-2a24-49fd-ee5a-8c3a1018e368",
+                    "code": "yes",
+                    "display": "Yes"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "ec905b2f-7fa6-4f74-d7ae-a76539eb2632",
+              "answer": [
+                {
+                  "valueBoolean": true
+                }
+              ]
+            }
+          ]
         }
       ]
     }
