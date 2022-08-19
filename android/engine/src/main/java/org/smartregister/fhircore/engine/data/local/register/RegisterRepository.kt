@@ -23,6 +23,7 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -64,11 +65,13 @@ constructor(
     val baseResourceType = baseResourceClass.newInstance().resourceType
 
     val baseResources: List<Resource> =
-      searchResource(
-        baseResourceClass = baseResourceClass,
-        dataQueries = baseResourceConfig.dataQueries,
-        currentPage = currentPage
-      )
+      withContext(dispatcherProvider.io()) {
+        searchResource(
+          baseResourceClass = baseResourceClass,
+          dataQueries = baseResourceConfig.dataQueries,
+          currentPage = currentPage
+        )
+      }
 
     // Retrieve data for each of the configured related resources
     // Also retrieve data for nested related resources for each of the related resource
@@ -93,12 +96,14 @@ constructor(
     // Retrieve related resources recursively
     relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
       val relatedResources =
-        searchRelatedResources(
-          resourceConfig = resourceConfig,
-          baseResourceType = baseResourceType,
-          baseResource = baseResource,
-          fhirPathExpression = resourceConfig.fhirPathExpression
-        )
+        withContext(dispatcherProvider.io()) {
+          searchRelatedResources(
+            resourceConfig = resourceConfig,
+            baseResourceType = baseResourceType,
+            baseResource = baseResource,
+            fhirPathExpression = resourceConfig.fhirPathExpression
+          )
+        }
       currentRelatedResources.addAll(relatedResources)
     }
 
@@ -179,7 +184,7 @@ constructor(
         }
     }
     relatedResourceData.forEach { resourceData: RelatedResourceData ->
-      resourceConfig.relatedResources?.forEach {
+      resourceConfig.relatedResources.forEach {
         val searchRelatedResources =
           searchRelatedResources(
             resourceConfig = it,
@@ -241,7 +246,8 @@ constructor(
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
 
-    val baseResource: Resource = fhirEngine.get(baseResourceType, resourceId)
+    val baseResource: Resource =
+      withContext(dispatcherProvider.io()) { fhirEngine.get(baseResourceType, resourceId) }
 
     return retrieveRelatedResources(
       relatedResourcesConfig = relatedResourcesConfig,

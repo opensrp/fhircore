@@ -136,7 +136,7 @@ fun ProfileScreen(
       if (!fabActions.isNullOrEmpty()) {
         ExtendedFloatingActionButton(
           contentColor = Color.White,
-          text = { fabActions.first().display?.let { Text(text = it.uppercase()) } },
+          text = { Text(text = fabActions.first().display.uppercase()) },
           onClick = {
             val clickAction =
               fabActions.first().actions?.find { it.trigger == ActionTrigger.ON_CLICK }
