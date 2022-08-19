@@ -25,6 +25,7 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
@@ -37,6 +38,7 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
+import timber.log.Timber
 
 @HiltViewModel
 class ProfileViewModel
@@ -93,6 +95,10 @@ constructor(
             }
             ApplicationWorkflow.CHANGE_MANAGING_ENTITY -> {
               if (event.managingEntity == null) return@forEach
+              if (event.resourceData?.baseResource?.resourceType != ResourceType.Group) {
+                Timber.w("Wrong resource type. Expecting Group resource")
+                return@forEach
+              }
               changeManagingEntity(event = event)
             }
             else -> {}
