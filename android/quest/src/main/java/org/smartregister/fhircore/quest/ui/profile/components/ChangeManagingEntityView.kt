@@ -65,7 +65,6 @@ import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 const val TEST_TAG_SAVE = "saveTestTag"
 const val TEST_TAG_CANCEL = "cancelTestTag"
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ChangeManagingEntityView(
   modifier: Modifier = Modifier,
