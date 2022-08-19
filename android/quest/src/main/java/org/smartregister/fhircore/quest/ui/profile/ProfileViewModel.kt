@@ -93,43 +93,7 @@ constructor(
             }
             ApplicationWorkflow.CHANGE_MANAGING_ENTITY -> {
               if (event.managingEntity == null) return@forEach
-              val resourceTypeToFilter = event.managingEntity.fhirPathResource.resourceType
-
-              val eligibleManagingEntityList =
-                event
-                  .resourceData
-                  ?.relatedResourcesMap
-                  ?.get(resourceTypeToFilter)
-                  ?.filter {
-                    FhirPathDataExtractor.extractValue(
-                        it,
-                        event.managingEntity.fhirPathResource.fhirPathExpression
-                      )
-                      .toBoolean()
-                  }
-                  ?.map {
-                    EligibleManagingEntity(
-                      groupId = event.resourceData.baseResource.logicalId,
-                      logicalId = it.logicalId,
-                      memberInfo =
-                        FhirPathDataExtractor.extractValue(
-                          it,
-                          event.managingEntity.infoFhirPathExpression
-                        )
-                    )
-                  }
-              (event.context as AppCompatActivity).let { activity ->
-                ProfileBottomSheetFragment(
-                    eligibleManagingEntities = eligibleManagingEntityList!!,
-                    onSaveClick = {
-                      ProfileEvent.OnChangeManagingEntity(
-                        newManagingEntityId = it.logicalId,
-                        groupId = it.groupId
-                      )
-                    }
-                  )
-                  .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
-              }
+              changeManagingEntity(event = event)
             }
             else -> {}
           }
@@ -142,6 +106,46 @@ constructor(
           registerRepository.changeManagingEntity(event.newManagingEntityId, event.groupId)
         }
       }
+    }
+  }
+
+  private fun changeManagingEntity(event: ProfileEvent.OverflowMenuClick) {
+    val resourceTypeToFilter = event.managingEntity?.fhirPathResource?.resourceType
+
+    val eligibleManagingEntityList =
+      event
+        .resourceData
+        ?.relatedResourcesMap
+        ?.get(resourceTypeToFilter)
+        ?.filter {
+          FhirPathDataExtractor.extractValue(
+              it,
+              event.managingEntity?.fhirPathResource?.fhirPathExpression ?: ""
+            )
+            .toBoolean()
+        }
+        ?.map {
+          EligibleManagingEntity(
+            groupId = event.resourceData.baseResource.logicalId,
+            logicalId = it.logicalId,
+            memberInfo =
+              FhirPathDataExtractor.extractValue(
+                it,
+                event.managingEntity?.infoFhirPathExpression ?: ""
+              )
+          )
+        }
+    (event.context as AppCompatActivity).let { activity ->
+      ProfileBottomSheetFragment(
+          eligibleManagingEntities = eligibleManagingEntityList!!,
+          onSaveClick = {
+            ProfileEvent.OnChangeManagingEntity(
+              newManagingEntityId = it.logicalId,
+              groupId = it.groupId
+            )
+          }
+        )
+        .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
     }
   }
 }
