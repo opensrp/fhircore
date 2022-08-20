@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "name": "Reveal Streets Style",
+  "name": "Quest Streets Style",
   "metadata": {
     "mapbox:origin": "streets-v10",
     "mapbox:autocomposite": true,
@@ -102,7 +102,7 @@
       "url": "mapbox://mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7",
       "type": "vector"
     },
-    "reveal-data-set": {
+    "quest-data-set": {
       "type": "geojson",
       "data": {
         "type": "FeatureCollection",
@@ -12311,10 +12311,10 @@
       }
     },
     {
-      "id": "reveal-data-polygons",
+      "id": "quest-data-polygons",
       "type": "fill",
       "layout": {},
-      "source": "reveal-data-set",
+      "source": "quest-data-set",
       "filter": [
         "==",
         "$type",
@@ -12373,9 +12373,9 @@
       }
     },
     {
-      "id": "reveal-data-points",
+      "id": "quest-data-points",
       "type": "circle",
-      "source": "reveal-data-set",
+      "source": "quest-data-set",
       "filter": [
         "==",
         "$type",

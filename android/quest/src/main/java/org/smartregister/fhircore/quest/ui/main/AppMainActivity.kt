@@ -35,7 +35,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.R
@@ -76,32 +75,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
 
-    /*
-  val getLocationPos = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-    val intent = result.data ?: run {
-      Timber.e(Exception("Data back from GeowidgetActivity is null"))
-      return@registerForActivityResult
-    }
-    val locationId = intent.getStringExtra(GeowidgetActivity.LOCATION_ID) ?: run {
-      Timber.e(Exception("LOCATION-ID from GeowidgetActivity is null"))
-      return@registerForActivityResult
-    }
-
-    activity.lifecycleScope.launch (Dispatchers.IO) {
-      val fhirEngine = FhirEngineProvider.getInstance(context)
-
-      val location = fhirEngine.get(ResourceType.Location, locationId)
-      val locationString = FhirContext.forR4Cached().newJsonParser().encodeResourceToString(location)
-
-      val bundle = bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(locationString)))
-
-      activity.lifecycleScope.launch(Dispatchers.Main) {
-        context.launchQuestionnaire<QuestionnaireActivity>("82952-geowidget", intentBundle = bundle)
-      }
-    }
-  }
-     */
-
     val getLocationPos = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
       val intent = result.data ?: run {
         Timber.e(Exception("Data back from GeowidgetActivity is null"))
@@ -128,7 +101,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
     }
 
-    appMainViewModel.getLocationPos = getLocationPos
+    appMainViewModel.mapLauncher = getLocationPos
   }
 
   override fun onResume() {

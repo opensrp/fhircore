@@ -58,7 +58,7 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
 
       mapboxMap.setStyle(builder) { style ->
         Timber.e("Finished setting the style")
-        geoJsonSource = style.getSourceAs<GeoJsonSource>("reveal-data-set")
+        geoJsonSource = style.getSourceAs<GeoJsonSource>("quest-data-set")
 
         geoJsonSource?.also { source ->
           featureCollection?.also { collection ->
@@ -82,7 +82,7 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
           )
           .show()
       },
-      "reveal-data-points"
+      "quest-data-points"
     )
 
     kujakuMapView.addPoint(

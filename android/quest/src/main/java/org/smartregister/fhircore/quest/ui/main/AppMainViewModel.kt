@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
@@ -57,6 +58,7 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.geowidget.screens.GeowidgetActivity
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.NavigationArg.bindArgumentsOf
@@ -76,7 +78,7 @@ constructor(
   val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
 
-  lateinit var getLocationPos: ActivityResultLauncher<Intent>
+  lateinit var mapLauncher: ActivityResultLauncher<Intent>
 
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
@@ -181,10 +183,16 @@ constructor(
           ApplicationWorkflow.LAUNCH_PROFILE ->
             // TODO bind the necessary patient profile url params
             event.navController.navigate(MainNavigationScreen.Profile.route)
+          ApplicationWorkflow.LAUNCH_MAP ->
+            launchGeowidgetWithPromise(event.context, mapLauncher)
           null -> return
         }
       }
     }
+  }
+
+  internal fun launchGeowidgetWithPromise(context: Context, mapLauncher: ActivityResultLauncher<Intent>?) {
+    mapLauncher?.launch(Intent(context, GeowidgetActivity::class.java))
   }
 
   private fun retrieveRegisterCountMap(): Map<String, Long> {

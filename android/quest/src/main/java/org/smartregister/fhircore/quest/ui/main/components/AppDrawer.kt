@@ -86,6 +86,7 @@ import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
 import org.smartregister.fhircore.geowidget.screens.GeowidgetActivity
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
@@ -114,8 +115,7 @@ fun AppDrawer(
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  appVersionPair: Pair<Int, String>? = null,
-  getLocationPos: ActivityResultLauncher<Intent>? = null
+  appVersionPair: Pair<Int, String>? = null
 ) {
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
@@ -184,8 +184,7 @@ fun AppDrawer(
           navController = navController,
           openDrawer = openDrawer,
           onSideMenuClick = onSideMenuClick,
-          appUiState = appUiState,
-          getLocationPos,
+          appUiState = appUiState
         )
       }
     }
@@ -315,11 +314,15 @@ private fun StaticMenus(
   navController: NavHostController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  appUiState: AppMainUiState,
-  getLocationPos: ActivityResultLauncher<Intent>? = null
+  appUiState: AppMainUiState
 ) {
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
     items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
+
+      if (navigationMenu.display.contains("maps") && BuildConfig.GEOWIDGET_ENABLED) {
+        return@items
+      }
+
       SideMenuItem(
         // TODO Do we want save icons as base64 encoded strings
         iconResource = context.retrieveResourceId(navigationMenu.icon),
@@ -338,27 +341,8 @@ private fun StaticMenus(
           )
         }
       )
-      SideMenuItem(
-        iconResource = context.retrieveResourceId(navigationMenu.icon),
-        title = "Geowidget",
-        endText = "",
-        showEndText = false,
-        onSideMenuClick = {
-          openDrawer(false)
-          launchGeowidgetWithPromise(context, getLocationPos)
-        }
-      )
     }
   }
-}
-
-fun launchGeowidgetWithPromise(context: Context, getLocationPos: ActivityResultLauncher<Intent>?) {
-  /*val activity = context.getActivity() ?: run{
-    Timber.e(Exception("The activity could not be found"))
-    return
-  }*/
-
-  getLocationPos?.launch(Intent(context, GeowidgetActivity::class.java))
 }
 
 @Composable
