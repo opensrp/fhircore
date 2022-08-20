@@ -28,15 +28,17 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group) {
           src -> groupIdentifier.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
        } "rule_group_identifier";
 
-       src -> group.characteristic = create('Group_Characteristic') as groupCharacteristic then {
-          src -> groupCharacteristic.code = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://fhir.labs.smartregister.org/codes/family-location", "location") "group_characteristic_cc_cod";
-                src -> concept.text = 'Household Location' "group_characteristic_cc_text";
-            } "group_characteristic_cc";
-          src -> groupCharacteristic.value = create("Reference") as ref then {
-                src -> ref.reference = evaluate(src, "Location/" + $this.item.where(linkId = "household-location-reference").answer.value) "group_characteristic_gc_1";
-            } "group_characteristic_gc";
-       } "group_characteristic";
+       src.item as householdLocation where(linkId = 'household-location-reference' and answer.count() > 0 and answer.empty().not()) then {
+           src -> group.characteristic = create('Group_Characteristic') as groupCharacteristic then {
+              src -> groupCharacteristic.code = create('CodeableConcept') as concept then {
+                    src -> concept.coding = c("http://fhir.labs.smartregister.org/codes/family-location", "location") "group_characteristic_cc_cod";
+                    src -> concept.text = 'Household Location' "group_characteristic_cc_text";
+                } "group_characteristic_cc";
+              src -> groupCharacteristic.value = create("Reference") as ref then {
+                    src -> ref.reference = evaluate(src, "Location/" + $this.item.where(linkId = "household-location-reference").answer.value) "group_characteristic_gc_1";
+                } "group_characteristic_gc";
+           } "group_characteristic";
+       } "group_characteristic_exists";
 
        src -> group.active = true "r_grp_status_data";
        src -> group.type = 'person' "r_grp_type_data";
