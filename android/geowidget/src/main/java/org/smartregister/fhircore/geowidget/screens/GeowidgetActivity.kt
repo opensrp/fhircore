@@ -2,8 +2,6 @@ package org.smartregister.fhircore.geowidget.screens
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.TextUtils
-import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -44,68 +42,52 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
     Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_TOKEN)
-
     setContentView(R.layout.activity_geowidget)
-
     geowidgetViewModel.context = this
 
     kujakuMapView = findViewById(R.id.mapView)
     kujakuMapView.getMapAsync { mapboxMap ->
-      Timber.e("Get Map async finished")
+      Timber.i("Get Map async finished")
       val builder = Style.Builder().fromUri("asset://fhircore_style.json")
 
       mapboxMap.setStyle(builder) { style ->
-        Timber.e("Finished setting the style")
-        geoJsonSource = style.getSourceAs<GeoJsonSource>("quest-data-set")
-
-        geoJsonSource?.also { source ->
-          featureCollection?.also { collection ->
-            Timber.e("Setting the feature collection")
-            source.setGeoJson(collection)
-
-            zoomToPointsOnMap(featureCollection)
-          }
-        }
+        Timber.i("Finished setting the style")
+        renderResourcesOnMap(style)
       }
     }
 
-    kujakuMapView.setOnFeatureClickListener(
-      { featuresList ->
-        val names =
-          featuresList.filter { it.hasProperty("name") }.map { it.getStringProperty("name") }
-        Toast.makeText(
-            this@GeowidgetActivity,
-            "Family clicked: ${TextUtils.join(",", names)}",
-            Toast.LENGTH_LONG
-          )
-          .show()
-      },
-      "quest-data-points"
-    )
+    setFeatureClickListener()
+    enableFamilyRegistration()
 
+    // Display the groups
+    geowidgetViewModel.getFamiliesFeatureCollectionStream().observe(this, this)
+  }
+
+  private fun renderResourcesOnMap(style: Style) {
+    geoJsonSource = style.getSourceAs<GeoJsonSource>("quest-data-set")
+
+    geoJsonSource?.also { source ->
+      featureCollection?.also { collection ->
+        Timber.i("Setting the feature collection")
+        source.setGeoJson(collection)
+
+        zoomToPointsOnMap(featureCollection)
+      }
+    }
+  }
+
+  private fun enableFamilyRegistration() {
     kujakuMapView.addPoint(
       true,
       object : AddPointCallback {
 
         override fun onPointAdd(featureJSONObject: JSONObject?) {
           // Open the family registration with the coordinates
-
           featureJSONObject ?: return
-
           val coordinates = featureJSONObject.coordinates() ?: return
 
-          val location =
-            Location().apply {
-              id = UUID.randomUUID().toString()
-              status = Location.LocationStatus.INACTIVE
-              position =
-                Location.LocationPositionComponent().apply {
-                  longitude = BigDecimal(coordinates.longitude)
-                  latitude = BigDecimal(coordinates.latitude)
-                }
-            }
+          val location = generateLocation(coordinates)
 
           Toast.makeText(this@GeowidgetActivity, "Please wait...", Toast.LENGTH_LONG)
             .show()
@@ -113,26 +95,65 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
           // Save it in the viewModel
           geowidgetViewModel.saveLocation(location).observe(this@GeowidgetActivity) {
             if (it) {
-              Toast.makeText(this@GeowidgetActivity, "Openning the family registration form", Toast.LENGTH_LONG)
+              Toast.makeText(
+                this@GeowidgetActivity,
+                getString(R.string.openning_family_registration_form),
+                Toast.LENGTH_LONG
+              )
                 .show()
 
-              val intentData =
-                Intent().apply { putExtra(LOCATION_ID, location.idElement.value) }
-
-              setResult(RESULT_OK, intentData)
-              this@GeowidgetActivity.finish()
+              setLocationReferenceAsResult(location)
             }
           }
         }
 
         override fun onCancel() {}
       }
-    )
+      )
+  }
 
-    findViewById<Button>(R.id.register_family)
+  private fun setLocationReferenceAsResult(location: Location) {
+    val intentData =
+      Intent().apply { putExtra(LOCATION_ID, location.idElement.value) }
 
-    // Display the groups
-    geowidgetViewModel.getFamiliesFeatureCollectionStream().observe(this, this)
+    setResult(RESULT_OK, intentData)
+    this@GeowidgetActivity.finish()
+  }
+
+  private fun generateLocation(coordinates: Coordinate) : Location {
+    return Location().apply {
+      id = UUID.randomUUID().toString()
+      status = Location.LocationStatus.INACTIVE
+      position =
+        Location.LocationPositionComponent().apply {
+          longitude = BigDecimal(coordinates.longitude)
+          latitude = BigDecimal(coordinates.latitude)
+        }
+    }
+  }
+
+  private fun setFeatureClickListener() {
+    kujakuMapView.setOnFeatureClickListener(
+      { featuresList ->
+        featuresList.firstOrNull { it.hasProperty("family-id") }
+          ?.let {
+            it.getStringProperty("family-id")
+              ?.also {
+                setFamilyIdAsResult(it)
+              }
+
+          }
+      },
+      "quest-data-points"
+      )
+  }
+
+  private fun setFamilyIdAsResult(familyId: String) {
+    val intentData =
+      Intent().apply { putExtra(FAMILY_ID, familyId) }
+
+    setResult(RESULT_OK, intentData)
+    this@GeowidgetActivity.finish()
   }
 
   override fun onChanged(featureCollection: FeatureCollection?) {
@@ -141,11 +162,7 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
 
     geoJsonSource?.also { source ->
       featureCollection?.also { collection ->
-        Timber.e("Feature loaded : ${featureCollection.toJson()}")
-
         source.setGeoJson(collection)
-        //this.featureCollection = null
-
         zoomToPointsOnMap(featureCollection)
       }
     }
@@ -222,5 +239,6 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
 
   companion object {
     const val LOCATION_ID = "LOCATION-ID"
+    const val FAMILY_ID = "FAMILY-ID"
   }
 }
