@@ -317,12 +317,7 @@ private fun StaticMenus(
   appUiState: AppMainUiState
 ) {
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
-    items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
-
-      if (navigationMenu.display.contains("maps") && BuildConfig.GEOWIDGET_ENABLED) {
-        return@items
-      }
-
+    items(navigationConfiguration.staticMenu.filter { !(it.id.contains("map")  && !BuildConfig.GEOWIDGET_ENABLED)}, { it.id }) { navigationMenu ->
       SideMenuItem(
         // TODO Do we want save icons as base64 encoded strings
         iconResource = context.retrieveResourceId(navigationMenu.icon),

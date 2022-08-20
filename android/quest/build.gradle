@@ -199,7 +199,7 @@ dependencies {
             transitive = true
             exclude group: 'stax', module: 'stax-api'
         }*/
-        implementation deps.mapbox_sdk
+        //implementation deps.mapbox_sdk
     }
 
     //Hilt - Dependency Injection
