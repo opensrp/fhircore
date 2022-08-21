@@ -264,5 +264,6 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
   companion object {
     const val LOCATION_ID = "LOCATION-ID"
     const val FAMILY_ID = "FAMILY-ID"
+    const val FAMILY_REGISTRATION_QUESTIONNAIRE = "82952"
   }
 }

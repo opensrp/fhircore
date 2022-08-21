@@ -25,8 +25,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -35,7 +37,9 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Location
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -45,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationConf
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
@@ -75,10 +80,11 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val configService: ConfigService,
   val registerRepository: RegisterRepository,
-  val dispatcherProvider: DefaultDispatcherProvider
+  val dispatcherProvider: DefaultDispatcherProvider,
+  val defaultRepository: DefaultRepository
 ) : ViewModel() {
 
-  lateinit var mapLauncher: ActivityResultLauncher<Intent>
+  lateinit var mapLauncherResultHandler: ActivityResultLauncher<Intent>
 
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
@@ -183,7 +189,8 @@ constructor(
           ApplicationWorkflow.LAUNCH_PROFILE ->
             // TODO bind the necessary patient profile url params
             event.navController.navigate(MainNavigationScreen.Profile.route)
-          ApplicationWorkflow.LAUNCH_MAP -> launchGeowidgetWithPromise(event.context, mapLauncher)
+          ApplicationWorkflow.LAUNCH_MAP ->
+            launchGeowidgetWithPromise(event.context, mapLauncherResultHandler)
           null -> return
         }
       }
@@ -206,6 +213,29 @@ constructor(
       }
     }
     return countsMap
+  }
+
+  fun launchFamilyRegistrationWithLocationId(context: Context, locationId: String) {
+    viewModelScope.launch(Dispatchers.IO) {
+      val location = defaultRepository.loadResource<Location>(locationId)
+      val locationString =
+        FhirContext.forR4Cached().newJsonParser().encodeResourceToString(location)
+
+      val bundle =
+        bundleOf(
+          Pair(
+            QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+            arrayListOf(locationString)
+          )
+        )
+
+      viewModelScope.launch(Dispatchers.Main) {
+        context.launchQuestionnaire<QuestionnaireActivity>(
+          GeowidgetActivity.FAMILY_REGISTRATION_QUESTIONNAIRE,
+          intentBundle = bundle
+        )
+      }
+    }
   }
 
   private suspend fun List<NavigationMenuConfig>.setRegisterCount(
