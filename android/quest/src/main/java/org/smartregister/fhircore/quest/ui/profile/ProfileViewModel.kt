@@ -158,9 +158,11 @@ constructor(
       ProfileBottomSheetFragment(
           eligibleManagingEntities = eligibleManagingEntityList!!,
           onSaveClick = {
-            ProfileEvent.OnChangeManagingEntity(
-              newManagingEntityId = it.logicalId,
-              groupId = it.groupId
+            onEvent(
+              ProfileEvent.OnChangeManagingEntity(
+                newManagingEntityId = it.logicalId,
+                groupId = it.groupId
+              )
             )
           },
           managingEntity = event.managingEntity
