@@ -29,7 +29,8 @@ data class QuestionnaireConfig(
   val setOrganizationDetails: Boolean = false,
   val planDefinitions: List<String>? = null,
   val type: QuestionnaireType = QuestionnaireType.DEFAULT,
-  val customActivity: String? = null
+  val customActivity: String? = null,
+  val clientIdentifier: String? = null
 )
 
 enum class CustomQuestionnaireActivity {

@@ -294,3 +294,9 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
 fun String.resourceClassType(): Class<out Resource> {
   return Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
 }
+/**
+ * A function that returns the logical id from the result of a fhirpath that extracts the Resource
+ * id e.g running this fhirpath expression "Group.id" returns an id with the following format
+ * [Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2]
+ */
+fun String.logicalIdFromFhirPathExtractedId() = this.split("/")?.get(1)

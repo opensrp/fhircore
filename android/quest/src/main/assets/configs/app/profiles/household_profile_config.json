@@ -109,6 +109,13 @@
       "actions": [
         "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
       ]
+    },
+    {
+      "name": "familyLogicalId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id.value'))"
+      ]
     }
   ],
   "views": [
@@ -229,7 +236,8 @@
           "questionnaire": {
             "id": "82952",
             "title": "Add Family",
-            "type": "EDIT"
+            "type": "EDIT",
+            "clientIdentifier": "@{familyLogicalId}"
           }
         }
       ]
@@ -268,14 +276,15 @@
           "params": [
             {
               "key": "familyId",
-              "value": "@{familyId}"
+              "value": "@{familyLogicalId}"
             }
           ],
           "questionnaire": {
             "id": "101644",
             "title": "eCBIS Remove Family Form",
             "type": "DEFAULT",
-            "customActivity": "REMOVE_FAMILY"
+            "customActivity": "REMOVE_FAMILY",
+            "clientIdentifier": "@{familyLogicalId}"
           }
         }
       ]

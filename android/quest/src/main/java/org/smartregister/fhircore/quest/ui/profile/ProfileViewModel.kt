@@ -33,10 +33,11 @@ import org.smartregister.fhircore.engine.configuration.CustomQuestionnaireActivi
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.logicalIdFromFhirPathExtractedId
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
@@ -84,7 +85,6 @@ constructor(
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               actionConfig.questionnaire?.let { questionnaireConfig ->
                 val questionnaireType = questionnaireConfig.type
-                Group().logicalId
                 val classType =
                   if (actionConfig.questionnaire!!.customActivity != null)
                     actionConfig.questionnaire!!.customActivity?.let {
@@ -94,8 +94,11 @@ constructor(
                 event.context.launchQuestionnaire<QuestionnaireActivity>(
                   questionnaireId = questionnaireConfig.id,
                   clientIdentifier =
-                    if (questionnaireType == QuestionnaireType.DEFAULT) null
-                    else event.resourceData?.baseResource?.logicalId,
+                    actionConfig
+                      .questionnaire
+                      ?.clientIdentifier
+                      ?.interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
+                      ?.logicalIdFromFhirPathExtractedId(),
                   questionnaireType = questionnaireType,
                   intentBundle =
                     actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap()),
