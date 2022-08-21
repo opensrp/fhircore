@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.geowidget.model
 
 import android.content.Context
@@ -5,15 +21,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.DatabaseErrorStrategy
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineConfiguration
 import com.google.android.fhir.FhirEngineProvider
-import com.google.android.fhir.NetworkConfiguration
-import com.google.android.fhir.ServerConfiguration
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.Authenticator
 import com.mapbox.geojson.FeatureCollection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,15 +32,12 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Reference
-import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.KujakuConversionInterface
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 10-08-2022. */
 class GeowidgetViewModel : ViewModel() {
 
-  val fhirEngine: FhirEngine by lazy {
-    FhirEngineProvider.getInstance(context)
-  }
+  val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(context) }
   lateinit var context: Context
 
   suspend fun getFamiliesFeatureCollection(): FeatureCollection {
@@ -89,33 +97,35 @@ class GeowidgetViewModel : ViewModel() {
     return familiesList
   }
 
-  fun saveLocation(location: Location) : LiveData<Boolean> {
+  fun saveLocation(location: Location): LiveData<Boolean> {
     val liveData = MutableLiveData<Boolean>()
-    viewModelScope.launch (Dispatchers.IO) {
+    viewModelScope.launch(Dispatchers.IO) {
       fhirEngine.create(location)
       liveData.postValue(true)
     }
 
     return liveData
   }
-/*
-  fun getFhirEngine(): FhirEngine {
-    if (!this::fhirEngine1.isInitialized) {
-*//*
-      FhirEngineProvider.init(
-        FhirEngineConfiguration(
-          enableEncryptionIfSupported = !BuildConfig.DEBUG,
-          DatabaseErrorStrategy.UNSPECIFIED,
-          ServerConfiguration(
-            baseUrl = "https://fhir.labs.smartreigster.org/fhir/",
-            authenticator =
-              object : Authenticator {
-                override fun getAccessToken() = ""
-              },
-            networkConfiguration = NetworkConfiguration(120, 120, 120)
-          )
-        )
-      )*//*
+  /*
+    fun getFhirEngine(): FhirEngine {
+      if (!this::fhirEngine1.isInitialized) {
+  */
+  /*
+  FhirEngineProvider.init(
+    FhirEngineConfiguration(
+      enableEncryptionIfSupported = !BuildConfig.DEBUG,
+      DatabaseErrorStrategy.UNSPECIFIED,
+      ServerConfiguration(
+        baseUrl = "https://fhir.labs.smartreigster.org/fhir/",
+        authenticator =
+          object : Authenticator {
+            override fun getAccessToken() = ""
+          },
+        networkConfiguration = NetworkConfiguration(120, 120, 120)
+      )
+    )
+  )*/
+  /*
 
       fhirEngine1 = FhirEngineProvider.getInstance(context)
     }

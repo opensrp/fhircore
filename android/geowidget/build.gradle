@@ -1,9 +1,11 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'jacoco'
 }
 
 apply from: '../properties.gradle'
+apply from: '../jacoco.gradle'
 
 android {
     compileSdk 32
@@ -13,7 +15,6 @@ android {
         targetSdk 32
 
         buildConfigField("String", 'MAPBOX_SDK_TOKEN', "\"${MAPBOX_SDK_TOKEN}\"")
-        buildConfigField("boolean", 'MAPBOX_SDK_ENABLED', "true")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"

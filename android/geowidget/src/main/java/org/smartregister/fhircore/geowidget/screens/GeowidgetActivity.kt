@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.geowidget.screens
 
 import android.content.Intent
@@ -100,10 +116,10 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
           geowidgetViewModel.saveLocation(location).observe(this@GeowidgetActivity) {
             if (it) {
               Toast.makeText(
-                this@GeowidgetActivity,
-                getString(R.string.openning_family_registration_form),
-                Toast.LENGTH_LONG
-              )
+                  this@GeowidgetActivity,
+                  getString(R.string.openning_family_registration_form),
+                  Toast.LENGTH_LONG
+                )
                 .show()
               setLocationReferenceAsResult(location)
             }
@@ -112,18 +128,17 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
 
         override fun onCancel() {}
       }
-      )
+    )
   }
 
   private fun setLocationReferenceAsResult(location: Location) {
-    val intentData =
-      Intent().apply { putExtra(LOCATION_ID, location.idElement.value) }
+    val intentData = Intent().apply { putExtra(LOCATION_ID, location.idElement.value) }
 
     setResult(RESULT_OK, intentData)
     this@GeowidgetActivity.finish()
   }
 
-  private fun generateLocation(featureJSONObject: JSONObject, coordinates: Coordinate) : Location {
+  private fun generateLocation(featureJSONObject: JSONObject, coordinates: Coordinate): Location {
     return Location().apply {
       id = UUID.randomUUID().toString()
       status = Location.LocationStatus.INACTIVE
@@ -133,34 +148,33 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
           latitude = BigDecimal(coordinates.latitude)
         }
 
-      extension = listOf(Extension(KujakuConversionInterface.BOUNDARY_GEOJSON_EXT_URL).apply {
-        setValue(Attachment().apply {
-          contentType = "application/geo+json"
-          data = Base64.encodeBase64(featureJSONObject.toString().encodeToByteArray())
-        })
-      })
+      extension =
+        listOf(
+          Extension(KujakuConversionInterface.BOUNDARY_GEOJSON_EXT_URL).apply {
+            setValue(
+              Attachment().apply {
+                contentType = "application/geo+json"
+                data = Base64.encodeBase64(featureJSONObject.toString().encodeToByteArray())
+              }
+            )
+          }
+        )
     }
   }
 
   private fun setFeatureClickListener() {
     kujakuMapView.setOnFeatureClickListener(
       { featuresList ->
-        featuresList.firstOrNull { it.hasProperty("family-id") }
-          ?.let {
-            it.getStringProperty("family-id")
-              ?.also {
-                setFamilyIdAsResult(it)
-              }
-
-          }
+        featuresList.firstOrNull { it.hasProperty("family-id") }?.let {
+          it.getStringProperty("family-id")?.also { setFamilyIdAsResult(it) }
+        }
       },
       "quest-data-points"
-      )
+    )
   }
 
   private fun setFamilyIdAsResult(familyId: String) {
-    val intentData =
-      Intent().apply { putExtra(FAMILY_ID, familyId) }
+    val intentData = Intent().apply { putExtra(FAMILY_ID, familyId) }
 
     setResult(RESULT_OK, intentData)
     this@GeowidgetActivity.finish()
