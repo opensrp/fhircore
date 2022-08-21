@@ -32,7 +32,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Reference
-import org.smartregister.fhircore.geowidget.KujakuConversionInterface
+import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 10-08-2022. */
 class GeowidgetViewModel : ViewModel() {
@@ -44,7 +44,7 @@ class GeowidgetViewModel : ViewModel() {
     val families = getFamilies()
 
     val featureCollection =
-      KujakuConversionInterface()
+      KujakuFhirCoreConverter()
         .generateFeatureCollection(context, families.map { listOf(it.first, it.second) })
 
     return featureCollection
@@ -106,30 +106,4 @@ class GeowidgetViewModel : ViewModel() {
 
     return liveData
   }
-  /*
-    fun getFhirEngine(): FhirEngine {
-      if (!this::fhirEngine1.isInitialized) {
-  */
-  /*
-  FhirEngineProvider.init(
-    FhirEngineConfiguration(
-      enableEncryptionIfSupported = !BuildConfig.DEBUG,
-      DatabaseErrorStrategy.UNSPECIFIED,
-      ServerConfiguration(
-        baseUrl = "https://fhir.labs.smartreigster.org/fhir/",
-        authenticator =
-          object : Authenticator {
-            override fun getAccessToken() = ""
-          },
-        networkConfiguration = NetworkConfiguration(120, 120, 120)
-      )
-    )
-  )*/
-  /*
-
-      fhirEngine1 = FhirEngineProvider.getInstance(context)
-    }
-
-    return fhirEngine1
-  }*/
 }

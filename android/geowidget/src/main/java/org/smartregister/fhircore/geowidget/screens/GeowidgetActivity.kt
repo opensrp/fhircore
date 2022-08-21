@@ -43,7 +43,7 @@ import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Location
 import org.json.JSONObject
 import org.smartregister.fhircore.geowidget.BuildConfig
-import org.smartregister.fhircore.geowidget.KujakuConversionInterface
+import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 import org.smartregister.fhircore.geowidget.R
 import org.smartregister.fhircore.geowidget.ext.Coordinate
 import org.smartregister.fhircore.geowidget.ext.latitude
@@ -150,7 +150,7 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
 
       extension =
         listOf(
-          Extension(KujakuConversionInterface.BOUNDARY_GEOJSON_EXT_URL).apply {
+          Extension(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL).apply {
             setValue(
               Attachment().apply {
                 contentType = "application/geo+json"

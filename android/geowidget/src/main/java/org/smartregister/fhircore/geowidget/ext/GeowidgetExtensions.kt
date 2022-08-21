@@ -21,7 +21,7 @@ import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.Location
 import org.json.JSONArray
 import org.json.JSONObject
-import org.smartregister.fhircore.geowidget.KujakuConversionInterface
+import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 16-08-2022. */
 typealias Coordinate = Pair<Double, Double>
@@ -35,7 +35,7 @@ val Coordinate.longitude: Double
 val Location.boundaryGeoJsonExtAttachment: Attachment?
   get() {
     return if (hasBoundaryGeoJsonExt) {
-      getExtensionByUrl(KujakuConversionInterface.BOUNDARY_GEOJSON_EXT_URL).value as Attachment
+      getExtensionByUrl(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL).value as Attachment
     } else {
       return null
     }
@@ -43,9 +43,9 @@ val Location.boundaryGeoJsonExtAttachment: Attachment?
 
 val Location.hasBoundaryGeoJsonExt
   get(): Boolean {
-    if (hasExtension(KujakuConversionInterface.BOUNDARY_GEOJSON_EXT_URL)) {
+    if (hasExtension(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL)) {
       val boundaryGeojsonFeature =
-        getExtensionByUrl(KujakuConversionInterface.BOUNDARY_GEOJSON_EXT_URL)
+        getExtensionByUrl(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL)
       if (boundaryGeojsonFeature != null && boundaryGeojsonFeature.value is Attachment) {
         val attachment = boundaryGeojsonFeature.value as Attachment
 

@@ -30,7 +30,7 @@ import org.json.JSONObject
 import org.smartregister.fhircore.geowidget.ext.getGeoJsonGeometry
 import org.smartregister.fhircore.geowidget.ext.updateBoundaryGeoJsonProperties
 
-class KujakuConversionInterface {
+class KujakuFhirCoreConverter {
 
   private lateinit var conversionGuide: HashMap<String, LinkedList<Pair<String, String>>>
 
@@ -50,7 +50,7 @@ class KujakuConversionInterface {
     jsonObject.keys().forEach { propertyKey ->
       val propertiesList = LinkedList<Pair<String, String>>()
 
-      conversionGuide.put(propertyKey, propertiesList)
+      conversionGuide[propertyKey] = propertiesList
 
       val declaredKeyValues = jsonObject.getJSONObject(propertyKey)
 
@@ -84,7 +84,7 @@ class KujakuConversionInterface {
           resource.updateBoundaryGeoJsonProperties(feature)
         }
 
-        conversionGuide.get(resource.resourceType.name)?.forEach { path ->
+        conversionGuide[resource.resourceType.name]?.forEach { path ->
           val value = fhirPath.evaluate(resource, path.second, Base::class.java).firstOrNull()
           properties.put(path.first, value)
         }

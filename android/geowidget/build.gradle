@@ -1,18 +1,20 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    //id 'kotlin-android'
     id 'jacoco'
+    id 'de.mannodermaus.android-junit5'
 }
 
 apply from: '../properties.gradle'
 apply from: '../jacoco.gradle'
 
 android {
-    compileSdk 32
+    compileSdkVersion sdk_versions.compile_sdk
 
     defaultConfig {
-        minSdk 21
-        targetSdk 32
+        minSdkVersion sdk_versions.min_sdk
+        targetSdkVersion sdk_versions.target_sdk
 
         buildConfigField("String", 'MAPBOX_SDK_TOKEN', "\"${MAPBOX_SDK_TOKEN}\"")
 
@@ -27,11 +29,21 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+
+    packagingOptions {
+        exclude 'META-INF/ASL-2.0.txt'
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
     }
 }
 
@@ -41,7 +53,7 @@ dependencies {
         transitive = true
         exclude group: 'stax', module: 'stax-api'
     }
-    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0'
+    implementation deps.mapbox_sdk_turf
 
     api('org.smartregister:data-capture:0.1.0-beta03-preview7-SNAPSHOT') {
         transitive = true
@@ -71,7 +83,14 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    testImplementation 'junit:junit:4.13.2'
+
+    testImplementation deps.junit5_api
+    testRuntimeOnly deps.junit5_engine
+    testRuntimeOnly deps.junit5_engine_vintage
+    testImplementation deps.robolectric
+    testImplementation deps.atsl.ext_junit
+    testImplementation deps.atsl.ext_junit_ktx
+
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
