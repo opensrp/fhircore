@@ -18,11 +18,6 @@ package org.smartregister.fhircore.quest.ui.main.components
 
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.Intent
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -58,22 +53,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.os.bundleOf
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.FhirEngineProvider
-import com.google.android.fhir.datacapture.enablement.fhirPathEngine
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.Language
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
 import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
@@ -83,15 +68,12 @@ import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.appVersion
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
-import org.smartregister.fhircore.geowidget.screens.GeowidgetActivity
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
-import timber.log.Timber
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
@@ -317,7 +299,12 @@ private fun StaticMenus(
   appUiState: AppMainUiState
 ) {
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
-    items(navigationConfiguration.staticMenu.filter { !(it.id.contains("map")  && !BuildConfig.GEOWIDGET_ENABLED)}, { it.id }) { navigationMenu ->
+    items(
+      navigationConfiguration.staticMenu.filter {
+        !(it.id.contains("map") && !BuildConfig.GEOWIDGET_ENABLED)
+      },
+      { it.id }
+    ) { navigationMenu ->
       SideMenuItem(
         // TODO Do we want save icons as base64 encoded strings
         iconResource = context.retrieveResourceId(navigationMenu.icon),
@@ -487,8 +474,9 @@ fun AppDrawerPreview() {
   )
 }
 
-fun Context.getActivity(): AppCompatActivity? = when (this) {
-  is AppCompatActivity -> this
-  is ContextWrapper -> baseContext.getActivity()
-  else -> null
-}
+fun Context.getActivity(): AppCompatActivity? =
+  when (this) {
+    is AppCompatActivity -> this
+    is ContextWrapper -> baseContext.getActivity()
+    else -> null
+  }

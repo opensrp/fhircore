@@ -23,7 +23,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import java.util.UUID
 import javax.inject.Inject

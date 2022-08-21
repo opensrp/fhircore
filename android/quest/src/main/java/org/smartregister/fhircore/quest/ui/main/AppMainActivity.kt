@@ -34,9 +34,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Location
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -75,25 +73,25 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
 
-    val getLocationPos = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-      val intent = result.data ?: run {
-        Timber.e(Exception("Data back from GeowidgetActivity is null"))
-        return@registerForActivityResult
-      }
-      intent.getStringExtra(GeowidgetActivity.FAMILY_ID)?.also { familyId ->
-        launchFamilyProfile(familyId)
-      } ?: also {
-        Timber.i(Exception("FAMILY-ID from GeowidgetActivity is null"))
-      }
+    val getLocationPos =
+      registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val intent =
+          result.data
+            ?: run {
+              Timber.e(Exception("Data back from GeowidgetActivity is null"))
+              return@registerForActivityResult
+            }
+        intent.getStringExtra(GeowidgetActivity.FAMILY_ID)?.also { familyId ->
+          launchFamilyProfile(familyId)
+        }
+          ?: also { Timber.i(Exception("FAMILY-ID from GeowidgetActivity is null")) }
 
-      intent.getStringExtra(GeowidgetActivity.LOCATION_ID)?.also { locationId ->
-        launchFamilyRegistrationWithLocationId(locationId)
-        return@registerForActivityResult
-      } ?: also {
-        Timber.i(Exception("LOCATION-ID from GeowidgetActivity is null"))
+        intent.getStringExtra(GeowidgetActivity.LOCATION_ID)?.also { locationId ->
+          launchFamilyRegistrationWithLocationId(locationId)
+          return@registerForActivityResult
+        }
+          ?: also { Timber.i(Exception("LOCATION-ID from GeowidgetActivity is null")) }
       }
-
-    }
 
     appMainViewModel.mapLauncher = getLocationPos
   }
@@ -106,17 +104,19 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       val locationString =
         FhirContext.forR4Cached().newJsonParser().encodeResourceToString(location)
 
-      val bundle = bundleOf(
-        Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(locationString))
-      )
+      val bundle =
+        bundleOf(
+          Pair(
+            QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+            arrayListOf(locationString)
+          )
+        )
 
       lifecycleScope.launch(Dispatchers.Main) {
         launchQuestionnaire<QuestionnaireActivity>("82952-geowidget", intentBundle = bundle)
       }
     }
   }
-
-
 
   private fun launchFamilyProfile(familyId: String) {
     Timber.i("Launching family profile for : $familyId")

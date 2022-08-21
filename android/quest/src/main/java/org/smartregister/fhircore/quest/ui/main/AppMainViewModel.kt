@@ -183,15 +183,17 @@ constructor(
           ApplicationWorkflow.LAUNCH_PROFILE ->
             // TODO bind the necessary patient profile url params
             event.navController.navigate(MainNavigationScreen.Profile.route)
-          ApplicationWorkflow.LAUNCH_MAP ->
-            launchGeowidgetWithPromise(event.context, mapLauncher)
+          ApplicationWorkflow.LAUNCH_MAP -> launchGeowidgetWithPromise(event.context, mapLauncher)
           null -> return
         }
       }
     }
   }
 
-  internal fun launchGeowidgetWithPromise(context: Context, mapLauncher: ActivityResultLauncher<Intent>?) {
+  internal fun launchGeowidgetWithPromise(
+    context: Context,
+    mapLauncher: ActivityResultLauncher<Intent>?
+  ) {
     mapLauncher?.launch(Intent(context, GeowidgetActivity::class.java))
   }
 

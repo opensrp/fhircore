@@ -1,4 +1,5 @@
 <resources>
     <string name="register_family">Register Family</string>
     <string name="openning_family_registration_form">Openning the family registration form</string>
+    <string name="please_wait">Please wait...</string>
 </resources>

@@ -21,9 +21,13 @@ import io.ona.kujaku.views.KujakuMapView
 import java.math.BigDecimal
 import java.util.LinkedList
 import java.util.UUID
+import org.apache.commons.codec.binary.Base64
+import org.hl7.fhir.r4.model.Attachment
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Location
 import org.json.JSONObject
 import org.smartregister.fhircore.geowidget.BuildConfig
+import org.smartregister.fhircore.geowidget.KujakuConversionInterface
 import org.smartregister.fhircore.geowidget.R
 import org.smartregister.fhircore.geowidget.ext.Coordinate
 import org.smartregister.fhircore.geowidget.ext.latitude
@@ -87,10 +91,10 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
           featureJSONObject ?: return
           val coordinates = featureJSONObject.coordinates() ?: return
 
-          val location = generateLocation(coordinates)
-
-          Toast.makeText(this@GeowidgetActivity, "Please wait...", Toast.LENGTH_LONG)
+          Toast.makeText(this@GeowidgetActivity, getString(R.string.please_wait), Toast.LENGTH_LONG)
             .show()
+
+          val location = generateLocation(featureJSONObject, coordinates)
 
           // Save it in the viewModel
           geowidgetViewModel.saveLocation(location).observe(this@GeowidgetActivity) {
@@ -101,7 +105,6 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
                 Toast.LENGTH_LONG
               )
                 .show()
-
               setLocationReferenceAsResult(location)
             }
           }
@@ -120,7 +123,7 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
     this@GeowidgetActivity.finish()
   }
 
-  private fun generateLocation(coordinates: Coordinate) : Location {
+  private fun generateLocation(featureJSONObject: JSONObject, coordinates: Coordinate) : Location {
     return Location().apply {
       id = UUID.randomUUID().toString()
       status = Location.LocationStatus.INACTIVE
@@ -129,6 +132,13 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
           longitude = BigDecimal(coordinates.longitude)
           latitude = BigDecimal(coordinates.latitude)
         }
+
+      extension = listOf(Extension(KujakuConversionInterface.BOUNDARY_GEOJSON_EXT_URL).apply {
+        setValue(Attachment().apply {
+          contentType = "application/geo+json"
+          data = Base64.encodeBase64(featureJSONObject.toString().encodeToByteArray())
+        })
+      })
     }
   }
 
