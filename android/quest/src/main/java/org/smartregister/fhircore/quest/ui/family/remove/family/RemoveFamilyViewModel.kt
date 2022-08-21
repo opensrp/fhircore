@@ -42,9 +42,7 @@ constructor(
   override fun remove(profileId: String, familyId: String?) {
     viewModelScope.launch {
       try {
-        // TODO handle remove family logic
-        // repository.registerDaoFactory.familyRegisterDao.removeFamily(profileId,
-        // isDeactivateMembers)
+        repository.removeGroup(profileId, isDeactivateMembers)
         isRemoved.postValue(true)
       } catch (e: Exception) {
         Timber.e(e)

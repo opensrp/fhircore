@@ -274,7 +274,8 @@
           "questionnaire": {
             "id": "101644",
             "title": "eCBIS Remove Family Form",
-            "type": "DEFAULT"
+            "type": "DEFAULT",
+            "customActivity": "REMOVE_FAMILY"
           }
         }
       ]

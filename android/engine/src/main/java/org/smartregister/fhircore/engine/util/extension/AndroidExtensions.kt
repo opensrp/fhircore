@@ -90,10 +90,12 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   clientIdentifier: String? = null,
   groupIdentifier: String? = null,
   questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-  intentBundle: Bundle = Bundle.EMPTY
+  intentBundle: Bundle = Bundle.EMPTY,
+  classType: Class<out QuestionnaireActivity>? = null
 ) {
+  val classType: Class<out QuestionnaireActivity> = classType ?: Q::class.java
   this.startActivity(
-    Intent(this, Q::class.java)
+    Intent(this, classType)
       .putExtras(intentBundle)
       .putExtras(
         QuestionnaireActivity.intentArgs(
