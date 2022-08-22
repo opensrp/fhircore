@@ -233,7 +233,8 @@ constructor(
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
 
     val resourceType = baseResourceClass.newInstance().resourceType
-    return fhirEngine.count(
+
+    val search =
       Search(resourceType).apply {
         baseResourceConfig.dataQueries?.forEach { filterBy(it) }
         // For patient return only active members count
@@ -241,7 +242,11 @@ constructor(
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
       }
-    )
+
+    return when (resourceType) {
+      ResourceType.Group -> filterActiveGroups(search).size.toLong()
+      else -> fhirEngine.count(search)
+    }
   }
 
   override suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData {
