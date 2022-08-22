@@ -339,11 +339,11 @@ private fun MenuActionButton(
                 it.trigger == ActionTrigger.ON_CLICK &&
                   it.workflow == ApplicationWorkflow.LAUNCH_QUESTIONNAIRE
               }
-            if (action != null && action.questionnaire?.id != null) {
+            if (action?.questionnaire != null) {
               onSideMenuClick(
                 AppMainEvent.RegisterNewClient(
                   context = context,
-                  questionnaireId = action.questionnaire!!.id
+                  questionnaireConfig = action.questionnaire!!
                 )
               )
             }

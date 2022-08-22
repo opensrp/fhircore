@@ -23,7 +23,6 @@ import android.content.Intent
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext

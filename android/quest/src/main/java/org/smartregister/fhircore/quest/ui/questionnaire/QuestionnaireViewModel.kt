@@ -56,7 +56,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
-import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -128,35 +127,6 @@ constructor(
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
       this.url = this.url ?: this.referenceValue()
     }
-
-  suspend fun getQuestionnaireConfig(
-    questionnaireId: String,
-    context: Context
-  ): QuestionnaireConfig {
-    val loadConfig =
-      loadQuestionnaireConfigFromRegistry() ?: loadQuestionnaireConfigFromAssets(context)
-    questionnaireConfig = loadConfig!!.first { it.id == questionnaireId }
-    return questionnaireConfig
-  }
-
-  private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
-    // TODO form configs are no longer loaded separately fix this
-    return null
-  }
-
-  private suspend fun loadQuestionnaireConfigFromAssets(
-    context: Context
-  ): List<QuestionnaireConfig>? =
-    kotlin
-      .runCatching {
-        withContext(dispatcherProvider.io()) {
-          AssetUtil.decodeAsset<List<QuestionnaireConfig>>(
-            fileName = QuestionnaireActivity.FORM_CONFIGURATIONS,
-            context = context
-          )
-        }
-      }
-      .getOrNull()
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
@@ -508,7 +478,7 @@ constructor(
     }
   }
 
-  fun removeGroupMember(memberId:String, groupId: String) {
+  fun removeGroupMember(memberId: String, groupId: String) {
     viewModelScope.launch {
       try {
         defaultRepository.removeGroupMember(memberId = memberId, groupId = groupId)

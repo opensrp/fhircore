@@ -142,8 +142,11 @@ fun ProfileScreen(
               fabActions.first().actions?.find { it.trigger == ActionTrigger.ON_CLICK }
             when (clickAction?.workflow) {
               ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
-                clickAction.questionnaire?.id?.let { questionnaireId ->
-                  navController.context.launchQuestionnaire<QuestionnaireActivity>(questionnaireId)
+                if (clickAction.questionnaire != null) {
+                  navController.context.launchQuestionnaire<QuestionnaireActivity>(
+                    questionnaireId = clickAction.questionnaire!!.id,
+                    questionnaireConfig = clickAction.questionnaire
+                  )
                 }
               }
             }

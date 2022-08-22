@@ -86,6 +86,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private lateinit var saveProcessingAlertDialog: AlertDialog
 
+  private lateinit var questionnaireConfig: QuestionnaireConfig
+
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     outState.clear()
@@ -110,6 +112,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     // Initialises the lateinit variable questionnaireViewModel to prevent
     // some init operations running on a separate thread and causing a crash
     questionnaireViewModel.sharedPreferencesHelper
+
+    questionnaireConfig =
+      intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig
+
+    questionnaireViewModel.questionnaireConfig = questionnaireConfig
 
     lifecycleScope.launch(dispatcherProvider.io()) {
       loadQuestionnaireAndConfig(formName)
@@ -195,8 +202,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     // load from assets and get questionnaire or if not found build it from questionnaire
     kotlin
       .runCatching {
-        val questionnaireConfig =
-          questionnaireViewModel.getQuestionnaireConfig(formName, this@QuestionnaireActivity)
         questionnaire =
           questionnaireViewModel.loadQuestionnaire(questionnaireConfig.id, questionnaireType)!!
       }
@@ -348,10 +353,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       .all { it.isValid }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    val questionnaireConfig =
-      if (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) != null)
-        intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig
-      else null
+
     if (questionnaireConfig?.confirmationDialog != null) {
       handleRemoveEntityQuestionnaireResponse(questionnaireConfig = questionnaireConfig)
     } else {

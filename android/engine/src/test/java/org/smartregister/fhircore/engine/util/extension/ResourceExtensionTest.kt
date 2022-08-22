@@ -577,9 +577,15 @@ class ResourceExtensionTest : RobolectricTest() {
         readOnly = false
         addExtension(
           Extension().apply {
-            url = org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_URL
+            url =
+              org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment
+                .PHOTO_CAPTURE_URL
             setValue(
-              StringType().apply { value = org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_NAME }
+              StringType().apply {
+                value =
+                  org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment
+                    .PHOTO_CAPTURE_NAME
+              }
             )
           }
         )
@@ -592,8 +598,16 @@ class ResourceExtensionTest : RobolectricTest() {
         readOnly = false
         addExtension(
           Extension().apply {
-            url = org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment.BARCODE_URL
-            setValue(StringType().apply { value = org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment.BARCODE_NAME })
+            url =
+              org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment
+                .BARCODE_URL
+            setValue(
+              StringType().apply {
+                value =
+                  org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment
+                    .BARCODE_NAME
+              }
+            )
           }
         )
       }
@@ -602,10 +616,17 @@ class ResourceExtensionTest : RobolectricTest() {
     questionnaire.prepareQuestionsForReadingOrEditing("path", true)
 
     Assert.assertTrue(
-      questionnaire[1].hasExtension(org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_URL)
+      questionnaire[1].hasExtension(
+        org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment
+          .PHOTO_CAPTURE_URL
+      )
     )
     Assert.assertTrue(questionnaire[1].readOnly)
-    Assert.assertTrue(questionnaire[2].hasExtension(org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment.BARCODE_URL))
+    Assert.assertTrue(
+      questionnaire[2].hasExtension(
+        org.smartregister.fhircore.quest.ui.questionnaire.FhirCoreQuestionnaireFragment.BARCODE_URL
+      )
+    )
     Assert.assertTrue(questionnaire[2].readOnly)
   }
 

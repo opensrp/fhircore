@@ -123,7 +123,8 @@ constructor(
       }
       is AppMainEvent.RegisterNewClient -> {
         event.context.launchQuestionnaire<QuestionnaireActivity>(
-          questionnaireId = event.questionnaireId
+          questionnaireId = event.questionnaireConfig.id,
+          questionnaireConfig = event.questionnaireConfig
         )
       }
       is AppMainEvent.OpenRegistersBottomSheet -> {
