@@ -220,6 +220,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
   /** Remove member of a group using the provided [patientId] */
   suspend fun removeGroupMember(patientId: String, groupId: String?) {
     // TODO refactor to work with any resource type
+    // TODO provide resourceType as param
     loadResource<Patient>(patientId)?.let { patient ->
       if (!patient.active) throw IllegalStateException("Patient already deleted")
       patient.active = false

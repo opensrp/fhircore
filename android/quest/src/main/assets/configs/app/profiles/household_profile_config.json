@@ -277,6 +277,10 @@
             {
               "key": "familyId",
               "value": "@{familyLogicalId}"
+            },
+            {
+              "key": "familyName",
+              "value": "@{familyName}"
             }
           ],
           "questionnaire": {
@@ -284,7 +288,16 @@
             "title": "eCBIS Remove Family Form",
             "type": "DEFAULT",
             "customActivity": "REMOVE_FAMILY",
-            "clientIdentifier": "@{familyLogicalId}"
+            "clientIdentifier": "@{familyLogicalId}",
+            "groupResource" : {
+              "memberResourceType" : "Patient",
+              "removeGroup": true
+            },
+            "confirmationDialog" : {
+              "title" : "Remove family",
+              "message" : "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
+              "actionButtonText": "Remove family"
+            }
           }
         }
       ]

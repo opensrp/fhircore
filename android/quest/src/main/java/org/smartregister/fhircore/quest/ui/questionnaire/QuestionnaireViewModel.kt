@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire
+package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
 import android.content.Intent
@@ -113,6 +113,11 @@ constructor(
       decodeFhirResource = true
     )
   }
+
+  // TODO this setting should be loaded from a configuration
+  var isDeactivateMembers = false
+  var isRemoved = MutableLiveData(false)
+  var isDiscarded = MutableLiveData(false)
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
@@ -490,6 +495,22 @@ constructor(
         set(Calendar.MONTH, 1)
       }
       .time
+
+  fun removeGroup(groupId: String) {
+    viewModelScope.launch {
+      try {
+        defaultRepository.removeGroup(groupId, isDeactivateMembers)
+        isRemoved.postValue(true)
+      } catch (e: Exception) {
+        Timber.e(e)
+        isDiscarded.postValue(true)
+      }
+    }
+  }
+
+  fun discard() {
+    isDiscarded.postValue(true)
+  }
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"

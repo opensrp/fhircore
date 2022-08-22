@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire
+package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -24,6 +24,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -48,7 +49,9 @@ import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.FhirCoreQuestionnaireFragment
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -56,6 +59,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import timber.log.Timber
 
 /**
@@ -95,6 +99,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
     intent.getStringExtra(QUESTIONNAIRE_ARG_TYPE)?.let {
       questionnaireType = QuestionnaireType.valueOf(it)
+
+      questionnaireViewModel.apply {
+        isRemoved.observe(this@QuestionnaireActivity) { if (it) onRemove() }
+        isDiscarded.observe(this@QuestionnaireActivity) { if (it) finish() }
+      }
     }
 
     val loadProgress = showProgressAlert(this, R.string.loading)
@@ -340,13 +349,54 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       .all { it.isValid }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    questionnaireViewModel.extractAndSaveResources(
+    val questionnaireConfig =
+      if (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) != null)
+        intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig
+      else null
+    if (questionnaireConfig?.confirmationDialog != null) {
+      handleRemoveEntityQuestionnaireResponse(questionnaireConfig = questionnaireConfig)
+    } else {
+      questionnaireViewModel.extractAndSaveResources(
+        context = this,
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
+        groupResourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_GROUP_KEY),
+        questionnaireType = questionnaireType
+      )
+    }
+  }
+
+  fun handleRemoveEntityQuestionnaireResponse(questionnaireConfig: QuestionnaireConfig) {
+    val clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
+    dismissSaveProcessing()
+    confirmationDialog(
+      profileId = clientIdentifier!!,
+      profileName = clientIdentifier!!,
+      questionnaireConfig = questionnaireConfig
+    )
+  }
+
+  private fun confirmationDialog(
+    profileId: String,
+    profileName: String,
+    questionnaireConfig: QuestionnaireConfig
+  ) {
+    AlertDialogue.showAlert(
       context = this,
-      questionnaire = questionnaire,
-      questionnaireResponse = questionnaireResponse,
-      resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
-      groupResourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_GROUP_KEY),
-      questionnaireType = questionnaireType
+      alertIntent = AlertIntent.CONFIRM,
+      title = questionnaireConfig.confirmationDialog!!.title,
+      message = questionnaireConfig.confirmationDialog!!.message,
+      confirmButtonListener = { dialog ->
+        if (questionnaireConfig.groupResource?.removeGroup == true) {
+          questionnaireViewModel.removeGroup(profileId)
+        }
+        dialog.dismiss()
+      },
+      neutralButtonListener = { dialog ->
+        questionnaireViewModel.discard()
+        dialog.dismiss()
+      }
     )
   }
 
@@ -376,6 +426,20 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message
 
+  @OptIn(ExperimentalMaterialApi::class)
+  open fun onRemove() {
+    // TODO handle this with  workflow
+    // trigger event ActionTrigger.ON_CLOSE
+    val intent =
+      Intent(this@QuestionnaireActivity, AppMainActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      }
+    this@QuestionnaireActivity.run {
+      startActivity(intent)
+      finish()
+    }
+  }
+
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
@@ -390,6 +454,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
+    const val QUESTIONNAIRE_CONFIG_KEY = "questionnaire-config"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =
@@ -402,14 +467,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
       backReference: String? = null,
-      populationResources: ArrayList<Resource> = ArrayList()
+      populationResources: ArrayList<Resource> = ArrayList(),
+      questionnaireConfig: QuestionnaireConfig?
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_GROUP_KEY, groupIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, formName),
         Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
-        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)
+        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference),
+        Pair(QUESTIONNAIRE_CONFIG_KEY, questionnaireConfig)
       )
         .apply {
           questionnaireResponse?.let {

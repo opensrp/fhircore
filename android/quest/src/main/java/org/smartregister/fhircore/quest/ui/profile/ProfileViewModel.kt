@@ -25,22 +25,20 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.CustomQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.logicalIdFromFhirPathExtractedId
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
 import timber.log.Timber
 
 @HiltViewModel
@@ -85,12 +83,6 @@ constructor(
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               actionConfig.questionnaire?.let { questionnaireConfig ->
                 val questionnaireType = questionnaireConfig.type
-                val classType =
-                  if (actionConfig.questionnaire!!.customActivity != null)
-                    actionConfig.questionnaire!!.customActivity?.let {
-                      CustomQuestionnaireActivity.valueOf(it).getCustomClass()
-                    }
-                  else null
                 event.context.launchQuestionnaire<QuestionnaireActivity>(
                   questionnaireId = questionnaireConfig.id,
                   clientIdentifier =
@@ -102,7 +94,7 @@ constructor(
                   questionnaireType = questionnaireType,
                   intentBundle =
                     actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap()),
-                  classType = classType
+                  questionnaireConfig = actionConfig.questionnaire
                 )
               }
             }

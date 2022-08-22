@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire
+package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -60,17 +60,18 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
 
 @HiltAndroidTest
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var questionnaireActivity: QuestionnaireActivity
+  private lateinit var questionnaireActivity:
+    org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
   private lateinit var intent: Intent
 
@@ -83,9 +84,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
 
   @BindValue
-  val questionnaireViewModel: QuestionnaireViewModel =
+  val questionnaireViewModel:
+    org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel =
     spyk(
-      QuestionnaireViewModel(
+      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel(
         fhirEngine = mockk(),
         defaultRepository = mockk(),
         configurationRegistry = mockk(),
@@ -103,9 +105,21 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     intent =
       Intent().apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "1234")
+        putExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_TITLE_KEY,
+          "Patient registration"
+        )
+        putExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_ARG_FORM,
+          "patient-registration"
+        )
+        putExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_ARG_PATIENT_KEY,
+          "1234"
+        )
       }
 
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
@@ -120,7 +134,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireFragment = spyk<QuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
-    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    val controller =
+      Robolectric.buildActivity(
+        org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity::class.java,
+        intent
+      )
     questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.supportFragmentManager.executePendingTransactions()
     questionnaireActivity.supportFragmentManager.commitNow {
@@ -146,31 +164,51 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val populationResources = ArrayList<Resource>()
     populationResources.add(patient)
     val result =
-      QuestionnaireActivity.intentArgs(
+      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.intentArgs(
         clientIdentifier = "1234",
         formName = "my-form",
         questionnaireType = QuestionnaireType.READ_ONLY,
         questionnaireResponse = questionnaireResponse,
         populationResources = populationResources
       )
-    Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
+    Assert.assertEquals(
+      "my-form",
+      result.getString(
+        org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+          .QUESTIONNAIRE_ARG_FORM
+      )
+    )
     Assert.assertEquals(
       "1234",
-      result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+      result.getString(
+        org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+          .QUESTIONNAIRE_ARG_PATIENT_KEY
+      )
     )
     Assert.assertEquals(
       QuestionnaireType.READ_ONLY.name,
-      result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE)
+      result.getString(
+        org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+          .QUESTIONNAIRE_ARG_TYPE
+      )
     )
     Assert.assertEquals(
       FhirContext.forCached(FhirVersionEnum.R4)
         .newJsonParser()
         .encodeResourceToString(questionnaireResponse),
-      result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+      result.getString(
+        org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+          .QUESTIONNAIRE_RESPONSE
+      )
     )
     Assert.assertEquals(
       FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(patient),
-      result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
+      result
+        .getStringArrayList(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_POPULATION_RESOURCES
+        )
+        ?.get(0)
     )
   }
 
@@ -180,15 +218,31 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     intent =
       Intent().apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE, QuestionnaireType.READ_ONLY.name)
+        putExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_TITLE_KEY,
+          "Patient registration"
+        )
+        putExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_ARG_FORM,
+          "patient-registration"
+        )
+        putExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_ARG_TYPE,
+          QuestionnaireType.READ_ONLY.name
+        )
       }
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
-    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    val controller =
+      Robolectric.buildActivity(
+        org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity::class.java,
+        intent
+      )
     questionnaireActivity = controller.create().resume().get()
 
     Assert.assertTrue(questionnaireActivity.questionnaireType.isReadOnly())
@@ -198,11 +252,24 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testReadOnlyIntentShouldChangeSaveButtonToDone() {
     intent =
       Intent().apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE, QuestionnaireType.READ_ONLY.name)
         putExtra(
-          QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_TITLE_KEY,
+          "Patient registration"
+        )
+        putExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_ARG_FORM,
+          "patient-registration"
+        )
+        putExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_ARG_TYPE,
+          QuestionnaireType.READ_ONLY.name
+        )
+        putExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_RESPONSE,
           QuestionnaireResponse().encodeResourceToString()
         )
       }
@@ -210,7 +277,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireFragment = spyk<QuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
-    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    val controller =
+      Robolectric.buildActivity(
+        org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity::class.java,
+        intent
+      )
     questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.supportFragmentManager.executePendingTransactions()
     questionnaireActivity.supportFragmentManager.commitNow {
@@ -258,7 +329,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       questionnaireViewModel.extractAndSaveResources(
         any(),
         any(),
-        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+        intent.getStringExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_ARG_GROUP_KEY
+        ),
         any(),
         any(),
         any()
@@ -283,7 +357,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       questionnaireViewModel.extractAndSaveResources(
         any(),
         any(),
-        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+        intent.getStringExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_ARG_GROUP_KEY
+        ),
         any(),
         any(),
         any()
@@ -310,7 +387,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       questionnaireViewModel.extractAndSaveResources(
         any(),
         any(),
-        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+        intent.getStringExtra(
+          org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+            .QUESTIONNAIRE_ARG_GROUP_KEY
+        ),
         any(),
         any(),
         any()

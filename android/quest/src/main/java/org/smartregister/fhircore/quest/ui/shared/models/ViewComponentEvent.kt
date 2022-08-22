@@ -21,10 +21,10 @@ import com.google.android.fhir.logicalId
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
 
 /**
  * This sealed class is used to represent various click events of the configurable view components

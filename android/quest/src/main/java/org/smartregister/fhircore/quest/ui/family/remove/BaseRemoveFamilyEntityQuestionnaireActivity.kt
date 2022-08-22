@@ -24,9 +24,9 @@ import androidx.compose.material.ExperimentalMaterialApi
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
 abstract class BaseRemoveFamilyEntityQuestionnaireActivity<T> : QuestionnaireActivity() {
 
@@ -53,7 +53,7 @@ abstract class BaseRemoveFamilyEntityQuestionnaireActivity<T> : QuestionnaireAct
   }
 
   @OptIn(ExperimentalMaterialApi::class)
-  fun onRemove() {
+  override fun onRemove() {
     val intent =
       Intent(this@BaseRemoveFamilyEntityQuestionnaireActivity, AppMainActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

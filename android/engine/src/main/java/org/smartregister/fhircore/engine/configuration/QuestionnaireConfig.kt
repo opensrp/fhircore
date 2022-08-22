@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.configuration
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 @Serializable
 data class QuestionnaireConfig(
@@ -30,27 +29,21 @@ data class QuestionnaireConfig(
   val planDefinitions: List<String>? = null,
   val type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val customActivity: String? = null,
-  val clientIdentifier: String? = null
-)
+  val clientIdentifier: String? = null,
+  val confirmationDialog: ConfirmationDialog? = null,
+  val groupResource: GroupResourceConfig? = null
+) : java.io.Serializable
 
-enum class CustomQuestionnaireActivity {
-  REMOVE_FAMILY,
-  REMOVE_FAMILY_MEMBER;
+@Serializable
+data class ConfirmationDialog(
+  val title: String = "",
+  val message: String = "",
+  val actionButtonText: String = ""
+) : java.io.Serializable
 
-  fun getCustomClass(): Class<out QuestionnaireActivity> {
-    return when (this) {
-      REMOVE_FAMILY ->
-        Class.forName(REMOVE_FAMILY_QUESTIONNAIRE_ACTIVITY) as Class<out QuestionnaireActivity>
-      REMOVE_FAMILY_MEMBER ->
-        Class.forName(REMOVE_FAMILY_MEMBER_QUESTIONNAIRE_ACTIVITY) as
-          Class<out QuestionnaireActivity>
-    }
-  }
-
-  companion object {
-    const val REMOVE_FAMILY_QUESTIONNAIRE_ACTIVITY =
-      "org.smartregister.fhircore.quest.ui.family.remove.family.RemoveFamilyQuestionnaireActivity"
-    const val REMOVE_FAMILY_MEMBER_QUESTIONNAIRE_ACTIVITY =
-      "org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity"
-  }
-}
+@Serializable
+data class GroupResourceConfig(
+  val memberResourceType: String,
+  val removeMember: Boolean = false,
+  val removeGroup: Boolean = false,
+) : java.io.Serializable

@@ -24,6 +24,11 @@
             android:name=".ui.family.remove.family.RemoveFamilyQuestionnaireActivity"
             android:exported="false" />
 
+        <activity
+            android:name="org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme" />
+
         <activity android:name=".ui.main.AppMainActivity" />
 
         <service

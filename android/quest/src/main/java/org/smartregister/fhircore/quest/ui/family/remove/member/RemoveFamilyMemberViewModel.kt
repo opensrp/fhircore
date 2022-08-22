@@ -42,6 +42,7 @@ constructor(
         // TODO handle remove family member logic
         //        repository.registerDaoFactory.familyRegisterDao.removeFamilyMember(profileId,
         // familyId)
+        // DefaultRepository#removeGroupMember()
         isRemoved.postValue(true)
       } catch (e: Exception) {
         Timber.e(e)

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire
+package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.app.Application
 import android.content.Intent
 import android.os.Looper
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
@@ -79,8 +78,6 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -88,6 +85,8 @@ import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
+import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -95,8 +94,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  /*
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()*/
 
   @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
 
@@ -104,7 +103,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private val context: Application = ApplicationProvider.getApplicationContext()
 
-  private lateinit var questionnaireViewModel: QuestionnaireViewModel
+  private lateinit var questionnaireViewModel:
+    org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel
 
   private lateinit var defaultRepo: DefaultRepository
 
@@ -129,7 +129,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel =
       spyk(
-        QuestionnaireViewModel(
+        org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel(
           fhirEngine = fhirEngine,
           defaultRepository = defaultRepo,
           configurationRegistry = configurationRegistry,
@@ -575,12 +575,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val intent = Intent()
     intent.putStringArrayListExtra(
-      QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+        .QUESTIONNAIRE_POPULATION_RESOURCES,
       arrayListOf(
         "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}"
       )
     )
-    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
+    intent.putExtra(
+      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+        .QUESTIONNAIRE_ARG_PATIENT_KEY,
+      "2"
+    )
 
     runBlocking {
       val resourceList = questionnaireViewModel.getPopulationResources(intent)
@@ -773,7 +778,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
               item =
                 listOf(
                   QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
-                    linkId = QuestionnaireActivity.QUESTIONNAIRE_AGE
+                    linkId =
+                      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+                        .QUESTIONNAIRE_AGE
                     answer =
                       listOf(
                         QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
