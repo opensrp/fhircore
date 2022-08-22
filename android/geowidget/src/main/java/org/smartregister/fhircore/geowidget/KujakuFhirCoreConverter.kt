@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.geowidget
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 08-08-2022. */
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum

@@ -21,39 +21,37 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import com.mapbox.geojson.FeatureCollection
-import kotlinx.coroutines.Dispatchers
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Reference
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 10-08-2022. */
-class GeowidgetViewModel : ViewModel() {
+class GeowidgetViewModel
+@Inject
+constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: DispatcherProvider) :
+  ViewModel() {
 
-  val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(context) }
   lateinit var context: Context
 
   suspend fun getFamiliesFeatureCollection(): FeatureCollection {
     val families = getFamilies()
 
-    val featureCollection =
-      KujakuFhirCoreConverter()
-        .generateFeatureCollection(context, families.map { listOf(it.first, it.second) })
-
-    return featureCollection
+    return KujakuFhirCoreConverter()
+      .generateFeatureCollection(context, families.map { listOf(it.first, it.second) })
   }
 
   fun getFamiliesFeatureCollectionStream(): LiveData<FeatureCollection> {
     val featureCollectionLiveData = MutableLiveData<FeatureCollection>()
 
-    viewModelScope.launch(Dispatchers.IO) {
+    viewModelScope.launch(dispatcherProvider.io()) {
       val familyFeatures = getFamiliesFeatureCollection()
       featureCollectionLiveData.postValue(familyFeatures)
     }
@@ -69,19 +67,21 @@ class GeowidgetViewModel : ViewModel() {
       }
 
     val familiesWithLocations =
-      fhirEngine.search<Group> { filter(Group.TYPE, { value = of(coding) }) }.filter {
-        // it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
-        it.characteristic.firstOrNull { characteristic ->
-          characteristic.value is Reference &&
-            characteristic.valueReference.reference.contains("Location")
-        } != null
-      }
+      defaultRepository.fhirEngine
+        .search<Group> { filter(Group.TYPE, { value = of(coding) }) }
+        .filter {
+          // it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
+          it.characteristic.firstOrNull { characteristic ->
+            characteristic.value is Reference &&
+              characteristic.valueReference.reference.contains("Location")
+          } != null
+        }
 
     val familiesList = ArrayList<Pair<Group, Location>>()
 
     familiesWithLocations.forEach { family ->
       val familyLocation =
-        fhirEngine.get<Location>(
+        defaultRepository.fhirEngine.get<Location>(
           family.characteristic.firstOrNull { characteristic ->
               characteristic.value is Reference &&
                 characteristic.valueReference.reference.contains("Location")
@@ -99,8 +99,8 @@ class GeowidgetViewModel : ViewModel() {
 
   fun saveLocation(location: Location): LiveData<Boolean> {
     val liveData = MutableLiveData<Boolean>()
-    viewModelScope.launch(Dispatchers.IO) {
-      fhirEngine.create(location)
+    viewModelScope.launch(dispatcherProvider.io()) {
+      defaultRepository.save(location)
       liveData.postValue(true)
     }
 

@@ -190,16 +190,8 @@ dependencies {
 
 
     // Geowidget dependency
-    if (geowidgetEnabled) {
-        implementation(project(":geowidget")) {
-            transitive = true
-        }
-        //implementation "com.android.volley:volley:1.2.1"
-        /*implementation (deps.kujaku_library) {
-            transitive = true
-            exclude group: 'stax', module: 'stax-api'
-        }*/
-        //implementation deps.mapbox_sdk
+    implementation(project(":geowidget")) {
+        transitive = true
     }
 
     //Hilt - Dependency Injection
