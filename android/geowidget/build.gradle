@@ -41,6 +41,7 @@ android {
 
     packagingOptions {
         exclude 'META-INF/ASL-2.0.txt'
+        exclude 'META-INF/sun-jaxb.episode'
     }
 
     testOptions {
