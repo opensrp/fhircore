@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.view
+package org.smartregister.fhircore.quest
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.ActionConfig
-import org.smartregister.fhircore.engine.domain.model.ViewType
+import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@Serializable
-data class ButtonProperties(
-  override val viewType: ViewType = ViewType.BUTTON,
-  val visible: Boolean? = null,
-  val text: String? = null,
-  val status: String,
-  val smallSized: Boolean = false,
-  val fontSize: Float = 10.0f,
-  val actions: List<ActionConfig> = emptyList(),
-) : ViewProperties()
+@ExcludeFromJacocoGeneratedReport
+@AndroidEntryPoint
+class HiltActivityForTest : AppCompatActivity()
