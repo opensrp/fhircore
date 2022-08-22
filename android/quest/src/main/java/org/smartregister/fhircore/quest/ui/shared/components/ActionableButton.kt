@@ -56,9 +56,7 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
-const val ACTIONABLE_BUTTON_START_ICON_TEST_TAG = "actionableButtonStartIconTestTag"
-const val ACTIONABLE_BUTTON_END_ICON_TEST_TAG = "actionableButtonEndIconTestTag"
-const val ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG = "actionableButtonOutlinedButtonTestTag"
+const val ACTIONABLE_BUTTON_TEST_TAG = "actionableButtonTestTag"
 
 @Composable
 fun ActionableButton(
@@ -82,7 +80,7 @@ fun ActionableButton(
         .fillMaxWidth()
         .padding(top = 0.dp, start = 12.dp, end = 12.dp)
         .wrapContentHeight()
-        .testTag(ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG)
+        .testTag(ACTIONABLE_BUTTON_TEST_TAG)
   ) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
@@ -91,7 +89,7 @@ fun ActionableButton(
     ) {
       Spacer(modifier = modifier.weight(0.5f).fillMaxHeight())
       Icon(
-        modifier = modifier.size(16.dp).testTag(ACTIONABLE_BUTTON_START_ICON_TEST_TAG),
+        modifier = modifier.size(16.dp),
         imageVector =
           if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
         contentDescription = null,
@@ -112,7 +110,6 @@ fun ActionableButton(
       Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
       if (status == ServiceStatus.COMPLETED.name) {
         Icon(
-          modifier = modifier.testTag(ACTIONABLE_BUTTON_END_ICON_TEST_TAG),
           imageVector = Icons.Filled.ArrowDropDown,
           contentDescription = null,
           tint = DefaultColor.copy(alpha = 0.9f)
@@ -139,8 +136,7 @@ fun ActionableButtonPreview() {
   Column(modifier = Modifier.height(50.dp)) {
     ActionableButton(
       buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
-      resourceData = ResourceData(Patient()),
-      onViewComponentEvent = {}
-    )
+      resourceData = ResourceData(Patient())
+    ) {}
   }
 }

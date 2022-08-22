@@ -33,11 +33,15 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 class ActionableButtonTest {
 
-  private val mockListener: () -> Unit = spyk({})
+  private val mockOnViewComponentClick: (ViewComponentEvent) -> Unit = spyk({})
 
   @get:Rule val composeRule = createComposeRule()
 
@@ -50,42 +54,30 @@ class ActionableButtonTest {
             ButtonProperties(
               status = "COMPLETED",
               text = "Button Text",
-              questionnaire = QuestionnaireConfig(id = "23", title = "Add Family")
+              actions =
+                listOf(
+                  ActionConfig(
+                    trigger = ActionTrigger.ON_CLICK,
+                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+                    questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
+                  )
+                )
             ),
           resourceData = ResourceData(Patient()),
-          onViewComponentEvent = {}
+          onViewComponentEvent = mockOnViewComponentClick
         )
       }
     }
   }
 
   @Test
-  fun testActionableButtonRendersButtonTextCorrectly() {
-    composeRule.onNodeWithText("Button Text").assertExists().assertIsDisplayed()
-  }
-
-  @Test
-  fun testActionableButtonRendersStartIconCorrectly() {
+  fun testActionableButtonRendersAncClickWorksCorrectly() {
     composeRule
-      .onNodeWithTag(ACTIONABLE_BUTTON_START_ICON_TEST_TAG, useUnmergedTree = true)
+      .onNodeWithText("Button Text", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
-  }
 
-  @Test
-  fun testActionableButtonRendersEndIconCorrectly() {
-    composeRule
-      .onNodeWithTag(ACTIONABLE_BUTTON_END_ICON_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
-  fun testThatActionableButtonClickCallsTheListener() {
-    val actionableButtonContainer =
-      composeRule.onNodeWithTag(ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG, useUnmergedTree = true)
-    actionableButtonContainer.assertExists()
-    actionableButtonContainer.performClick()
-    verify { mockListener() }
+    composeRule.onNodeWithTag(ACTIONABLE_BUTTON_TEST_TAG).performClick()
+    verify { mockOnViewComponentClick(any()) }
   }
 }
