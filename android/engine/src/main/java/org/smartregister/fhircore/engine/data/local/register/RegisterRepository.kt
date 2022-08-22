@@ -24,6 +24,7 @@ import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -214,7 +215,15 @@ constructor(
         count = PaginationConstant.DEFAULT_PAGE_SIZE
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
-    return fhirEngine.search(search)
+    return when (resourceType) {
+      ResourceType.Group -> filterActiveGroups(search)
+      else -> fhirEngine.search(search)
+    }
+  }
+
+  suspend fun filterActiveGroups(search: Search): List<Resource> {
+    val groups = fhirEngine.search<Group>(search)
+    return groups.filter { it.active && !it.name.isNullOrEmpty() }
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
