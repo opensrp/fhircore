@@ -35,7 +35,9 @@
           "Encounter",
           "Observation",
           "Condition",
-          "CarePlan"
+          "CarePlan",
+          "QuestionnaireResponse",
+          "Task"
         ],
         "type": "token",
         "expression": "#organization"
@@ -111,8 +113,10 @@
           "Observation",
           "Condition",
           "CarePlan",
+          "QuestionnaireResponse",
           "Questionnaire",
           "StructureMap",
+          "Task",
           "Group",
           "Location"
         ],
