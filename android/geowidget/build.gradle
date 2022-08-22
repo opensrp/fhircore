@@ -41,7 +41,26 @@ android {
 
     packagingOptions {
         exclude 'META-INF/ASL-2.0.txt'
+        exclude 'META-INF/LGPL-3.0.txt'
+        exclude 'license.html'
+        exclude 'readme.html'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/license.html'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/ASL-2.0.txt'
+        exclude 'META-INF/LGPL-3.0.txt'
         exclude 'META-INF/sun-jaxb.episode'
+        exclude("META-INF/*.kotlin_module")
+        exclude("META-INF/AL2.0")
+        exclude("META-INF/LGPL2.1")
     }
 
     testOptions {
