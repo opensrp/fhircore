@@ -79,6 +79,7 @@ class QuestConfigServiceTest : RobolectricTest() {
           ResourceType.Encounter,
           ResourceType.Group,
           ResourceType.Library,
+          ResourceType.Location,
           ResourceType.Measure,
           ResourceType.Observation,
           ResourceType.Patient,

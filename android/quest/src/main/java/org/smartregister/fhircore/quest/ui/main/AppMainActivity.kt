@@ -81,8 +81,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             return@registerForActivityResult
           }
       intent.getStringExtra(GeowidgetActivity.FAMILY_ID)?.also { familyId ->
-        // Expect Group/1122f50c-5499-4eaa-bd53-a5364371a2ba/_history/5 OR
-        // Group/1122f50c-5499-4eaa-bd53-a5364371a2ba
         launchFamilyProfile(familyId)
       }
         ?: also { Timber.i(Exception("FAMILY-ID from GeowidgetActivity is null")) }
@@ -95,6 +93,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     }
 
   private fun launchFamilyProfile(familyId: String) {
+    // Expect Group/1122f50c-5499-4eaa-bd53-a5364371a2ba/_history/5 OR
+    // Group/1122f50c-5499-4eaa-bd53-a5364371a2ba
+
     Timber.i("Launching family profile for : $familyId")
 
     // TODO: Add family profile launching here
