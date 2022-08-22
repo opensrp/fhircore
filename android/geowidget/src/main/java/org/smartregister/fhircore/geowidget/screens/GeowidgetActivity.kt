@@ -31,27 +31,22 @@ import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.turf.TurfMeasurement
+import dagger.hilt.android.AndroidEntryPoint
 import io.ona.kujaku.callbacks.AddPointCallback
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
-import java.math.BigDecimal
 import java.util.LinkedList
-import java.util.UUID
-import org.apache.commons.codec.binary.Base64
-import org.hl7.fhir.r4.model.Attachment
-import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Location
 import org.json.JSONObject
 import org.smartregister.fhircore.geowidget.BuildConfig
-import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 import org.smartregister.fhircore.geowidget.R
-import org.smartregister.fhircore.geowidget.ext.Coordinate
-import org.smartregister.fhircore.geowidget.ext.latitude
-import org.smartregister.fhircore.geowidget.ext.longitude
+import org.smartregister.fhircore.geowidget.ext.coordinates
+import org.smartregister.fhircore.geowidget.ext.generateLocation
 import org.smartregister.fhircore.geowidget.model.GeowidgetViewModel
 import timber.log.Timber
 
-class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
+@AndroidEntryPoint
+open class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
 
   lateinit var kujakuMapView: KujakuMapView
   val geowidgetViewModel: GeowidgetViewModel by viewModels()
@@ -62,6 +57,11 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    performOnCreateOperations()
+  }
+
+  protected open fun performOnCreateOperations() {
     Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_TOKEN)
     setContentView(R.layout.activity_geowidget)
     geowidgetViewModel.context = this
@@ -84,7 +84,7 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
     geowidgetViewModel.getFamiliesFeatureCollectionStream().observe(this, this)
   }
 
-  private fun renderResourcesOnMap(style: Style) {
+  fun renderResourcesOnMap(style: Style) {
     geoJsonSource = style.getSourceAs<GeoJsonSource>("quest-data-set")
 
     geoJsonSource?.also { source ->
@@ -97,7 +97,7 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
     }
   }
 
-  private fun enableFamilyRegistration() {
+  fun enableFamilyRegistration() {
     kujakuMapView.addPoint(
       true,
       object : AddPointCallback {
@@ -131,38 +131,14 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
     )
   }
 
-  private fun setLocationReferenceAsResult(location: Location) {
+  fun setLocationReferenceAsResult(location: Location) {
     val intentData = Intent().apply { putExtra(LOCATION_ID, location.idElement.value) }
 
     setResult(RESULT_OK, intentData)
     this@GeowidgetActivity.finish()
   }
 
-  private fun generateLocation(featureJSONObject: JSONObject, coordinates: Coordinate): Location {
-    return Location().apply {
-      id = UUID.randomUUID().toString()
-      status = Location.LocationStatus.INACTIVE
-      position =
-        Location.LocationPositionComponent().apply {
-          longitude = BigDecimal(coordinates.longitude)
-          latitude = BigDecimal(coordinates.latitude)
-        }
-
-      extension =
-        listOf(
-          Extension(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL).apply {
-            setValue(
-              Attachment().apply {
-                contentType = "application/geo+json"
-                data = Base64.encodeBase64(featureJSONObject.toString().encodeToByteArray())
-              }
-            )
-          }
-        )
-    }
-  }
-
-  private fun setFeatureClickListener() {
+  fun setFeatureClickListener() {
     kujakuMapView.setOnFeatureClickListener(
       { featuresList ->
         featuresList.firstOrNull { it.hasProperty("family-id") }?.let {
@@ -173,7 +149,7 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
     )
   }
 
-  private fun setFamilyIdAsResult(familyId: String) {
+  fun setFamilyIdAsResult(familyId: String) {
     val intentData = Intent().apply { putExtra(FAMILY_ID, familyId) }
 
     setResult(RESULT_OK, intentData)
@@ -220,12 +196,6 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
     }
   }
 
-  fun JSONObject.coordinates(): Coordinate? {
-    return optJSONObject("geometry")?.run {
-      optJSONArray("coordinates")?.run { Coordinate(optDouble(0), optDouble(1)) }
-    }
-  }
-
   override fun onStart() {
     super.onStart()
     if (this::kujakuMapView.isInitialized) kujakuMapView.onStart()
@@ -264,6 +234,6 @@ class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
   companion object {
     const val LOCATION_ID = "LOCATION-ID"
     const val FAMILY_ID = "FAMILY-ID"
-    const val FAMILY_REGISTRATION_QUESTIONNAIRE = "82952"
+    const val FAMILY_REGISTRATION_QUESTIONNAIRE = "82952-geowidget"
   }
 }

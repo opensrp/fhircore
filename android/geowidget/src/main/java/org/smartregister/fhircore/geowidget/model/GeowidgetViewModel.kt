@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import com.mapbox.geojson.FeatureCollection
+import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Coding
@@ -34,6 +35,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 
+@HiltViewModel
 class GeowidgetViewModel
 @Inject
 constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: DispatcherProvider) :

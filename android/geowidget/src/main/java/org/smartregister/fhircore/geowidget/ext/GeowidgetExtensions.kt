@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.geowidget.ext
 
+import java.math.BigDecimal
+import java.util.UUID
 import org.apache.commons.codec.binary.Base64
 import org.hl7.fhir.r4.model.Attachment
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Location
 import org.json.JSONArray
 import org.json.JSONObject
@@ -87,4 +90,34 @@ fun Location.getGeoJsonGeometry(): JSONObject {
     return featureFromExt.getJSONObject("geometry")
   }
   return geometry
+}
+
+fun generateLocation(featureJSONObject: JSONObject, coordinates: Coordinate): Location {
+  return Location().apply {
+    id = UUID.randomUUID().toString()
+    status = Location.LocationStatus.INACTIVE
+    position =
+      Location.LocationPositionComponent().apply {
+        longitude = BigDecimal(coordinates.longitude)
+        latitude = BigDecimal(coordinates.latitude)
+      }
+
+    extension =
+      listOf(
+        Extension(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL).apply {
+          setValue(
+            Attachment().apply {
+              contentType = "application/geo+json"
+              data = Base64.encodeBase64(featureJSONObject.toString().encodeToByteArray())
+            }
+          )
+        }
+      )
+  }
+}
+
+fun JSONObject.coordinates(): Coordinate? {
+  return optJSONObject("geometry")?.run {
+    optJSONArray("coordinates")?.run { Coordinate(optDouble(0), optDouble(1)) }
+  }
 }
