@@ -61,10 +61,6 @@ class ActionableButtonTest {
 
   @Test
   fun testActionableButtonRendersButtonTextCorrectly() {
-    composeRule
-      .onNodeWithTag(ACTIONABLE_BUTTON_TEXT_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
     composeRule.onNodeWithText("Button Text").assertExists().assertIsDisplayed()
   }
 

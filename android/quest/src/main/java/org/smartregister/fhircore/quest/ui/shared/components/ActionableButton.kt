@@ -56,7 +56,6 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
-const val ACTIONABLE_BUTTON_TEXT_TEST_TAG = "actionableButtonTextTestTag"
 const val ACTIONABLE_BUTTON_START_ICON_TEST_TAG = "actionableButtonStartIconTestTag"
 const val ACTIONABLE_BUTTON_END_ICON_TEST_TAG = "actionableButtonEndIconTestTag"
 const val ACTIONABLE_BUTTON_OUTLINED_BUTTON_TEST_TAG = "actionableButtonOutlinedButtonTestTag"
@@ -69,6 +68,7 @@ fun ActionableButton(
   onViewComponentEvent: (ViewComponentEvent) -> Unit,
 ) {
   val computedValuesMap = remember { resourceData.computedValuesMap }
+  val status = remember { buttonProperties.status.interpolate(resourceData.computedValuesMap) }
 
   OutlinedButton(
     onClick = { buttonProperties.actions.handleClickEvent(onViewComponentEvent, resourceData) },
@@ -93,26 +93,24 @@ fun ActionableButton(
       Icon(
         modifier = modifier.size(16.dp).testTag(ACTIONABLE_BUTTON_START_ICON_TEST_TAG),
         imageVector =
-          if (buttonProperties.status == ServiceStatus.COMPLETED.name) Icons.Filled.Check
-          else Icons.Filled.Add,
+          if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
         contentDescription = null,
         tint =
-          when (buttonProperties.status) {
+          when (status) {
             ServiceStatus.COMPLETED.name -> SuccessColor.copy(alpha = 0.9f)
             else -> buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
           }
       )
       Spacer(modifier = modifier.width(6.dp))
       Text(
-        modifier = modifier.testTag(ACTIONABLE_BUTTON_TEXT_TEST_TAG),
         text = buttonProperties.text.toString(),
         fontWeight = FontWeight.Medium,
         color =
-          if (buttonProperties.status == ServiceStatus.COMPLETED.name) DefaultColor.copy(0.9f)
+          if (status == ServiceStatus.COMPLETED.name) DefaultColor.copy(0.9f)
           else buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
       )
       Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
-      if (buttonProperties.status == ServiceStatus.COMPLETED.name) {
+      if (status == ServiceStatus.COMPLETED.name) {
         Icon(
           modifier = modifier.testTag(ACTIONABLE_BUTTON_END_ICON_TEST_TAG),
           imageVector = Icons.Filled.ArrowDropDown,
