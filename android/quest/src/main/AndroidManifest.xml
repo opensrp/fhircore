@@ -31,6 +31,8 @@
 
         <activity android:name=".ui.main.AppMainActivity" />
 
+        <activity android:name=".HiltActivityForTest" />
+
         <service
             android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService"
             android:exported="false">

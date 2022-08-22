@@ -35,13 +35,15 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class ProfileViewModelTest : RobolectricTest() {
-  @get:Rule() val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
@@ -68,7 +70,7 @@ class ProfileViewModelTest : RobolectricTest() {
       ProfileViewModel(
         registerRepository = registerRepository,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = DefaultDispatcherProvider()
+        dispatcherProvider = coroutineRule.testDispatcherProvider
       )
   }
 

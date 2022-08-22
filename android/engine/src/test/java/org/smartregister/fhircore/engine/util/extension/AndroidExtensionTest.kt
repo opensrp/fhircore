@@ -33,7 +33,6 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.LightColors
 
 class AndroidExtensionTest : RobolectricTest() {
@@ -66,7 +65,7 @@ class AndroidExtensionTest : RobolectricTest() {
 
   @Test
   fun testParseColorReturnsDefaultColorWhenStringIsEmpty() {
-    assertEquals(DefaultColor, "".parseColor())
+    assertEquals(Color.Unspecified, "".parseColor())
   }
 
   @Test
