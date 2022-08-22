@@ -508,6 +508,18 @@ constructor(
     }
   }
 
+  fun removeGroupMember(memberId:String, groupId: String) {
+    viewModelScope.launch {
+      try {
+        defaultRepository.removeGroupMember(memberId = memberId, groupId = groupId)
+        isRemoved.postValue(true)
+      } catch (e: Exception) {
+        Timber.e(e)
+        isDiscarded.postValue(true)
+      }
+    }
+  }
+
   fun discard() {
     isDiscarded.postValue(true)
   }

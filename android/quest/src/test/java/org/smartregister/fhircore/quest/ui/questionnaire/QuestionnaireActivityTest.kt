@@ -58,13 +58,13 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
-import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
 
 @HiltAndroidTest
@@ -75,7 +75,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private lateinit var intent: Intent
 
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+  /*@get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()*/
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
@@ -169,7 +169,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         formName = "my-form",
         questionnaireType = QuestionnaireType.READ_ONLY,
         questionnaireResponse = questionnaireResponse,
-        populationResources = populationResources
+        populationResources = populationResources,
+        questionnaireConfig = QuestionnaireConfig(id = "id-1")
       )
     Assert.assertEquals(
       "my-form",

@@ -51,7 +51,6 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.FhirCoreQuestionnaireFragment
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -81,7 +80,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   protected var clientIdentifier: String? = null
 
-  lateinit var fragment: FhirCoreQuestionnaireFragment
+  lateinit var fragment: QuestQuestionnaireFragment
 
   private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -158,7 +157,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private suspend fun renderFragment() {
     fragment =
-      FhirCoreQuestionnaireFragment().apply {
+      org.smartregister.fhircore.quest.ui.questionnaire.QuestQuestionnaireFragment().apply {
         val questionnaireString = parser.encodeResourceToString(questionnaire)
 
         // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
@@ -468,7 +467,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireResponse: QuestionnaireResponse? = null,
       backReference: String? = null,
       populationResources: ArrayList<Resource> = ArrayList(),
-      questionnaireConfig: QuestionnaireConfig?
+      questionnaireConfig: QuestionnaireConfig? = null
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
