@@ -19,8 +19,8 @@ package org.smartregister.fhircore.quest.ui.main
 import android.content.Context
 import androidx.navigation.NavHostController
 import com.google.android.fhir.sync.State
-import org.smartregister.fhircore.engine.configuration.navigation.NavigationActionConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class AppMainEvent {
@@ -37,7 +37,7 @@ sealed class AppMainEvent {
   data class TriggerWorkflow(
     val context: Context,
     val navController: NavHostController,
-    val actions: List<NavigationActionConfig>?,
+    val actions: List<ActionConfig>?,
     val navMenu: NavigationMenuConfig
   ) : AppMainEvent()
 }
