@@ -35,7 +35,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -49,8 +48,12 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asMmmYyyy
+import org.smartregister.fhircore.engine.util.extension.asYyyy
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
+import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -238,7 +241,10 @@ constructor(
               launchSingleTop = true
             }
           }
-          .onFailure { toggleProgressIndicatorVisibility(false) }
+          .onFailure {
+            Timber.e(it)
+            toggleProgressIndicatorVisibility(false)
+          }
       }
     }
   }
@@ -282,52 +288,74 @@ constructor(
         // group.stratifier[]
         // group.stratifier.stratum[]
         // group.stratifier.stratum.population[]
-        val stratifierItems =
-          reportGroup.stratifier.map { stratifier ->
-            stratifier to
-              stratifier.stratum.filter { it.hasValue() }.mapNotNull { stratum ->
-                // if report is monthly report for measure check month- falls into measure period
-                val month = MONTH_NAMES.indexOf(stratifier.id.take(3))
-                if (month != -1 && measureReport.period.end.month < month) null
-                else {
-                  val text =
-                    when {
-                      stratum.value.hasText() -> stratum.value.text
-                      stratum.value.hasCoding() -> stratum.value.coding.last().display
-                      else -> "N/A"
+
+        // report group is stratifier/stratum denominator
+        val denominator = reportGroup.findPopulation(NUMERATOR)?.count ?: 0
+
+        val stratifierItems: List<List<MeasureReportIndividualResult>> =
+          if (reportGroup.code.coding.any { it.code.contains("month", true) })
+            measureReport.period.let {
+              val list = mutableListOf<MeasureReportIndividualResult>()
+              var currentDate = it.copy().start.firstDayOfMonth()
+
+              while (currentDate.before(it.end)) {
+                val currentMonth = MONTH_NAMES.elementAt(currentDate.month)
+
+                val stats =
+                  reportGroup
+                    .stratifier
+                    .flatMap { it.stratum }
+                    .find {
+                      it.hasValue() &&
+                        it.value.text.contains(currentDate.asYyyy()) &&
+                        it.value.text.contains(currentMonth)
                     }
-
-                  val numerator = stratum.findPopulation(NUMERATOR)?.count ?: 0
-                  val denominator = reportGroup.findPopulation(NUMERATOR)?.count ?: 0
-                  val percentage =
-                    if (denominator == 0) null else numerator.toDouble().div(denominator) * 100
-                  val count = "$numerator/$denominator"
-                  MeasureReportIndividualResult(
-                    title = text,
-                    percentage = percentage?.roundToInt()?.toString() ?: "0",
-                    count = count
+                    ?.let { it.findRatio(denominator) to it.findPercentage(denominator) }
+                MeasureReportIndividualResult(
+                    title = currentDate.asMmmYyyy(),
+                    percentage = stats?.second?.toString() ?: "0",
+                    count = stats?.first ?: "0/$denominator"
                   )
-                }
+                  .also {
+                    currentDate = currentDate.plusMonths(1)
+                    list.add(it)
+                  }
               }
-          }
-
+              listOf(list.toList())
+            }
+          else
+            reportGroup.stratifier.map { stratifier ->
+              stratifier.stratum.filter { it.hasValue() }.map { stratum ->
+                val text =
+                  when {
+                    stratum.value.hasText() -> stratum.value.text
+                    stratum.value.hasCoding() -> stratum.value.coding.last().display
+                    else -> "N/A"
+                  }
+                MeasureReportIndividualResult(
+                  title = text,
+                  percentage = stratum.findPercentage(denominator).toString(),
+                  count = stratum.findRatio(denominator),
+                  description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
+                )
+              }
+            }
         // if each stratum evaluated to single item, display all under one group else for each add a
         // separate group
-        if (stratifierItems.all { it.second.count() <= 1 })
+        if (stratifierItems.all { it.count() <= 1 })
           listOf(
             MeasureReportPopulationResult(
               title = reportGroup.id,
               count = reportGroup.findRatio(),
-              dataList = stratifierItems.flatMap { it.second }
+              dataList = stratifierItems.flatMap { it }
             )
           )
         else
           stratifierItems.map {
             MeasureReportPopulationResult(
-              title =
-                "${reportGroup.id} - ${it.first.id.replace("-", " ").uppercase(Locale.getDefault())}",
+              title = "${reportGroup.id} - ${it.first().description}",
               count = reportGroup.findRatio(),
-              dataList = it.second
+              dataList = it
             )
           }
       }
@@ -377,6 +405,15 @@ constructor(
 
   private fun MeasureReport.MeasureReportGroupComponent.findRatio(): String {
     return "${this.findPopulation(NUMERATOR)?.count}/${this.findPopulation(DENOMINATOR)?.count}"
+  }
+
+  private fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int): String {
+    return "${this.findPopulation(NUMERATOR)?.count}/$denominator"
+  }
+
+  private fun MeasureReport.StratifierGroupComponent.findPercentage(denominator: Int): Int {
+    return if (denominator == 0) 0
+    else findPopulation(NUMERATOR)?.count?.times(100)?.div(denominator) ?: 0
   }
 
   fun resetState() {
