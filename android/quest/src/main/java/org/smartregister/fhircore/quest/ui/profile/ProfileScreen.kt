@@ -17,30 +17,30 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,46 +48,32 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import org.smartregister.fhircore.engine.ui.components.ActionableButton
-import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
-import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.profile.components.PersonalData
-import org.smartregister.fhircore.quest.ui.profile.components.ProfileActionableItem
-import org.smartregister.fhircore.quest.ui.profile.components.ProfileCard
-import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
+import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
+
+const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 
 @Composable
 fun ProfileScreen(
-  profileId: String,
-  patientId: String,
-  familyId: String?,
-  navController: NavHostController,
   modifier: Modifier = Modifier,
-  profileViewModel: ProfileViewModel = hiltViewModel(),
-  refreshDataState: MutableState<Boolean>
+  navController: NavHostController,
+  profileUiState: ProfileUiState,
+  onEvent: (ProfileEvent) -> Unit
 ) {
-
-  val context = LocalContext.current
-  val profileViewData = profileViewModel.patientProfileViewData.value
   var showOverflowMenu by remember { mutableStateOf(false) }
-  val viewState = profileViewModel.profileUiState.value
-  val refreshDataStateValue by remember { refreshDataState }
-
-  LaunchedEffect(Unit) {
-    profileViewModel.fetchPatientProfileData(profileId = profileId, patientId = patientId ?: "")
-  }
-
-  SideEffect {
-    // Refresh family profile data on resume
-    if (refreshDataStateValue) {
-      profileViewModel.fetchPatientProfileData(profileId = profileId, patientId = patientId)
-      refreshDataState.value = false
-    }
-  }
+  val mutableInteractionSource = remember { MutableInteractionSource() }
+  val context = LocalContext.current
 
   Scaffold(
     topBar = {
@@ -99,7 +85,10 @@ fun ProfileScreen(
           }
         },
         actions = {
-          IconButton(onClick = { showOverflowMenu = !showOverflowMenu }) {
+          IconButton(
+            onClick = { showOverflowMenu = !showOverflowMenu },
+            modifier = modifier.testTag(DROPDOWN_MENU_TEST_TAG)
+          ) {
             Icon(
               imageVector = Icons.Outlined.MoreVert,
               contentDescription = null,
@@ -110,18 +99,19 @@ fun ProfileScreen(
             expanded = showOverflowMenu,
             onDismissRequest = { showOverflowMenu = false }
           ) {
-            viewState.overflowMenuItems.forEach {
+            profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
+              if (!it.visible.toBoolean()) return@forEach
+              if (it.showSeparator.toBoolean()) Divider(color = DividerColor, thickness = 1.dp)
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
-                  profileViewModel.onEvent(
+                  onEvent(
                     ProfileEvent.OverflowMenuClick(
-                      navController,
-                      context,
-                      it.id,
-                      profileViewData.logicalId,
-                      familyId,
-                      profileViewData
+                      navController = navController,
+                      context = context,
+                      resourceData = profileUiState.resourceData,
+                      overflowMenuItemConfig = it,
+                      managingEntity = profileUiState.profileConfiguration.managingEntity
                     )
                   )
                 },
@@ -131,127 +121,49 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .background(
                       color =
-                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
+                        if (it.confirmAction) it.backgroundColor.parseColor().copy(alpha = 0.1f)
                         else Color.Transparent
                     )
-              ) { Text(text = stringResource(id = it.titleResource), color = it.titleColor) }
+              ) { Text(text = it.title, color = it.titleColor.parseColor()) }
             }
           }
-        }
+        },
+        elevation = 0.dp
       )
+    },
+    floatingActionButton = {
+      val fabActions = profileUiState.profileConfiguration?.fabActions
+      if (!fabActions.isNullOrEmpty()) {
+        ExtendedFloatingActionButton(
+          contentColor = Color.White,
+          text = { Text(text = fabActions.first().display.uppercase()) },
+          onClick = {
+            val clickAction =
+              fabActions.first().actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+            when (clickAction?.workflow) {
+              ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+                clickAction.questionnaire?.id?.let { questionnaireId ->
+                  navController.context.launchQuestionnaire<QuestionnaireActivity>(questionnaireId)
+                }
+              }
+            }
+          },
+          backgroundColor = MaterialTheme.colors.primary,
+          icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
+          interactionSource = mutableInteractionSource
+        )
+      }
     }
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) {
-      Column(
-        modifier =
-          modifier
-            .verticalScroll(rememberScrollState())
-            .background(PatientProfileSectionsBackgroundColor)
-      ) {
-        // Personal Data: e.g. sex, age, dob
-        PersonalData(profileViewData)
-
-        // Patient tasks: List of tasks for the patients
-        if (profileViewData.tasks.isNotEmpty()) {
-          ProfileCard(
-            title = stringResource(R.string.visits).uppercase(),
-            onActionClick = {},
-            profileViewSection = PatientProfileViewSection.VISITS
-          ) {
-            profileViewData.tasks.forEach {
-              Spacer(modifier = modifier.height(16.dp))
-              ActionableButton(
-                actionableButtonData = it,
-                onAction = { questionnaireId, taskId ->
-                  profileViewModel.onEvent(
-                    ProfileEvent.OpenTaskForm(
-                      context = context,
-                      taskFormId = questionnaireId,
-                      taskId = taskId,
-                      patientId = profileViewData.logicalId
-                    )
-                  )
-                }
-              )
-              Spacer(modifier = modifier.height(16.dp))
-              Divider()
-            }
-          }
-        }
-
-        // Forms: Loaded for quest app
-        if (profileViewData.forms.isNotEmpty()) {
-          ProfileCard(
-            title = stringResource(R.string.forms),
-            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.FORMS
-          ) {
-            Spacer(modifier.height(16.dp))
-            profileViewData.forms.forEach {
-              ActionableButton(
-                actionableButtonData = it,
-                onAction = { questionnaireId, _ ->
-                  profileViewModel.onEvent(ProfileEvent.LoadQuestionnaire(questionnaireId, context))
-                }
-              )
-            }
-            Spacer(modifier.height(16.dp))
-          }
-        }
-
-        // Form responses: load questionnaire responses
-        if (profileViewData.formResponses.isNotEmpty()) {
-          ProfileCard(
-            title =
-              stringResource(R.string.responses, profileViewData.formResponses.size).uppercase(),
-            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.FORM_RESPONSES
-          ) {
-            profileViewData.formResponses.forEach {
-              ProfileActionableItem(it, onActionClick = { _, _ -> })
-            }
-          }
-        }
-
-        // Medical History: Show medication history for the patient
-        // TODO add handled events for all items action click
-        if (profileViewData.medicalHistoryData.isNotEmpty()) {
-          ProfileCard(
-            title = stringResource(R.string.medical_history),
-            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
-          ) {
-            profileViewData.medicalHistoryData.forEach {
-              ProfileActionableItem(it, onActionClick = { _, _ -> })
-            }
-          }
-        }
-
-        // Upcoming Services: Display upcoming services (or tasks) for the patient
-        if (profileViewData.upcomingServices.isNotEmpty()) {
-          ProfileCard(
-            title = stringResource(R.string.upcoming_services),
-            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES
-          ) {
-            profileViewData.upcomingServices.forEach {
-              ProfileActionableItem(it, onActionClick = { _, _ -> })
-            }
-          }
-        }
-
-        // Service Card: Display other vital information for ANC/PNC
-        if (profileViewData.ancCardData.isNotEmpty()) {
-          ProfileCard(
-            title = stringResource(R.string.service_card),
-            onActionClick = { profileViewModel.onEvent(ProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.SERVICE_CARD
-          ) {
-            profileViewData.ancCardData.forEach {
-              ProfileActionableItem(it, onActionClick = { _, _ -> })
-            }
-          }
-        }
+    Box(
+      modifier = modifier.background(ProfileBackgroundColor).fillMaxHeight().padding(innerPadding)
+    ) {
+      Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+        ViewRenderer(
+          viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
+          resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
+          onViewComponentClick = { onEvent(ProfileEvent.OnViewComponentEvent(it, navController)) }
+        )
       }
     }
   }

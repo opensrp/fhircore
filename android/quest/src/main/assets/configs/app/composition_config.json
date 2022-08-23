@@ -129,6 +129,30 @@
         }
       },
       "mode": "working"
+    },
+    {
+      "title": "Profile configurations",
+      "mode": "working",
+      "section": [
+        {
+          "title": "Household profile configuration",
+          "focus": {
+            "reference": "Binary/11111119",
+            "identifier": {
+              "value": "householdProfile"
+            }
+          }
+        },
+        {
+          "title": "Default profile configuration",
+          "focus": {
+            "reference": "Binary/11111120",
+            "identifier": {
+              "value": "defaultProfile"
+            }
+          }
+        }
+      ]
     }
   ]
 }

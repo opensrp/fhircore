@@ -45,13 +45,10 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val computedValuesMap = mutableMapOf<String, Any>()
   private val fhirPathDataExtractor = FhirPathDataExtractor
-  private val rulesEngineService = RulesEngineService()
+  val rulesEngineService = RulesEngineService()
 
   init {
     rulesEngine.registerRuleListener(this)
-    // Uncomment to include configurations in the facts map
-    //    configurationRegistry.configsJsonMap.forEach { entry -> facts.put(entry.key, entry.value)
-    // }
     facts.apply {
       put(FHIR_PATH, fhirPathDataExtractor)
       put(DATA, computedValuesMap)
@@ -138,6 +135,7 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
      * - The ResourceType the relatedResources belong to [fhirPathExpression]
      * - A fhir path expression used to retrieve the subject reference Id from the related resources
      */
+    @Suppress("UNCHECKED_CAST")
     fun retrieveRelatedResources(
       resource: Resource,
       relatedResourceType: String,

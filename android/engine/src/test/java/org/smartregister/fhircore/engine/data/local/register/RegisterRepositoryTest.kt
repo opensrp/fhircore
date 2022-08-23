@@ -41,10 +41,12 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
@@ -59,20 +61,22 @@ class RegisterRepositoryTest : RobolectricTest() {
   var context: Context = ApplicationProvider.getApplicationContext()
 
   private lateinit var fhirEngine: FhirEngine
+
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  private lateinit var rulesFactory: RulesFactory
+  @Inject lateinit var rulesFactory: RulesFactory
+
   private lateinit var registerRepository: RegisterRepository
+
+  private val patient = Faker.buildPatient("12345")
 
   @Before
   fun setUp() {
     hiltRule.inject()
-
     fhirEngine = mockk()
     dispatcherProvider = DefaultDispatcherProvider()
-    rulesFactory = mockk()
     registerRepository =
       spyk(
         RegisterRepository(
@@ -82,37 +86,25 @@ class RegisterRepositoryTest : RobolectricTest() {
           rulesFactory = rulesFactory
         )
       )
+    runBlocking {
+      configurationRegistry.loadConfigurations("app/debug", context) { Assert.assertTrue(it) }
+    }
+    coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns
+      listOf(Immunization())
+  }
+
+  @After
+  fun tearDown() {
+    unmockkObject(FhirPathDataExtractor)
   }
 
   @Test
   fun loadRegisterDataGivenRelatedResourceHasNoFhirPathExpression() {
-    val patient =
-      Patient().apply {
-        id = "12345"
-        addName().apply {
-          addGiven("Jon")
-          family = "Snow"
-        }
-        gender = Enumerations.AdministrativeGender.MALE
-      }
     coEvery {
       fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 20, from = 20))
     } returns listOf(patient)
 
-    val immunization = Immunization()
-    coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns
-      listOf(immunization)
-
-    every {
-      rulesFactory.fireRule(ruleConfigs = any(), baseResource = any(), relatedResourcesMap = any())
-    } returns
-      mapOf(
-        Pair("patientName", "Jon Snow"),
-        Pair("patientGender", Enumerations.AdministrativeGender.MALE)
-      )
-
     runBlocking {
-      configurationRegistry.loadConfigurations("app/debug", context) { Assert.assertTrue(it) }
       val listResourceData = registerRepository.loadRegisterData(1, "patientRegister")
       val resourceData = listResourceData.first()
 
@@ -125,10 +117,10 @@ class RegisterRepositoryTest : RobolectricTest() {
         resourceData.relatedResourcesMap.values.first().first().resourceType
       )
 
-      Assert.assertEquals("Jon Snow", resourceData.computedValuesMap["patientName"])
+      Assert.assertEquals("Nelson Mandela", resourceData.computedValuesMap["patientName"])
       Assert.assertEquals(
-        Enumerations.AdministrativeGender.MALE,
-        resourceData.computedValuesMap["patientGender"]
+        Enumerations.AdministrativeGender.MALE.name.lowercase(),
+        (resourceData.computedValuesMap["patientGender"] as String).lowercase()
       )
     }
 
@@ -139,24 +131,10 @@ class RegisterRepositoryTest : RobolectricTest() {
     }
 
     coVerify { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) }
-
-    verify {
-      rulesFactory.fireRule(ruleConfigs = any(), baseResource = any(), relatedResourcesMap = any())
-    }
   }
 
   @Test
   fun loadRegisterDataGivenRelatedResourceHasFhirPathExpression() {
-    val patient =
-      Patient().apply {
-        id = "12345"
-        addName().apply {
-          addGiven("Jon")
-          family = "Snow"
-        }
-        gender = Enumerations.AdministrativeGender.MALE
-      }
-
     val group =
       Group().apply {
         id = "12345"
@@ -180,10 +158,6 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     coEvery { fhirEngine.search<CarePlan>(Search(type = ResourceType.CarePlan)) } returns
       listOf(CarePlan())
-
-    every {
-      rulesFactory.fireRule(ruleConfigs = any(), baseResource = any(), relatedResourcesMap = any())
-    } returns mapOf(Pair("familyName", "Snow"))
 
     runBlocking {
       configurationRegistry.loadConfigurations("app/debug", context) { Assert.assertTrue(it) }
@@ -214,19 +188,25 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<CarePlan>(Search(type = ResourceType.CarePlan)) }
 
-    verify {
-      rulesFactory.fireRule(ruleConfigs = any(), baseResource = any(), relatedResourcesMap = any())
-    }
-
     unmockkObject(FhirPathDataExtractor)
   }
 
   @Test
   fun loadProfileDataIsNotSupportedYet() {
+    coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
     runBlocking {
-      Assert.assertNull(
-        registerRepository.loadProfileData(profileId = "12345", identifier = "485738")
-      )
+      val profileData =
+        registerRepository.loadProfileData(profileId = "patientProfile", resourceId = "12345")
+      Assert.assertNotNull(profileData)
+      Assert.assertTrue(profileData.computedValuesMap.containsKey(PATIENT_NAME))
+      Assert.assertEquals("Nelson Mandela", profileData.computedValuesMap[PATIENT_NAME])
+      Assert.assertTrue(profileData.computedValuesMap.containsKey(PATIENT_ID))
+      Assert.assertEquals("12345", profileData.computedValuesMap[PATIENT_ID])
     }
+  }
+
+  companion object {
+    private const val PATIENT_NAME = "patientName"
+    private const val PATIENT_ID = "patientId"
   }
 }
