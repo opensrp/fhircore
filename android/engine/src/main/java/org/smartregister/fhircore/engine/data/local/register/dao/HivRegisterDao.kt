@@ -150,9 +150,8 @@ constructor(
       .toLong()
   }
 
-  internal suspend fun Patient.isPregnant() = patientConditions(this.logicalId).hasActivePregnancy()
-  internal suspend fun Patient.isBreastfeeding() =
-    patientConditions(this.logicalId).activelyBreastfeeding()
+  suspend fun Patient.isPregnant() = patientConditions(this.logicalId).hasActivePregnancy()
+  suspend fun Patient.isBreastfeeding() = patientConditions(this.logicalId).activelyBreastfeeding()
 
   internal suspend fun Patient.activeConditions() =
     patientConditions(this.logicalId).filter { condition ->
@@ -237,6 +236,42 @@ constructor(
         this.active = false
       }
     defaultRepository.addOrUpdate(patient)
+  }
+
+  suspend fun loadChildContactsRegisterData(patients: List<Patient>): List<RegisterData> {
+    //    val patients =
+    //            fhirEngine.search<Patient> {
+    //              filter(Patient.ACTIVE, { value = of(true) })
+    //              sort(Patient.NAME, Order.ASCENDING)
+    //              count =
+    //                      if (loadAll) countRegisterData(appFeatureName).toInt()
+    //                      else PaginationConstant.DEFAULT_PAGE_SIZE
+    //              from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+    //            }
+
+    return patients
+      .filter(this::isValidPatient)
+      .map { patient ->
+        RegisterData.HivRegisterData(
+          logicalId = patient.logicalId,
+          identifier = hivPatientIdentifier(patient),
+          name = patient.extractName(),
+          gender = patient.gender,
+          age = patient.birthDate.toAgeDisplay(),
+          address = patient.extractAddress(),
+          familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+          phoneContacts = patient.extractTelecom(),
+          practitioners = patient.generalPractitioner,
+          chwAssigned = patient.extractGeneralPractitionerReference(),
+          healthStatus =
+            patient.extractHealthStatusFromMeta(
+              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+            ),
+          isPregnant = patient.isPregnant(),
+          isBreastfeeding = patient.isBreastfeeding()
+        )
+      }
+      .filterNot { it.healthStatus == HealthStatus.DEFAULT }
   }
 
   companion object {
