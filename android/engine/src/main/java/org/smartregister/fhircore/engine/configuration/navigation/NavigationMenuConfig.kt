@@ -26,5 +26,6 @@ data class NavigationMenuConfig(
   val icon: String? = null,
   val display: String,
   val showCount: Boolean = false,
-  val actions: List<ActionConfig>? = null
+  val actions: List<ActionConfig>? = null,
+  val isTextOnly: Boolean = false
 )
