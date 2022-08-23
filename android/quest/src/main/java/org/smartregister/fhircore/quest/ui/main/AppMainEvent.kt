@@ -24,20 +24,37 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class AppMainEvent {
+
   data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
+
   data class RegisterNewClient(val context: Context, val questionnaireId: String) : AppMainEvent()
+
   data class OpenRegistersBottomSheet(
     val context: Context,
     val navController: NavHostController,
     val registersList: List<NavigationMenuConfig>?
   ) : AppMainEvent()
+
   object Logout : AppMainEvent()
+
   object SyncData : AppMainEvent()
+
   data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
+
   data class TriggerWorkflow(
     val context: Context,
     val navController: NavHostController,
     val actions: List<ActionConfig>?,
     val navMenu: NavigationMenuConfig
+  ) : AppMainEvent()
+
+  /**
+   * Event triggered to open the profile with the given [profileId] for the resource identified by
+   * [resourceId].
+   */
+  data class OpenProfile(
+    val navController: NavHostController,
+    val profileId: String,
+    val resourceId: String
   ) : AppMainEvent()
 }

@@ -167,10 +167,11 @@ android {
             versionCode 1
             versionName "0.0.1"
         }
-        maps {
+
+        map {
             dimension "apps"
-            applicationIdSuffix ".maps"
-            versionNameSuffix "-maps"
+            applicationIdSuffix ".map"
+            versionNameSuffix "-map"
             versionCode 1
             versionName "0.0.1"
         }
@@ -180,6 +181,9 @@ android {
 dependencies {
     coreLibraryDesugaring deps.desugar
     implementation(project(":engine"))
+    implementation(project(":geowidget")) {
+        transitive = true
+    }
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'com.google.android.material:material:1.6.1'
@@ -187,12 +191,6 @@ dependencies {
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
-
-
-    // Geowidget dependency
-    implementation(project(":geowidget")) {
-        transitive = true
-    }
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"

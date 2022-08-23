@@ -41,20 +41,18 @@ class GeowidgetViewModel
 constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: DispatcherProvider) :
   ViewModel() {
 
-  lateinit var context: Context
-
-  suspend fun getFamiliesFeatureCollection(): FeatureCollection {
+  suspend fun getFamiliesFeatureCollection(context: Context): FeatureCollection {
     val families = getFamilies()
 
     return KujakuFhirCoreConverter()
       .generateFeatureCollection(context, families.map { listOf(it.first, it.second) })
   }
 
-  fun getFamiliesFeatureCollectionStream(): LiveData<FeatureCollection> {
+  fun getFamiliesFeatureCollectionStream(context: Context): LiveData<FeatureCollection> {
     val featureCollectionLiveData = MutableLiveData<FeatureCollection>()
 
     viewModelScope.launch(dispatcherProvider.io()) {
-      val familyFeatures = getFamiliesFeatureCollection()
+      val familyFeatures = getFamiliesFeatureCollection(context)
       featureCollectionLiveData.postValue(familyFeatures)
     }
 

@@ -29,12 +29,6 @@ import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 16-08-2022. */
 typealias Coordinate = Pair<Double, Double>
 
-val Coordinate.latitude: Double
-  get() = this.second
-
-val Coordinate.longitude: Double
-  get() = this.first
-
 val Location.boundaryGeoJsonExtAttachment: Attachment?
   get() {
     return if (hasBoundaryGeoJsonExt) {
@@ -93,13 +87,15 @@ fun Location.getGeoJsonGeometry(): JSONObject {
 }
 
 fun generateLocation(featureJSONObject: JSONObject, coordinates: Coordinate): Location {
+  val (longitude, latitude) = coordinates
+
   return Location().apply {
     id = UUID.randomUUID().toString()
     status = Location.LocationStatus.INACTIVE
     position =
       Location.LocationPositionComponent().apply {
-        longitude = BigDecimal(coordinates.longitude)
-        latitude = BigDecimal(coordinates.latitude)
+        this.longitude = BigDecimal(longitude)
+        this.latitude = BigDecimal(latitude)
       }
 
     extension =

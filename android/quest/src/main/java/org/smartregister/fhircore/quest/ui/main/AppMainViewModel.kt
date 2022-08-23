@@ -19,8 +19,8 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +28,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -37,19 +36,16 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Location
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
@@ -59,7 +55,9 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
@@ -70,6 +68,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg.bindArgumentsOf
 import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
+@ExperimentalMaterialApi
 class AppMainViewModel
 @Inject
 constructor(
@@ -78,13 +77,9 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val configService: ConfigService,
   val registerRepository: RegisterRepository,
-  val dispatcherProvider: DefaultDispatcherProvider,
-  val defaultRepository: DefaultRepository
+  val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
-
-  lateinit var mapLauncherResultHandler: ActivityResultLauncher<Intent>
 
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
@@ -138,30 +133,18 @@ constructor(
           questionnaireId = event.questionnaireId
         )
       }
-      is AppMainEvent.OpenRegistersBottomSheet -> {
-        (event.context as AppCompatActivity).let { activity ->
-          RegisterBottomSheetFragment(
-              navigationMenuConfigs = event.registersList,
-              registerCountMap = appMainUiState.value.registerCountMap,
-              menuClickListener = {
-                onEvent(
-                  AppMainEvent.TriggerWorkflow(
-                    context = event.context,
-                    navController = event.navController,
-                    actions = it.actions,
-                    navMenu = it
-                  )
-                )
-              }
-            )
-            .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
-        }
-      }
+      is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
           is State.Finished, is State.Failed -> {
             // Notify subscribers to refresh views after sync and refresh UI
             refreshDataState.value = true
+            if (event.state is State.Finished) {
+              sharedPreferencesHelper.write(
+                LAST_SYNC_TIMESTAMP,
+                formatLastSyncTimestamp(event.state.result.timestamp)
+              )
+            }
             retrieveAppMainUiState()
           }
           else ->
@@ -169,39 +152,62 @@ constructor(
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.TriggerWorkflow -> {
-        val navigationAction = event.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-
-        when (navigationAction?.workflow) {
-          ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(context = event.context)
-          ApplicationWorkflow.LAUNCH_SETTINGS ->
-            event.navController.navigate(route = MainNavigationScreen.Settings.route)
-          ApplicationWorkflow.LAUNCH_REPORT ->
-            event.navController.navigate(route = MainNavigationScreen.Reports.route)
-          ApplicationWorkflow.LAUNCH_REGISTER -> {
-            val urlParams =
-              bindArgumentsOf(
-                Pair(NavigationArg.REGISTER_ID, event.navMenu.id),
-                Pair(NavigationArg.SCREEN_TITLE, event.navMenu.display)
-              )
-            event.navController.navigate(route = MainNavigationScreen.Home.route + urlParams)
-          }
-          ApplicationWorkflow.LAUNCH_PROFILE ->
-            // TODO bind the necessary patient profile url params
-            event.navController.navigate(MainNavigationScreen.Profile.route)
-          ApplicationWorkflow.LAUNCH_MAP ->
-            launchGeowidgetWithPromise(event.context, mapLauncherResultHandler)
-          else -> return
-        }
+      is AppMainEvent.TriggerWorkflow -> triggerWorkflow(event)
+      is AppMainEvent.OpenProfile -> {
+        val urlParams =
+          bindArgumentsOf(
+            NavigationArg.PROFILE_ID to event.profileId,
+            NavigationArg.RESOURCE_ID to event.resourceId
+          )
+        event.navController.navigate(MainNavigationScreen.Profile.route + urlParams)
       }
     }
   }
 
-  internal fun launchGeowidgetWithPromise(
-    context: Context,
-    mapLauncher: ActivityResultLauncher<Intent>?
-  ) {
-    mapLauncher?.launch(Intent(context, GeowidgetActivity::class.java))
+  private fun triggerWorkflow(event: AppMainEvent.TriggerWorkflow) {
+    val navigationAction = event.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+    when (navigationAction?.workflow) {
+      ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(context = event.context)
+      ApplicationWorkflow.LAUNCH_SETTINGS ->
+        event.navController.navigate(route = MainNavigationScreen.Settings.route)
+      ApplicationWorkflow.LAUNCH_REPORT ->
+        event.navController.navigate(route = MainNavigationScreen.Reports.route)
+      ApplicationWorkflow.LAUNCH_REGISTER -> {
+        val urlParams =
+          bindArgumentsOf(
+            Pair(NavigationArg.REGISTER_ID, event.navMenu.id),
+            Pair(NavigationArg.SCREEN_TITLE, event.navMenu.display)
+          )
+        event.navController.navigate(route = MainNavigationScreen.Home.route + urlParams)
+      }
+      ApplicationWorkflow.LAUNCH_MAP ->
+        with(event.context) {
+          (getActivity() as AppMainActivity).mapLauncherResultHandler.launch(
+            Intent(this, GeowidgetActivity::class.java)
+          )
+        }
+      else -> return
+    }
+  }
+
+  private fun displayRegisterBottomSheet(event: AppMainEvent.OpenRegistersBottomSheet) {
+    (event.context as AppCompatActivity).let { activity ->
+      RegisterBottomSheetFragment(
+          navigationMenuConfigs = event.registersList,
+          registerCountMap = appMainUiState.value.registerCountMap,
+          menuClickListener = {
+            onEvent(
+              AppMainEvent.TriggerWorkflow(
+                context = event.context,
+                navController = event.navController,
+                actions = it.actions,
+                navMenu = it
+              )
+            )
+          }
+        )
+        .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
+    }
   }
 
   private fun retrieveRegisterCountMap(): Map<String, Long> {
@@ -216,25 +222,18 @@ constructor(
   }
 
   fun launchFamilyRegistrationWithLocationId(context: Context, locationId: String) {
-    viewModelScope.launch(Dispatchers.IO) {
-      val location = defaultRepository.loadResource<Location>(locationId)
-      val locationString =
-        FhirContext.forR4Cached().newJsonParser().encodeResourceToString(location)
+    viewModelScope.launch(dispatcherProvider.main()) {
+      val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
 
       val bundle =
         bundleOf(
-          Pair(
-            QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
-            arrayListOf(locationString)
-          )
+          Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
         )
 
-      viewModelScope.launch(Dispatchers.Main) {
-        context.launchQuestionnaire<QuestionnaireActivity>(
-          GeowidgetActivity.FAMILY_REGISTRATION_QUESTIONNAIRE,
-          intentBundle = bundle
-        )
-      }
+      context.launchQuestionnaire<QuestionnaireActivity>(
+        GeowidgetActivity.FAMILY_REGISTRATION_QUESTIONNAIRE,
+        intentBundle = bundle
+      )
     }
   }
 
@@ -260,7 +259,6 @@ constructor(
       .displayName
 
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
-
     val syncTimestampFormatter =
       SimpleDateFormat(SYNC_TIMESTAMP_INPUT_FORMAT, Locale.getDefault()).apply {
         timeZone = TimeZone.getTimeZone(UTC)
@@ -270,10 +268,6 @@ constructor(
   }
 
   fun retrieveLastSyncTimestamp(): String? = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
-
-  fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
-    sharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, formatLastSyncTimestamp(timestamp))
-  }
 
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"

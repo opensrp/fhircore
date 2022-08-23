@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.quest.ui.main.components
 
 import android.content.Context
-import android.content.ContextWrapper
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -71,7 +69,6 @@ import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
-import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
@@ -301,12 +298,7 @@ private fun StaticMenus(
   appUiState: AppMainUiState
 ) {
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
-    items(
-      navigationConfiguration.staticMenu.filter {
-        !(it.id.contains("map") && !BuildConfig.GEOWIDGET_ENABLED)
-      },
-      { it.id }
-    ) { navigationMenu ->
+    items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
       SideMenuItem(
         // TODO Do we want save icons as base64 encoded strings
         iconResource = context.retrieveResourceId(navigationMenu.icon),
@@ -467,10 +459,3 @@ fun AppDrawerPreview() {
     appVersionPair = Pair(1, "0.0.1")
   )
 }
-
-fun Context.getActivity(): AppCompatActivity? =
-  when (this) {
-    is AppCompatActivity -> this
-    is ContextWrapper -> baseContext.getActivity()
-    else -> null
-  }

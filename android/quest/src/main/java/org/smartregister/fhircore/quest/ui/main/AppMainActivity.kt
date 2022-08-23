@@ -62,17 +62,16 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   lateinit var getLocationPos: ActivityResultLauncher<Intent>
 
+  lateinit var mapLauncherResultHandler: ActivityResultLauncher<Intent>
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
-
-    val mapLauncherResultHandler = createMapActivityResultLauncher()
-
-    appMainViewModel.mapLauncherResultHandler = mapLauncherResultHandler
+    mapLauncherResultHandler = createMapActivityResultLauncher()
   }
 
-  private fun createMapActivityResultLauncher() =
+  private fun createMapActivityResultLauncher(): ActivityResultLauncher<Intent> =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
       val intent =
         result.data
@@ -103,7 +102,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   override fun onResume() {
     super.onResume()
-
     appMainViewModel.run {
       refreshDataState.value = true
       retrieveAppMainUiState()
@@ -156,7 +154,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
               )
             )
           )
-          updateLastSyncTimestamp(state.result.timestamp)
         }
         scheduleFhirTaskStatusUpdater()
       }

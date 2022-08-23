@@ -64,7 +64,6 @@ open class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
   protected open fun performOnCreateOperations() {
     Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_TOKEN)
     setContentView(R.layout.activity_geowidget)
-    geowidgetViewModel.context = this
 
     kujakuMapView = findViewById(R.id.mapView)
     kujakuMapView.getMapAsync { mapboxMap ->
@@ -81,11 +80,11 @@ open class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
     enableFamilyRegistration()
 
     // Display the groups
-    geowidgetViewModel.getFamiliesFeatureCollectionStream().observe(this, this)
+    geowidgetViewModel.getFamiliesFeatureCollectionStream(this).observe(this, this)
   }
 
   fun renderResourcesOnMap(style: Style) {
-    geoJsonSource = style.getSourceAs<GeoJsonSource>("quest-data-set")
+    geoJsonSource = style.getSourceAs("quest-data-set")
 
     geoJsonSource?.also { source ->
       featureCollection?.also { collection ->
