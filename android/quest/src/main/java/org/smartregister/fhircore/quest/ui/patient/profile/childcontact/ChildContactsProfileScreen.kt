@@ -104,7 +104,9 @@ fun ChildContactsProfileScreen(
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { Text(text = stringResource(R.string.patient_x_children, profileViewData.name)) },
+        title = {
+          Text(text = stringResource(R.string.patient_x_children, profileViewData.familyName))
+        },
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.Filled.ArrowBack, null)

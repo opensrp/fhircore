@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -118,6 +119,7 @@ constructor(
       logicalId = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
+      familyName = patient.extractFamilyName(),
       identifier = hivPatientIdentifier(patient),
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
