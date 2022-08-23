@@ -1,0 +1,72 @@
+{
+  "appId": "app",
+  "configType": "profile",
+  "id": "patientProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Patient"
+    },
+    "relatedResources": [
+      {
+        "resource": "Immunization",
+        "searchParameter": "patient"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "name": "patientName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
+      ]
+    },
+    {
+      "name": "patientId",
+      "condition": "true",
+      "actions": [
+        "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "CARD",
+          "padding": 0,
+          "content": [
+            {
+              "viewType": "COLUMN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "@{patientName}",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "ID: @{patientId}",
+                  "primaryTextColor": "#000000"
+                }
+              ]
+            },
+            {
+              "viewType": "SPACER",
+              "height": 16
+            }
+          ]
+        }
+      ],
+      "overFlowMenuItems": [
+        {
+          "title": "Register Pregnancy",
+          "titleColor": "#000000",
+          "visible": "true",
+          "showSeparator": "true"
+        }
+      ]
+    }
+  ]
+}

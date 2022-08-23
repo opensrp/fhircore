@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Application
 import android.content.Intent
 import android.os.Looper
+import androidx.compose.ui.graphics.Color
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.just
@@ -32,6 +33,12 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.ui.theme.LightColors
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 
 class AndroidExtensionTest : RobolectricTest() {
   private lateinit var context: Application
@@ -59,5 +66,27 @@ class AndroidExtensionTest : RobolectricTest() {
 
     // Fixes a compose and activity test failure
     Shadows.shadowOf(Looper.getMainLooper()).idle()
+  }
+
+  @Test
+  fun testParseColorReturnsDefaultColorWhenStringIsEmpty() {
+    assertEquals(Color.Unspecified, "".parseColor())
+  }
+
+  @Test
+  fun testParseColorReturnsCorrectColorWhenHexColorIsParsed() {
+    assertEquals(Color.White, "#ffffff".parseColor())
+  }
+
+  @Test
+  fun testParseColorReturnsCorrectColorForThemeColorStrings() {
+    assertEquals(LightColors.primary, PRIMARY_COLOR.parseColor())
+    assertEquals(LightColors.primaryVariant, PRIMARY_VARIANT_COLOR.parseColor())
+    assertEquals(LightColors.error, ERROR_COLOR.parseColor())
+    assertEquals(DangerColor, DANGER_COLOR.parseColor())
+    assertEquals(WarningColor, WARNING_COLOR.parseColor())
+    assertEquals(InfoColor, INFO_COLOR.parseColor())
+    assertEquals(SuccessColor, SUCCESS_COLOR.parseColor())
+    assertEquals(DefaultColor, DEFAULT_COLOR.parseColor())
   }
 }

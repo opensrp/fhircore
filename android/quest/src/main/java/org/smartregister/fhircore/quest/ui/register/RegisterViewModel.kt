@@ -38,7 +38,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -46,7 +45,6 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
-import org.smartregister.fhircore.quest.navigation.NavigationArg
 
 @HiltViewModel
 class RegisterViewModel
@@ -55,7 +53,6 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val rulesFactory: RulesFactory
 ) : ViewModel() {
 
   private val _currentPage = MutableLiveData(0)
@@ -102,7 +99,7 @@ constructor(
   }
 
   fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
-    // register configuration initialized once
+    // Ensures register configuration is initialized once
     if (!::registerConfiguration.isInitialized) {
       registerConfiguration =
         configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
@@ -122,7 +119,7 @@ constructor(
     _totalRecordsCount.value?.toDouble()?.div(DEFAULT_PAGE_SIZE.toLong())?.let { ceil(it).toInt() }
       ?: 1
 
-  fun onEvent(event: RegisterEvent) {
+  fun onEvent(event: RegisterEvent) =
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
@@ -143,20 +140,9 @@ constructor(
           // TODO use appropriate property from the register configuration
           "provide-questionnaire-id"
         )
-      is RegisterEvent.OpenProfile -> {
-        val urlParams =
-          NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, event.patientId))
-        // TODO conditionally navigate to either family or patient profile
-        //        if (event.registerId)
-        //          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route +
-        // urlParams)
-        //        else
-        //          event.navController.navigate(
-        //            route = MainNavigationScreen.PatientProfile.route + urlParams
-        //          )
-      }
+      is RegisterEvent.OnViewComponentEvent ->
+        event.viewComponentEvent.handleEvent(event.navController)
     }
-  }
 
   private fun filterRegisterData(event: RegisterEvent.SearchRegister) {
     val searchBar = retrieveRegisterConfiguration(event.registerId).searchBar

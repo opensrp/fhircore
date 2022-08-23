@@ -58,6 +58,8 @@ import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
@@ -188,7 +190,7 @@ private fun NavBottomSection(
   ) {
     SideMenuItem(
       modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
-      iconResource = R.drawable.ic_right_arrow,
+      iconResource = R.drawable.ic_sync,
       title = stringResource(R.string.sync),
       endText = appUiState.lastSyncTime,
       showEndText = true,
@@ -340,13 +342,19 @@ private fun MenuActionButton(
         modifier
           .fillMaxWidth()
           .clickable {
-            onSideMenuClick(
-              AppMainEvent.RegisterNewClient(
-                context = context,
-                questionnaireId =
-                  navigationConfiguration.menuActionButton?.questionnaire?.id.toString()
+            val action =
+              navigationConfiguration.menuActionButton?.actions?.find {
+                it.trigger == ActionTrigger.ON_CLICK &&
+                  it.workflow == ApplicationWorkflow.LAUNCH_QUESTIONNAIRE
+              }
+            if (action != null && action.questionnaire?.id != null) {
+              onSideMenuClick(
+                AppMainEvent.RegisterNewClient(
+                  context = context,
+                  questionnaireId = action.questionnaire!!.id
+                )
               )
-            )
+            }
           }
           .padding(16.dp)
           .testTag(MENU_BUTTON_TEST_TAG),
@@ -430,20 +438,6 @@ private fun SideMenuItemText(title: String, textColor: Color) {
     modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG)
   )
 }
-
-/*@Preview(showBackground = false)
-@ExcludeFromJacocoGeneratedReport
-@Composable
-fun PreviewSideMenuItem() {
-  SideMenuItem(
-    iconResource = null,
-    title = "Other Patients",
-    endText = "End Text",
-    showEndText = false,
-    endIconResource = R.drawable.ic_right_arrow,
-    onSideMenuClick = {}
-  )
-}*/
 
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport

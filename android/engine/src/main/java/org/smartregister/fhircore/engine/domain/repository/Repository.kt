@@ -16,16 +16,28 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
-import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
-/** Common repository for register. */
+/** This class provides common functionalities used in the register */
 interface Repository {
+
+  /**
+   * This function loads the desired register configuration using the provided [registerId]. The
+   * data query extracted from the retrieved configuration is used to filter the register data (FHIR
+   * resources wrapped in [ResourceData]
+   */
   suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData>
 
-  /** Return the count for the register content. The register is identified by its [registerId] */
+  /**
+   * This function uses the provided [registerId] to retrieve the register configuration from the
+   * registry, then proceeds to count the data based on the configured query parameters
+   */
   suspend fun countRegisterData(registerId: String): Long
 
-  /** This function returns data displayed on the users profile */
-  suspend fun loadProfileData(profileId: String, identifier: String): ProfileData?
+  /**
+   * This function returns data used on the profile for the given [resourceId]. Profile
+   * configuration is identified by the [profileId] and contains the queries for filtering the
+   * profile data.
+   */
+  suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData?
 }

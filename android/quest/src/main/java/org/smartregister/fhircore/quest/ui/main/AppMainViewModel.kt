@@ -191,7 +191,7 @@ constructor(
             event.navController.navigate(MainNavigationScreen.Profile.route)
           ApplicationWorkflow.LAUNCH_MAP ->
             launchGeowidgetWithPromise(event.context, mapLauncherResultHandler)
-          null -> return
+          else -> return
         }
       }
     }
