@@ -50,7 +50,6 @@ sealed class ViewComponentEvent {
       }
       is LaunchQuestionnaire -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
-          val questionnaireType = questionnaireConfig.type
           navController.context.launchQuestionnaire<QuestionnaireActivity>(
             questionnaireConfig = actionConfig.questionnaire,
             intentBundle = actionConfig.paramsBundle(resourceData.computedValuesMap)

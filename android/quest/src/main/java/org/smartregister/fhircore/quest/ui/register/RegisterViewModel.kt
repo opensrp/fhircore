@@ -138,8 +138,8 @@ constructor(
       is RegisterEvent.RegisterNewClient ->
         event.context.launchQuestionnaire<QuestionnaireActivity>(
           // TODO use appropriate property from the register configuration
-          // "provide-questionnaire-id"
-          )
+          //"provide-questionnaire-id"
+        )
       is RegisterEvent.OnViewComponentEvent ->
         event.viewComponentEvent.handleEvent(event.navController)
     }
