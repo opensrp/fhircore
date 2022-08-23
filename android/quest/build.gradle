@@ -214,7 +214,7 @@ dependencies {
     androidTestImplementation deps.mockk_android
 
 //    debugImplementation because LeakCanary should only run in debug builds.
-//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
 
     testImplementation 'info.cqframework:cql-to-elm:1.5.6'
 }

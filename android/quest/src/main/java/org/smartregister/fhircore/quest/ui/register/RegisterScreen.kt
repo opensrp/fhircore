@@ -147,13 +147,14 @@ fun RegisterScreen(
     Box(modifier = modifier.padding(innerPadding)) {
       if (firstTimeSync.value) LoaderDialog(modifier = modifier)
       RegisterCardList(
-        pagingItems = pagingItems,
-        onCardClick = { patientId: String ->
-          registerViewModel.onEvent(RegisterEvent.OpenProfile(registerId, patientId, navController))
-        },
         registerCardConfig =
-          registerViewModel.retrieveRegisterConfiguration(registerId).registerCard
-      )
+          registerViewModel.retrieveRegisterConfiguration(registerId).registerCard,
+        pagingItems = pagingItems
+      ) { viewComponentEvent ->
+        registerViewModel.onEvent(
+          RegisterEvent.OnViewComponentEvent(viewComponentEvent, navController)
+        )
+      }
     }
   }
 }

@@ -17,11 +17,11 @@
 package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.view.RegisterCardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class RegisterCardConfig(
   val rules: List<RuleConfig> = emptyList(),
-  val views: List<RegisterCardViewProperties> = emptyList()
+  val views: List<ViewProperties> = emptyList()
 )

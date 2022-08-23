@@ -30,5 +30,20 @@ enum class ViewType {
   @JsonNames("row", "Row") ROW,
 
   /** A card like view with an actionable service button used register list rows */
-  @JsonNames("service_card", "ServiceCard") SERVICE_CARD
+  @JsonNames("service_card", "ServiceCard") SERVICE_CARD,
+
+  /** Display a pair of compund texts with the formats label and displayValue */
+  @JsonNames("personal_data", "PersonalData") PERSONAL_DATA,
+
+  /** Renders a card */
+  @JsonNames("card", "Card") CARD,
+
+  /** View component used to render a button for click actions */
+  @JsonNames("button", "Button") BUTTON,
+
+  /** View component used to render a space between views */
+  @JsonNames("spacer", "Spacer") SPACER,
+
+  /** A type of view component used to render items in a list */
+  @JsonNames("list", "List") LIST,
 }
