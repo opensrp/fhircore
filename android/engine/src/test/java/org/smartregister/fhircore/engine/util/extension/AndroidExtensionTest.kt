@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Application
 import android.content.Intent
 import android.os.Looper
+import androidx.compose.ui.graphics.Color
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.just

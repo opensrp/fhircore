@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.contrib.views.barcode.QuestionnaireItemBarCodeReaderViewHolderFactory
-import org.smartregister.fhircore.engine.ui.questionnaire.CustomPhotoCaptureFactory
 
 class QuestQuestionnaireFragment : QuestionnaireFragment() {
 

@@ -74,6 +74,7 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -94,8 +95,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  /*
-  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()*/
 
   @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
 
@@ -103,8 +102,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private val context: Application = ApplicationProvider.getApplicationContext()
 
-  private lateinit var questionnaireViewModel:
-    org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel
+  private lateinit var questionnaireViewModel: QuestionnaireViewModel
 
   private lateinit var defaultRepo: DefaultRepository
 
@@ -577,21 +575,24 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val intent = Intent()
     intent.putStringArrayListExtra(
-      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-        .QUESTIONNAIRE_POPULATION_RESOURCES,
+      QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
       arrayListOf(
         "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}"
       )
     )
-    intent.putExtra(
-      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-        .QUESTIONNAIRE_ARG_PATIENT_KEY,
-      "2"
-    )
+
+    val expectedQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "patient-registration",
+        title = "Patient registration",
+        type = QuestionnaireType.READ_ONLY,
+        clientIdentifier = "2"
+      )
+    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY, expectedQuestionnaireConfig)
 
     runBlocking {
       val resourceList = questionnaireViewModel.getPopulationResources(intent)
-      Assert.assertEquals(3, resourceList.size)
+      Assert.assertEquals(1, resourceList.size)
     }
   }
 

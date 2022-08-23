@@ -383,7 +383,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
         resourceId = clientIdentifier,
-        groupResourceId = questionnaireConfig.groupIdentifier?.logicalIdFromFhirPathExtractedId(),
+        groupResourceId =
+          questionnaireConfig
+            .groupIdentifier
+            ?.interpolate(computedValuesMap ?: emptyMap())
+            ?.logicalIdFromFhirPathExtractedId(),
         questionnaireType = questionnaireType
       )
     }
