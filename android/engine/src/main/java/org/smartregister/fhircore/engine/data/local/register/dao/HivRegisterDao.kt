@@ -238,16 +238,7 @@ constructor(
     defaultRepository.addOrUpdate(patient)
   }
 
-  suspend fun loadChildContactsRegisterData(patients: List<Patient>): List<RegisterData> {
-    //    val patients =
-    //            fhirEngine.search<Patient> {
-    //              filter(Patient.ACTIVE, { value = of(true) })
-    //              sort(Patient.NAME, Order.ASCENDING)
-    //              count =
-    //                      if (loadAll) countRegisterData(appFeatureName).toInt()
-    //                      else PaginationConstant.DEFAULT_PAGE_SIZE
-    //              from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
-    //            }
+  suspend fun transformChildrenPatientToRegisterData(patients: List<Patient>): List<RegisterData> {
 
     return patients
       .filter(this::isValidPatient)

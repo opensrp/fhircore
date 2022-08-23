@@ -51,7 +51,7 @@ class ChildContactPagingSource(
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterViewData> {
     return try {
       val data =
-        patientRegisterRepository.loadChildContactsRegisterData(
+        patientRegisterRepository.loadChildrenRegisterData(
             healthModule = _patientPagingSourceState.healthModule,
             otherPatientResource = otherChildResource
           )

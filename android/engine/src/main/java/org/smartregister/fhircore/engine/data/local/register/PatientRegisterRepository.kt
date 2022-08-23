@@ -74,7 +74,7 @@ constructor(
       )
     }
 
-  suspend fun loadChildContactsRegisterData(
+  suspend fun loadChildrenRegisterData(
     healthModule: HealthModule,
     otherPatientResource: List<Resource>
   ): List<RegisterData> =
@@ -86,6 +86,6 @@ constructor(
         val itemPatient = item as Patient
         dataList.add(itemPatient)
       }
-      hivRegisterDao.loadChildContactsRegisterData(dataList) ?: emptyList()
+      hivRegisterDao.transformChildrenPatientToRegisterData(dataList)
     }
 }

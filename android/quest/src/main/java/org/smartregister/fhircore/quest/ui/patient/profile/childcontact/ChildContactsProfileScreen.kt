@@ -70,11 +70,11 @@ fun ChildContactsProfileScreen(
   val refreshDataStateValue by remember { refreshDataState }
 
   val currentPaginateRegisterData by rememberUpdatedState(
-    patientProfileViewModel::paginateRegisterData
+    patientProfileViewModel::paginateChildrenRegisterData
   )
 
   LaunchedEffect(Unit) {
-    patientProfileViewModel.fetchChildPatientProfileData(
+    patientProfileViewModel.fetchPatientProfileDataWithChildren(
       appFeatureName,
       healthModule,
       patientId ?: ""
@@ -84,7 +84,7 @@ fun ChildContactsProfileScreen(
   SideEffect {
     // Refresh child contacts data on resume
     if (refreshDataStateValue) {
-      patientProfileViewModel.fetchChildPatientProfileData(
+      patientProfileViewModel.fetchPatientProfileDataWithChildren(
         appFeatureName,
         healthModule,
         patientId ?: ""
@@ -96,7 +96,7 @@ fun ChildContactsProfileScreen(
 
   val pagingItems: LazyPagingItems<RegisterViewData> =
     patientProfileViewModel
-      .paginatedChildRegisterData
+      .paginatedChildrenRegisterData
       .collectAsState(emptyFlow())
       .value
       .collectAsLazyPagingItems()

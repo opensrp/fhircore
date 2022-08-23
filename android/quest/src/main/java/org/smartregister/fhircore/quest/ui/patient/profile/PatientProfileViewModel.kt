@@ -273,11 +273,22 @@ constructor(
           populationResources = event.getActivePopulationResources()
         )
       is PatientProfileEvent.OpenChildProfile -> {
-        // todo: open child profile
+        val urlParams =
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+            Pair(NavigationArg.HEALTH_MODULE, event.healthModule.name),
+            Pair(NavigationArg.PATIENT_ID, event.patientId)
+          )
+        if (event.healthModule == HealthModule.FAMILY)
+          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
+        else
+          event.navController.navigate(
+            route = MainNavigationScreen.PatientProfile.route + urlParams
+          )
       }
     }
 
-  fun fetchChildPatientProfileData(
+  fun fetchPatientProfileDataWithChildren(
     appFeatureName: String?,
     healthModule: HealthModule,
     patientId: String
@@ -290,14 +301,22 @@ constructor(
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
                 ProfileViewData.PatientProfileViewData
-            paginateRegisterData(appFeatureName, healthModule, true)
+            paginateChildrenRegisterData(appFeatureName, healthModule, true)
           }
       }
     }
   }
 
-  val paginatedChildRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
+  val paginatedChildrenRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
+
+  fun paginateChildrenRegisterData(
+    appFeatureName: String?,
+    healthModule: HealthModule,
+    loadAll: Boolean = true
+  ) {
+    paginatedChildrenRegisterData.value = getPager(appFeatureName, healthModule, loadAll).flow
+  }
 
   private fun getPager(
     appFeatureName: String?,
@@ -328,14 +347,6 @@ constructor(
           }
       }
     )
-
-  fun paginateRegisterData(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    loadAll: Boolean = true
-  ) {
-    paginatedChildRegisterData.value = getPager(appFeatureName, healthModule, loadAll).flow
-  }
 
   companion object {
     const val REMOVE_FAMILY_FORM = "remove-family"
