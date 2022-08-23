@@ -33,7 +33,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
@@ -46,7 +46,7 @@ class ProfileViewModel
 constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DefaultDispatcherProvider,
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   val profileUiState: MutableState<ProfileUiState> = mutableStateOf(ProfileUiState())

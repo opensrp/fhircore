@@ -17,77 +17,98 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Patient
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.quest.HiltActivityForTest
+import org.smartregister.fhircore.quest.waitUntilExists
 
 @HiltAndroidTest
 class ProfileScreenTest {
-  @get:Rule(order = 1) val composeTestRule = createComposeRule()
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val composeTestRule = createAndroidComposeRule<HiltActivityForTest>()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  private val profileViewModel = mockk<ProfileViewModel>()
-  private lateinit var navController: NavHostController
-  private lateinit var profileUiState: ProfileUiState
-  private val appDebug = "app/debug"
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    navController = mockk()
     runBlocking {
       configurationRegistry.loadConfigurations(
-        context = InstrumentationRegistry.getInstrumentation().targetContext,
-        appId = appDebug
+        "app/debug",
+        InstrumentationRegistry.getInstrumentation().targetContext
       ) {}
-      val profileConfiguration =
-        configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
-          ConfigType.Profile,
-          "householdProfile"
-        )
-      profileUiState = ProfileUiState(profileConfiguration = profileConfiguration)
-    }
 
-    every { profileViewModel.onEvent(any()) } returns
+      val profileUiState =
+        ProfileUiState(
+          resourceData = ResourceData(Patient()),
+          profileConfiguration =
+            configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile")
+        )
       composeTestRule.setContent {
         ProfileScreen(
-          navController = navController,
+          navController = rememberNavController(),
           profileUiState = profileUiState,
-          onEvent = mockk()
+          onEvent = spyk({})
         )
       }
+    }
   }
 
   @Test
   fun testFloatingActionButtonIsDisplayed() {
-    composeTestRule.onNodeWithText("ADD MEMBER").assertExists().assertIsDisplayed()
+    // We wait for the text be drawn before we do the assertion
+    composeTestRule.waitUntilExists(hasText("ADD MEMBER"))
+    composeTestRule
+      .onNodeWithText("ADD MEMBER", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
-  fun testOverFlowMenuItemsListedInTheHouseHoldProfileConfigAreDisplayed() {
-    composeTestRule.onNodeWithTag(ICON_BUTTON_TEST_TAG).assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ICON_BUTTON_TEST_TAG).performClick()
-    composeTestRule.onNodeWithText("Family details").assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithText("Change family head").assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithText("Family activity").assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithText("Family details").assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithText("Remove family").assertExists().assertIsDisplayed()
+  fun testThatOverflowMenuIsDisplayed() {
+    // We wait for the menu icon to be drawn before clicking it
+    composeTestRule.waitUntilExists(hasTestTag(DROPDOWN_MENU_TEST_TAG))
+    composeTestRule.onNodeWithTag(DROPDOWN_MENU_TEST_TAG).performClick()
+    composeTestRule
+      .onNodeWithText("Family details", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeTestRule
+      .onNodeWithText("Change family head", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeTestRule
+      .onNodeWithText("Family activity", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeTestRule
+      .onNodeWithText("Family details", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeTestRule
+      .onNodeWithText("Remove family", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test

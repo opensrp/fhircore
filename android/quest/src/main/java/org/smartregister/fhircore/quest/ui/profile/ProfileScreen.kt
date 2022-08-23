@@ -58,6 +58,7 @@ import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 
 const val ICON_BUTTON_TEST_TAG = "iconButton"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
+const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 
 @Composable
 fun ProfileScreen(
@@ -82,7 +83,7 @@ fun ProfileScreen(
         actions = {
           IconButton(
             onClick = { showOverflowMenu = !showOverflowMenu },
-            modifier = Modifier.testTag(ICON_BUTTON_TEST_TAG)
+            modifier = modifier.testTag(DROPDOWN_MENU_TEST_TAG)
           ) {
             Icon(
               imageVector = Icons.Outlined.MoreVert,

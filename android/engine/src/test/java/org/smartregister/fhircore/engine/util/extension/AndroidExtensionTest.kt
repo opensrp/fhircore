@@ -33,8 +33,12 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.LightColors
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 
 class AndroidExtensionTest : RobolectricTest() {
   private lateinit var context: Application
@@ -66,7 +70,7 @@ class AndroidExtensionTest : RobolectricTest() {
 
   @Test
   fun testParseColorReturnsDefaultColorWhenStringIsEmpty() {
-    assertEquals(DefaultColor, "".parseColor())
+    assertEquals(Color.Unspecified, "".parseColor())
   }
 
   @Test
@@ -79,5 +83,10 @@ class AndroidExtensionTest : RobolectricTest() {
     assertEquals(LightColors.primary, PRIMARY_COLOR.parseColor())
     assertEquals(LightColors.primaryVariant, PRIMARY_VARIANT_COLOR.parseColor())
     assertEquals(LightColors.error, ERROR_COLOR.parseColor())
+    assertEquals(DangerColor, DANGER_COLOR.parseColor())
+    assertEquals(WarningColor, WARNING_COLOR.parseColor())
+    assertEquals(InfoColor, INFO_COLOR.parseColor())
+    assertEquals(SuccessColor, SUCCESS_COLOR.parseColor())
+    assertEquals(DefaultColor, DEFAULT_COLOR.parseColor())
   }
 }
