@@ -57,6 +57,8 @@ import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
+import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.logicalIdFromFhirPathExtractedId
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import timber.log.Timber
@@ -78,7 +80,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   protected lateinit var questionnaire: Questionnaire
 
-  protected var clientIdentifier: String? = null
+  private var clientIdentifier: String? = null
+
+  private var groupIdentifier: String? = null
+
+  var computedValuesMap: Map<String, Any>? = emptyMap()
 
   lateinit var fragment: QuestQuestionnaireFragment
 
@@ -96,15 +102,33 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
-    val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
-    clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
-    intent.getStringExtra(QUESTIONNAIRE_ARG_TYPE)?.let {
-      questionnaireType = QuestionnaireType.valueOf(it)
 
-      questionnaireViewModel.apply {
-        isRemoved.observe(this@QuestionnaireActivity) { if (it) onRemove() }
-        isDiscarded.observe(this@QuestionnaireActivity) { if (it) finish() }
-      }
+    questionnaireConfig =
+      intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig
+
+    computedValuesMap =
+      intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY) as Map<String, Any>
+
+    val formName = questionnaireConfig.id
+    clientIdentifier =
+      questionnaireConfig
+        .clientIdentifier
+        ?.interpolate(computedValuesMap ?: emptyMap())
+        ?.logicalIdFromFhirPathExtractedId()
+
+    groupIdentifier =
+      questionnaireConfig
+        .groupIdentifier
+        ?.interpolate(computedValuesMap ?: emptyMap())
+        ?.logicalIdFromFhirPathExtractedId()
+
+    questionnaireViewModel.apply {
+      isRemoved.observe(this@QuestionnaireActivity) { if (it) onRemove() }
+      isDiscarded.observe(this@QuestionnaireActivity) { if (it) finish() }
+
+      questionnaireConfig = this@QuestionnaireActivity.questionnaireConfig
+      questionnaireType = this@QuestionnaireActivity.questionnaireConfig.type
+      computedValuesMap = this@QuestionnaireActivity.computedValuesMap
     }
 
     val loadProgress = showProgressAlert(this, R.string.loading)
@@ -112,9 +136,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     // Initialises the lateinit variable questionnaireViewModel to prevent
     // some init operations running on a separate thread and causing a crash
     questionnaireViewModel.sharedPreferencesHelper
-
-    questionnaireConfig =
-      intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig
 
     questionnaireViewModel.questionnaireConfig = questionnaireConfig
 
@@ -361,15 +382,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         context = this,
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
-        resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
-        groupResourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_GROUP_KEY),
+        resourceId = clientIdentifier,
+        groupResourceId = questionnaireConfig.groupIdentifier?.logicalIdFromFhirPathExtractedId(),
         questionnaireType = questionnaireType
       )
     }
   }
 
   fun handleRemoveEntityQuestionnaireResponse(questionnaireConfig: QuestionnaireConfig) {
-    val clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
     dismissSaveProcessing()
     confirmationDialog(
       profileId = clientIdentifier!!,
@@ -445,39 +465,31 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
-    const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
-    const val QUESTIONNAIRE_ARG_GROUP_KEY = "questionnaire_group_item_id"
     const val FORM_CONFIGURATIONS = "configurations/form/form_config.json"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
-    const val QUESTIONNAIRE_ARG_TYPE = "questionnaire-type"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val QUESTIONNAIRE_BACK_REFERENCE_KEY = "questionnaire-back-reference"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_CONFIG_KEY = "questionnaire-config"
+    const val QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY = "computed_values_map"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =
       this.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)
 
     fun intentArgs(
-      clientIdentifier: String? = null,
-      groupIdentifier: String? = null,
-      formName: String,
-      questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
       backReference: String? = null,
       populationResources: ArrayList<Resource> = ArrayList(),
-      questionnaireConfig: QuestionnaireConfig? = null
+      questionnaireConfig: QuestionnaireConfig? = null,
+      computedValuesMap: Map<String, Any>? = emptyMap()
     ) =
       bundleOf(
-        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-        Pair(QUESTIONNAIRE_ARG_GROUP_KEY, groupIdentifier),
-        Pair(QUESTIONNAIRE_ARG_FORM, formName),
-        Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
         Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference),
-        Pair(QUESTIONNAIRE_CONFIG_KEY, questionnaireConfig)
+        Pair(QUESTIONNAIRE_CONFIG_KEY, questionnaireConfig),
+        Pair(QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY, computedValuesMap)
       )
         .apply {
           questionnaireResponse?.let {

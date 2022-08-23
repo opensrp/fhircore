@@ -123,7 +123,6 @@ constructor(
       }
       is AppMainEvent.RegisterNewClient -> {
         event.context.launchQuestionnaire<QuestionnaireActivity>(
-          questionnaireId = event.questionnaireConfig.id,
           questionnaireConfig = event.questionnaireConfig
         )
       }

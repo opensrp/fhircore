@@ -17,9 +17,7 @@
 package org.smartregister.fhircore.quest.ui.shared.models
 
 import androidx.navigation.NavController
-import com.google.android.fhir.logicalId
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -54,11 +52,7 @@ sealed class ViewComponentEvent {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireType = questionnaireConfig.type
           navController.context.launchQuestionnaire<QuestionnaireActivity>(
-            questionnaireId = questionnaireConfig.id,
-            clientIdentifier =
-              if (questionnaireType == QuestionnaireType.DEFAULT) null
-              else resourceData.baseResource.logicalId,
-            questionnaireType = questionnaireType,
+            questionnaireConfig = actionConfig.questionnaire,
             intentBundle = actionConfig.paramsBundle(resourceData.computedValuesMap)
           )
         }

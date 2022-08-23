@@ -144,7 +144,6 @@ fun ProfileScreen(
               ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
                 if (clickAction.questionnaire != null) {
                   navController.context.launchQuestionnaire<QuestionnaireActivity>(
-                    questionnaireId = clickAction.questionnaire!!.id,
                     questionnaireConfig = clickAction.questionnaire
                   )
                 }

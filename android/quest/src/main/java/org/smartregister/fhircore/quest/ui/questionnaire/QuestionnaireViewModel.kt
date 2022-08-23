@@ -67,8 +67,10 @@ import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.logicalIdFromFhirPathExtractedId
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
@@ -98,7 +100,9 @@ constructor(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  lateinit var questionnaireConfig: QuestionnaireConfig
+  var questionnaireConfig: QuestionnaireConfig = QuestionnaireConfig(id = "default-rofile")
+
+  var computedValuesMap: Map<String, Any>? = emptyMap()
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -416,25 +420,29 @@ constructor(
       forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
     }
 
-    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
-      loadPatient(patientId)?.apply {
-        if (identifier.isEmpty()) {
-          identifier =
-            mutableListOf(
-              Identifier().apply {
-                value = logicalId
-                use = Identifier.IdentifierUse.OFFICIAL
-                system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
-              }
-            )
-          Timber.e(jsonParser.encodeResourceToString(this))
-        }
+    questionnaireConfig
+      .clientIdentifier
+      ?.interpolate(computedValuesMap ?: emptyMap())
+      ?.logicalIdFromFhirPathExtractedId()
+      ?.let { patientId ->
+        loadPatient(patientId)?.apply {
+          if (identifier.isEmpty()) {
+            identifier =
+              mutableListOf(
+                Identifier().apply {
+                  value = logicalId
+                  use = Identifier.IdentifierUse.OFFICIAL
+                  system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
+                }
+              )
+            Timber.e(jsonParser.encodeResourceToString(this))
+          }
 
-        resourcesList.add(this)
+          resourcesList.add(this)
+        }
+          ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
+        loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
       }
-        ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
-      loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
-    }
 
     return resourcesList.toTypedArray()
   }

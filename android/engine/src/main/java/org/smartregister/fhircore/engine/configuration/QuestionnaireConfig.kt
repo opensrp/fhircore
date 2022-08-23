@@ -28,8 +28,8 @@ data class QuestionnaireConfig(
   val setOrganizationDetails: Boolean = false,
   val planDefinitions: List<String>? = null,
   val type: QuestionnaireType = QuestionnaireType.DEFAULT,
-  val customActivity: String? = null,
   val clientIdentifier: String? = null,
+  val groupIdentifier: String? = null,
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null
 ) : java.io.Serializable

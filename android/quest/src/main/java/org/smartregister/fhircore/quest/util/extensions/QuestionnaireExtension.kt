@@ -21,27 +21,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 
 inline fun <
   reified Q : org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity> Context.launchQuestionnaire(
-  questionnaireId: String,
-  clientIdentifier: String? = null,
-  groupIdentifier: String? = null,
-  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
   intentBundle: Bundle = Bundle.EMPTY,
-  questionnaireConfig: QuestionnaireConfig? = null
+  questionnaireConfig: QuestionnaireConfig? = null,
+  computedValuesMap: Map<String, Any>? = emptyMap()
 ) {
   this.startActivity(
     Intent(this, Q::class.java)
       .putExtras(intentBundle)
       .putExtras(
         org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.intentArgs(
-          clientIdentifier = clientIdentifier,
-          groupIdentifier = groupIdentifier,
-          formName = questionnaireId,
-          questionnaireType = questionnaireType,
-          questionnaireConfig = questionnaireConfig
+          questionnaireConfig = questionnaireConfig,
+          computedValuesMap = computedValuesMap
         )
       )
   )
@@ -49,23 +42,19 @@ inline fun <
 
 inline fun <
   reified Q : org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity> Context.launchQuestionnaireForResult(
-  questionnaireId: String,
-  clientIdentifier: String? = null,
-  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
   backReference: String? = null,
   intentBundle: Bundle = Bundle.EMPTY,
-  questionnaireConfig: QuestionnaireConfig
+  questionnaireConfig: QuestionnaireConfig,
+  computedValuesMap: Map<String, Any> = emptyMap()
 ) {
   (this as Activity).startActivityForResult(
     Intent(this, Q::class.java)
       .putExtras(intentBundle)
       .putExtras(
         org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.intentArgs(
-          clientIdentifier = clientIdentifier,
-          formName = questionnaireId,
-          questionnaireType = questionnaireType,
           backReference = backReference,
-          questionnaireConfig = questionnaireConfig
+          questionnaireConfig = questionnaireConfig,
+          computedValuesMap = computedValuesMap
         )
       ),
     0

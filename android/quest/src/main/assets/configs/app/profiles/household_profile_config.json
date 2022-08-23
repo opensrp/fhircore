@@ -237,7 +237,8 @@
             "id": "82952",
             "title": "Add Family",
             "type": "EDIT",
-            "clientIdentifier": "@{familyLogicalId}"
+            "clientIdentifier": "@{familyLogicalId}",
+            "groupIdentifier": "@{familyLogicalId}"
           }
         }
       ]
@@ -289,6 +290,7 @@
             "type": "DEFAULT",
             "customActivity": "REMOVE_FAMILY",
             "clientIdentifier": "@{familyLogicalId}",
+            "groupIdentifier": "@{familyLogicalId}",
             "groupResource" : {
               "memberResourceType" : "Patient",
               "removeGroup": true
