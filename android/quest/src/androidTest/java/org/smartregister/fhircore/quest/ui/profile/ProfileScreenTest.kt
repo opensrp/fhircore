@@ -89,4 +89,15 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithText("Family details").assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithText("Remove family").assertExists().assertIsDisplayed()
   }
+
+  @Test
+  fun testThatFabButtonIsDisplayed() {
+    composeTestRule.onNodeWithTag(FAB_BUTTON_TEST_TAG).assertExists().assertIsDisplayed()
+    composeTestRule
+      .onNodeWithTag(
+        profileUiState.profileConfiguration?.fabActions?.first()?.display?.uppercase().toString()
+      )
+      .assertExists()
+      .assertIsDisplayed()
+  }
 }
