@@ -50,5 +50,5 @@ data class ResourceConfig(
   val searchParameter: String? = null,
   val fhirPathExpression: String? = null,
   val dataQueries: List<DataQuery>? = null,
-  val relatedResources: List<ResourceConfig>? = null
+  val relatedResources: List<ResourceConfig> = emptyList()
 )
