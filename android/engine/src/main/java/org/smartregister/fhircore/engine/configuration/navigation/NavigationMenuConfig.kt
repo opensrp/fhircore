@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.navigation
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 
 @Serializable
 data class NavigationMenuConfig(
@@ -25,7 +25,6 @@ data class NavigationMenuConfig(
   val visible: Boolean = true,
   val icon: String? = null,
   val display: String,
-  val questionnaire: QuestionnaireConfig? = null,
   val showCount: Boolean = false,
-  val actions: List<NavigationActionConfig>? = null
+  val actions: List<ActionConfig>? = null
 )

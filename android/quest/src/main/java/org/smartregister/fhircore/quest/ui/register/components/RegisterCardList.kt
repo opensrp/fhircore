@@ -34,6 +34,8 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
+import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import timber.log.Timber
 
 /**
@@ -45,16 +47,16 @@ fun RegisterCardList(
   modifier: Modifier = Modifier,
   registerCardConfig: RegisterCardConfig,
   pagingItems: LazyPagingItems<ResourceData>,
-  onCardClick: (String) -> Unit
+  onViewComponentClick: (ViewComponentEvent) -> Unit
 ) {
   LazyColumn {
     items(pagingItems, key = { it.baseResource.logicalId }) {
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.padding(horizontal = 16.dp)) {
-        RegisterCard(
+        ViewRenderer(
           resourceData = it!!,
-          registerCardViewProperties = registerCardConfig.views,
-          onCardClick = onCardClick
+          viewProperties = registerCardConfig.views,
+          onViewComponentClick = onViewComponentClick,
         )
       }
       Divider(color = DividerColor, thickness = 1.dp)
