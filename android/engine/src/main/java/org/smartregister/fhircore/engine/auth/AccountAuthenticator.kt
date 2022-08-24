@@ -41,9 +41,9 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.PractitionerDetailsUtil
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
@@ -193,7 +193,7 @@ constructor(
   }
 
   suspend fun getPractitionerDetails(keycloakUuid: String): org.hl7.fhir.r4.model.Bundle {
-    return fhirResourceService.getResource(url = PractitionerDetailsUtil.getUrl(keycloakUuid))
+    return fhirResourceService.getResource(url = keycloakUuid.practitionerEndpointUrl())
   }
 
   @Throws(NetworkErrorException::class)

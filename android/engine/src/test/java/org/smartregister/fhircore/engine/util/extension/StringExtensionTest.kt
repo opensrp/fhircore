@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.util.extension
 
-object PractitionerDetailsUtil {
+import org.junit.Assert
+import org.junit.Test
 
-  private const val PRACTITIONER_DETAILS_ENDPOINT = "practitioner-details"
-  private const val PRACTITIONER_DETAILS_KEYCLOAK_UUID_PARAMETER = "keycloak-uuid"
+class StringExtensionTest {
 
-  fun getUrl(keycloakUuid: String) =
-    "$PRACTITIONER_DETAILS_ENDPOINT?$PRACTITIONER_DETAILS_KEYCLOAK_UUID_PARAMETER=$keycloakUuid"
+  @Test
+  fun practitionerEndpointUrlShouldMatch() {
+    Assert.assertEquals(
+      "practitioner-details?keycloak-uuid=my-keycloak-id",
+      "my-keycloak-id".practitionerEndpointUrl()
+    )
+  }
 }
