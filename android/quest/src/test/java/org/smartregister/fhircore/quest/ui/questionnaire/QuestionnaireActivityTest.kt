@@ -239,7 +239,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     questionnaireActivity.supportFragmentManager.commitNow {
       add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
     }
-    /*questionnaireActivity.questionnaireType = QuestionnaireType.READ_ONLY*/
 
     Assert.assertEquals(
       "Done",

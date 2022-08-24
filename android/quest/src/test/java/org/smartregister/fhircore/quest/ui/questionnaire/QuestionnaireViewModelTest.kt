@@ -132,12 +132,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         id = "patient-registration",
         title = "Patient registration",
         type = QuestionnaireType.READ_ONLY,
+        setPractitionerDetails = false,
+        setOrganizationDetails = false,
         clientIdentifier = "2"
       )
 
     questionnaireViewModel =
       spyk(
-        org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel(
+        QuestionnaireViewModel(
           fhirEngine = fhirEngine,
           defaultRepository = defaultRepo,
           configurationRegistry = configurationRegistry,
@@ -606,7 +608,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     runBlocking {
       val resourceList = questionnaireViewModel.getPopulationResources(intent, questionnaireConfig)
-      Assert.assertEquals(1, resourceList.size)
+      Assert.assertEquals(3, resourceList.size)
     }
   }
 
