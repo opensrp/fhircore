@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -79,7 +80,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
   try {
     val jsonParser = FhirContext.forR4().newJsonParser()
     val savedResources =
-      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
+      sharedPreferencesHelper.read(SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name, "")
 
     context.assets.open(resourcesBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
       val bundle = jsonParser.parseResource(it) as Bundle
@@ -90,7 +91,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
           if (!savedResources!!.contains(resourcesBundlePath)) {
             create(entry.resource)
             sharedPreferencesHelper.write(
-              SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,
+              SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name,
               savedResources.plus(",").plus(resourcesBundlePath)
             )
           }
