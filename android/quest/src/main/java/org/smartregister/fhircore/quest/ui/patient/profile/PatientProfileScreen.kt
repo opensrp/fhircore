@@ -135,7 +135,14 @@ fun PatientProfileScreen(
                         if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
                         else Color.Transparent
                     )
-              ) { Text(text = stringResource(id = it.titleResource), color = it.titleColor) }
+              ) {
+                val titleTextResource = it.titleResource
+                if (it.id == org.smartregister.fhircore.quest.R.id.view_children) {
+                  Text(text = profileViewData.viewChildText, color = it.titleColor)
+                } else {
+                  Text(text = stringResource(id = it.titleResource), color = it.titleColor)
+                }
+              }
             }
           }
         }

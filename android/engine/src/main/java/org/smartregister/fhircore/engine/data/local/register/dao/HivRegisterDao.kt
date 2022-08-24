@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -47,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifie
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 
 @Singleton
 class HivRegisterDao
@@ -56,6 +58,8 @@ constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterDao {
+
+  val LINKED_CHILD_AGE_LIMIT = 20
 
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
@@ -135,6 +139,7 @@ constructor(
           ),
       services = patient.activeCarePlans(),
       conditions = patient.activeConditions(),
+      otherPatients = patient.otherChildren(),
       observations = patient.observations()
     )
   }
@@ -189,6 +194,44 @@ constructor(
       subjectType = ResourceType.Patient,
       subjectParam = CarePlan.SUBJECT
     )
+
+  internal suspend fun Patient.otherPatients() = this.fetchOtherPatients(this.logicalId)
+
+  internal suspend fun Patient.otherChildren(): List<Resource> {
+    return this.fetchOtherPatients(this.logicalId)
+  }
+
+  internal suspend fun Patient.fetchOtherPatients(patientId: String): List<Resource> {
+    val list: ArrayList<Patient> = arrayListOf()
+
+    val filteredItems =
+      defaultRepository.searchResourceFor<Patient>(
+        subjectId = patientId,
+        subjectType = ResourceType.Patient,
+        subjectParam = Patient.LINK
+      )
+
+    for (item in filteredItems) {
+      if (item.isValidChildContact()) list.add(item)
+    }
+    return list
+  }
+
+  internal fun Patient.isValidChildContact(): Boolean {
+    val healthStatus =
+      this.extractHealthStatusFromMeta(
+        getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+      )
+
+    if (healthStatus == HealthStatus.CHILD_CONTACT || healthStatus == HealthStatus.EXPOSED_INFANT) {
+      if (this.hasBirthDate()) {
+        if (this.birthDate!!.yearsPassed() < LINKED_CHILD_AGE_LIMIT) return true
+      }
+    } else {
+      return true
+    }
+    return false
+  }
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
 
