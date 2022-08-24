@@ -162,5 +162,28 @@
         ]
       }
     ]
+  },
+  "noResults": {
+    "title": "No Families Added",
+    "message": "Sorry, you haven't added any families to your register",
+    "actionButton": {
+      "id": "noResultsButton",
+      "visible": true,
+      "display": "Add household",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "householdRegister",
+          "questionnaire": {
+            "id": "82952",
+            "title": "{{add.family}}",
+            "saveButtonText": "ADD FAMILY",
+            "setPractitionerDetails": true,
+            "setOrganizationDetails": true
+          }
+        }
+      ]
+    }
   }
 }

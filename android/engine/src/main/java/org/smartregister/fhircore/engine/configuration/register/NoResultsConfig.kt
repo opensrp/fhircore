@@ -17,17 +17,11 @@
 package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 
 @Serializable
-data class RegisterConfiguration(
-  override var appId: String,
-  override var configType: String = ConfigType.Register.name,
-  val id: String,
-  val fhirResource: FhirResourceConfig,
-  val filter: RegisterContentConfig? = null,
-  val searchBar: RegisterContentConfig? = null,
-  val registerCard: RegisterCardConfig = RegisterCardConfig(),
-  val noResults: NoResultsConfig? = null
-) : Configuration()
+data class NoResultsConfig(
+  val title: String = "",
+  val message: String = "",
+  val actionButton: NavigationMenuConfig? = null
+)
