@@ -45,6 +45,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
@@ -80,10 +81,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   protected lateinit var questionnaire: Questionnaire
 
-  private var clientIdentifier: String? = null
-
-  private var groupIdentifier: String? = null
-
   var computedValuesMap: Map<String, Any>? = emptyMap()
 
   lateinit var fragment: QuestQuestionnaireFragment
@@ -103,32 +100,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
 
-    questionnaireConfig =
-      intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig
-
     computedValuesMap =
       intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY) as Map<String, Any>
 
-    val formName = questionnaireConfig.id
-    clientIdentifier =
-      questionnaireConfig
-        .clientIdentifier
-        ?.interpolate(computedValuesMap ?: emptyMap())
-        ?.logicalIdFromFhirPathExtractedId()
+    questionnaireConfig =
+      (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig).interpolate(
+        computedValuesMap
+      )
 
-    groupIdentifier =
-      questionnaireConfig
-        .groupIdentifier
-        ?.interpolate(computedValuesMap ?: emptyMap())
-        ?.logicalIdFromFhirPathExtractedId()
+    val formName = questionnaireConfig.id
 
     questionnaireViewModel.apply {
       isRemoved.observe(this@QuestionnaireActivity) { if (it) onRemove() }
       isDiscarded.observe(this@QuestionnaireActivity) { if (it) finish() }
 
-      questionnaireConfig = this@QuestionnaireActivity.questionnaireConfig
       questionnaireType = this@QuestionnaireActivity.questionnaireConfig.type
-      computedValuesMap = this@QuestionnaireActivity.computedValuesMap
     }
 
     val loadProgress = showProgressAlert(this, R.string.loading)
@@ -136,8 +122,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     // Initialises the lateinit variable questionnaireViewModel to prevent
     // some init operations running on a separate thread and causing a crash
     questionnaireViewModel.sharedPreferencesHelper
-
-    questionnaireViewModel.questionnaireConfig = questionnaireConfig
 
     lifecycleScope.launch(dispatcherProvider.io()) {
       loadQuestionnaireAndConfig(formName)
@@ -169,7 +153,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       } else if (questionnaireType.isEditMode()) {
         // setting the save button text from Questionnaire Config
         text =
-          questionnaireViewModel.questionnaireConfig.saveButtonText
+          questionnaireConfig.saveButtonText
             ?: getString(R.string.questionnaire_alert_submit_button_title)
       }
     }
@@ -178,8 +162,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       setDisplayHomeAsUpEnabled(true)
       title =
         if (questionnaireType.isEditMode())
-          "${getString(R.string.edit)} ${questionnaireViewModel.questionnaireConfig.title}"
-        else questionnaireViewModel.questionnaireConfig.title
+          "${getString(R.string.edit)} ${questionnaireConfig.title}"
+        else questionnaireConfig.title
     }
   }
 
@@ -204,10 +188,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
               if (questionnaireType.isReadOnly()) require(questionnaireResponse != null)
 
-              if (clientIdentifier != null) {
-                setBarcode(questionnaire, clientIdentifier!!, true)
+              if (questionnaireConfig.clientIdentifier != null) {
+                setBarcode(questionnaire, questionnaireConfig.clientIdentifier!!, true)
                 questionnaireResponse =
-                  questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+                  questionnaireViewModel.generateQuestionnaireResponse(
+                    questionnaire,
+                    intent,
+                    questionnaireConfig
+                  )
                 this.putString(
                   QuestionnaireFragment.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING,
                   questionnaireResponse.encodeResourceToString()
@@ -229,7 +217,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       .onFailure {
         // load questionnaire from db and build config
         questionnaire = questionnaireViewModel.loadQuestionnaire(formName, questionnaireType)!!
-        questionnaireViewModel.questionnaireConfig =
+        questionnaireConfig =
           QuestionnaireConfig(title = questionnaire.title ?: "", id = questionnaire.logicalId)
       }
       .also { populateInitialValues(questionnaire) }
@@ -254,7 +242,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
-        loadQuestionnaireAndConfig(questionnaireViewModel.questionnaireConfig.id)
+        loadQuestionnaireAndConfig(questionnaireConfig.id)
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
         withContext(dispatcherProvider.main()) {
@@ -382,13 +370,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         context = this,
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
-        resourceId = clientIdentifier,
+        resourceId = questionnaireConfig.clientIdentifier,
         groupResourceId =
           questionnaireConfig
             .groupIdentifier
             ?.interpolate(computedValuesMap ?: emptyMap())
             ?.logicalIdFromFhirPathExtractedId(),
-        questionnaireType = questionnaireType
+        questionnaireType = questionnaireType,
+        questionnaireConfig = questionnaireConfig
       )
     }
   }
@@ -396,8 +385,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   fun handleRemoveEntityQuestionnaireResponse(questionnaireConfig: QuestionnaireConfig) {
     dismissSaveProcessing()
     confirmationDialog(
-      profileId = clientIdentifier!!,
-      profileName = clientIdentifier!!,
+      profileId = questionnaireConfig.clientIdentifier!!,
+      profileName = questionnaireConfig.clientIdentifier!!,
       questionnaireConfig = questionnaireConfig
     )
   }

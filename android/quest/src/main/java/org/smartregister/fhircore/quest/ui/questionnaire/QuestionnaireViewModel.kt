@@ -67,10 +67,8 @@ import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.logicalIdFromFhirPathExtractedId
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
@@ -99,10 +97,6 @@ constructor(
   var editQuestionnaireResponse: QuestionnaireResponse? = null
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
-
-  var questionnaireConfig: QuestionnaireConfig = QuestionnaireConfig(id = "default-rofile")
-
-  var computedValuesMap: Map<String, Any>? = emptyMap()
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -189,7 +183,8 @@ constructor(
     groupResourceId: String? = null,
     questionnaireResponse: QuestionnaireResponse,
     questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-    questionnaire: Questionnaire
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig
   ) {
     questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
 
@@ -274,18 +269,22 @@ constructor(
         }
 
         extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-        extractCarePlan(questionnaireResponse, bundle)
+        extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
-        extractCarePlan(questionnaireResponse, null)
+        extractCarePlan(questionnaireResponse, null, questionnaireConfig)
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
-  suspend fun extractCarePlan(questionnaireResponse: QuestionnaireResponse, bundle: Bundle?) {
+  suspend fun extractCarePlan(
+    questionnaireResponse: QuestionnaireResponse,
+    bundle: Bundle?,
+    questionnaireConfig: QuestionnaireConfig
+  ) {
     val subject =
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
@@ -413,45 +412,48 @@ constructor(
     viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
 
-  open suspend fun getPopulationResources(intent: Intent): Array<Resource> {
+  open suspend fun getPopulationResources(
+    intent: Intent,
+    questionnaireConfig: QuestionnaireConfig
+  ): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
       forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
     }
 
-    questionnaireConfig
-      .clientIdentifier
-      ?.interpolate(computedValuesMap ?: emptyMap())
-      ?.logicalIdFromFhirPathExtractedId()
-      ?.let { patientId ->
-        loadPatient(patientId)?.apply {
-          if (identifier.isEmpty()) {
-            identifier =
-              mutableListOf(
-                Identifier().apply {
-                  value = logicalId
-                  use = Identifier.IdentifierUse.OFFICIAL
-                  system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
-                }
-              )
-            Timber.e(jsonParser.encodeResourceToString(this))
-          }
-
-          resourcesList.add(this)
+    questionnaireConfig.clientIdentifier?.let { patientId ->
+      loadPatient(patientId)?.apply {
+        if (identifier.isEmpty()) {
+          identifier =
+            mutableListOf(
+              Identifier().apply {
+                value = logicalId
+                use = Identifier.IdentifierUse.OFFICIAL
+                system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
+              }
+            )
+          Timber.e(jsonParser.encodeResourceToString(this))
         }
-          ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
-        loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
+
+        resourcesList.add(this)
       }
+        ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
+      loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
+    }
 
     return resourcesList.toTypedArray()
   }
 
   suspend fun generateQuestionnaireResponse(
     questionnaire: Questionnaire,
-    intent: Intent
+    intent: Intent,
+    questionnaireConfig: QuestionnaireConfig
   ): QuestionnaireResponse {
-    return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
+    return ResourceMapper.populate(
+      questionnaire,
+      *getPopulationResources(intent, questionnaireConfig = questionnaireConfig)
+    )
   }
 
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {

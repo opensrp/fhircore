@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.configuration
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.logicalIdFromFhirPathExtractedId
 
 @Serializable
 data class QuestionnaireConfig(
@@ -47,3 +49,15 @@ data class GroupResourceConfig(
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
 ) : java.io.Serializable
+
+fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>?) =
+  this.copy(
+    clientIdentifier =
+      this.clientIdentifier
+        ?.interpolate(computedValuesMap ?: emptyMap())
+        ?.logicalIdFromFhirPathExtractedId(),
+    groupIdentifier =
+      this.groupIdentifier
+        ?.interpolate(computedValuesMap ?: emptyMap())
+        ?.logicalIdFromFhirPathExtractedId()
+  )

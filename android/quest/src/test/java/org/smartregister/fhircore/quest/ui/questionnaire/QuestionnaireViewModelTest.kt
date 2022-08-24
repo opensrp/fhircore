@@ -110,6 +110,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
 
+  private lateinit var questionnaireConfig: QuestionnaireConfig
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -124,6 +126,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
     sharedPreferencesHelper.write(APP_ID_KEY, "appId")
+
+    questionnaireConfig =
+      QuestionnaireConfig(
+        id = "patient-registration",
+        title = "Patient registration",
+        type = QuestionnaireType.READ_ONLY,
+        clientIdentifier = "2"
+      )
 
     questionnaireViewModel =
       spyk(
@@ -390,7 +400,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         context = context,
         resourceId = "12345",
         questionnaireResponse = questionnaireResponse,
-        questionnaire = questionnaire
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig
       )
 
       coVerify { defaultRepo.addOrUpdate(patient) }
@@ -427,7 +438,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context = context,
       resourceId = null,
       questionnaireResponse = questionnaireResponse,
-      questionnaire = questionnaire
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig
     )
 
     coVerify { defaultRepo.addOrUpdate(any()) }
@@ -452,7 +464,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context = context,
       resourceId = "12345",
       questionnaireResponse = QuestionnaireResponse(),
-      questionnaire = questionnaire
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig
     )
 
     coVerify(timeout = 2000) { defaultRepo.addOrUpdate(capture(questionnaireResponseSlot)) }
@@ -489,7 +502,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       resourceId = "12345",
       questionnaireResponse = QuestionnaireResponse(),
       questionnaireType = QuestionnaireType.EDIT,
-      questionnaire = questionnaire
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig
     )
 
     coVerifyOrder {
@@ -591,7 +605,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY, expectedQuestionnaireConfig)
 
     runBlocking {
-      val resourceList = questionnaireViewModel.getPopulationResources(intent)
+      val resourceList = questionnaireViewModel.getPopulationResources(intent, questionnaireConfig)
       Assert.assertEquals(1, resourceList.size)
     }
   }
@@ -642,7 +656,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         context = ApplicationProvider.getApplicationContext(),
         resourceId = null,
         questionnaireResponse = questionnaireResponse,
-        questionnaire = questionnaire
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig
       )
     }
 
@@ -669,7 +684,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         "cde",
         questionnaireResponse,
         QuestionnaireType.EDIT,
-        questionnaire
+        questionnaire,
+        questionnaireConfig
       )
     }
 
@@ -697,7 +713,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         "cde",
         questionnaireResponse,
         QuestionnaireType.EDIT,
-        questionnaire
+        questionnaire,
+        questionnaireConfig
       )
     }
 
@@ -748,7 +765,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       resourceId = "12345",
       questionnaireResponse = questionnaireResponse,
       questionnaireType = QuestionnaireType.EDIT,
-      questionnaire = questionnaire
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig
     )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
@@ -896,7 +914,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context = context,
       resourceId = "0993ldsfkaljlsnldm",
       questionnaireResponse = questionnaireResponse,
-      questionnaire = questionnaire
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig
     )
 
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
@@ -943,7 +962,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context = context,
       resourceId = "0993ldsfkaljlsnldm",
       questionnaireResponse = questionnaireResponse,
-      questionnaire = questionnaire
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig
     )
 
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }

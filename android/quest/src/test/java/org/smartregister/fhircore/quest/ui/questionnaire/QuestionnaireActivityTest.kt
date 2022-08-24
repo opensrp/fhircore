@@ -62,7 +62,6 @@ import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
@@ -80,11 +79,12 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
 
+  private lateinit var questionnaireConfig: QuestionnaireConfig
+
   @BindValue
-  val questionnaireViewModel:
-    org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel =
+  val questionnaireViewModel: QuestionnaireViewModel =
     spyk(
-      org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel(
+      QuestionnaireViewModel(
         fhirEngine = mockk(),
         defaultRepository = mockk(),
         configurationRegistry = mockk(),
@@ -100,7 +100,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     // TODO Proper set up
     hiltRule.inject()
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
-    val questionnaireConfig =
+    questionnaireConfig =
       QuestionnaireConfig(
         id = "patient-registration",
         title = "Patient registration",
@@ -120,10 +120,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         )
 
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
-
-    coEvery { questionnaireViewModel.questionnaireConfig } returns questionnaireConfig
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
-    coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any()) } returns
+    coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any(), any()) } returns
       QuestionnaireResponse()
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
@@ -135,6 +133,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     questionnaireActivity.supportFragmentManager.commitNow {
       add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
     }
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
   }
 
   @After
@@ -240,6 +239,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     questionnaireActivity.supportFragmentManager.commitNow {
       add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
     }
+    /*questionnaireActivity.questionnaireType = QuestionnaireType.READ_ONLY*/
 
     Assert.assertEquals(
       "Done",
@@ -279,13 +279,22 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     questionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
 
     verify {
-      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any()
+      )
     }
   }
 
   @Test
   fun testHandleQuestionnaireSubmitShouldShowProgressAndCallExtractAndSaveResources() {
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
     questionnaireActivity.handleQuestionnaireSubmit()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
@@ -297,7 +306,15 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(timeout = 2000) {
-      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any()
+      )
     }
   }
 
@@ -317,7 +334,15 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(inverse = true) {
-      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any()
+      )
     }
   }
 
@@ -450,7 +475,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testQuestionnaireTypeEditShouldAppendEditPrefixInActionBarTitle() {
     with(questionnaireActivity) {
       questionnaireType = QuestionnaireType.EDIT
-      questionnaireViewModel.questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
+      val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
+      ReflectionHelpers.setField(this, "questionnaireConfig", questionnaireConfig)
 
       updateViews()
 
@@ -462,7 +488,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testQuestionnaireTypeDefaultShouldHasNormalActionBarTitle() {
     with(questionnaireActivity) {
       questionnaireType = QuestionnaireType.DEFAULT
-      questionnaireViewModel.questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
+      val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
+      ReflectionHelpers.setField(this, "questionnaireConfig", questionnaireConfig)
 
       updateViews()
 
@@ -474,7 +501,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testQuestionnaireTypeReadOnlyShouldHasNormalActionBarTitle() {
     with(questionnaireActivity) {
       questionnaireType = QuestionnaireType.READ_ONLY
-      questionnaireViewModel.questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
+      val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
+      ReflectionHelpers.setField(this, "questionnaireConfig", questionnaireConfig)
 
       updateViews()
 
