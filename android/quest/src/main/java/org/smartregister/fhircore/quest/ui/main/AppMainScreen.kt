@@ -27,19 +27,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.NavigationArg.routePathsOf
@@ -53,9 +51,9 @@ import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigatio
 @Composable
 fun MainScreen(
   modifier: Modifier = Modifier,
-  appMainViewModel: AppMainViewModel = hiltViewModel()
+  appMainViewModel: AppMainViewModel = hiltViewModel(),
+  navController: NavController
 ) {
-  val navController = rememberNavController()
   val scope = rememberCoroutineScope()
   val scaffoldState = rememberScaffoldState()
   val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
@@ -87,10 +85,8 @@ fun MainScreen(
     Box(modifier = modifier.padding(innerPadding)) {
       AppMainNavigationGraph(
         navController = navController,
-        mainNavigationScreens = MainNavigationScreen.appScreens,
         openDrawer = openDrawer,
-        appMainViewModel = appMainViewModel,
-        navigationConfiguration = uiState.navigationConfiguration
+        appMainViewModel = appMainViewModel
       )
     }
   }
@@ -101,102 +97,87 @@ fun MainScreen(
  * contained navigation. The screens are provided via the list of [MainNavigationScreen] and are
  * configured using the [NavigationConfiguration]. The main screen is composed of three parts
  * including: the side menu (navigation drawer), mid content section and the bottom navigation bar.
- * The [mainNavigationScreens] are rendered in the content section of the main screen depending on
- * the [MainNavigationScreen.route]. [MeasureReportViewModel] and [AppMainViewModel] are provided to
- * this composable function to handle any business logic. The [openDrawer] function is used to
- * toggle between opening and closing the navigation drawer.
+ * [MeasureReportViewModel] and [AppMainViewModel] are provided to this composable function to
+ * handle any business logic. The [openDrawer] function is used to toggle between opening and
+ * closing the navigation drawer.
  */
 @Composable
 private fun AppMainNavigationGraph(
-  navController: NavHostController,
-  mainNavigationScreens: List<MainNavigationScreen>,
+  navController: NavController,
   openDrawer: (Boolean) -> Unit,
-  navigationConfiguration: NavigationConfiguration,
   measureReportViewModel: MeasureReportViewModel = hiltViewModel(),
   appMainViewModel: AppMainViewModel
 ) {
-  val firstNavigationMenu = navigationConfiguration.clientRegisters.first()
+  val homeUrl =
+    MainNavigationScreen.Home.route +
+      routePathsOf(NavigationArg.SCREEN_TITLE, NavigationArg.REGISTER_ID)
 
-  // The id of the register's click action, if it exists, otherwise the first navigation menu id
-  val firstRegisterId =
-    firstNavigationMenu.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id
-      ?: firstNavigationMenu.id
+  NavHost(navController = (navController as NavHostController), startDestination = homeUrl) {
+    val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
+    val topMenuConfigId =
+      topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id ?: topMenuConfig.id
 
-  val homeUrlParams = routePathsOf(NavigationArg.SCREEN_TITLE, NavigationArg.REGISTER_ID)
-  NavHost(
-    navController = navController,
-    startDestination = MainNavigationScreen.Home.route + homeUrlParams
-  ) {
-    mainNavigationScreens.forEach {
-      when (it) {
-        is MainNavigationScreen.Home ->
-          composable(
-            route = it.route + homeUrlParams,
-            arguments =
-              listOf(
-                navArgument(NavigationArg.SCREEN_TITLE) {
-                  type = NavType.StringType
-                  nullable = false
-                  defaultValue = firstNavigationMenu.display
-                },
-                navArgument(NavigationArg.REGISTER_ID) {
-                  type = NavType.StringType
-                  nullable = false
-                  defaultValue = firstRegisterId
-                }
-              )
-          ) { stackEntry ->
-            val screenTitle: String =
-              stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
-                ?: stringResource(R.string.all_clients)
-            val registerId: String =
-              stackEntry.arguments?.getString(NavigationArg.REGISTER_ID) ?: ""
-
-            RegisterScreen(
-              navController = navController,
-              openDrawer = openDrawer,
-              screenTitle = screenTitle,
-              registerId = registerId,
-              refreshDataState = appMainViewModel.refreshDataState
-            )
+    composable(
+      route = homeUrl,
+      arguments =
+        listOf(
+          navArgument(NavigationArg.SCREEN_TITLE) {
+            type = NavType.StringType
+            nullable = false
+          },
+          navArgument(NavigationArg.REGISTER_ID) {
+            type = NavType.StringType
+            nullable = false
           }
-        MainNavigationScreen.Reports ->
-          measureReportNavigationGraph(navController, measureReportViewModel)
-        MainNavigationScreen.Settings ->
-          composable(MainNavigationScreen.Settings.route) { UserProfileScreen() }
-        MainNavigationScreen.Profile ->
-          composable(
-            route = it.route + routePathsOf(NavigationArg.PROFILE_ID, NavigationArg.RESOURCE_ID),
-            arguments =
-              listOf(
-                navArgument(NavigationArg.PROFILE_ID) {
-                  type = NavType.StringType
-                  nullable = false
-                },
-                navArgument(NavigationArg.RESOURCE_ID) {
-                  type = NavType.StringType
-                  nullable = false
-                }
-              )
-          ) { stackEntry ->
-            val profileId = stackEntry.arguments?.getString(NavigationArg.PROFILE_ID)
-            val resourceId = stackEntry.arguments?.getString(NavigationArg.RESOURCE_ID)
+        )
+    ) { stackEntry ->
+      val screenTitle: String =
+        stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: topMenuConfig.display
+      val registerId: String =
+        stackEntry.arguments?.getString(NavigationArg.REGISTER_ID) ?: topMenuConfigId
 
-            if (!profileId.isNullOrEmpty() && !resourceId.isNullOrEmpty()) {
-              val profileViewModel = hiltViewModel<ProfileViewModel>()
-              LaunchedEffect(Unit) {
-                profileViewModel.retrieveProfileUiState(
-                  profileId = profileId,
-                  resourceId = resourceId
-                )
-              }
-              ProfileScreen(
-                navController = navController,
-                profileUiState = profileViewModel.profileUiState.value,
-                onEvent = profileViewModel::onEvent
-              )
-            }
+      RegisterScreen(
+        navController = navController,
+        openDrawer = openDrawer,
+        screenTitle = screenTitle,
+        registerId = registerId,
+        refreshDataState = appMainViewModel.refreshDataState
+      )
+    }
+
+    measureReportNavigationGraph(navController, measureReportViewModel)
+
+    composable(MainNavigationScreen.Settings.route) { UserProfileScreen() }
+
+    composable(
+      route =
+        MainNavigationScreen.Profile.route +
+          routePathsOf(NavigationArg.PROFILE_ID, NavigationArg.RESOURCE_ID),
+      arguments =
+        listOf(
+          navArgument(NavigationArg.PROFILE_ID) {
+            type = NavType.StringType
+            nullable = false
+          },
+          navArgument(NavigationArg.RESOURCE_ID) {
+            type = NavType.StringType
+            nullable = false
           }
+        )
+    ) { stackEntry ->
+      val profileId = stackEntry.arguments?.getString(NavigationArg.PROFILE_ID)
+      val resourceId = stackEntry.arguments?.getString(NavigationArg.RESOURCE_ID)
+
+      if (!profileId.isNullOrEmpty() && !resourceId.isNullOrEmpty()) {
+        val profileViewModel = hiltViewModel<ProfileViewModel>()
+        LaunchedEffect(Unit) {
+          profileViewModel.retrieveProfileUiState(profileId = profileId, resourceId = resourceId)
+        }
+        ProfileScreen(
+          navController = navController,
+          profileUiState = profileViewModel.profileUiState.value,
+          onEvent = profileViewModel::onEvent
+        )
       }
     }
   }

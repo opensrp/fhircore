@@ -29,7 +29,7 @@
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_MAP",
-          "id": "navigateToMapsScreen"
+          "id": "householdRegistrationMap"
         }
       ]
     },

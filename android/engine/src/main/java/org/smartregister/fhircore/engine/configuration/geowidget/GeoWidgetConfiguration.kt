@@ -19,9 +19,13 @@ package org.smartregister.fhircore.engine.configuration.geowidget
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 
 @Serializable
 data class GeoWidgetConfiguration(
   override var appId: String,
-  override var configType: String = ConfigType.GeoWidget.name
+  override var configType: String = ConfigType.GeoWidget.name,
+  val id: String,
+  val profileId: String,
+  val registrationQuestionnaire: QuestionnaireConfig
 ) : Configuration()

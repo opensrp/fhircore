@@ -19,7 +19,7 @@ package org.smartregister.fhircore.geowidget.screens
 import android.widget.TextView
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 22-08-2022. */
-class GeowidgetTestActivity : GeowidgetActivity() {
+class GeoWidgetTestActivity : GeoWidgetActivity() {
 
   override fun performOnCreateOperations() {
     setContentView(TextView(this))

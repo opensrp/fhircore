@@ -30,8 +30,4 @@ sealed class MainNavigationScreen(
   object Settings :
     MainNavigationScreen(R.string.settings, R.drawable.ic_settings, "settingsRoute", true)
   object Profile : MainNavigationScreen(titleResource = R.string.profile, route = "profileRoute")
-
-  companion object {
-    val appScreens = listOf(Home, Reports, Settings, Profile)
-  }
 }

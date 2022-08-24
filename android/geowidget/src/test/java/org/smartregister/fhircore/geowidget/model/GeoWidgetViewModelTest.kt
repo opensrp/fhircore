@@ -18,7 +18,7 @@ package org.smartregister.fhircore.geowidget.model
 
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.mapbox.geojson.FeatureCollection
@@ -50,7 +50,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 @HiltAndroidTest
-class GeowidgetViewModelTest {
+class GeoWidgetViewModelTest {
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -60,24 +60,27 @@ class GeowidgetViewModelTest {
 
   val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
 
-  lateinit var geowidgetViewModel: GeowidgetViewModel
+  lateinit var geowidgetViewModel: GeoWidgetViewModel
+
   val fhirEngine = mockk<FhirEngine>()
+
   val defaultRepository = spyk(DefaultRepository(fhirEngine, dispatcherProvider))
+
+  val context = InstrumentationRegistry.getInstrumentation().targetContext
 
   @Before
   fun setUp() {
-    geowidgetViewModel = spyk(GeowidgetViewModel(defaultRepository, dispatcherProvider))
+    geowidgetViewModel = spyk(GeoWidgetViewModel(defaultRepository, dispatcherProvider))
 
     coEvery { defaultRepository.save(any()) } just runs
   }
 
   @Test
   fun getFamiliesFeatureCollectionShouldCallGetFamiliesAndGenerateFeatureCollection() {
-    geowidgetViewModel.context = ApplicationProvider.getApplicationContext()
 
     val families: List<Pair<Group, Location>> = emptyList()
     coEvery { geowidgetViewModel.getFamilies() } returns families
-    val featureCollection = runBlocking { geowidgetViewModel.getFamiliesFeatureCollection() }
+    val featureCollection = runBlocking { geowidgetViewModel.getFamiliesFeatureCollection(context) }
 
     coVerify { geowidgetViewModel.getFamilies() }
     Assert.assertNotNull(featureCollection)
@@ -87,11 +90,11 @@ class GeowidgetViewModelTest {
   fun getFamiliesFeatureCollectionStreamShouldCallGetFamilyFeaturesCollection() {
     val featureCollection = mockk<FeatureCollection>()
 
-    coEvery { geowidgetViewModel.getFamiliesFeatureCollection() } returns featureCollection
+    coEvery { geowidgetViewModel.getFamiliesFeatureCollection(context) } returns featureCollection
 
-    val featureCollectionLiveData = geowidgetViewModel.getFamiliesFeatureCollectionStream()
+    val featureCollectionLiveData = geowidgetViewModel.getFamiliesFeatureCollectionStream(context)
 
-    coVerify { geowidgetViewModel.getFamiliesFeatureCollection() }
+    coVerify { geowidgetViewModel.getFamiliesFeatureCollection(context) }
     Assert.assertEquals(featureCollection, featureCollectionLiveData.value)
   }
 

@@ -28,6 +28,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -42,6 +43,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -61,7 +63,8 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.geowidget.screens.GeowidgetActivity
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetActivity
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetActivity.Companion.GEO_WIDGET_CONFIG_ID
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.NavigationArg.bindArgumentsOf
@@ -97,7 +100,7 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  private val navigationConfiguration: NavigationConfiguration by lazy {
+  val navigationConfiguration: NavigationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
   }
 
@@ -165,9 +168,10 @@ constructor(
   }
 
   private fun triggerWorkflow(event: AppMainEvent.TriggerWorkflow) {
-    val navigationAction = event.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+    val navigationAction = event.navMenu.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
     when (navigationAction?.workflow) {
-      ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(context = event.context)
+      ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC ->
+        startP2PScreen(context = event.navController.context)
       ApplicationWorkflow.LAUNCH_SETTINGS ->
         event.navController.navigate(route = MainNavigationScreen.Settings.route)
       ApplicationWorkflow.LAUNCH_REPORT ->
@@ -181,9 +185,10 @@ constructor(
         event.navController.navigate(route = MainNavigationScreen.Home.route + urlParams)
       }
       ApplicationWorkflow.LAUNCH_MAP ->
-        with(event.context) {
+        with(event.navController.context) {
           (getActivity() as AppMainActivity).mapLauncherResultHandler.launch(
-            Intent(this, GeowidgetActivity::class.java)
+            Intent(this, GeoWidgetActivity::class.java)
+              .putExtra(GEO_WIDGET_CONFIG_ID, navigationAction.id)
           )
         }
       else -> return
@@ -191,19 +196,12 @@ constructor(
   }
 
   private fun displayRegisterBottomSheet(event: AppMainEvent.OpenRegistersBottomSheet) {
-    (event.context as AppCompatActivity).let { activity ->
+    (event.navController.context as AppCompatActivity).let { activity ->
       RegisterBottomSheetFragment(
           navigationMenuConfigs = event.registersList,
           registerCountMap = appMainUiState.value.registerCountMap,
           menuClickListener = {
-            onEvent(
-              AppMainEvent.TriggerWorkflow(
-                context = event.context,
-                navController = event.navController,
-                actions = it.actions,
-                navMenu = it
-              )
-            )
+            onEvent(AppMainEvent.TriggerWorkflow(navController = event.navController, navMenu = it))
           }
         )
         .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
@@ -231,7 +229,7 @@ constructor(
         )
 
       context.launchQuestionnaire<QuestionnaireActivity>(
-        GeowidgetActivity.FAMILY_REGISTRATION_QUESTIONNAIRE,
+        GeoWidgetActivity.FAMILY_REGISTRATION_QUESTIONNAIRE,
         intentBundle = bundle
       )
     }
@@ -268,6 +266,19 @@ constructor(
   }
 
   fun retrieveLastSyncTimestamp(): String? = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+
+  fun launchProfileFromGeoWidget(
+    navController: NavController,
+    geoWidgetConfigId: String,
+    resourceId: String
+  ) {
+    val geoWidgetConfiguration =
+      configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
+        ConfigType.GeoWidget,
+        geoWidgetConfigId
+      )
+    onEvent(AppMainEvent.OpenProfile(navController, geoWidgetConfiguration.profileId, resourceId))
+  }
 
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"

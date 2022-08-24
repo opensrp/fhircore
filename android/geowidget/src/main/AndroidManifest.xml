@@ -4,7 +4,7 @@
 
     <application>
         <activity
-            android:name=".screens.GeowidgetActivity"
+            android:name=".screens.GeoWidgetActivity"
             android:exported="false" />
 
         <receiver

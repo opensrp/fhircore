@@ -36,20 +36,28 @@ import io.ona.kujaku.callbacks.AddPointCallback
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
 import java.util.LinkedList
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Location
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
 import org.smartregister.fhircore.geowidget.ext.coordinates
 import org.smartregister.fhircore.geowidget.ext.generateLocation
-import org.smartregister.fhircore.geowidget.model.GeowidgetViewModel
+import org.smartregister.fhircore.geowidget.model.GeoWidgetViewModel
 import timber.log.Timber
 
 @AndroidEntryPoint
-open class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
+open class GeoWidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
 
   lateinit var kujakuMapView: KujakuMapView
-  val geowidgetViewModel: GeowidgetViewModel by viewModels()
+  val geowidgetViewModel: GeoWidgetViewModel by viewModels()
   var geoJsonSource: GeoJsonSource? = null
 
   var featureCollection: FeatureCollection? = null
@@ -57,6 +65,12 @@ open class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    val geoWidgetConfigId = intent.getStringExtra(GEO_WIDGET_CONFIG_ID) ?: ""
+    geoWidgetConfiguration =
+      configurationRegistry.retrieveConfiguration(
+        ConfigType.GeoWidget,
+        configId = geoWidgetConfigId
+      )
 
     performOnCreateOperations()
   }
@@ -106,16 +120,16 @@ open class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
           featureJSONObject ?: return
           val coordinates = featureJSONObject.coordinates() ?: return
 
-          Toast.makeText(this@GeowidgetActivity, getString(R.string.please_wait), Toast.LENGTH_LONG)
+          Toast.makeText(this@GeoWidgetActivity, getString(R.string.please_wait), Toast.LENGTH_LONG)
             .show()
 
           val location = generateLocation(featureJSONObject, coordinates)
 
           // Save it in the viewModel
-          geowidgetViewModel.saveLocation(location).observe(this@GeowidgetActivity) {
+          geowidgetViewModel.saveLocation(location).observe(this@GeoWidgetActivity) {
             if (it) {
               Toast.makeText(
-                  this@GeowidgetActivity,
+                  this@GeoWidgetActivity,
                   getString(R.string.openning_family_registration_form),
                   Toast.LENGTH_LONG
                 )
@@ -134,7 +148,7 @@ open class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
     val intentData = Intent().apply { putExtra(LOCATION_ID, location.idElement.value) }
 
     setResult(RESULT_OK, intentData)
-    this@GeowidgetActivity.finish()
+    this@GeoWidgetActivity.finish()
   }
 
   fun setFeatureClickListener() {
@@ -152,7 +166,7 @@ open class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
     val intentData = Intent().apply { putExtra(FAMILY_ID, familyId) }
 
     setResult(RESULT_OK, intentData)
-    this@GeowidgetActivity.finish()
+    this@GeoWidgetActivity.finish()
   }
 
   override fun onChanged(featureCollection: FeatureCollection?) {
@@ -231,8 +245,9 @@ open class GeowidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
   }
 
   companion object {
-    const val LOCATION_ID = "LOCATION-ID"
-    const val FAMILY_ID = "FAMILY-ID"
+    const val LOCATION_ID = "location-id"
+    const val FAMILY_ID = "family-id"
+    const val GEO_WIDGET_CONFIG_ID = "geoWidgetConfigId"
     const val FAMILY_REGISTRATION_QUESTIONNAIRE = "82952-geowidget"
   }
 }

@@ -153,6 +153,21 @@
           }
         }
       ]
+    },
+    {
+      "title": "GeoWidget configurations",
+      "mode": "working",
+      "section": [
+        {
+          "title": "Household geoWidget configuration",
+          "focus": {
+            "reference": "Binary/11111121",
+            "identifier": {
+              "value": "householdRegistrationMap"
+            }
+          }
+        }
+      ]
     }
   ]
 }

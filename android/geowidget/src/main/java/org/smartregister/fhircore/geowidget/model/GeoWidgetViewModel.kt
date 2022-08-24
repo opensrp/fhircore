@@ -36,7 +36,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
 
 @HiltViewModel
-class GeowidgetViewModel
+class GeoWidgetViewModel
 @Inject
 constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: DispatcherProvider) :
   ViewModel() {

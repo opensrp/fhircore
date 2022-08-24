@@ -62,9 +62,9 @@ import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
   application = HiltTestApplication::class
 )
 @HiltAndroidTest
-class GeowidgetActivityTest {
+class GeoWidgetActivityTest {
 
-  lateinit var geowidgetActivity: GeowidgetActivity
+  lateinit var geowidgetActivity: GeoWidgetActivity
   var kujakuMapView = mockk<KujakuMapView>()
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -72,7 +72,7 @@ class GeowidgetActivityTest {
 
   @Before
   fun setup() {
-    val controller = Robolectric.buildActivity(GeowidgetTestActivity::class.java)
+    val controller = Robolectric.buildActivity(GeoWidgetTestActivity::class.java)
     geowidgetActivity = spyk(controller.create().resume().get())
     geowidgetActivity.kujakuMapView = kujakuMapView
 
@@ -110,7 +110,7 @@ class GeowidgetActivityTest {
     verify { geowidgetActivity.setResult(Activity.RESULT_OK, capture(intentCapturingSlot)) }
     Assert.assertEquals(
       "i2342980kosdf9823",
-      intentCapturingSlot.captured.getStringExtra(GeowidgetActivity.LOCATION_ID)
+      intentCapturingSlot.captured.getStringExtra(GeoWidgetActivity.LOCATION_ID)
     )
     verify { geowidgetActivity.finish() }
   }
@@ -144,7 +144,7 @@ class GeowidgetActivityTest {
     verify { geowidgetActivity.setResult(Activity.RESULT_OK, capture(intentCapturingSlot)) }
     Assert.assertEquals(
       "john-doe-family-id",
-      intentCapturingSlot.captured.getStringExtra(GeowidgetActivity.FAMILY_ID)
+      intentCapturingSlot.captured.getStringExtra(GeoWidgetActivity.FAMILY_ID)
     )
     verify { geowidgetActivity.finish() }
   }

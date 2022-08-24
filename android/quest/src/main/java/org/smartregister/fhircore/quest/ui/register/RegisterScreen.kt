@@ -38,7 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
@@ -58,7 +58,7 @@ fun RegisterScreen(
   openDrawer: (Boolean) -> Unit,
   refreshDataState: MutableState<Boolean>,
   registerViewModel: RegisterViewModel = hiltViewModel(),
-  navController: NavHostController
+  navController: NavController
 ) {
   val context = LocalContext.current
   val firstTimeSync = remember { mutableStateOf(registerViewModel.isFirstTimeSync()) }

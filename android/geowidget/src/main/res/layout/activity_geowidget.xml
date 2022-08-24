@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".screens.GeowidgetActivity">
+    tools:context=".screens.GeoWidgetActivity">
 
     <io.ona.kujaku.views.KujakuMapView
         android:id="@+id/mapView"
@@ -12,17 +12,5 @@
         android:layout_height="match_parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
-
-    <Button
-        android:id="@+id/register_family"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="@string/register_family"
-        android:visibility="gone"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

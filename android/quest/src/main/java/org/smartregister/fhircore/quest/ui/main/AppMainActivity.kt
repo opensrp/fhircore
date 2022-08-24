@@ -25,25 +25,27 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BACK_REFERENCE_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.geowidget.screens.GeowidgetActivity
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetActivity
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -56,7 +58,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var configService: ConfigService
 
-  @Inject lateinit var defaultRepository: DefaultRepository
+  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
@@ -64,9 +68,16 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   lateinit var mapLauncherResultHandler: ActivityResultLauncher<Intent>
 
+  lateinit var navController: NavController
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
+
+    setContent {
+      navController = rememberNavController()
+      AppTheme { MainScreen(appMainViewModel = appMainViewModel, navController = navController) }
+    }
+
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
     mapLauncherResultHandler = createMapActivityResultLauncher()
   }
@@ -76,29 +87,25 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       val intent =
         result.data
           ?: run {
-            Timber.e(Exception("Data back from GeowidgetActivity is null"))
+            Timber.e(Exception("Data back from GeoWidgetActivity is null"))
             return@registerForActivityResult
           }
-      intent.getStringExtra(GeowidgetActivity.FAMILY_ID)?.also { familyId ->
-        launchFamilyProfile(familyId)
+      intent.getStringExtra(GeoWidgetActivity.FAMILY_ID)?.also { resourceId ->
+        // TODO remove hardcoded geoWidgetConfigId
+        appMainViewModel.launchProfileFromGeoWidget(
+          navController,
+          "householdRegistrationMap",
+          resourceId
+        )
       }
-        ?: also { Timber.i(Exception("FAMILY-ID from GeowidgetActivity is null")) }
+        ?: also { Timber.i(Exception("FAMILY-ID from GeoWidgetActivity is null")) }
 
-      intent.getStringExtra(GeowidgetActivity.LOCATION_ID)?.also { locationId ->
+      intent.getStringExtra(GeoWidgetActivity.LOCATION_ID)?.also { locationId ->
         appMainViewModel.launchFamilyRegistrationWithLocationId(this@AppMainActivity, locationId)
         return@registerForActivityResult
       }
-        ?: also { Timber.i(Exception("LOCATION-ID from GeowidgetActivity is null")) }
+        ?: also { Timber.i(Exception("LOCATION-ID from GeoWidgetActivity is null")) }
     }
-
-  private fun launchFamilyProfile(familyId: String) {
-    // Expect Group/1122f50c-5499-4eaa-bd53-a5364371a2ba/_history/5 OR
-    // Group/1122f50c-5499-4eaa-bd53-a5364371a2ba
-
-    Timber.i("Launching family profile for : $familyId")
-
-    // TODO: Add family profile launching here
-  }
 
   override fun onResume() {
     super.onResume()
@@ -161,7 +168,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   }
 
   private fun scheduleFhirTaskStatusUpdater() {
-    // TODO use sharedpref to save the state
+    // TODO use sharedPref to save the state
     with(configService) {
       if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
         this.schedulePlan(this@AppMainActivity)
@@ -175,7 +182,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
     if (resultCode == Activity.RESULT_OK)
       data?.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(dispatcherProvider.io()) {
           when {
             it.startsWith(ResourceType.Task.name) ->
               fhirCarePlanGenerator.completeTask(it.asReference(ResourceType.Task).extractId())
