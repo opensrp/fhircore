@@ -156,8 +156,7 @@ fun Patient.extractTelecom(): List<String> {
 }
 
 fun Patient.extractGeneralPractitionerReference(): String {
-  if (!hasGeneralPractitioner()) return ""
-  return with(generalPractitionerFirstRep) { this.reference }
+  return generalPractitioner.firstOrNull { !it.isEmpty }?.reference ?: ""
 }
 
 fun Patient.extractManagingOrganizationReference(): String {
