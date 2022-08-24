@@ -139,6 +139,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       Group().apply {
         id = "12345"
         name = "Snow"
+        active = true
         addMember().apply { entity = Reference("Patient/${patient.logicalId}") }
       }
 
