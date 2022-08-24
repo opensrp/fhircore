@@ -64,6 +64,8 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterDao, PatientDao {
 
+  val LINKED_CHILD_AGE_LIMIT = 20
+
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
       patient.hasName() &&
@@ -249,7 +251,7 @@ constructor(
 
     if (healthStatus == HealthStatus.CHILD_CONTACT || healthStatus == HealthStatus.EXPOSED_INFANT) {
       if (this.hasBirthDate()) {
-        if (this.birthDate!!.yearsPassed() < 18) return true
+        if (this.birthDate!!.yearsPassed() < LINKED_CHILD_AGE_LIMIT) return true
       }
     } else {
       return true
