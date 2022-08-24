@@ -21,8 +21,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.util.Calendar
+import java.util.Date
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -31,13 +34,16 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -55,6 +61,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -182,6 +189,13 @@ class HivRegisterDaoTest : RobolectricTest() {
   }
 
   @Test
+  fun `loadPatient gets patient with id`() = runTest {
+    val patientResult = hivRegisterDao.loadPatient(testPatient.id)
+    Assert.assertEquals(testPatient, patientResult)
+    coVerify(exactly = 1) { fhirEngine.get(ResourceType.Patient, testPatient.id) }
+  }
+
+  @Test
   fun testLoadRegisterData() = runTest {
     val data =
       hivRegisterDao.loadRegisterData(currentPage = 0, loadAll = true, appFeatureName = "HIV")
@@ -220,6 +234,65 @@ class HivRegisterDaoTest : RobolectricTest() {
     assertEquals("practitioner/1234", hivProfileData.chwAssigned.reference)
     assertEquals(HealthStatus.EXPOSED_INFANT, hivProfileData.healthStatus)
     assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
+  }
+
+  @Test
+  fun `loadGuardiansRegisterData returns from relatedPersons`() = runTest {
+    val guardianRelatedPerson =
+      RelatedPerson().apply {
+        id = "22"
+        gender = Enumerations.AdministrativeGender.MALE
+        birthDate = DateType(Date()).apply { add(Calendar.YEAR, -32) }.dateTimeValue().value
+      }
+    val guardianReference = guardianRelatedPerson.asReference()
+    coEvery { fhirEngine.get(ResourceType.RelatedPerson, guardianRelatedPerson.logicalId) } returns
+      guardianRelatedPerson
+    testPatient.apply {
+      link = mutableListOf(Patient.PatientLinkComponent().apply { other = guardianReference })
+    }
+
+    val result = hivRegisterDao.loadGuardiansRegisterData(testPatient).firstOrNull()
+    coVerify { fhirEngine.get(ResourceType.RelatedPerson, guardianRelatedPerson.logicalId) }
+    assertNotNull(result)
+    assertEquals(guardianRelatedPerson.logicalId, result.logicalId)
+    assertEquals(HealthStatus.DEFAULT, result.healthStatus)
+    assertEquals("Not on ART", result.healthStatus.display)
+    assertEquals(HivRegisterDao.ResourceValue.BLANK, result.identifier)
+    assertEquals(HivRegisterDao.ResourceValue.BLANK, result.chwAssigned)
+  }
+
+  @Test
+  fun `loadGuardiansRegisterData returns from patient's link`() = runTest {
+    val guardianPatient =
+      Patient().apply {
+        id = "38"
+        gender = Enumerations.AdministrativeGender.MALE
+        meta.addTag(
+          Coding().apply {
+            system = "https://d-tree.org"
+            code = "client-already-on-art"
+          }
+        )
+        birthDate = DateType(Date()).apply { add(Calendar.YEAR, 48) }.dateTimeValue().value
+      }
+    val guardianReference = guardianPatient.asReference()
+    coEvery { fhirEngine.get(ResourceType.Patient, guardianPatient.logicalId) } returns
+      guardianPatient
+    testPatient.apply {
+      val patientLink =
+        Patient.PatientLinkComponent().apply {
+          other = guardianReference
+          type = Patient.LinkType.REFER
+        }
+      link = mutableListOf(patientLink)
+    }
+
+    val result = hivRegisterDao.loadGuardiansRegisterData(testPatient).firstOrNull()
+    coVerify { fhirEngine.get(ResourceType.Patient, guardianPatient.logicalId) }
+    assertNotNull(result)
+    assertEquals(guardianPatient.logicalId, result.logicalId)
+    assertEquals(HealthStatus.CLIENT_ALREADY_ON_ART, result.healthStatus)
+    assertEquals("ART Client", result.healthStatus.display)
   }
 
   @Test

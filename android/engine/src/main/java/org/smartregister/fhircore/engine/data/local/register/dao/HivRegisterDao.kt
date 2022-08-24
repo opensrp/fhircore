@@ -64,8 +64,6 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterDao, PatientDao {
 
-  val LINKED_CHILD_AGE_LIMIT = 20
-
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
       patient.hasName() &&
@@ -290,5 +288,6 @@ constructor(
 
   companion object {
     const val HAPI_MDM_TAG = "HAPI-MDM"
+    const val LINKED_CHILD_AGE_LIMIT = 20
   }
 }

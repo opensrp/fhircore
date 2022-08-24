@@ -21,13 +21,13 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.di.HivPatient
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class HivPatientGuardianRepository
 @Inject
 constructor(
   @HivPatient private val patientDao: PatientDao,
-  private val dispatcherProvider: DefaultDispatcherProvider
+  private val dispatcherProvider: DispatcherProvider
 ) {
 
   suspend fun loadPatient(patientId: String) =
