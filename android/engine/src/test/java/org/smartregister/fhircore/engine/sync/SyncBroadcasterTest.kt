@@ -20,6 +20,7 @@ import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.Before
@@ -50,7 +51,7 @@ internal class SyncBroadcasterTest {
   @Before
   fun setup() {
     fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
-    sharedPreferencesHelper = SharedPreferencesHelper(context)
+    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,

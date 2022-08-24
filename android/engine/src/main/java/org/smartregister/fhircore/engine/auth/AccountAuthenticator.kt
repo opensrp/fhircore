@@ -29,6 +29,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.core.os.bundleOf
+import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
@@ -37,11 +38,12 @@ import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
@@ -56,11 +58,12 @@ constructor(
   @ApplicationContext val context: Context,
   val accountManager: AccountManager,
   val oAuthService: OAuthService,
+  val fhirResourceService: FhirResourceService,
+  val parser: IParser,
   val configService: ConfigService,
   val secureSharedPreference: SecureSharedPreference,
   val tokenManagerService: TokenManagerService,
   val sharedPreference: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider
 ) : AbstractAccountAuthenticator(context) {
 
   override fun addAccount(
@@ -181,6 +184,16 @@ constructor(
       Timber.e("Failed to refresh token, refresh token may have expired", exception)
       return null
     }
+  }
+
+  fun getPractitionerDetailsFromAssets(): org.hl7.fhir.r4.model.Bundle {
+    val jsonPayload =
+      context.assets.open(PATH_PRACTITIONER_DETAILS_PAYLOAD).bufferedReader().use { it.readText() }
+    return parser.parseResource(jsonPayload) as org.hl7.fhir.r4.model.Bundle
+  }
+
+  suspend fun getPractitionerDetails(keycloakUuid: String): org.hl7.fhir.r4.model.Bundle {
+    return fhirResourceService.getResource(url = keycloakUuid.practitionerEndpointUrl())
   }
 
   @Throws(NetworkErrorException::class)
@@ -348,5 +361,6 @@ constructor(
     const val USERNAME = "username"
     const val PASSWORD = "password"
     const val REFRESH_TOKEN = "refresh_token"
+    const val PATH_PRACTITIONER_DETAILS_PAYLOAD = "sample_practitioner_payload.json"
   }
 }

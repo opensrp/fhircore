@@ -58,7 +58,6 @@ import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -77,17 +76,13 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.encodeJson
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
+import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -116,16 +111,22 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    every { sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
-      getUserInfo().encodeJson()
+    every {
+      sharedPreferencesHelper.read<KeycloakUserDetails>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+      )
+    } returns getKeycloakUserDetails()
 
-    every { sharedPreferencesHelper.read(LOGGED_IN_PRACTITIONER, null) } returns
-      Practitioner().apply { id = "123" }.encodeResourceToString()
+    every {
+      sharedPreferencesHelper.read<List<String>>(
+        SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+      )
+    } returns listOf("105")
 
     defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider))
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
-    sharedPreferencesHelper.write(APP_ID_KEY, "appId")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "appId")
 
     questionnaireViewModel =
       spyk(
@@ -998,17 +999,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireResponse
     )
 
-    Assert.assertEquals("Organization/1111", questionnaireResponse.subject.reference)
+    Assert.assertEquals("Organization/105", questionnaireResponse.subject.reference)
   }
 
-  private fun getUserInfo(): UserInfo {
-    val userInfo =
-      UserInfo().apply {
-        questionnairePublisher = "ab"
-        organization = "1111"
-        keycloakUuid = "123"
-      }
-    return userInfo
+  private fun getKeycloakUserDetails(): KeycloakUserDetails {
+    return KeycloakUserDetails().apply { id = "12345" }
   }
 
   private fun samplePatient() =
@@ -1023,7 +1018,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.appendPractitionerInfo(patient)
 
-    Assert.assertEquals("Practitioner/123", patient.generalPractitioner[0].reference)
+    Assert.assertEquals("12345", patient.generalPractitioner[0].reference)
   }
 
   @Test
@@ -1031,19 +1026,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // For patient
     val patient = samplePatient()
     questionnaireViewModel.appendOrganizationInfo(patient)
-    Assert.assertNotNull("Organization/1111", patient.managingOrganization.reference)
+    Assert.assertNotNull("Organization/105", patient.managingOrganization.reference)
 
     // For group
     val group = Group().apply { id = "123" }
     questionnaireViewModel.appendOrganizationInfo(group)
-    Assert.assertEquals("Organization/1111", group.managingEntity.reference)
+    Assert.assertEquals("Organization/105", group.managingEntity.reference)
   }
 
   @Test
   fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
     questionnaireViewModel.appendPractitionerInfo(encounter)
-    Assert.assertEquals("Practitioner/123", encounter.participant[0].individual.reference)
+    Assert.assertEquals("12345", encounter.participant[0].individual.reference)
   }
 
   @Test

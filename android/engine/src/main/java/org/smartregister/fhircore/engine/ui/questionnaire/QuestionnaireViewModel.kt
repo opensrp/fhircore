@@ -41,7 +41,6 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -53,14 +52,12 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
@@ -75,6 +72,7 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.model.practitioner.KeycloakUserDetails
 import timber.log.Timber
 
 @HiltViewModel
@@ -103,14 +101,15 @@ constructor(
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
-  private val authenticatedUserInfo by lazy {
-    sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY)
+  private val authenticatedOrganizationIds by lazy {
+    sharedPreferencesHelper.read<List<String>>(
+      SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+    )
   }
 
-  private val loggedInPractitioner by lazy {
-    sharedPreferencesHelper.read<Practitioner>(
-      key = LOGGED_IN_PRACTITIONER,
-      decodeFhirResource = true
+  private val loggedInUserDetail by lazy {
+    sharedPreferencesHelper.read<KeycloakUserDetails>(
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
     )
   }
 
@@ -162,18 +161,20 @@ constructor(
   }
 
   fun appendOrganizationInfo(resource: Resource) {
-    authenticatedUserInfo?.organization?.let { org ->
+    authenticatedOrganizationIds.let { ids ->
       val organizationRef =
-        Reference().apply { reference = "${ResourceType.Organization.name}/$org" }
+        Reference().apply { reference = "${ResourceType.Organization.name}/${ids?.first()}" }
 
-      if (resource is Patient) resource.managingOrganization = organizationRef
-      else if (resource is Group) resource.managingEntity = organizationRef
-      else if (resource is Encounter) resource.serviceProvider = organizationRef
+      when (resource) {
+        is Patient -> resource.managingOrganization = organizationRef
+        is Group -> resource.managingEntity = organizationRef
+        is Encounter -> resource.serviceProvider = organizationRef
+      }
     }
   }
 
   fun appendPractitionerInfo(resource: Resource) {
-    loggedInPractitioner?.id?.let {
+    loggedInUserDetail?.id?.let {
       val practitionerRef = Reference().apply { reference = it }
 
       if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
@@ -363,7 +364,7 @@ constructor(
     questionnaireResponse.subject =
       when (subjectType) {
         ResourceType.Organization.name ->
-          authenticatedUserInfo?.organization?.asReference(ResourceType.Organization)
+          authenticatedOrganizationIds?.first()?.asReference(ResourceType.Organization)
         else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
       }
   }

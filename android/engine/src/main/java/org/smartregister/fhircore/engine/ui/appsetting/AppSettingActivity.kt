@@ -34,8 +34,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -73,7 +73,7 @@ class AppSettingActivity : AppCompatActivity() {
             configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
               loadSuccessful: Boolean ->
               if (loadSuccessful) {
-                sharedPreferencesHelper.write(APP_ID_KEY, appId)
+                sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
                 if (!isLoggedIn) {
                   accountAuthenticator.launchScreen(LoginActivity::class.java)
                 } else {
@@ -95,7 +95,7 @@ class AppSettingActivity : AppCompatActivity() {
           configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
             loadSuccessful: Boolean ->
             if (loadSuccessful) {
-              sharedPreferencesHelper.write(APP_ID_KEY, appId)
+              sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
               accountAuthenticator.launchScreen(LoginActivity::class.java)
               finish()
             } else {
@@ -130,7 +130,7 @@ class AppSettingActivity : AppCompatActivity() {
       }
     }
 
-    val lastAppId = sharedPreferencesHelper.read(APP_ID_KEY, null)?.trimEnd()
+    val lastAppId = sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
     lastAppId?.let {
       with(appSettingViewModel) {
         onApplicationIdChanged(it)

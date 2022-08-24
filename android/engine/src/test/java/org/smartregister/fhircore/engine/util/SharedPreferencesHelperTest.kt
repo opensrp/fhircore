@@ -19,18 +19,17 @@ package org.smartregister.fhircore.engine.util
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.logicalId
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import org.hl7.fhir.r4.model.Practitioner
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.extension.encodeJson
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 internal class SharedPreferencesHelperTest : RobolectricTest() {
@@ -43,9 +42,12 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
+  @Inject lateinit var gson: Gson
+
   @Before
   fun setUp() {
-    sharedPreferencesHelper = SharedPreferencesHelper(application)
+    hiltRule.inject()
+    sharedPreferencesHelper = SharedPreferencesHelper(context = application, gson = gson)
   }
 
   @Test
@@ -82,19 +84,22 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
   }
 
   @Test
-  fun testReadObject() {
-    val practitioner = Practitioner().apply { id = "1234" }
-    sharedPreferencesHelper.write(LOGGED_IN_PRACTITIONER, practitioner.encodeResourceToString())
-
-    val readPractitioner =
-      sharedPreferencesHelper.read<Practitioner>(LOGGED_IN_PRACTITIONER, decodeFhirResource = true)
-    Assert.assertNotNull(readPractitioner!!.logicalId)
-    Assert.assertEquals(practitioner.logicalId, readPractitioner.logicalId)
-
-    sharedPreferencesHelper.write(
-      USER_INFO_SHARED_PREFERENCE_KEY,
-      UserInfo(keycloakUuid = "1244").encodeJson()
+  fun writeObjectUsingSerialized() {
+    val questionnaireConfig = QuestionnaireConfig(id = "123", title = "my-questionnaire")
+    sharedPreferencesHelper.write("object", questionnaireConfig)
+    Assert.assertEquals(
+      questionnaireConfig.id,
+      sharedPreferencesHelper.read<QuestionnaireConfig>("object", isSerialized = true)?.id
     )
-    Assert.assertNotNull(sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY))
+  }
+
+  @Test
+  fun writeObjectUsingGson() {
+    val keycloakUserDetails = KeycloakUserDetails().apply { id = "12345" }
+    sharedPreferencesHelper.write("object", keycloakUserDetails)
+    Assert.assertEquals(
+      keycloakUserDetails.id,
+      sharedPreferencesHelper.read<KeycloakUserDetails>("object")?.id
+    )
   }
 }

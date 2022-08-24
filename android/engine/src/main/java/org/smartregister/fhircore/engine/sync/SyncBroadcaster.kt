@@ -27,12 +27,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 import timber.log.Timber
 
 /**
@@ -50,20 +48,23 @@ class SyncBroadcaster(
 ) {
   fun runSync() {
     CoroutineScope(dispatcherProvider.io()).launch {
+      val paramsMap =
+        mutableMapOf<String, List<String>>().apply {
+          put(
+            SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
+            sharedPreferencesHelper.read<List<String>>(
+              SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+            )
+              ?: listOf()
+          )
+        }
       try {
         syncJob.run(
           fhirEngine = fhirEngine,
           downloadManager =
             ResourceParamsBasedDownloadWorkManager(
               syncParams =
-                configService
-                  .loadRegistrySyncParams(
-                    configurationRegistry,
-                    sharedPreferencesHelper
-                      .read(USER_INFO_SHARED_PREFERENCE_KEY, null)
-                      ?.decodeJson<UserInfo>()
-                  )
-                  .toMap()
+                configService.loadRegistrySyncParams(configurationRegistry, paramsMap).toMap()
             ),
           subscribeTo = sharedSyncStatus,
           resolver = AcceptLocalConflictResolver
