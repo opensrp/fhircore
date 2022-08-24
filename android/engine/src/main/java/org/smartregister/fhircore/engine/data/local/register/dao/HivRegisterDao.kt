@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
+import org.smartregister.fhircore.engine.util.extension.extractGivenName
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
@@ -96,7 +97,8 @@ constructor(
           gender = patient.gender,
           age = patient.birthDate.toAgeDisplay(),
           address = patient.extractAddress(),
-          familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+          givenName = patient.extractGivenName(),
+          familyName = patient.extractFamilyName(),
           phoneContacts = patient.extractTelecom(),
           practitioners = patient.generalPractitioner,
           chwAssigned = patient.extractGeneralPractitionerReference(),
@@ -119,6 +121,7 @@ constructor(
       logicalId = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
+      givenName = patient.extractGivenName(),
       familyName = patient.extractFamilyName(),
       identifier = hivPatientIdentifier(patient),
       gender = patient.gender,
@@ -253,7 +256,8 @@ constructor(
           gender = patient.gender,
           age = patient.birthDate.toAgeDisplay(),
           address = patient.extractAddress(),
-          familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+          givenName = patient.extractGivenName(),
+          familyName = patient.extractFamilyName(),
           phoneContacts = patient.extractTelecom(),
           practitioners = patient.generalPractitioner,
           chwAssigned = patient.extractGeneralPractitionerReference(),

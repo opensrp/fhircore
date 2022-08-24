@@ -45,6 +45,8 @@ class ProfileDataTest : RobolectricTest() {
     with(hivProfileDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
+      Assert.assertEquals("familyName", familyName)
+      Assert.assertEquals("givenName", givenName)
       Assert.assertEquals("testIdentifier()", identifier)
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
@@ -110,6 +112,8 @@ class ProfileDataTest : RobolectricTest() {
         ProfileData.HivProfileData(
           logicalId = "logicalId",
           name = "testName",
+          familyName = "familyName",
+          givenName = "givenName",
           identifier = "testIdentifier()",
           address = "testAddress",
           age = "5y",

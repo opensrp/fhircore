@@ -314,6 +314,13 @@ class PatientExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun testExtractGivenName() {
+    val patient = Patient().apply { addName().apply { addGiven("GivenName") } }
+
+    Assert.assertEquals("GivenName", patient.extractGivenName())
+  }
+
+  @Test
   fun testExtractFamilyNameShouldReturnEmptyStringWhenFamilyNameIsEmptyAndGivenNameIsProvided() {
     val patient = Patient().apply { addName().apply { addGiven("Given Name") } }
 

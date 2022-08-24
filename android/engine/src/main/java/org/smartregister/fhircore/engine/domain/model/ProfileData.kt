@@ -81,6 +81,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     override val logicalId: String,
     override val name: String,
     val identifier: String? = null,
+    val givenName: String = "",
     val familyName: String = "",
     val birthdate: Date,
     val age: String = birthdate.toAgeDisplay(),
