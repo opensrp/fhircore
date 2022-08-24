@@ -37,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -63,10 +62,7 @@ fun ChildContactsProfileScreen(
   refreshDataState: MutableState<Boolean>
 ) {
 
-  val context = LocalContext.current
   val profileViewData = patientProfileViewModel.patientProfileViewData.value
-  //  var showOverflowMenu by remember { mutableStateOf(false) }
-  //  val viewState = childContactsViewModel.patientProfileUiState.value
   val refreshDataStateValue by remember { refreshDataState }
 
   val currentPaginateRegisterData by rememberUpdatedState(
@@ -117,8 +113,6 @@ fun ChildContactsProfileScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       Column(modifier = modifier.background(PatientProfileSectionsBackgroundColor)) {
-        // Personal Data: e.g. sex, age, dob
-        // PersonalData(profileViewData)
         RegisterList(
           modifier = modifier,
           pagingItems = pagingItems,

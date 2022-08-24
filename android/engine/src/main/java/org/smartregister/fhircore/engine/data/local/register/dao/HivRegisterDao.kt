@@ -152,8 +152,9 @@ constructor(
       .toLong()
   }
 
-  suspend fun Patient.isPregnant() = patientConditions(this.logicalId).hasActivePregnancy()
-  suspend fun Patient.isBreastfeeding() = patientConditions(this.logicalId).activelyBreastfeeding()
+  internal suspend fun Patient.isPregnant() = patientConditions(this.logicalId).hasActivePregnancy()
+  internal suspend fun Patient.isBreastfeeding() =
+    patientConditions(this.logicalId).activelyBreastfeeding()
 
   internal suspend fun Patient.activeConditions() =
     patientConditions(this.logicalId).filter { condition ->
