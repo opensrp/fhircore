@@ -16,7 +16,15 @@
 
 package org.smartregister.fhircore.engine.util
 
-const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
-const val USER_INFO_SHARED_PREFERENCE_KEY = "user_info"
-const val LOGGED_IN_PRACTITIONER = "logged_in_practitioner"
-const val APP_ID_KEY = "app_id"
+enum class SharedPreferenceKey {
+  APP_ID,
+  LAST_SYNC_TIMESTAMP,
+  LANG,
+  MEASURE_RESOURCES_LOADED,
+  PRACTITIONER_DETAILS_USER_DETAIL,
+  PRACTITIONER_DETAILS_CARE_TEAM_IDS,
+  PRACTITIONER_DETAILS_ORGANIZATION_IDS,
+  PRACTITIONER_DETAILS_LOCATION_IDS,
+  PRACTITIONER_DETAILS_LOCATION_HIERARCHIES,
+  THEME
+}

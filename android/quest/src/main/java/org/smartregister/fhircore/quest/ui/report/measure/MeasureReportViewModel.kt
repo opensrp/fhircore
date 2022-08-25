@@ -43,11 +43,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Practitioner
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
@@ -60,6 +59,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIn
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.model.practitioner.KeycloakUserDetails
 import timber.log.Timber
 
 @HiltViewModel
@@ -102,10 +102,9 @@ constructor(
     MutableStateFlow(retrieveAncPatients())
   }
 
-  private val loggedInPractitioner by lazy {
-    sharedPreferencesHelper.read<Practitioner>(
-      key = LOGGED_IN_PRACTITIONER,
-      decodeFhirResource = true
+  private val loggedInUserDetail by lazy {
+    sharedPreferencesHelper.read<KeycloakUserDetails>(
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
     )
   }
 
@@ -212,7 +211,7 @@ constructor(
                     end = endDateFormatted,
                     reportType = SUBJECT,
                     subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
-                    practitioner = loggedInPractitioner?.id,
+                    practitioner = loggedInUserDetail?.id,
                     lastReceivedOn = null // Non-null value not supported yet
                   )
                 }
@@ -256,7 +255,7 @@ constructor(
           end = endDateFormatted,
           reportType = POPULATION,
           subject = null,
-          practitioner = loggedInPractitioner?.id,
+          practitioner = loggedInUserDetail?.id,
           lastReceivedOn = null // Non-null value not supported yet
         )
       }

@@ -20,10 +20,12 @@ import android.accounts.Account
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.FhirEngine
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -34,10 +36,12 @@ import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Practitioner
-import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.CareTeam
+import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.Organization
+import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -51,13 +55,18 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.model.location.LocationHierarchy
+import org.smartregister.model.practitioner.FhirPractitionerDetails
+import org.smartregister.model.practitioner.KeycloakUserDetails
+import org.smartregister.model.practitioner.PractitionerDetails
+import org.smartregister.model.practitioner.UserBioData
 import retrofit2.Call
 import retrofit2.Response
 
@@ -80,6 +89,8 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  @Inject lateinit var gson: Gson
+
   private lateinit var loginViewModel: LoginViewModel
 
   private lateinit var accountAuthenticatorSpy: AccountAuthenticator
@@ -87,6 +98,8 @@ internal class LoginViewModelTest : RobolectricTest() {
   private val resourceService: FhirResourceService = mockk()
 
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
+
+  private val application = ApplicationProvider.getApplicationContext<Application>()
 
   @Before
   fun setUp() {
@@ -100,10 +113,10 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel =
       LoginViewModel(
+        fhirEngine = mockk(),
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        fhirResourceDataSource = fhirResourceDataSource,
         configurationRegistry = configurationRegistry
       )
   }
@@ -245,74 +258,204 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchLoggedInPractitionerShouldRetrieveAndSavePractitioner() {
-    coroutineTestRule.runBlockingTest {
-      val userInfo =
-        UserInfo(
-          questionnairePublisher = "quesP1",
-          keycloakUuid = "keyck1",
-          organization = "org",
-          location = "Nairobi"
+  fun savePractitionerDetailsWithProperPayload() {
+    val fhirEngine = mockk<FhirEngine>()
+    val configurationRegistry = mockk<ConfigurationRegistry>()
+    val accountAuthenticator = mockk<AccountAuthenticator>()
+    val dispatcher = DefaultDispatcherProvider()
+    val sharedPreferences = SharedPreferencesHelper(application, gson)
+
+    val viewModel =
+      LoginViewModel(
+        fhirEngine = fhirEngine,
+        configurationRegistry = configurationRegistry,
+        accountAuthenticator = accountAuthenticator,
+        dispatcher = dispatcher,
+        sharedPreferences = sharedPreferences
+      )
+
+    val sampleKeycloakUserDetails =
+      KeycloakUserDetails().apply {
+        id = "12345"
+        userBioData = UserBioData().apply { givenName = StringType("John") }
+      }
+    val sampleCareTeam = CareTeam().apply { id = "1" }
+    val sampleOrganization = Organization().apply { id = "12" }
+    val sampleLocation = Location().apply { id = "123" }
+    val sampleLocationHierarchy = LocationHierarchy().apply { id = "1234" }
+
+    val samplePractitionerDetails =
+      PractitionerDetails().apply {
+        id = "94859"
+        userDetail = sampleKeycloakUserDetails
+        fhirPractitionerDetails =
+          FhirPractitionerDetails().apply {
+            careTeams = listOf(sampleCareTeam)
+            organizations = listOf(sampleOrganization)
+            locations = listOf(sampleLocation)
+            locationHierarchyList = listOf(sampleLocationHierarchy)
+          }
+      }
+
+    val bundle =
+      Bundle().apply {
+        entry = listOf(Bundle.BundleEntryComponent().apply { resource = samplePractitionerDetails })
+      }
+
+    coEvery {
+      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray())
+    } returns listOf("1")
+
+    coEvery {
+      fhirEngine.create(
+        *samplePractitionerDetails.fhirPractitionerDetails.organizations.toTypedArray()
+      )
+    } returns listOf("12")
+
+    coEvery {
+      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray())
+    } returns listOf("123")
+
+    runBlocking { viewModel.savePractitionerDetails(bundle) }
+
+    Assert.assertEquals(
+      "John",
+      sharedPreferences.read<KeycloakUserDetails>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
         )
+        ?.userBioData
+        ?.givenName
+        ?.value
+    )
 
-      val practitionerId = "12123"
-
-      coEvery { resourceService.searchResource(ResourceType.Practitioner.name, any()) } returns
-        Bundle().apply {
-          entry.add(
-            Bundle.BundleEntryComponent().apply {
-              resource = Practitioner().apply { id = practitionerId }
-            }
-          )
-        }
-
-      loginViewModel.fetchLoggedInPractitioner(userInfo)
-
-      // Shared preference contains practitioner details
-      val practitioner =
-        sharedPreferencesHelper.read<Practitioner>(
-          LOGGED_IN_PRACTITIONER,
-          decodeFhirResource = true
+    Assert.assertEquals(
+      1,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
         )
-      Assert.assertNotNull(practitioner)
-      Assert.assertEquals(practitionerId, practitioner!!.logicalId)
+        ?.size
+    )
 
-      // Eventually dismisses the progress dialog and navigates home
-      Assert.assertNotNull(loginViewModel.showProgressBar.value)
-      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
-      Assert.assertNotNull(loginViewModel.navigateToHome.value)
-      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+    Assert.assertEquals(
+      1,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      1,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      1,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
+        )
+        ?.size
+    )
+
+    coVerify {
+      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray())
+    }
+
+    coVerify {
+      fhirEngine.create(
+        *samplePractitionerDetails.fhirPractitionerDetails.organizations.toTypedArray()
+      )
+    }
+
+    coVerify {
+      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray())
     }
   }
+
   @Test
-  fun testFetchLoggedInPractitionerWithNullKeycloakUuid() {
-    coroutineTestRule.runBlockingTest {
-      val userInfo =
-        UserInfo(
-          questionnairePublisher = "quesP1",
-          keycloakUuid = null,
-          organization = "org",
-          location = "Nairobi"
+  fun savePractitionerDetailsWhenFhirPractitionerDetailsIsNull() {
+    val fhirEngine = mockk<FhirEngine>()
+    val configurationRegistry = mockk<ConfigurationRegistry>()
+    val accountAuthenticator = mockk<AccountAuthenticator>()
+    val dispatcher = DefaultDispatcherProvider()
+    val sharedPreferences = SharedPreferencesHelper(application, gson)
+
+    val viewModel =
+      LoginViewModel(
+        fhirEngine = fhirEngine,
+        configurationRegistry = configurationRegistry,
+        accountAuthenticator = accountAuthenticator,
+        dispatcher = dispatcher,
+        sharedPreferences = sharedPreferences
+      )
+
+    val sampleKeycloakUserDetails =
+      KeycloakUserDetails().apply {
+        id = "12345"
+        userBioData = UserBioData().apply { givenName = StringType("John") }
+      }
+
+    val samplePractitionerDetails =
+      PractitionerDetails().apply {
+        id = "94859"
+        userDetail = sampleKeycloakUserDetails
+        fhirPractitionerDetails = FhirPractitionerDetails()
+      }
+
+    val bundle =
+      Bundle().apply {
+        entry = listOf(Bundle.BundleEntryComponent().apply { resource = samplePractitionerDetails })
+      }
+
+    coEvery { fhirEngine.create(*emptyArray()) } returns listOf()
+
+    runBlocking { viewModel.savePractitionerDetails(bundle) }
+
+    Assert.assertEquals(
+      "John",
+      sharedPreferences.read<KeycloakUserDetails>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
         )
+        ?.userBioData
+        ?.givenName
+        ?.value
+    )
 
-      val practitionerId = "12123"
+    Assert.assertEquals(
+      0,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
+        )
+        ?.size
+    )
 
-      coEvery { resourceService.searchResource(ResourceType.Practitioner.name, any()) } returns
-        Bundle().apply {
-          entry.add(
-            Bundle.BundleEntryComponent().apply {
-              resource = Practitioner().apply { id = practitionerId }
-            }
-          )
-        }
+    Assert.assertEquals(
+      0,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+        )
+        ?.size
+    )
 
-      loginViewModel.fetchLoggedInPractitioner(userInfo)
+    Assert.assertEquals(
+      0,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
+        )
+        ?.size
+    )
 
-      // Eventually dismisses the progress dialog and navigates home
-      Assert.assertNotNull(loginViewModel.showProgressBar.value)
-      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
-      Assert.assertNotNull(loginViewModel.navigateToHome.value)
-      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
-    }
+    Assert.assertEquals(
+      0,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
+        )
+        ?.size
+    )
+
+    coVerify(exactly = 3) { fhirEngine.create(*emptyArray()) }
   }
 }

@@ -37,6 +37,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class ApplicationExtensionTest : RobolectricTest() {
@@ -125,7 +126,7 @@ class ApplicationExtensionTest : RobolectricTest() {
     val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
     val measureResourceBundleUrl = "measure/ANCIND01-bundle.json"
 
-    val prefsDataKey = SharedPreferencesHelper.MEASURE_RESOURCES_LOADED
+    val prefsDataKey = SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name
     every { sharedPreferencesHelper.read(prefsDataKey, any<String>()) } returns ""
     every { sharedPreferencesHelper.write(prefsDataKey, any<String>()) } returns Unit
     coEvery { fhirOperator.loadLib(any()) } returns Unit

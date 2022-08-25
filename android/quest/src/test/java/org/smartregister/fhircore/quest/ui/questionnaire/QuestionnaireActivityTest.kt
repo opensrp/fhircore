@@ -347,6 +347,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     }
   }
 
+  @Ignore("Flaky test")
   @Test
   fun testOnClickSaveButtonShouldShowSubmitConfirmationAlert() {
     ReflectionHelpers.setField(
@@ -366,6 +367,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
   }
 
+  @Ignore("Flaky test")
   @Test
   fun testOnClickSaveWithExperimentalButtonShouldShowTestOnlyConfirmationAlert() {
     ReflectionHelpers.setField(

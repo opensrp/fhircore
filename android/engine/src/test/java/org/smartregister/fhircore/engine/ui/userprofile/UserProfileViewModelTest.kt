@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -74,7 +75,7 @@ class UserProfileViewModelTest : RobolectricTest() {
   private var fhirResourceDataSource: FhirResourceDataSource
 
   init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context)
+    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
     syncBroadcaster =
@@ -151,10 +152,10 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun loadSelectedLanguage() {
-    every { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en") } returns "fr"
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") } returns "fr"
 
     Assert.assertEquals("French", userProfileViewModel.loadSelectedLanguage())
-    verify { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en") }
+    verify { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") }
   }
 
   @Test
@@ -170,7 +171,7 @@ class UserProfileViewModelTest : RobolectricTest() {
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    verify { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "es") }
+    verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
     Assert.assertEquals(language, postedValue!!)
   }
 

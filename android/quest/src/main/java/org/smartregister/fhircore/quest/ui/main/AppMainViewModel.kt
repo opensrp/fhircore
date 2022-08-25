@@ -45,10 +45,9 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.refresh
@@ -78,7 +77,9 @@ constructor(
     mutableStateOf(
       appMainUiStateOf(
         navigationConfiguration =
-          NavigationConfiguration(sharedPreferencesHelper.read(APP_ID_KEY) ?: "")
+          NavigationConfiguration(
+            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!
+          )
       )
     )
 
@@ -111,7 +112,7 @@ constructor(
     when (event) {
       AppMainEvent.Logout -> accountAuthenticator.logout()
       is AppMainEvent.SwitchLanguage -> {
-        sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, event.language.tag)
+        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
           (this as Activity).refresh()
@@ -210,7 +211,7 @@ constructor(
 
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
           ?: Locale.ENGLISH.toLanguageTag()
       )
       .displayName
@@ -225,10 +226,14 @@ constructor(
     return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
-  fun retrieveLastSyncTimestamp(): String? = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+  fun retrieveLastSyncTimestamp(): String? =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
-    sharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, formatLastSyncTimestamp(timestamp))
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+      formatLastSyncTimestamp(timestamp)
+    )
   }
 
   companion object {
