@@ -77,8 +77,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
-  var questionnaireType = QuestionnaireType.DEFAULT
-
   protected lateinit var questionnaire: Questionnaire
 
   var computedValuesMap: Map<String, Any>? = emptyMap()
@@ -113,8 +111,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     questionnaireViewModel.apply {
       isRemoved.observe(this@QuestionnaireActivity) { if (it) onRemove() }
       isDiscarded.observe(this@QuestionnaireActivity) { if (it) finish() }
-
-      questionnaireType = this@QuestionnaireActivity.questionnaireConfig.type
     }
 
     val loadProgress = showProgressAlert(this, R.string.loading)
@@ -142,15 +138,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   fun updateViews() {
     findViewById<Button>(R.id.btn_edit_qr).apply {
-      visibility = if (questionnaireType.isReadOnly()) View.VISIBLE else View.GONE
+      visibility = if (questionnaireConfig.type.isReadOnly()) View.VISIBLE else View.GONE
       setOnClickListener(this@QuestionnaireActivity)
     }
 
     findViewById<Button>(R.id.btn_save_client_info).apply {
       setOnClickListener(this@QuestionnaireActivity)
-      if (questionnaireType.isReadOnly() || questionnaire.experimental) {
+      if (questionnaireConfig.type.isReadOnly() || questionnaire.experimental) {
         text = context.getString(R.string.done)
-      } else if (questionnaireType.isEditMode()) {
+      } else if (questionnaireConfig.type.isEditMode()) {
         // setting the save button text from Questionnaire Config
         text =
           questionnaireConfig.saveButtonText
@@ -161,7 +157,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     supportActionBar?.apply {
       setDisplayHomeAsUpEnabled(true)
       title =
-        if (questionnaireType.isEditMode())
+        if (questionnaireConfig.type.isEditMode())
           "${getString(R.string.edit)} ${questionnaireConfig.title}"
         else questionnaireConfig.title
     }
@@ -186,7 +182,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                   ?.decodeResourceFromString<QuestionnaireResponse>()
                   ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
 
-              if (questionnaireType.isReadOnly()) require(questionnaireResponse != null)
+              if (questionnaireConfig.type.isReadOnly()) require(questionnaireResponse != null)
 
               if (questionnaireConfig.clientIdentifier != null) {
                 setBarcode(questionnaire, questionnaireConfig.clientIdentifier!!, true)
@@ -212,11 +208,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     kotlin
       .runCatching {
         questionnaire =
-          questionnaireViewModel.loadQuestionnaire(questionnaireConfig.id, questionnaireType)!!
+          questionnaireViewModel.loadQuestionnaire(
+            questionnaireConfig.id,
+            questionnaireConfig.type
+          )!!
       }
       .onFailure {
         // load questionnaire from db and build config
-        questionnaire = questionnaireViewModel.loadQuestionnaire(formName, questionnaireType)!!
+        questionnaire =
+          questionnaireViewModel.loadQuestionnaire(formName, questionnaireConfig.type)!!
         questionnaireConfig =
           QuestionnaireConfig(title = questionnaire.title ?: "", id = questionnaire.logicalId)
       }
@@ -232,13 +232,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   override fun onClick(view: View) {
     if (view.id == R.id.btn_save_client_info) {
-      if (questionnaireType.isReadOnly()) {
+      if (questionnaireConfig.type.isReadOnly()) {
         finish()
       } else {
         showFormSubmissionConfirmAlert()
       }
     } else if (view.id == R.id.btn_edit_qr) {
-      questionnaireType = QuestionnaireType.EDIT
+      questionnaireConfig.copy(type = QuestionnaireType.EDIT)
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
@@ -376,7 +376,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             .groupIdentifier
             ?.interpolate(computedValuesMap ?: emptyMap())
             ?.logicalIdFromFhirPathExtractedId(),
-        questionnaireType = questionnaireType,
+        questionnaireType = questionnaireConfig.type,
         questionnaireConfig = questionnaireConfig
       )
     }
@@ -425,7 +425,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   override fun onBackPressed() {
-    if (questionnaireType.isReadOnly()) {
+    if (questionnaireConfig.type.isReadOnly()) {
       finish()
     } else {
       showConfirmAlert(
