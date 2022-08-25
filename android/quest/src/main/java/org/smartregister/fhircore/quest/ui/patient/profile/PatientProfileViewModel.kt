@@ -22,8 +22,11 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.AppFeature
@@ -31,6 +34,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.extension.ACTIVE_ANC_REGEX
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
@@ -141,7 +145,10 @@ constructor(
             event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
               clientIdentifier = event.patientId,
-              intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId))
+              intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, event.familyId)),
+              populationResources = arrayListOf(Patient().apply {
+                birthDate = event.patient.dob
+              })
             )
           R.id.record_as_anc ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(

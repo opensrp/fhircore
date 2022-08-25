@@ -28,6 +28,7 @@ import android.os.LocaleList
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import java.util.Locale
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -82,7 +83,8 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   clientIdentifier: String? = null,
   groupIdentifier: String? = null,
   questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-  intentBundle: Bundle = Bundle.EMPTY
+  intentBundle: Bundle = Bundle.EMPTY,
+  populationResources: ArrayList<Resource> = ArrayList()
 ) {
   this.startActivity(
     Intent(this, Q::class.java)
@@ -92,7 +94,8 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
           clientIdentifier = clientIdentifier,
           groupIdentifier = groupIdentifier,
           formName = questionnaireId,
-          questionnaireType = questionnaireType
+          questionnaireType = questionnaireType,
+          populationResources = populationResources
         )
       )
   )
