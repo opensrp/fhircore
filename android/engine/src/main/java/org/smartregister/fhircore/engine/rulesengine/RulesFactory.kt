@@ -141,6 +141,7 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
       relatedResourceType: String,
       fhirPathExpression: String
     ): List<Resource> {
+      if (facts.getFact(relatedResourceType) == null) return emptyList()
       val value = facts.getFact(relatedResourceType).value as ArrayList<Resource>
 
       return value.filter {

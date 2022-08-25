@@ -643,4 +643,10 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertFalse(isValidResourceType("Manufacturer"))
     Assert.assertFalse(isValidResourceType(""))
   }
+
+  @Test
+  fun logicalIdFromFhirPathExtractedIdReturnsCorrectValue() {
+    val fhirpathExtractedId = "Group/12345/v2"
+    Assert.assertEquals("12345", fhirpathExtractedId.logicalIdFromFhirPathExtractedId())
+  }
 }
