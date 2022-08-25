@@ -110,15 +110,4 @@ class ProfileScreenTest {
       .assertExists()
       .assertIsDisplayed()
   }
-
-  @Test
-  fun testThatFabButtonIsDisplayed() {
-    composeTestRule.onNodeWithTag(FAB_BUTTON_TEST_TAG).assertExists().assertIsDisplayed()
-    composeTestRule
-      .onNodeWithTag(
-        profileUiState.profileConfiguration?.fabActions?.first()?.display?.uppercase().toString()
-      )
-      .assertExists()
-      .assertIsDisplayed()
-  }
 }

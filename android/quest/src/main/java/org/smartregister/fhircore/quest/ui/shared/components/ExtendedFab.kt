@@ -38,10 +38,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.ui.profile.FAB_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
+const val FAB_BUTTON_ROW_TEST_TAG = "fabButtonRowTestTag"
+const val FAB_BUTTON_ROW_TEXT_TEST_TAG = "fabButtonRowTextTestTag"
+const val FAB_BUTTON_ROW_ICON_TEST_TAG = "fabButtonRowIconTestTag"
 private val ExtendedFabIconPadding = 12.dp
 private val ExtendedFabTextPadding = 20.dp
 
@@ -54,7 +56,6 @@ fun ExtendedFab(
   icon: ImageVector = Icons.Filled.Add,
 ) {
   FloatingActionButton(
-    modifier = modifier.testTag(FAB_BUTTON_TEST_TAG),
     contentColor = Color.White,
     shape = CircleShape,
     onClick = {
@@ -66,16 +67,25 @@ fun ExtendedFab(
     backgroundColor = MaterialTheme.colors.primary,
   ) {
     val text = fabActions.first().display.uppercase()
-    val iconComposable = @Composable { Icon(imageVector = icon, contentDescription = null) }
+    val iconComposable =
+      @Composable
+      {
+        Icon(
+          imageVector = icon,
+          contentDescription = null,
+          modifier.testTag(FAB_BUTTON_ROW_ICON_TEST_TAG)
+        )
+      }
     val padding = if (text.isBlank()) ExtendedFabIconPadding else ExtendedFabTextPadding
     val isTextOnly = fabActions.first().isTextOnly
 
     Row(
       modifier =
         Modifier.padding(
-          start = padding,
-          end = if (text.isNotBlank()) ExtendedFabTextPadding else padding
-        ),
+            start = padding,
+            end = if (text.isNotBlank()) ExtendedFabTextPadding else padding
+          )
+          .testTag(FAB_BUTTON_ROW_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.Center
     ) {
@@ -84,7 +94,10 @@ fun ExtendedFab(
       }
       if (text.isNotBlank()) {
         if (isTextOnly.not()) Spacer(Modifier.width(ExtendedFabIconPadding))
-        Text(text = fabActions.first().display.uppercase())
+        Text(
+          text = fabActions.first().display.uppercase(),
+          modifier.testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
+        )
       }
     }
   }
