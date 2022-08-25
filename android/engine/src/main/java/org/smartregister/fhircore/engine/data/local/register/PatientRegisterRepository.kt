@@ -19,8 +19,11 @@ package org.smartregister.fhircore.engine.data.local.register
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
 import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFactory
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -69,5 +72,20 @@ constructor(
         appFeatureName = appFeatureName,
         resourceId = patientId
       )
+    }
+
+  suspend fun loadChildrenRegisterData(
+    healthModule: HealthModule,
+    otherPatientResource: List<Resource>
+  ): List<RegisterData> =
+    withContext(dispatcherProvider.io()) {
+      val dataList: ArrayList<Patient> = arrayListOf()
+      val hivRegisterDao = registerDaoFactory.registerDaoMap[healthModule] as HivRegisterDao
+
+      for (item: Resource in otherPatientResource) {
+        val itemPatient = item as Patient
+        dataList.add(itemPatient)
+      }
+      hivRegisterDao.transformChildrenPatientToRegisterData(dataList)
     }
 }

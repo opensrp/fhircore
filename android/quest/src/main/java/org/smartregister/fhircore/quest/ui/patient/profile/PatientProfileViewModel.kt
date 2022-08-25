@@ -21,8 +21,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
@@ -40,14 +46,19 @@ import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
+import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactPagingSource
 import org.smartregister.fhircore.quest.ui.patient.remove.HivPatientQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
+import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
 class PatientProfileViewModel
@@ -56,7 +67,8 @@ constructor(
   val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val profileViewDataMapper: ProfileViewDataMapper
+  val profileViewDataMapper: ProfileViewDataMapper,
+  val registerViewDataMapper: RegisterViewDataMapper
 ) : ViewModel() {
 
   var patientProfileUiState: MutableState<PatientProfileUiState> =
@@ -199,6 +211,19 @@ constructor(
               )
             }
           }
+          R.id.view_children -> {
+            event.patientId.let { patientId ->
+              val urlParams =
+                NavigationArg.bindArgumentsOf(
+                  Pair(NavigationArg.FEATURE, AppFeature.HouseholdManagement.name),
+                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV.name),
+                  Pair(NavigationArg.PATIENT_ID, patientId)
+                )
+              event.navController.navigate(
+                route = MainNavigationScreen.ViewChildContacts.route + urlParams
+              )
+            }
+          }
           R.id.remove_family_member ->
             event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
               questionnaireId = REMOVE_FAMILY_FORM,
@@ -247,7 +272,81 @@ constructor(
           backReference = event.taskId.asReference(ResourceType.Task).reference,
           populationResources = event.getActivePopulationResources()
         )
+      is PatientProfileEvent.OpenChildProfile -> {
+        val urlParams =
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+            Pair(NavigationArg.HEALTH_MODULE, event.healthModule.name),
+            Pair(NavigationArg.PATIENT_ID, event.patientId)
+          )
+        if (event.healthModule == HealthModule.FAMILY)
+          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
+        else
+          event.navController.navigate(
+            route = MainNavigationScreen.PatientProfile.route + urlParams
+          )
+      }
     }
+
+  fun fetchPatientProfileDataWithChildren(
+    appFeatureName: String?,
+    healthModule: HealthModule,
+    patientId: String
+  ) {
+    if (patientId.isNotEmpty()) {
+      viewModelScope.launch {
+        patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
+          ?.let {
+            patientProfileData = it
+            patientProfileViewData.value =
+              profileViewDataMapper.transformInputToOutputModel(it) as
+                ProfileViewData.PatientProfileViewData
+            paginateChildrenRegisterData(appFeatureName, healthModule, true)
+          }
+      }
+    }
+  }
+
+  val paginatedChildrenRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
+    MutableStateFlow(emptyFlow())
+
+  fun paginateChildrenRegisterData(
+    appFeatureName: String?,
+    healthModule: HealthModule,
+    loadAll: Boolean = true
+  ) {
+    paginatedChildrenRegisterData.value = getPager(appFeatureName, healthModule, loadAll).flow
+  }
+
+  private fun getPager(
+    appFeatureName: String?,
+    healthModule: HealthModule,
+    loadAll: Boolean = true
+  ): Pager<Int, RegisterViewData> =
+    Pager(
+      config =
+        PagingConfig(
+          pageSize = PatientRegisterPagingSource.DEFAULT_PAGE_SIZE,
+          initialLoadSize = PatientRegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE
+        ),
+      pagingSourceFactory = {
+        ChildContactPagingSource(
+            patientProfileViewData.value.otherPatients,
+            patientRegisterRepository,
+            registerViewDataMapper
+          )
+          .apply {
+            setPatientPagingSourceState(
+              PatientPagingSourceState(
+                appFeatureName = appFeatureName,
+                healthModule = healthModule,
+                loadAll = loadAll,
+                currentPage = 0
+              )
+            )
+          }
+      }
+    )
 
   companion object {
     const val REMOVE_FAMILY_FORM = "remove-family"

@@ -31,6 +31,8 @@ sealed class ProfileViewData(
     override val logicalId: String = "",
     override val name: String = "",
     override val identifier: String? = null,
+    val givenName: String = "",
+    val familyName: String = "",
     val status: String? = null,
     val sex: String = "",
     val age: String = "",
