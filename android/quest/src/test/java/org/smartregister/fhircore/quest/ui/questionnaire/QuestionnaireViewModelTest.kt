@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.app.Application
 import android.content.Intent
 import android.os.Looper
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
@@ -81,10 +80,9 @@ import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
-import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel
+import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
