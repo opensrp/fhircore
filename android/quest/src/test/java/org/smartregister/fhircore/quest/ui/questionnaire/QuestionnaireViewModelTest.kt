@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.questionnaire
+package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Application
 import android.content.Intent
 import android.os.Looper
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
