@@ -35,7 +35,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @UninstallModules(NetworkModule::class)
@@ -65,17 +65,23 @@ class AppSettingActivityTest : RobolectricTest() {
   fun testAppSettingActivity_withAppId_hasNotBeenSubmitted() {
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(null, activity.sharedPreferencesHelper.read(APP_ID_KEY, null))
+      Assert.assertEquals(
+        null,
+        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      )
       Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
     }
   }
 
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasNotLoggedIn() {
-    sharedPreferencesHelper.write(APP_ID_KEY, "app")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app")
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals("app", activity.sharedPreferencesHelper.read(APP_ID_KEY, null))
+      Assert.assertEquals(
+        "app",
+        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      )
       Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
     }
   }
@@ -83,27 +89,33 @@ class AppSettingActivityTest : RobolectricTest() {
   @Test
   @Ignore("Find a way to fake an access token to make hasActiveSession return true")
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn() {
-    sharedPreferencesHelper.write(APP_ID_KEY, "app")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app")
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals("app", activity.sharedPreferencesHelper.read(APP_ID_KEY, null))
+      Assert.assertEquals(
+        "app",
+        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      )
       Assert.assertEquals(true, activity.accountAuthenticator.hasActiveSession())
     }
   }
 
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn_withSessionToken_hasExpired() {
-    sharedPreferencesHelper.write(APP_ID_KEY, "app")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app")
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals("app", activity.sharedPreferencesHelper.read(APP_ID_KEY, null))
+      Assert.assertEquals(
+        "app",
+        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      )
       Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
     }
   }
 
   @Test
   fun testAppSettingActivity_withConfig_hasBeenLoaded() {
-    sharedPreferencesHelper.write(APP_ID_KEY, "app/debug")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app/debug")
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       activity.configurationRegistry.configsJsonMap.let { workflows ->

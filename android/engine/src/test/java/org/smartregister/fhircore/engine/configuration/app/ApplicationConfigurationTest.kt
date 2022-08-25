@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.app
 
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 
 class ApplicationConfigurationTest {
 
@@ -30,6 +31,7 @@ class ApplicationConfigurationTest {
         theme = "dark theme",
         languages = listOf("en"),
         syncInterval = 15,
+        syncStrategy = listOf("Organization", "Location", "CareTeam", "Practitioner"),
         appTitle = "Test App",
         remoteSyncPageSize = 100
       )
@@ -39,25 +41,8 @@ class ApplicationConfigurationTest {
     Assert.assertEquals(15, applicationConfiguration.syncInterval)
     Assert.assertEquals("Test App", applicationConfiguration.appTitle)
     Assert.assertEquals(100, applicationConfiguration.remoteSyncPageSize)
-  }
-
-  @Test
-  fun testApplicationConfigurationOf() {
-    val applicationConfiguration =
-      ApplicationConfiguration(
-        appId = "ancApp",
-        configType = "classification",
-        theme = "dark theme",
-        languages = listOf("en"),
-        syncInterval = 15,
-        appTitle = "Test App",
-        remoteSyncPageSize = 100
-      )
-    Assert.assertEquals("ancApp", applicationConfiguration.appId)
-    Assert.assertEquals("classification", applicationConfiguration.configType)
-    Assert.assertEquals("dark theme", applicationConfiguration.theme)
-    Assert.assertEquals(15, applicationConfiguration.syncInterval)
-    Assert.assertEquals("Test App", applicationConfiguration.appTitle)
-    Assert.assertEquals(100, applicationConfiguration.remoteSyncPageSize)
+    Assert.assertTrue(
+      applicationConfiguration.syncStrategy.containsAll(SyncStrategy.values().map { it.value })
+    )
   }
 }

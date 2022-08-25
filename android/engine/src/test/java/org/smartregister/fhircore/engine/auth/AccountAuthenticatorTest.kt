@@ -101,11 +101,12 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = oAuthService,
+          fhirResourceService = mockk(),
+          parser = mockk(),
           configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference,
-          dispatcherProvider = dispatcherProvider
+          sharedPreference = sharedPreference
         )
       )
   }
@@ -218,11 +219,12 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
+          fhirResourceService = mockk(),
+          parser = mockk(),
           configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference,
-          dispatcherProvider = dispatcherProvider
+          sharedPreference = sharedPreference
         )
       )
 
@@ -272,11 +274,12 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
+          fhirResourceService = mockk(),
+          parser = mockk(),
           configService = configService,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
-          sharedPreference = sharedPreference,
-          dispatcherProvider = dispatcherProvider
+          sharedPreference = sharedPreference
         )
       )
 
