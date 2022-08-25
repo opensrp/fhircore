@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -67,6 +68,13 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
+
+const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
+const val NO_REGISTER_VIEW_TITLE_TEST_TAG = "noRegisterViewTitleTestTag"
+const val NO_REGISTER_VIEW_MESSAGE_TEST_TAG = "noRegisterViewMessageTestTag"
+const val NO_REGISTER_VIEW_BUTTON_TEST_TAG = "noRegisterViewButtonTestTag"
+const val NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG = "noRegisterViewButtonIconTestTag"
+const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestTag"
 
 @Composable
 fun RegisterScreen(
@@ -176,7 +184,27 @@ fun RegisterScreen(
         }
       } else {
         registerConfiguration.noResults?.let { noResultConfig ->
-          NoRegistersView(modifier = modifier, context = context, noResults = noResultConfig)
+          NoRegistersView(
+            modifier = modifier,
+            context = context,
+            noResults = noResultConfig,
+            onClick = {
+              val onClickAction =
+                noResultConfig.actionButton?.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+              onClickAction?.let { actionConfig ->
+                when (onClickAction.workflow) {
+                  ApplicationWorkflow.LAUNCH_REGISTER -> {
+                    actionConfig.questionnaire?.id?.let { questionnaireId ->
+                      context.launchQuestionnaire<QuestionnaireActivity>(
+                        questionnaireId = questionnaireId
+                      )
+                    }
+                  }
+                  else -> {}
+                }
+              }
+            }
+          )
         }
       }
     }
@@ -184,46 +212,44 @@ fun RegisterScreen(
 }
 
 @Composable
-fun NoRegistersView(modifier: Modifier = Modifier, context: Context, noResults: NoResultsConfig) {
+fun NoRegistersView(
+  modifier: Modifier = Modifier,
+  context: Context,
+  noResults: NoResultsConfig,
+  onClick: () -> Unit
+) {
   Column(
-    modifier = modifier.fillMaxSize().padding(16.dp),
+    modifier = modifier.fillMaxSize().padding(16.dp).testTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center
   ) {
     Text(
       text = noResults.title,
       fontSize = 16.sp,
-      modifier = modifier.padding(vertical = 8.dp),
+      modifier = modifier.padding(vertical = 8.dp).testTag(NO_REGISTER_VIEW_TITLE_TEST_TAG),
       fontWeight = FontWeight.Bold
     )
     Text(
       text = noResults.message,
-      modifier = modifier.padding(start = 32.dp, end = 32.dp),
+      modifier =
+        modifier.padding(start = 32.dp, end = 32.dp).testTag(NO_REGISTER_VIEW_MESSAGE_TEST_TAG),
       textAlign = TextAlign.Center,
       fontSize = 15.sp,
       color = Color.Gray
     )
     Button(
-      modifier = modifier.padding(vertical = 16.dp),
-      onClick = {
-        val onClickAction =
-          noResults.actionButton?.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-        onClickAction?.let { actionConfig ->
-          when (onClickAction.workflow) {
-            ApplicationWorkflow.LAUNCH_REGISTER -> {
-              actionConfig.questionnaire?.id?.let { questionnaireId ->
-                context.launchQuestionnaire<QuestionnaireActivity>(
-                  questionnaireId = questionnaireId
-                )
-              }
-            }
-            else -> {}
-          }
-        }
-      }
+      modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
+      onClick = onClick
     ) {
-      Icon(imageVector = Icons.Filled.Add, contentDescription = null, modifier.padding(end = 8.dp))
-      Text(text = noResults.actionButton?.display?.uppercase().toString())
+      Icon(
+        imageVector = Icons.Filled.Add,
+        contentDescription = null,
+        modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
+      )
+      Text(
+        text = noResults.actionButton?.display?.uppercase().toString(),
+        modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG)
+      )
     }
   }
 }
@@ -238,6 +264,7 @@ private fun PreviewNoRegistersView() {
         message = "This is message",
         actionButton = NavigationMenuConfig(display = "Button Text", id = "1")
       ),
-    context = LocalContext.current
+    context = LocalContext.current,
+    onClick = {}
   )
 }
