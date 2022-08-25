@@ -238,7 +238,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         showFormSubmissionConfirmAlert()
       }
     } else if (view.id == R.id.btn_edit_qr) {
-      questionnaireConfig.copy(type = QuestionnaireType.EDIT)
+      questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.EDIT)
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment

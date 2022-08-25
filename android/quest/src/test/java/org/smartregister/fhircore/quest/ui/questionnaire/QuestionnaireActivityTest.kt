@@ -185,7 +185,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testReadOnlyIntentShouldBeReadToReadOnlyFlag() {
-    Assert.assertFalse(questionnaireActivity.questionnaireType.isReadOnly())
+    Assert.assertFalse(questionnaireConfig.type.isReadOnly())
     val expectedQuestionnaireConfig =
       QuestionnaireConfig(
         id = "patient-registration",
@@ -209,7 +209,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()
 
-    Assert.assertTrue(questionnaireActivity.questionnaireType.isReadOnly())
+    val updatedQuestionnaireConfig =
+      ReflectionHelpers.getField<QuestionnaireConfig>(questionnaireActivity, "questionnaireConfig")
+    Assert.assertTrue(updatedQuestionnaireConfig.type.isReadOnly())
   }
 
   @Ignore("Fix failing test")
@@ -267,7 +269,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnBackPressedShouldCallFinishWhenInReadOnlyMode() {
     val qActivity = spyk(questionnaireActivity)
-    ReflectionHelpers.setField(qActivity, "questionnaireType", QuestionnaireType.READ_ONLY)
+    questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.READ_ONLY)
+    ReflectionHelpers.setField(qActivity, "questionnaireConfig", questionnaireConfig)
     qActivity.onBackPressed()
 
     verify { qActivity.finish() }
@@ -391,11 +394,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testOnClickEditButtonShouldSetEditModeToTrue() = runBlockingTest {
     val questionnaire = Questionnaire().apply { experimental = false }
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
-    Assert.assertFalse(questionnaireActivity.questionnaireType.isEditMode())
+    Assert.assertFalse(questionnaireConfig.type.isEditMode())
 
     questionnaireActivity.onClick(questionnaireActivity.findViewById(R.id.btn_edit_qr))
 
-    Assert.assertTrue(questionnaireActivity.questionnaireType.isEditMode())
+    val updatedQuestionnaireConfig =
+      ReflectionHelpers.getField<QuestionnaireConfig>(questionnaireActivity, "questionnaireConfig")
+    Assert.assertTrue(updatedQuestionnaireConfig.type.isEditMode())
   }
 
   @Test
@@ -477,8 +482,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testQuestionnaireTypeEditShouldAppendEditPrefixInActionBarTitle() {
     with(questionnaireActivity) {
-      questionnaireType = QuestionnaireType.EDIT
-      val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
+      val questionnaireConfig =
+        QuestionnaireConfig("form", "title", "form-id", type = QuestionnaireType.EDIT)
       ReflectionHelpers.setField(this, "questionnaireConfig", questionnaireConfig)
 
       updateViews()
@@ -490,7 +495,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testQuestionnaireTypeDefaultShouldHasNormalActionBarTitle() {
     with(questionnaireActivity) {
-      questionnaireType = QuestionnaireType.DEFAULT
+      questionnaireConfig.copy(type = QuestionnaireType.DEFAULT)
       val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
       ReflectionHelpers.setField(this, "questionnaireConfig", questionnaireConfig)
 
@@ -503,7 +508,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testQuestionnaireTypeReadOnlyShouldHasNormalActionBarTitle() {
     with(questionnaireActivity) {
-      questionnaireType = QuestionnaireType.READ_ONLY
+      questionnaireConfig.copy(type = QuestionnaireType.READ_ONLY)
       val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
       ReflectionHelpers.setField(this, "questionnaireConfig", questionnaireConfig)
 
