@@ -49,6 +49,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -318,6 +319,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     }
   }
 
+  @Ignore("Flaky test")
   @Test
   fun testOnClickSaveButtonShouldShowSubmitConfirmationAlert() {
     ReflectionHelpers.setField(
@@ -337,6 +339,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
   }
 
+  @Ignore("Flaky test")
   @Test
   fun testOnClickSaveWithExperimentalButtonShouldShowTestOnlyConfirmationAlert() {
     ReflectionHelpers.setField(

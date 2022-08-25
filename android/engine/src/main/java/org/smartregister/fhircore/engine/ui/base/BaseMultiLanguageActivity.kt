@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import java.lang.UnsupportedOperationException
 import java.util.Locale
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
@@ -33,7 +34,7 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
     inject()
     super.onCreate(savedInstanceState)
     val themePref =
-      sharedPreferencesHelper.read(key = SharedPreferencesHelper.THEME, defaultValue = "")!!
+      sharedPreferencesHelper.read(key = SharedPreferenceKey.THEME.name, defaultValue = "")!!
 
     if (themePref.isNotEmpty()) {
       val resourceId = this.resources.getIdentifier(themePref, "style", packageName)
@@ -45,7 +46,7 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
     val lang =
       baseContext
         .getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
-        .getString(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+        .getString(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
         ?: Locale.ENGLISH.toLanguageTag()
     baseContext.setAppLocale(lang).run {
       super.attachBaseContext(baseContext)

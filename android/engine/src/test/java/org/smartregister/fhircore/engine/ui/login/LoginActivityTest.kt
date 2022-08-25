@@ -47,7 +47,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -94,10 +94,10 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
     loginViewModel =
       LoginViewModel(
+        fhirEngine = mockk(),
         accountAuthenticator = accountAuthenticator,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        fhirResourceDataSource = fhirResourceDataSource,
         configurationRegistry = configurationRegistry
       )
 
@@ -105,7 +105,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     loginActivity = controller.create().resume().get()
 
     loginActivity.configurationRegistry = configurationRegistry
-    sharedPreferencesHelper.write(APP_ID_KEY, "default")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
     loginService = loginActivity.loginService
   }
 
