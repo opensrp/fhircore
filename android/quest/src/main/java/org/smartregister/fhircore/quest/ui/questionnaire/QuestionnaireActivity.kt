@@ -59,7 +59,6 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.engine.util.extension.logicalIdFromFhirPathExtractedId
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import timber.log.Timber
@@ -371,11 +370,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
         resourceId = questionnaireConfig.clientIdentifier,
-        groupResourceId =
-          questionnaireConfig
-            .groupIdentifier
-            ?.interpolate(computedValuesMap ?: emptyMap())
-            ?.logicalIdFromFhirPathExtractedId(),
+        groupResourceId = questionnaireConfig.groupIdentifier,
         questionnaireType = questionnaireConfig.type,
         questionnaireConfig = questionnaireConfig
       )
