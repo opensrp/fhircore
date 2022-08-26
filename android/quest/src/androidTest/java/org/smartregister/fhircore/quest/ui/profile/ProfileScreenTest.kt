@@ -78,6 +78,7 @@ class ProfileScreenTest {
   fun testFloatingActionButtonIsDisplayed() {
     // We wait for the text be drawn before we do the assertion
     composeTestRule.waitUntilExists(hasText("ADD MEMBER"))
+    composeTestRule.waitUntilExists(hasTestTag(FAB_BUTTON_TEST_TAG))
     composeTestRule
       .onNodeWithText("ADD MEMBER", useUnmergedTree = true)
       .assertExists()
