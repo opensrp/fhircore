@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
+const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
 const val FAB_BUTTON_ROW_TEST_TAG = "fabButtonRowTestTag"
 const val FAB_BUTTON_ROW_TEXT_TEST_TAG = "fabButtonRowTextTestTag"
 const val FAB_BUTTON_ROW_ICON_TEST_TAG = "fabButtonRowIconTestTag"
@@ -65,6 +66,7 @@ fun ExtendedFab(
         ?.handleClickEvent(onViewComponentClick = onViewComponentEvent, resourceData = resourceData)
     },
     backgroundColor = MaterialTheme.colors.primary,
+    modifier = modifier.testTag(FAB_BUTTON_TEST_TAG)
   ) {
     val text = fabActions.first().display.uppercase()
     val iconComposable =

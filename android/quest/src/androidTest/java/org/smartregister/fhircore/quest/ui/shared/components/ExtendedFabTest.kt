@@ -38,6 +38,14 @@ class ExtendedFabTest {
   }
 
   @Test
+  fun testFloatingButtonIsDisplayed() {
+    composeRule
+      .onNodeWithTag(FAB_BUTTON_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
   fun extendedFabButtonRendersRowCorrectly() {
     composeRule
       .onNodeWithTag(FAB_BUTTON_ROW_TEST_TAG, useUnmergedTree = true)
@@ -59,11 +67,4 @@ class ExtendedFabTest {
       .assertExists()
       .assertIsDisplayed()
   }
-
-  /*  @Test
-  fun testHorizontalSpacerIsRendered() {
-    val spacerProperties = SpacerProperties(height = null, width = 16F)
-    composeRule.setContent { SpacerView(spacerProperties = spacerProperties) }
-    composeRule.onNodeWithTag(HORIZONTAL_SPACER_TEST_TAG, useUnmergedTree = true).assertExists()
-  }*/
 }
