@@ -193,8 +193,10 @@ constructor(
       val organizationRef =
         Reference().apply { reference = "${ResourceType.Organization.name}/$org" }
 
-      if (resource is Patient) resource.managingOrganization = organizationRef
-      else if (resource is Group) resource.managingEntity = organizationRef
+      if (resource is Patient && !resource.hasManagingOrganization())
+        resource.managingOrganization = organizationRef
+      else if (resource is Group && !resource.hasManagingEntity())
+        resource.managingEntity = organizationRef
     }
   }
 
