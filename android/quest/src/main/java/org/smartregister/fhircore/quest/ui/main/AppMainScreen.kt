@@ -45,6 +45,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
+import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactsProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
 import org.smartregister.fhircore.quest.ui.patient.register.guardians.GuardiansRoute
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
@@ -194,6 +195,21 @@ private fun AppMainNavigationGraph(
               familyId = patientId,
               navController = navController,
               refreshDataState = appMainViewModel.refreshDataState
+            )
+          }
+        MainNavigationScreen.ViewChildContacts ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
+            arguments = commonNavArgs.plus(patientIdNavArgument())
+          ) { stackEntry ->
+            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
+            ChildContactsProfileScreen(
+              patientId = patientId,
+              navController = navController,
+              refreshDataState = appMainViewModel.refreshDataState,
+              appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
+              healthModule = stackEntry.retrieveHealthModuleArg()
             )
           }
       }

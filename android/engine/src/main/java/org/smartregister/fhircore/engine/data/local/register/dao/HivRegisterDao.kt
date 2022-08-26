@@ -45,11 +45,15 @@ import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
+import org.smartregister.fhircore.engine.util.extension.extractGivenName
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
+import org.smartregister.fhircore.engine.util.extension.familyName
+import org.smartregister.fhircore.engine.util.extension.givenName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
@@ -103,6 +107,8 @@ constructor(
       logicalId = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
+      givenName = patient.extractGivenName(),
+      familyName = patient.extractFamilyName(),
       identifier = hivPatientIdentifier(patient),
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
@@ -157,7 +163,8 @@ constructor(
       gender = person.gender,
       age = person.birthDate.toAgeDisplay(),
       address = person.addressFirstRep.canonical(),
-      familyName = if (person.hasName()) person.nameFirstRep.family else null,
+      givenName = person.name.givenName(),
+      familyName = person.name.familyName(),
       phoneContacts = if (person.hasTelecom()) person.telecom.map { it.value } else emptyList(),
       chwAssigned = ResourceValue.BLANK,
       healthStatus = HealthStatus.DEFAULT.apply { display = "Not on ART" },
@@ -171,7 +178,8 @@ constructor(
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
       address = patient.extractAddress(),
-      familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+      givenName = patient.extractGivenName(),
+      familyName = patient.extractFamilyName(),
       phoneContacts = patient.extractTelecom(),
       practitioners = patient.generalPractitioner,
       chwAssigned = patient.extractGeneralPractitionerReference(),
@@ -280,6 +288,34 @@ constructor(
         this.active = false
       }
     defaultRepository.addOrUpdate(patient)
+  }
+
+  suspend fun transformChildrenPatientToRegisterData(patients: List<Patient>): List<RegisterData> {
+
+    return patients
+      .filter(this::isValidPatient)
+      .map { patient ->
+        RegisterData.HivRegisterData(
+          logicalId = patient.logicalId,
+          identifier = hivPatientIdentifier(patient),
+          name = patient.extractName(),
+          gender = patient.gender,
+          age = patient.birthDate.toAgeDisplay(),
+          address = patient.extractAddress(),
+          givenName = patient.extractGivenName(),
+          familyName = patient.extractFamilyName(),
+          phoneContacts = patient.extractTelecom(),
+          practitioners = patient.generalPractitioner,
+          chwAssigned = patient.extractGeneralPractitionerReference(),
+          healthStatus =
+            patient.extractHealthStatusFromMeta(
+              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+            ),
+          isPregnant = patient.isPregnant(),
+          isBreastfeeding = patient.isBreastfeeding()
+        )
+      }
+      .filterNot { it.healthStatus == HealthStatus.DEFAULT }
   }
 
   object ResourceValue {

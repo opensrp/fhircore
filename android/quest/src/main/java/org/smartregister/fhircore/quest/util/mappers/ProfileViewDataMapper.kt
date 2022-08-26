@@ -66,6 +66,8 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
         ProfileViewData.PatientProfileViewData(
           logicalId = inputModel.logicalId,
           name = inputModel.name,
+          givenName = inputModel.givenName,
+          familyName = inputModel.familyName,
           sex = inputModel.gender.translateGender(context),
           age = inputModel.age,
           dob = inputModel.birthdate.formatDob(),

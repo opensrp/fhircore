@@ -27,6 +27,7 @@ import io.mockk.mockk
 import java.util.Calendar
 import java.util.Date
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -361,5 +362,50 @@ class HivRegisterDaoTest : RobolectricTest() {
   fun testCountRegisterData() = runTest {
     val count = hivRegisterDao.countRegisterData("HIV")
     assertEquals(1, count)
+  }
+
+  private val testHivPatient =
+    buildPatient(
+      id = "logicalId",
+      family = "doe",
+      given = "john",
+      age = 50,
+      patientType = "exposed-infant",
+      practitionerReference = "practitioner/1234"
+    )
+      .apply {
+        active = true
+        identifier.add(
+          Identifier().apply {
+            this.use = Identifier.IdentifierUse.SECONDARY
+            this.value = "149856"
+          }
+        )
+        meta.addTag(
+          Coding().apply {
+            system = "https://d-tree.org"
+            code = "exposed-infant"
+            display = "Exposed Infant"
+          }
+        )
+      }
+
+  @Test
+  fun testTransformChildrenPatientToRegisterData() = runTest {
+    val patient = testHivPatient.apply { active = true }
+    val childRegisterData = hivRegisterDao.transformChildrenPatientToRegisterData(listOf(patient))
+    assertEquals(1, childRegisterData.size)
+    val registerDataPatient = childRegisterData[0] as RegisterData.HivRegisterData
+    with(registerDataPatient) {
+      assertEquals("logicalId", logicalId)
+      assertEquals("John Doe", name)
+      assertEquals("Dist 1 City 1", address)
+      assertEquals("50y", age)
+      assertEquals(emptyList(), phoneContacts)
+      assertEquals(Enumerations.AdministrativeGender.MALE, gender)
+      assertEquals("practitioner/1234", chwAssigned)
+      assertEquals("practitioner/1234", practitioners?.get(0)?.reference)
+      assertNotEquals(HealthStatus.DEFAULT, healthStatus)
+    }
   }
 }

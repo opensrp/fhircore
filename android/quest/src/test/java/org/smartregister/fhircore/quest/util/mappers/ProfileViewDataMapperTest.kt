@@ -71,6 +71,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
+      Assert.assertEquals("familyName", familyName)
+      Assert.assertEquals("givenName", givenName)
       Assert.assertEquals("testIdentifier()", identifier)
       Assert.assertEquals("HCC Number", identifierKey)
       Assert.assertEquals(true, showIdentifierInProfile)
@@ -163,6 +165,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
         ProfileData.HivProfileData(
           logicalId = "logicalId",
           name = "testName",
+          familyName = "familyName",
+          givenName = "givenName",
           identifier = "testIdentifier()",
           address = "testAddress",
           age = "5y",

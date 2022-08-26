@@ -52,12 +52,28 @@ fun Patient.extractName(): String {
   return this.name.canonicalName()
 }
 
-fun Patient.extractFamilyName(): String {
-  if (!hasName()) return ""
-  val humanName = this.name.firstOrNull()
+fun List<HumanName>.familyName(): String {
+  val humanName = this.firstOrNull()
   return if (humanName != null) {
     humanName.family?.capitalizeFirstLetter()?.plus(" Family") ?: ""
   } else ""
+}
+
+fun Patient.extractFamilyName(): String {
+  if (!hasName()) return ""
+  return this.name.familyName()
+}
+
+fun List<HumanName>.givenName(): String {
+  val humanName = this.firstOrNull()
+  return if (humanName != null) {
+    humanName.given?.toString()?.trim('[')?.trim(']')?.capitalizeFirstLetter() ?: ""
+  } else ""
+}
+
+fun Patient.extractGivenName(): String {
+  if (!hasName()) return ""
+  return this.name.givenName()
 }
 
 fun String.capitalizeFirstLetter() = replaceFirstChar { it.titlecase(Locale.getDefault()) }

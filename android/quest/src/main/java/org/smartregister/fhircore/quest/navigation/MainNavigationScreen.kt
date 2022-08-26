@@ -34,9 +34,19 @@ sealed class MainNavigationScreen(
     MainNavigationScreen(titleResource = R.string.profile, route = "patientProfileRoute")
   object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
   object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
+  object ViewChildContacts : MainNavigationScreen(route = "viewChildContacts")
 
   companion object {
     val appScreens =
-      listOf(Home, Tasks, Reports, Settings, PatientProfile, PatientGuardians, FamilyProfile)
+      listOf(
+        Home,
+        Tasks,
+        Reports,
+        Settings,
+        PatientProfile,
+        PatientGuardians,
+        FamilyProfile,
+        ViewChildContacts
+      )
   }
 }
