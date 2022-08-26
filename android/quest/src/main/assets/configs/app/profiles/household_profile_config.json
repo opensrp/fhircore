@@ -90,7 +90,6 @@
             "saveButtonText": "ADD MEMBER",
             "setPractitionerDetails": false,
             "setOrganizationDetails": false,
-            "clientIdentifier": "@{familyLogicalId}",
             "groupIdentifier": "@{familyLogicalId}"
           }
         }
