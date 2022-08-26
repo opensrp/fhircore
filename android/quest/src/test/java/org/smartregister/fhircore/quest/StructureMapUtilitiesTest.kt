@@ -359,4 +359,37 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     System.out.println(iParser.encodeResourceToString(targetResource))
   }
+
+  @Test
+  fun `perform location extraction`() {
+    val locationQuestionnaireResponseString: String =
+      "content/general/location-response-sample.json".readFile()
+    val locationStructureMap = "content/general/location-structure-map.txt".readFile()
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(locationStructureMap, "LocationRegistration")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        locationQuestionnaireResponseString
+      )
+
+    scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
 }
