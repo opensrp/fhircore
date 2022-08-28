@@ -88,8 +88,14 @@ class ProfileScreenTest {
   @Test
   fun testTopBarRendersCorrectly() {
     // We wait for the text be drawn before we do the assertion
-    composeTestRule.onNodeWithTag(PROFILE_TOP_BAR_TEST_TAG).assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithTag(PROFILE_TOP_BAR_ICON_TEST_TAG).assertExists().assertIsDisplayed()
+    composeTestRule
+      .onNodeWithTag(PROFILE_TOP_BAR_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeTestRule
+      .onNodeWithTag(PROFILE_TOP_BAR_ICON_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
