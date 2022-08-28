@@ -79,7 +79,11 @@ fun ProfileScreen(
         title = {},
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
-            Icon(Icons.Filled.ArrowBack, null, modifier = modifier.testTag(PROFILE_TOP_BAR_ICON_TEST_TAG))
+            Icon(
+              Icons.Filled.ArrowBack,
+              null,
+              modifier = modifier.testTag(PROFILE_TOP_BAR_ICON_TEST_TAG)
+            )
           }
         },
         actions = {
