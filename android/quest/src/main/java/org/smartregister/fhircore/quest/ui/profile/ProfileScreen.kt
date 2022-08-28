@@ -58,6 +58,8 @@ import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
+const val PROFILE_TOP_BAR_TEST_TAG = "profileTopBarTestTag"
+const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
 
 @Composable
 fun ProfileScreen(
@@ -73,10 +75,11 @@ fun ProfileScreen(
   Scaffold(
     topBar = {
       TopAppBar(
+        modifier = modifier.testTag(PROFILE_TOP_BAR_TEST_TAG),
         title = {},
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
-            Icon(Icons.Filled.ArrowBack, null)
+            Icon(Icons.Filled.ArrowBack, null, modifier = modifier.testTag(PROFILE_TOP_BAR_ICON_TEST_TAG))
           }
         },
         actions = {
