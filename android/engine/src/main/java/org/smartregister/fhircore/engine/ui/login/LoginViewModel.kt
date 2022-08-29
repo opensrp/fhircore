@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.getSubstringBetween
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
 import retrofit2.Response
@@ -122,9 +123,14 @@ constructor(
     val locationHierarchies =
       practitionerDetails.fhirPractitionerDetails.locationHierarchyList ?: listOf()
 
-    val careTeamIds = defaultRepository.create(*careTeams.toTypedArray())
-    val organizationIds = defaultRepository.create(*organizations.toTypedArray())
-    val locationIds = defaultRepository.create(*locations.toTypedArray())
+    val careTeamIds =
+      defaultRepository.create(*careTeams.toTypedArray()).map { it.getSubstringBetween("/", "/") }
+    val organizationIds =
+      defaultRepository.create(*organizations.toTypedArray()).map {
+        it.getSubstringBetween("/", "/")
+      }
+    val locationIds =
+      defaultRepository.create(*locations.toTypedArray()).map { it.getSubstringBetween("/", "/") }
 
     sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
