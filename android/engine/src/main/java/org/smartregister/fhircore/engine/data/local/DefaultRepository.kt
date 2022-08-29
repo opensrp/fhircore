@@ -51,7 +51,11 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.addMandatoryTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -61,11 +65,17 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.model.practitioner.KeycloakUserDetails
+import timber.log.Timber
 
 @Singleton
 open class DefaultRepository
 @Inject
-constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
+constructor(
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider,
+  open val sharedPreferencesHelper: SharedPreferencesHelper
+) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
@@ -123,10 +133,37 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
 
   suspend fun getBinary(id: String): Binary = fhirEngine.get(id)
 
-  suspend fun save(resource: Resource) {
+  suspend fun create(vararg resource: Resource): List<String> {
+    val syncStrategy = mutableMapOf<String, List<String>>()
+
+    sharedPreferencesHelper.read<List<String>>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
+      )
+      ?.let { careTeamIds -> syncStrategy[SyncStrategy.CARE_TEAM.value] = careTeamIds }
+
+    sharedPreferencesHelper.read<List<String>>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+      )
+      ?.let { organizationIds -> syncStrategy[SyncStrategy.ORGANIZATION.value] = organizationIds }
+
+    sharedPreferencesHelper.read<List<String>>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
+      )
+      ?.let { locationIds -> syncStrategy[SyncStrategy.LOCATION.value] = locationIds }
+
+    sharedPreferencesHelper.read<KeycloakUserDetails>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+      )
+      ?.let { practitioner ->
+        syncStrategy[SyncStrategy.PRACTITIONER.value] = listOf(practitioner.id)
+      }
+
     return withContext(dispatcherProvider.io()) {
-      resource.generateMissingId()
-      fhirEngine.create(resource)
+      resource.map {
+        it.generateMissingId()
+        it.addMandatoryTags(syncStrategy)
+      }
+      fhirEngine.create(*resource)
     }
   }
 

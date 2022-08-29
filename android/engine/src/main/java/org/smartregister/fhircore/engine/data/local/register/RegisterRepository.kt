@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
@@ -52,10 +53,16 @@ class RegisterRepository
 constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
+  override val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val rulesFactory: RulesFactory
+  val rulesFactory: RulesFactory,
 ) :
-  Repository, DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
+  Repository,
+  DefaultRepository(
+    fhirEngine = fhirEngine,
+    dispatcherProvider = dispatcherProvider,
+    sharedPreferencesHelper = sharedPreferencesHelper
+  ) {
 
   override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId)

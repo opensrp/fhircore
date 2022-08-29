@@ -47,6 +47,7 @@ import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
@@ -293,4 +294,39 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
 
 fun String.resourceClassType(): Class<out Resource> {
   return Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
+}
+
+/**
+ * Append SyncStrategy tags when it exist.
+ */
+fun Resource.addMandatoryTags(
+  syncStrategy: Map<String, List<String>>,
+) {
+  if (syncStrategy.containsKey(SyncStrategy.CARE_TEAM.value))
+    this.meta.addTag(
+      SyncStrategy.CARE_TEAM.tag.apply {
+        code = syncStrategy.getValue(SyncStrategy.CARE_TEAM.value).first()
+      }
+    )
+
+  if (syncStrategy.containsKey(SyncStrategy.ORGANIZATION.value))
+    this.meta.addTag(
+      SyncStrategy.ORGANIZATION.tag.apply {
+        code = syncStrategy.getValue(SyncStrategy.ORGANIZATION.value).first()
+      }
+    )
+
+  if (syncStrategy.containsKey(SyncStrategy.LOCATION.value))
+    this.meta.addTag(
+      SyncStrategy.LOCATION.tag.apply {
+        code = syncStrategy.getValue(SyncStrategy.LOCATION.value).first()
+      }
+    )
+
+  if (syncStrategy.containsKey(SyncStrategy.PRACTITIONER.value))
+    this.meta.addTag(
+      SyncStrategy.PRACTITIONER.tag.apply {
+        code = syncStrategy.getValue(SyncStrategy.PRACTITIONER.value).first()
+      }
+    )
 }
