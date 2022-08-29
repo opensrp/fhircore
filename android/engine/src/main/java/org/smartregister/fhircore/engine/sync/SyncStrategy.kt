@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.sync
 
 import org.hl7.fhir.r4.model.Coding
+
 /**
  * SyncStrategy defines whether to sync resource based on the IDs of CareTeam, Location,
  * Organization and Practitioner. Each SyncStrategy represents a meta tag that is used by all synced

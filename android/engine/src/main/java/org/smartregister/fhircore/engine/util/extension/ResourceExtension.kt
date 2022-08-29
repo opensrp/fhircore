@@ -296,9 +296,7 @@ fun String.resourceClassType(): Class<out Resource> {
   return Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
 }
 
-/**
- * Append SyncStrategy tags when it exist.
- */
+/** Append SyncStrategy tags when it exist. */
 fun Resource.addMandatoryTags(
   syncStrategy: Map<String, List<String>>,
 ) {
