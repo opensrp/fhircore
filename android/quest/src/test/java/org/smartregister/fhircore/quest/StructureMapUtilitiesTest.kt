@@ -383,10 +383,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val targetResource = Bundle()
 
     val baseElement =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        locationQuestionnaireResponseString
-      )
+      iParser.parseResource(QuestionnaireResponse::class.java, locationQuestionnaireResponseString)
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
