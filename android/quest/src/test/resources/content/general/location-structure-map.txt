@@ -21,8 +21,7 @@ group ExtractLocationName(source src : QuestionnaireResponse, target location : 
 
 group ExtractLocationPhysicalType(source src : QuestionnaireResponse, target  location : Location) {
        src -> location.physicalType = create('CodeableConcept') as locationPhysicalType then {
-       src -> locationPhysicalType.coding = c("http://hl7.org/fhir/r4/codesystem-location-physical-type.html#location-physical-type-jdn", "location") "rule_location_type_code";
-       src -> locationPhysicalType.text = 'Jurisdiction' "rule_location_type_text";
+       src -> locationPhysicalType.text = evaluate(src, $this.item.where(linkId = '045cb6e1-ad2a-40f8-9351-a8643dbfaa3f').answer.value.code) "rule_location_type_text";
 } "rule_location_physical_type";
 }
 
@@ -38,7 +37,7 @@ group ExtractLocationTelecom(source src : QuestionnaireResponse, target location
 
                      src -> location.telecom = create('ContactPoint') as locationTelecom then {
                         src -> locationTelecom.system = "email" "rule_location_email";
-                        src -> locationTelecom.value = evaluate(src, $this.item.where(linkId = '75633ed1-f3e1-45c7-8ee9-2edfdb2ed74e').answer.value) "rule_location_email_value";
+                        src -> locationTelecom.value = evaluate(src, $this.item.where(linkId = '75633ed1-f3e1-45c7-8ee9-2edfdb2ed74f').answer.value) "rule_location_email_value";
                 } "rule_extract_email_telecom";
 }
 
@@ -49,10 +48,3 @@ group ExtractLocationAddress(source src : QuestionnaireResponse, target location
         src -> locationAddress.district = evaluate(src, $this.item.where(linkId = '23ea830e-de6d-41e9-ca28-d749563f73c8').answer.value) "rule_location_address_district";
     } "rule_location_address";
 }
-
-
-
-
-
-
-
