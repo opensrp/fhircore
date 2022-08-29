@@ -25,6 +25,7 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -39,13 +40,16 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
+import org.smartregister.fhircore.engine.util.extension.extractGivenName
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 
 @Singleton
 class HivRegisterDao
@@ -55,6 +59,8 @@ constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterDao {
+
+  val LINKED_CHILD_AGE_LIMIT = 20
 
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
@@ -91,7 +97,8 @@ constructor(
           gender = patient.gender,
           age = patient.birthDate.toAgeDisplay(),
           address = patient.extractAddress(),
-          familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+          givenName = patient.extractGivenName(),
+          familyName = patient.extractFamilyName(),
           phoneContacts = patient.extractTelecom(),
           practitioners = patient.generalPractitioner,
           chwAssigned = patient.extractGeneralPractitionerReference(),
@@ -114,6 +121,8 @@ constructor(
       logicalId = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
+      givenName = patient.extractGivenName(),
+      familyName = patient.extractFamilyName(),
       identifier = hivPatientIdentifier(patient),
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
@@ -133,7 +142,8 @@ constructor(
             )
           ),
       services = patient.activeCarePlans(),
-      conditions = patient.activeConditions()
+      conditions = patient.activeConditions(),
+      otherPatients = patient.otherChildren()
     )
   }
 
@@ -181,6 +191,44 @@ constructor(
       subjectParam = CarePlan.SUBJECT
     )
 
+  internal suspend fun Patient.otherPatients() = this.fetchOtherPatients(this.logicalId)
+
+  internal suspend fun Patient.otherChildren(): List<Resource> {
+    return this.fetchOtherPatients(this.logicalId)
+  }
+
+  internal suspend fun Patient.fetchOtherPatients(patientId: String): List<Resource> {
+    val list: ArrayList<Patient> = arrayListOf()
+
+    val filteredItems =
+      defaultRepository.searchResourceFor<Patient>(
+        subjectId = patientId,
+        subjectType = ResourceType.Patient,
+        subjectParam = Patient.LINK
+      )
+
+    for (item in filteredItems) {
+      if (item.isValidChildContact()) list.add(item)
+    }
+    return list
+  }
+
+  internal fun Patient.isValidChildContact(): Boolean {
+    val healthStatus =
+      this.extractHealthStatusFromMeta(
+        getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+      )
+
+    if (healthStatus == HealthStatus.CHILD_CONTACT || healthStatus == HealthStatus.EXPOSED_INFANT) {
+      if (this.hasBirthDate()) {
+        if (this.birthDate!!.yearsPassed() < LINKED_CHILD_AGE_LIMIT) return true
+      }
+    } else {
+      return true
+    }
+    return false
+  }
+
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
 
   fun getApplicationConfiguration(): ApplicationConfiguration {
@@ -194,6 +242,34 @@ constructor(
         this.active = false
       }
     defaultRepository.addOrUpdate(patient)
+  }
+
+  suspend fun transformChildrenPatientToRegisterData(patients: List<Patient>): List<RegisterData> {
+
+    return patients
+      .filter(this::isValidPatient)
+      .map { patient ->
+        RegisterData.HivRegisterData(
+          logicalId = patient.logicalId,
+          identifier = hivPatientIdentifier(patient),
+          name = patient.extractName(),
+          gender = patient.gender,
+          age = patient.birthDate.toAgeDisplay(),
+          address = patient.extractAddress(),
+          givenName = patient.extractGivenName(),
+          familyName = patient.extractFamilyName(),
+          phoneContacts = patient.extractTelecom(),
+          practitioners = patient.generalPractitioner,
+          chwAssigned = patient.extractGeneralPractitionerReference(),
+          healthStatus =
+            patient.extractHealthStatusFromMeta(
+              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+            ),
+          isPregnant = patient.isPregnant(),
+          isBreastfeeding = patient.isBreastfeeding()
+        )
+      }
+      .filterNot { it.healthStatus == HealthStatus.DEFAULT }
   }
 
   companion object {
