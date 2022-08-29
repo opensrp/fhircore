@@ -34,7 +34,7 @@ import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.quest.HiltActivityForTest
 
 @HiltAndroidTest
-class RegisterScreenTest {
+class RegisterScreenNoResultViewTest {
 
   private val mockListener: () -> Unit = spyk({})
 
