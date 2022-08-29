@@ -17,41 +17,27 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
-import android.content.res.AssetManager
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.SyncJob
-import com.google.android.fhir.workflow.FhirOperator
 import com.google.gson.Gson
-import java.net.URL
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.IdType
-import org.hl7.fhir.r4.model.Library
-import org.hl7.fhir.r4.model.Measure
-import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import timber.log.Timber
 
 fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
   var json = assets.open(id).bufferedReader().use { it.readText() }
@@ -70,77 +56,6 @@ suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: St
     null
   }
 }
-
-suspend fun FhirEngine.loadCqlLibraryBundle(
-  context: Context,
-  sharedPreferencesHelper: SharedPreferencesHelper,
-  fhirOperator: FhirOperator,
-  resourcesBundlePath: String
-) =
-  try {
-    val jsonParser = FhirContext.forR4().newJsonParser()
-    val savedResources =
-      sharedPreferencesHelper.read(SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name, "")
-
-    context.assets.open(resourcesBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
-      val bundle = jsonParser.parseResource(it) as Bundle
-      bundle.entry.forEach { entry ->
-        if (entry.resource.resourceType == ResourceType.Library) {
-          fhirOperator.loadLib(entry.resource as Library)
-        } else {
-          if (!savedResources!!.contains(resourcesBundlePath)) {
-            create(entry.resource)
-            sharedPreferencesHelper.write(
-              SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name,
-              savedResources.plus(",").plus(resourcesBundlePath)
-            )
-          }
-        }
-      }
-    }
-  } catch (exception: Exception) {
-    Timber.e(exception)
-  }
-
-suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: String) {
-  // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
-  val library =
-    if (!UrlUtil.isValid(path)) get<Library>(IdType(path).idPart)
-    else search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
-
-  library?.let {
-    fhirOperator.loadLib(it)
-
-    it.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
-  }
-}
-
-suspend fun FhirEngine.loadLibraryAtPath(
-  fhirOperator: FhirOperator,
-  relatedArtifact: RelatedArtifact
-) {
-  if (relatedArtifact.type.isIn(
-      RelatedArtifact.RelatedArtifactType.COMPOSEDOF,
-      RelatedArtifact.RelatedArtifactType.DEPENDSON
-    )
-  )
-    loadLibraryAtPath(fhirOperator, relatedArtifact.resource)
-}
-
-suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measurePath: String) =
-  try {
-    // resource path could be Measure/123 OR something like http://fhir.labs.common/Measure/123
-    val measure =
-      if (UrlUtil.isValid(measurePath))
-        search<Measure> { filter(Measure.URL, { value = measurePath }) }.first()
-      else get(measurePath)
-
-    measure.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
-
-    measure.library.map { it.value }.forEach { path -> loadLibraryAtPath(fhirOperator, path) }
-  } catch (exception: Exception) {
-    Timber.e(exception)
-  }
 
 fun ConfigurationRegistry.fetchLanguages() =
   this.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
