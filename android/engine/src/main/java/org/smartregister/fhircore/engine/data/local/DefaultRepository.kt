@@ -132,8 +132,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        resource.generateMissingId()
-        fhirEngine.create(resource)
+        create(resource)
       }
     }
   }
@@ -174,7 +173,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         this.id = UUID.randomUUID().toString()
       }
 
-    fhirEngine.create(relatedPerson)
+    create(relatedPerson)
     val group =
       fhirEngine.get<Group>(groupId).apply {
         managingEntity = relatedPerson.asReference()

@@ -50,7 +50,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   fun testLoadConfigurations() = runBlockingTest {
     coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
       Bundle().apply { addEntry().resource = Composition() }
-    coEvery { appSettingViewModel.defaultRepository.save(any()) } just runs
+    coEvery { appSettingViewModel.defaultRepository.create(any()) } just runs
 
     appSettingViewModel.loadConfigurations(true)
     Assert.assertNotNull(appSettingViewModel.loadConfigs.value)
@@ -66,12 +66,12 @@ class AppSettingViewModelTest : RobolectricTest() {
             addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
           }
       }
-    coEvery { appSettingViewModel.defaultRepository.save(any()) } just runs
+    coEvery { appSettingViewModel.defaultRepository.create(any()) } just runs
 
     appSettingViewModel.fetchConfigurations("appId", ApplicationProvider.getApplicationContext())
 
     coVerify { appSettingViewModel.fhirResourceDataSource.loadData(any()) }
-    coVerify { appSettingViewModel.defaultRepository.save(any()) }
+    coVerify { appSettingViewModel.defaultRepository.create(any()) }
   }
 
   @Test

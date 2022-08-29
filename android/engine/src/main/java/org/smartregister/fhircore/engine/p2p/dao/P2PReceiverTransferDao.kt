@@ -25,6 +25,7 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.dao.ReceiverTransferDao
@@ -36,7 +37,8 @@ open class P2PReceiverTransferDao
 constructor(
   fhirEngine: FhirEngine,
   dispatcherProvider: DispatcherProvider,
-  configurationRegistry: ConfigurationRegistry
+  configurationRegistry: ConfigurationRegistry,
+  val defaultRepository: DefaultRepository
 ) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, configurationRegistry), ReceiverTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
@@ -49,7 +51,7 @@ constructor(
       runBlocking {
         val resource =
           jsonParser.parseResource(type.name.resourceClassType(), jsonArray.get(it).toString())
-        addOrUpdate(resource = resource)
+        defaultRepository.addOrUpdate(resource = resource)
         maxLastUpdated =
           (if (resource.meta.lastUpdated.time > maxLastUpdated) resource.meta.lastUpdated.time
           else maxLastUpdated)

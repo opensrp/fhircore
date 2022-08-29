@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -50,7 +51,11 @@ import timber.log.Timber
 @Singleton
 class FhirCarePlanGenerator
 @Inject
-constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformSupportServices) {
+constructor(
+  val fhirEngine: FhirEngine,
+  val transformSupportServices: TransformSupportServices,
+  val defaultRepository: DefaultRepository
+) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
   }
@@ -173,9 +178,9 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
       careplan.contained.clear()
 
       // save careplan only if it has activity, otherwise just save contained/dependent resources
-      if (output.hasActivity()) fhirEngine.create(careplan)
+      if (output.hasActivity()) defaultRepository.create(careplan)
 
-      dependents.forEach { fhirEngine.create(it) }
+      dependents.forEach { defaultRepository.create(it) }
 
       if (careplan.status == CarePlan.CarePlanStatus.COMPLETED)
         careplan
@@ -197,7 +202,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
   }
 
   suspend fun completeTask(id: String) {
-    fhirEngine.run {
+    defaultRepository.run {
       create(
         getTask(id).apply {
           this.status = Task.TaskStatus.COMPLETED
@@ -208,7 +213,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
   }
 
   suspend fun cancelTask(id: String, reason: String) {
-    fhirEngine.run {
+    defaultRepository.run {
       create(
         getTask(id).apply {
           this.status = Task.TaskStatus.CANCELLED

@@ -98,12 +98,12 @@ constructor(
           val ids = entry.value.joinToString(",") { it.focus.extractId() }
           val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
           fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach {
-            defaultRepository.save(it.resource)
+            defaultRepository.create(it.resource)
           }
         }
 
       // Save composition after fetching all the referenced section resources
-      defaultRepository.save(composition)
+      defaultRepository.create(composition)
 
       loadConfigurations(true)
       _showProgressBar.postValue(false)

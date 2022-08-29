@@ -151,7 +151,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.update(any()) } answers {}
 
-    coEvery { defaultRepo.save(any()) } returns Unit
+    coEvery { defaultRepo.create(any()) } returns Unit
     coEvery { defaultRepo.addOrUpdate(any()) } just runs
 
     // Setup sample resources
@@ -562,9 +562,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testSaveResourceShouldVerifyResourceSaveMethodCall() {
-    coEvery { defaultRepo.save(any()) } returns Unit
+    coEvery { defaultRepo.create(any()) } returns Unit
     questionnaireViewModel.saveResource(mockk())
-    coVerify(exactly = 1) { defaultRepo.save(any()) }
+    coVerify(exactly = 1) { defaultRepo.create(any()) }
   }
 
   @Test
@@ -949,7 +949,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val sourcePatient = Patient().apply { id = "test_patient_1_id" }
     questionnaireViewModel.saveResource(sourcePatient)
 
-    coVerify { defaultRepo.save(sourcePatient) }
+    coVerify { defaultRepo.create(sourcePatient) }
   }
 
   @Test

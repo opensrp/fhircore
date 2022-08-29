@@ -88,7 +88,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
-    coEvery { defaultRepository.save(any()) } just runs
+    coEvery { defaultRepository.create(any()) } just runs
     coEvery { defaultRepository.search(any()) } returns listOf()
 
     val result = runBlocking {
@@ -109,7 +109,7 @@ class CqlContentTest : RobolectricTest() {
       ResourceType.MedicationRequest
     )
 
-    coVerify { defaultRepository.save(any()) }
+    coVerify { defaultRepository.create(any()) }
   }
 
   @Test
@@ -146,7 +146,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
-    coEvery { defaultRepository.save(any()) } just runs
+    coEvery { defaultRepository.create(any()) } just runs
     coEvery { defaultRepository.search(any()) } returns listOf()
 
     val result = runBlocking {
@@ -173,7 +173,7 @@ class CqlContentTest : RobolectricTest() {
       ResourceType.DiagnosticReport
     )
 
-    coVerify(exactly = 3) { defaultRepository.save(any()) }
+    coVerify(exactly = 3) { defaultRepository.create(any()) }
   }
 
   @Test
@@ -208,7 +208,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
-    coEvery { defaultRepository.save(any()) } just runs
+    coEvery { defaultRepository.create(any()) } just runs
 
     val result = runBlocking {
       evaluator.runCqlLibrary(cqlLibrary.logicalId, null, dataBundle, defaultRepository)
@@ -226,7 +226,7 @@ class CqlContentTest : RobolectricTest() {
     )
 
     val observationSlot = slot<Observation>()
-    coVerify { defaultRepository.save(capture(observationSlot)) }
+    coVerify { defaultRepository.create(capture(observationSlot)) }
 
     Assert.assertEquals(
       "QuestionnaireResponse/TEST_QUESTIONNAIRE_RESPONSE",

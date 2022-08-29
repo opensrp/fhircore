@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
@@ -58,7 +59,8 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
-  val sharedPreferences: SharedPreferencesHelper
+  val sharedPreferences: SharedPreferencesHelper,
+  val defaultRepository: DefaultRepository
 ) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -120,9 +122,9 @@ constructor(
     val locationHierarchies =
       practitionerDetails.fhirPractitionerDetails.locationHierarchyList ?: listOf()
 
-    val careTeamIds = fhirEngine.create(*careTeams.toTypedArray())
-    val organizationIds = fhirEngine.create(*organizations.toTypedArray())
-    val locationIds = fhirEngine.create(*locations.toTypedArray())
+    val careTeamIds = defaultRepository.create(*careTeams.toTypedArray())
+    val organizationIds = defaultRepository.create(*organizations.toTypedArray())
+    val locationIds = defaultRepository.create(*locations.toTypedArray())
 
     sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,

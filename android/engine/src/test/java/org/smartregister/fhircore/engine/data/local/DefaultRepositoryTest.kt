@@ -213,7 +213,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
-    runBlocking { defaultRepository.save(resource) }
+    runBlocking { defaultRepository.create(resource) }
 
     verify { resource.generateMissingId() }
 
