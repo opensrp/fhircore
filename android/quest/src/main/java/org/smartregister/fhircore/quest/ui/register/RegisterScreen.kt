@@ -64,6 +64,7 @@ import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
@@ -255,6 +256,7 @@ fun NoRegistersView(
 }
 
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 @Composable
 private fun PreviewNoRegistersView() {
   NoRegistersView(
