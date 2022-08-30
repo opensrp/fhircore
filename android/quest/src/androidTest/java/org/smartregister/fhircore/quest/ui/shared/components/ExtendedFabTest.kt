@@ -48,6 +48,7 @@ class ExtendedFabTest {
             NavigationMenuConfig(
               id = "test",
               display = "Fab Button",
+              icon = "add",
               actions =
                 listOf(
                   ActionConfig(
