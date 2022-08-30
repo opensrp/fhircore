@@ -61,10 +61,10 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     measureReportViewModel =
       MeasureReportViewModel(
-        fhirEngine = fhirEngine,
         fhirOperator = fhirOperator,
         sharedPreferencesHelper = sharedPreferencesHelper,
         dispatcherProvider = mockk(),
+        defaultRepository = mockk(),
         measureReportRepository = measureReportRepository,
         measureReportPatientViewDataMapper = measureReportPatientViewDataMapper
       )

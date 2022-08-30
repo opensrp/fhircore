@@ -22,9 +22,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
@@ -83,12 +81,13 @@ class CqlContentTest : RobolectricTest() {
       }
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    val defaultRepository =
+      spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider(), mockk()))
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
-    coEvery { defaultRepository.create(any()) } just runs
+    coEvery { defaultRepository.create(any()) } returns emptyList()
     coEvery { defaultRepository.search(any()) } returns listOf()
 
     val result = runBlocking {
@@ -141,12 +140,13 @@ class CqlContentTest : RobolectricTest() {
       }
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    val defaultRepository =
+      spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider(), mockk()))
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
-    coEvery { defaultRepository.create(any()) } just runs
+    coEvery { defaultRepository.create(any()) } returns emptyList()
     coEvery { defaultRepository.search(any()) } returns listOf()
 
     val result = runBlocking {
@@ -203,12 +203,13 @@ class CqlContentTest : RobolectricTest() {
       }
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    val defaultRepository =
+      spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider(), mockk()))
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
-    coEvery { defaultRepository.create(any()) } just runs
+    coEvery { defaultRepository.create(any()) } returns emptyList()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(cqlLibrary.logicalId, null, dataBundle, defaultRepository)
