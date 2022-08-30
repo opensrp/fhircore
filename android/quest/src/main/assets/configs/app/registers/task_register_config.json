@@ -21,7 +21,8 @@
     {
       "id": "ActionButton",
       "visible": true,
-      "display": "",
+      "display": "Add Tasks",
+      "icon": "add",
       "actions": [
         {
           "trigger": "ON_CLICK",
