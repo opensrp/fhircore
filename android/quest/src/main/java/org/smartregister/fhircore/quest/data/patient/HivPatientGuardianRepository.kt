@@ -35,4 +35,7 @@ constructor(
 
   suspend fun loadGuardianRegisterData(patient: Patient) =
     withContext(dispatcherProvider.io()) { patientDao.loadGuardiansRegisterData(patient) }
+
+  suspend fun loadGuardianNotOnARTProfile(logicalId: String) =
+    withContext(dispatcherProvider.io()) { patientDao.loadRelatedPersonProfileData(logicalId) }
 }

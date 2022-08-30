@@ -155,5 +155,16 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
         confirmAction = true
       )
     )
+  ),
+  NOT_ON_ART(
+    listOf(
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(
+        id = R.id.remove_hiv_patient,
+        titleResource = R.string.remove_active_person,
+        titleColor = DangerColor,
+        confirmAction = true
+      )
+    )
   )
 }

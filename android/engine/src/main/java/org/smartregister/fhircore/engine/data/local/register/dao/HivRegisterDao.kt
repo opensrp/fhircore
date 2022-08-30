@@ -25,6 +25,7 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -167,7 +168,27 @@ constructor(
       familyName = person.name.familyName(),
       phoneContacts = if (person.hasTelecom()) person.telecom.map { it.value } else emptyList(),
       chwAssigned = ResourceValue.BLANK,
-      healthStatus = HealthStatus.DEFAULT.apply { display = "Not on ART" },
+      healthStatus = HealthStatus.NOT_ON_ART,
+    )
+
+  override suspend fun loadRelatedPersonProfileData(logicalId: String): ProfileData =
+    transformRelatedPersonToHivProfileData(fhirEngine.loadResource<RelatedPerson>(logicalId)!!)
+
+  private fun transformRelatedPersonToHivProfileData(person: RelatedPerson) =
+    ProfileData.HivProfileData(
+      logicalId = person.logicalId,
+      birthdate = person.birthDate,
+      name = person.name.canonicalName(),
+      givenName = person.name.givenName(),
+      familyName = person.name.familyName(),
+      identifier = ResourceValue.BLANK,
+      gender = person.gender,
+      age = person.birthDate.toAgeDisplay(),
+      address = person.addressFirstRep.canonical(),
+      phoneContacts = if (person.hasTelecom()) person.telecom.map { it.value } else emptyList(),
+      chwAssigned = Reference(), // Empty
+      showIdentifierInProfile = true,
+      healthStatus = HealthStatus.NOT_ON_ART,
     )
 
   private suspend fun transformPatientToHivRegisterData(patient: Patient) =
