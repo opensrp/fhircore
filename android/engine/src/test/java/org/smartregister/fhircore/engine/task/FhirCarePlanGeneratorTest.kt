@@ -56,6 +56,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
@@ -82,17 +83,19 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Inject lateinit var transformSupportServices: TransformSupportServices
 
   lateinit var structureMapUtilities: StructureMapUtilities
+  lateinit var defaultRepository: DefaultRepository
 
   @Before
   fun setup() {
     hiltRule.inject()
 
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
-
+    defaultRepository = mockk()
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
-        transformSupportServices = transformSupportServices
+        transformSupportServices = transformSupportServices,
+        defaultRepository = defaultRepository
       )
 
     mockkStatic(DateTimeType::class)
@@ -122,7 +125,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString().replace("''", "'month'"))
       }
 
-    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -164,7 +167,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
         val resourcesSlot = mutableListOf<Resource>()
 
-        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(resourcesSlot)) }
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -205,7 +208,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString().replace("''", "'month'"))
       }
 
-    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -237,7 +240,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
         val resourcesSlot = mutableListOf<Resource>()
 
-        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(resourcesSlot)) }
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -401,7 +404,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
@@ -415,7 +418,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
         val resourcesSlot = mutableListOf<Resource>()
 
-        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
@@ -446,7 +449,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any()) } returns emptyList()
     coEvery { fhirEngine.update(any()) } just runs
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
 
@@ -474,7 +477,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
 
         val resourcesSlot = mutableListOf<Resource>()
-        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
@@ -525,7 +528,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         println(it.encodeResourceToString())
       }
 
-    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMap
 
     coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf()
@@ -538,7 +541,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       .also {
         val resourcesSlot = mutableListOf<Resource>()
 
-        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(resourcesSlot)) }
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
         resourcesSlot
@@ -588,7 +591,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
-    coEvery { fhirEngine.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any()) } returns emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>("132156") } returns structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("132067") } returns structureMapReferral
@@ -640,7 +643,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
         val resourcesSlot = mutableListOf<Resource>()
 
-        coVerify { fhirEngine.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 

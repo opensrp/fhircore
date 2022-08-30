@@ -18,8 +18,6 @@ package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.DateParamFilterCriterion
 import io.mockk.coEvery
@@ -43,7 +41,6 @@ import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.joda.time.LocalDate
@@ -74,7 +71,14 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     defaultRepository = mockk()
     configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
     baseP2PTransferDao =
-      spyk(P2PReceiverTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
+      spyk(
+        P2PReceiverTransferDao(
+          fhirEngine,
+          DefaultDispatcherProvider(),
+          configurationRegistry,
+          mockk()
+        )
+      )
   }
 
   @Test
@@ -137,46 +141,6 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     assertTrue(
       actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
     )
-  }
-
-  @Test
-  fun `addOrUpdate() calls fhirEngine#update() when resource already exists`() {
-    val expectedPatient = populateTestPatient()
-
-    coEvery { fhirEngine.get(ResourceType.Patient, expectedPatient.logicalId) } returns
-      expectedPatient
-    runBlocking { baseP2PTransferDao.addOrUpdate(expectedPatient) }
-
-    val resourceSlot = slot<Resource>()
-    coVerify { fhirEngine.update(capture(resourceSlot)) }
-    val actualPatient = resourceSlot.captured as Patient
-    assertEquals(expectedPatient.logicalId, actualPatient.logicalId)
-    assertEquals(expectedPatient.birthDate, actualPatient.birthDate)
-    assertEquals(expectedPatient.gender, actualPatient.gender)
-    assertEquals(expectedPatient.address[0].city, actualPatient.address[0].city)
-    assertEquals(expectedPatient.address[0].country, actualPatient.address[0].country)
-    assertEquals(expectedPatient.name[0].family, actualPatient.name[0].family)
-    assertEquals(expectedPatient.meta.lastUpdated, actualPatient.meta.lastUpdated)
-  }
-
-  @Test
-  fun `addOrUpdate() calls fhirEngine#create() when resource does not exist`() {
-    val expectedPatient = populateTestPatient()
-    val resourceNotFoundException = ResourceNotFoundException("", "")
-    coEvery { fhirEngine.get(ResourceType.Patient, expectedPatient.logicalId) } throws
-      resourceNotFoundException
-    runBlocking { baseP2PTransferDao.addOrUpdate(expectedPatient) }
-
-    val resourceSlot = slot<Resource>()
-    coVerify { fhirEngine.create(capture(resourceSlot)) }
-    val actualPatient = resourceSlot.captured as Patient
-    assertEquals(expectedPatient.logicalId, actualPatient.logicalId)
-    assertEquals(expectedPatient.birthDate, actualPatient.birthDate)
-    assertEquals(expectedPatient.gender, actualPatient.gender)
-    assertEquals(expectedPatient.address[0].city, actualPatient.address[0].city)
-    assertEquals(expectedPatient.address[0].country, actualPatient.address[0].country)
-    assertEquals(expectedPatient.name[0].family, actualPatient.name[0].family)
-    assertEquals(expectedPatient.meta.lastUpdated, actualPatient.meta.lastUpdated)
   }
 
   @Test

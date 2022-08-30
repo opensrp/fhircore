@@ -20,7 +20,6 @@ import android.accounts.Account
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -52,6 +51,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
@@ -91,6 +91,8 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Inject lateinit var gson: Gson
 
+  lateinit var defaultRepository: DefaultRepository
+
   private lateinit var loginViewModel: LoginViewModel
 
   private lateinit var accountAuthenticatorSpy: AccountAuthenticator
@@ -111,13 +113,15 @@ internal class LoginViewModelTest : RobolectricTest() {
       arrayOf(Account("demo", ApplicationProvider.getApplicationContext<Application>().packageName))
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
 
+    defaultRepository = mockk()
+
     loginViewModel =
       LoginViewModel(
-        fhirEngine = mockk(),
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
+        defaultRepository = defaultRepository
       )
   }
 
@@ -259,7 +263,6 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Test
   fun savePractitionerDetailsWithProperPayload() {
-    val fhirEngine = mockk<FhirEngine>()
     val configurationRegistry = mockk<ConfigurationRegistry>()
     val accountAuthenticator = mockk<AccountAuthenticator>()
     val dispatcher = DefaultDispatcherProvider()
@@ -267,11 +270,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val viewModel =
       LoginViewModel(
-        fhirEngine = fhirEngine,
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
-        sharedPreferences = sharedPreferences
+        sharedPreferences = sharedPreferences,
+        defaultRepository = defaultRepository
       )
 
     val sampleKeycloakUserDetails =
@@ -303,17 +306,21 @@ internal class LoginViewModelTest : RobolectricTest() {
       }
 
     coEvery {
-      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray())
+      defaultRepository.create(
+        *samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray()
+      )
     } returns listOf("1")
 
     coEvery {
-      fhirEngine.create(
+      defaultRepository.create(
         *samplePractitionerDetails.fhirPractitionerDetails.organizations.toTypedArray()
       )
     } returns listOf("12")
 
     coEvery {
-      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray())
+      defaultRepository.create(
+        *samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray()
+      )
     } returns listOf("123")
 
     runBlocking { viewModel.savePractitionerDetails(bundle) }
@@ -361,23 +368,26 @@ internal class LoginViewModelTest : RobolectricTest() {
     )
 
     coVerify {
-      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray())
+      defaultRepository.create(
+        *samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray()
+      )
     }
 
     coVerify {
-      fhirEngine.create(
+      defaultRepository.create(
         *samplePractitionerDetails.fhirPractitionerDetails.organizations.toTypedArray()
       )
     }
 
     coVerify {
-      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray())
+      defaultRepository.create(
+        *samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray()
+      )
     }
   }
 
   @Test
   fun savePractitionerDetailsWhenFhirPractitionerDetailsIsNull() {
-    val fhirEngine = mockk<FhirEngine>()
     val configurationRegistry = mockk<ConfigurationRegistry>()
     val accountAuthenticator = mockk<AccountAuthenticator>()
     val dispatcher = DefaultDispatcherProvider()
@@ -385,11 +395,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val viewModel =
       LoginViewModel(
-        fhirEngine = fhirEngine,
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
-        sharedPreferences = sharedPreferences
+        sharedPreferences = sharedPreferences,
+        defaultRepository = defaultRepository
       )
 
     val sampleKeycloakUserDetails =
@@ -410,7 +420,7 @@ internal class LoginViewModelTest : RobolectricTest() {
         entry = listOf(Bundle.BundleEntryComponent().apply { resource = samplePractitionerDetails })
       }
 
-    coEvery { fhirEngine.create(*emptyArray()) } returns listOf()
+    coEvery { defaultRepository.create(*emptyArray()) } returns listOf()
 
     runBlocking { viewModel.savePractitionerDetails(bundle) }
 
@@ -456,6 +466,6 @@ internal class LoginViewModelTest : RobolectricTest() {
         ?.size
     )
 
-    coVerify(exactly = 3) { fhirEngine.create(*emptyArray()) }
+    coVerify(exactly = 3) { defaultRepository.create(*emptyArray()) }
   }
 }

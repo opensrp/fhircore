@@ -16,13 +16,20 @@
 
 package org.smartregister.fhircore.engine.data.local
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import com.google.android.fhir.workflow.FhirOperator
+import com.google.gson.Gson
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -31,6 +38,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Binary
@@ -50,26 +58,49 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.joda.time.LocalDate
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 
+@HiltAndroidTest
 class DefaultRepositoryTest : RobolectricTest() {
 
-  private val dispatcherProvider = DefaultDispatcherProvider()
+  @get:Rule val hiltRule = HiltAndroidRule(this)
+
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+  @Inject lateinit var gson: Gson
+  lateinit var dispatcherProvider: DefaultDispatcherProvider
+  lateinit var fhirEngine: FhirEngine
+  lateinit var sharedPreferenceHelper: SharedPreferencesHelper
+  lateinit var defaultRepository: DefaultRepository
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+
+    dispatcherProvider = DefaultDispatcherProvider()
+    fhirEngine = mockk()
+    sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
+    defaultRepository =
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = dispatcherProvider,
+        sharedPreferencesHelper = sharedPreferenceHelper
+      )
+  }
 
   @Test
   fun loadResourceShouldGetResourceUsingId() {
     val samplePatientId = "12345"
     val samplePatient: Patient = Patient().apply { id = samplePatientId }
 
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.get<Patient>(any()) } answers { samplePatient }
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking {
       val actualPatient = defaultRepository.loadResource<Patient>(samplePatientId)
@@ -82,11 +113,8 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun searchResourceForGivenReferenceShouldSearchCarePlanThatIsRelatedToAPatientUsingId() {
     val samplePatientId = "12345"
-    val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.search<CarePlan> {} } returns listOf(mockk())
 
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+    coEvery { fhirEngine.search<CarePlan> {} } returns listOf(mockk())
 
     runBlocking {
       val actualCarePlans =
@@ -104,11 +132,8 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun searchResourceForGivenTokenShouldReturn1PatientUsingId() {
     val samplePatientId = "12345"
-    val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.search<Patient> {} } returns listOf(mockk())
 
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+    coEvery { fhirEngine.search<Patient> {} } returns listOf(mockk())
 
     runBlocking {
       val actualPatients =
@@ -125,11 +150,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun searchShouldReturn1ConditionGivenConditionTypeDataRequirement() {
-    val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.search<Condition> {} } returns listOf(mockk())
 
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+    coEvery { fhirEngine.search<Condition> {} } returns listOf(mockk())
 
     runBlocking {
       val actualPatients =
@@ -169,12 +191,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     val savedPatientSlot = slot<Patient>()
 
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.get(any(), any()) } answers { patient }
     coEvery { fhirEngine.update(any()) } just runs
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     // Call the function under test
     runBlocking { defaultRepository.addOrUpdate(patient) }
@@ -206,12 +224,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     mockkStatic(Resource::generateMissingId)
     val resource = spyk(Patient())
 
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.create(any()) } returns listOf()
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.create(resource) }
 
@@ -225,12 +240,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     mockkStatic(Resource::generateMissingId)
     val resource = Patient()
 
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.create(any()) } returns listOf()
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.addOrUpdate(resource) }
 
@@ -241,12 +253,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun searchCompositionByIdentifier() = runBlocking {
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<Composition>(any()) } returns
       listOf(Composition().apply { id = "123" })
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     val result = defaultRepository.searchCompositionByIdentifier("appId")
 
@@ -257,11 +265,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun getBinaryResource() = runBlocking {
-    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns Binary().apply { id = "111" }
-
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     val result = defaultRepository.getBinary("111")
 
@@ -272,9 +276,6 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun loadManagingEntityShouldReturnPatient() {
-    val fhirEngine: FhirEngine = mockk()
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     val group = Group().apply { managingEntity = Reference("RelatedPerson/12983") }
 
@@ -296,9 +297,6 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun changeManagingEntityShouldVerifyFhirEngineCalls() {
-    val fhirEngine: FhirEngine = mockk()
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     val patient =
       Patient().apply {
@@ -343,9 +341,6 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun removeGroupGivenGroupAlreadyDeletedShouldThrowIllegalStateException() {
-    val fhirEngine: FhirEngine = mockk()
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     val group =
       Group().apply {
@@ -357,5 +352,31 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertThrows(IllegalStateException::class.java) {
       runBlocking { defaultRepository.removeGroup(group.logicalId, false) }
     }
+  }
+
+  @Test
+  fun `FhirEngine#loadCqlLibraryBundle()`() {
+
+    val context = ApplicationProvider.getApplicationContext<Application>()
+    val fhirEngine = mockk<FhirEngine>()
+    val fhirOperator: FhirOperator = mockk()
+    sharedPreferenceHelper = mockk()
+    val measureResourceBundleUrl = "measure/ANCIND01-bundle.json"
+
+    val prefsDataKey = SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name
+    every { sharedPreferenceHelper.read(prefsDataKey, any<String>()) } returns ""
+    every { sharedPreferenceHelper.write(prefsDataKey, any<String>()) } returns Unit
+    coEvery { fhirOperator.loadLib(any()) } returns Unit
+    coEvery { fhirEngine.create(any()) } returns listOf()
+
+    runBlocking {
+      defaultRepository.loadCqlLibraryBundle(
+        context = context,
+        fhirOperator = fhirOperator,
+        resourcesBundlePath = measureResourceBundleUrl
+      )
+    }
+
+    Assert.assertNotNull(sharedPreferenceHelper.read(prefsDataKey, ""))
   }
 }

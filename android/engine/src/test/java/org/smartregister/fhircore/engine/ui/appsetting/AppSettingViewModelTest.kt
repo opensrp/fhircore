@@ -20,9 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Bundle
@@ -50,7 +48,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   fun testLoadConfigurations() = runBlockingTest {
     coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
       Bundle().apply { addEntry().resource = Composition() }
-    coEvery { appSettingViewModel.defaultRepository.create(any()) } just runs
+    coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
 
     appSettingViewModel.loadConfigurations(true)
     Assert.assertNotNull(appSettingViewModel.loadConfigs.value)
@@ -66,7 +64,7 @@ class AppSettingViewModelTest : RobolectricTest() {
             addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
           }
       }
-    coEvery { appSettingViewModel.defaultRepository.create(any()) } just runs
+    coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
 
     appSettingViewModel.fetchConfigurations("appId", ApplicationProvider.getApplicationContext())
 

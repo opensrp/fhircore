@@ -83,7 +83,8 @@ class RegisterRepositoryTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           configurationRegistry = configurationRegistry,
-          rulesFactory = rulesFactory
+          rulesFactory = rulesFactory,
+          sharedPreferencesHelper = mockk()
         )
       )
     runBlocking {

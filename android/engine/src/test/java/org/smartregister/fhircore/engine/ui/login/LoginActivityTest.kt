@@ -94,11 +94,11 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
     loginViewModel =
       LoginViewModel(
-        fhirEngine = mockk(),
         accountAuthenticator = accountAuthenticator,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
+        defaultRepository = mockk()
       )
 
     val controller = Robolectric.buildActivity(LoginActivity::class.java)

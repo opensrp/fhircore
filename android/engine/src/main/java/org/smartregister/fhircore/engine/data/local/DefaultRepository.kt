@@ -299,7 +299,6 @@ constructor(
 
   suspend fun loadCqlLibraryBundle(
     context: Context,
-    sharedPreferencesHelper: SharedPreferencesHelper,
     fhirOperator: FhirOperator,
     resourcesBundlePath: String
   ) =

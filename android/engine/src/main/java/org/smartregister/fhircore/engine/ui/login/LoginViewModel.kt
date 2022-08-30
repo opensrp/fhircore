@@ -25,7 +25,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
 import java.net.UnknownHostException
@@ -56,7 +55,6 @@ import timber.log.Timber
 class LoginViewModel
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,

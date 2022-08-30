@@ -123,7 +123,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     } returns listOf("105")
 
-    defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider))
+    defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider, mockk()))
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
     sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "appId")
@@ -151,7 +151,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.update(any()) } answers {}
 
-    coEvery { defaultRepo.create(any()) } returns Unit
+    //    coEvery { defaultRepo.create(any()) } returns Unit
     coEvery { defaultRepo.addOrUpdate(any()) } just runs
 
     // Setup sample resources
@@ -562,7 +562,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testSaveResourceShouldVerifyResourceSaveMethodCall() {
-    coEvery { defaultRepo.create(any()) } returns Unit
+    //    coEvery { defaultRepo.create(any()) } returns Unit
     questionnaireViewModel.saveResource(mockk())
     coVerify(exactly = 1) { defaultRepo.create(any()) }
   }
