@@ -29,8 +29,10 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.fhir.datacapture.validation.Invalid
+import com.google.android.fhir.datacapture.validation.NotValidated
+import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.datacapture.validation.ValidationResult
-import com.google.android.fhir.datacapture.validation.getSingleStringValidationMessage
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewHolderDelegate
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewHolderFactory
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
@@ -150,8 +152,10 @@ class CustomPhotoCaptureFactory(
 
       override fun displayValidationResult(validationResult: ValidationResult) {
         tvError.text =
-          if (validationResult.getSingleStringValidationMessage() == "") null
-          else validationResult.getSingleStringValidationMessage()
+          when (validationResult) {
+            is NotValidated, Valid -> null
+            is Invalid -> validationResult.getSingleStringValidationMessage()
+          }
       }
 
       override fun setReadOnly(isReadOnly: Boolean) {

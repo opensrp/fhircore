@@ -114,6 +114,6 @@
         <string name="dob">Tarehe ya Kuzaliwa</string>
         <string name="invalid_form_id">ID ya fomu iliyoambatishwa si sahihi</string>
         <string name="error_loading_config">Hitilafu katika kupakia usanidi. Maelezo: %1$s</string>
-        <string name="error_contacting_server">Hitilafu katika kuwasiliana na seva. Msimbo wa hitilafu %1$s</string>
         <string name="date_last_visited">Ziara ya mwisho %1$s</string>
+    <string name="clear_database">Futa yote</string>
 </resources>

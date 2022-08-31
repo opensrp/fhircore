@@ -126,4 +126,8 @@
     <string name="other_patients">Other patients</string>
     <string name="responses">RESPONSES (%1$s)</string>
     <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
+    <string name="clear_database">Reset data</string>
+    <string name="clear_database_title">Reset Database!</string>
+    <string name="clear_database_message">Resetting database will clear all records from your device. This action can’t be undone.</string>
+    <string name="resetting_app">Resetting Application...</string>
 </resources>

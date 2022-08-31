@@ -29,17 +29,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
@@ -57,10 +62,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
+
+const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
 
 @Composable
 fun UserProfileScreen(
@@ -70,6 +79,8 @@ fun UserProfileScreen(
 
   val username by remember { mutableStateOf(userProfileViewModel.retrieveUsername()) }
   var expanded by remember { mutableStateOf(false) }
+  val resetDB by userProfileViewModel.onDatabaseReset.observeAsState(false)
+  val showProgressBar by userProfileViewModel.showProgressBar.observeAsState(false)
 
   Column(modifier = modifier.padding(vertical = 20.dp)) {
     if (!username.isNullOrEmpty()) {
@@ -151,12 +162,35 @@ fun UserProfileScreen(
       Divider(color = DividerColor)
     }
 
+    if (showProgressBar) {
+      LoaderDialog(modifier = modifier, stringResource(id = R.string.resetting_app))
+    }
+
+    if (resetDB) {
+      ConfirmClearDatabaseDialog(
+        permanentResetDatabase = {
+          userProfileViewModel.showProgressBarFlag(true)
+          userProfileViewModel.resetDatabase()
+        },
+        onDismissDialog = { userProfileViewModel.resetDatabaseFlag(false) }
+      )
+    }
+
     UserProfileRow(
-      icon = Icons.Rounded.Logout,
-      text = stringResource(id = R.string.logout),
-      clickListener = userProfileViewModel::logoutUser,
+      icon = Icons.Rounded.DeleteForever,
+      text = stringResource(id = R.string.clear_database),
+      clickListener = { userProfileViewModel.resetDatabaseFlag(true) },
       modifier = modifier
     )
+
+    if (BuildConfig.DEBUG) {
+      UserProfileRow(
+        icon = Icons.Rounded.Logout,
+        text = stringResource(id = R.string.logout),
+        clickListener = userProfileViewModel::logoutUser,
+        modifier = modifier
+      )
+    }
   }
 }
 
@@ -188,4 +222,44 @@ fun UserProfileRow(
     )
   }
   Divider(color = DividerColor)
+}
+
+@Composable
+fun ConfirmClearDatabaseDialog(
+  permanentResetDatabase: () -> Unit,
+  onDismissDialog: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  AlertDialog(
+    onDismissRequest = onDismissDialog,
+    title = {
+      Text(
+        text = stringResource(R.string.clear_database_title),
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp
+      )
+    },
+    text = { Text(text = stringResource(R.string.clear_database_message), fontSize = 16.sp) },
+    buttons = {
+      Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        horizontalArrangement = Arrangement.End
+      ) {
+        Text(
+          text = stringResource(R.string.cancel),
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
+        )
+        Text(
+          color = MaterialTheme.colors.primary,
+          text = stringResource(R.string.clear_database).uppercase(),
+          modifier =
+            modifier.padding(horizontal = 10.dp).clickable {
+              permanentResetDatabase()
+              onDismissDialog()
+            }
+        )
+      }
+    },
+    modifier = Modifier.testTag(RESET_DATABASE_DIALOG)
+  )
 }

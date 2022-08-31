@@ -114,6 +114,6 @@
     <string name="dob">DDN</string>
     <string name="invalid_form_id">ID de formulaire joint non valide</string>
     <string name="error_loading_config">Erreur lors du chargement de la configuration. Descriptif : %$1s</string>
-    <string name="error_contacting_server">Erreur de contact avec le serveur. Code d\'erreur %1$s</string>
     <string name="date_last_visited">Dernière visite %1$s</string>
+    <string name="clear_database">Réinitialiser</string>
 </resources>

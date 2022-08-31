@@ -97,6 +97,13 @@ constructor(
     prefs.edit().remove(key).apply()
   }
 
+  fun resetSharedPrefs() {
+    with(prefs.edit()) {
+      clear()
+      apply()
+    }
+  }
+
   companion object {
     const val PREFS_NAME = "params"
   }
