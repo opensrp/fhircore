@@ -17,11 +17,7 @@
 package org.smartregister.fhircore.quest.ui.patient.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
@@ -49,14 +45,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import org.hl7.fhir.r4.model.CarePlan
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
+import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.ui.patient.profile.components.PersonalData
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileActionableItem
 import org.smartregister.fhircore.quest.ui.patient.profile.components.ProfileCard
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
+import java.util.*
 
 @Composable
 fun PatientProfileScreen(
@@ -91,7 +90,7 @@ fun PatientProfileScreen(
   Scaffold(
     topBar = {
       TopAppBar(
-        title = {},
+        title = {Text(stringResource(R.string.profile))},
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.Filled.ArrowBack, null)
@@ -127,13 +126,13 @@ fun PatientProfileScreen(
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier =
-                  modifier
-                    .fillMaxWidth()
-                    .background(
-                      color =
-                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
-                        else Color.Transparent
-                    )
+                modifier
+                  .fillMaxWidth()
+                  .background(
+                    color =
+                    if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
+                    else Color.Transparent
+                  )
               ) {
                 val titleTextResource = it.titleResource
                 if (it.id == org.smartregister.fhircore.quest.R.id.view_children) {
@@ -151,17 +150,24 @@ fun PatientProfileScreen(
     Box(modifier = modifier.padding(innerPadding)) {
       Column(
         modifier =
-          modifier
-            .verticalScroll(rememberScrollState())
-            .background(PatientProfileSectionsBackgroundColor)
+        modifier
+          .verticalScroll(rememberScrollState())
+          .background(PatientProfileSectionsBackgroundColor)
       ) {
         // Personal Data: e.g. sex, age, dob
         PersonalData(profileViewData)
 
         // Patient tasks: List of tasks for the patients
         if (profileViewData.tasks.isNotEmpty()) {
+            val appointmentDate = profileViewData.carePlans.singleOrNull { it.status == CarePlan.CarePlanStatus.ACTIVE }?.period?.end
           ProfileCard(
-            title = stringResource(R.string.clinic_visits).uppercase(),
+            title = {
+              Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(text = stringResource(R.string.clinic_visit).uppercase(Locale.getDefault()))
+                if (appointmentDate != null)
+                  Text(text = appointmentDate.asDdMmmYyyy())
+              }
+            },
             onActionClick = {},
             showSeeAll = profileViewData.showListsHighlights,
             profileViewSection = PatientProfileViewSection.TASKS
