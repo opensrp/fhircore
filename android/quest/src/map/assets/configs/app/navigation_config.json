@@ -34,18 +34,6 @@
       ]
     },
     {
-      "id": "p2p_sync",
-      "visible": true,
-      "display": "{{transfer.data}}",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "DEVICE_TO_DEVICE_SYNC",
-          "id": "navigateToP2PScreen"
-        }
-      ]
-    },
-    {
       "id": "profile",
       "visible": true,
       "display": "{{ profile }}",
