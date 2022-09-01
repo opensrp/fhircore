@@ -46,8 +46,9 @@ import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactsProfileScreen
+import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardianRelatedPersonProfileScreen
+import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardiansRoute
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
-import org.smartregister.fhircore.quest.ui.patient.register.guardians.GuardiansRoute
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
 
@@ -181,9 +182,52 @@ private fun AppMainNavigationGraph(
           }
         MainNavigationScreen.PatientGuardians ->
           composable(
-            route = "${it.route}/{${NavigationArg.PATIENT_ID}}",
-            arguments = listOf(navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType })
-          ) { GuardiansRoute(onBackPress = { navController.popBackStack() }) }
+            route =
+              "${it.route}/{${NavigationArg.PATIENT_ID}}${NavigationArg.routePathsOf(includeCommonArgs = true)}",
+            arguments =
+              commonNavArgs.plus(
+                navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType }
+              )
+          ) {
+            GuardiansRoute(
+              navigateRoute = { route -> navController.navigate(route) },
+              onBackPress = { navController.popBackStack() },
+              refreshDataState = appMainViewModel.refreshDataState
+            )
+          }
+        MainNavigationScreen.GuardianProfile ->
+          composable(
+            route =
+              "${it.route}/{${NavigationArg.PATIENT_ID}}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.ON_ART)}",
+            arguments =
+              commonNavArgs.plus(
+                listOf(
+                  navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType },
+                  navArgument(NavigationArg.ON_ART) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = "true"
+                  }
+                )
+              )
+          ) { stackEntry ->
+            val onART = stackEntry.arguments?.getString(NavigationArg.ON_ART) ?: "true"
+            if (onART.toBoolean()) {
+              PatientProfileScreen(
+                navController = navController,
+                appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
+                healthModule = stackEntry.retrieveHealthModuleArg(),
+                patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID),
+                familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID),
+                refreshDataState = appMainViewModel.refreshDataState
+              )
+            } else {
+              GuardianRelatedPersonProfileScreen(
+                refreshDataState = appMainViewModel.refreshDataState,
+                onBackPress = { navController.popBackStack() }
+              )
+            }
+          }
         MainNavigationScreen.FamilyProfile ->
           composable(
             route =

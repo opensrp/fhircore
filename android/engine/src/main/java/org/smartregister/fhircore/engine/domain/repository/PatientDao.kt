@@ -17,10 +17,16 @@
 package org.smartregister.fhircore.engine.domain.repository
 
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 
 interface PatientDao {
   suspend fun loadPatient(patientId: String): Patient?
 
+  suspend fun loadRelatedPerson(logicalId: String): RelatedPerson?
+
   suspend fun loadGuardiansRegisterData(patient: Patient): List<RegisterData>
+
+  suspend fun loadRelatedPersonProfileData(logicalId: String): ProfileData
 }

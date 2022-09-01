@@ -35,6 +35,7 @@ sealed class MainNavigationScreen(
   object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
   object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
   object ViewChildContacts : MainNavigationScreen(route = "viewChildContacts")
+  object GuardianProfile : MainNavigationScreen(route = "guardianProfile")
 
   companion object {
     val appScreens =
@@ -46,7 +47,8 @@ sealed class MainNavigationScreen(
         PatientProfile,
         PatientGuardians,
         FamilyProfile,
-        ViewChildContacts
+        ViewChildContacts,
+        GuardianProfile
       )
   }
 }

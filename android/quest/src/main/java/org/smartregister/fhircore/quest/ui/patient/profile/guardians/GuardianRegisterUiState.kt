@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register.guardians
+package org.smartregister.fhircore.quest.ui.patient.profile.guardians
 
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
+typealias GuardianProfileNavRoute = String
+
 data class GuardianUiState(
   val patientFirstName: String,
-  val registerViewData: List<RegisterViewData>
+  val registerViewData: List<GuardianPatientRegisterData>
+)
+
+data class GuardianPatientRegisterData(
+  val profileNavRoute: GuardianProfileNavRoute,
+  val viewData: RegisterViewData
 )

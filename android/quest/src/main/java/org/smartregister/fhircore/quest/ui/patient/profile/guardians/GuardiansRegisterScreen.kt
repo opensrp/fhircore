@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register.guardians
+package org.smartregister.fhircore.quest.ui.patient.profile.guardians
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,8 +27,11 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,11 +45,25 @@ import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 @Composable
 fun GuardiansRoute(
+  navigateRoute: (String) -> Unit,
   onBackPress: () -> Unit,
+  refreshDataState: MutableState<Boolean>,
   viewModel: GuardianRegisterViewModel = hiltViewModel()
 ) {
   val uiState by viewModel.guardianUiDetails
+  val refreshDataStateValue by remember { refreshDataState }
+
+  LaunchedEffect(Unit) { viewModel.loadData() }
+
+  SideEffect {
+    if (refreshDataStateValue) {
+      viewModel.loadData()
+      refreshDataState.value = false
+    }
+  }
+
   GuardiansRegisterScreen(
+    navigateRoute = navigateRoute,
     onBackPress = onBackPress,
     patientFirstName = uiState.patientFirstName,
     viewGuardiansData = uiState.registerViewData
@@ -55,9 +72,10 @@ fun GuardiansRoute(
 
 @Composable
 fun GuardiansRegisterScreen(
+  navigateRoute: (String) -> Unit,
   onBackPress: () -> Unit,
   patientFirstName: String,
-  viewGuardiansData: List<RegisterViewData>
+  viewGuardiansData: List<GuardianPatientRegisterData>
 ) {
   Scaffold(
     topBar = {
@@ -72,8 +90,11 @@ fun GuardiansRegisterScreen(
     }
   ) { contentPadding ->
     LazyColumn(modifier = Modifier.padding(contentPadding)) {
-      items(viewGuardiansData, key = { it.logicalId }) {
-        HivPatientRegisterListRow(data = it, onItemClick = {})
+      items(viewGuardiansData, key = { it.viewData.logicalId }) { viewGuardianItem ->
+        HivPatientRegisterListRow(
+          data = viewGuardianItem.viewData,
+          onItemClick = { navigateRoute(viewGuardianItem.profileNavRoute) }
+        )
       }
     }
   }
@@ -87,24 +108,33 @@ fun PreviewGuardiansScreen() {
     patientFirstName = "Izzy",
     viewGuardiansData =
       listOf(
-        RegisterViewData(
-          logicalId = "eddb38b9-5363-4bcc-8cb9-dbbc2b4cddd9",
-          identifier = "38",
-          title = "Isabel Iguana",
-          subtitle = "24yr, ART Client",
-          serviceTextIcon = R.drawable.baseline_pregnant_woman_24,
-          serviceButtonBackgroundColor = FemalePinkColor,
-          registerType = RegisterData.HivRegisterData::class,
+        GuardianPatientRegisterData(
+          viewData =
+            RegisterViewData(
+              logicalId = "eddb38b9-5363-4bcc-8cb9-dbbc2b4cddd9",
+              identifier = "38",
+              title = "Isabel Iguana",
+              subtitle = "24yr, ART Client",
+              serviceTextIcon = R.drawable.baseline_pregnant_woman_24,
+              serviceButtonBackgroundColor = FemalePinkColor,
+              registerType = RegisterData.HivRegisterData::class,
+            ),
+          profileNavRoute = "*TODO*"
         ),
-        RegisterViewData(
-          logicalId = "1212299",
-          identifier = "    ",
-          title = "Garry Iguana",
-          serviceTextIcon = R.drawable.baseline_man_24,
-          subtitle = "25yr, Not On ART",
-          serviceButtonBackgroundColor = MaleBlueColor,
-          registerType = RegisterData.HivRegisterData::class,
+        GuardianPatientRegisterData(
+          viewData =
+            RegisterViewData(
+              logicalId = "1212299",
+              identifier = "    ",
+              title = "Garry Iguana",
+              serviceTextIcon = R.drawable.baseline_man_24,
+              subtitle = "25yr, Not On ART",
+              serviceButtonBackgroundColor = MaleBlueColor,
+              registerType = RegisterData.HivRegisterData::class,
+            ),
+          profileNavRoute = "*TODO*"
         )
-      )
+      ),
+    navigateRoute = { /*TODO*/}
   )
 }

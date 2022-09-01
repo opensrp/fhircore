@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register.guardians
+package org.smartregister.fhircore.quest.ui.patient.profile.guardians
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -25,8 +25,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
+import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.quest.data.patient.HivPatientGuardianRepository
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
@@ -35,31 +39,58 @@ class GuardianRegisterViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
-  repository: HivPatientGuardianRepository,
-  registerViewDataMapper: RegisterViewDataMapper
+  val repository: HivPatientGuardianRepository,
+  val registerViewDataMapper: RegisterViewDataMapper
 ) : ViewModel() {
 
   // Get your argument from the SavedStateHandle
   private val patientId: String = savedStateHandle[NavigationArg.PATIENT_ID]!!
+  private val appFeatureName: String? = savedStateHandle[NavigationArg.FEATURE]
+  private val healthModule: HealthModule =
+    savedStateHandle[NavigationArg.HEALTH_MODULE] ?: HealthModule.HIV
 
   private val _guardianUiDetails =
     mutableStateOf(GuardianUiState(patientFirstName = "", registerViewData = emptyList()))
 
   val guardianUiDetails: State<GuardianUiState> = _guardianUiDetails
 
-  init {
+  fun loadData() {
     viewModelScope.launch {
       val patient = repository.loadPatient(patientId)
       val guardiansRegisterViewData =
-        repository.loadGuardianRegisterData(patient!!).map {
-          registerViewDataMapper.transformInputToOutputModel(it)
-        }
+        repository
+          .loadGuardianRegisterData(patient!!)
+          .filterIsInstance<RegisterData.HivRegisterData>()
+          .map {
+            GuardianPatientRegisterData(
+              viewData = registerViewDataMapper.transformInputToOutputModel(it),
+              profileNavRoute = getRoute(it)
+            )
+          }
       _guardianUiDetails.value =
         GuardianUiState(
           patientFirstName = patient.extractFirstName(),
           registerViewData = guardiansRegisterViewData
         )
     }
+  }
+
+  private fun getRoute(registerData: RegisterData.HivRegisterData): String {
+    val commonNavArgs =
+      listOf(
+        Pair(NavigationArg.FEATURE, appFeatureName),
+        Pair(NavigationArg.HEALTH_MODULE, healthModule.name)
+      )
+
+    val navArgs =
+      commonNavArgs +
+        Pair(
+          NavigationArg.ON_ART,
+          (registerData.healthStatus != HealthStatus.NOT_ON_ART).toString()
+        )
+    val urlParams = NavigationArg.bindArgumentsOf(*navArgs.toTypedArray())
+
+    return "${MainNavigationScreen.GuardianProfile.route}/${registerData.logicalId}$urlParams"
   }
 
   private fun Patient.extractFirstName() = this.extractName().substringBefore(" ")
