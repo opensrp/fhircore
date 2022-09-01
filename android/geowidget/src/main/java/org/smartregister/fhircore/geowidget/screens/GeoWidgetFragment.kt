@@ -20,10 +20,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
@@ -82,6 +86,24 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
         ConfigType.GeoWidget,
         geoWidgetActivityArgs.configId
       )
+
+    return setupViews()
+  }
+
+  /** Create the fragment views. Add the toolbar and KujakuMapView to a LinearLayout */
+  private fun setupViews(): LinearLayout {
+    val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 168)
+
+    val toolbar =
+      Toolbar(requireContext()).apply {
+        popupTheme = R.style.AppTheme
+        visibility = View.VISIBLE
+        navigationIcon =
+          ContextCompat.getDrawable(context, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+        setLayoutParams(layoutParams)
+        setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
+        setNavigationOnClickListener { findNavController().popBackStack() }
+      }
     kujakuMapView =
       KujakuMapView(requireContext()).apply {
         id = R.id.kujaku_widget
@@ -95,7 +117,15 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
           }
         }
       }
-    return kujakuMapView
+    return LinearLayout(requireContext()).apply {
+      orientation = LinearLayout.VERTICAL
+      addView(
+        toolbar,
+      )
+      addView(
+        kujakuMapView,
+      )
+    }
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
