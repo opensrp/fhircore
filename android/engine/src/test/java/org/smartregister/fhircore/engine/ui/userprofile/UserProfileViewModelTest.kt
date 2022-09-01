@@ -98,11 +98,12 @@ class UserProfileViewModelTest : RobolectricTest() {
     sharedPreferencesHelper = mockk()
     userProfileViewModel =
       UserProfileViewModel(
-        syncBroadcaster,
-        accountAuthenticator,
-        secureSharedPreference,
-        sharedPreferencesHelper,
-        configurationRegistry
+        fhirEngine = mockk(),
+        syncBroadcaster = syncBroadcaster,
+        accountAuthenticator = accountAuthenticator,
+        secureSharedPreference = secureSharedPreference,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry
       )
   }
 

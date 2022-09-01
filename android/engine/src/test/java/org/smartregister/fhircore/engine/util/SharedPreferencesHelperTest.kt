@@ -102,4 +102,19 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
       sharedPreferencesHelper.read<KeycloakUserDetails>("object")?.id
     )
   }
+
+  @Test
+  fun testResetSharedPrefsClearsData() {
+
+    sharedPreferencesHelper.write("anyBooleanKey", true)
+    sharedPreferencesHelper.write("anyLongKey", 123456789)
+
+    Assert.assertEquals(123456789, sharedPreferencesHelper.read("anyLongKey", 0))
+    Assert.assertEquals(true, sharedPreferencesHelper.read("anyBooleanKey", false))
+
+    sharedPreferencesHelper.resetSharedPrefs()
+
+    Assert.assertEquals(0, sharedPreferencesHelper.read("anyLongKey", 0))
+    Assert.assertEquals(false, sharedPreferencesHelper.read("anyBooleanKey", false))
+  }
 }

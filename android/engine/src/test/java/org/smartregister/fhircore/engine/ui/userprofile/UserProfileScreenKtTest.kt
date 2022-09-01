@@ -16,20 +16,20 @@
 
 package org.smartregister.fhircore.engine.ui.userprofile
 
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.MutableLiveData
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-@Ignore("Fix failing tests")
 class UserProfileScreenKtTest : RobolectricTest() {
 
   private val userProfileViewModel = mockk<UserProfileViewModel>()
@@ -40,6 +40,8 @@ class UserProfileScreenKtTest : RobolectricTest() {
   fun setUp() {
     every { userProfileViewModel.retrieveUsername() } returns "johndoe"
     every { userProfileViewModel.allowSwitchingLanguages() } returns false
+    every { userProfileViewModel.onDatabaseReset } returns MutableLiveData(false)
+    every { userProfileViewModel.showProgressBar } returns MutableLiveData(false)
   }
 
   @Test
@@ -88,5 +90,19 @@ class UserProfileScreenKtTest : RobolectricTest() {
     composeRule.onNodeWithText("Language").performClick()
     composeRule.onNodeWithText("Spanish").assertExists()
     composeRule.onNodeWithText("English").assertExists()
+  }
+
+  @Test
+  fun testResetDatabaseRowIsRenderedOnProfileScreen() {
+    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+    composeRule.onNodeWithText("Reset data").assertExists()
+  }
+
+  @Test
+  fun testResetDatabaseRowClickRendersConfirmationDialog() {
+    every { userProfileViewModel.resetDatabaseFlag(true) } returns Unit
+    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+    composeRule.onNode(isDialog()).assertDoesNotExist()
+    composeRule.onNodeWithText("Reset data").performClick()
   }
 }

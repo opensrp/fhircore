@@ -176,21 +176,21 @@ fun UserProfileScreen(
       )
     }
 
-    UserProfileRow(
-      icon = Icons.Rounded.DeleteForever,
-      text = stringResource(id = R.string.clear_database),
-      clickListener = { userProfileViewModel.resetDatabaseFlag(true) },
-      modifier = modifier
-    )
-
     if (BuildConfig.DEBUG) {
       UserProfileRow(
-        icon = Icons.Rounded.Logout,
-        text = stringResource(id = R.string.logout),
-        clickListener = userProfileViewModel::logoutUser,
+        icon = Icons.Rounded.DeleteForever,
+        text = stringResource(id = R.string.clear_database),
+        clickListener = { userProfileViewModel.resetDatabaseFlag(true) },
         modifier = modifier
       )
     }
+
+    UserProfileRow(
+      icon = Icons.Rounded.Logout,
+      text = stringResource(id = R.string.logout),
+      clickListener = userProfileViewModel::logoutUser,
+      modifier = modifier
+    )
   }
 }
 
