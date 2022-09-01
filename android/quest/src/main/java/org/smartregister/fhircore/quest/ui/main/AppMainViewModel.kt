@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.MutableState
@@ -59,15 +58,12 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
-import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetActivity
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetActivity.Companion.GEO_WIDGET_CONFIG_ID
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.navigation.NavigationArg.bindArgumentsOf
 import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
@@ -157,12 +153,12 @@ constructor(
       }
       is AppMainEvent.TriggerWorkflow -> triggerWorkflow(event)
       is AppMainEvent.OpenProfile -> {
-        val urlParams =
-          bindArgumentsOf(
+        val args =
+          bundleOf(
             NavigationArg.PROFILE_ID to event.profileId,
             NavigationArg.RESOURCE_ID to event.resourceId
           )
-        event.navController.navigate(MainNavigationScreen.Profile.route + urlParams)
+        event.navController.navigate(MainNavigationScreen.Profile.route, args)
       }
     }
   }
@@ -173,24 +169,22 @@ constructor(
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC ->
         startP2PScreen(context = event.navController.context)
       ApplicationWorkflow.LAUNCH_SETTINGS ->
-        event.navController.navigate(route = MainNavigationScreen.Settings.route)
+        event.navController.navigate(MainNavigationScreen.Settings.route)
       ApplicationWorkflow.LAUNCH_REPORT ->
-        event.navController.navigate(route = MainNavigationScreen.Reports.route)
+        event.navController.navigate(MainNavigationScreen.Reports.route)
       ApplicationWorkflow.LAUNCH_REGISTER -> {
-        val urlParams =
-          bindArgumentsOf(
+        val args =
+          bundleOf(
             Pair(NavigationArg.REGISTER_ID, event.navMenu.id),
             Pair(NavigationArg.SCREEN_TITLE, event.navMenu.display)
           )
-        event.navController.navigate(route = MainNavigationScreen.Home.route + urlParams)
+        event.navController.navigate(MainNavigationScreen.Home.route, args)
       }
       ApplicationWorkflow.LAUNCH_MAP ->
-        with(event.navController.context) {
-          (getActivity() as AppMainActivity).mapLauncherResultHandler.launch(
-            Intent(this, GeoWidgetActivity::class.java)
-              .putExtra(GEO_WIDGET_CONFIG_ID, navigationAction.id)
-          )
-        }
+        event.navController.navigate(
+          MainNavigationScreen.GeoWidget.route,
+          bundleOf(NavigationArg.CONFIG_ID to navigationAction.id)
+        )
       else -> return
     }
   }
@@ -229,7 +223,7 @@ constructor(
         )
 
       context.launchQuestionnaire<QuestionnaireActivity>(
-        GeoWidgetActivity.FAMILY_REGISTRATION_QUESTIONNAIRE,
+        GeoWidgetFragment.FAMILY_REGISTRATION_QUESTIONNAIRE,
         intentBundle = bundle
       )
     }

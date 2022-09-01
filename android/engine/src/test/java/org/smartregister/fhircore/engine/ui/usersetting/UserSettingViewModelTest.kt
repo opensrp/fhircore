@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.userprofile
+package org.smartregister.fhircore.engine.ui.usersetting
 
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
@@ -51,11 +51,11 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
-class UserProfileViewModelTest : RobolectricTest() {
+class UserSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  lateinit var userProfileViewModel: UserProfileViewModel
+  lateinit var userSettingViewModel: UserSettingViewModel
   lateinit var accountAuthenticator: AccountAuthenticator
   lateinit var secureSharedPreference: SecureSharedPreference
   var sharedPreferencesHelper: SharedPreferencesHelper
@@ -95,8 +95,8 @@ class UserProfileViewModelTest : RobolectricTest() {
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
-    userProfileViewModel =
-      UserProfileViewModel(
+    userSettingViewModel =
+      UserSettingViewModel(
         syncBroadcaster,
         accountAuthenticator,
         secureSharedPreference,
@@ -107,14 +107,14 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSync() {
-    userProfileViewModel.runSync()
+    userSettingViewModel.runSync()
   }
 
   @Test
   fun testRetrieveUsernameShouldReturnDemo() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
-    Assert.assertEquals("demo", userProfileViewModel.retrieveUsername())
+    Assert.assertEquals("demo", userSettingViewModel.retrieveUsername())
     verify { secureSharedPreference.retrieveSessionUsername() }
   }
 
@@ -122,38 +122,38 @@ class UserProfileViewModelTest : RobolectricTest() {
   fun testLogoutUserShouldCallAuthLogoutService() {
     every { accountAuthenticator.logout() } returns Unit
 
-    userProfileViewModel.logoutUser()
+    userSettingViewModel.logoutUser()
 
     verify(exactly = 1) { accountAuthenticator.logout() }
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-    Assert.assertTrue(userProfileViewModel.onLogout.value!!)
+    Assert.assertTrue(userSettingViewModel.onLogout.value!!)
   }
 
   @Test
   fun allowSwitchingLanguagesShouldReturnTrueWhenMultipleLanguagesAreConfigured() {
     val languages = listOf(Language("es", "Spanish"), Language("en", "English"))
-    userProfileViewModel = spyk(userProfileViewModel)
+    userSettingViewModel = spyk(userSettingViewModel)
 
-    every { userProfileViewModel.languages } returns languages
+    every { userSettingViewModel.languages } returns languages
 
-    Assert.assertTrue(userProfileViewModel.allowSwitchingLanguages())
+    Assert.assertTrue(userSettingViewModel.allowSwitchingLanguages())
   }
 
   @Test
   fun allowSwitchingLanguagesShouldReturnFalseWhenConfigurationIsFalse() {
     val languages = listOf(Language("es", "Spanish"))
-    userProfileViewModel = spyk(userProfileViewModel)
+    userSettingViewModel = spyk(userSettingViewModel)
 
-    every { userProfileViewModel.languages } returns languages
+    every { userSettingViewModel.languages } returns languages
 
-    Assert.assertFalse(userProfileViewModel.allowSwitchingLanguages())
+    Assert.assertFalse(userSettingViewModel.allowSwitchingLanguages())
   }
 
   @Test
   fun loadSelectedLanguage() {
     every { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en") } returns "fr"
 
-    Assert.assertEquals("French", userProfileViewModel.loadSelectedLanguage())
+    Assert.assertEquals("French", userSettingViewModel.loadSelectedLanguage())
     verify { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en") }
   }
 
@@ -164,9 +164,9 @@ class UserProfileViewModelTest : RobolectricTest() {
 
     every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
 
-    userProfileViewModel.language.observeForever { postedValue = it }
+    userSettingViewModel.language.observeForever { postedValue = it }
 
-    userProfileViewModel.setLanguage(language)
+    userSettingViewModel.setLanguage(language)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
@@ -176,7 +176,7 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() = runBlockingTest {
-    val languages = userProfileViewModel.languages
+    val languages = userSettingViewModel.languages
     Assert.assertEquals("English", languages[0].displayName)
     Assert.assertEquals("en", languages[0].tag)
     Assert.assertEquals("Swahili", languages[1].displayName)
@@ -185,7 +185,7 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun languagesLazyPropertyShouldRunFetchLanguagesAndReturnConfiguredLanguages() {
-    val languages = userProfileViewModel.languages
+    val languages = userSettingViewModel.languages
 
     Assert.assertEquals("English", languages[0].displayName)
     Assert.assertEquals("en", languages[0].tag)

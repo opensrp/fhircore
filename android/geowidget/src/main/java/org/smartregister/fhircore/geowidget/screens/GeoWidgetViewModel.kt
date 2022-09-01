@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.geowidget.model
+package org.smartregister.fhircore.geowidget.screens
 
 import android.content.Context
 import androidx.lifecycle.LiveData
@@ -34,12 +34,15 @@ import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
+import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 
 @HiltViewModel
 class GeoWidgetViewModel
 @Inject
 constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: DispatcherProvider) :
   ViewModel() {
+
+  val geoWidgetEventLiveData = MutableLiveData<GeoWidgetEvent>()
 
   suspend fun getFamiliesFeatureCollection(context: Context): FeatureCollection {
     val families = getFamilies()

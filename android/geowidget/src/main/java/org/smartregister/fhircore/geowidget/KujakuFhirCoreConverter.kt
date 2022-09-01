@@ -26,8 +26,8 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Resource
 import org.json.JSONObject
-import org.smartregister.fhircore.geowidget.ext.getGeoJsonGeometry
-import org.smartregister.fhircore.geowidget.ext.updateBoundaryGeoJsonProperties
+import org.smartregister.fhircore.geowidget.util.extensions.getGeoJsonGeometry
+import org.smartregister.fhircore.geowidget.util.extensions.updateBoundaryGeoJsonProperties
 
 class KujakuFhirCoreConverter {
 

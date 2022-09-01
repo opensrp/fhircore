@@ -3,10 +3,6 @@
     package="org.smartregister.fhircore.geowidget">
 
     <application>
-        <activity
-            android:name=".screens.GeoWidgetActivity"
-            android:exported="false" />
-
         <receiver
             android:name="io.ona.kujaku.receivers.KujakuNetworkChangeReceiver"
             android:exported="false">

@@ -45,7 +45,8 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
             '**/di/*',
             '**/*Hilt*.*',
             // Data Binding
-            '**/databinding/*'
+            '**/databinding/*',
+            'org/hl7/fhir/*'
     ]
 
     def moduleVariant = project.name == "quest" ? "questDebug" : "debug"

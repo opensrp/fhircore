@@ -75,10 +75,6 @@ interface ConfigService {
       )
   }
 
-  fun unschedulePlan(context: Context) {
-    WorkManager.getInstance(context).cancelUniqueWork(FhirTaskPlanWorker.WORK_ID)
-  }
-
   /** Retrieve registry sync params */
   fun loadRegistrySyncParams(
     configurationRegistry: ConfigurationRegistry,

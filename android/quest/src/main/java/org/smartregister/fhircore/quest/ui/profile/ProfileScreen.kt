@@ -50,7 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -67,7 +67,7 @@ const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 @Composable
 fun ProfileScreen(
   modifier: Modifier = Modifier,
-  navController: NavHostController,
+  navController: NavController,
   profileUiState: ProfileUiState,
   onEvent: (ProfileEvent) -> Unit
 ) {
@@ -146,6 +146,7 @@ fun ProfileScreen(
                   navController.context.launchQuestionnaire<QuestionnaireActivity>(questionnaireId)
                 }
               }
+              else -> {}
             }
           },
           backgroundColor = MaterialTheme.colors.primary,

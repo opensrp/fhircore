@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="nav_host" type="id" />
+    <item name="kujaku_widget" type="id" />
 </resources>

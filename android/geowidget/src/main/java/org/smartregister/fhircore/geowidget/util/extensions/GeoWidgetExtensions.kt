@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.geowidget.ext
+package org.smartregister.fhircore.geowidget.util.extensions
 
 import java.math.BigDecimal
 import java.util.UUID

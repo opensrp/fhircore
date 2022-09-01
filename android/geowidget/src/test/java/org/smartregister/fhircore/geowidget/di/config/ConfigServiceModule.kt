@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.di.config
+package org.smartregister.fhircore.geowidget.di.config
 
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.geowidget.di.config.FakeConfigService
 
 @InstallIn(SingletonComponent::class)
 @Module

@@ -7,6 +7,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
+    id 'androidx.navigation.safeargs'
 }
 
 apply from: '../jacoco.gradle'
@@ -99,7 +100,7 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
-        freeCompilerArgs = ['-Xjvm-default=compatibility', '-opt-in=kotlin.RequiresOptIn']
+        freeCompilerArgs = ['-Xjvm-default=all-compatibility', '-opt-in=kotlin.RequiresOptIn']
     }
 
     buildFeatures {
@@ -108,7 +109,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.1.1'
+        kotlinCompilerExtensionVersion '1.3.0'
     }
 
     testOptions {
@@ -208,7 +209,7 @@ dependencies {
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
     testImplementation deps.kotlin.test
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.2'
 
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
@@ -219,7 +220,6 @@ dependencies {
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
 
-    def composeVersion = "1.3.0-alpha01"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")

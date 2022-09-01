@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.userprofile
+package org.smartregister.fhircore.engine.ui.usersetting
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -30,7 +30,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 
 @HiltViewModel
-class UserProfileViewModel
+class UserSettingViewModel
 @Inject
 constructor(
   val syncBroadcaster: SyncBroadcaster,

@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.navArgs
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
 import com.mapbox.geojson.Point
@@ -44,57 +47,61 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
-import org.smartregister.fhircore.geowidget.ext.coordinates
-import org.smartregister.fhircore.geowidget.ext.generateLocation
-import org.smartregister.fhircore.geowidget.model.GeoWidgetViewModel
+import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
+import org.smartregister.fhircore.geowidget.util.extensions.coordinates
+import org.smartregister.fhircore.geowidget.util.extensions.generateLocation
 import timber.log.Timber
 
 @AndroidEntryPoint
-open class GeoWidgetActivity : AppCompatActivity(), Observer<FeatureCollection> {
+open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
 
+  val geoWidgetActivityArgs by navArgs<GeoWidgetFragmentArgs>()
+
+  val geoWidgetViewModel by activityViewModels<GeoWidgetViewModel>()
+
   lateinit var kujakuMapView: KujakuMapView
-  val geowidgetViewModel: GeoWidgetViewModel by viewModels()
+
   var geoJsonSource: GeoJsonSource? = null
 
   var featureCollection: FeatureCollection? = null
+
   var registerFamilyMode = false
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    val geoWidgetConfigId = intent.getStringExtra(GEO_WIDGET_CONFIG_ID) ?: ""
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View? {
+    Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
     geoWidgetConfiguration =
       configurationRegistry.retrieveConfiguration(
         ConfigType.GeoWidget,
-        configId = geoWidgetConfigId
+        geoWidgetActivityArgs.configId
       )
+    kujakuMapView =
+      KujakuMapView(requireContext()).apply {
+        id = R.id.kujaku_widget
+        getMapAsync { mapboxMap ->
+          Timber.i("Get Map async finished")
+          val builder = Style.Builder().fromUri("asset://fhircore_style.json")
 
-    performOnCreateOperations()
+          mapboxMap.setStyle(builder) { style ->
+            Timber.i("Finished setting the style")
+            renderResourcesOnMap(style)
+          }
+        }
+      }
+    return kujakuMapView
   }
 
-  protected open fun performOnCreateOperations() {
-    Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_TOKEN)
-    setContentView(R.layout.activity_geowidget)
-
-    kujakuMapView = findViewById(R.id.mapView)
-    kujakuMapView.getMapAsync { mapboxMap ->
-      Timber.i("Get Map async finished")
-      val builder = Style.Builder().fromUri("asset://fhircore_style.json")
-
-      mapboxMap.setStyle(builder) { style ->
-        Timber.i("Finished setting the style")
-        renderResourcesOnMap(style)
-      }
-    }
-
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
     setFeatureClickListener()
     enableFamilyRegistration()
-
-    // Display the groups
-    geowidgetViewModel.getFamiliesFeatureCollectionStream(this).observe(this, this)
   }
 
   fun renderResourcesOnMap(style: Style) {
@@ -120,21 +127,17 @@ open class GeoWidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
           featureJSONObject ?: return
           val coordinates = featureJSONObject.coordinates() ?: return
 
-          Toast.makeText(this@GeoWidgetActivity, getString(R.string.please_wait), Toast.LENGTH_LONG)
+          val geoWidgetActivity = requireContext()
+          Toast.makeText(geoWidgetActivity, getString(R.string.please_wait), Toast.LENGTH_LONG)
             .show()
 
-          val location = generateLocation(featureJSONObject, coordinates)
+          val location: Location = generateLocation(featureJSONObject, coordinates)
 
-          // Save it in the viewModel
-          geowidgetViewModel.saveLocation(location).observe(this@GeoWidgetActivity) {
-            if (it) {
-              Toast.makeText(
-                  this@GeoWidgetActivity,
-                  getString(R.string.openning_family_registration_form),
-                  Toast.LENGTH_LONG
-                )
-                .show()
-              setLocationReferenceAsResult(location)
+          geoWidgetViewModel.saveLocation(location).observe(viewLifecycleOwner) { saveLocation ->
+            if (saveLocation) {
+              geoWidgetViewModel.geoWidgetEventLiveData.postValue(
+                GeoWidgetEvent.RegisterClient(location.idElement.value)
+              )
             }
           }
         }
@@ -144,29 +147,19 @@ open class GeoWidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
     )
   }
 
-  fun setLocationReferenceAsResult(location: Location) {
-    val intentData = Intent().apply { putExtra(LOCATION_ID, location.idElement.value) }
-
-    setResult(RESULT_OK, intentData)
-    this@GeoWidgetActivity.finish()
-  }
-
   fun setFeatureClickListener() {
     kujakuMapView.setOnFeatureClickListener(
       { featuresList ->
         featuresList.firstOrNull { it.hasProperty("family-id") }?.let {
-          it.getStringProperty("family-id")?.also { setFamilyIdAsResult(it) }
+          it.getStringProperty("family-id")?.also { familyId ->
+            geoWidgetViewModel.geoWidgetEventLiveData.postValue(
+              GeoWidgetEvent.OpenProfile(familyId)
+            )
+          }
         }
       },
       "quest-data-points"
     )
-  }
-
-  fun setFamilyIdAsResult(familyId: String) {
-    val intentData = Intent().apply { putExtra(FAMILY_ID, familyId) }
-
-    setResult(RESULT_OK, intentData)
-    this@GeoWidgetActivity.finish()
   }
 
   override fun onChanged(featureCollection: FeatureCollection?) {
@@ -195,8 +188,6 @@ open class GeoWidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
     }
 
     val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(points))
-
-    // Generate the padded bbox
     val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
 
     kujakuMapView.getMapAsync { mapboxMap ->
@@ -211,43 +202,46 @@ open class GeoWidgetActivity : AppCompatActivity(), Observer<FeatureCollection> 
 
   override fun onStart() {
     super.onStart()
-    if (this::kujakuMapView.isInitialized) kujakuMapView.onStart()
+    kujakuMapView.onStart()
   }
 
   override fun onResume() {
     super.onResume()
-    if (this::kujakuMapView.isInitialized) kujakuMapView.onResume()
+    kujakuMapView.onResume()
+    // Display the groups
+    geoWidgetViewModel
+      .getFamiliesFeatureCollectionStream(requireContext())
+      .observe(viewLifecycleOwner, this)
   }
 
   override fun onPause() {
     super.onPause()
-    if (this::kujakuMapView.isInitialized) kujakuMapView.onPause()
+    kujakuMapView.onPause()
   }
 
   override fun onStop() {
     super.onStop()
-    if (this::kujakuMapView.isInitialized) kujakuMapView.onStop()
+    kujakuMapView.onStop()
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    if (this::kujakuMapView.isInitialized) kujakuMapView.onDestroy()
+    kujakuMapView.onDestroy()
   }
 
   override fun onLowMemory() {
     super.onLowMemory()
-    if (this::kujakuMapView.isInitialized) kujakuMapView.onLowMemory()
+    kujakuMapView.onLowMemory()
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
-    if (this::kujakuMapView.isInitialized) kujakuMapView.onSaveInstanceState(outState)
+    kujakuMapView.onSaveInstanceState(outState)
   }
 
   companion object {
     const val LOCATION_ID = "location-id"
     const val FAMILY_ID = "family-id"
-    const val GEO_WIDGET_CONFIG_ID = "geoWidgetConfigId"
     const val FAMILY_REGISTRATION_QUESTIONNAIRE = "82952-geowidget"
   }
 }

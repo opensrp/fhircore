@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.geowidget.di.login
+package org.smartregister.fhircore.geowidget.model
 
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
-import org.smartregister.fhircore.engine.ui.login.LoginService
+import kotlinx.serialization.Serializable
 
-@InstallIn(ActivityComponent::class)
-@Module
-object LoginServiceModule {
+@Serializable
+sealed class GeoWidgetEvent {
 
-  @Provides
-  fun bindLoginService(): LoginService {
-    return FakeLoginService()
-  }
+  @Serializable data class OpenProfile(val data: String) : GeoWidgetEvent()
+
+  @Serializable data class RegisterClient(val data: String) : GeoWidgetEvent()
 }
