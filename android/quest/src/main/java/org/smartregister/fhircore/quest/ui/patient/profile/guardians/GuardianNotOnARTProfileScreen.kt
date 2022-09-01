@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import org.smartregister.fhircore.engine.R as R2
 import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.quest.R
@@ -83,7 +84,7 @@ fun GuardianRelatedPersonProfileScreen(
   Scaffold(
     topBar = {
       TopAppBar(
-        title = {},
+        title = { Text(stringResource(R2.string.profile)) },
         navigationIcon = {
           IconButton(onClick = { onBackPress() }) { Icon(Icons.Filled.ArrowBack, null) }
         },

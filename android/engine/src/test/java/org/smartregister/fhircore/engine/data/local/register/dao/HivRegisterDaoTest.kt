@@ -256,7 +256,7 @@ class HivRegisterDaoTest : RobolectricTest() {
     coVerify { fhirEngine.get(ResourceType.RelatedPerson, guardianRelatedPerson.logicalId) }
     assertNotNull(result)
     assertEquals(guardianRelatedPerson.logicalId, result.logicalId)
-    assertEquals(HealthStatus.DEFAULT, result.healthStatus)
+    assertEquals(HealthStatus.NOT_ON_ART, result.healthStatus)
     assertEquals("Not on ART", result.healthStatus.display)
     assertEquals(HivRegisterDao.ResourceValue.BLANK, result.identifier)
     assertEquals(HivRegisterDao.ResourceValue.BLANK, result.chwAssigned)
