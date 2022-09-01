@@ -219,12 +219,12 @@ constructor(
 
   fun onUsernameUpdated(username: String) {
     _loginErrorState.postValue(null)
-    _username.postValue(username)
+    _username.value = username
   }
 
   fun onPasswordUpdated(password: String) {
     _loginErrorState.postValue(null)
-    _password.postValue(password)
+    _password.value = password
   }
 
   override fun run(future: AccountManagerFuture<Bundle>?) {
