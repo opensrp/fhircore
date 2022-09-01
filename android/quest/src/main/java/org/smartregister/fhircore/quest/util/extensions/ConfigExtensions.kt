@@ -25,7 +25,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 fun List<ActionConfig>.handleClickEvent(
   onViewComponentClick: (ViewComponentEvent) -> Unit,
-  resourceData: ResourceData
+  resourceData: ResourceData?
 ) {
   val onClickAction = this.find { it.trigger == ActionTrigger.ON_CLICK }
   onClickAction?.let { actionConfig ->
@@ -36,7 +36,7 @@ fun List<ActionConfig>.handleClickEvent(
         actionConfig.id?.let {
           ViewComponentEvent.OpenProfile(
             profileId = it,
-            resourceId = resourceData.baseResource.logicalId
+            resourceId = resourceData?.baseResource?.logicalId
           )
         }
       }
