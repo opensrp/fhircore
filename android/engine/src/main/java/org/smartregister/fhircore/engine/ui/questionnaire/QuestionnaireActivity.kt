@@ -33,6 +33,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -350,7 +351,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       )
       .values
       .flatten()
-      .all { it.isValid }
+      .all { it is Valid }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     questionnaireViewModel.extractAndSaveResources(
