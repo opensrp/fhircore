@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.userprofile
 
+import android.os.Build
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -27,9 +28,11 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
+@Config(sdk = [Build.VERSION_CODES.Q])
 class UserProfileScreenKtTest : RobolectricTest() {
 
   private val userProfileViewModel = mockk<UserProfileViewModel>()

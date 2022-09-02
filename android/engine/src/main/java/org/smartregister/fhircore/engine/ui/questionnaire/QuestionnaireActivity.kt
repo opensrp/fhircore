@@ -24,6 +24,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -31,8 +32,8 @@ import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -254,10 +255,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   fun getQuestionnaireResponse(): QuestionnaireResponse {
-    val questionnaireFragment =
-      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
+    val questionnaireFragment = fetchQuestionnaireFragment()
     return questionnaireFragment.getQuestionnaireResponse()
   }
+
+  @VisibleForTesting
+  fun fetchQuestionnaireFragment() =
+    supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
 
   fun dismissSaveProcessing() {
     if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog.isShowing)
@@ -338,7 +342,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       )
       .values
       .flatten()
-      .any { it is Invalid }
+      .all { it is Valid }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     questionnaireViewModel.extractAndSaveResources(
