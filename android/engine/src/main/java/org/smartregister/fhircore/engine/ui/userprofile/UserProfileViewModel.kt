@@ -80,7 +80,7 @@ constructor(
     viewModelScope.launch(dispatcherProvider.io()) {
       fhirEngine.clearDatabase()
       sharedPreferencesHelper.resetSharedPrefs()
-      // logoutUser()
+      accountAuthenticator.localLogout()
       accountAuthenticator.launchScreen(AppSettingActivity::class.java)
     }
   }

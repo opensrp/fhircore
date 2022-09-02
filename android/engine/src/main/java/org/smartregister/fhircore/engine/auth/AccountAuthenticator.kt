@@ -296,13 +296,7 @@ constructor(
         object : Callback<ResponseBody> {
           override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
             if (response.isSuccessful) {
-              // Invalidate access token then launch login screen
-              accountManager.invalidateAuthToken(
-                getAccountType(),
-                tokenManagerService.getLocalSessionToken()
-              )
-              // Reset session and refresh tokens to null to force re-login
-              secureSharedPreference.deleteSessionTokens()
+              localLogout()
               launchScreen(LoginActivity::class.java)
             } else {
               context.showToast(context.getString(R.string.cannot_logout_user))
@@ -318,6 +312,13 @@ constructor(
         }
       )
     }
+  }
+
+  fun localLogout() {
+    // Invalidate access token then launch login screen
+    accountManager.invalidateAuthToken(getAccountType(), tokenManagerService.getLocalSessionToken())
+    // Reset session and refresh tokens to null to force re-login
+    secureSharedPreference.deleteSessionTokens()
   }
 
   fun launchScreen(clazz: Class<*>) {

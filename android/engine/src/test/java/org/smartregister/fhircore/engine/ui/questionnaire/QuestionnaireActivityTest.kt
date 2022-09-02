@@ -119,6 +119,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.supportFragmentManager.executePendingTransactions()
+
+    questionnaireActivity.populateInitialValues(
+      Questionnaire()
+    ) // fix flaky test - init lazy property questionnaire
   }
 
   @After
