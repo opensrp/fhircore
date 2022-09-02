@@ -41,7 +41,9 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
+import org.smartregister.fhircore.engine.util.extension.extractGivenName
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
@@ -96,7 +98,8 @@ constructor(
           gender = patient.gender,
           age = patient.birthDate.toAgeDisplay(),
           address = patient.extractAddress(),
-          familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
+          givenName = patient.extractGivenName(),
+          familyName = patient.extractFamilyName(),
           phoneContacts = patient.extractTelecom(),
           practitioners = patient.generalPractitioner,
           chwAssigned = patient.extractGeneralPractitionerReference(),
@@ -119,6 +122,8 @@ constructor(
       logicalId = patient.logicalId,
       birthdate = patient.birthDate,
       name = patient.extractName(),
+      givenName = patient.extractGivenName(),
+      familyName = patient.extractFamilyName(),
       identifier = hivPatientIdentifier(patient),
       gender = patient.gender,
       age = patient.birthDate.toAgeDisplay(),
@@ -246,6 +251,34 @@ constructor(
         this.active = false
       }
     defaultRepository.addOrUpdate(patient)
+  }
+
+  suspend fun transformChildrenPatientToRegisterData(patients: List<Patient>): List<RegisterData> {
+
+    return patients
+      .filter(this::isValidPatient)
+      .map { patient ->
+        RegisterData.HivRegisterData(
+          logicalId = patient.logicalId,
+          identifier = hivPatientIdentifier(patient),
+          name = patient.extractName(),
+          gender = patient.gender,
+          age = patient.birthDate.toAgeDisplay(),
+          address = patient.extractAddress(),
+          givenName = patient.extractGivenName(),
+          familyName = patient.extractFamilyName(),
+          phoneContacts = patient.extractTelecom(),
+          practitioners = patient.generalPractitioner,
+          chwAssigned = patient.extractGeneralPractitionerReference(),
+          healthStatus =
+            patient.extractHealthStatusFromMeta(
+              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+            ),
+          isPregnant = patient.isPregnant(),
+          isBreastfeeding = patient.isBreastfeeding()
+        )
+      }
+      .filterNot { it.healthStatus == HealthStatus.DEFAULT }
   }
 
   companion object {

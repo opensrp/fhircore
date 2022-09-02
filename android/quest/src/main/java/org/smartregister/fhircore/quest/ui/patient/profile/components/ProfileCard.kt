@@ -20,6 +20,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,12 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileRowItem
@@ -49,6 +48,25 @@ import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSecti
 @Composable
 fun ProfileCard(
   title: String,
+  profileViewSection: PatientProfileViewSection,
+  onActionClick: ((PatientProfileViewSection) -> Unit),
+  showSeeAll: Boolean = true,
+  modifier: Modifier = Modifier,
+  body: (@Composable() () -> Unit)
+) {
+  ProfileCard(
+    title = { Text(text = title.uppercase(Locale.getDefault())) },
+    profileViewSection = profileViewSection,
+    onActionClick = onActionClick,
+    showSeeAll,
+    modifier,
+    body
+  )
+}
+
+@Composable
+fun ProfileCard(
+  title: @Composable RowScope.() -> Unit,
   profileViewSection: PatientProfileViewSection,
   onActionClick: (PatientProfileViewSection) -> Unit,
   showSeeAll: Boolean = true,
@@ -61,11 +79,7 @@ fun ProfileCard(
       horizontalArrangement = Arrangement.SpaceBetween,
       modifier = modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 16.dp)
     ) {
-      Text(
-        text = title.uppercase(Locale.getDefault()),
-        color = DefaultColor,
-        fontWeight = FontWeight.SemiBold
-      )
+      title()
 
       if (showSeeAll) {
         Row(
