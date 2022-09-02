@@ -25,7 +25,8 @@ import android.widget.TextView
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.datacapture.validation.ValidationResult
+import com.google.android.fhir.datacapture.validation.Invalid
+import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -120,8 +121,10 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
         },
         QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
           addAnswer().value = Attachment().apply { data = "image".encodeToByteArray() }
-        }
-      ) {}
+        },
+        validationResult = NotValidated,
+        answersChangedCallback = { _, _, _ -> },
+      )
 
     val tvPrefix = mockk<TextView>(relaxed = true)
     every { photoCaptureFactory.tvPrefix } returns tvPrefix
@@ -163,8 +166,10 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
         },
         QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
           addAnswer().value = Attachment().apply { data = "image".encodeToByteArray() }
-        }
-      ) {}
+        },
+        validationResult = NotValidated,
+        answersChangedCallback = { _, _, _ -> },
+      )
 
     val tvPrefix = mockk<TextView>(relaxed = true)
     every { photoCaptureFactory.tvPrefix } returns tvPrefix
@@ -200,7 +205,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     val tvError = mockk<TextView>(relaxed = true)
     every { photoCaptureFactory.tvError } returns tvError
 
-    val validationResult = ValidationResult(false, listOf("Error"))
+    val validationResult = Invalid(listOf("Error"))
     photoCaptureFactory
       .getQuestionnaireItemViewHolderDelegate()
       .displayValidationResult(validationResult)
@@ -218,12 +223,12 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     val tvError = mockk<TextView>(relaxed = true)
     every { photoCaptureFactory.tvError } returns tvError
 
-    val validationResult = ValidationResult(true, listOf())
+    val validationResult = Invalid(listOf())
     photoCaptureFactory
       .getQuestionnaireItemViewHolderDelegate()
       .displayValidationResult(validationResult)
 
-    verify { tvError.text = null }
+    verify { tvError.text = "" }
   }
 
   @Test
