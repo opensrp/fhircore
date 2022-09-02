@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.patient.profile
 
 import android.content.Context
 import androidx.navigation.NavHostController
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Observation
@@ -44,7 +45,8 @@ sealed class PatientProfileEvent {
   ) : PatientProfileEvent() {
     fun getActivePopulationResources(): ArrayList<Resource> {
       val resources = carePlans + patientConditions + patientObservations
-      return ArrayList(resources)
+      val resourcesBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
+      return arrayListOf(resourcesBundle)
     }
   }
 
@@ -60,7 +62,8 @@ sealed class PatientProfileEvent {
   ) : PatientProfileEvent() {
     fun getActivePopulationResources(): ArrayList<Resource> {
       val resources = carePlans + patientConditions + patientObservations
-      return ArrayList(resources)
+      val resourcesBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
+      return arrayListOf(resourcesBundle)
     }
   }
 
