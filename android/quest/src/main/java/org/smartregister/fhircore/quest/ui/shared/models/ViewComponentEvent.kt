@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
+import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import com.google.android.fhir.logicalId
@@ -36,9 +37,9 @@ sealed class ViewComponentEvent {
    * Event triggered when user clicks a service card to open a profile. Uses [profileId] to fetch
    * the profile configurations and [resourceId] to fetch the data for the current profile.
    */
-  data class OpenProfile(val profileId: String, val resourceId: String) : ViewComponentEvent()
+  data class OpenProfile(val profileId: String, val resourceId: String?) : ViewComponentEvent()
 
-  data class LaunchQuestionnaire(val actionConfig: ActionConfig, val resourceData: ResourceData) :
+  data class LaunchQuestionnaire(val actionConfig: ActionConfig, val resourceData: ResourceData?) :
     ViewComponentEvent()
 
   fun handleEvent(navController: NavController) {
@@ -58,9 +59,11 @@ sealed class ViewComponentEvent {
             questionnaireId = questionnaireConfig.id,
             clientIdentifier =
               if (questionnaireType == QuestionnaireType.DEFAULT) null
-              else resourceData.baseResource.logicalId,
+              else resourceData?.baseResource?.logicalId,
             questionnaireType = questionnaireType,
-            intentBundle = actionConfig.paramsBundle(resourceData.computedValuesMap)
+            intentBundle =
+              if (resourceData != null) actionConfig.paramsBundle(resourceData.computedValuesMap)
+              else Bundle.EMPTY
           )
         }
       }

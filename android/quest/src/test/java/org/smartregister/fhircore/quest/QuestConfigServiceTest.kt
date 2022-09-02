@@ -33,7 +33,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -65,10 +65,19 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testResourceSyncParam_shouldHaveResourceTypes() {
+
+    val paramsMap =
+      mutableMapOf<String, List<String>>().apply {
+        put(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
+          listOf("Organization/105")
+        )
+      }
+
     val syncParam =
       configService.loadRegistrySyncParams(
         configurationRegistry = configurationRegistry,
-        authenticatedUserInfo = UserInfo("ONA-Systems", "105", "Nairobi")
+        paramsMap = paramsMap
       )
     Assert.assertTrue(syncParam.isNotEmpty())
 
@@ -120,7 +129,6 @@ class QuestConfigServiceTest : RobolectricTest() {
       }
 
     syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("publisher"))
       Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
   }

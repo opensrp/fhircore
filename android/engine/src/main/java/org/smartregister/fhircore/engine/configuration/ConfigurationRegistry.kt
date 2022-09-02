@@ -31,8 +31,8 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
@@ -276,7 +276,7 @@ constructor(
     // TODO load these type of configs from assets too
     CoroutineScope(dispatcherProvider.io()).launch {
       try {
-        sharedPreferencesHelper.read(APP_ID_KEY, null)?.let { appId: String ->
+        sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
           repository.searchCompositionByIdentifier(appId)?.let { composition ->
             composition
               .retrieveCompositionSections()

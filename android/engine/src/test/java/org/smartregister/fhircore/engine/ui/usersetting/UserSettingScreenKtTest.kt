@@ -30,7 +30,7 @@ import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @Ignore("Fix failing tests")
-class UserProfileScreenKtTest : RobolectricTest() {
+class UserSettingScreenKtTest : RobolectricTest() {
 
   private val userSettingViewModel = mockk<UserSettingViewModel>()
 

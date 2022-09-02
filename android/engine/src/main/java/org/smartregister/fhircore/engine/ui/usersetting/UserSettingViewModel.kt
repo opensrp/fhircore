@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 
@@ -61,13 +62,13 @@ constructor(
 
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
           ?: Locale.ENGLISH.toLanguageTag()
       )
       .displayName
 
   fun setLanguage(language: Language) {
-    sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, language.tag)
+    sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, language.tag)
     this.language.postValue(language)
   }
 }

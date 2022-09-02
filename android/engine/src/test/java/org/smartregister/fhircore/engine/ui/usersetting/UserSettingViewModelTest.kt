@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -48,6 +47,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -55,18 +55,22 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  lateinit var userSettingViewModel: UserSettingViewModel
-  lateinit var accountAuthenticator: AccountAuthenticator
-  lateinit var secureSharedPreference: SecureSharedPreference
-  var sharedPreferencesHelper: SharedPreferencesHelper
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
 
-  val defaultRepository: DefaultRepository = mockk()
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  lateinit var userSettingViewModel: UserSettingViewModel
+
+  lateinit var accountAuthenticator: AccountAuthenticator
+
+  lateinit var secureSharedPreference: SecureSharedPreference
+
+  var sharedPreferencesHelper: SharedPreferencesHelper
 
   private var configService: ConfigService
 
   private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
+
   private var syncBroadcaster: SyncBroadcaster
+
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   private val resourceService: FhirResourceService = mockk()
@@ -74,7 +78,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   private var fhirResourceDataSource: FhirResourceDataSource
 
   init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context)
+    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
     syncBroadcaster =
@@ -151,10 +155,9 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun loadSelectedLanguage() {
-    every { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en") } returns "fr"
-
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") } returns "fr"
     Assert.assertEquals("French", userSettingViewModel.loadSelectedLanguage())
-    verify { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en") }
+    verify { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") }
   }
 
   @Test
@@ -170,7 +173,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    verify { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "es") }
+    verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
     Assert.assertEquals(language, postedValue!!)
   }
 

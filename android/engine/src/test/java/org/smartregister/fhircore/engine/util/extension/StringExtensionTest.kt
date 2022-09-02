@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.navigation
+package org.smartregister.fhircore.engine.util.extension
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.junit.Assert
+import org.junit.Test
 
-@Serializable
-data class NavigationMenuConfig(
-  val id: String,
-  val visible: Boolean = true,
-  val icon: String? = null,
-  val display: String,
-  val showCount: Boolean = false,
-  val actions: List<ActionConfig>? = null,
-)
+class StringExtensionTest {
+
+  @Test
+  fun practitionerEndpointUrlShouldMatch() {
+    Assert.assertEquals(
+      "practitioner-details?keycloak-uuid=my-keycloak-id",
+      "my-keycloak-id".practitionerEndpointUrl()
+    )
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "status": "in-progress",
+  "item": [
+    {
+      "linkId": "297047cd-118a-44d4-fee8-57d1c9c447c8",
+      "text": "Location Name",
+      "answer": [
+        {
+          "item": [
+            {
+              "linkId": "8c6e50c5-7cd6-45da-b89f-0a522d692e5c",
+              "text": "Location Alias",
+              "answer": [
+                {
+                  "valueString": "Kanairo"
+                }
+              ]
+            }
+          ],
+          "valueString": "Nairobi"
+        }
+      ]
+    },
+    {
+      "linkId": "045cb6e1-ad2a-40f8-9351-a8643dbfaa3f",
+      "text": "Location Type",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "jurisdiction",
+            "display": "Jurisdiction",
+            "system": "urn:uuid:f25e14ea-8db3-4bd1-8c9d-d7193520de1c"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "785bcb8d-da9f-4e9e-df6f-cbb78bcf48c0",
+      "text": "Location Telephone Contact Number",
+      "answer": [
+        {
+          "valueString": "+25470000000"
+        }
+      ]
+    },
+    {
+      "linkId": "75633ed1-f3e1-45c7-8ee9-2edfdb2ed74f",
+      "text": "Location Email",
+      "answer": [
+        {
+          "valueString": "kanairo@gmail.com"
+        }
+      ]
+    },
+    {
+      "linkId": "1ce57134-4f57-4c38-994f-e9949042defd",
+      "text": "Location Country\n",
+      "answer": [
+        {
+          "item": [
+            {
+              "linkId": "eeba824d-a402-4ecb-ec98-c4d7035d2ff4",
+              "text": "Location City",
+              "answer": [
+                {
+                  "item": [
+                    {
+                      "linkId": "23ea830e-de6d-41e9-ca28-d749563f73c8",
+                      "text": "Location District",
+                      "answer": [
+                        {
+                          "valueString": "Nairobi"
+                        }
+                      ]
+                    }
+                  ],
+                  "valueString": "Nairobi"
+                }
+              ]
+            }
+          ],
+          "valueString": "Kenya"
+        }
+      ]
+    }
+  ]
+}

@@ -29,9 +29,9 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltViewModel
@@ -83,7 +83,7 @@ constructor(
     val username = secureSharedPreference.retrieveSessionUsername()
     pinUiState.value =
       PinUiState(
-        appId = sharedPreferences.read(APP_ID_KEY, "")!!,
+        appId = sharedPreferences.read(SharedPreferenceKey.APP_ID.name, "")!!,
         appName = applicationConfiguration.appTitle,
         savedPin = secureSharedPreference.retrieveSessionPin() ?: "",
         isSetupPage = isSetup,
@@ -129,7 +129,7 @@ constructor(
   }
 
   fun onMenuSettingClicked() {
-    sharedPreferences.remove(APP_ID_KEY)
+    sharedPreferences.remove(SharedPreferenceKey.APP_ID.name)
     _navigateToSettings.value = true
   }
 }
