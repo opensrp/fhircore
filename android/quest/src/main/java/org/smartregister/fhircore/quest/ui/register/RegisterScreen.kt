@@ -69,6 +69,7 @@ import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
+import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
 const val NO_REGISTER_VIEW_TITLE_TEST_TAG = "noRegisterViewTitleTestTag"
@@ -168,6 +169,19 @@ fun RegisterScreen(
             }
           }
         }
+      }
+    },
+    floatingActionButton = {
+      val fabActions = registerConfiguration.fabActions
+      if (fabActions.isNotEmpty() && fabActions.first().visible) {
+        ExtendedFab(
+          fabActions = fabActions,
+          onViewComponentEvent = { viewComponentEvent ->
+            registerViewModel.onEvent(
+              RegisterEvent.OnViewComponentEvent(viewComponentEvent, navController)
+            )
+          }
+        )
       }
     }
   ) { innerPadding ->

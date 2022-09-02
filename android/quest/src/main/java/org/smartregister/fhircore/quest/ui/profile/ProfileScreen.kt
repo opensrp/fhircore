@@ -29,15 +29,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
@@ -52,17 +49,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
+const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
+const val PROFILE_TOP_BAR_TEST_TAG = "profileTopBarTestTag"
+const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
 
 @Composable
 fun ProfileScreen(
@@ -78,10 +75,15 @@ fun ProfileScreen(
   Scaffold(
     topBar = {
       TopAppBar(
+        modifier = modifier.testTag(PROFILE_TOP_BAR_TEST_TAG),
         title = {},
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
-            Icon(Icons.Filled.ArrowBack, null)
+            Icon(
+              Icons.Filled.ArrowBack,
+              null,
+              modifier = modifier.testTag(PROFILE_TOP_BAR_ICON_TEST_TAG)
+            )
           }
         },
         actions = {
@@ -133,24 +135,12 @@ fun ProfileScreen(
     },
     floatingActionButton = {
       val fabActions = profileUiState.profileConfiguration?.fabActions
-      if (!fabActions.isNullOrEmpty()) {
-        ExtendedFloatingActionButton(
-          contentColor = Color.White,
-          text = { Text(text = fabActions.first().display.uppercase()) },
-          onClick = {
-            val clickAction =
-              fabActions.first().actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-            when (clickAction?.workflow) {
-              ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
-                clickAction.questionnaire?.id?.let { questionnaireId ->
-                  navController.context.launchQuestionnaire<QuestionnaireActivity>(questionnaireId)
-                }
-              }
-            }
-          },
-          backgroundColor = MaterialTheme.colors.primary,
-          icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-          interactionSource = mutableInteractionSource
+      if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+        ExtendedFab(
+          modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
+          fabActions = fabActions,
+          resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
+          onViewComponentEvent = { onEvent(ProfileEvent.OnViewComponentEvent(it, navController)) }
         )
       }
     }

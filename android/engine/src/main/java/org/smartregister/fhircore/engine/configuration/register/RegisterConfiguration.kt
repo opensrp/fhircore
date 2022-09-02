@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.configuration.register
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 
 @Serializable
 data class RegisterConfiguration(
@@ -29,5 +30,6 @@ data class RegisterConfiguration(
   val filter: RegisterContentConfig? = null,
   val searchBar: RegisterContentConfig? = null,
   val registerCard: RegisterCardConfig = RegisterCardConfig(),
+  val fabActions: List<NavigationMenuConfig> = emptyList()
   val noResults: NoResultsConfig? = null
 ) : Configuration()
