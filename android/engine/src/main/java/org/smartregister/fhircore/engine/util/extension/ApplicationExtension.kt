@@ -16,46 +16,22 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.content.Context
-import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.SyncJob
-import com.google.gson.Gson
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-
-fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
-  var json = assets.open(id).bufferedReader().use { it.readText() }
-
-  data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
-
-  return if (Resource::class.java.isAssignableFrom(clazz))
-    FhirContext.forR4Cached().newJsonParser().parseResource(json) as T
-  else Gson().fromJson(json, clazz)
-}
-
-suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
-  return try {
-    this.get(resourceId)
-  } catch (resourceNotFoundException: ResourceNotFoundException) {
-    null
-  }
-}
 
 fun ConfigurationRegistry.fetchLanguages() =
   this.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
