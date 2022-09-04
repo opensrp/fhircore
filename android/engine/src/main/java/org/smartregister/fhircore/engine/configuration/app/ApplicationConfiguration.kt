@@ -37,4 +37,26 @@ data class ApplicationConfiguration(
   val syncStrategy: List<Code> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null
-) : Configuration()
+) : Configuration() {
+
+  fun getMandatoryTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Code> {
+    val tags = mutableListOf<Code>()
+    syncStrategy.forEach { coding ->
+      when (coding.display) {
+        SyncStrategy.CARE_TEAM.value,
+        SyncStrategy.ORGANIZATION.value,
+        SyncStrategy.LOCATION.value -> {
+          sharedPreferencesHelper.read<List<String>>(coding.display!!)?.forEach { id ->
+            tags.add(coding.apply { code = id }.copy())
+          }
+        }
+        SyncStrategy.PRACTITIONER.value -> {
+          sharedPreferencesHelper.read<KeycloakUserDetails>(coding.display!!)?.let { practitioner ->
+            tags.add(coding.apply { code = practitioner.id })
+          }
+        }
+      }
+    }
+    return tags
+  }
+}

@@ -29,7 +29,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -46,25 +45,18 @@ class SyncBroadcaster(
   val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow(),
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) {
+
   fun runSync() {
     CoroutineScope(dispatcherProvider.io()).launch {
-      val paramsMap =
-        mutableMapOf<String, List<String>>().apply {
-          put(
-            SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-            sharedPreferencesHelper.read<List<String>>(
-              SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-            )
-              ?: listOf()
-          )
-        }
       try {
         syncJob.run(
           fhirEngine = fhirEngine,
           downloadManager =
             ResourceParamsBasedDownloadWorkManager(
               syncParams =
-                configService.loadRegistrySyncParams(configurationRegistry, paramsMap).toMap()
+                configService
+                  .loadRegistrySyncParams(configurationRegistry, sharedPreferencesHelper)
+                  .toMap()
             ),
           subscribeTo = sharedSyncStatus,
           resolver = AcceptLocalConflictResolver

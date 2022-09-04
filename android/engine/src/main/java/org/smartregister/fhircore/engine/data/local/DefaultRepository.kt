@@ -77,6 +77,12 @@ constructor(
   open val sharedPreferencesHelper: SharedPreferencesHelper
 ) {
 
+  val appConfig: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
+
+  val mandatoryTags: List<Code> by lazy { appConfig.getMandatoryTags(sharedPreferencesHelper) }
+
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
   }
@@ -124,45 +130,13 @@ constructor(
       else -> listOf()
     }
 
-  suspend fun searchCompositionByIdentifier(identifier: String): Composition? =
-    fhirEngine
-      .search<Composition> {
-        filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
-      }
-      .firstOrNull()
-
-  suspend fun getBinary(id: String): Binary = fhirEngine.get(id)
-
   suspend fun create(vararg resource: Resource): List<String> {
-    val syncStrategy = mutableMapOf<String, List<String>>()
-
-    sharedPreferencesHelper.read<List<String>>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
-      )
-      ?.let { careTeamIds -> syncStrategy[SyncStrategy.CARE_TEAM.value] = careTeamIds }
-
-    sharedPreferencesHelper.read<List<String>>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-      )
-      ?.let { organizationIds -> syncStrategy[SyncStrategy.ORGANIZATION.value] = organizationIds }
-
-    sharedPreferencesHelper.read<List<String>>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
-      )
-      ?.let { locationIds -> syncStrategy[SyncStrategy.LOCATION.value] = locationIds }
-
-    sharedPreferencesHelper.read<KeycloakUserDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-      )
-      ?.let { practitioner ->
-        syncStrategy[SyncStrategy.PRACTITIONER.value] = listOf(practitioner.id)
-      }
-
     return withContext(dispatcherProvider.io()) {
-      resource.map {
+      resource.onEach {
         it.generateMissingId()
-        it.addMandatoryTags(syncStrategy)
+        it.addTags(mandatoryTags)
       }
+
       fhirEngine.create(*resource)
     }
   }

@@ -35,8 +35,9 @@ import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 /** An interface that provides the application configurations. */
@@ -82,7 +83,7 @@ interface ConfigService {
   /** Retrieve registry sync params */
   fun loadRegistrySyncParams(
     configurationRegistry: ConfigurationRegistry,
-    paramsMap: Map<String, List<String>>?,
+    sharedPreferencesHelper: SharedPreferencesHelper
   ): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
@@ -91,6 +92,8 @@ interface ConfigService {
 
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+
+    val mandatoryTags = appConfig.getMandatoryTags(sharedPreferencesHelper)
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
@@ -103,10 +106,10 @@ interface ConfigService {
           // TODO: Does not support multi organization yet,
           // https://github.com/opensrp/fhircore/issues/1550
           ConfigurationRegistry.ORGANIZATION ->
-            paramsMap
-              ?.get(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
-              ?.firstOrNull()
-              ?.substringAfter("/")
+            mandatoryTags.firstOrNull {
+                it.display.contentEquals(SyncStrategy.ORGANIZATION.value)
+              }!!
+              .code
           ConfigurationRegistry.ID -> paramExpression
           ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
           else -> null
