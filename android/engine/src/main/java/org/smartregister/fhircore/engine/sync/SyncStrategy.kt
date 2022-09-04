@@ -16,44 +16,14 @@
 
 package org.smartregister.fhircore.engine.sync
 
-import org.hl7.fhir.r4.model.Coding
-
 /**
  * SyncStrategy defines whether to sync resource based on the IDs of CareTeam, Location,
  * Organization and Practitioner. Each SyncStrategy represents a meta tag that is used by all synced
  * resource.
  */
-enum class SyncStrategy(val value: String, val tag: Coding) {
-  CARE_TEAM(
-    value = "CareTeam",
-    tag =
-      Coding().apply {
-        system = "https://smartregister.org/"
-        display = "Practitioner CareTeam"
-      }
-  ),
-  LOCATION(
-    value = "Location",
-    tag =
-      Coding().apply {
-        system = "https://smartregister.org/"
-        display = "Practitioner Location"
-      }
-  ),
-  ORGANIZATION(
-    value = "Organization",
-    tag =
-      Coding().apply {
-        system = "https://smartregister.org/"
-        display = "Practitioner Organization"
-      }
-  ),
-  PRACTITIONER(
-    value = "Practitioner",
-    tag =
-      Coding().apply {
-        system = "https://smartregister.org/"
-        display = "Practitioner"
-      }
-  )
+enum class SyncStrategy(val value: String) {
+  CARE_TEAM("Practitioner CareTeam"),
+  LOCATION("Practitioner Location"),
+  ORGANIZATION("Practitioner Organization"),
+  PRACTITIONER("Practitioner")
 }

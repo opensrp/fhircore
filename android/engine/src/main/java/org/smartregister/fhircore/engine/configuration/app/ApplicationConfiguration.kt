@@ -19,6 +19,10 @@ package org.smartregister.fhircore.engine.configuration.app
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.sync.SyncStrategy
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @Serializable
 data class ApplicationConfiguration(
@@ -30,7 +34,7 @@ data class ApplicationConfiguration(
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Int = 30,
-  val syncStrategy: List<String> = listOf(),
+  val syncStrategy: List<Code> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null
 ) : Configuration()

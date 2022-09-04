@@ -11,7 +11,24 @@
 	],
 	"useDarkTheme": false,
 	"syncInterval": 30,
-	"syncStrategy": ["Organization","Location","CareTeam","Practitioner"],
+	"syncStrategy": [
+		{
+			"system": "https://smartregister.org/",
+			"display": "Practitioner CareTeam"
+		},
+		{
+			"system": "https://smartregister.org/",
+			"display": "Practitioner Location"
+		},
+		{
+			"system": "https://smartregister.org/",
+			"display": "Practitioner Organization"
+		},
+		{
+			"system": "https://smartregister.org/",
+			"display": "Practitioner"
+		}
+	],
 	"loginConfig": {
 		"showLogo": true,
 		"enablePin": true
