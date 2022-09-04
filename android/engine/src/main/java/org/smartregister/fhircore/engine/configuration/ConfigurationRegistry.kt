@@ -17,6 +17,10 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
 import java.util.LinkedList
 import java.util.Locale
 import java.util.PropertyResourceBundle
@@ -25,21 +29,30 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.fileExtension
+import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
+import org.smartregister.fhircore.engine.util.extension.updateFrom
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
 
@@ -47,10 +60,10 @@ import timber.log.Timber
 class ConfigurationRegistry
 @Inject
 constructor(
+  val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider,
-  val repository: DefaultRepository
+  val dispatcherProvider: DispatcherProvider
 ) {
 
   val json = Json {
@@ -62,6 +75,10 @@ constructor(
   val configsJsonMap = mutableMapOf<String, String>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   val supportedFileExtensions = listOf("json", "properties")
+
+  val appConfig: ApplicationConfiguration by lazy { retrieveConfiguration(ConfigType.Application) }
+
+  val mandatoryTags: List<Code> by lazy { appConfig.getMandatoryTags(sharedPreferencesHelper) }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -185,7 +202,7 @@ constructor(
           )
         }
     } else {
-      repository.searchCompositionByIdentifier(appId)?.run {
+      fhirEngine.searchCompositionByIdentifier(appId)?.run {
         populateConfigurationsMap(context, this, loadFromAssets, appId, configsLoadedCallback)
       }
     }
@@ -224,7 +241,7 @@ constructor(
           val configKey = it.focus.identifier.value
           val referenceResourceType = it.focus.reference.substringBeforeLast("/")
           if (isAppConfig(referenceResourceType)) {
-            val configBinary = repository.getBinary(it.focus.extractId())
+            val configBinary = fhirEngine.get<Binary>(it.focus.extractId())
             configsJsonMap[configKey] = configBinary.content.decodeToString()
           }
         }
@@ -277,7 +294,7 @@ constructor(
     CoroutineScope(dispatcherProvider.io()).launch {
       try {
         sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
-          repository.searchCompositionByIdentifier(appId)?.let { composition ->
+          fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
             composition
               .retrieveCompositionSections()
               .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
@@ -289,7 +306,7 @@ constructor(
                   }
                 val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
                 fhirResourceDataSource.loadData(searchPath).entry.forEach {
-                  repository.addOrUpdate(it.resource)
+                  addOrUpdate(it.resource)
                 }
               }
           }
@@ -297,6 +314,30 @@ constructor(
       } catch (exception: Exception) {
         Timber.e(exception)
       }
+    }
+  }
+
+  suspend fun <R : Resource> addOrUpdate(resource: R) {
+    return withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
+      try {
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
+          fhirEngine.update(updateFrom(resource))
+        }
+      } catch (resourceNotFoundException: ResourceNotFoundException) {
+        create(resource)
+      }
+    }
+  }
+
+  suspend fun create(vararg resource: Resource): List<String> {
+    return withContext(dispatcherProvider.io()) {
+      resource.onEach {
+        it.generateMissingId()
+        it.addTags(mandatoryTags)
+      }
+
+      fhirEngine.create(*resource)
     }
   }
 
