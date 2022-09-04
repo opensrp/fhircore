@@ -27,7 +27,10 @@ import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
 import androidx.compose.ui.graphics.Color as ComposeColor
+import ca.uhn.fhir.context.FhirContext
+import com.google.gson.Gson
 import java.util.Locale
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
@@ -139,6 +142,16 @@ fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "dr
   if (resourceName.isNullOrEmpty()) return null
   val resourceId = this.resources.getIdentifier(resourceName, resourceType, this.packageName)
   return if (resourceId != 0) resourceId else null
+}
+
+fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
+  var json = assets.open(id).bufferedReader().use { it.readText() }
+
+  data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
+
+  return if (Resource::class.java.isAssignableFrom(clazz))
+    FhirContext.forR4Cached().newJsonParser().parseResource(json) as T
+  else Gson().fromJson(json, clazz)
 }
 
 /**
