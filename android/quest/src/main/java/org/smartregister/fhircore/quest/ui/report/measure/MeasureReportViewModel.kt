@@ -27,6 +27,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,12 +44,12 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -65,10 +66,10 @@ import timber.log.Timber
 class MeasureReportViewModel
 @Inject
 constructor(
+  val fhirEngine: FhirEngine,
   val fhirOperator: FhirOperator,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DefaultDispatcherProvider,
-  val defaultRepository: DefaultRepository,
   val measureReportRepository: MeasureReportRepository,
   val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
 ) : ViewModel() {
@@ -102,9 +103,7 @@ constructor(
   }
 
   private val loggedInUserDetail by lazy {
-    sharedPreferencesHelper.read<KeycloakUserDetails>(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
-    )
+    sharedPreferencesHelper.read<KeycloakUserDetails>(key = SyncStrategy.PRACTITIONER.value)
   }
 
   fun defaultDateRangeState() =
@@ -198,7 +197,7 @@ constructor(
             toggleProgressIndicatorVisibility(true)
 
             withContext(dispatcherProvider.io()) {
-              defaultRepository.loadCqlLibraryBundle(fhirOperator, measureUrl)
+              fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
             }
 
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
