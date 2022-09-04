@@ -54,14 +54,15 @@ constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
   override val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry,
+  override val configurationRegistry: ConfigurationRegistry,
   val rulesFactory: RulesFactory,
 ) :
   Repository,
   DefaultRepository(
     fhirEngine = fhirEngine,
     dispatcherProvider = dispatcherProvider,
-    sharedPreferencesHelper = sharedPreferencesHelper
+    sharedPreferencesHelper = sharedPreferencesHelper,
+    configurationRegistry = configurationRegistry
   ) {
 
   override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> {

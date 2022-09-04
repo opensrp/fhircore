@@ -74,7 +74,8 @@ open class DefaultRepository
 constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
-  open val sharedPreferencesHelper: SharedPreferencesHelper
+  open val sharedPreferencesHelper: SharedPreferencesHelper,
+  open val configurationRegistry: ConfigurationRegistry
 ) {
 
   val appConfig: ApplicationConfiguration by lazy {
