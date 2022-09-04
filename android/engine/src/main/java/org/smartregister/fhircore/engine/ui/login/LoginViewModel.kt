@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.OAuthRespons
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -130,21 +131,12 @@ constructor(
     val locationIds =
       defaultRepository.create(*locations.toTypedArray()).map { it.getSubstringBetween("/", "/") }
 
+    sharedPreferences.write(SyncStrategy.PRACTITIONER.value, practitionerDetails.userDetail)
+    sharedPreferences.write(SyncStrategy.CARE_TEAM.value, careTeamIds)
+    sharedPreferences.write(SyncStrategy.ORGANIZATION.value, organizationIds)
+    sharedPreferences.write(SyncStrategy.LOCATION.value, locationIds)
     sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
-      practitionerDetails.userDetail
-    )
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name,
-      careTeamIds
-    )
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-      organizationIds
-    )
-    sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name, locationIds)
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name,
+      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
       locationHierarchies
     )
   }

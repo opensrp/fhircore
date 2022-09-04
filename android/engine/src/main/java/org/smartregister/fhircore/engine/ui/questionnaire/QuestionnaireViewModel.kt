@@ -53,10 +53,10 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
@@ -102,15 +102,11 @@ constructor(
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private val authenticatedOrganizationIds by lazy {
-    sharedPreferencesHelper.read<List<String>>(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-    )
+    sharedPreferencesHelper.read<List<String>>(key = SyncStrategy.ORGANIZATION.value)
   }
 
   private val loggedInUserDetail by lazy {
-    sharedPreferencesHelper.read<KeycloakUserDetails>(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-    )
+    sharedPreferencesHelper.read<KeycloakUserDetails>(key = SyncStrategy.PRACTITIONER.value)
   }
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
@@ -161,9 +157,9 @@ constructor(
   }
 
   fun appendOrganizationInfo(resource: Resource) {
-    authenticatedOrganizationIds.let { ids ->
+    authenticatedOrganizationIds?.let { ids ->
       val organizationRef =
-        Reference().apply { reference = "${ResourceType.Organization.name}/${ids?.first()}" }
+        Reference().apply { reference = "${ResourceType.Organization.name}/${ids.first()}" }
 
       when (resource) {
         is Patient -> resource.managingOrganization = organizationRef
