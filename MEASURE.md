@@ -128,6 +128,23 @@ define "Age Stratifier":
   end
 ```
 
+The CQL is referenced by url into Measure. The CQL is translated into elm-json and uploaded a Library on server. There are multiple ways to get elm for CQL. (elm-xml is also a valid standard but it is not recognized by android fhir libraries yet)
+
+**CQL to ELM REST Translator**:
+A [elm REST app](https://github.com/cqframework/cql-translation-service/blob/master/README.md) that can be used to run elm microservice and convert CQL via a REST API. 
+
+
+**CQL to ELM JAVA Translator**:
+A [elm java app](https://github.com/cqframework/clinical_quality_language/blob/master/Src/java/READM.md) that can be used to elm translator on files and get an output. Instructions can be found [here](https://github.com/cqframework/cql-execution#to-execute-your-cql)
+
+**Note**: Above approaches output a json elm which then need to be base64 decoded and copied to the [Library](http://hl7.org/fhir/R4/library.html) content as Attachment.
+
+**Fhir-Resource on FhirCore**:
+The [fhir-resources](https://github.com/opensrp/fhir-resources/fhircore-testing/src/test/resources/measure-report/household-members.feature) repository has a testing module which allows you to not only get the complete Library resource to directly save to server but also allows to test the Measure output and make changes on the fly. Check the cucumber tests fhircore-testing/src/test/resources/measure-report/household-members.feature. 
+
+**FhirCore Unit Tests**
+The CQL can also be translated to [Library] using an approach like fhircore as in unit tests org.smartregister.fhircore.quest.CqlContentTest#runCqlLibraryTestForPqMedication. A complete Library resource is output to console as a result.
+
 ## MEASURE REPORT
 A [MeasureReport](http://hl7.org/fhir/R4/measurereport.html) is a FHIR resource which represents the outcome of calculation of a [Measure](http://hl7.org/fhir/R4/measure.html) for a particular subject or population of subjects.
 
