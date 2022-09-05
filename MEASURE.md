@@ -223,10 +223,14 @@ A basic measure report can comprise of following components
 Some notable fields coming/cacluated from Measure
 
 **contained**: The Measure [property](http://hl7.org/fhir/R4/measure-definitions.html#Measure.supplementalData) `supplementalData` is calculated for each measure `subject` and output as an [Observation](http://hl7.org/fhir/R4/observation.html) having extension http://hl7.org/fhir/StructureDefinition/cqf-measureInfo with inner extension defining the variable requested i.e. `group` in case above. The code.coding.code has the value of given variable `Group/1818d503-7226-45cb-9ac7-8c8609dd37c0/_history/3` in example above
-**measure**: The Measure.url for which this report was generated i.e. http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01",
+
+**measure**: The Measure.url for which this report was generated i.e. http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01
+
 **period**: Measure period which was sent for date filter i.e. reporting period start and end. The Measure interval has closed boundaries. Read details [here](https://cql.hl7.org/02-authorsguide.html#interval-values) 
+
 **group**: The calculated value for each Measure indicator with
  - id: id/name of group/indicator/stratifier as defined in Meaure. 
  - count: Calculated value from CQL for given variable
- - measureScore: The percent/ratio of calculated value i.e. numerator/denomintor. Note that for stratifier the score denominator is stratifier denomintor rather than group denominator.
+ - measureScore: The percent/ratio of calculated value i.e. numerator/denomintor. Note that for stratifier the score denominator is stratifier denomintor rather than group denominator
+ - 
 **stratifier**: Count for given indicator disaggregated by each type. The stratifier misses the values where counts are zero. Hence if stratifier has predefined criteria, each should be a calculated as separate group. 
