@@ -101,7 +101,7 @@ class QuestConfigServiceTest : RobolectricTest() {
         )
         .sorted()
 
-    Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
+    Assert.assertTrue(resourceTypes.containsAll(syncParam.keys.toTypedArray().sorted()))
 
     syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
       Assert.assertTrue(syncParam[it]!!.containsKey("_count"))

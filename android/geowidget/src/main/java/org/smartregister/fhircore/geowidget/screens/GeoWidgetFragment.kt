@@ -119,12 +119,8 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
       }
     return LinearLayout(requireContext()).apply {
       orientation = LinearLayout.VERTICAL
-      addView(
-        toolbar,
-      )
-      addView(
-        kujakuMapView,
-      )
+      addView(toolbar)
+      addView(kujakuMapView)
     }
   }
 

@@ -198,6 +198,8 @@ dependencies {
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
+    implementation 'androidx.work:work-testing:2.7.1'
+
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine
     testRuntimeOnly deps.junit5_engine_vintage
