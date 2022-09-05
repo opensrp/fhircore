@@ -218,3 +218,6 @@ Details of some notable fields in above MeasureReport (calculated from Measure) 
 
 ## Screenshots
 
+<img width="300" height="500" src="https://user-images.githubusercontent.com/4829880/188478590-93474727-4ef2-4ba7-acfc-8eb6ac9e32d5.png"/> <img width="300" height="500" src="https://user-images.githubusercontent.com/4829880/188478602-e3941d73-4582-43a2-bc24-423eb1253fe0.png"/>
+
+
