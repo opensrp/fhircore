@@ -1,7 +1,7 @@
-## MEASURE
+## Measure
 The [Measure](http://hl7.org/fhir/R4/measure.html) is a FHIR resource which represents definition- for calculation of an indicator. The Measure uses a logic Library (CQL) that contains the calculation logic for measure.
 
-A basic measure report can comprise of following components
+A working example (Households and Members disaggregated by age) of Measure can be found [here](https://github.com/opensrp/fhir-resources/blob/main/ecbis/measure/household_measure.fhir.json). Notable components in example Measure are
 
 ```
 {
@@ -13,46 +13,26 @@ A basic measure report can comprise of following components
     "resource": "Library/1753"
    } ],
   "library": [ "http://fhir.org/guides/cqf/common/Library/HOUSEHOLDIND01" ],
-  "scoring": {
-    "coding": [{
-      "system": "http://terminology.hl7.org/CodeSystem/measure-scoring",
-      "code": "proportion"
-    }]
-  },
+  "scoring": { ... },
   "group": [ {
     "id": "males",
     "population": [ {
       "id": "initial-population",
-      "code": {
-        "coding": [ { 
-          "system": "http://terminology.hl7.org/CodeSystem/measure-population",
-          "code": "initial-population"
-      } ]
-      },
+      "code": { ... },
       "criteria": {
         "language": "text/cql-identifier",
         "expression": "Patients"
       }
     }, {
       "id": "denominator",
-      "code": {
-        "coding": [ { 
-          "system": "http://terminology.hl7.org/CodeSystem/measure-population",
-          "code": "denominator"
-        } ]
-      },
+      "code": { ... },
       "criteria": {
         "language": "text/cql-identifier",
         "expression": "Group Member"
       }
     }, {
       "id": "numerator",
-      "code": {
-        "coding": [ { 
-          "system": "http://terminology.hl7.org/CodeSystem/measure-population",
-          "code": "numerator"
-        } ]
-      },
+      "code": { ... },
       "criteria": {
         "language": "text/cql-identifier",
         "expression": "Males"
@@ -80,9 +60,9 @@ A basic measure report can comprise of following components
 }
 ```
 
-Some notable fields
+Details of notable fields for Measure
 
-**url**: The complete url of Measure with measure.name i.e. http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01
+**url**: The complete url of Measure with Measure.name i.e. http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01
 
 **name**: A unique name for Measure i.e. HOUSEHOLDIND01. The Measure is loaded by name and url into measure processor
 
@@ -99,7 +79,7 @@ Some notable fields
 - supplementalData: Any extra data or intermediate calculation to be output to final report
 
 
-## MEASURE LIBRARY
+## CQL Logic/Decision Library for Measure
 
 ```
 library HOUSEHOLDIND01 version '1'
@@ -140,15 +120,16 @@ A [elm java app](https://github.com/cqframework/clinical_quality_language/blob/m
 **Note**: Above approaches output a json elm which then need to be base64 decoded and copied to the [Library](http://hl7.org/fhir/R4/library.html) content as Attachment.
 
 **Fhir-Resource on FhirCore**:
-The [fhir-resources](https://github.com/opensrp/fhir-resources/fhircore-testing/src/test/resources/measure-report/household-members.feature) repository has a testing module which allows you to not only get the complete Library resource to directly save to server but also allows to test the Measure output and make changes on the fly. Check the cucumber tests fhircore-testing/src/test/resources/measure-report/household-members.feature. 
+The [fhir-resources](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing) repository has a testing module which allows to not only get the complete Library resource to directly save to server but also allows to test the Measure output and make changes on the fly. Check the cucumber tests [Feature File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/src/test/resources/measure-report/household-members.feature), the [Test Code File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/src/test/kotlin/com/fhircore/resources/testing/measure/HouseholdMembersMeasureTest.kt#L28) and the [Convertor Util Method](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/src/test/kotlin/com/fhircore/resources/testing/CqlUtils.kt#L31)
 
 **FhirCore Unit Tests**
-The CQL can also be translated to [Library] using an approach like fhircore as in unit tests org.smartregister.fhircore.quest.CqlContentTest#runCqlLibraryTestForPqMedication. A complete Library resource is output to console as a result.
+The CQL can also be translated to Library using an approach as used by fhircore as in [CQL Content Tests](https://github.com/opensrp/fhircore/blob/main/android/quest/src/test/java/org/smartregister/fhircore/quest/CqlContentTest.kt#L57). A complete Library resource is output to console as a result.
 
-## MEASURE REPORT
+## Measure Report
 A [MeasureReport](http://hl7.org/fhir/R4/measurereport.html) is a FHIR resource which represents the outcome of calculation of a [Measure](http://hl7.org/fhir/R4/measure.html) for a particular subject or population of subjects.
 
-A basic measure report can comprise of following components
+The output MeasureReport of above Measure is [here](https://github.com/opensrp/fhir-resources/blob/main/ecbis/measure_report/household_measure_report.fhir.json). Some important components of report are below
+
 ```
 {
   "resourceType": "MeasureReport",
@@ -220,7 +201,7 @@ A basic measure report can comprise of following components
 }
 ```
 
-Some notable fields coming/cacluated from Measure
+Details of some notable fields in above MeasureReport (calculated from Measure) are 
 
 **contained**: The Measure [property](http://hl7.org/fhir/R4/measure-definitions.html#Measure.supplementalData) `supplementalData` is calculated for each measure `subject` and output as an [Observation](http://hl7.org/fhir/R4/observation.html) having extension http://hl7.org/fhir/StructureDefinition/cqf-measureInfo with inner extension defining the variable requested i.e. `group` in case above. The code.coding.code has the value of given variable `Group/1818d503-7226-45cb-9ac7-8c8609dd37c0/_history/3` in example above
 
@@ -234,3 +215,6 @@ Some notable fields coming/cacluated from Measure
  - measureScore: The percent/ratio of calculated value i.e. numerator/denomintor. Note that for stratifier the score denominator is stratifier denomintor rather than group denominator
  - 
 **stratifier**: Count for given indicator disaggregated by each type. The stratifier misses the values where counts are zero. Hence if stratifier has predefined criteria, each should be a calculated as separate group. 
+
+## Screenshots
+
