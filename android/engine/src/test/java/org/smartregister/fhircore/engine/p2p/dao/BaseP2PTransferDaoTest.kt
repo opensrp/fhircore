@@ -69,7 +69,7 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
   fun setUp() {
     fhirEngine = mockk(relaxed = true)
     defaultRepository = mockk()
-    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    configurationRegistry = Faker.buildTestConfigurationRegistry()
     baseP2PTransferDao =
       spyk(
         P2PReceiverTransferDao(

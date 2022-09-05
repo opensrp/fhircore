@@ -23,13 +23,11 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
-import com.google.android.fhir.workflow.FhirOperator
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -41,9 +39,7 @@ import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
-import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DataRequirement
@@ -61,9 +57,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
@@ -75,6 +71,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
   @Inject lateinit var gson: Gson
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
   lateinit var dispatcherProvider: DefaultDispatcherProvider
   lateinit var fhirEngine: FhirEngine
   lateinit var sharedPreferenceHelper: SharedPreferencesHelper
@@ -83,6 +80,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
 
     dispatcherProvider = DefaultDispatcherProvider()
     fhirEngine = mockk()
@@ -91,7 +89,8 @@ class DefaultRepositoryTest : RobolectricTest() {
       DefaultRepository(
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
-        sharedPreferencesHelper = sharedPreferenceHelper
+        sharedPreferencesHelper = sharedPreferenceHelper,
+        configurationRegistry = configurationRegistry
       )
   }
 
@@ -252,29 +251,6 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun searchCompositionByIdentifier() = runBlocking {
-    coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(Composition().apply { id = "123" })
-
-    val result = defaultRepository.searchCompositionByIdentifier("appId")
-
-    coVerify { fhirEngine.search<Composition>(any()) }
-
-    Assert.assertEquals("123", result!!.logicalId)
-  }
-
-  @Test
-  fun getBinaryResource() = runBlocking {
-    coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns Binary().apply { id = "111" }
-
-    val result = defaultRepository.getBinary("111")
-
-    coVerify { fhirEngine.get(ResourceType.Binary, any()) }
-
-    Assert.assertEquals("111", result.logicalId)
-  }
-
-  @Test
   fun loadManagingEntityShouldReturnPatient() {
 
     val group = Group().apply { managingEntity = Reference("RelatedPerson/12983") }
@@ -352,31 +328,5 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertThrows(IllegalStateException::class.java) {
       runBlocking { defaultRepository.removeGroup(group.logicalId, false) }
     }
-  }
-
-  @Test
-  fun `FhirEngine#loadCqlLibraryBundle()`() {
-
-    val context = ApplicationProvider.getApplicationContext<Application>()
-    val fhirEngine = mockk<FhirEngine>()
-    val fhirOperator: FhirOperator = mockk()
-    sharedPreferenceHelper = mockk()
-    val measureResourceBundleUrl = "measure/ANCIND01-bundle.json"
-
-    val prefsDataKey = SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name
-    every { sharedPreferenceHelper.read(prefsDataKey, any<String>()) } returns ""
-    every { sharedPreferenceHelper.write(prefsDataKey, any<String>()) } returns Unit
-    coEvery { fhirOperator.loadLib(any()) } returns Unit
-    coEvery { fhirEngine.create(any()) } returns listOf()
-
-    runBlocking {
-      defaultRepository.loadCqlLibraryBundle(
-        context = context,
-        fhirOperator = fhirOperator,
-        resourcesBundlePath = measureResourceBundleUrl
-      )
-    }
-
-    Assert.assertNotNull(sharedPreferenceHelper.read(prefsDataKey, ""))
   }
 }

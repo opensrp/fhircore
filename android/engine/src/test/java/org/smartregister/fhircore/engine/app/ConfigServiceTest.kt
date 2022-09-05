@@ -16,48 +16,64 @@
 
 package org.smartregister.fhircore.engine.app
 
+import android.content.Context
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.impl.WorkManagerImpl
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.SyncJob
+import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.util.ReflectionHelpers.setStaticField
-import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 
 @HiltAndroidTest
 class ConfigServiceTest : RobolectricTest() {
 
-  val configService = AppConfigService(ApplicationProvider.getApplicationContext())
-  val configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  @get:Rule var hiltRule = HiltAndroidRule(this)
+
+  private var application: Context = ApplicationProvider.getApplicationContext()
+  private val configService = AppConfigService(ApplicationProvider.getApplicationContext())
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
+
+    val careTeamIds = listOf("948", "372")
+    sharedPreferencesHelper.write(SyncStrategy.CARE_TEAM.value, careTeamIds)
+    val organizationIds = listOf("400", "105")
+    sharedPreferencesHelper.write(SyncStrategy.ORGANIZATION.value, organizationIds)
+    val locationIds = listOf("728", "899")
+    sharedPreferencesHelper.write(SyncStrategy.LOCATION.value, locationIds)
+  }
 
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
-
-    val paramsMap =
-      mutableMapOf<String, List<String>>().apply {
-        put(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-          listOf("Organization/105")
-        )
-      }
-    val syncParam = configService.loadRegistrySyncParams(configurationRegistry, paramsMap)
+    val syncParam =
+      configService.loadRegistrySyncParams(configurationRegistry, sharedPreferencesHelper)
 
     Assert.assertTrue(syncParam.isNotEmpty())
 

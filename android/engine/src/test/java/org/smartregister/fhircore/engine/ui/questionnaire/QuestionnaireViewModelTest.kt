@@ -44,6 +44,7 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -79,6 +80,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
@@ -95,6 +97,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
 
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   private val fhirEngine: FhirEngine = mockk()
 
   private val context: Application = ApplicationProvider.getApplicationContext()
@@ -110,20 +114,24 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    runBlocking { configurationRegistry.loadConfigurations("app/debug", context) }
 
     every {
-      sharedPreferencesHelper.read<KeycloakUserDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-      )
+      sharedPreferencesHelper.read<KeycloakUserDetails>(key = SyncStrategy.PRACTITIONER.value)
     } returns getKeycloakUserDetails()
 
-    every {
-      sharedPreferencesHelper.read<List<String>>(
-        SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-      )
-    } returns listOf("105")
+    every { sharedPreferencesHelper.read<List<String>>(SyncStrategy.ORGANIZATION.value) } returns
+      listOf("105")
 
-    defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider, mockk()))
+    defaultRepo =
+      spyk(
+        DefaultRepository(
+          fhirEngine,
+          coroutineRule.testDispatcherProvider,
+          mockk(),
+          configurationRegistry
+        )
+      )
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
     sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "appId")

@@ -33,7 +33,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -65,19 +64,10 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testResourceSyncParam_shouldHaveResourceTypes() {
-
-    val paramsMap =
-      mutableMapOf<String, List<String>>().apply {
-        put(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-          listOf("Organization/105")
-        )
-      }
-
     val syncParam =
       configService.loadRegistrySyncParams(
         configurationRegistry = configurationRegistry,
-        paramsMap = paramsMap
+        sharedPreferencesHelper = mockk()
       )
     Assert.assertTrue(syncParam.isNotEmpty())
 

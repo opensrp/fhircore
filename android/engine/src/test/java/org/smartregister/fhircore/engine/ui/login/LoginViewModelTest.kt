@@ -58,6 +58,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.OAuthRespons
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -327,42 +328,25 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<KeycloakUserDetails>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-        )
+      sharedPreferences.read<KeycloakUserDetails>(SyncStrategy.PRACTITIONER.value)
         ?.userBioData
         ?.givenName
         ?.value
     )
 
+    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.CARE_TEAM.value)?.size)
+
     Assert.assertEquals(
       1,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
-        )
-        ?.size
+      sharedPreferences.read<List<String>>(SyncStrategy.ORGANIZATION.value)?.size
     )
+
+    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.LOCATION.value)?.size)
 
     Assert.assertEquals(
       1,
       sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-        )
-        ?.size
-    )
-
-    Assert.assertEquals(
-      1,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
-        )
-        ?.size
-    )
-
-    Assert.assertEquals(
-      1,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
+          SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name
         )
         ?.size
     )
@@ -426,42 +410,25 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<KeycloakUserDetails>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-        )
+      sharedPreferences.read<KeycloakUserDetails>(SyncStrategy.PRACTITIONER.value)
         ?.userBioData
         ?.givenName
         ?.value
     )
 
+    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.CARE_TEAM.value)?.size)
+
     Assert.assertEquals(
       0,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
-        )
-        ?.size
+      sharedPreferences.read<List<String>>(SyncStrategy.ORGANIZATION.value)?.size
     )
+
+    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.LOCATION.value)?.size)
 
     Assert.assertEquals(
       0,
       sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-        )
-        ?.size
-    )
-
-    Assert.assertEquals(
-      0,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
-        )
-        ?.size
-    )
-
-    Assert.assertEquals(
-      0,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
+          SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name
         )
         ?.size
     )

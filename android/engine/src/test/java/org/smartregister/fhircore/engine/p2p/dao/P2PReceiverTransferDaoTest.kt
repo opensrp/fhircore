@@ -62,7 +62,7 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    configurationRegistry = Faker.buildTestConfigurationRegistry()
     defaultRepository = mockk()
     p2PReceiverTransferDao =
       spyk(

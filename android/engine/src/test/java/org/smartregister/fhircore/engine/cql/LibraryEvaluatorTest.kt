@@ -47,6 +47,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -61,6 +62,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
   @Inject lateinit var gson: Gson
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   var evaluator: LibraryEvaluator? = null
   var libraryData = ""
@@ -75,6 +77,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
     try {
       libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
       helperData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")
@@ -177,7 +180,12 @@ class LibraryEvaluatorTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
     val defaultRepository =
-      DefaultRepository(fhirEngine, DefaultDispatcherProvider(), sharedPreferencesHelper)
+      DefaultRepository(
+        fhirEngine,
+        DefaultDispatcherProvider(),
+        sharedPreferencesHelper,
+        configurationRegistry
+      )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns

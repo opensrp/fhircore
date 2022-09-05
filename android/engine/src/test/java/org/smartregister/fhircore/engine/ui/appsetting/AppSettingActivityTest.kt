@@ -23,7 +23,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
-import io.mockk.mockk
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
@@ -50,8 +49,7 @@ class AppSettingActivityTest : RobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  @BindValue
-  var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository = mockk())
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   val context: Context =
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }

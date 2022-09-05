@@ -62,7 +62,7 @@ class UserProfileViewModelTest : RobolectricTest() {
   var sharedPreferencesHelper: SharedPreferencesHelper
 
   val defaultRepository: DefaultRepository = mockk()
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private var configService: ConfigService
 

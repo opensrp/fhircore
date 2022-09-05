@@ -60,7 +60,7 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    configurationRegistry = Faker.buildTestConfigurationRegistry()
     fhirPathDataExtractor = mockk(relaxed = true)
     rulesEngine = mockk()
     rulesFactory = spyk(RulesFactory(configurationRegistry = configurationRegistry))

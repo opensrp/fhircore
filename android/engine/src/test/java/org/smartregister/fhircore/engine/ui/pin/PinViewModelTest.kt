@@ -65,7 +65,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   val defaultRepository: DefaultRepository = mockk()
 
-  @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 

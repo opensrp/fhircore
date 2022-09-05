@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.util
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import java.util.Locale
 import javax.inject.Inject
 import org.junit.Assert
@@ -161,7 +160,7 @@ class LocalizationHelperTest : RobolectricTest() {
 
   @Test
   fun testParseTemplateWithStaticTranslationFilesGeneratesCorrectlyTranslatedString() {
-    val configRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    val configRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
     val templateString = "{{person.gender}} from {{person.address}}"
 
     val result =

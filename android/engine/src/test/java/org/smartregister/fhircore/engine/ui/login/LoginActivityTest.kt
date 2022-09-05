@@ -67,7 +67,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @BindValue val repository: DefaultRepository = mockk()
 
   @BindValue
-  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
 
