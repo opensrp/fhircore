@@ -76,10 +76,21 @@ Details of notable fields for Measure
 - id: Group name/id.
 - population: The calculations (or name of variable in CQL that defines the value) for each of population components i.e. initial-population, denominator, numerator
 - stratifier: The disaggregations for given population numerator. i.e. by age, by month, by education etc 
-- supplementalData: Any extra data or intermediate calculation to be output to final report
+- supplementalData: Any extra data or intermediate calculation to be output to final report. Current implementation of MeasureEvaluator does not allow running any measure which is not Patient centric i.e. a Measure.subject can always be a Patient. Hence, we are using `supplementalData` to output Group for each indicator and then counting distinct Group to count Households
 
 
 ## CQL Logic/Decision Library for Measure
+
+The Measure needs a [Library](http://hl7.org/fhir/R4/library.html) to get the logic/calculation for ecah variable. This calculation or logic comes from CQL. [Here](https://cql.hl7.org/01-introduction.html) is a detailed guide on CQL. Some example CQL scripts can be found [here](https://github.com/opensrp/fhir-resources/tree/main/ecbis/measure_cql).
+
+- CQL brief authoring guide https://cql.hl7.org/02-authorsguide.html
+- CQL operators and functions https://cql.hl7.org/04-logicalspecification.html and https://cql.hl7.org/09-b-cqlreference.html
+- Fhirpath mapping in CQL https://cql.hl7.org/16-i-fhirpathtranslation.html
+- Examples [Time Interval](https://cql.hl7.org/15-h-timeintervalcalculations.html) and [Detail on Queries](https://cql.hl7.org/03-developersguide.html#conditional-expressions)
+- CQL Sandbox is [here](https://sandbox.cqlab.io/ CQL sandbox)
+- CQL android editor app is [here](https://github.com/Path-Check/cql-editor-app/)
+
+A working example of used by above Measure is [here](https://github.com/opensrp/fhir-resources/blob/main/ecbis/measure_cql/household_measure_reporting.cql). Some notable lines are
 
 ```
 library HOUSEHOLDIND01 version '1'
