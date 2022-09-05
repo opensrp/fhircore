@@ -107,7 +107,9 @@ interface ConfigService {
           // https://github.com/opensrp/fhircore/issues/1550
           ConfigurationRegistry.ORGANIZATION ->
             mandatoryTags
-              .firstOrNull { it.display.contentEquals(SyncStrategy.ORGANIZATION.value) }
+              .firstOrNull {
+                it.display.contentEquals(SyncStrategy.ORGANIZATION.value, ignoreCase = true)
+              }
               ?.code
           ConfigurationRegistry.ID -> paramExpression
           ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
