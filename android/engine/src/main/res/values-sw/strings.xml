@@ -116,4 +116,12 @@
         <string name="error_loading_config">Hitilafu katika kupakia usanidi. Maelezo: %1$s</string>
         <string name="date_last_visited">Ziara ya mwisho %1$s</string>
     <string name="clear_database">Futa yote</string>
+    <string name="other_patients">Wagonjwa wengine</string>
+        <string name="responses">MAJIBU (%1$s)</string>
+        <string name="multi_user_login_attempt">Umejaribu kuingia na mtoa huduma tofauti</string>
+        <string name="clear_database_title">Weka upya hifadhidata</string>
+        <string name="clear_database_message">Kuweka upya hifadhidata kutafuta rekodi zote kwenye kifaa chako. Kitendo hiki hakiwezi kutenduliwa.</string>
+        <string name="resetting_app">Weka upya...</string>
+        <string name="error_logging_out">Ujumbe wa hitilafu katika kuondoka: %1$s</string>
+        <string name="cannot_logout_user">Imeshindwa kuondoka. Angalia ikiwa kifaa hakiko mtandaoni.</string>
 </resources>

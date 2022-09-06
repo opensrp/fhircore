@@ -60,5 +60,10 @@
     <string name="select_date">Sélectionnez des dates</string>
     <string name="select_patient">SÉLECTIONNER PATIENT</string>
     <string name="start_date">Date de début</string>
+    <string name="visit_due_on">%1$s dû le %2$s</string>
+    <string name="visit_due_today">%1$s dû aujourd\'hui</string>
+    <string name="visit_overdue">%1$s en retard il y a %2$s</string>
+    <string name="pregnancy_outcome">Résultat de la grossesse</string>
+    <string name="registers">Registres</string>
 
 </resources>
