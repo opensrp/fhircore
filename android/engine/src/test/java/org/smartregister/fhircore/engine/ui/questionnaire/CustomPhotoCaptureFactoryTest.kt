@@ -270,4 +270,34 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     verify { btnTakePhoto.isEnabled = true }
     verify { btnTakePhoto.alpha = 1F }
   }
+
+  @Test
+  fun testOnAnswerChangedIsInitialized() {
+
+    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    every { fragment.requireContext() } returns context
+
+    val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
+
+    every { photoCaptureFactory.onAnswerChanged } returns mockk(relaxed = true)
+
+    val callback = slot<ActivityResultCallback<Bitmap>>()
+    every {
+      fragment.registerForActivityResult(
+        any<ActivityResultContract<Void, Bitmap>>(),
+        capture(callback)
+      )
+    } returns mockk()
+
+    photoCaptureFactory.registerCameraLauncher()
+
+    val byteArray = "image".encodeToByteArray()
+    val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+    callback.captured.onActivityResult(bitmap)
+
+    photoCaptureFactory.onAnswerChanged.invoke()
+    //verify { photoCaptureFactory.onAnswerChanged.invoke() }
+    verify { photoCaptureFactory.loadThumbnail(any()) }
+    verify { photoCaptureFactory.populateQuestionnaireResponse(any()) }
+  }
 }
