@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
-enum class LoginErrorState {
-  UNKNOWN_HOST,
-  NETWORK_ERROR,
-  INVALID_CREDENTIALS
-}
+class InvalidCredentialsException(cause: Throwable) : Exception("Invalid login credentials", cause)
+
+class LoginNetworkException(cause: Throwable) : Exception("Network call failed", cause)
