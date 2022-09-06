@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
+import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 
 @Composable
 fun RegisterScreen(
@@ -141,6 +142,19 @@ fun RegisterScreen(
             }
           }
         }
+      }
+    },
+    floatingActionButton = {
+      val fabActions = registerConfiguration.fabActions
+      if (fabActions.isNotEmpty() && fabActions.first().visible) {
+        ExtendedFab(
+          fabActions = fabActions,
+          onViewComponentEvent = { viewComponentEvent ->
+            registerViewModel.onEvent(
+              RegisterEvent.OnViewComponentEvent(viewComponentEvent, navController)
+            )
+          }
+        )
       }
     }
   ) { innerPadding ->
