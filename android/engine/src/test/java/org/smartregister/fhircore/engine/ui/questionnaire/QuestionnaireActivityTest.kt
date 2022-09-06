@@ -110,6 +110,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
 
     val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
+    questionnaireViewModel.questionnaireConfig = questionnaireConfig
     coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
       questionnaireConfig
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
