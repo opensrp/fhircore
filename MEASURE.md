@@ -1,6 +1,5 @@
 ## Measure
-The [Measure](http://hl7.org/fhir/R4/measure.html) is a FHIR resource which represents definition- for calculation of an indicator. The Measure uses a logic Library (CQL) that contains the calculation logic for measure.
-
+A [Measure](http://hl7.org/fhir/R4/measure.html) is a FHIR resource which represents definition- for calculation of an Indicator. The Measure uses a logic Library that contains the calculation logic for measure that is written as a Clinical Quality Language (CQL) expression.
 A working example (Households and Members disaggregated by age) of Measure can be found [here](https://github.com/opensrp/fhir-resources/blob/main/ecbis/measure/household_measure.fhir.json). Notable components in example Measure are
 
 ```
@@ -60,23 +59,23 @@ A working example (Households and Members disaggregated by age) of Measure can b
 }
 ```
 
-Details of notable fields for Measure
+**Details of notable fields for Measure**
 
-**url**: The complete url of Measure with Measure.name i.e. http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01
+1. **url**: The complete url of Measure with Measure.name i.e. http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01
 
-**name**: A unique name for Measure i.e. HOUSEHOLDIND01. The Measure is loaded by name and url into measure processor
+2. **name**: A unique name for Measure i.e. `HOUSEHOLDIND01`. The Measure is loaded by name and url into measure processor
 
-**relatedArtifact**: Helper libraries to load before running Measure to be used by measure logic libraries i.e. FHIRHelpers|4.0.1. The Library is loaded by its canonical url i.e. Library/123
+3. **relatedArtifact**: Helper libraries to load before running Measure to be used by measure logic libraries i.e. FHIRHelpers|4.0.1. The Library is loaded by its canonical url i.e. Library/123
+       
+4. **library**: The CQL logic libraries used by Measure for calculation i.e. http://fhir.org/guides/cqf/common/Library/HOUSEHOLDIND01. The logic library is loaded by its url. The url must end with /Library/name 
 
-**library**: The CQL logic libraries used by Measure for calculation i.e. http://fhir.org/guides/cqf/common/Library/HOUSEHOLDIND01. The logic library is loaded by its url. The url must end with /Library/name 
+5. **scoring**: proportion | ratio | continuous-variable | cohort
 
-**scoring**: proportion | ratio | continuous-variable | cohort
-
-**group**: The section of report defining the stats for a specific indicator (may be disaggregated by stratifier). Each group has following components
-- id: Group name/id.
-- population: The calculations (or name of variable in CQL that defines the value) for each of population components i.e. initial-population, denominator, numerator
-- stratifier: The disaggregations for given population numerator. i.e. by age, by month, by education etc 
-- supplementalData: Any extra data or intermediate calculation to be output to final report. Current implementation of MeasureEvaluator does not allow running any measure which is not Patient centric i.e. a Measure.subject can always be a Patient. Hence, we are using `supplementalData` to output Group for each indicator and then counting distinct Group to count Households
+6. **group**: The section of report defining the stats for a specific indicator (may be disaggregated by stratifier). Each group has following components
+   - **id**: Group name/id.
+   - **population**: The calculations (or name of variable in CQL that defines the value) for each of population components i.e. initial-population, denominator, numerator
+   - **stratifier**: The disaggregations for given population numerator. i.e. by age, by month, by education etc 
+   - **supplementalData**: Any extra data or intermediate calculation to be output to final report. Current implementation of MeasureEvaluator does not allow running any measure which is not Patient centric i.e. a Measure.subject can always be a Patient. Hence, we are using `supplementalData` to output Group for each indicator and then counting distinct Group to count Households
 
 
 ## CQL Logic/Decision Library for Measure
@@ -121,25 +120,29 @@ define "Age Stratifier":
 
 The CQL is referenced by url into Measure. The CQL is translated into elm-json and uploaded a Library on server. There are multiple ways to get elm for CQL. (elm-xml is also a valid standard but it is not recognized by android fhir libraries yet)
 
-**CQL to ELM REST Translator**:
+**CQL to ELM REST Translator**
+
 A [elm REST app](https://github.com/cqframework/cql-translation-service/blob/master/README.md) that can be used to run elm microservice and convert CQL via a REST API. 
 
 
-**CQL to ELM JAVA Translator**:
+**CQL to ELM JAVA Translator**
+
 A [elm java app](https://github.com/cqframework/clinical_quality_language/blob/master/Src/java/READM.md) that can be used to elm translator on files and get an output. Instructions can be found [here](https://github.com/cqframework/cql-execution#to-execute-your-cql)
 
-**Note**: Above approaches output a json elm which then need to be base64 decoded and copied to the [Library](http://hl7.org/fhir/R4/library.html) content as Attachment.
+***Note** : Above approaches output a json elm which then need to be base64 decoded and copied to the [Library](http://hl7.org/fhir/R4/library.html) content as Attachment.*
 
-**Fhir-Resource on FhirCore**:
+**How to Test your CQL Script**
+
 The [fhir-resources](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing) repository has a testing module which allows to not only get the complete Library resource to directly save to server but also allows to test the Measure output and make changes on the fly. Check the cucumber tests [Feature File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/src/test/resources/measure-report/household-members.feature), the [Test Code File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/src/test/kotlin/com/fhircore/resources/testing/measure/HouseholdMembersMeasureTest.kt#L28) and the [Convertor Util Method](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/src/test/kotlin/com/fhircore/resources/testing/CqlUtils.kt#L31)
 
 **FhirCore Unit Tests**
-The CQL can also be translated to Library using an approach as used by fhircore as in [CQL Content Tests](https://github.com/opensrp/fhircore/blob/main/android/quest/src/test/java/org/smartregister/fhircore/quest/CqlContentTest.kt#L57). A complete Library resource is output to console as a result.
+
+The CQL can also be translated to Library using an approach as used by FHIR Core as in [CQL Content Tests](https://github.com/opensrp/fhircore/blob/main/android/quest/src/test/java/org/smartregister/fhircore/quest/CqlContentTest.kt#L57). A complete Library resource is output to console as a result.
 
 ## Testing Measure and CQL Library
 
-To make sure your Measure and Library are working and have been validated data, it is best to thoroughly test the input and output first so that multiple updates to server can be avoided and an easy and quick test driven approach is opted to implement your new functionality. Fhir-Resources [repository](https://github.com/opensrp/fhir-resources) has a testing module which implements Cucumber tests to help facilitate this. 
-- Checkout [Fhir-Resources Repository](https://github.com/opensrp/fhir-resources)
+To make sure your Measure and Library are working and have been validated data, it is best to thoroughly test the input and output first so that multiple updates to server can be avoided and an easy and quick test driven approach is opted to implement your new functionality. The fhir-resources [repository](https://github.com/opensrp/fhir-resources) has a testing module which implements Cucumber tests to help facilitate this. 
+- Checkout [fhir-resources](https://github.com/opensrp/fhir-resources) Repository 
 - Open module fhircore-testing into Intellij or VS Code
 - Install Cucumber plugin (optional and allows to run feature file directly)
 - The module has a lot of helper functions to allow creating sample data and testing basic MeasureReport output. if you understand Cucumber you can add a complete custom test as well
@@ -172,7 +175,8 @@ Feature: Household Members Count by Age group
  - Make sure to use same Step definition convention i.e. Given `TAG` CQL is "`cql-path`" OR Given `TAG` Measure is "`measure path`". Otherwise you would need to write your own Steps into YourTagTest.kt file using standard defined in [Cucumber Tutorial](https://medium.com/@mlvandijk/kukumber-getting-started-with-cucumber-in-kotlin-e55112e7309b)
  - The assertions should also use same Step convention. i.e. Then `TAG` Measure Report has "`your-fhirpath-in-measure-report`" = "`expected-size`". Or you can add additional assertions to Test code file as in `Then` section below
 - Add your test file to kotlin/com/fhircore/resources/testing/measure/YourMeasureNameTest.kt i.e. kotlin/com/fhircore/resources/testing/measure/HouseholdMembersMeasureTest.kt
-- Note that the feature-file name should match with test-file name i.e. household-members.feature corresponds to HouseholdMembersMeasureTest.kt
+  
+***Note** The feature-file name should match with test-file name i.e. household-members.feature corresponds to HouseholdMembersMeasureTest.kt*
   
 ```
 @RunWith(Cucumber::class)
@@ -205,7 +209,9 @@ class HouseholdMembersMeasureTest : En {
   }
 }
 ```
-- The final working Library, Measure, and MeasureReport are printed to console which can be copied and POST/PUT to server. 
+
+
+The final working Library, Measure, and MeasureReport are printed to console which can be copied and POST/PUT to server. 
 
 ## MeasureReport
 A [MeasureReport](http://hl7.org/fhir/R4/measurereport.html) is a FHIR resource which represents the outcome of calculation of a [Measure](http://hl7.org/fhir/R4/measure.html) for a particular subject or population of subjects.
@@ -283,28 +289,29 @@ The output MeasureReport of above Measure is [here](https://github.com/opensrp/f
 }
 ```
 
+**Notable components of the MeasureReport**
+
 Details of some notable fields in above MeasureReport (calculated from Measure) are 
 
-**contained**: The Measure [property](http://hl7.org/fhir/R4/measure-definitions.html#Measure.supplementalData) `supplementalData` is calculated for each measure `subject` and output as an [Observation](http://hl7.org/fhir/R4/observation.html) having extension http://hl7.org/fhir/StructureDefinition/cqf-measureInfo with inner extension defining the variable requested i.e. `group` in case above. The code.coding.code has the value of given variable `Group/1818d503-7226-45cb-9ac7-8c8609dd37c0/_history/3` in example above
+1. **contained**: The Measure [property](http://hl7.org/fhir/R4/measure-definitions.html#Measure.supplementalData) `supplementalData` is calculated for each measure `subject` and output as an [Observation](http://hl7.org/fhir/R4/observation.html) having extension http://hl7.org/fhir/StructureDefinition/cqf-measureInfo with inner extension defining the variable requested i.e. `group` in case above. The code.coding.code has the value of given variable `Group/1818d503-7226-45cb-9ac7-8c8609dd37c0/_history/3` in example above
 
-**measure**: The Measure.url for which this report was generated i.e. http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01
+2. **measure**: The Measure.url for which this report was generated i.e. http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01
 
-**period**: Measure period which was sent for date filter i.e. reporting period start and end. The Measure interval has closed boundaries. Read details [here](https://cql.hl7.org/02-authorsguide.html#interval-values) 
+3. **period**: Measure period which was sent for date filter i.e. reporting period start and end. The Measure interval has closed boundaries. Read details [here](https://cql.hl7.org/02-authorsguide.html#interval-values) 
 
-**group**: The calculated value for each Measure indicator with
- - id: id/name of group/indicator/stratifier as defined in Meaure. 
- - count: Calculated value from CQL for given variable
- - measureScore: The percent/ratio of calculated value i.e. numerator/denomintor. Note that for stratifier the score denominator is stratifier denomintor rather than group denominator
- - 
-**stratifier**: Count for given indicator disaggregated by each type. The stratifier misses the values where counts are zero. Hence if stratifier has predefined criteria, each should be a calculated as separate group. 
+4. **group**: The calculated value for each Measure indicator with
+    - id: id/name of group/indicator/stratifier as defined in Meaure. 
+    - count: Calculated value from CQL for given variable
+    - measureScore: The percent/ratio of calculated value i.e. numerator/denomintor. Note that for stratifier the score denominator is stratifier denomintor rather than group denominator
+5. **stratifier**: Count for given indicator disaggregated by each type. The stratifier misses the values where counts are zero. Hence if stratifier has predefined criteria, each should be a calculated as separate group. 
 
 
-## FhirCore Integration
+## FHIR Core Integration
 
 Once your Measure, and Library is ready add these to sync_config.json to make sure that the Measure and all dependent Library resources are always synced.
-- Save/Update Measure on server i.e. POST - https://your.fhir.server/fhir/Measure OR PUT - https://your.fhir.server/fhir/Measure/measure-id 
-- Save/Update Library on server i.e. POST - https://your.fhir.server/fhir/Library OR PUT - https://your.fhir.server/fhir/Library/library-id 
-- Update the sync_config.json Debug or Binary config for your app with new your measure id, and library id as below
+1. Save/Update Measure on server i.e. POST - https://your.fhir.server/fhir/Measure OR PUT - https://your.fhir.server/fhir/Measure/measure-id 
+2. Save/Update Library on server i.e. POST - https://your.fhir.server/fhir/Library OR PUT - https://your.fhir.server/fhir/Library/library-id 
+3. Update the sync_config.json Debug or Binary config for your app with new your measure id, and library id as below
 ```
   {
     "resource": {
@@ -332,7 +339,7 @@ Once your Measure, and Library is ready add these to sync_config.json to make su
     "expression": "1753,133081,133105,{your-library-id},{any-helper-library-ids}"
   }
 ```
-- Update the measure_report_config.json Debug or Binary config with your new measure so that it shows up in the list
+4. Update the measure_report_config.json Debug or Binary config with your new measure so that it shows up in the list
 ``` 
 "reports": [
   ... ... ...
@@ -346,8 +353,6 @@ Once your Measure, and Library is ready add these to sync_config.json to make su
   ]
 ```
 
-## Screenshots
+## Screenshot of MeasureReport on FHIR Core
 
 <img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/188478590-93474727-4ef2-4ba7-acfc-8eb6ac9e32d5.png"/> <img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/188478602-e3941d73-4582-43a2-bc24-423eb1253fe0.png"/>
-
-
