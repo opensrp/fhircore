@@ -116,10 +116,17 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns Questionnaire()
     coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any()) } returns
       QuestionnaireResponse()
+    coEvery { questionnaireViewModel.defaultRepository.addOrUpdate(any()) } returns Unit
+    coEvery { questionnaireViewModel.defaultRepository.loadResource(any()) } returns
+      Patient().apply { id = "my-patient-id" }
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.supportFragmentManager.executePendingTransactions()
+
+    val questionnaireFragment = spyk<FhirCoreQuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    questionnaireActivity.fragment = questionnaireFragment
 
     questionnaireActivity.populateInitialValues(
       Questionnaire()
@@ -446,14 +453,32 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testQuestionnaireTypeEditShouldAppendEditPrefixInActionBarTitle() {
-    with(questionnaireActivity) {
-      questionnaireType = QuestionnaireType.EDIT
-      questionnaireViewModel.questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
+    val questionnaireResponse = QuestionnaireResponse()
+    val questionnaireResponseString =
+      FhirContext.forCached(FhirVersionEnum.R4)
+        .newJsonParser()
+        .encodeResourceToString(questionnaireResponse)
+    intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE, QuestionnaireType.READ_ONLY.name)
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, questionnaireResponseString)
+      }
 
-      updateViews()
+    val questionnaireFragment = spyk<FhirCoreQuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
 
-      Assert.assertEquals("${getString(R.string.edit)} title", supportActionBar?.title)
-    }
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+    questionnaireActivity.fragment = questionnaireFragment
+    questionnaireActivity.questionnaireType = QuestionnaireType.EDIT
+    questionnaireActivity.updateViews()
+
+    Assert.assertEquals(
+      "${getString(R.string.edit)} title",
+      questionnaireActivity.supportActionBar?.title
+    )
   }
 
   @Test

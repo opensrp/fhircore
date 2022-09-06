@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.data.local.register
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import java.util.LinkedList
@@ -46,6 +47,7 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 class RegisterRepository
 @Inject
@@ -170,18 +172,22 @@ constructor(
         relatedResourceData.addLast(RelatedResourceData(it))
       }
     } else {
-      FhirPathDataExtractor.extractData(baseResource, fhirPathExpression)
-        .takeWhile { it is Reference }
-        .map { it as Reference }
-        .map {
-          fhirEngine.get(
-            resourceConfig.resource.resourceClassType().newInstance().resourceType,
-            it.extractId()
-          )
-        }
-        .forEach { resource ->
-          relatedResourceData.addLast(RelatedResourceData(resource = resource))
-        }
+      try {
+        FhirPathDataExtractor.extractData(baseResource, fhirPathExpression)
+          .takeWhile { it is Reference }
+          .map { it as Reference }
+          .map {
+            fhirEngine.get(
+              resourceConfig.resource.resourceClassType().newInstance().resourceType,
+              it.extractId()
+            )
+          }
+          .forEach { resource ->
+            relatedResourceData.addLast(RelatedResourceData(resource = resource))
+          }
+      } catch (exception: ResourceNotFoundException) {
+        Timber.e("Failed to refresh token, refresh token may have expired", exception)
+      }
     }
     relatedResourceData.forEach { resourceData: RelatedResourceData ->
       resourceConfig.relatedResources.forEach {
