@@ -230,9 +230,16 @@ internal class LoginViewModelTest : RobolectricTest() {
     ReflectionHelpers.callInstanceMethod<Any>(
       loginViewModel,
       "handleErrorMessage",
-      ReflectionHelpers.ClassParameter(Throwable::class.java, IOException())
+      ReflectionHelpers.ClassParameter(Throwable::class.java, InvalidCredentialsException())
     )
     Assert.assertEquals(LoginErrorState.INVALID_CREDENTIALS, loginViewModel.loginErrorState.value)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      loginViewModel,
+      "handleErrorMessage",
+      ReflectionHelpers.ClassParameter(Throwable::class.java, IOException())
+    )
+    Assert.assertEquals(LoginErrorState.NETWORK_ERROR, loginViewModel.loginErrorState.value)
   }
 
   @Test
