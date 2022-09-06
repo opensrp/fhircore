@@ -296,7 +296,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     callback.captured.onActivityResult(bitmap)
 
     photoCaptureFactory.onAnswerChanged.invoke()
-    //verify { photoCaptureFactory.onAnswerChanged.invoke() }
+    // verify { photoCaptureFactory.onAnswerChanged.invoke() }
     verify { photoCaptureFactory.loadThumbnail(any()) }
     verify { photoCaptureFactory.populateQuestionnaireResponse(any()) }
   }
