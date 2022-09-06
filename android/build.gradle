@@ -4,6 +4,7 @@ buildscript {
     apply from: 'configs.gradle'
 
     ext.composeVersion = "1.2.1"
+    ext.navigationVersion = "2.5.1"
 
     repositories {
         google()

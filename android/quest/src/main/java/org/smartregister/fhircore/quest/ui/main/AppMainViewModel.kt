@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.p2p.utils.startP2PScreen
@@ -214,7 +213,11 @@ constructor(
     return countsMap
   }
 
-  fun launchFamilyRegistrationWithLocationId(context: Context, locationId: String) {
+  fun launchFamilyRegistrationWithLocationId(
+    context: Context,
+    locationId: String,
+    geoWidgetConfigId: String
+  ) {
     viewModelScope.launch(dispatcherProvider.main()) {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
 
@@ -223,10 +226,7 @@ constructor(
           Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
         )
 
-      context.launchQuestionnaire<QuestionnaireActivity>(
-        GeoWidgetFragment.FAMILY_REGISTRATION_QUESTIONNAIRE,
-        intentBundle = bundle
-      )
+      context.launchQuestionnaire<QuestionnaireActivity>(geoWidgetConfigId, intentBundle = bundle)
     }
   }
 

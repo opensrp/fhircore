@@ -163,7 +163,6 @@ dependencies {
     implementation('org.smartregister:p2p-lib:0.4.0-SNAPSHOT')
 
     //Configure Jetpack Compose and navigation
-    def navigationVersion = "2.5.1"
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
     api("androidx.compose.foundation:foundation:$composeVersion")

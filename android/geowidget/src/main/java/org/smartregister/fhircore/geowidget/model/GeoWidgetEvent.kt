@@ -23,5 +23,6 @@ sealed class GeoWidgetEvent {
 
   @Serializable data class OpenProfile(val data: String) : GeoWidgetEvent()
 
-  @Serializable data class RegisterClient(val data: String) : GeoWidgetEvent()
+  @Serializable
+  data class RegisterClient(val data: String, val geoWidgetConfigId: String) : GeoWidgetEvent()
 }

@@ -105,7 +105,7 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
         setNavigationOnClickListener { findNavController().popBackStack() }
       }
     kujakuMapView =
-      KujakuMapView(requireContext()).apply {
+      KujakuMapView(requireActivity()).apply {
         id = R.id.kujaku_widget
         getMapAsync { mapboxMap ->
           Timber.i("Get Map async finished")
@@ -162,7 +162,10 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
           geoWidgetViewModel.saveLocation(location).observe(viewLifecycleOwner) { saveLocation ->
             if (saveLocation) {
               geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-                GeoWidgetEvent.RegisterClient(location.idElement.value)
+                GeoWidgetEvent.RegisterClient(
+                  location.idElement.value,
+                  geoWidgetConfiguration.registrationQuestionnaire.id
+                )
               )
             }
           }
@@ -263,11 +266,5 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     kujakuMapView.onSaveInstanceState(outState)
-  }
-
-  companion object {
-    const val LOCATION_ID = "location-id"
-    const val FAMILY_ID = "family-id"
-    const val FAMILY_REGISTRATION_QUESTIONNAIRE = "82952-geowidget"
   }
 }

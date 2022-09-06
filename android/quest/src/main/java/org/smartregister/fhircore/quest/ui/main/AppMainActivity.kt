@@ -61,7 +61,7 @@ open class AppMainActivity : BaseMultiLanguageActivity() {
 
   lateinit var mapLauncherResultHandler: ActivityResultLauncher<Intent>
 
-  private lateinit var navHostFragment: NavHostFragment
+  lateinit var navHostFragment: NavHostFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -95,7 +95,11 @@ open class AppMainActivity : BaseMultiLanguageActivity() {
           )
         }
         is GeoWidgetEvent.RegisterClient ->
-          appMainViewModel.launchFamilyRegistrationWithLocationId(this, geoWidgetEvent.data)
+          appMainViewModel.launchFamilyRegistrationWithLocationId(
+            this,
+            geoWidgetEvent.data,
+            geoWidgetEvent.geoWidgetConfigId
+          )
       }
     }
 

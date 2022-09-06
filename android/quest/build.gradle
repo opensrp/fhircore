@@ -225,6 +225,7 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+    testImplementation ("androidx.navigation:navigation-testing:$navigationVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     androidTestUtil 'androidx.test:orchestrator:1.4.2-alpha04'
 
