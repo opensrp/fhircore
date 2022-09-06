@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
-class InvalidCredentialsException(cause: Throwable? = null) : Exception("Invalid login credentials", cause)
+class InvalidCredentialsException(cause: Throwable? = null) :
+  Exception("Invalid login credentials", cause)
 
 class LoginNetworkException(cause: Throwable? = null) : Exception("Network call failed", cause)
