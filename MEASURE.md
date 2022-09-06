@@ -136,7 +136,78 @@ The [fhir-resources](https://github.com/opensrp/fhir-resources/blob/main/fhircor
 **FhirCore Unit Tests**
 The CQL can also be translated to Library using an approach as used by fhircore as in [CQL Content Tests](https://github.com/opensrp/fhircore/blob/main/android/quest/src/test/java/org/smartregister/fhircore/quest/CqlContentTest.kt#L57). A complete Library resource is output to console as a result.
 
-## Measure Report
+## Testing Measure and CQL Library
+
+To make sure your Measure and Library are working and have been validated data, it is best to thoroughly test the input and output first so that multiple updates to server can be avoided and an easy and quick test driven approach is opted to implement your new functionality. Fhir-Resources [repository](https://github.com/opensrp/fhir-resources) has a testing module which implements Cucumber tests to help facilitate this. 
+- Checkout [Fhir-Resources Repository](https://github.com/opensrp/fhir-resources)
+- Open module fhircore-testing into Intellij or VS Code
+- Install Cucumber plugin (optional and allows to run feature file directly)
+- The module has a lot of helper functions to allow creating sample data and testing basic MeasureReport output. if you understand Cucumber you can add a complete custom test as well
+- Add you test feature file to fhircore-testing/src/test/resources/measure-report/ i.e. fhircore-testing/src/test/resources/measure-report/household-members.feature
+```
+Feature: Household Members Count by Age group
+
+  Scenario: Household members in household disaggregated by age group
+    Given Household Members CQL is "ecbis/measure_cql/household_measure_reporting.cql"
+    Given Household Members Measure is "ecbis/measure/household_measure.fhir.json"
+    Given Household Members Sample Bundle has 19 Groups; of them 17 active person
+    Given Household Members Sample Bundle has 16 Group Members gender "male" active aged
+      | 0 | 1 | 4 | 5 | 6 | 9 | 14 | 15 | 16 | 25 | 34 | 40 | 49 | 50 | 51 | 55 |
+    Given Household Members Sample Bundle has 21 Group Members gender "female" active aged
+      | 0 | 1 | 2 | 4 | 5 | 6 | 7 | 9 | 14 | 15 | 16 | 21 | 25 | 34 | 40 | 44 | 48 | 49 | 50 | 51 | 55 |
+    When Household Members Measure is run
+    Then Household Members Measure Report has "evaluatedResource.count()" = "17"
+    Then Household Members Measure Report has "group.count()" = "2"
+    Then Household Members Measure Report has "group.where(id='males').population[0].count" = "37"
+    Then Household Members Measure Report has "group.where(id='males').population[1].count" = "37"
+    Then Household Members Measure Report has "group.where(id='males').population[2].count" = "16"
+    Then Household Members Measure Report has "group.where(id='females').population[0].count" = "37"
+    Then Household Members Measure Report has "group.where(id='females').population[1].count" = "37"
+    Then Household Members Measure Report has "group.where(id='females').population[2].count" = "21"
+```
+ - 'Household Members' is the TAG. This should match your Measure core functionality
+ - 'ecbis/measure_cql/household_measure_reporting.cql' is cql path. This should be the path from main dir i.e. fhir-resources where your cql resides
+ - 'ecbis/measure/household_measure.fhir.json' is measure path. This should be the path from main dir i.e. fhir-resources where your measure resides
+ - Change test data as per your requirements. You can change values into double quotes, int values, or in data tables as per your test requirements
+ - Make sure to use same Step definition convention i.e. Given `TAG` CQL is "`cql-path`" OR Given `TAG` Measure is "`measure path`". Otherwise you would need to write your own Steps into YourTagTest.kt file using standard defined in [Cucumber Tutorial](https://medium.com/@mlvandijk/kukumber-getting-started-with-cucumber-in-kotlin-e55112e7309b)
+ - The assertions should also use same Step convention. i.e. Then `TAG` Measure Report has "`your-fhirpath-in-measure-report`" = "`expected-size`". Or you can add additional assertions to Test code file as in `Then` section below
+- Add your test file to kotlin/com/fhircore/resources/testing/measure/YourMeasureNameTest.kt i.e. kotlin/com/fhircore/resources/testing/measure/HouseholdMembersMeasureTest.kt
+- Note that the feature-file name should match with test-file name i.e. household-members.feature corresponds to HouseholdMembersMeasureTest.kt
+  
+```
+@RunWith(Cucumber::class)
+@CucumberOptions(
+  features = ["src/test/resources/measure-report/household-members.feature"], tags = "not @ignored"
+)
+class HouseholdMembersMeasureTest : En {
+  private val measureContext = MeasureContext().apply { withMeasurePeriod("2022-01-01", "2022-07-15") }
+
+  private val TAG = "Household Members"
+
+  init {
+    measureContext.givenCql(TAG) // helper step definition to load and print Library in console
+    measureContext.givenMeasure(TAG) // helper step definition to load and print Measure in console
+
+    // add your test data below. you can add custom code as well to load data of your choice
+    measureContext.givenGroupsXHavingYActivePerson(TAG) // helper step definition to add households test data
+    measureContext.givenGroupMembersXHavingGenderYAndAgesZ(TAG) // helper step definition to add household members, patients test data
+
+    // helper step definition to run measure of given type and print report in console
+    measureContext.whenMeasureRun(TAG, MeasureEvalType.POPULATION)
+
+    // helper step definition to add assertions. You can add custom assertions as well to test complex data
+    Then("Household Members Measure Report has {string} = {string}") { path: String, value: String ->
+      measureContext.thenMeasureReportHas(path, value)
+
+      // Add additional assertions if needed
+      // assertEquals(0.5, measureContext.measureReport.group.first().measureScore)
+    }
+  }
+}
+```
+- The final working Library, Measure, and MeasureReport are printed to console which can be copied and POST/PUT to server. 
+
+## MeasureReport
 A [MeasureReport](http://hl7.org/fhir/R4/measurereport.html) is a FHIR resource which represents the outcome of calculation of a [Measure](http://hl7.org/fhir/R4/measure.html) for a particular subject or population of subjects.
 
 The output MeasureReport of above Measure is [here](https://github.com/opensrp/fhir-resources/blob/main/ecbis/measure_report/household_measure_report.fhir.json). Some important components of report are below
@@ -227,8 +298,56 @@ Details of some notable fields in above MeasureReport (calculated from Measure) 
  - 
 **stratifier**: Count for given indicator disaggregated by each type. The stratifier misses the values where counts are zero. Hence if stratifier has predefined criteria, each should be a calculated as separate group. 
 
+
+## FhirCore Integration
+
+Once your Measure, and Library is ready add these to sync_config.json to make sure that the Measure and all dependent Library resources are always synced.
+- Save/Update Measure on server i.e. POST - https://your.fhir.server/fhir/Measure OR PUT - https://your.fhir.server/fhir/Measure/measure-id 
+- Save/Update Library on server i.e. POST - https://your.fhir.server/fhir/Library OR PUT - https://your.fhir.server/fhir/Library/library-id 
+- Update the sync_config.json Debug or Binary config for your app with new your measure id, and library id as below
+```
+  {
+    "resource": {
+      "resourceType": "SearchParameter",
+      "name": "_id",
+      "code": "_id",
+      "base": [
+        "Measure"
+      ]
+    },
+    "type": "token",
+    "expression": "133082,133104,{your-measure-id}"
+  },
+  ... ... ...
+  {
+    "resource": {
+      "resourceType": "SearchParameter",
+      "name": "_id",
+      "code": "_id",
+      "base": [
+        "Library"
+      ]
+    },
+    "type": "token",
+    "expression": "1753,133081,133105,{your-library-id},{any-helper-library-ids}"
+  }
+```
+- Update the measure_report_config.json Debug or Binary config with your new measure so that it shows up in the list
+``` 
+"reports": [
+  ... ... ...
+    {
+      "id": "new serial id in list",
+      "title": "Household Members",
+      "description": "Number of Households, Household members registered, disaggregated by age and gender for each age group",
+      "url": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDIND01"
+    },
+    ... ... ... 
+  ]
+```
+
 ## Screenshots
 
-<img width="300" height="500" src="https://user-images.githubusercontent.com/4829880/188478590-93474727-4ef2-4ba7-acfc-8eb6ac9e32d5.png"/> <img width="300" height="500" src="https://user-images.githubusercontent.com/4829880/188478602-e3941d73-4582-43a2-bc24-423eb1253fe0.png"/>
+<img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/188478590-93474727-4ef2-4ba7-acfc-8eb6ac9e32d5.png"/> <img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/188478602-e3941d73-4582-43a2-bc24-423eb1253fe0.png"/>
 
 
