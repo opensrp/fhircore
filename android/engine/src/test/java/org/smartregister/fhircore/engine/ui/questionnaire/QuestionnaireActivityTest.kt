@@ -406,6 +406,25 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testPostSaveSuccessfulShouldFinishActivity() {
+    val questionnaireResponse = QuestionnaireResponse()
+    val questionnaireResponseString =
+      FhirContext.forCached(FhirVersionEnum.R4)
+        .newJsonParser()
+        .encodeResourceToString(questionnaireResponse)
+    intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE, QuestionnaireType.READ_ONLY.name)
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, questionnaireResponseString)
+      }
+
+    questionnaireActivity.intent = intent
+
+    val questionnaireFragment = spyk<FhirCoreQuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
+
+    questionnaireActivity.fragment = questionnaireFragment
     questionnaireActivity.postSaveSuccessful(QuestionnaireResponse())
 
     Assert.assertTrue(questionnaireActivity.isFinishing)
