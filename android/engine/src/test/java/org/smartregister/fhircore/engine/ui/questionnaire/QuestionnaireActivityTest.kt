@@ -483,7 +483,27 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testQuestionnaireTypeDefaultShouldHasNormalActionBarTitle() {
+
     with(questionnaireActivity) {
+      val questionnaireResponse = QuestionnaireResponse()
+      val questionnaireResponseString =
+        FhirContext.forCached(FhirVersionEnum.R4)
+          .newJsonParser()
+          .encodeResourceToString(questionnaireResponse)
+      val intentInner =
+        Intent().apply {
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE, QuestionnaireType.READ_ONLY.name)
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, questionnaireResponseString)
+        }
+
+      intent = intentInner
+
+      val questionnaireFragment = spyk<FhirCoreQuestionnaireFragment>()
+      every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
+
+      fragment = questionnaireFragment
       questionnaireType = QuestionnaireType.DEFAULT
       questionnaireViewModel.questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
 
