@@ -466,11 +466,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE, questionnaireResponseString)
       }
 
+    questionnaireActivity.intent = intent
+
     val questionnaireFragment = spyk<FhirCoreQuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
 
-    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
-    questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.fragment = questionnaireFragment
     questionnaireActivity.questionnaireType = QuestionnaireType.EDIT
     questionnaireActivity.updateViews()

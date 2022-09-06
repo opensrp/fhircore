@@ -186,7 +186,7 @@ constructor(
             relatedResourceData.addLast(RelatedResourceData(resource = resource))
           }
       } catch (exception: ResourceNotFoundException) {
-        Timber.e("Failed to refresh token, refresh token may have expired", exception)
+        Timber.e("Failed to find FHIR Resource", exception)
       }
     }
     relatedResourceData.forEach { resourceData: RelatedResourceData ->
