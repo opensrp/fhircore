@@ -92,7 +92,7 @@ android {
 // Test Logging
 tasks.withType(Test) {
     testLogging {
-        events  "passed", "skipped", "failed"
+        events  "failed"
     }
 }
 
