@@ -84,11 +84,15 @@ android {
             all {
                 minHeapSize = "4608m"
                 maxHeapSize = "4608m"
-                beforeTest { testDescriptor ->
-                    println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
-                }
             }
         }
+    }
+}
+
+// Test Logging
+tasks.withType(Test) {
+    testLogging {
+        events  "passed", "skipped", "failed"
     }
 }
 

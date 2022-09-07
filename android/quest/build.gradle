@@ -119,11 +119,6 @@ android {
         unitTests {
             includeAndroidResources = true
             returnDefaultValues = true
-            all {
-                beforeTest { testDescriptor ->
-                    println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
-                }
-            }
         }
     }
 
@@ -176,6 +171,13 @@ android {
             versionCode 1
             versionName "0.0.1"
         }
+    }
+}
+
+// Test Logging
+tasks.withType(Test) {
+    testLogging {
+        events  "passed", "skipped", "failed"
     }
 }
 
