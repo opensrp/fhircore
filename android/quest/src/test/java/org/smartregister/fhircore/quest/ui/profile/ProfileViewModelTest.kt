@@ -30,9 +30,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -46,9 +44,13 @@ class ProfileViewModelTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var registerRepository: RegisterRepository
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   private lateinit var profileViewModel: ProfileViewModel
+
   private lateinit var resourceData: ResourceData
+
   private lateinit var expectedBaseResource: Patient
 
   @Before
@@ -85,18 +87,10 @@ class ProfileViewModelTest : RobolectricTest() {
     assertEquals(expectedBaseResource.name[0].family, actualPatient.name[0].family)
     assertEquals(expectedBaseResource.name[0].given, actualPatient.name[0].given)
     assertEquals(expectedBaseResource.address[0].city, actualPatient.address[0].city)
-  }
 
-  @Test
-  fun testRetrieveProfileConfiguration() {
-    val profileConfiguration: ProfileConfiguration =
-      ReflectionHelpers.callInstanceMethod(
-        profileViewModel,
-        "retrieveProfileConfiguration",
-        ReflectionHelpers.ClassParameter.from(String::class.java, "householdProfile")
-      )
-    assertEquals("app", profileConfiguration.appId)
-    assertEquals("profile", profileConfiguration.configType)
-    assertEquals("householdProfile", profileConfiguration.id)
+    val profileConfiguration = profileViewModel.profileUiState.value.profileConfiguration
+    assertEquals("app", profileConfiguration?.appId)
+    assertEquals("profile", profileConfiguration?.configType)
+    assertEquals("householdProfile", profileConfiguration?.id)
   }
 }

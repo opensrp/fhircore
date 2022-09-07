@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.userprofile
+package org.smartregister.fhircore.engine.ui.usersetting
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -30,21 +30,21 @@ import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @Ignore("Fix failing tests")
-class UserProfileScreenKtTest : RobolectricTest() {
+class UserSettingScreenKtTest : RobolectricTest() {
 
-  private val userProfileViewModel = mockk<UserProfileViewModel>()
+  private val userSettingViewModel = mockk<UserSettingViewModel>()
 
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Before
   fun setUp() {
-    every { userProfileViewModel.retrieveUsername() } returns "johndoe"
-    every { userProfileViewModel.allowSwitchingLanguages() } returns false
+    every { userSettingViewModel.retrieveUsername() } returns "johndoe"
+    every { userSettingViewModel.allowSwitchingLanguages() } returns false
   }
 
   @Test
   fun testUserProfileShouldDisplayCorrectContent() {
-    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
 
     composeRule.onNodeWithText("Johndoe").assertExists()
     composeRule.onNodeWithText("Sync").assertExists()
@@ -53,26 +53,26 @@ class UserProfileScreenKtTest : RobolectricTest() {
 
   @Test
   fun testSyncRowClickShouldInitiateSync() {
-    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
-    every { userProfileViewModel.runSync() } returns Unit
+    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
+    every { userSettingViewModel.runSync() } returns Unit
 
     composeRule.onNodeWithText("Sync").performClick()
 
-    verify { userProfileViewModel.runSync() }
+    verify { userSettingViewModel.runSync() }
   }
 
   @Test
   fun testLanguageRowIsNotShownWhenAllowSwitchingLanguagesIsFalse() {
-    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
 
     composeRule.onNodeWithText("Language").assertDoesNotExist()
   }
 
   @Test
   fun testLanguageRowIsShownWhenAllowSwitchingLanguagesIsTrue() {
-    every { userProfileViewModel.allowSwitchingLanguages() } returns true
-    every { userProfileViewModel.loadSelectedLanguage() } returns "Some lang"
-    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+    every { userSettingViewModel.allowSwitchingLanguages() } returns true
+    every { userSettingViewModel.loadSelectedLanguage() } returns "Some lang"
+    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
 
     composeRule.onNodeWithText("Language").assertExists()
   }
@@ -80,10 +80,10 @@ class UserProfileScreenKtTest : RobolectricTest() {
   @Test
   fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
     val languages = listOf(Language("es", "Spanish"), Language("en", "English"))
-    every { userProfileViewModel.languages } returns languages
-    every { userProfileViewModel.allowSwitchingLanguages() } returns true
-    every { userProfileViewModel.loadSelectedLanguage() } returns "Some lang"
-    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+    every { userSettingViewModel.languages } returns languages
+    every { userSettingViewModel.allowSwitchingLanguages() } returns true
+    every { userSettingViewModel.loadSelectedLanguage() } returns "Some lang"
+    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
 
     composeRule.onNodeWithText("Language").performClick()
     composeRule.onNodeWithText("Spanish").assertExists()
