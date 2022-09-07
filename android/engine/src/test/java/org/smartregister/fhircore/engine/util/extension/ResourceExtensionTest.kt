@@ -646,7 +646,7 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun logicalIdFromFhirPathExtractedIdReturnsCorrectValue() {
-    val fhirpathExtractedId = "Group/12345/v2"
-    Assert.assertEquals("12345", fhirpathExtractedId.logicalIdFromFhirPathExtractedId())
+    val logicalId = "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2"
+    Assert.assertEquals("0acda8c9-3fa3-40ae-abcd-7d1fba7098b4", logicalId.extractLogicalIdUuid())
   }
 }

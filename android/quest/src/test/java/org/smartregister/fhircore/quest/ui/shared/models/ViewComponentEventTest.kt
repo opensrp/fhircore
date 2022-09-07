@@ -33,10 +33,12 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
 
-class ViewComponentEventTest {
+class ViewComponentEventTest : RobolectricTest() {
 
   private lateinit var viewComponentEvent: ViewComponentEvent
 
@@ -45,14 +47,20 @@ class ViewComponentEventTest {
   @Test
   fun testHandleEventShouldOpenProfile() {
     viewComponentEvent = ViewComponentEvent.OpenProfile("1234", "res123")
-    val urlPathSlot = slot<String>()
-    every { navController.navigate(capture(urlPathSlot)) } just runs
+    val urlPathSlot = slot<Int>()
+    val bundleSlot = slot<Bundle>()
+    every { navController.navigate(capture(urlPathSlot), capture(bundleSlot)) } just runs
 
     viewComponentEvent.handleEvent(navController)
 
-    val captured = urlPathSlot.captured
-    Assert.assertTrue(captured.isNotEmpty())
-    Assert.assertEquals("profileRoute?profileId=1234&resourceId=res123", captured)
+    Assert.assertEquals(R.id.profileFragment, urlPathSlot.captured)
+    val bundle = bundleSlot.captured
+    val profileIdKey = "profileId"
+    val resourceIdKey = "resourceId"
+    Assert.assertTrue(bundle.containsKey(profileIdKey))
+    Assert.assertTrue(bundle.containsKey(resourceIdKey))
+    Assert.assertEquals("1234", bundle.getString(profileIdKey))
+    Assert.assertEquals("res123", bundle.getString(resourceIdKey))
   }
 
   @Test
@@ -72,7 +80,6 @@ class ViewComponentEventTest {
     val mockContext = mockk<Context>(relaxed = true, relaxUnitFun = true)
     every { navController.context } returns mockContext
     every { mockContext.startActivity(any()) } just runs
-
     every {
       navController.context.launchQuestionnaire<QuestionnaireActivity>(
         questionnaireConfig = capture(questionnaireConfigSlot),

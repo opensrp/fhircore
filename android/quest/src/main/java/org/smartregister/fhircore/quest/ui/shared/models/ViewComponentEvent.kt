@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
+import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -33,26 +35,28 @@ sealed class ViewComponentEvent {
    * Event triggered when user clicks a service card to open a profile. Uses [profileId] to fetch
    * the profile configurations and [resourceId] to fetch the data for the current profile.
    */
-  data class OpenProfile(val profileId: String, val resourceId: String) : ViewComponentEvent()
+  data class OpenProfile(val profileId: String, val resourceId: String?) : ViewComponentEvent()
 
-  data class LaunchQuestionnaire(val actionConfig: ActionConfig, val resourceData: ResourceData) :
+  data class LaunchQuestionnaire(val actionConfig: ActionConfig, val resourceData: ResourceData?) :
     ViewComponentEvent()
 
   fun handleEvent(navController: NavController) {
     when (this) {
       is OpenProfile -> {
-        val urlParams =
-          NavigationArg.bindArgumentsOf(
+        val args =
+          bundleOf(
             NavigationArg.PROFILE_ID to this.profileId,
             NavigationArg.RESOURCE_ID to this.resourceId
           )
-        navController.navigate(MainNavigationScreen.Profile.route + urlParams)
+        navController.navigate(MainNavigationScreen.Profile.route, args)
       }
       is LaunchQuestionnaire -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           navController.context.launchQuestionnaire<QuestionnaireActivity>(
-            questionnaireConfig = actionConfig.questionnaire,
-            intentBundle = actionConfig.paramsBundle(resourceData.computedValuesMap)
+            questionnaireConfig = questionnaireConfig,
+            intentBundle =
+              if (resourceData != null) actionConfig.paramsBundle(resourceData.computedValuesMap)
+              else Bundle.EMPTY
           )
         }
       }

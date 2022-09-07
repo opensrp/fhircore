@@ -1,0 +1,68 @@
+{
+  "appId": "map",
+  "configType": "navigation",
+  "menuActionButton": {
+    "id": "mainActionButton",
+    "visible": true,
+    "display": "{{ add.new.household }}",
+    "actions": [
+      {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_REGISTER",
+        "id": "householdRegister",
+        "questionnaire": {
+          "id": "82952",
+          "title": "{{add.family}}",
+          "saveButtonText": "ADD FAMILY",
+          "setPractitionerDetails": true,
+          "setOrganizationDetails": true
+        }
+      }
+    ]
+  },
+  "staticMenu": [
+    {
+      "id": "maps",
+      "visible": true,
+      "display": "Maps",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_MAP",
+          "id": "householdRegistrationMap"
+        }
+      ]
+    },
+    {
+      "id": "profile",
+      "visible": true,
+      "display": "{{ profile }}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_SETTINGS",
+          "id": "navigateToSettingsScreen"
+        }
+      ]
+    }
+  ],
+  "clientRegisters": [
+    {
+      "id": "householdRegister",
+      "display": "{{ all.households }}",
+      "icon": "",
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "householdRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "householdRegister"
+        }
+      ]
+    }
+  ]
+}

@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
@@ -261,7 +262,9 @@ constructor(
     val baseResourceType = baseResourceClass.newInstance().resourceType
 
     val baseResource: Resource =
-      withContext(dispatcherProvider.io()) { fhirEngine.get(baseResourceType, resourceId) }
+      withContext(dispatcherProvider.io()) {
+        fhirEngine.get(baseResourceType, resourceId.extractLogicalIdUuid())
+      }
 
     return retrieveRelatedResources(
       relatedResourcesConfig = relatedResourcesConfig,

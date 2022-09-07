@@ -58,7 +58,6 @@ import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import timber.log.Timber
@@ -114,9 +113,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     val loadProgress = showProgressAlert(this, R.string.loading)
 
-    // Initialises the lateinit variable questionnaireViewModel to prevent
-    // some init operations running on a separate thread and causing a crash
-    questionnaireViewModel.sharedPreferencesHelper
+    //    // Initialises the lateinit variable questionnaireViewModel to prevent
+    //    // some init operations running on a separate thread and causing a crash
+    //    questionnaireViewModel.sharedPreferencesHelper
 
     lifecycleScope.launch(dispatcherProvider.io()) {
       loadQuestionnaireAndConfig(formName)
@@ -124,9 +123,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       withContext(dispatcherProvider.io()) { questionnaireViewModel.libraryEvaluator.initialize() }
 
       // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null) {
-        renderFragment()
-      }
+      if (savedInstanceState == null) renderFragment()
 
       withContext(dispatcherProvider.main()) {
         updateViews()
@@ -164,7 +161,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private suspend fun renderFragment() {
     fragment =
-      org.smartregister.fhircore.quest.ui.questionnaire.QuestQuestionnaireFragment().apply {
+      QuestQuestionnaireFragment().apply {
         val questionnaireString = parser.encodeResourceToString(questionnaire)
 
         // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
@@ -184,7 +181,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               if (questionnaireConfig.type.isReadOnly()) require(questionnaireResponse != null)
 
               if (questionnaireConfig.clientIdentifier != null) {
-                setBarcode(questionnaire, questionnaireConfig.clientIdentifier!!, true)
+                setBarcode(questionnaire, questionnaireConfig.clientIdentifier!!)
                 questionnaireResponse =
                   questionnaireViewModel.generateQuestionnaireResponse(
                     questionnaire,
@@ -221,11 +218,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
       .also { populateInitialValues(questionnaire) }
 
-  private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
+  private fun setBarcode(questionnaire: Questionnaire, code: String) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
       initial =
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
-      readOnly = readonly
+      readOnly = true
     }
   }
 
@@ -362,7 +359,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
 
-    if (questionnaireConfig?.confirmationDialog != null) {
+    if (questionnaireConfig.confirmationDialog != null) {
       handleRemoveEntityQuestionnaireResponse(questionnaireConfig = questionnaireConfig)
     } else {
       questionnaireViewModel.extractAndSaveResources(
@@ -381,16 +378,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     dismissSaveProcessing()
     confirmationDialog(
       profileId = questionnaireConfig.clientIdentifier!!,
-      profileName = questionnaireConfig.clientIdentifier!!,
       questionnaireConfig = questionnaireConfig
     )
   }
 
-  private fun confirmationDialog(
-    profileId: String,
-    profileName: String,
-    questionnaireConfig: QuestionnaireConfig
-  ) {
+  private fun confirmationDialog(profileId: String, questionnaireConfig: QuestionnaireConfig) {
     AlertDialogue.showAlert(
       context = this,
       alertIntent = AlertIntent.CONFIRM,
@@ -450,10 +442,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   companion object {
-    const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
-    const val FORM_CONFIGURATIONS = "configurations/form/form_config.json"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val QUESTIONNAIRE_BACK_REFERENCE_KEY = "questionnaire-back-reference"

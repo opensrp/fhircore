@@ -8,7 +8,7 @@
     "actions": [
       {
         "trigger": "ON_CLICK",
-        "workflow": "LAUNCH_REGISTER",
+        "workflow": "LAUNCH_QUESTIONNAIRE",
         "id": "householdRegister",
         "questionnaire": {
           "id": "82952",
@@ -22,17 +22,6 @@
   },
   "staticMenu": [
     {
-      "id": "maps",
-      "visible": true,
-      "display": "Maps",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_MAP",
-          "id": "navigateToMapsScreen"
-        }
-      ]
-    },{
       "id": "reports",
       "visible": true,
       "display": "{{reports}}",
