@@ -50,7 +50,7 @@ fun BottomScreenSection(
     modifier = Modifier.testTag(BOTTOM_NAV_CONTAINER_TEST_TAG)
   ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+    val currentRoute = navBackStackEntry?.destination?.id
     mainNavigationScreens.filter { it.showInBottomNav }.forEach { navigationScreen ->
       if (navigationScreen.titleResource != null) {
         BottomNavigationItem(
@@ -73,15 +73,7 @@ fun BottomScreenSection(
           unselectedContentColor = Color.Black.copy(0.5f),
           alwaysShowLabel = true,
           selected = currentRoute == navigationScreen.route,
-          onClick = {
-            navController.navigate(navigationScreen.route) {
-              navController.graph.startDestinationRoute?.let { screen_route ->
-                popUpTo(screen_route) { saveState = true }
-              }
-              launchSingleTop = true
-              restoreState = false
-            }
-          },
+          onClick = { navController.navigate(navigationScreen.route) },
           modifier = Modifier.testTag(BOTTOM_NAV_ITEM_TEST_TAG)
         )
       }

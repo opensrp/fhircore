@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -26,6 +27,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color as ComposeColor
 import java.util.Locale
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -165,3 +167,10 @@ fun String?.parseColor(): androidx.compose.ui.graphics.Color {
   }
   return ComposeColor.Unspecified
 }
+
+fun Context.getActivity(): AppCompatActivity? =
+  when (this) {
+    is AppCompatActivity -> this
+    is ContextWrapper -> baseContext.getActivity()
+    else -> null
+  }

@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,7 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -64,12 +63,11 @@ const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
 @Composable
 fun ProfileScreen(
   modifier: Modifier = Modifier,
-  navController: NavHostController,
+  navController: NavController,
   profileUiState: ProfileUiState,
   onEvent: (ProfileEvent) -> Unit
 ) {
   var showOverflowMenu by remember { mutableStateOf(false) }
-  val mutableInteractionSource = remember { MutableInteractionSource() }
   val context = LocalContext.current
 
   Scaffold(
