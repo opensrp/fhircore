@@ -256,7 +256,7 @@ fun LoginPage(
           color = MaterialTheme.colors.error,
           text =
             when (loginErrorState) {
-              LoginErrorState.UNKNOWN_HOST ->
+              LoginErrorState.UNKNOWN_HOST, LoginErrorState.NETWORK_ERROR ->
                 stringResource(
                   id = R.string.login_error,
                   stringResource(R.string.login_call_fail_error_message)
