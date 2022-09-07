@@ -30,5 +30,6 @@ data class RegisterConfiguration(
   val filter: RegisterContentConfig? = null,
   val searchBar: RegisterContentConfig? = null,
   val registerCard: RegisterCardConfig = RegisterCardConfig(),
-  val fabActions: List<NavigationMenuConfig> = emptyList()
+  val fabActions: List<NavigationMenuConfig> = emptyList(),
+  val noResults: NoResultsConfig? = null
 ) : Configuration()

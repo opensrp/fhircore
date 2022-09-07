@@ -1,7 +1,7 @@
 //FHIR CORE CREDENTIALS
 ext.props = new Properties()
 
-def fhirAuthArray = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
+def fhirAuthArray = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE", "MAPBOX_SDK_TOKEN"]
 if (rootProject.file("local.properties").exists()) {
     props.load(rootProject.file("local.properties").newDataInputStream())
 

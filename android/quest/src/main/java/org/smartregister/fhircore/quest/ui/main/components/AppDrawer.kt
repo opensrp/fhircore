@@ -51,7 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
@@ -93,7 +93,7 @@ const val NAV_CLIENT_REGISTER_MENUS_LIST = "navClientRegisterMenusList"
 fun AppDrawer(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
-  navController: NavHostController,
+  navController: NavController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
   appVersionPair: Pair<Int, String>? = null
@@ -148,9 +148,8 @@ fun AppDrawer(
             OtherPatientsItem(
               navigationConfiguration = appUiState.navigationConfiguration,
               onSideMenuClick = onSideMenuClick,
-              context = context,
               openDrawer = openDrawer,
-              navController
+              navController = navController
             )
           }
         }
@@ -201,9 +200,8 @@ private fun NavBottomSection(
 private fun OtherPatientsItem(
   navigationConfiguration: NavigationConfiguration,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  context: Context,
   openDrawer: (Boolean) -> Unit,
-  navController: NavHostController
+  navController: NavController
 ) {
   SideMenuItem(
     iconResource = null,
@@ -216,7 +214,6 @@ private fun OtherPatientsItem(
       openDrawer(false)
       onSideMenuClick(
         AppMainEvent.OpenRegistersBottomSheet(
-          context = context,
           registersList = navigationConfiguration.bottomSheetRegisters?.registers,
           navController = navController
         )
@@ -260,7 +257,7 @@ private fun NavTopSection(
 private fun ClientRegisterMenus(
   appUiState: AppMainUiState,
   context: Context,
-  navController: NavHostController,
+  navController: NavController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit
 ) {
@@ -274,12 +271,7 @@ private fun ClientRegisterMenus(
         onSideMenuClick = {
           openDrawer(false)
           onSideMenuClick(
-            AppMainEvent.TriggerWorkflow(
-              navController = navController,
-              actions = navigationMenu.actions,
-              navMenu = navigationMenu,
-              context = context
-            )
+            AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu)
           )
         }
       )
@@ -292,7 +284,7 @@ private fun StaticMenus(
   modifier: Modifier = Modifier,
   navigationConfiguration: NavigationConfiguration,
   context: Context,
-  navController: NavHostController,
+  navController: NavController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
   appUiState: AppMainUiState
@@ -308,12 +300,7 @@ private fun StaticMenus(
         onSideMenuClick = {
           openDrawer(false)
           onSideMenuClick(
-            AppMainEvent.TriggerWorkflow(
-              context = context,
-              navController = navController,
-              actions = navigationMenu.actions,
-              navMenu = navigationMenu
-            )
+            AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu)
           )
         }
       )
