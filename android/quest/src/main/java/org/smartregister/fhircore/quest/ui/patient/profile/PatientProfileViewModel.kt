@@ -106,7 +106,7 @@ constructor(
           Pair(
             R.id.add_to_family_planning,
             profileData?.let {
-              !(it.sex.startsWith("F", true) && (it.dob?.yearsPassed() in 15..49))
+              !(it.tasks.none { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } && (it.dob?.yearsPassed() in 15..48))
             }
               ?: false
           )
