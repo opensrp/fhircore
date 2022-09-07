@@ -184,11 +184,11 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api('org.smartregister:common:0.1.0-alpha03-preview2-SNAPSHOT') {
+    api('org.smartregister:common:0.1.0-alpha03-preview3-SNAPSHOT') {
         transitive = true
     }
 
-    api('org.smartregister:engine:0.1.0-beta01-preview10.4-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-preview-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
