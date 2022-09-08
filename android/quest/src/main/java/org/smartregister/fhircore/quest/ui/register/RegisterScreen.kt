@@ -93,6 +93,7 @@ fun RegisterScreen(
   val currentSetTotalRecordCount by rememberUpdatedState(registerViewModel::setTotalRecordsCount)
   val currentPaginateRegisterData by rememberUpdatedState(registerViewModel::paginateRegisterData)
   val refreshDataStateValue by remember { refreshDataState }
+  val totalRecordsCount by registerViewModel.totalRecordsCount.observeAsState(0)
 
   LaunchedEffect(Unit) {
     currentSetTotalRecordCount(registerId)
@@ -110,8 +111,7 @@ fun RegisterScreen(
   }
 
   val pagingItems: LazyPagingItems<ResourceData> =
-    registerViewModel
-      .paginatedRegisterData
+    registerViewModel.paginatedRegisterData
       .collectAsState(emptyFlow())
       .value
       .collectAsLazyPagingItems()
@@ -168,7 +168,7 @@ fun RegisterScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (firstTimeSync.value) LoaderDialog(modifier = modifier)
-      if (pagingItems.itemCount > 0) {
+      if (totalRecordsCount > 0) {
         RegisterCardList(
           registerCardConfig =
             registerViewModel.retrieveRegisterConfiguration(registerId).registerCard,
@@ -180,7 +180,7 @@ fun RegisterScreen(
         }
       } else {
         registerConfiguration.noResults?.let { noResultConfig ->
-          NoRegistersView(modifier = modifier, noResults = noResultConfig) {
+          NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
             val onClickAction =
               noResultConfig.actionButton?.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
             onClickAction?.let { actionConfig ->
@@ -203,7 +203,7 @@ fun RegisterScreen(
 }
 
 @Composable
-fun NoRegistersView(
+fun NoRegisterDataView(
   modifier: Modifier = Modifier,
   noResults: NoResultsConfig,
   onClick: () -> Unit
@@ -248,7 +248,7 @@ fun NoRegistersView(
 @ExcludeFromJacocoGeneratedReport
 @Composable
 private fun PreviewNoRegistersView() {
-  NoRegistersView(
+  NoRegisterDataView(
     noResults =
       NoResultsConfig(
         title = "Title",

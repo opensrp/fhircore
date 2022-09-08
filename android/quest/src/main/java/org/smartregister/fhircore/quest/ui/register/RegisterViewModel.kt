@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.register
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -61,7 +62,9 @@ constructor(
   val searchText: androidx.compose.runtime.State<String>
     get() = _searchText
 
-  private val _totalRecordsCount = MutableLiveData(1L)
+  private val _totalRecordsCount = MutableLiveData(0L)
+  val totalRecordsCount: LiveData<Long>
+    get() = _totalRecordsCount
 
   private lateinit var registerConfiguration: RegisterConfiguration
 
