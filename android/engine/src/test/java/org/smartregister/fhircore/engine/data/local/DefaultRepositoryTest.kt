@@ -26,16 +26,7 @@ import com.google.android.fhir.search.search
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.runs
-import io.mockk.slot
-import io.mockk.spyk
-import io.mockk.unmockkStatic
-import io.mockk.verify
+import io.mockk.*
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
@@ -59,6 +50,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -80,6 +72,8 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    mockkObject(ApplicationUtil)
+    every { ApplicationUtil.application } returns application
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
 
     dispatcherProvider = DefaultDispatcherProvider()

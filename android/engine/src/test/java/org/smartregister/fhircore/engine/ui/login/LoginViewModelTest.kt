@@ -23,14 +23,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.spyk
-import io.mockk.verify
+import io.mockk.*
 import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
@@ -59,10 +52,7 @@ import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.sync.SyncStrategy
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.*
 import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.KeycloakUserDetails
@@ -107,6 +97,9 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    mockkObject(ApplicationUtil)
+    every { ApplicationUtil.application } returns application
+
     // Spy needed to control interaction with the real injected dependency
     accountAuthenticatorSpy = spyk(accountAuthenticator)
 

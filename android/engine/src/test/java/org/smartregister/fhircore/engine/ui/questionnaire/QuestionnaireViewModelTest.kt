@@ -27,6 +27,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -81,6 +82,7 @@ import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.sync.SyncStrategy
+import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
@@ -88,8 +90,6 @@ import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
-
-  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -99,9 +99,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  @Inject lateinit var gson: Gson
+
   private val fhirEngine: FhirEngine = mockk()
 
-  private val context: Application = ApplicationProvider.getApplicationContext()
+  private val application: Application = ApplicationProvider.getApplicationContext()
 
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
 
@@ -111,17 +113,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
 
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking { configurationRegistry.loadConfigurations("app/debug", context) }
+    mockkObject(ApplicationUtil)
+    every { ApplicationUtil.application } returns application
+    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
 
-    every {
-      sharedPreferencesHelper.read<KeycloakUserDetails>(key = SyncStrategy.PRACTITIONER.value)
-    } returns getKeycloakUserDetails()
+    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+    sharedPreferencesHelper.write(SyncStrategy.PRACTITIONER.value, getKeycloakUserDetails())
 
-    every { sharedPreferencesHelper.read<List<String>>(SyncStrategy.ORGANIZATION.value) } returns
-      listOf("105")
+    val organizationIds = listOf("105")
+    sharedPreferencesHelper.write(SyncStrategy.ORGANIZATION.value, organizationIds)
 
     defaultRepo =
       spyk(
@@ -165,7 +170,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Setup sample resources
     val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val qJson =
-      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+      application.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
 
     samplePatientRegisterQuestionnaire = iParser.parseResource(qJson) as Questionnaire
   }
@@ -360,7 +365,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testGetQuestionnaireConfigShouldLoadRightConfig() {
     val result = runBlocking {
-      questionnaireViewModel.getQuestionnaireConfig("patient-registration", context)
+      questionnaireViewModel.getQuestionnaireConfig("patient-registration", application)
     }
     Assert.assertEquals("patient-registration", result.id)
     Assert.assertEquals("Add Patient", result.title)
@@ -396,7 +401,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val questionnaireResponse = QuestionnaireResponse()
 
       questionnaireViewModel.extractAndSaveResources(
-        context = context,
+        context = application,
         resourceId = "12345",
         questionnaireResponse = questionnaireResponse,
         questionnaire = questionnaire
@@ -433,7 +438,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
+      context = application,
       resourceId = null,
       questionnaireResponse = questionnaireResponse,
       questionnaire = questionnaire
@@ -458,7 +463,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
+      context = application,
       resourceId = "12345",
       questionnaireResponse = QuestionnaireResponse(),
       questionnaire = questionnaire
@@ -494,7 +499,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
+      context = application,
       resourceId = "12345",
       questionnaireResponse = QuestionnaireResponse(),
       questionnaireType = QuestionnaireType.EDIT,
@@ -665,7 +670,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     runBlocking {
       questionnaireViewModel.extractAndSaveResources(
-        context,
+        application,
         "abc",
         "cde",
         questionnaireResponse,
@@ -693,7 +698,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     runBlocking {
       questionnaireViewModel.extractAndSaveResources(
-        context,
+        application,
         "abc",
         "cde",
         questionnaireResponse,
@@ -745,7 +750,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.editQuestionnaireResponse = oldQuestionnaireResponse
     questionnaireViewModel.extractAndSaveResources(
-      context,
+      application,
       resourceId = "12345",
       questionnaireResponse = questionnaireResponse,
       questionnaireType = QuestionnaireType.EDIT,
@@ -892,7 +897,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any()) } just runs
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
+      context = application,
       resourceId = "0993ldsfkaljlsnldm",
       questionnaireResponse = questionnaireResponse,
       questionnaire = questionnaire
@@ -939,7 +944,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf()
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
+      context = application,
       resourceId = "0993ldsfkaljlsnldm",
       questionnaireResponse = questionnaireResponse,
       questionnaire = questionnaire

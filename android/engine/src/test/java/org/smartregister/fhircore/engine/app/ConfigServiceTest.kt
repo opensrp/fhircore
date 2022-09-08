@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.app
 
-import android.content.Context
+import android.app.Application
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -25,10 +25,7 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.SyncJob
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -44,6 +41,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 
@@ -52,7 +50,7 @@ class ConfigServiceTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  private var application: Context = ApplicationProvider.getApplicationContext()
+  private var application: Application = ApplicationProvider.getApplicationContext()
   private val configService = AppConfigService(ApplicationProvider.getApplicationContext())
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
@@ -60,6 +58,9 @@ class ConfigServiceTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    mockkObject(ApplicationUtil)
+    every { ApplicationUtil.application } returns application
+
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
 
     val careTeamIds = listOf("948", "372")

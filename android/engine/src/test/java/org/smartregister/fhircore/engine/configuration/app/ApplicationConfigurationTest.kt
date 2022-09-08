@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
-import android.content.Context
+import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -31,7 +31,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncStrategy
-import org.smartregister.fhircore.engine.util.ContextUtil
+import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -40,15 +40,15 @@ class ApplicationConfigurationTest : RobolectricTest() {
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
   lateinit var appConfig: ApplicationConfiguration
-  var application: Context = ApplicationProvider.getApplicationContext()
+  var application: Application = ApplicationProvider.getApplicationContext()
   @Inject lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    mockkObject(ContextUtil)
-    every { ContextUtil.context } returns application
+    mockkObject(ApplicationUtil)
+    every { ApplicationUtil.application } returns application
     appConfig =
       ApplicationConfiguration(
         appId = "ancApp",
