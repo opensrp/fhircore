@@ -334,7 +334,7 @@ internal class LoginViewModelTest : RobolectricTest() {
         ?.value
     )
 
-    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.CARE_TEAM.value)?.size)
+    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.CARETEAM.value)?.size)
 
     Assert.assertEquals(
       1,
@@ -416,7 +416,7 @@ internal class LoginViewModelTest : RobolectricTest() {
         ?.value
     )
 
-    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.CARE_TEAM.value)?.size)
+    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.CARETEAM.value)?.size)
 
     Assert.assertEquals(
       0,

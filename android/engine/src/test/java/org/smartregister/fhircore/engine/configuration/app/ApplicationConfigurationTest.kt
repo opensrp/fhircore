@@ -20,6 +20,8 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.mockkObject
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
@@ -27,9 +29,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncStrategy
+import org.smartregister.fhircore.engine.util.ContextUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -45,6 +47,8 @@ class ApplicationConfigurationTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    mockkObject(ContextUtil)
+    every { ContextUtil.context } returns application
     appConfig =
       ApplicationConfiguration(
         appId = "ancApp",
@@ -52,13 +56,7 @@ class ApplicationConfigurationTest : RobolectricTest() {
         theme = "dark theme",
         languages = listOf("en"),
         syncInterval = 15,
-        syncStrategy =
-          listOf(
-            Code(system = "https://smartregister.org/", display = SyncStrategy.CARE_TEAM.value),
-            Code(system = "https://smartregister.org/", display = SyncStrategy.LOCATION.value),
-            Code(system = "https://smartregister.org/", display = SyncStrategy.ORGANIZATION.value),
-            Code(system = "https://smartregister.org/", display = SyncStrategy.PRACTITIONER.value),
-          ),
+        syncStrategy = listOf("CareTeam", "Location", "Organization", "Practitioner"),
         appTitle = "Test App",
         remoteSyncPageSize = 100
       )
@@ -72,17 +70,17 @@ class ApplicationConfigurationTest : RobolectricTest() {
     Assert.assertEquals(15, appConfig.syncInterval)
     Assert.assertEquals("Test App", appConfig.appTitle)
     Assert.assertEquals(100, appConfig.remoteSyncPageSize)
-    Assert.assertTrue(
-      appConfig.syncStrategy.map { it.display }.containsAll(SyncStrategy.values().map { it.value })
-    )
+    Assert.assertTrue(appConfig.syncStrategy.containsAll(SyncStrategy.values().map { it.value }))
   }
 
   @Test
   fun getMandatoryTags() {
     val careTeamIds = listOf("948", "372")
-    sharedPreferenceHelper.write(SyncStrategy.CARE_TEAM.value, careTeamIds)
+    sharedPreferenceHelper.write(SyncStrategy.CARETEAM.value, careTeamIds)
+
     val organizationIds = listOf("400", "105")
     sharedPreferenceHelper.write(SyncStrategy.ORGANIZATION.value, organizationIds)
+
     val locationIds = listOf("728", "899")
     sharedPreferenceHelper.write(SyncStrategy.LOCATION.value, locationIds)
 
@@ -93,15 +91,15 @@ class ApplicationConfigurationTest : RobolectricTest() {
 
       Assert.assertEquals(
         careTeamIds,
-        mandatoryTags.filter { it.display == SyncStrategy.CARE_TEAM.value }.map { it.code }
+        mandatoryTags.filter { it.display == SyncStrategy.CARETEAM.tag.display }.map { it.code }
       )
       Assert.assertEquals(
         organizationIds,
-        mandatoryTags.filter { it.display == SyncStrategy.ORGANIZATION.value }.map { it.code }
+        mandatoryTags.filter { it.display == SyncStrategy.ORGANIZATION.tag.display }.map { it.code }
       )
       Assert.assertEquals(
         locationIds,
-        mandatoryTags.filter { it.display == SyncStrategy.LOCATION.value }.map { it.code }
+        mandatoryTags.filter { it.display == SyncStrategy.LOCATION.tag.display }.map { it.code }
       )
     }
   }

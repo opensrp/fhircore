@@ -60,7 +60,7 @@ class QuestConfigServiceTest : RobolectricTest() {
       )
 
     val careTeamIds = listOf("948", "372")
-    sharedPreferencesHelper.write(SyncStrategy.CARE_TEAM.value, careTeamIds)
+    sharedPreferencesHelper.write(SyncStrategy.CARETEAM.value, careTeamIds)
     val organizationIds = listOf("400", "105")
     sharedPreferencesHelper.write(SyncStrategy.ORGANIZATION.value, organizationIds)
     val locationIds = listOf("728", "899")
