@@ -24,7 +24,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
-import javax.inject.Inject
 import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.Assert
 import org.junit.Before
@@ -35,6 +34,7 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import javax.inject.Inject
 
 @HiltAndroidTest
 class MeasureReportViewModelTest : RobolectricTest() {
