@@ -18,9 +18,13 @@
 
 package org.smartregister.fhircore.quest
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.mockkObject
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.ResourceType
@@ -31,6 +35,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.SyncStrategy
+import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -40,7 +45,10 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
+  private val application: Application = ApplicationProvider.getApplicationContext()
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   private lateinit var configService: ConfigService
@@ -48,6 +56,8 @@ class QuestConfigServiceTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    mockkObject(ApplicationUtil)
+    every { ApplicationUtil.application } returns application
     runBlocking {
       configurationRegistry.loadConfigurations(
         context = InstrumentationRegistry.getInstrumentation().targetContext,
