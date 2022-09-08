@@ -27,7 +27,6 @@ import androidx.activity.viewModels
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
@@ -59,8 +58,9 @@ class LoginActivity :
     loginViewModel.apply {
       navigateToHome.observe(this@LoginActivity) {
         val isUpdatingCurrentAccount =
-          intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)?.trim() ==
-            loginViewModel.username.value?.trim()
+          intent.hasExtra(AccountManager.KEY_ACCOUNT_NAME) &&
+            intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!.trim() ==
+              loginViewModel.username.value?.trim()
 
         if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
           val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
@@ -106,7 +106,6 @@ class LoginActivity :
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
 
-    if (BuildConfig.DEBUG) println(intent.extras?.keySet())
     if (!intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME).isNullOrBlank() &&
         loginViewModel.username.value.isNullOrBlank()
     ) {

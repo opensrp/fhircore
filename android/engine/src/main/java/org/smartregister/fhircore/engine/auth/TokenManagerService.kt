@@ -48,7 +48,6 @@ constructor(
     Timber.v("Trying to get blocking auth token from account manager")
     return getActiveAccount()?.let {
       accountManager.blockingGetAuthToken(it, AccountAuthenticator.AUTH_TOKEN_TYPE, false)
-        ?: error("Auth Token expired or invalid")
     }
   }
 

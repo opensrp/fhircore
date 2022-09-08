@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.showToast
+import retrofit2.HttpException
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -90,7 +91,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
       }
       is State.Failed -> {
-        showToast(getString(R.string.sync_failed))
+        showToast(getString(R.string.sync_failed_text))
+        val resultHasAuthError =
+          state.result.exceptions.any {
+            it.exception is HttpException && (it.exception as HttpException).code() == 401
+          }
+        val message =
+          if (resultHasAuthError) R.string.session_expired else R.string.sync_check_internet
+        showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
             state,
