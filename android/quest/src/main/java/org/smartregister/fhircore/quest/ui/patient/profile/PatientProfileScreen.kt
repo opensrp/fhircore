@@ -51,8 +51,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import java.util.Locale
@@ -274,7 +277,7 @@ fun PatientProfileScreen(
       //  Finish visit
       if (profileViewData.carePlans.isNotEmpty() && profileViewData.tasks.isNotEmpty()) {
         Button(
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.fillMaxWidth().padding(0.dp),
           shape = RectangleShape,
           onClick = {
             patientProfileViewModel.onEvent(
@@ -287,8 +290,12 @@ fun PatientProfileScreen(
           enabled = profileViewData.tasksCompleted
         ) {
           Text(
+            modifier = Modifier.padding(10.dp),
             text = stringResource(id = R.string.finish).uppercase(),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            fontSize = 18.sp,
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Medium
           )
         }
       }
