@@ -33,12 +33,12 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -78,7 +78,7 @@ constructor(
 
   val appConfig: ApplicationConfiguration by lazy { retrieveConfiguration(ConfigType.Application) }
 
-  val mandatoryTags: List<Code> by lazy { appConfig.getMandatoryTags(sharedPreferencesHelper) }
+  val mandatoryTags: List<Coding> by lazy { appConfig.getMandatoryTags(sharedPreferencesHelper) }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]

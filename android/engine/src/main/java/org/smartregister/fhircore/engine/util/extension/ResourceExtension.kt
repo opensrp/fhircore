@@ -47,7 +47,6 @@ import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
@@ -296,6 +295,6 @@ fun String.resourceClassType(): Class<out Resource> {
   return Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
 }
 
-fun Resource.addTags(tags: List<Code>) {
-  tags.forEach { this.meta.addTag(it.asCoding()) }
+fun Resource.addTags(tags: List<Coding>) {
+  tags.forEach { this.meta.addTag(it) }
 }

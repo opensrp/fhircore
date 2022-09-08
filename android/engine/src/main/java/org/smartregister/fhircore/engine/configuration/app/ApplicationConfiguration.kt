@@ -17,9 +17,9 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
-import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.model.practitioner.KeycloakUserDetails
@@ -34,25 +34,27 @@ data class ApplicationConfiguration(
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Int = 30,
-  val syncStrategy: List<Code> = listOf(),
+  val syncStrategy: List<String> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null
 ) : Configuration() {
 
-  fun getMandatoryTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Code> {
-    val tags = mutableListOf<Code>()
-    syncStrategy.forEach { coding ->
-      when (coding.display) {
-        SyncStrategy.CARE_TEAM.value,
+  fun getMandatoryTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+    val tags = mutableListOf<Coding>()
+    syncStrategy.forEach { strategy ->
+      when (strategy) {
+        SyncStrategy.CARETEAM.value,
         SyncStrategy.ORGANIZATION.value,
         SyncStrategy.LOCATION.value -> {
-          sharedPreferencesHelper.read<List<String>>(coding.display!!)?.forEach { id ->
-            tags.add(coding.apply { code = id }.copy())
+          sharedPreferencesHelper.read<List<String>>(strategy)?.forEach { id ->
+            tags.add(SyncStrategy.valueOf(strategy.uppercase()).tag.apply { code = id }.copy())
           }
         }
         SyncStrategy.PRACTITIONER.value -> {
-          sharedPreferencesHelper.read<KeycloakUserDetails>(coding.display!!)?.let { practitioner ->
-            tags.add(coding.apply { code = practitioner.id })
+          sharedPreferencesHelper.read<KeycloakUserDetails>(strategy)?.let { practitioner ->
+            tags.add(
+              SyncStrategy.valueOf(strategy.uppercase()).tag.apply { code = practitioner.id }
+            )
           }
         }
       }

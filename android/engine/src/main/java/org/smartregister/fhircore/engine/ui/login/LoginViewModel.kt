@@ -132,7 +132,7 @@ constructor(
       defaultRepository.create(*locations.toTypedArray()).map { it.getSubstringBetween("/", "/") }
 
     sharedPreferences.write(SyncStrategy.PRACTITIONER.value, practitionerDetails.userDetail)
-    sharedPreferences.write(SyncStrategy.CARE_TEAM.value, careTeamIds)
+    sharedPreferences.write(SyncStrategy.CARETEAM.value, careTeamIds)
     sharedPreferences.write(SyncStrategy.ORGANIZATION.value, organizationIds)
     sharedPreferences.write(SyncStrategy.LOCATION.value, locationIds)
     sharedPreferences.write(
