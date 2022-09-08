@@ -17,32 +17,48 @@
 package org.smartregister.fhircore.engine.sync
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.AcceptLocalConflictResolver
+import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
-import io.mockk.mockk
+import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
+import com.google.gson.Gson
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert
 import org.junit.Before
-import org.mockito.Mock
+import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
-internal class SyncBroadcasterTest {
+class SyncBroadcasterTest {
 
-  @Mock private lateinit var fhirResourceService: FhirResourceService
+  @MockK private lateinit var fhirResourceService: FhirResourceService
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
-  @Mock private lateinit var configService: ConfigService
-  @Mock private lateinit var context: Context
-  @Mock private lateinit var syncJob: SyncJob
-  @Mock private lateinit var fhirEngine: FhirEngine
-  @Mock private lateinit var dispatcherProvider: DispatcherProvider
-  @Mock private lateinit var configurationRegistry: ConfigurationRegistry
+  @MockK private lateinit var configService: ConfigService
+  @MockK private lateinit var context: Context
+  @MockK private lateinit var syncJob: SyncJob
+  @MockK private lateinit var fhirEngine: FhirEngine
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
+  @MockK private lateinit var sharedPreferences: SharedPreferences
+  @MockK private lateinit var configurationRegistry: ConfigurationRegistry
+  @MockK private lateinit var gson: Gson
   private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
@@ -50,8 +66,10 @@ internal class SyncBroadcasterTest {
 
   @Before
   fun setup() {
+    MockKAnnotations.init(this)
     fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
+    every { context.getSharedPreferences(any(), any()) } returns sharedPreferences
+    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = gson)
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
@@ -62,5 +80,43 @@ internal class SyncBroadcasterTest {
         sharedSyncStatus,
         dispatcherProvider
       )
+  }
+
+  @Test
+  fun `runSync calls syncJob with correct params`() = runTest {
+    every {
+      sharedPreferences.getString(
+        SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
+        any()
+      )
+    } returns "[]"
+    val organizationIds = emptyList<String>()
+    every { gson.fromJson("[]", List::class.java) } returns organizationIds
+    every { configService.loadRegistrySyncParams(configurationRegistry, any()) } returns mapOf()
+    coEvery { syncJob.run(fhirEngine, any(), any(), any()) } returns Result.Success()
+
+    syncBroadcaster.runSync()
+    verify {
+      configService.loadRegistrySyncParams(
+        configurationRegistry,
+        withArg {
+          Assert.assertTrue(
+            it.containsKey(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
+          )
+          Assert.assertEquals(
+            organizationIds,
+            it.getValue(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
+          )
+        }
+      )
+    }
+    coVerify {
+      syncJob.run(
+        fhirEngine,
+        withArg { Assert.assertTrue(it is ResourceParamsBasedDownloadWorkManager) },
+        subscribeTo = sharedSyncStatus,
+        resolver = AcceptLocalConflictResolver
+      )
+    }
   }
 }

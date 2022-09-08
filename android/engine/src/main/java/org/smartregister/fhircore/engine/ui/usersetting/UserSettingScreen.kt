@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.userprofile
+package org.smartregister.fhircore.engine.ui.usersetting
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,12 +63,12 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 
 @Composable
-fun UserProfileScreen(
+fun UserSettingScreen(
   modifier: Modifier = Modifier,
-  userProfileViewModel: UserProfileViewModel = hiltViewModel()
+  userSettingViewModel: UserSettingViewModel = hiltViewModel()
 ) {
 
-  val username by remember { mutableStateOf(userProfileViewModel.retrieveUsername()) }
+  val username by remember { mutableStateOf(userSettingViewModel.retrieveUsername()) }
   var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = modifier.padding(vertical = 20.dp)) {
@@ -95,15 +95,15 @@ fun UserProfileScreen(
       }
     }
     Divider(color = DividerColor)
-    UserProfileRow(
+    UserSettingRow(
       icon = Icons.Rounded.Sync,
       text = stringResource(id = R.string.sync),
-      clickListener = userProfileViewModel::runSync,
+      clickListener = userSettingViewModel::runSync,
       modifier = modifier
     )
 
     // Language option
-    if (userProfileViewModel.allowSwitchingLanguages()) {
+    if (userSettingViewModel.allowSwitchingLanguages()) {
       Row(
         modifier =
           modifier
@@ -124,7 +124,7 @@ fun UserProfileScreen(
         }
         Box(contentAlignment = Alignment.CenterEnd) {
           Text(
-            text = userProfileViewModel.loadSelectedLanguage(),
+            text = userSettingViewModel.loadSelectedLanguage(),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = modifier.wrapContentWidth(Alignment.End)
@@ -134,8 +134,8 @@ fun UserProfileScreen(
             onDismissRequest = { expanded = false },
             modifier = modifier.wrapContentWidth(Alignment.End)
           ) {
-            for (language in userProfileViewModel.languages) {
-              DropdownMenuItem(onClick = { userProfileViewModel.setLanguage(language) }) {
+            for (language in userSettingViewModel.languages) {
+              DropdownMenuItem(onClick = { userSettingViewModel.setLanguage(language) }) {
                 Text(text = language.displayName, fontSize = 18.sp)
               }
             }
@@ -151,17 +151,17 @@ fun UserProfileScreen(
       Divider(color = DividerColor)
     }
 
-    UserProfileRow(
+    UserSettingRow(
       icon = Icons.Rounded.Logout,
       text = stringResource(id = R.string.logout),
-      clickListener = userProfileViewModel::logoutUser,
+      clickListener = userSettingViewModel::logoutUser,
       modifier = modifier
     )
   }
 }
 
 @Composable
-fun UserProfileRow(
+fun UserSettingRow(
   icon: ImageVector,
   text: String,
   clickListener: () -> Unit,

@@ -19,115 +19,91 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.core.os.bundleOf
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
-import com.google.android.fhir.sync.State
+import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.sync.OnSyncListener
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BACK_REFERENCE_KEY
-import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.showToast
-import timber.log.Timber
+import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
+import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
-open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
-
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+open class AppMainActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   @Inject lateinit var configService: ConfigService
 
+  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
   val appMainViewModel by viewModels<AppMainViewModel>()
+
+  val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
+
+  lateinit var getLocationPos: ActivityResultLauncher<Intent>
+
+  lateinit var mapLauncherResultHandler: ActivityResultLauncher<Intent>
+
+  lateinit var navHostFragment: NavHostFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
-    syncBroadcaster.registerSyncListener(this, lifecycleScope)
-  }
+    setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
+    val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
+    val topMenuConfigId =
+      topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id ?: topMenuConfig.id
 
-  override fun onResume() {
-    super.onResume()
-    appMainViewModel.run {
-      refreshDataState.value = true
-      retrieveAppMainUiState()
-    }
-  }
+    navHostFragment =
+      NavHostFragment.create(
+        R.navigation.application_nav_graph,
+        bundleOf(
+          NavigationArg.SCREEN_TITLE to topMenuConfig.display,
+          NavigationArg.REGISTER_ID to topMenuConfigId
+        )
+      )
 
-  override fun onSync(state: State) {
-    Timber.i("Sync state received is $state")
-    when (state) {
-      is State.Started -> {
-        showToast(getString(R.string.syncing))
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_initiated))
-        )
-      }
-      is State.InProgress -> {
-        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
-        )
-      }
-      is State.Glitch -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
-        )
-        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
-      }
-      is State.Failed -> {
-        showToast(getString(R.string.sync_failed))
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(
-            state,
-            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-              getString(R.string.last_sync_timestamp, appMainViewModel.retrieveLastSyncTimestamp())
-            else getString(R.string.syncing_failed)
+    supportFragmentManager
+      .beginTransaction()
+      .replace(R.id.nav_host, navHostFragment)
+      .setPrimaryNavigationFragment(navHostFragment)
+      .commit()
+
+    geoWidgetViewModel.geoWidgetEventLiveData.observe(this) { geoWidgetEvent ->
+      when (geoWidgetEvent) {
+        is GeoWidgetEvent.OpenProfile -> {
+          appMainViewModel.launchProfileFromGeoWidget(
+            navHostFragment.navController,
+            "householdRegistrationMap",
+            geoWidgetEvent.data
           )
-        )
-        Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
-        scheduleFhirTaskStatusUpdater()
-      }
-      is State.Finished -> {
-        showToast(getString(R.string.sync_completed))
-        appMainViewModel.run {
-          onEvent(
-            AppMainEvent.UpdateSyncState(
-              state,
-              getString(
-                R.string.last_sync_timestamp,
-                formatLastSyncTimestamp(state.result.timestamp)
-              )
-            )
-          )
-          updateLastSyncTimestamp(state.result.timestamp)
         }
-        scheduleFhirTaskStatusUpdater()
+        is GeoWidgetEvent.RegisterClient ->
+          appMainViewModel.launchFamilyRegistrationWithLocationId(
+            this,
+            geoWidgetEvent.data,
+            geoWidgetEvent.geoWidgetConfigId
+          )
       }
     }
-  }
 
-  private fun scheduleFhirTaskStatusUpdater() {
-    // TODO use sharedpref to save the state
-    with(configService) {
-      if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
-        this.schedulePlan(this@AppMainActivity)
-      else this.unschedulePlan(this@AppMainActivity)
-    }
+    configService.schedulePlan(this)
   }
 
   @Suppress("DEPRECATION")
@@ -136,7 +112,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
     if (resultCode == Activity.RESULT_OK)
       data?.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(dispatcherProvider.io()) {
           when {
             it.startsWith(ResourceType.Task.name) ->
               fhirCarePlanGenerator.completeTask(it.asReference(ResourceType.Task).extractId())

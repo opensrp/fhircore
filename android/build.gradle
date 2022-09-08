@@ -1,16 +1,22 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     apply from: 'deps.gradle'
+    apply from: 'configs.gradle'
+
+    ext.composeVersion = "1.2.1"
+    ext.navigationVersion = "2.5.1"
+
     repositories {
         google()
         maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-
     }
+
     dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10'
-        classpath "org.jetbrains.kotlin:kotlin-serialization:1.6.21"
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10'
+        classpath "org.jetbrains.kotlin:kotlin-serialization:1.7.10"
         classpath 'com.google.dagger:hilt-android-gradle-plugin:2.42'
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.5.1"
         classpath deps.spotless
         classpath deps.kotlin_coveralls_plugin
         classpath deps.junit5_plugin
@@ -31,6 +37,9 @@ allprojects {
         maven {
             name = "fhirsdk"
             url = uri("/Users/ndegwamartin/.m2.dev/fhirsdk")
+        }
+        maven {
+            url 'https://jcenter.bintray.com/'
         }
     }
 }
