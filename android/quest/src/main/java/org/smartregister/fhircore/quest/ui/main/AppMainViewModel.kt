@@ -41,6 +41,7 @@ import org.hl7.fhir.r4.model.Location
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
@@ -166,8 +167,7 @@ constructor(
   private fun triggerWorkflow(event: AppMainEvent.TriggerWorkflow) {
     val navigationAction = event.navMenu.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
     when (navigationAction?.workflow) {
-      ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC ->
-        startP2PScreen(context = event.navController.context)
+      ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(event.navController.context)
       ApplicationWorkflow.LAUNCH_SETTINGS ->
         event.navController.navigate(MainNavigationScreen.Settings.route)
       ApplicationWorkflow.LAUNCH_REPORT ->
@@ -216,19 +216,17 @@ constructor(
   fun launchFamilyRegistrationWithLocationId(
     context: Context,
     locationId: String,
-    geoWidgetConfigId: String
+    questionnaireConfig: QuestionnaireConfig
   ) {
     viewModelScope.launch(dispatcherProvider.main()) {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
-
-      val bundle =
-        bundleOf(
-          Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
-        )
-
-      // TODO Figure how to provide questionnaire config
-      //      context.launchQuestionnaire<QuestionnaireActivity>(geoWidgetConfigId, intentBundle =
-      // bundle)
+      context.launchQuestionnaire<QuestionnaireActivity>(
+        questionnaireConfig = questionnaireConfig,
+        intentBundle =
+          bundleOf(
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
+          )
+      )
     }
   }
 

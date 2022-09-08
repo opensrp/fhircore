@@ -35,8 +35,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -90,15 +89,15 @@ open class AppMainActivity : BaseMultiLanguageActivity() {
         is GeoWidgetEvent.OpenProfile -> {
           appMainViewModel.launchProfileFromGeoWidget(
             navHostFragment.navController,
-            "householdRegistrationMap",
+            geoWidgetEvent.geoWidgetConfiguration.id,
             geoWidgetEvent.data
           )
         }
         is GeoWidgetEvent.RegisterClient ->
           appMainViewModel.launchFamilyRegistrationWithLocationId(
-            this,
-            geoWidgetEvent.data,
-            geoWidgetEvent.geoWidgetConfigId
+            context = this,
+            locationId = geoWidgetEvent.data,
+            questionnaireConfig = geoWidgetEvent.questionnaire
           )
       }
     }
@@ -115,7 +114,7 @@ open class AppMainActivity : BaseMultiLanguageActivity() {
         lifecycleScope.launch(dispatcherProvider.io()) {
           when {
             it.startsWith(ResourceType.Task.name) ->
-              fhirCarePlanGenerator.completeTask(it.asReference(ResourceType.Task).extractId())
+              fhirCarePlanGenerator.completeTask(it.extractLogicalIdUuid())
           }
         }
       }
