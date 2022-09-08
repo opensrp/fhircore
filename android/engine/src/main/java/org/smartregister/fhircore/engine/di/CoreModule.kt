@@ -32,10 +32,12 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class])
@@ -68,6 +70,11 @@ class CoreModule {
       setExpansionProfile(Parameters())
       isCanRunWithoutTerminology = true
     }
+
+  @Singleton
+  @Provides
+  fun provideFHIRPathEngine(transformSupportServices: TransformSupportServices) =
+    FHIRPathEngine(transformSupportServices.simpleWorkerContext)
 
   @Singleton
   @Provides

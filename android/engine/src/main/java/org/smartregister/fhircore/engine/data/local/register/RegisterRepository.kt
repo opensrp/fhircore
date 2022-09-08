@@ -55,7 +55,8 @@ constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
   val configurationRegistry: ConfigurationRegistry,
-  val rulesFactory: RulesFactory
+  val rulesFactory: RulesFactory,
+  val fhirPathDataExtractor: FhirPathDataExtractor
 ) :
   Repository, DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
 
@@ -172,7 +173,8 @@ constructor(
         relatedResourceData.addLast(RelatedResourceData(it))
       }
     } else {
-      FhirPathDataExtractor.extractData(baseResource, fhirPathExpression)
+      fhirPathDataExtractor
+        .extractData(baseResource, fhirPathExpression)
         .takeWhile { it is Reference }
         .map { it as Reference }
         .map {

@@ -27,9 +27,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.spyk
-import io.mockk.unmockkObject
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -42,7 +40,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -57,7 +54,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class RegisterRepositoryTest : RobolectricTest() {
 
-  @get:Rule var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
   var context: Context = ApplicationProvider.getApplicationContext()
 
@@ -73,6 +70,8 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   private val patient = Faker.buildPatient("12345")
 
+  private val fhirPathDataExtractor: FhirPathDataExtractor = mockk()
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -84,7 +83,8 @@ class RegisterRepositoryTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           configurationRegistry = configurationRegistry,
-          rulesFactory = rulesFactory
+          rulesFactory = rulesFactory,
+          fhirPathDataExtractor = fhirPathDataExtractor
         )
       )
     runBlocking {
@@ -92,11 +92,6 @@ class RegisterRepositoryTest : RobolectricTest() {
     }
     coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns
       listOf(Immunization())
-  }
-
-  @After
-  fun tearDown() {
-    unmockkObject(FhirPathDataExtractor)
   }
 
   @Test
@@ -148,9 +143,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 20, from = 20))
     } returns listOf(group)
 
-    mockkObject(FhirPathDataExtractor)
-
-    every { FhirPathDataExtractor.extractData(group, "Group.member.entity") } returns
+    every { fhirPathDataExtractor.extractData(group, "Group.member.entity") } returns
       listOf(Reference("Patient/12345"))
 
     coEvery { fhirEngine.get(type = ResourceType.Patient, "12345") } returns patient
@@ -182,15 +175,13 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 20, from = 20)) }
 
-    verify { FhirPathDataExtractor.extractData(group, "Group.member.entity") }
+    verify { fhirPathDataExtractor.extractData(group, "Group.member.entity") }
 
     coVerify { fhirEngine.get(type = ResourceType.Patient, "12345") }
 
     coVerify { fhirEngine.search<Condition>(Search(type = ResourceType.Condition)) }
 
     coVerify { fhirEngine.search<CarePlan>(Search(type = ResourceType.CarePlan)) }
-
-    unmockkObject(FhirPathDataExtractor)
   }
 
   @Test

@@ -430,7 +430,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testExtractAndSaveResourcesWithResourceIdShouldSaveQuestionnaireResponse() {
-    coEvery { fhirEngine.get(ResourceType.Patient, "12345") } returns samplePatient()
+    coEvery { fhirEngine.get(ResourceType.Patient, "2") } returns samplePatient()
 
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
     val questionnaire =
@@ -451,7 +451,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify(timeout = 2000) { defaultRepo.addOrUpdate(capture(questionnaireResponseSlot)) }
 
     Assert.assertEquals(
-      "12345",
+      "2",
       questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
     )
     Assert.assertEquals("1234567", questionnaireResponseSlot.captured.meta.tagFirstRep.code)
@@ -492,10 +492,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     Assert.assertEquals(
-      "12345",
+      "2",
       questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
     )
-    Assert.assertEquals("12345", patientSlot.captured.id)
+    Assert.assertEquals("2", patientSlot.captured.id)
 
     unmockkObject(ResourceMapper)
   }
@@ -737,7 +737,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context = context,
       questionnaireResponse = questionnaireResponse,
       questionnaire = questionnaire,
-      questionnaireConfig = questionnaireConfig
+      questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.EDIT)
     )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
@@ -1016,7 +1016,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.appendPractitionerInfo(patient)
 
-    Assert.assertEquals("12345", patient.generalPractitioner[0].reference)
+    Assert.assertEquals("Practitioner/12345", patient.generalPractitioner[0].reference)
   }
 
   @Test
@@ -1036,7 +1036,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
     questionnaireViewModel.appendPractitionerInfo(encounter)
-    Assert.assertEquals("12345", encounter.participant[0].individual.reference)
+    Assert.assertEquals("Practitioner/12345", encounter.participant[0].individual.reference)
   }
 
   @Test

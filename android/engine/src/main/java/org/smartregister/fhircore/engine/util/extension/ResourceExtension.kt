@@ -48,7 +48,6 @@ import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
@@ -263,9 +262,6 @@ fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
 
 fun generateUniqueId() = UUID.randomUUID().toString()
-
-fun Base.extractWithFhirPath(expression: String) =
-  FhirPathDataExtractor.extractData(this, expression).firstOrNull()?.primitiveValue() ?: ""
 
 fun isValidResourceType(resourceCode: String): Boolean {
   return try {

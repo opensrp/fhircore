@@ -46,6 +46,7 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
+  val fhirPathDataExtractor: FhirPathDataExtractor
 ) : ViewModel() {
 
   val profileUiState: MutableState<ProfileUiState> = mutableStateOf(ProfileUiState())
@@ -119,10 +120,8 @@ constructor(
         ?.relatedResourcesMap
         ?.get(resourceTypeToFilter)
         ?.filter {
-          FhirPathDataExtractor.extractValue(
-              it,
-              event.managingEntity?.fhirPathResource?.fhirPathExpression ?: ""
-            )
+          fhirPathDataExtractor
+            .extractValue(it, event.managingEntity?.fhirPathResource?.fhirPathExpression ?: "")
             .toBoolean()
         }
         ?.map {
@@ -130,7 +129,7 @@ constructor(
             groupId = event.resourceData.baseResource.logicalId,
             logicalId = it.logicalId,
             memberInfo =
-              FhirPathDataExtractor.extractValue(
+              fhirPathDataExtractor.extractValue(
                 it,
                 event.managingEntity?.infoFhirPathExpression ?: ""
               )

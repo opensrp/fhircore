@@ -50,11 +50,14 @@ import timber.log.Timber
 @Singleton
 class FhirCarePlanGenerator
 @Inject
-constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformSupportServices) {
+constructor(
+  val fhirEngine: FhirEngine,
+  val fhirPathEngine: FHIRPathEngine,
+  val transformSupportServices: TransformSupportServices
+) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
   }
-  val fhirPathEngine = FHIRPathEngine(transformSupportServices.simpleWorkerContext)
 
   suspend fun generateOrUpdateCarePlan(
     planDefinitionId: String,

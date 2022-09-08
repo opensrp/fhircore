@@ -106,7 +106,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         title = "Patient registration",
         "form",
         clientIdentifier = "@{familyLogicalId}",
-        groupIdentifier = "@{familyLogicalId}"
       )
     val computedValuesMap: Map<String, Any> =
       mutableMapOf<String, Any>().apply { put("familyLogicalId", "Group/group-id") }
