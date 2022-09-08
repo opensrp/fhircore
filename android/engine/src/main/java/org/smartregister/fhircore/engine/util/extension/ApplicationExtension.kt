@@ -108,8 +108,7 @@ suspend fun FhirEngine.loadLibraryAtPath(
   fhirOperator: FhirOperator,
   relatedArtifact: RelatedArtifact
 ) {
-  if (
-    relatedArtifact.type.isIn(
+  if (relatedArtifact.type.isIn(
       RelatedArtifact.RelatedArtifactType.COMPOSEDOF,
       RelatedArtifact.RelatedArtifactType.DEPENDSON
     )
