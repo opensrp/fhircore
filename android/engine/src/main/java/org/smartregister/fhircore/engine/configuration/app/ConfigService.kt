@@ -104,7 +104,7 @@ interface ConfigService {
           ConfigurationRegistry.ORGANIZATION ->
             mandatoryTags
               .firstOrNull {
-                it.display.contentEquals(SyncStrategy.ORGANIZATION.value, ignoreCase = true)
+                it.display.contentEquals(SyncStrategy.ORGANIZATION.tag.display, ignoreCase = true)
               }
               ?.code
           ConfigurationRegistry.ID -> paramExpression
