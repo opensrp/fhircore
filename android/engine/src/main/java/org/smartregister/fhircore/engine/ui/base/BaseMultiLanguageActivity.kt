@@ -22,7 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import java.lang.UnsupportedOperationException
 import java.util.Locale
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.util.ContextUtil
+import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
@@ -34,7 +34,7 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
     super.onCreate(savedInstanceState)
-    ContextUtil.context = this
+    ApplicationUtil.application = this.application
     val themePref =
       sharedPreferencesHelper.read(key = SharedPreferenceKey.THEME.name, defaultValue = "")!!
 

@@ -18,7 +18,7 @@ package org.smartregister.fhircore.engine.sync
 
 import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.util.ContextUtil
+import org.smartregister.fhircore.engine.util.ApplicationUtil
 
 /**
  * SyncStrategy defines whether to sync resource based on the IDs of CareTeam, Location,
@@ -30,32 +30,32 @@ enum class SyncStrategy(val value: String, val tag: Coding) {
     value = "CareTeam",
     tag =
       Coding().apply {
-        system = ContextUtil.context.getString(R.string.sync_strategy_careteam_system)
-        display = ContextUtil.context.getString(R.string.sync_strategy_careteam_display)
+        system = ApplicationUtil.application.getString(R.string.sync_strategy_careteam_system)
+        display = ApplicationUtil.application.getString(R.string.sync_strategy_careteam_display)
       }
   ),
   LOCATION(
     value = "Location",
     tag =
       Coding().apply {
-        system = ContextUtil.context.getString(R.string.sync_strategy_location_system)
-        display = ContextUtil.context.getString(R.string.sync_strategy_location_display)
+        system = ApplicationUtil.application.getString(R.string.sync_strategy_location_system)
+        display = ApplicationUtil.application.getString(R.string.sync_strategy_location_display)
       }
   ),
   ORGANIZATION(
     value = "Organization",
     tag =
       Coding().apply {
-        system = ContextUtil.context.getString(R.string.sync_strategy_organization_system)
-        display = ContextUtil.context.getString(R.string.sync_strategy_organization_display)
+        system = ApplicationUtil.application.getString(R.string.sync_strategy_organization_system)
+        display = ApplicationUtil.application.getString(R.string.sync_strategy_organization_display)
       }
   ),
   PRACTITIONER(
     value = "Practitioner",
     tag =
       Coding().apply {
-        system = ContextUtil.context.getString(R.string.sync_strategy_practitioner_system)
-        display = ContextUtil.context.getString(R.string.sync_strategy_practitioner_display)
+        system = ApplicationUtil.application.getString(R.string.sync_strategy_practitioner_system)
+        display = ApplicationUtil.application.getString(R.string.sync_strategy_practitioner_display)
       }
   )
 }

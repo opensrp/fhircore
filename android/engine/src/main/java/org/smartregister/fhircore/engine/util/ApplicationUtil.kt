@@ -16,8 +16,9 @@
 
 package org.smartregister.fhircore.engine.util
 
-import android.content.Context
+import android.app.Application
 
-object ContextUtil {
-  lateinit var context: Context
+object ApplicationUtil {
+  /** This Application is used to retrieve string resources outside of the Activity. */
+  lateinit var application: Application
 }
