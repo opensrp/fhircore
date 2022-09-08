@@ -254,8 +254,14 @@ constructor(
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
 
+    // Some resource id maybe in the format  Group/1be72fc8-5e5c-4f90-a37d-739c73fc4bdf/_history/7
+    val parsedResourceId =
+      if (resourceId.startsWith(baseResourceType.name))
+        resourceId.substringAfter("/").substringBefore("/")
+      else resourceId
+
     val baseResource: Resource =
-      withContext(dispatcherProvider.io()) { fhirEngine.get(baseResourceType, resourceId) }
+      withContext(dispatcherProvider.io()) { fhirEngine.get(baseResourceType, parsedResourceId) }
 
     return retrieveRelatedResources(
       relatedResourcesConfig = relatedResourcesConfig,

@@ -1,0 +1,166 @@
+{
+  "appId": "map",
+  "configType": "register",
+  "id": "householdRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "id": "householdQueryByType",
+          "filterType": "TOKEN",
+          "key": "type",
+          "valueType": "CODING",
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/group-type",
+            "code": "person"
+          }
+        },
+        {
+          "id": "householdQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "35359004"
+          }
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "Patient",
+        "fhirPathExpression": "Group.member.entity",
+        "relatedResources": [
+          {
+            "resource": "Condition",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "CarePlan",
+            "searchParameter": "subject"
+          }
+        ]
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "id": "filterHouseholdCarePlans",
+            "filterType": "TOKEN",
+            "key": "_tag",
+            "valueType": "CODING",
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "35359004"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "filter": {
+    "visible": true,
+    "display": "{{ show.overdue }}",
+    "rules": [
+      {
+        "name": "filter",
+        "condition": "",
+        "actions": [
+          ""
+        ]
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.name.or.id }}",
+    "computedRules": [
+      "familyName",
+      "familyId"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "familyName",
+        "condition": "true",
+        "actions": [
+          "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
+        ]
+      },
+      {
+        "name": "familyId",
+        "condition": "true",
+        "actions": [
+          "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ family.name.family }}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ id.family.id }}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ village.or.address }}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#5A5A5A"
+              }
+            ],
+            "showVerticalDivider": true,
+            "serviceMemberIcons": "PREGNANT_WOMAN,CHILD,CHILD",
+            "serviceButton": {
+              "visible": true,
+              "text": "1",
+              "status": "OVERDUE",
+              "smallSized": false,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_QUESTIONNAIRE",
+                  "questionnaire": {
+                    "id": "82952",
+                    "title": "Add Family",
+                    "saveButtonText": "ADD FAMILY",
+                    "setPractitionerDetails": true,
+                    "setOrganizationDetails": true
+                  }
+                }
+              ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "householdProfile",
+                "params": [
+                  {
+                    "key": "familyId",
+                    "value": "@{familyId}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

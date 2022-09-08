@@ -1,0 +1,82 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/5667cfbd-13c4-4111-b952-7cee58bdb9d5" = 'eCBIS Family Registration'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Group" as target
+
+group eCBISFamilyRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.id = uuid() "rule_bundle_id";
+    src -> bundle.type = 'collection' "rule_bundle_type";
+    src -> bundle.entry as entry, entry.resource = create('Group') as group then
+        ExtractGroup(src, group), ExtractEncounter(src, bundle) "rule_bundle_entries";
+}
+
+group ExtractGroup(source src : QuestionnaireResponse, target group : Group) {
+       src -> group.id = uuid() "rule_group_id_generation";
+       src -> group.name = evaluate(src, $this.item.where(linkId = '64712707-d6eb-4166-8d6e-06fa2b9fcf3e').answer.value) "rule_group_name";
+
+       src -> group.identifier = create('Identifier') as groupIdentifierHouseholdId then {
+         src -> groupIdentifierHouseholdId.value = evaluate(src, $this.item.where(linkId = 'ce49bde4-6ef9-423e-c747-efab250cd770').answer.value)
+         "rule_group_identifier_national_id_value";
+         src -> groupIdentifierHouseholdId.use = "official" "rule_group_identifier_national_id_use";
+         src -> groupIdentifierHouseholdId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
+       } "rule_group_identifier_national_id";
+
+       src -> group.identifier = create('Identifier') as groupIdentifier then {
+          src -> groupIdentifier.value = uuid() "rule_group_identifier_value";
+          src -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
+          src -> groupIdentifier.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
+       } "rule_group_identifier";
+
+       src.item as householdLocation where(linkId = 'household-location-reference' and answer.count() > 0 and answer.empty().not()) then {
+           src -> group.characteristic = create('Group_Characteristic') as groupCharacteristic then {
+              src -> groupCharacteristic.code = create('CodeableConcept') as concept then {
+                    src -> concept.coding = c("http://fhir.labs.smartregister.org/codes/family-location", "location") "group_characteristic_cc_cod";
+                    src -> concept.text = 'Household Location' "group_characteristic_cc_text";
+                } "group_characteristic_cc";
+              src -> groupCharacteristic.value = create("Reference") as ref then {
+                    src -> ref.reference = evaluate(src, "Location/" + $this.item.where(linkId = "household-location-reference").answer.value) "group_characteristic_gc_1";
+                } "group_characteristic_gc";
+           } "group_characteristic";
+       } "group_characteristic_exists";
+
+       src -> group.active = true "r_grp_status_data";
+       src -> group.type = 'person' "r_grp_type_data";
+       src -> group.code = create('CodeableConcept') as concept then ExtractFamilyCode(src, concept) "r_grp_code_data";
+}
+
+group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
+        src -> encounter.id = uuid() "r_en_id";
+        src -> encounter.status = 'finished' "r_en_st";
+        src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "r_en_cls";
+        src -> encounter.type = create('CodeableConcept') as concept then {
+            src -> concept.coding = c("http://snomed.info/sct", "184048005") as coding then {
+                src -> coding.display = 'Registration' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            src -> concept.text = 'Registration' "r_en_typ_text";
+        } "r_en_typ";
+        src -> encounter.priority = create('CodeableConcept') as concept then {
+            src -> concept.coding = c("http://terminology.hl7.org/ValueSet/v3-ActPriority", "EL") as coding then {
+                src -> coding.display = 'elective' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            src -> concept.text = 'elective' "r_en_prio_text";
+        } "r_en_prio";
+        src.subject as subject -> encounter.subject = subject "r_en_sub";
+        // src -> encounter.participant = automatically set by code in questionnaire view model
+        src -> encounter.period = create('Period') as enPeriod then {
+            src -> enPeriod.start = evaluate(src, now()) "r_en_per_start";
+            src -> enPeriod.end = evaluate(src, now()) "r_en_per_end";
+        } "r_en_per";
+        src -> encounter.reasonCode = create('CodeableConcept') as concept then {
+            src -> concept.text = 'Family Registration Task' "r_en_text";
+        } "r_en_reason";
+        // serviceProvider = automatically added in code
+    } "r_en";
+}
+
+group ExtractFamilyCode(source src : Group, target concept: CodeableConcept) {
+    src -> concept.coding = c("https://www.snomed.org", "35359004") as coding then {
+        src -> coding.display = 'Family' "r_cp_cod_disp";
+    } "r_cp_cc_cod";
+}

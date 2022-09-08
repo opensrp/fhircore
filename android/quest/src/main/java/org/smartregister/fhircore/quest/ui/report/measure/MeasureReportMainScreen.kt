@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure
 
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportListScreen
@@ -30,13 +30,14 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportP
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportResultScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSelectorScreen
 
-fun NavGraphBuilder.measureReportNavigationGraph(
-  navController: NavController,
+@Composable
+fun MeasureReportMainScreen(
+  navController: NavHostController = rememberNavController(),
   measureReportViewModel: MeasureReportViewModel
 ) {
-  navigation(
-    startDestination = MeasureReportNavigationScreen.MeasureReportList.route,
-    route = MainNavigationScreen.Reports.route
+  NavHost(
+    navController = navController,
+    startDestination = MeasureReportNavigationScreen.MeasureReportList.route
   ) {
 
     // Display list of supported measures for reporting

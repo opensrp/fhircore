@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.shared.models
 
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import com.google.android.fhir.logicalId
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -44,12 +45,12 @@ sealed class ViewComponentEvent {
   fun handleEvent(navController: NavController) {
     when (this) {
       is OpenProfile -> {
-        val urlParams =
-          NavigationArg.bindArgumentsOf(
+        val args =
+          bundleOf(
             NavigationArg.PROFILE_ID to this.profileId,
             NavigationArg.RESOURCE_ID to this.resourceId
           )
-        navController.navigate(MainNavigationScreen.Profile.route + urlParams)
+        navController.navigate(MainNavigationScreen.Profile.route, args)
       }
       is LaunchQuestionnaire -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
