@@ -29,8 +29,10 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.fhir.datacapture.validation.Invalid
+import com.google.android.fhir.datacapture.validation.NotValidated
+import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.datacapture.validation.ValidationResult
-import com.google.android.fhir.datacapture.validation.getSingleStringValidationMessage
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewHolderDelegate
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewHolderFactory
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
@@ -124,7 +126,7 @@ class CustomPhotoCaptureFactory(
           btnTakePhoto = binding.btnTakePhoto
           tvError = binding.tvError as TextView
         }
-        onAnswerChanged = { onAnswerChanged(context) }
+        onAnswerChanged = { onAnswerChanged() }
       }
 
       override fun bind(questionnaireItemViewItem: QuestionnaireItemViewItem) {
@@ -138,20 +140,20 @@ class CustomPhotoCaptureFactory(
         }
         tvHeader.text = questionnaireItemViewItem.questionnaireItem.text
         btnTakePhoto.setOnClickListener { launchCamera() }
-        questionnaireItemViewItem.singleAnswerOrNull?.valueAttachment?.let { attachment ->
+        questionnaireItemViewItem.answers.singleOrNull()?.valueAttachment?.let { attachment ->
           loadThumbnail(attachment.data.decodeToBitmap())
           answers.clear()
           answers.add(QuestionnaireResponseItemAnswerComponent().apply { value = attachment })
         }
         if (!questionnaireItemViewItem.questionnaireItem.readOnly) {
-          questionnaireItemViewItem.questionnaireResponseItem.answer = answers
+          answers.singleOrNull()?.let { questionnaireItemViewItem.setAnswer(it) }
         }
       }
 
       override fun displayValidationResult(validationResult: ValidationResult) {
         tvError.text =
-          if (validationResult.getSingleStringValidationMessage() == "") null
-          else validationResult.getSingleStringValidationMessage()
+          if (validationResult is Valid || validationResult is NotValidated) null
+          else (validationResult as Invalid).getSingleStringValidationMessage()
       }
 
       override fun setReadOnly(isReadOnly: Boolean) {
