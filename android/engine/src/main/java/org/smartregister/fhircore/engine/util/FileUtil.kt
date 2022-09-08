@@ -90,9 +90,9 @@ object FileUtil {
       val files: Array<out File> = dir.listFiles() ?: return returnedFiles
       files.forEach { file ->
         if (file.isDirectory) {
-          recurseFolders(file)
+          returnedFiles += recurseFolders(file)
         } else {
-          returnedFiles.add(file.canonicalPath)
+          returnedFiles += file.canonicalPath
         }
       }
     } catch (ioException: IOException) {

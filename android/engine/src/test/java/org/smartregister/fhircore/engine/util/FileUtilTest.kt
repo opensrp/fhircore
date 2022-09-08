@@ -71,8 +71,7 @@ class FileUtilTest {
         File.separator +
         File.separator +
         "test/resources/cql/measureevaluator/"
-    val patientAssetsDir = baseTestPathMeasureAssets + "first-contact"
-    val filePatientAssetDir = File(patientAssetsDir)
+    val filePatientAssetDir = File(baseTestPathMeasureAssets)
     val fileListString = FileUtil.recurseFolders(filePatientAssetDir)
     Assert.assertNotNull(fileListString)
   }
