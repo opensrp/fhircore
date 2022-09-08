@@ -126,4 +126,12 @@
     <string name="other_patients">Other patients</string>
     <string name="responses">RESPONSES (%1$s)</string>
     <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
+    <string name="sync_strategy_careteam_system">https://smartregister.org/</string>
+    <string name="sync_strategy_location_system">https://smartregister.org/</string>
+    <string name="sync_strategy_organization_system">https://smartregister.org/</string>
+    <string name="sync_strategy_practitioner_system">https://smartregister.org/</string>
+    <string name="sync_strategy_careteam_display">Practitioner CareTeam</string>
+    <string name="sync_strategy_location_display">Practitioner Location</string>
+    <string name="sync_strategy_organization_display">Practitioner Organization</string>
+    <string name="sync_strategy_practitioner_display">Practitioner</string>
 </resources>

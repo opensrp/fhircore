@@ -16,14 +16,46 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import org.hl7.fhir.r4.model.Coding
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.util.ContextUtil
+
 /**
  * SyncStrategy defines whether to sync resource based on the IDs of CareTeam, Location,
  * Organization and Practitioner. Each SyncStrategy represents a meta tag that is used by all synced
  * resource.
  */
-enum class SyncStrategy(val value: String) {
-  CARE_TEAM("Practitioner CareTeam"),
-  LOCATION("Practitioner Location"),
-  ORGANIZATION("Practitioner Organization"),
-  PRACTITIONER("Practitioner")
+enum class SyncStrategy(val value: String, val tag: Coding) {
+  CARETEAM(
+    value = "CareTeam",
+    tag =
+      Coding().apply {
+        system = ContextUtil.context.getString(R.string.sync_strategy_careteam_system)
+        display = ContextUtil.context.getString(R.string.sync_strategy_careteam_display)
+      }
+  ),
+  LOCATION(
+    value = "Location",
+    tag =
+      Coding().apply {
+        system = ContextUtil.context.getString(R.string.sync_strategy_location_system)
+        display = ContextUtil.context.getString(R.string.sync_strategy_location_display)
+      }
+  ),
+  ORGANIZATION(
+    value = "Organization",
+    tag =
+      Coding().apply {
+        system = ContextUtil.context.getString(R.string.sync_strategy_organization_system)
+        display = ContextUtil.context.getString(R.string.sync_strategy_organization_display)
+      }
+  ),
+  PRACTITIONER(
+    value = "Practitioner",
+    tag =
+      Coding().apply {
+        system = ContextUtil.context.getString(R.string.sync_strategy_practitioner_system)
+        display = ContextUtil.context.getString(R.string.sync_strategy_practitioner_display)
+      }
+  )
 }
