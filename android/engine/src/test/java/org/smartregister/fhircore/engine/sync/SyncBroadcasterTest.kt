@@ -43,7 +43,6 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -88,12 +87,7 @@ class SyncBroadcasterTest {
     coEvery { syncJob.run(fhirEngine, any(), any(), any()) } returns Result.Success()
 
     syncBroadcaster.runSync()
-    verify {
-      configService.loadRegistrySyncParams(
-        configurationRegistry,
-        sharedPreferencesHelper
-      )
-    }
+    verify { configService.loadRegistrySyncParams(configurationRegistry, sharedPreferencesHelper) }
     coVerify {
       syncJob.run(
         fhirEngine,
