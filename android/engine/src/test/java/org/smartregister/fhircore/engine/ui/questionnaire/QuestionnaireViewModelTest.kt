@@ -28,7 +28,6 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.gson.Gson
-import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -170,7 +169,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Setup sample resources
     val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val qJson =
-      application.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+      application.assets.open("sample_patient_registration.json").bufferedReader().use {
+        it.readText()
+      }
 
     samplePatientRegisterQuestionnaire = iParser.parseResource(qJson) as Questionnaire
   }
