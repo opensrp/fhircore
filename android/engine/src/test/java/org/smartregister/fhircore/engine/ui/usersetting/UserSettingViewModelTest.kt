@@ -55,7 +55,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   lateinit var userSettingViewModel: UserSettingViewModel
 

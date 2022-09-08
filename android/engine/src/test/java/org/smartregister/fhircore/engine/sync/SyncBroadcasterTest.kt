@@ -84,14 +84,6 @@ class SyncBroadcasterTest {
 
   @Test
   fun `runSync calls syncJob with correct params`() = runTest {
-    every {
-      sharedPreferences.getString(
-        SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-        any()
-      )
-    } returns "[]"
-    val organizationIds = emptyList<String>()
-    every { gson.fromJson("[]", List::class.java) } returns organizationIds
     every { configService.loadRegistrySyncParams(configurationRegistry, any()) } returns mapOf()
     coEvery { syncJob.run(fhirEngine, any(), any(), any()) } returns Result.Success()
 
@@ -99,15 +91,7 @@ class SyncBroadcasterTest {
     verify {
       configService.loadRegistrySyncParams(
         configurationRegistry,
-        withArg {
-          Assert.assertTrue(
-            it.containsKey(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
-          )
-          Assert.assertEquals(
-            organizationIds,
-            it.getValue(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
-          )
-        }
+        sharedPreferencesHelper
       )
     }
     coVerify {
