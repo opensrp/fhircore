@@ -20,9 +20,20 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
+import org.smartregister.fhircore.engine.util.DateUtils.isToday
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 class DateUtilsTest {
+
+  @Test
+  fun isTodayWithDateTodayShouldReturnTrue() {
+    Assert.assertTrue(DateUtils.today().isToday())
+  }
+
+  @Test
+  fun isTodayWithDateYesterdayShouldReturnFalse() {
+    Assert.assertFalse(DateUtils.yesterday().isToday())
+  }
 
   @Test
   fun `addDays() should return correct date when given initialDate and daysToAdd`() {
