@@ -16,14 +16,19 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
+import android.accounts.AccountManager
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -34,6 +39,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
+import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
 class LoginActivity :
@@ -52,6 +58,10 @@ class LoginActivity :
     loginService.loginActivity = this
     loginViewModel.apply {
       navigateToHome.observe(this@LoginActivity) {
+        val isUpdatingCurrentAccount =
+          intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)?.trim() ==
+            loginViewModel.username.value?.trim()
+
         if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
           val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
           val forceLoginViaUsernamePinSetup =
@@ -67,6 +77,10 @@ class LoginActivity :
               loginService.navigateToPinLogin(goForSetup = true)
             }
           }
+        } else if (isUpdatingCurrentAccount) {
+          configurationRegistry.fetchNonWorkflowConfigResources()
+          setResult(Activity.RESULT_OK)
+          finish() // Return to the previous activity
         } else {
           configurationRegistry.fetchNonWorkflowConfigResources()
           syncBroadcaster.get().runSync()
@@ -91,6 +105,14 @@ class LoginActivity :
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+
+    if (BuildConfig.DEBUG) println(intent.extras?.keySet())
+    if (!intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME).isNullOrBlank() &&
+        loginViewModel.username.value.isNullOrBlank()
+    ) {
+      loginViewModel.onUsernameUpdated(intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!)
+      this@LoginActivity.showToast(getString(R.string.auth_token_expired), Toast.LENGTH_SHORT)
+    }
   }
 
   private fun goToHomeScreen(sharedPreferencesKey: String, sharedPreferencesValue: Boolean) {
