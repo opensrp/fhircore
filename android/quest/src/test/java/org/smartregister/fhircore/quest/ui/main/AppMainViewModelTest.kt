@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
 import android.content.Context
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
+@OptIn(ExperimentalMaterialApi::class)
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
@@ -83,7 +85,6 @@ class AppMainViewModelTest : RobolectricTest() {
         secureSharedPreference,
         sharedPreferencesHelper,
         configurationRegistry,
-        configService,
         registerRepository,
         dispatcherProvider
       )

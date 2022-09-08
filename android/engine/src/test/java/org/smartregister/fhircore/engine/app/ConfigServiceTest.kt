@@ -143,15 +143,4 @@ class ConfigServiceTest : RobolectricTest() {
       )
     }
   }
-
-  @Test
-  fun testUnschedulePlanShouldCancelUniqueWork() {
-    val workManager = mockk<WorkManagerImpl>()
-    setStaticField(WorkManagerImpl::class.java, "sDelegatedInstance", workManager)
-
-    every { workManager.cancelUniqueWork(any()) } returns mockk()
-    configService.unschedulePlan(mockk())
-
-    verify { workManager.cancelUniqueWork(eq(FhirTaskPlanWorker.WORK_ID)) }
-  }
 }

@@ -1,0 +1,13 @@
+{
+  "appId": "map",
+  "id": "householdRegistrationMap",
+  "configType": "geoWidget",
+  "profileId": "householdProfile",
+  "registrationQuestionnaire": {
+    "id": "82952-geowidget",
+    "title": "{{add.family}}",
+    "saveButtonText": "ADD FAMILY",
+    "setPractitionerDetails": true,
+    "setOrganizationDetails": true
+  }
+}
