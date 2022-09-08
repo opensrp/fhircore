@@ -43,6 +43,8 @@ class RegisterViewModelTest : RobolectricTest() {
     fun testPaginateRegisterData() {
         val registerId = "12727277171"
         every { registerViewModelMock.paginateRegisterData(any(), any()) } just runs
+        registerViewModelMock.paginateRegisterData(registerId, false)
         verify { registerViewModelMock.paginateRegisterData(registerId, false) }
+
     }
 }
