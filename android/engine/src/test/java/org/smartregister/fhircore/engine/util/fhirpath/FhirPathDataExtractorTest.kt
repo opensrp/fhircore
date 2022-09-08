@@ -57,7 +57,7 @@ class FhirPathDataExtractorTest : RobolectricTest() {
   }
 
   @Test
-  fun `extractValue returns string value for an expression`() {
+  fun extractValueWithBasePatientAndFamilyNameExpressionShouldReturnStringValueOfFamily() {
     val patient =
       Patient().apply {
         deceased = BooleanType(false)
@@ -68,7 +68,7 @@ class FhirPathDataExtractorTest : RobolectricTest() {
   }
 
   @Test
-  fun `extractValue returns empty string for empty fhirpath evaluates`() {
+  fun extractValueWithPatientWithNoGivenNameAndExpressionGivenNameShouldReturnEmptyString() {
     val patientNoGivenName =
       Patient().apply {
         deceased = BooleanType(false)

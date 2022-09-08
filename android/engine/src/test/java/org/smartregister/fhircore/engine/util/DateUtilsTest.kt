@@ -26,12 +26,12 @@ import org.smartregister.fhircore.engine.util.extension.makeItReadable
 class DateUtilsTest {
 
   @Test
-  fun `isToday returns true for today`() {
+  fun isTodayWithDateTodayShouldReturnTrue() {
     Assert.assertTrue(DateUtils.today().isToday())
   }
 
   @Test
-  fun `isToday returns false for yesterday`() {
+  fun isTodayWithDateYesterdayShouldReturnFalse() {
     Assert.assertFalse(DateUtils.yesterday().isToday())
   }
 
