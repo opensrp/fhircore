@@ -82,7 +82,9 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.KeycloakUserDetails
+import org.smartregister.model.practitioner.PractitionerDetails
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -112,10 +114,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     every {
-      sharedPreferencesHelper.read<KeycloakUserDetails>(
+      sharedPreferencesHelper.read<PractitionerDetails>(
         key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
       )
-    } returns getKeycloakUserDetails()
+    } returns practitionerDetails()
 
     every {
       sharedPreferencesHelper.read<List<String>>(
@@ -1000,8 +1002,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("Organization/105", questionnaireResponse.subject.reference)
   }
 
-  private fun getKeycloakUserDetails(): KeycloakUserDetails {
-    return KeycloakUserDetails().apply { id = "12345" }
+  private fun practitionerDetails(): PractitionerDetails {
+    return PractitionerDetails().apply {
+      userDetail = KeycloakUserDetails().apply { id = "12345" }
+      fhirPractitionerDetails = FhirPractitionerDetails().apply { id = "12345" }
+    }
   }
 
   private fun samplePatient() =

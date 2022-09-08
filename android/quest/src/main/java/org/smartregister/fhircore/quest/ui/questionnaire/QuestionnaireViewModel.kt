@@ -71,7 +71,7 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import org.smartregister.model.practitioner.KeycloakUserDetails
+import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
 @HiltViewModel
@@ -105,10 +105,11 @@ constructor(
     )
   }
 
-  private val loggedInUserDetail by lazy {
-    sharedPreferencesHelper.read<KeycloakUserDetails>(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-    )
+  private val practitionerDetails by lazy {
+    sharedPreferencesHelper.read<PractitionerDetails>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+      )
+      ?.fhirPractitionerDetails
   }
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
@@ -145,7 +146,7 @@ constructor(
   }
 
   fun appendPractitionerInfo(resource: Resource) {
-    loggedInUserDetail?.id?.let {
+    practitionerDetails?.id?.let {
       // Convert practitioner uuid to reference e.g. "Practitioner/some-gibberish-uuid"
       val practitionerRef = it.asReference(ResourceType.Practitioner)
 
