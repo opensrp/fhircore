@@ -86,7 +86,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   val questionnaireViewModel: QuestionnaireViewModel =
     spyk(
       QuestionnaireViewModel(
-        fhirEngine = mockk(),
         defaultRepository = mockk(),
         configurationRegistry = mockk(),
         transformSupportServices = mockk(),
@@ -288,9 +287,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         any(),
         any(),
         any(),
-        any(),
-        any(),
-        any()
       )
     }
   }
@@ -310,15 +306,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(timeout = 2000) {
-      questionnaireViewModel.extractAndSaveResources(
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any()
-      )
+      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any())
     }
   }
 
@@ -338,15 +326,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(inverse = true) {
-      questionnaireViewModel.extractAndSaveResources(
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any()
-      )
+      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any())
     }
   }
 

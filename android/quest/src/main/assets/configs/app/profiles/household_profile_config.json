@@ -287,13 +287,10 @@
           ],
           "questionnaire": {
             "id": "101644",
-            "title": "eCBIS Remove Family Form",
+            "title": "Remove Family Form",
             "type": "DEFAULT",
-            "customActivity": "REMOVE_FAMILY",
             "clientIdentifier": "@{familyLogicalId}",
-            "groupIdentifier": "@{familyLogicalId}",
             "groupResource": {
-              "memberResourceType": "Patient",
               "removeGroup": true
             },
             "confirmationDialog": {

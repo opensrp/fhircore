@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
@@ -43,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,7 +61,6 @@ import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
@@ -138,8 +135,7 @@ fun RegisterScreen(
       }
     },
     bottomBar = {
-      // Bottom section has a pagination footer and button with client registration action
-      // Only show when filtering data is not active
+      // Bottom section has a pagination footer
       Column {
         if (searchText.isEmpty() && pagingItems.itemCount > 0) {
           RegisterFooter(
@@ -153,20 +149,6 @@ fun RegisterScreen(
               registerViewModel.onEvent(RegisterEvent.MoveToNextPage(registerId))
             }
           )
-          // TODO activate this button action via config; now only activated for family register
-          if (registerViewModel.isRegisterFormViaSettingExists()) {
-            Button(
-              modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-              onClick = { registerViewModel.onEvent(RegisterEvent.RegisterNewClient(context)) },
-              enabled = !firstTimeSync.value
-            ) {
-              // TODO set text from new register configurations
-              Text(
-                text = stringResource(id = R.string.register_new_client),
-                modifier = modifier.padding(8.dp)
-              )
-            }
-          }
         }
       }
     },

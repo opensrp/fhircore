@@ -24,7 +24,6 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -43,7 +42,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -59,7 +57,6 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import timber.log.Timber
 
 /**
@@ -69,15 +66,13 @@ import timber.log.Timber
 @AndroidEntryPoint
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   protected lateinit var questionnaire: Questionnaire
 
-  var computedValuesMap: Map<String, Any>? = emptyMap()
+  var computedValuesMap: Map<String, Any> = emptyMap()
 
   lateinit var fragment: QuestQuestionnaireFragment
 
@@ -92,6 +87,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     outState.clear()
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
@@ -104,23 +100,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         computedValuesMap
       )
 
-    val formName = questionnaireConfig.id
-
-    questionnaireViewModel.apply {
-      isRemoved.observe(this@QuestionnaireActivity) { if (it) onRemove() }
-      isDiscarded.observe(this@QuestionnaireActivity) { if (it) finish() }
-    }
+    questionnaireViewModel.removeOperation.observe(this) { if (it) finish() }
 
     val loadProgress = showProgressAlert(this, R.string.loading)
 
-    //    // Initialises the lateinit variable questionnaireViewModel to prevent
-    //    // some init operations running on a separate thread and causing a crash
-    //    questionnaireViewModel.sharedPreferencesHelper
-
     lifecycleScope.launch(dispatcherProvider.io()) {
-      loadQuestionnaireAndConfig(formName)
-
-      withContext(dispatcherProvider.io()) { questionnaireViewModel.libraryEvaluator.initialize() }
+      questionnaireViewModel.run {
+        questionnaire = loadQuestionnaire(questionnaireConfig.id, questionnaireConfig.type)!!
+        libraryEvaluator.initialize()
+      }
 
       // Only add the fragment once, when the activity is first created.
       if (savedInstanceState == null) renderFragment()
@@ -166,7 +154,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
         // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
         // pass questionnaire and questionnaire-response to fragment
-        // 1- editmode -> assert and pass response from intent
+        // 1- editMode -> assert and pass response from intent
         // 2- readonly -> assert and pass response from intent
         // 3- default -> process, populate and pass response/data from intent if exists
         arguments =
@@ -198,26 +186,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
   }
 
-  suspend fun loadQuestionnaireAndConfig(formName: String) =
-    // form is either name of form in asset/form-config or questionnaire-id
-    // load from assets and get questionnaire or if not found build it from questionnaire
-    kotlin
-      .runCatching {
-        questionnaire =
-          questionnaireViewModel.loadQuestionnaire(
-            questionnaireConfig.id,
-            questionnaireConfig.type
-          )!!
-      }
-      .onFailure {
-        // load questionnaire from db and build config
-        questionnaire =
-          questionnaireViewModel.loadQuestionnaire(formName, questionnaireConfig.type)!!
-        questionnaireConfig =
-          QuestionnaireConfig(title = questionnaire.title ?: "", id = questionnaire.logicalId)
-      }
-      .also { populateInitialValues(questionnaire) }
-
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
       initial =
@@ -238,7 +206,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       val loadProgress = showProgressAlert(this, R.string.loading)
       lifecycleScope.launch(dispatcherProvider.io()) {
         // Reload the questionnaire and reopen the fragment
-        loadQuestionnaireAndConfig(questionnaireConfig.id)
+        questionnaire =
+          questionnaireViewModel.loadQuestionnaire(
+            questionnaireConfig.id,
+            questionnaireConfig.type
+          )!!
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
         withContext(dispatcherProvider.main()) {
@@ -312,8 +284,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  open fun populateInitialValues(questionnaire: Questionnaire) = Unit
-
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     val message = questionnaireViewModel.extractionProgressMessage.value
     if (message?.isNotEmpty() == true)
@@ -358,7 +328,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       .all { it.isValid }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-
     if (questionnaireConfig.confirmationDialog != null) {
       handleRemoveEntityQuestionnaireResponse(questionnaireConfig = questionnaireConfig)
     } else {
@@ -366,9 +335,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         context = this,
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
-        resourceId = questionnaireConfig.clientIdentifier,
-        groupResourceId = questionnaireConfig.groupIdentifier,
-        questionnaireType = questionnaireConfig.type,
         questionnaireConfig = questionnaireConfig
       )
     }
@@ -377,27 +343,34 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   fun handleRemoveEntityQuestionnaireResponse(questionnaireConfig: QuestionnaireConfig) {
     dismissSaveProcessing()
     confirmationDialog(
-      profileId = questionnaireConfig.clientIdentifier!!,
+      resourceId = questionnaireConfig.clientIdentifier!!,
       questionnaireConfig = questionnaireConfig
     )
   }
 
-  private fun confirmationDialog(profileId: String, questionnaireConfig: QuestionnaireConfig) {
+  private fun confirmationDialog(resourceId: String, questionnaireConfig: QuestionnaireConfig) {
     AlertDialogue.showAlert(
       context = this,
       alertIntent = AlertIntent.CONFIRM,
       title = questionnaireConfig.confirmationDialog!!.title,
       message = questionnaireConfig.confirmationDialog!!.message,
       confirmButtonListener = { dialog ->
-        if (questionnaireConfig.groupResource?.removeGroup == true) {
-          questionnaireViewModel.removeGroup(profileId)
+        if (questionnaireConfig.groupResource != null) {
+          questionnaireViewModel.removeGroup(
+            groupId = resourceId,
+            removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
+            deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers
+          )
+          questionnaireViewModel.removeGroupMember(
+            memberId = resourceId,
+            removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
+            groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
+            memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
+          )
         }
         dialog.dismiss()
       },
-      neutralButtonListener = { dialog ->
-        questionnaireViewModel.discard()
-        dialog.dismiss()
-      }
+      neutralButtonListener = { dialog -> dialog.dismiss() }
     )
   }
 
@@ -427,20 +400,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message
 
-  @OptIn(ExperimentalMaterialApi::class)
-  open fun onRemove() {
-    // TODO handle this with  workflow
-    // trigger event ActionTrigger.ON_CLOSE
-    val intent =
-      Intent(this@QuestionnaireActivity, AppMainActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      }
-    this@QuestionnaireActivity.run {
-      startActivity(intent)
-      finish()
-    }
-  }
-
   companion object {
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
@@ -451,7 +410,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_CONFIG_KEY = "questionnaire-config"
-    const val QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY = "computed_values_map"
+    const val QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY = "computed-values-map"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =

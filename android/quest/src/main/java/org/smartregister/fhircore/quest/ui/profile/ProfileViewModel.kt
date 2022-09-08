@@ -80,11 +80,10 @@ constructor(
           when (actionConfig.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               actionConfig.questionnaire?.let { questionnaireConfig ->
-                val questionnaireType = questionnaireConfig.type
                 event.context.launchQuestionnaire<QuestionnaireActivity>(
                   intentBundle =
                     actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap()),
-                  questionnaireConfig = actionConfig.questionnaire,
+                  questionnaireConfig = questionnaireConfig,
                   computedValuesMap = event.resourceData?.computedValuesMap
                 )
               }
@@ -93,7 +92,7 @@ constructor(
               if (event.managingEntity == null) return@forEach
               if (event.resourceData?.baseResource?.resourceType != ResourceType.Group) {
                 Timber.w("Wrong resource type. Expecting Group resource")
-                return@forEach
+                return
               }
               changeManagingEntity(event = event)
             }

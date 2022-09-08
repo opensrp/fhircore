@@ -20,8 +20,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 
 fun Reference.extractId(): String =
-  if (this.reference.isNullOrEmpty()) ""
-  else this.reference.substringAfterLast(delimiter = '/', missingDelimiterValue = "")
+  if (this.reference.isNullOrEmpty()) "" else this.reference.extractLogicalIdUuid()
 
 fun String.asReference(resourceType: ResourceType): Reference {
   val resourceId = this

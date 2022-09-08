@@ -23,6 +23,7 @@ import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.LinkedList
+import java.util.Locale
 import java.util.UUID
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
@@ -62,7 +63,15 @@ fun Base?.valueToString(): String {
     this is Quantity -> this.value.toPlainString()
     this is Timing ->
       this.repeat.let {
-        it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
+        it.period
+          .toPlainString()
+          .plus(" ")
+          .plus(
+            it.periodUnit.display.replaceFirstChar { char ->
+              if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
+            }
+          )
+          .plus(" (s)")
       }
     this is HumanName -> "${this.given.firstOrNull().valueToString()} ${this.family}"
     else -> this.toString()
@@ -291,13 +300,17 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
   return sections
 }
 
-fun String.resourceClassType(): Class<out Resource> {
-  return Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
-}
+fun String.resourceClassType(): Class<out Resource> =
+  Class.forName("org.hl7.fhir.r4.model.$this") as Class<out Resource>
+
 /**
  * A function that extracts only the UUID part of a resource logicalId.
  *
- * Example: "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
+ * Examples:
+ *
+ * 1. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
  * "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
+ *
+ * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  */
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")

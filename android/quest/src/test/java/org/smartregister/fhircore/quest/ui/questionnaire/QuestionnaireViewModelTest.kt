@@ -141,7 +141,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     questionnaireViewModel =
       spyk(
         QuestionnaireViewModel(
-          fhirEngine = fhirEngine,
           defaultRepository = defaultRepo,
           configurationRegistry = configurationRegistry,
           transformSupportServices = mockk(),
@@ -382,7 +381,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       questionnaireViewModel.extractAndSaveResources(
         context = context,
-        resourceId = "12345",
         questionnaireResponse = questionnaireResponse,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig
@@ -420,7 +418,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.extractAndSaveResources(
       context = context,
-      resourceId = null,
       questionnaireResponse = questionnaireResponse,
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
@@ -446,7 +443,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.extractAndSaveResources(
       context = context,
-      resourceId = "12345",
       questionnaireResponse = QuestionnaireResponse(),
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
@@ -481,11 +477,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         addExtension().url = "sdc-questionnaire-itemExtractionContext"
       }
 
+    questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.EDIT)
+
     questionnaireViewModel.extractAndSaveResources(
       context = context,
-      resourceId = "12345",
       questionnaireResponse = QuestionnaireResponse(),
-      questionnaireType = QuestionnaireType.EDIT,
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
     )
@@ -638,7 +634,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking {
       questionnaireViewModel.extractAndSaveResources(
         context = ApplicationProvider.getApplicationContext(),
-        resourceId = null,
         questionnaireResponse = questionnaireResponse,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig
@@ -663,13 +658,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     runBlocking {
       questionnaireViewModel.extractAndSaveResources(
-        context,
-        "abc",
-        "cde",
-        questionnaireResponse,
-        QuestionnaireType.EDIT,
-        questionnaire,
-        questionnaireConfig
+        context = context,
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig
       )
     }
 
@@ -693,10 +685,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking {
       questionnaireViewModel.extractAndSaveResources(
         context,
-        "abc",
-        "cde",
         questionnaireResponse,
-        QuestionnaireType.EDIT,
         questionnaire,
         questionnaireConfig
       )
@@ -745,10 +734,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.editQuestionnaireResponse = oldQuestionnaireResponse
     questionnaireViewModel.extractAndSaveResources(
-      context,
-      resourceId = "12345",
+      context = context,
       questionnaireResponse = questionnaireResponse,
-      questionnaireType = QuestionnaireType.EDIT,
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
     )
@@ -896,7 +883,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.extractAndSaveResources(
       context = context,
-      resourceId = "0993ldsfkaljlsnldm",
       questionnaireResponse = questionnaireResponse,
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
@@ -944,7 +930,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.extractAndSaveResources(
       context = context,
-      resourceId = "0993ldsfkaljlsnldm",
       questionnaireResponse = questionnaireResponse,
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig

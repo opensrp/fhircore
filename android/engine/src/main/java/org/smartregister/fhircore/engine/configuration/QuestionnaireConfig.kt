@@ -31,7 +31,6 @@ data class QuestionnaireConfig(
   val planDefinitions: List<String>? = null,
   val type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val clientIdentifier: String? = null,
-  val groupIdentifier: String? = null,
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null
 ) : java.io.Serializable
@@ -45,15 +44,26 @@ data class ConfirmationDialog(
 
 @Serializable
 data class GroupResourceConfig(
-  val memberResourceType: String,
+  val groupIdentifier: String? = null,
+  val memberResourceType: String? = null,
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
+  val deactivateMembers: Boolean = true
 ) : java.io.Serializable
 
-fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>?) =
+fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
   this.copy(
-    clientIdentifier =
-      this.clientIdentifier?.interpolate(computedValuesMap ?: emptyMap())?.extractLogicalIdUuid(),
-    groupIdentifier =
-      this.groupIdentifier?.interpolate(computedValuesMap ?: emptyMap())?.extractLogicalIdUuid()
+    title = title?.interpolate(computedValuesMap),
+    clientIdentifier = clientIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
+    groupResource =
+      groupResource?.copy(
+        groupIdentifier =
+          groupResource.groupIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid()
+      ),
+    confirmationDialog =
+      confirmationDialog?.copy(
+        title = confirmationDialog.title.interpolate(computedValuesMap),
+        message = confirmationDialog.message.interpolate(computedValuesMap),
+        actionButtonText = confirmationDialog.actionButtonText.interpolate(computedValuesMap)
+      )
   )

@@ -43,8 +43,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
 
 @HiltViewModel
 class RegisterViewModel
@@ -135,11 +133,6 @@ constructor(
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
         paginateRegisterData(event.registerId)
       }
-      is RegisterEvent.RegisterNewClient ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
-          // TODO use appropriate property from the register configuration
-          // "provide-questionnaire-id"
-          )
       is RegisterEvent.OnViewComponentEvent ->
         event.viewComponentEvent.handleEvent(event.navController)
     }
@@ -160,11 +153,6 @@ constructor(
           }
         }
     }
-  }
-
-  // TODO this setting should be removed after refactor
-  fun isRegisterFormViaSettingExists(): Boolean {
-    return false
   }
 
   fun isFirstTimeSync() =

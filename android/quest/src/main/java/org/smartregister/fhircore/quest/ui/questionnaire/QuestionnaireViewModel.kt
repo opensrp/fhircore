@@ -23,7 +23,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
@@ -32,7 +31,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
@@ -40,6 +38,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -62,6 +61,7 @@ import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
@@ -78,7 +78,6 @@ import timber.log.Timber
 open class QuestionnaireViewModel
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
   val transformSupportServices: TransformSupportServices,
@@ -91,6 +90,8 @@ constructor(
   val extractionProgress = MutableLiveData<Boolean>()
 
   val extractionProgressMessage = MutableLiveData<String>()
+
+  val removeOperation = MutableLiveData(false)
 
   var editQuestionnaireResponse: QuestionnaireResponse? = null
 
@@ -109,11 +110,6 @@ constructor(
       key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
     )
   }
-
-  // TODO this setting should be loaded from a configuration
-  var isDeactivateMembers = false
-  var isRemoved = MutableLiveData(false)
-  var isDiscarded = MutableLiveData(false)
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
@@ -134,21 +130,24 @@ constructor(
   }
 
   fun appendOrganizationInfo(resource: Resource) {
+    // Organization reference in shared pref as "Organization/some-gibberish-uuid"
     authenticatedOrganizationIds.let { ids ->
       val organizationRef =
-        Reference().apply { reference = "${ResourceType.Organization.name}/${ids?.first()}" }
+        ids?.first()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
 
       when (resource) {
         is Patient -> resource.managingOrganization = organizationRef
         is Group -> resource.managingEntity = organizationRef
         is Encounter -> resource.serviceProvider = organizationRef
+        is Location -> resource.managingOrganization = organizationRef
       }
     }
   }
 
   fun appendPractitionerInfo(resource: Resource) {
     loggedInUserDetail?.id?.let {
-      val practitionerRef = Reference().apply { reference = it }
+      // Convert practitioner uuid to reference e.g. "Practitioner/some-gibberish-uuid"
+      val practitionerRef = it.asReference(ResourceType.Practitioner)
 
       if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
       else if (resource is Encounter)
@@ -180,10 +179,7 @@ constructor(
 
   fun extractAndSaveResources(
     context: Context,
-    resourceId: String?,
-    groupResourceId: String? = null,
     questionnaireResponse: QuestionnaireResponse,
-    questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig
   ) {
@@ -196,11 +192,17 @@ constructor(
 
     viewModelScope.launch(dispatcherProvider.io()) {
       questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-        it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
+        it.valueCodeableConcept.coding.forEach { coding ->
+          questionnaireResponse.meta.addTag(coding)
+        }
       }
 
       // important to set response subject so that structure map can handle subject for all entities
-      handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
+      handleQuestionnaireResponseSubject(
+        questionnaireConfig.clientIdentifier,
+        questionnaire,
+        questionnaireResponse
+      )
 
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
@@ -209,7 +211,7 @@ constructor(
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
             // if it is new registration set response subject
-            if (resourceId == null)
+            if (questionnaireConfig.clientIdentifier == null)
               questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
           if (questionnaireConfig.setPractitionerDetails) {
@@ -219,13 +221,13 @@ constructor(
             appendOrganizationInfo(bundleEntry.resource)
           }
 
-          if (questionnaireType != QuestionnaireType.EDIT &&
+          if (questionnaireConfig.type != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
                 ResourceType.Patient,
                 ResourceType.RelatedPerson
               )
           ) {
-            groupResourceId?.let {
+            questionnaireConfig.groupResource?.groupIdentifier?.let {
               appendPatientsAndRelatedPersonsToGroups(
                 resource = bundleEntry.resource,
                 groupResourceId = it
@@ -239,7 +241,7 @@ constructor(
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
           // Ideally ResourceMapper should allow this internally via structure-map
-          if (questionnaireType.isEditMode()) {
+          if (questionnaireConfig.type.isEditMode()) {
             if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
               bundleEntry.resource.id = questionnaireResponse.subject.extractId()
             else {
@@ -256,7 +258,7 @@ constructor(
           )
         } else saveBundleResources(bundle)
 
-        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
+        if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
         }
 
@@ -265,7 +267,7 @@ constructor(
         // TODO https://github.com/opensrp/fhircore/issues/900
         // reassess following i.e. deleting/updating older resources because one resource
         // might have generated other flow in subsequent followups
-        if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
+        if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
 
@@ -277,7 +279,7 @@ constructor(
         extractCarePlan(questionnaireResponse, null, questionnaireConfig)
       }
 
-      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+      viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
     }
   }
 
@@ -312,7 +314,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     bundle: Bundle?
   ) {
-    withContext(Dispatchers.Default) {
+    withContext(dispatcherProvider.default()) {
       val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
       questionnaire
         .cqfLibraryIds()
@@ -440,7 +442,7 @@ constructor(
         resourcesList.add(this)
       }
         ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
-      loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
+      loadRelatedPerson(patientId).forEach { resourcesList.add(it) }
     }
 
     return resourcesList.toTypedArray()
@@ -477,32 +479,41 @@ constructor(
       }
       .time
 
-  fun removeGroup(groupId: String) {
-    viewModelScope.launch {
-      try {
-        defaultRepository.removeGroup(groupId, isDeactivateMembers)
-        isRemoved.postValue(true)
-      } catch (e: Exception) {
-        Timber.e(e)
-        isDiscarded.postValue(true)
+  fun removeGroup(groupId: String, removeGroup: Boolean, deactivateMembers: Boolean) {
+    if (removeGroup) {
+      viewModelScope.launch(dispatcherProvider.io()) {
+        try {
+          defaultRepository.removeGroup(groupId, deactivateMembers)
+        } catch (exception: Exception) {
+          Timber.e(exception)
+        } finally {
+          removeOperation.postValue(true)
+        }
       }
     }
   }
 
-  fun removeGroupMember(memberId: String, groupId: String) {
-    viewModelScope.launch {
-      try {
-        defaultRepository.removeGroupMember(memberId = memberId, groupId = groupId)
-        isRemoved.postValue(true)
-      } catch (e: Exception) {
-        Timber.e(e)
-        isDiscarded.postValue(true)
+  fun removeGroupMember(
+    memberId: String,
+    groupIdentifier: String?,
+    memberResourceType: String?,
+    removeMember: Boolean
+  ) {
+    if (removeMember) {
+      viewModelScope.launch(dispatcherProvider.io()) {
+        try {
+          defaultRepository.removeGroupMember(
+            memberId = memberId,
+            groupId = groupIdentifier,
+            groupMemberResourceType = memberResourceType
+          )
+        } catch (exception: Exception) {
+          Timber.e(exception)
+        } finally {
+          removeOperation.postValue(true)
+        }
       }
     }
-  }
-
-  fun discard() {
-    isDiscarded.postValue(true)
   }
 
   companion object {
