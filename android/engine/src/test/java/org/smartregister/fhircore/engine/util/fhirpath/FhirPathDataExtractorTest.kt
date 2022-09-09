@@ -70,4 +70,27 @@ class FhirPathDataExtractorTest : RobolectricTest() {
     Assert.assertEquals(1, familyNameValue?.size)
     Assert.assertEquals("Doe Family", (familyNameValue?.first() as StringType).value)
   }
+
+  @Test
+  fun extractValueWithBasePatientAndFamilyNameExpressionShouldReturnStringValueOfFamily() {
+    val patient =
+      Patient().apply {
+        deceased = BooleanType(false)
+        addName().family = "Doe"
+      }
+    val expression = "Patient.name.family"
+    Assert.assertEquals("Doe", FhirPathDataExtractor.extractValue(patient, expression))
+  }
+
+  @Test
+  fun extractValueWithPatientWithNoGivenNameAndExpressionGivenNameShouldReturnEmptyString() {
+    val patientNoGivenName =
+      Patient().apply {
+        deceased = BooleanType(false)
+        addName().family = "Doe"
+      }
+    val expression = "Patient.name.given" // would evaluate to empty
+    val result = FhirPathDataExtractor.extractValue(patientNoGivenName, expression)
+    Assert.assertTrue(result.isEmpty())
+  }
 }
