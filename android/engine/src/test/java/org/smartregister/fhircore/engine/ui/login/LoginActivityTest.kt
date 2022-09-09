@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
+import android.accounts.AccountAuthenticatorResponse
+import android.accounts.AccountManager
 import android.app.Activity
 import android.app.Application
 import android.content.Context
@@ -26,7 +28,10 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
@@ -114,6 +119,93 @@ class LoginActivityTest : ActivityRobolectricTest() {
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
     loginViewModel.navigateToHome()
     verify { loginService.navigateToHome() }
+  }
+
+  @Test
+  fun testNavigateToHomeForManualAuthUpdateSetsUsername() {
+    val accountName = "testUser"
+    val updateAuthIntent =
+      Intent().apply {
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+        putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
+        putExtra(
+          AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
+          mockk<AccountAuthenticatorResponse>()
+        )
+        putExtra(AccountAuthenticator.AUTH_TOKEN_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+      }
+    Robolectric.buildActivity(LoginActivity::class.java, updateAuthIntent).create().resume()
+    Assert.assertEquals(accountName, loginViewModel.username.value)
+  }
+
+  @Test
+  fun testNavigateToHomeForManualAuthUpdateShouldNotVerifyExpectedIntent() {
+    val accountName = "testUser"
+    val updateAuthIntent =
+      Intent().apply {
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+        putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
+        putExtra(
+          AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
+          mockk<AccountAuthenticatorResponse>()
+        )
+        putExtra(AccountAuthenticator.AUTH_TOKEN_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+      }
+    loginActivity =
+      spyk(
+        Robolectric.buildActivity(LoginActivity::class.java, updateAuthIntent)
+          .create()
+          .resume()
+          .get()
+      )
+    loginActivity.configurationRegistry = configurationRegistry
+    loginActivity.configurationRegistry.appId = "default"
+    loginService = loginActivity.loginService
+
+    loginViewModel.navigateToHome()
+    verify(exactly = 0) { loginService.navigateToHome() }
+
+    loginActivity =
+      spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
+    loginActivity.configurationRegistry = configurationRegistry
+    loginActivity.configurationRegistry.appId = "default"
+    loginService = loginActivity.loginService
+  }
+
+  @Test
+  fun testNavigateToHomeForManualAuthUpdateWithUsernameEditedShouldVerifyExpectedIntent() {
+    val accountName = "testUser"
+    val updateAuthIntent =
+      Intent().apply {
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+        putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
+        putExtra(
+          AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
+          mockk<AccountAuthenticatorResponse>()
+        )
+        putExtra(AccountAuthenticator.AUTH_TOKEN_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+      }
+    loginActivity =
+      spyk(
+        Robolectric.buildActivity(LoginActivity::class.java, updateAuthIntent)
+          .create()
+          .resume()
+          .get()
+      )
+    loginActivity.configurationRegistry = configurationRegistry
+    loginActivity.configurationRegistry.appId = "default"
+    loginService = loginActivity.loginService
+    every { loginActivity.setResult(any()) } just runs
+    loginViewModel.onUsernameUpdated("newTestUser")
+
+    loginViewModel.navigateToHome()
+    verify(exactly = 1) { loginService.navigateToHome() }
+
+    loginActivity =
+      spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
+    loginActivity.configurationRegistry = configurationRegistry
+    loginActivity.configurationRegistry.appId = "default"
+    loginService = loginActivity.loginService
   }
 
   @Test

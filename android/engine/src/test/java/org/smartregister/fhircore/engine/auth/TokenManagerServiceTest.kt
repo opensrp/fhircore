@@ -25,7 +25,11 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.jsonwebtoken.UnsupportedJwtException
 import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.verify
 import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
@@ -81,6 +85,51 @@ class TokenManagerServiceTest : RobolectricTest() {
     every { tokenManagerService.isTokenActive(authCredentials.sessionToken) } returns true
     secureSharedPreference.saveCredentials(authCredentials)
     Assert.assertEquals(authCredentials.sessionToken, tokenManagerService.getLocalSessionToken())
+  }
+
+  @Test
+  fun getLocalSessionWithInvalidateCachedTrueShouldInvalidateExpiredToken() {
+    val accountManagerMockk = mockk<AccountManager>()
+    every { accountManagerMockk.invalidateAuthToken(any(), any()) } just runs
+    val tokenManagerService2 =
+      spyk(
+        TokenManagerService(
+          context = context,
+          accountManager = accountManagerMockk,
+          configService = configService,
+          secureSharedPreference = secureSharedPreference
+        )
+      )
+    every { tokenManagerService2.isTokenActive(authCredentials.sessionToken) } returns false
+    secureSharedPreference.saveCredentials(authCredentials)
+
+    tokenManagerService2.getLocalSessionToken(invalidateCached = true)
+    verify(exactly = 1) {
+      accountManagerMockk.invalidateAuthToken(
+        AccountAuthenticator.AUTH_TOKEN_TYPE,
+        authCredentials.sessionToken
+      )
+    }
+  }
+
+  @Test
+  fun getLocalSessionWithInvalidateCachedFalseShouldNotInvalidateExpiredToken() {
+    val accountManagerMockk = mockk<AccountManager>()
+    every { accountManagerMockk.invalidateAuthToken(any(), any()) } just runs
+    val tokenManagerService2 =
+      spyk(
+        TokenManagerService(
+          context = context,
+          accountManager = accountManagerMockk,
+          configService = configService,
+          secureSharedPreference = secureSharedPreference
+        )
+      )
+    every { tokenManagerService2.isTokenActive(authCredentials.sessionToken) } returns false
+    secureSharedPreference.saveCredentials(authCredentials)
+
+    tokenManagerService2.getLocalSessionToken(invalidateCached = false)
+    verify(exactly = 0) { accountManagerMockk.invalidateAuthToken(any(), any()) }
   }
 
   @Test
