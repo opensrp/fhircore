@@ -24,6 +24,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.Assert
 import org.junit.Before
@@ -34,72 +35,63 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
-import javax.inject.Inject
 
 @HiltAndroidTest
 class MeasureReportViewModelTest : RobolectricTest() {
 
-    @get:Rule(order = 0)
-    val hiltRule = HiltAndroidRule(this)
-    @get:Rule(order = 1)
-    val composeRule = createComposeRule()
-    @get:Rule(order = 2)
-    val coroutinesTestRule = CoroutineTestRule()
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val composeRule = createComposeRule()
+  @get:Rule(order = 2) val coroutinesTestRule = CoroutineTestRule()
 
-    @Inject
-    lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var fhirEngine: FhirEngine
 
-    @Inject
-    lateinit var fhirOperator: FhirOperator
+  @Inject lateinit var fhirOperator: FhirOperator
 
-    @Inject
-    lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
 
-    @BindValue
-    val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
-    @Inject
-    lateinit var measureReportRepository: MeasureReportRepository
+  @Inject lateinit var measureReportRepository: MeasureReportRepository
 
-    private lateinit var measureReportViewModel: MeasureReportViewModel
+  private lateinit var measureReportViewModel: MeasureReportViewModel
 
-    @Before
-    fun setUp() {
-        hiltRule.inject()
+  @Before
+  fun setUp() {
+    hiltRule.inject()
 
-        measureReportViewModel =
-            MeasureReportViewModel(
-                fhirEngine = fhirEngine,
-                fhirOperator = fhirOperator,
-                sharedPreferencesHelper = sharedPreferencesHelper,
-                dispatcherProvider = mockk(),
-                measureReportRepository = measureReportRepository,
-                measureReportPatientViewDataMapper = measureReportPatientViewDataMapper
-            )
-    }
+    measureReportViewModel =
+      MeasureReportViewModel(
+        fhirEngine = fhirEngine,
+        fhirOperator = fhirOperator,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        dispatcherProvider = mockk(),
+        measureReportRepository = measureReportRepository,
+        measureReportPatientViewDataMapper = measureReportPatientViewDataMapper
+      )
+  }
 
-    @Test
-    fun testDefaultDateRangeState() {
-        Assert.assertNotNull(measureReportViewModel.defaultDateRangeState())
-        Assert.assertNotNull(measureReportViewModel.defaultDateRangeState().first)
-        Assert.assertNotNull(measureReportViewModel.defaultDateRangeState().second)
-    }
+  @Test
+  fun testDefaultDateRangeState() {
+    Assert.assertNotNull(measureReportViewModel.defaultDateRangeState())
+    Assert.assertNotNull(measureReportViewModel.defaultDateRangeState().first)
+    Assert.assertNotNull(measureReportViewModel.defaultDateRangeState().second)
+  }
 
-    @Test
-    fun testToggleProgressIndicatorVisibility() {
-        measureReportViewModel.toggleProgressIndicatorVisibility(showProgressIndicator = false)
-        Assert.assertFalse(measureReportViewModel.reportTypeSelectorUiState.value.showProgressIndicator)
-    }
+  @Test
+  fun testToggleProgressIndicatorVisibility() {
+    measureReportViewModel.toggleProgressIndicatorVisibility(showProgressIndicator = false)
+    Assert.assertFalse(measureReportViewModel.reportTypeSelectorUiState.value.showProgressIndicator)
+  }
 
-    @Test
-    fun testResetState() {
-        measureReportViewModel.resetState()
-        Assert.assertFalse(measureReportViewModel.reportTypeSelectorUiState.value.showProgressIndicator)
-        Assert.assertNotNull(measureReportViewModel.dateRange)
-        Assert.assertEquals(
-            MeasureReport.MeasureReportType.SUMMARY,
-            measureReportViewModel.reportTypeState.value
-        )
-        Assert.assertEquals(TextFieldValue(""), measureReportViewModel.searchTextState.value)
-    }
+  @Test
+  fun testResetState() {
+    measureReportViewModel.resetState()
+    Assert.assertFalse(measureReportViewModel.reportTypeSelectorUiState.value.showProgressIndicator)
+    Assert.assertNotNull(measureReportViewModel.dateRange)
+    Assert.assertEquals(
+      MeasureReport.MeasureReportType.SUMMARY,
+      measureReportViewModel.reportTypeState.value
+    )
+    Assert.assertEquals(TextFieldValue(""), measureReportViewModel.searchTextState.value)
+  }
 }
