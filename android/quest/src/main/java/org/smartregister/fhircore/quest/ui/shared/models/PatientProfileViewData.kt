@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.shared.models
 import java.util.Date
 import org.smartregister.fhircore.engine.domain.model.ActionableButtonData
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
+import org.hl7.fhir.r4.model.Condition
 
 sealed class ProfileViewData(
   open val logicalId: String = "",
@@ -39,6 +40,7 @@ sealed class ProfileViewData(
     val medicalHistoryData: List<PatientProfileRowItem> = emptyList(),
     val upcomingServices: List<PatientProfileRowItem> = emptyList(),
     val ancCardData: List<PatientProfileRowItem> = emptyList(),
+    val conditions: List<Condition> = listOf(),
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier)
 
   data class FamilyProfileViewData(

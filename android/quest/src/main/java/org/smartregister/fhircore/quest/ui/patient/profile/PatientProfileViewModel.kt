@@ -106,7 +106,9 @@ constructor(
           Pair(
             R.id.add_to_family_planning,
             profileData?.let {
-              !(it.tasks.none { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } && (it.dob?.yearsPassed() in 15..48))
+              !(it.tasks.none { it.action.matches(Regex(ACTIVE_ANC_REGEX)) } &&
+                      it.conditions.none { it.code.text.equals("Family Planning") } &&
+                      (it.dob?.yearsPassed() in 15..48))
             }
               ?: false
           )

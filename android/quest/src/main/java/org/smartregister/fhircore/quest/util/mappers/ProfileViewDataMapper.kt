@@ -82,6 +82,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           age = inputModel.age,
           sex = inputModel.gender.translateGender(context),
           dob = inputModel.birthdate,
+          conditions = inputModel.conditions,
           tasks =
             inputModel.tasks.take(DEFAULT_TASKS_COUNT).map {
               ActionableButtonData(
