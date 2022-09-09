@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -50,14 +49,13 @@ class RegisterScreenNoResultViewTest {
   @Test
   fun registerScreenRendersNoRegistersViewCorrectly() {
     composeTestRule.setContent {
-      NoRegistersView(
+      NoRegisterDataView(
         noResults =
           NoResultsConfig(
             title = "Title",
             message = "This is message",
             actionButton = NavigationMenuConfig(display = "Button Text", id = "1")
           ),
-        context = LocalContext.current,
         onClick = mockListener
       )
     }

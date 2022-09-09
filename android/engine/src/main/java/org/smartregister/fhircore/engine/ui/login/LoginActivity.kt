@@ -21,11 +21,9 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
@@ -36,8 +34,6 @@ class LoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
-
   val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +41,7 @@ class LoginActivity : BaseMultiLanguageActivity() {
     loginService.loginActivity = this
     loginViewModel.apply {
       // Run sync and navigate directly to home screen if session is active
-      if (accountAuthenticator.hasActiveSession()) runSyncAndNavigateHome()
+      if (accountAuthenticator.hasActiveSession()) loginService.navigateToHome()
 
       val isPinEnabled = loginViewModel.applicationConfiguration.loginConfig?.enablePin ?: false
       navigateToHome.observe(this@LoginActivity) { launchHomeScreen ->
@@ -57,7 +53,7 @@ class LoginActivity : BaseMultiLanguageActivity() {
             loginService.navigateToPinLogin(true)
           }
           launchHomeScreen && !isPinEnabled -> {
-            runSyncAndNavigateHome()
+            loginService.navigateToHome()
           }
         }
       }
@@ -65,10 +61,6 @@ class LoginActivity : BaseMultiLanguageActivity() {
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
-  }
-
-  private fun runSyncAndNavigateHome() {
-    loginService.navigateToHome()
   }
 
   private fun launchDialPad(phone: String) {

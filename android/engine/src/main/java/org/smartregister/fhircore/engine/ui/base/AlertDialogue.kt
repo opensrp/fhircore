@@ -71,7 +71,6 @@ object AlertDialogue {
           setView(view)
           title?.let { setTitle(it) }
           setCancelable(false)
-
           neutralButtonListener?.let {
             setNeutralButton(neutralButtonText) { d, _ -> neutralButtonListener.invoke(d) }
           }

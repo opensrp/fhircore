@@ -19,8 +19,7 @@
 
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
-    <application
-        xmlns:tools="http://schemas.android.com/tools">
+    <application>
 
         <activity
             android:name=".ui.appsetting.AppSettingActivity"
@@ -40,10 +39,6 @@
         <activity
             android:name=".ui.pin.PinSetupActivity"
             android:exported="false" />
-        <activity
-            android:name=".ui.questionnaire.QuestionnaireActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme" />
         <activity
             android:name=".HiltActivityForTest"
             android:exported="false"

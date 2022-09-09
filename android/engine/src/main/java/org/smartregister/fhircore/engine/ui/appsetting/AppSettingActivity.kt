@@ -80,10 +80,12 @@ class AppSettingActivity : AppCompatActivity() {
                   loginService.loginActivity = appSettingActivity
                   loginService.navigateToHome()
                 }
+                appSettingViewModel.showProgressBar.postValue(false)
                 finish()
               } else {
                 launch(dispatcherProvider.main()) {
                   showToast(getString(R.string.application_not_supported, appId))
+                  appSettingViewModel.showProgressBar.postValue(false)
                 }
               }
             }
@@ -92,6 +94,7 @@ class AppSettingActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch(dispatcherProvider.io()) {
+          appSettingViewModel.showProgressBar.postValue(true)
           configurationRegistry.loadConfigurations(context = appSettingActivity, appId = appId) {
             loadSuccessful: Boolean ->
             if (loadSuccessful) {
@@ -103,6 +106,7 @@ class AppSettingActivity : AppCompatActivity() {
                 showToast(getString(R.string.application_not_supported, appId))
               }
             }
+            appSettingViewModel.showProgressBar.postValue(false)
           }
         }
       }
@@ -126,7 +130,7 @@ class AppSettingActivity : AppCompatActivity() {
       }
 
       error.observe(appSettingActivity) { error ->
-        if (error.isNotBlank()) showToast(getString(R.string.error_loading_config, error))
+        if (!error.isNullOrEmpty()) showToast(getString(R.string.error_loading_config, error))
       }
     }
 
