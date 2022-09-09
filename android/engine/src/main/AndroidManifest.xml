@@ -19,8 +19,7 @@
 
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
-    <application
-        xmlns:tools="http://schemas.android.com/tools">
+    <application>
 
         <activity
             android:name=".ui.appsetting.AppSettingActivity"

@@ -49,7 +49,7 @@ class RegisterScreenNoResultViewTest {
   @Test
   fun registerScreenRendersNoRegistersViewCorrectly() {
     composeTestRule.setContent {
-      NoRegistersView(
+      NoRegisterDataView(
         noResults =
           NoResultsConfig(
             title = "Title",

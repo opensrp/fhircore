@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
@@ -35,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -57,21 +57,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
+  @Inject lateinit var syncListenerManager: SyncListenerManager
+
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
   val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
 
-  lateinit var getLocationPos: ActivityResultLauncher<Intent>
-
-  lateinit var mapLauncherResultHandler: ActivityResultLauncher<Intent>
-
   lateinit var navHostFragment: NavHostFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    syncBroadcaster.registerSyncListener(this, lifecycleScope)
     setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
     val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
     val topMenuConfigId =
@@ -110,7 +107,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
     }
 
-    configService.schedulePlan(this)
+    // Register sync listener then run sync in that order
+    syncListenerManager.registerSyncListener(this, lifecycle)
+    syncBroadcaster.runSync()
+
+    configService.scheduleFhirTaskPlanWorker(this)
   }
 
   @Suppress("DEPRECATION")
@@ -132,21 +133,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     Timber.i("Sync state received is $state")
     when (state) {
       is State.Started -> {
-        showToast(getString(org.smartregister.fhircore.engine.R.string.syncing))
+        showToast(getString(R.string.syncing))
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(
-            state,
-            getString(org.smartregister.fhircore.engine.R.string.syncing_initiated)
-          )
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_initiated))
         )
       }
       is State.InProgress -> {
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(
-            state,
-            getString(org.smartregister.fhircore.engine.R.string.syncing_in_progress)
-          )
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
         )
       }
       is State.Glitch -> {
@@ -156,16 +151,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
       }
       is State.Failed -> {
-        showToast(getString(org.smartregister.fhircore.engine.R.string.sync_failed))
+        showToast(getString(R.string.sync_failed))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
             state,
             if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-              getString(
-                org.smartregister.fhircore.engine.R.string.last_sync_timestamp,
-                appMainViewModel.retrieveLastSyncTimestamp()
-              )
-            else getString(org.smartregister.fhircore.engine.R.string.syncing_failed)
+              getString(R.string.last_sync_timestamp, appMainViewModel.retrieveLastSyncTimestamp())
+            else getString(R.string.syncing_failed)
           )
         )
         Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
@@ -177,7 +169,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             AppMainEvent.UpdateSyncState(
               state,
               getString(
-                org.smartregister.fhircore.engine.R.string.last_sync_timestamp,
+                R.string.last_sync_timestamp,
                 formatLastSyncTimestamp(state.result.timestamp)
               )
             )

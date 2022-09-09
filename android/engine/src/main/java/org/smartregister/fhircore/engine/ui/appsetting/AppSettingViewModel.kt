@@ -42,15 +42,13 @@ constructor(
 
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
+  val showProgressBar = MutableLiveData(false)
+
   val fetchConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   private val _appId = MutableLiveData("")
   val appId
     get() = _appId
-
-  private val _showProgressBar = MutableLiveData(false)
-  val showProgressBar
-    get() = _showProgressBar
 
   private val _error = MutableLiveData("")
   val error: LiveData<String>
@@ -61,6 +59,7 @@ constructor(
   }
 
   fun loadConfigurations(loadConfigs: Boolean) {
+    if (loadConfigs) showProgressBar.postValue(true)
     this.loadConfigs.postValue(loadConfigs)
   }
 
@@ -76,13 +75,13 @@ constructor(
   suspend fun fetchConfigurations(appId: String, context: Context) {
     runCatching {
       Timber.i("Fetching configs for app $appId")
-      this._showProgressBar.postValue(true)
+      showProgressBar.postValue(true)
       val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
       val compositionResponse =
         fhirResourceDataSource.loadData(urlPath).entryFirstRep.also {
           if (!it.hasResource()) {
             Timber.w("No response for composition resource on path $urlPath")
-            _showProgressBar.postValue(false)
+            showProgressBar.postValue(false)
             _error.postValue(context.getString(R.string.application_not_supported, appId))
             return
           }
@@ -106,11 +105,11 @@ constructor(
       defaultRepository.save(composition)
 
       loadConfigurations(true)
-      _showProgressBar.postValue(false)
+      showProgressBar.postValue(false)
     }
       .onFailure {
         Timber.w(it)
-        _showProgressBar.postValue(false)
+        showProgressBar.postValue(false)
         _error.postValue("${it.message}")
       }
   }

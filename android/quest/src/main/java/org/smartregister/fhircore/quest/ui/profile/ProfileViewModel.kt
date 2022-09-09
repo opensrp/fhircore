@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -32,6 +31,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
@@ -135,7 +135,7 @@ constructor(
               )
           )
         }
-    (event.context as AppCompatActivity).let { activity ->
+    (event.context.getActivity())?.let { activity ->
       ProfileBottomSheetFragment(
           eligibleManagingEntities = eligibleManagingEntityList!!,
           onSaveClick = {

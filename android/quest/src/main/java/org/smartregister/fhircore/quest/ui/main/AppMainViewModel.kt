@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -57,6 +56,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -93,7 +93,7 @@ constructor(
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
-  private val applicationConfiguration: ApplicationConfiguration by lazy {
+  val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
@@ -190,7 +190,7 @@ constructor(
   }
 
   private fun displayRegisterBottomSheet(event: AppMainEvent.OpenRegistersBottomSheet) {
-    (event.navController.context as AppCompatActivity).let { activity ->
+    (event.navController.context.getActivity())?.let { activity ->
       RegisterBottomSheetFragment(
           navigationMenuConfigs = event.registersList,
           registerCountMap = appMainUiState.value.registerCountMap,

@@ -21,11 +21,8 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
@@ -37,8 +34,6 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 class PinSetupActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   val pinViewModel by viewModels<PinViewModel>()
 
@@ -51,10 +46,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
     pinViewModel.apply {
       setPinUiState(isSetup = true)
       val pinSetupActivity = this@PinSetupActivity
-      navigateToHome.observe(pinSetupActivity) {
-        loginService.navigateToHome()
-        syncBroadcaster.get().runSync()
-      }
+      navigateToHome.observe(pinSetupActivity) { loginService.navigateToHome() }
       navigateToSettings.observe(pinSetupActivity) { pinSetupActivity.moveToSettings() }
       navigateToLogin.observe(pinSetupActivity) { pinSetupActivity.moveToLoginViaUsername() }
       pin.observe(pinSetupActivity) {

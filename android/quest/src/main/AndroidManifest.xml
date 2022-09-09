@@ -16,11 +16,14 @@
         tools:replace="android:theme">
 
         <activity
-            android:name="org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity"
+            android:name=".ui.questionnaire.QuestionnaireActivity"
             android:exported="false"
             android:theme="@style/AppTheme" />
 
-        <activity android:name=".ui.main.AppMainActivity" />
+        <activity
+            android:name=".ui.main.AppMainActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
 
         <activity android:name=".HiltActivityForTest" />
 

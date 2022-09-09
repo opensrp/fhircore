@@ -111,7 +111,8 @@ fun RegisterScreen(
   }
 
   val pagingItems: LazyPagingItems<ResourceData> =
-    registerViewModel.paginatedRegisterData
+    registerViewModel
+      .paginatedRegisterData
       .collectAsState(emptyFlow())
       .value
       .collectAsLazyPagingItems()

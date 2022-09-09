@@ -88,8 +88,8 @@ class UserSettingViewModelTest : RobolectricTest() {
         configService,
         syncJob = mockk(),
         fhirEngine = mockk(),
-        sharedSyncStatus,
-        dispatcherProvider = CoroutineTestRule().testDispatcherProvider
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        syncListenerManager = mockk(relaxed = true)
       )
   }
 
