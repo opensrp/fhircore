@@ -32,7 +32,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 @HiltAndroidTest
 class FhirPathDataExtractorTest : RobolectricTest() {
 
-  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
@@ -79,7 +79,7 @@ class FhirPathDataExtractorTest : RobolectricTest() {
         addName().family = "Doe"
       }
     val expression = "Patient.name.family"
-    Assert.assertEquals("Doe", FhirPathDataExtractor.extractValue(patient, expression))
+    Assert.assertEquals("Doe", fhirPathDataExtractor.extractValue(patient, expression))
   }
 
   @Test
@@ -90,7 +90,7 @@ class FhirPathDataExtractorTest : RobolectricTest() {
         addName().family = "Doe"
       }
     val expression = "Patient.name.given" // would evaluate to empty
-    val result = FhirPathDataExtractor.extractValue(patientNoGivenName, expression)
+    val result = fhirPathDataExtractor.extractValue(patientNoGivenName, expression)
     Assert.assertTrue(result.isEmpty())
   }
 }
