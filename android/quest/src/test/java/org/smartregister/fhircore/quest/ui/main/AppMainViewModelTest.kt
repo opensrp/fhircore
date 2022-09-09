@@ -35,6 +35,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -130,7 +131,7 @@ class AppMainViewModelTest : RobolectricTest() {
   @Test
   fun onEventRegisterNewClient() {
     val context = mockkClass(Activity::class, relaxed = true)
-    val appMainEvent = AppMainEvent.RegisterNewClient(context, "123")
+    val appMainEvent = AppMainEvent.RegisterNewClient(context, QuestionnaireConfig(id = "123"))
 
     runBlocking { appMainViewModel.onEvent(appMainEvent) }
 

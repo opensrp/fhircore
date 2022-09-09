@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.register
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -38,10 +39,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
@@ -63,7 +62,9 @@ constructor(
   val searchText: androidx.compose.runtime.State<String>
     get() = _searchText
 
-  private val _totalRecordsCount = MutableLiveData(1L)
+  private val _totalRecordsCount = MutableLiveData(0L)
+  val totalRecordsCount: LiveData<Long>
+    get() = _totalRecordsCount
 
   private lateinit var registerConfiguration: RegisterConfiguration
 
@@ -135,11 +136,6 @@ constructor(
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
         paginateRegisterData(event.registerId)
       }
-      is RegisterEvent.RegisterNewClient ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
-          // TODO use appropriate property from the register configuration
-          "provide-questionnaire-id"
-        )
       is RegisterEvent.OnViewComponentEvent ->
         event.viewComponentEvent.handleEvent(event.navController)
     }
@@ -160,11 +156,6 @@ constructor(
           }
         }
     }
-  }
-
-  // TODO this setting should be removed after refactor
-  fun isRegisterFormViaSettingExists(): Boolean {
-    return false
   }
 
   fun isFirstTimeSync() =

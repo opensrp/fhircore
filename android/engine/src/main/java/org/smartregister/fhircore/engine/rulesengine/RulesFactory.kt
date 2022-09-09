@@ -38,13 +38,16 @@ import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
 
 @Singleton
-class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationRegistry) :
-  RuleListener {
+class RulesFactory
+@Inject
+constructor(
+  val configurationRegistry: ConfigurationRegistry,
+  val fhirPathDataExtractor: FhirPathDataExtractor
+) : RuleListener {
 
   private var facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val computedValuesMap = mutableMapOf<String, Any>()
-  private val fhirPathDataExtractor = FhirPathDataExtractor
   val rulesEngineService = RulesEngineService()
 
   init {
@@ -141,6 +144,7 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
       relatedResourceType: String,
       fhirPathExpression: String
     ): List<Resource> {
+      if (facts.getFact(relatedResourceType) == null) return emptyList()
       val value = facts.getFact(relatedResourceType).value as ArrayList<Resource>
 
       return value.filter {

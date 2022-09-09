@@ -164,7 +164,7 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
               geoWidgetViewModel.geoWidgetEventLiveData.postValue(
                 GeoWidgetEvent.RegisterClient(
                   location.idElement.value,
-                  geoWidgetConfiguration.registrationQuestionnaire.id
+                  geoWidgetConfiguration.registrationQuestionnaire
                 )
               )
             }
@@ -182,7 +182,7 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
         featuresList.firstOrNull { it.hasProperty("family-id") }?.let {
           it.getStringProperty("family-id")?.also { familyId ->
             geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-              GeoWidgetEvent.OpenProfile(familyId)
+              GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
             )
           }
         }
