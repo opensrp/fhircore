@@ -25,6 +25,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
@@ -57,6 +58,7 @@ constructor(
     mutableStateOf(ProfileViewData.PatientProfileViewData())
 
   private var guardianResource: RelatedPerson? = null
+  private var patientId: String? = null
 
   fun getProfileData() {
     viewModelScope.launch {
@@ -66,6 +68,7 @@ constructor(
             ProfileViewData.PatientProfileViewData
       }
       guardianResource = repository.loadRelatedPerson(guardianId)
+      patientId = IdType(guardianResource?.patient?.reference).idPart
     }
   }
 
@@ -74,14 +77,14 @@ constructor(
       R.id.edit_profile ->
         context.launchQuestionnaire<QuestionnaireActivity>(
           questionnaireId = FORM.EDIT_PROFILE,
-          //          clientIdentifier = guardianId,
+          clientIdentifier = patientId,
           populationResources =
             if (guardianResource != null) arrayListOf(guardianResource!!) else null
         )
       R.id.remove_hiv_patient ->
         context.launchQuestionnaire<QuestionnaireActivity>(
           questionnaireId = FORM.REMOVE_PERSON,
-          //          clientIdentifier = guardianId,
+          clientIdentifier = patientId,
           populationResources =
             if (guardianResource != null) arrayListOf(guardianResource!!) else null
         )

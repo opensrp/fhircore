@@ -487,7 +487,11 @@ constructor(
         resourcesList.add(this)
       }
         ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
-      loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
+
+      // for situations where patient RelatedPersons not passed through intent extras
+      if (resourcesList.none { it.resourceType == ResourceType.RelatedPerson }) {
+        loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
+      }
     }
 
     return resourcesList.toTypedArray()
