@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -65,6 +66,10 @@ fun MainScreen(
     scope.launch {
       if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
     }
+  }
+
+  BackHandler(enabled = scaffoldState.drawerState.isOpen) {
+    scope.launch { scaffoldState.drawerState.close() }
   }
 
   Scaffold(
