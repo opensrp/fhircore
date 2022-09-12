@@ -33,7 +33,7 @@ data class ApplicationConfiguration(
   val remoteSyncPageSize: Int = 100,
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
-  val syncInterval: Int = 30,
+  val syncInterval: Long = 30,
   val syncStrategy: List<String> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null

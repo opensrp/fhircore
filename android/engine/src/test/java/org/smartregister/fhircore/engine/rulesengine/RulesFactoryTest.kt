@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -25,6 +27,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ContactPoint
@@ -42,6 +45,7 @@ import org.jeasy.rules.core.DefaultRulesEngine
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
@@ -50,20 +54,26 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
+@HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
 
-  private lateinit var rulesEngine: DefaultRulesEngine
-  private lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  private val rulesEngine = mockk<DefaultRulesEngine>()
+
   private lateinit var configurationRegistry: ConfigurationRegistry
+
   private lateinit var rulesFactory: RulesFactory
+
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
 
   @Before
   fun setUp() {
-    configurationRegistry = Faker.buildTestConfigurationRegistry()
-    fhirPathDataExtractor = mockk(relaxed = true)
-    rulesEngine = mockk()
-    rulesFactory = spyk(RulesFactory(configurationRegistry = configurationRegistry))
+    hiltAndroidRule.inject()
+    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    rulesFactory = spyk(RulesFactory(configurationRegistry, fhirPathDataExtractor))
     rulesEngineService = rulesFactory.RulesEngineService()
   }
 

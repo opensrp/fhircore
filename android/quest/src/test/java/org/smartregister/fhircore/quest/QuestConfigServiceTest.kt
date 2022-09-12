@@ -18,123 +18,41 @@
 
 package org.smartregister.fhircore.quest
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.mockkObject
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.sync.SyncStrategy
-import org.smartregister.fhircore.engine.util.ApplicationUtil
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class QuestConfigServiceTest : RobolectricTest() {
 
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  private val application: Application = ApplicationProvider.getApplicationContext()
-
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
-  private lateinit var configService: ConfigService
+  @Inject lateinit var configService: QuestConfigService
 
   @Before
   fun setUp() {
-    hiltRule.inject()
-    mockkObject(ApplicationUtil)
-    every { ApplicationUtil.application } returns application
-    runBlocking {
-      configurationRegistry.loadConfigurations(
-        context = InstrumentationRegistry.getInstrumentation().targetContext,
-        appId = APP_DEBUG
-      ) {}
-    }
-    configService =
-      QuestConfigService(
-        context = InstrumentationRegistry.getInstrumentation().targetContext,
-      )
-
-    val careTeamIds = listOf("948", "372")
-    sharedPreferencesHelper.write(SyncStrategy.CARETEAM.value, careTeamIds)
-    val organizationIds = listOf("400", "105")
-    sharedPreferencesHelper.write(SyncStrategy.ORGANIZATION.value, organizationIds)
-    val locationIds = listOf("728", "899")
-    sharedPreferencesHelper.write(SyncStrategy.LOCATION.value, locationIds)
+    hiltAndroidRule.inject()
   }
 
   @Test
-  fun testResourceSyncParam_shouldHaveResourceTypes() {
-    val syncParam =
-      configService.loadRegistrySyncParams(
-        configurationRegistry = configurationRegistry,
-        sharedPreferencesHelper = sharedPreferencesHelper
-      )
-    Assert.assertTrue(syncParam.isNotEmpty())
+  fun testProvideAuthConfigurationShouldReturnConfigs() {
 
-    val resourceTypes =
-      arrayOf(
-          ResourceType.CarePlan,
-          ResourceType.Condition,
-          ResourceType.Encounter,
-          ResourceType.Group,
-          ResourceType.Library,
-          ResourceType.Location,
-          ResourceType.Measure,
-          ResourceType.Observation,
-          ResourceType.Patient,
-          ResourceType.PlanDefinition,
-          ResourceType.Questionnaire,
-          ResourceType.QuestionnaireResponse,
-          ResourceType.StructureMap,
-          ResourceType.Task,
-          ResourceType.Practitioner
-        )
-        .sorted()
+    val authConfiguration = configService.provideAuthConfiguration()
 
-    Assert.assertTrue(resourceTypes.containsAll(syncParam.keys.toTypedArray().sorted()))
-
-    syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
-
-    syncParam.keys.filter { it.isIn(ResourceType.Patient) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
-
-    syncParam.keys
-      .filter {
-        it.isIn(
-          ResourceType.Encounter,
-          ResourceType.Condition,
-          ResourceType.MedicationRequest,
-          ResourceType.Task,
-          ResourceType.QuestionnaireResponse,
-          ResourceType.Observation
-        )
-      }
-      .forEach {
-        Assert.assertTrue(syncParam[it]!!.containsKey("subject.organization"))
-        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-      }
-
-    syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
+    Assert.assertNotNull(authConfiguration)
+    Assert.assertEquals(BuildConfig.FHIR_BASE_URL, authConfiguration.fhirServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, authConfiguration.oauthServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_CIENT_ID, authConfiguration.clientId)
+    Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, authConfiguration.clientSecret)
+    Assert.assertEquals(
+      InstrumentationRegistry.getInstrumentation().targetContext.packageName,
+      authConfiguration.accountType
+    )
   }
 }

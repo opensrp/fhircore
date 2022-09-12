@@ -133,6 +133,7 @@ fun ProfileScreen(
     },
     floatingActionButton = {
       val fabActions = profileUiState.profileConfiguration?.fabActions
+
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),

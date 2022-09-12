@@ -41,10 +41,6 @@ class ProfileFragment : Fragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    profileViewModel.retrieveProfileUiState(
-      profileId = profileFragmentArgs.profileId,
-      resourceId = profileFragmentArgs.resourceId
-    )
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
@@ -57,5 +53,13 @@ class ProfileFragment : Fragment() {
         }
       }
     }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    profileViewModel.retrieveProfileUiState(
+      profileId = profileFragmentArgs.profileId,
+      resourceId = profileFragmentArgs.resourceId
+    )
   }
 }

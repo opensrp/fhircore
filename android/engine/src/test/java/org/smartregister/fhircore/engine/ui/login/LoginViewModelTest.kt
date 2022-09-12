@@ -20,6 +20,7 @@ import android.accounts.Account
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -28,7 +29,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
@@ -52,15 +52,12 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.sync.SyncStrategy
-import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -94,8 +91,6 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Inject lateinit var gson: Gson
 
-  lateinit var defaultRepository: DefaultRepository
-
   private lateinit var loginViewModel: LoginViewModel
 
   private lateinit var accountAuthenticatorSpy: AccountAuthenticator
@@ -109,9 +104,6 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    mockkObject(ApplicationUtil)
-    every { ApplicationUtil.application } returns application
-
     // Spy needed to control interaction with the real injected dependency
     accountAuthenticatorSpy = spyk(accountAuthenticator)
 
@@ -119,15 +111,13 @@ internal class LoginViewModelTest : RobolectricTest() {
       arrayOf(Account("demo", ApplicationProvider.getApplicationContext<Application>().packageName))
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
 
-    defaultRepository = mockk()
-
     loginViewModel =
       LoginViewModel(
+        fhirEngine = mockk(),
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry,
-        defaultRepository = defaultRepository
+        configurationRegistry = configurationRegistry
       )
   }
 
@@ -269,6 +259,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Test
   fun savePractitionerDetailsWithProperPayload() {
+    val fhirEngine = mockk<FhirEngine>()
     val configurationRegistry = mockk<ConfigurationRegistry>()
     val accountAuthenticator = mockk<AccountAuthenticator>()
     val dispatcher = DefaultDispatcherProvider()
@@ -276,11 +267,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val viewModel =
       LoginViewModel(
+        fhirEngine = fhirEngine,
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
-        sharedPreferences = sharedPreferences,
-        defaultRepository = defaultRepository
+        sharedPreferences = sharedPreferences
       )
 
     val sampleKeycloakUserDetails =
@@ -312,71 +303,82 @@ internal class LoginViewModelTest : RobolectricTest() {
       }
 
     coEvery {
-      defaultRepository.create(
-        *samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray()
-      )
+      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray())
     } returns listOf("1")
 
     coEvery {
-      defaultRepository.create(
+      fhirEngine.create(
         *samplePractitionerDetails.fhirPractitionerDetails.organizations.toTypedArray()
       )
     } returns listOf("12")
 
     coEvery {
-      defaultRepository.create(
-        *samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray()
-      )
+      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray())
     } returns listOf("123")
 
     runBlocking { viewModel.savePractitionerDetails(bundle) }
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<KeycloakUserDetails>(SyncStrategy.PRACTITIONER.value)
+      sharedPreferences.read<PractitionerDetails>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+        )
+        ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value
     )
 
-    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.CARETEAM.value)?.size)
-
     Assert.assertEquals(
       1,
-      sharedPreferences.read<List<String>>(SyncStrategy.ORGANIZATION.value)?.size
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
+        )
+        ?.size
     )
-
-    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.LOCATION.value)?.size)
 
     Assert.assertEquals(
       1,
       sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name
+          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      1,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      1,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
         )
         ?.size
     )
 
     coVerify {
-      defaultRepository.create(
-        *samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray()
-      )
+      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray())
     }
 
     coVerify {
-      defaultRepository.create(
+      fhirEngine.create(
         *samplePractitionerDetails.fhirPractitionerDetails.organizations.toTypedArray()
       )
     }
 
     coVerify {
-      defaultRepository.create(
-        *samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray()
-      )
+      fhirEngine.create(*samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray())
     }
   }
 
   @Test
   fun savePractitionerDetailsWhenFhirPractitionerDetailsIsNull() {
+    val fhirEngine = mockk<FhirEngine>()
     val configurationRegistry = mockk<ConfigurationRegistry>()
     val accountAuthenticator = mockk<AccountAuthenticator>()
     val dispatcher = DefaultDispatcherProvider()
@@ -384,11 +386,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val viewModel =
       LoginViewModel(
+        fhirEngine = fhirEngine,
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
-        sharedPreferences = sharedPreferences,
-        defaultRepository = defaultRepository
+        sharedPreferences = sharedPreferences
       )
 
     val sampleKeycloakUserDetails =
@@ -409,35 +411,53 @@ internal class LoginViewModelTest : RobolectricTest() {
         entry = listOf(Bundle.BundleEntryComponent().apply { resource = samplePractitionerDetails })
       }
 
-    coEvery { defaultRepository.create(*emptyArray()) } returns listOf()
+    coEvery { fhirEngine.create(*emptyArray()) } returns listOf()
 
     runBlocking { viewModel.savePractitionerDetails(bundle) }
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<KeycloakUserDetails>(SyncStrategy.PRACTITIONER.value)
+      sharedPreferences.read<PractitionerDetails>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+        )
+        ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value
     )
 
-    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.CARETEAM.value)?.size)
-
-    Assert.assertEquals(
-      0,
-      sharedPreferences.read<List<String>>(SyncStrategy.ORGANIZATION.value)?.size
-    )
-
-    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.LOCATION.value)?.size)
-
     Assert.assertEquals(
       0,
       sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name
+          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
         )
         ?.size
     )
 
-    coVerify(exactly = 3) { defaultRepository.create(*emptyArray()) }
+    Assert.assertEquals(
+      0,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      0,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      0,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
+        )
+        ?.size
+    )
+
+    coVerify(exactly = 3) { fhirEngine.create(*emptyArray()) }
   }
 }

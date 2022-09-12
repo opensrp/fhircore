@@ -61,6 +61,12 @@ subprojects {
             trimTrailingWhitespace()
             endWithNewline()
         }
+
+        format 'json', {
+            target '**/*.json'
+            indentWithSpaces(2)
+            trimTrailingWhitespace()
+        }
     }
 
     configurations.all {

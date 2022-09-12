@@ -59,7 +59,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIn
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
-import org.smartregister.model.practitioner.KeycloakUserDetails
+import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
 @HiltViewModel
@@ -102,8 +102,11 @@ constructor(
     MutableStateFlow(retrieveAncPatients())
   }
 
-  private val loggedInUserDetail by lazy {
-    sharedPreferencesHelper.read<KeycloakUserDetails>(key = SyncStrategy.PRACTITIONER.value)
+  private val practitionerDetails by lazy {
+    sharedPreferencesHelper.read<PractitionerDetails>(
+        key = SyncStrategy.PRACTITIONER.value
+      )
+      ?.fhirPractitionerDetails
   }
 
   fun defaultDateRangeState() =
@@ -209,7 +212,7 @@ constructor(
                     end = endDateFormatted,
                     reportType = SUBJECT,
                     subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
-                    practitioner = loggedInUserDetail?.id,
+                    practitioner = practitionerDetails?.id,
                     lastReceivedOn = null // Non-null value not supported yet
                   )
                 }
@@ -253,7 +256,7 @@ constructor(
           end = endDateFormatted,
           reportType = POPULATION,
           subject = null,
-          practitioner = loggedInUserDetail?.id,
+          practitioner = practitionerDetails?.id,
           lastReceivedOn = null // Non-null value not supported yet
         )
       }

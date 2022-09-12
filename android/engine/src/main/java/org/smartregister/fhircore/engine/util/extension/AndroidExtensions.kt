@@ -24,7 +24,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Build
-import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -33,8 +32,6 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.gson.Gson
 import java.util.Locale
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
@@ -88,49 +85,6 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
 
 fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
   return values.any { this == it }
-}
-
-inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
-  questionnaireId: String,
-  clientIdentifier: String? = null,
-  groupIdentifier: String? = null,
-  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-  intentBundle: Bundle = Bundle.EMPTY
-) {
-  this.startActivity(
-    Intent(this, Q::class.java)
-      .putExtras(intentBundle)
-      .putExtras(
-        QuestionnaireActivity.intentArgs(
-          clientIdentifier = clientIdentifier,
-          groupIdentifier = groupIdentifier,
-          formName = questionnaireId,
-          questionnaireType = questionnaireType
-        )
-      )
-  )
-}
-
-inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForResult(
-  questionnaireId: String,
-  clientIdentifier: String? = null,
-  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-  backReference: String? = null,
-  intentBundle: Bundle = Bundle.EMPTY
-) {
-  (this as Activity).startActivityForResult(
-    Intent(this, Q::class.java)
-      .putExtras(intentBundle)
-      .putExtras(
-        QuestionnaireActivity.intentArgs(
-          clientIdentifier = clientIdentifier,
-          formName = questionnaireId,
-          questionnaireType = questionnaireType,
-          backReference = backReference
-        )
-      ),
-    0
-  )
 }
 
 /** Return a pair of application versionCode and versionName e.g. Pair(1, 0.0.1) */

@@ -53,13 +53,13 @@ class FhirCarePlanGenerator
 @Inject
 constructor(
   val fhirEngine: FhirEngine,
+  val fhirPathEngine: FHIRPathEngine,
   val transformSupportServices: TransformSupportServices,
   val defaultRepository: DefaultRepository
 ) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
   }
-  val fhirPathEngine = FHIRPathEngine(transformSupportServices.simpleWorkerContext)
 
   suspend fun generateOrUpdateCarePlan(
     planDefinitionId: String,
@@ -74,7 +74,7 @@ constructor(
     subject: Resource,
     data: Bundle? = null
   ): CarePlan? {
-    // only one careplan per plan , update or init a new one if not exists
+    // Only one CarePlan per plan , update or init a new one if not exists
     val output =
       fhirEngine
         .search<CarePlan> {
@@ -87,7 +87,7 @@ constructor(
           this.instantiatesCanonical = listOf(CanonicalType(planDefinition.asReference().reference))
         }
 
-    var careplanModified = false
+    var carePlanModified = false
 
     planDefinition.action.forEach { action ->
       val input = Bundle().apply { entry.addAll(data?.entry ?: listOf()) }
@@ -161,33 +161,33 @@ constructor(
             else throw UnsupportedOperationException("${definition.kind} not supported")
           }
         }
-        careplanModified = true
+        carePlanModified = true
       }
     }
 
-    if (careplanModified) saveCarePlan(output)
+    if (carePlanModified) saveCarePlan(output)
 
     return if (output.hasActivity()) output else null
   }
 
-  suspend fun saveCarePlan(output: CarePlan) {
-    output.also { Timber.d(it.encodeResourceToString()) }.also { careplan ->
-      // save embedded resources inside as independent entries, clear embedded and save careplan
-      val dependents = careplan.contained.map { it.copy() }
+  private suspend fun saveCarePlan(output: CarePlan) {
+    output.also { Timber.d(it.encodeResourceToString()) }.also { carePlan ->
+      // Save embedded resources inside as independent entries, clear embedded and save carePlan
+      val dependents = carePlan.contained.map { it.copy() }
 
-      careplan.contained.clear()
+      carePlan.contained.clear()
 
-      // save careplan only if it has activity, otherwise just save contained/dependent resources
-      if (output.hasActivity()) defaultRepository.create(careplan)
+      // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
+      if (output.hasActivity()) defaultRepository.create(carePlan)
 
       dependents.forEach { defaultRepository.create(it) }
 
-      if (careplan.status == CarePlan.CarePlanStatus.COMPLETED)
-        careplan
+      if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED)
+        carePlan
           .activity
           .flatMap { it.outcomeReference }
           .filter { it.reference.startsWith(ResourceType.Task.name) }
-          .map { getTask(it.extractId())!! }
+          .map { getTask(it.extractId()) }
           .forEach {
             if (it.status.isIn(
                 Task.TaskStatus.REQUESTED,
@@ -195,35 +195,31 @@ constructor(
                 Task.TaskStatus.INPROGRESS
               )
             ) {
-              cancelTask(it.logicalId, "${careplan.fhirType()} ${careplan.status}")
+              cancelTask(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
             }
           }
     }
   }
 
   suspend fun completeTask(id: String) {
-    defaultRepository.run {
-      create(
-        getTask(id).apply {
-          this.status = Task.TaskStatus.COMPLETED
-          this.lastModified = Date()
-        }
-      )
-    }
+    defaultRepository.create(
+      getTask(id).apply {
+        this.status = Task.TaskStatus.COMPLETED
+        this.lastModified = Date()
+      }
+    )
   }
 
   suspend fun cancelTask(id: String, reason: String) {
-    defaultRepository.run {
-      create(
-        getTask(id).apply {
-          this.status = Task.TaskStatus.CANCELLED
-          this.lastModified = Date()
-          this.statusReason = CodeableConcept().apply { text = reason }
-        }
-      )
-    }
+    defaultRepository.create(
+      getTask(id).apply {
+        this.status = Task.TaskStatus.CANCELLED
+        this.lastModified = Date()
+        this.statusReason = CodeableConcept().apply { text = reason }
+      }
+    )
   }
 
   suspend fun getTask(id: String) =
-    kotlin.runCatching { fhirEngine.get<Task>(id) }.getOrNull() ?: fhirEngine.get<Task>("#$id")
+    kotlin.runCatching { fhirEngine.get<Task>(id) }.getOrNull() ?: fhirEngine.get("#$id")
 }

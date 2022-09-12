@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.main
 import android.content.Context
 import androidx.navigation.NavController
 import com.google.android.fhir.sync.State
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 
@@ -26,7 +27,8 @@ sealed class AppMainEvent {
 
   data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
 
-  data class RegisterNewClient(val context: Context, val questionnaireId: String) : AppMainEvent()
+  data class RegisterNewClient(val context: Context, val questionnaireConfig: QuestionnaireConfig) :
+    AppMainEvent()
 
   data class OpenRegistersBottomSheet(
     val navController: NavController,

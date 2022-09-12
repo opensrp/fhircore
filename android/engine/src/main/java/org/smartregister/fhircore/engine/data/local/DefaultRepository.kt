@@ -47,10 +47,12 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
@@ -223,17 +225,35 @@ constructor(
     }
   }
 
-  /** Remove member of a group using the provided [patientId] */
-  suspend fun removeGroupMember(patientId: String, groupId: String?) {
-    // TODO refactor to work with any resource type
-    loadResource<Patient>(patientId)?.let { patient ->
-      if (!patient.active) throw IllegalStateException("Patient already deleted")
-      patient.active = false
+  /** Remove member of a group using the provided [memberId] and [groupMemberResourceType] */
+  suspend fun removeGroupMember(
+    memberId: String,
+    groupId: String?,
+    groupMemberResourceType: String?
+  ) {
+    val memberResourceType =
+      groupMemberResourceType?.resourceClassType()?.newInstance()?.resourceType
+    val fhirResource: Resource? =
+      try {
+        if (memberResourceType == null) {
+          return
+        }
+        fhirEngine.get(memberResourceType, memberId.extractLogicalIdUuid())
+      } catch (resourceNotFoundException: ResourceNotFoundException) {
+        null
+      }
+
+    fhirResource?.let { resource ->
+      if (resource is Patient) {
+        resource.active = false
+      }
 
       if (groupId != null) {
         loadResource<Group>(groupId)?.let { group ->
           group.member.run {
-            remove(this.find { it.entity.reference == "Patient/${patient.logicalId}" })
+            remove(
+              this.find { it.entity.reference == "${resource.resourceType}/${resource.logicalId}" }
+            )
           }
           group
             .managingEntity
@@ -246,14 +266,17 @@ constructor(
             }
             ?.firstOrNull()
             ?.let { relatedPerson ->
-              if (relatedPerson.patient.id == patientId) {
+              if (relatedPerson.patient.id.extractLogicalIdUuid() == memberId) {
                 delete(relatedPerson)
                 group.managingEntity = null
               }
             }
+
+          // Update this group resource
+          addOrUpdate(group)
         }
       }
-      addOrUpdate(patient)
+      addOrUpdate(resource)
     }
   }
 }
