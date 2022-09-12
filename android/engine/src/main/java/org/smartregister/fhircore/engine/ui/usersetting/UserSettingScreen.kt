@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
@@ -65,9 +66,10 @@ import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 @Composable
 fun UserSettingScreen(
   modifier: Modifier = Modifier,
-  userSettingViewModel: UserSettingViewModel = hiltViewModel()
+  userSettingViewModel: UserSettingViewModel = hiltViewModel(),
+  onClick: (UserSettingsEvent) -> Unit,
 ) {
-
+  val context = LocalContext.current
   val username by remember { mutableStateOf(userSettingViewModel.retrieveUsername()) }
   var expanded by remember { mutableStateOf(false) }
 
@@ -98,7 +100,7 @@ fun UserSettingScreen(
     UserSettingRow(
       icon = Icons.Rounded.Sync,
       text = stringResource(id = R.string.sync),
-      clickListener = userSettingViewModel::runSync,
+      clickListener = { onClick(UserSettingsEvent.RunSync) },
       modifier = modifier
     )
 
@@ -135,9 +137,9 @@ fun UserSettingScreen(
             modifier = modifier.wrapContentWidth(Alignment.End)
           ) {
             for (language in userSettingViewModel.languages) {
-              DropdownMenuItem(onClick = { userSettingViewModel.setLanguage(language) }) {
-                Text(text = language.displayName, fontSize = 18.sp)
-              }
+              DropdownMenuItem(
+                onClick = { onClick(UserSettingsEvent.SwitchLanguage(language, context)) }
+              ) { Text(text = language.displayName, fontSize = 18.sp) }
             }
           }
         }
@@ -154,7 +156,7 @@ fun UserSettingScreen(
     UserSettingRow(
       icon = Icons.Rounded.Logout,
       text = stringResource(id = R.string.logout),
-      clickListener = userSettingViewModel::logoutUser,
+      clickListener = { onClick(UserSettingsEvent.Logout) },
       modifier = modifier
     )
   }

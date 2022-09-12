@@ -21,6 +21,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Ignore
@@ -31,6 +32,8 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @Ignore("Fix failing tests")
 class UserSettingScreenKtTest : RobolectricTest() {
+
+  private val mockUserSettingsEventListener: (UserSettingsEvent) -> Unit = spyk({})
 
   private val userSettingViewModel = mockk<UserSettingViewModel>()
 
@@ -44,7 +47,12 @@ class UserSettingScreenKtTest : RobolectricTest() {
 
   @Test
   fun testUserProfileShouldDisplayCorrectContent() {
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
+    composeRule.setContent {
+      UserSettingScreen(
+        userSettingViewModel = userSettingViewModel,
+        onClick = mockUserSettingsEventListener
+      )
+    }
 
     composeRule.onNodeWithText("Johndoe").assertExists()
     composeRule.onNodeWithText("Sync").assertExists()
@@ -53,17 +61,24 @@ class UserSettingScreenKtTest : RobolectricTest() {
 
   @Test
   fun testSyncRowClickShouldInitiateSync() {
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
-    every { userSettingViewModel.runSync() } returns Unit
-
+    composeRule.setContent {
+      UserSettingScreen(
+        userSettingViewModel = userSettingViewModel,
+        onClick = mockUserSettingsEventListener
+      )
+    }
     composeRule.onNodeWithText("Sync").performClick()
-
-    verify { userSettingViewModel.runSync() }
+    verify { mockUserSettingsEventListener(any()) }
   }
 
   @Test
   fun testLanguageRowIsNotShownWhenAllowSwitchingLanguagesIsFalse() {
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
+    composeRule.setContent {
+      UserSettingScreen(
+        userSettingViewModel = userSettingViewModel,
+        onClick = mockUserSettingsEventListener
+      )
+    }
 
     composeRule.onNodeWithText("Language").assertDoesNotExist()
   }
@@ -72,7 +87,12 @@ class UserSettingScreenKtTest : RobolectricTest() {
   fun testLanguageRowIsShownWhenAllowSwitchingLanguagesIsTrue() {
     every { userSettingViewModel.allowSwitchingLanguages() } returns true
     every { userSettingViewModel.loadSelectedLanguage() } returns "Some lang"
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
+    composeRule.setContent {
+      UserSettingScreen(
+        userSettingViewModel = userSettingViewModel,
+        onClick = mockUserSettingsEventListener
+      )
+    }
 
     composeRule.onNodeWithText("Language").assertExists()
   }
@@ -83,7 +103,12 @@ class UserSettingScreenKtTest : RobolectricTest() {
     every { userSettingViewModel.languages } returns languages
     every { userSettingViewModel.allowSwitchingLanguages() } returns true
     every { userSettingViewModel.loadSelectedLanguage() } returns "Some lang"
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
+    composeRule.setContent {
+      UserSettingScreen(
+        userSettingViewModel = userSettingViewModel,
+        onClick = mockUserSettingsEventListener
+      )
+    }
 
     composeRule.onNodeWithText("Language").performClick()
     composeRule.onNodeWithText("Spanish").assertExists()

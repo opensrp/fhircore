@@ -39,7 +39,14 @@ class UserSettingFragment : Fragment() {
   ): View {
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-      setContent { AppTheme { UserSettingScreen(userSettingViewModel = userSettingViewModel) } }
+      setContent {
+        AppTheme {
+          UserSettingScreen(
+            userSettingViewModel = userSettingViewModel,
+            onClick = userSettingViewModel::onEvent
+          )
+        }
+      }
     }
   }
 }
