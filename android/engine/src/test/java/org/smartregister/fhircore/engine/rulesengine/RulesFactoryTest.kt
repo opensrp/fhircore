@@ -72,7 +72,7 @@ class RulesFactoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    configurationRegistry = Faker.buildTestConfigurationRegistry()
     rulesFactory = spyk(RulesFactory(configurationRegistry, fhirPathDataExtractor))
     rulesEngineService = rulesFactory.RulesEngineService()
   }

@@ -52,12 +52,14 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -101,6 +103,8 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
+  private val defaultRepository: DefaultRepository = mockk()
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -113,11 +117,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel =
       LoginViewModel(
-        fhirEngine = mockk(),
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
+        defaultRepository = defaultRepository
       )
   }
 
@@ -267,11 +271,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val viewModel =
       LoginViewModel(
-        fhirEngine = fhirEngine,
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
-        sharedPreferences = sharedPreferences
+        sharedPreferences = sharedPreferences,
+        defaultRepository = defaultRepository
       )
 
     val sampleKeycloakUserDetails =
@@ -320,43 +324,26 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<PractitionerDetails>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-        )
+      sharedPreferences.read<PractitionerDetails>(SyncStrategy.PRACTITIONER.value)
         ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value
     )
 
+    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.CARETEAM.value)?.size)
+
     Assert.assertEquals(
       1,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
-        )
-        ?.size
+      sharedPreferences.read<List<String>>(SyncStrategy.ORGANIZATION.value)?.size
     )
+
+    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.LOCATION.value)?.size)
 
     Assert.assertEquals(
       1,
       sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-        )
-        ?.size
-    )
-
-    Assert.assertEquals(
-      1,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
-        )
-        ?.size
-    )
-
-    Assert.assertEquals(
-      1,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
+          SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name
         )
         ?.size
     )
@@ -386,11 +373,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val viewModel =
       LoginViewModel(
-        fhirEngine = fhirEngine,
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
-        sharedPreferences = sharedPreferences
+        sharedPreferences = sharedPreferences,
+        defaultRepository = defaultRepository
       )
 
     val sampleKeycloakUserDetails =
@@ -417,43 +404,26 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<PractitionerDetails>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-        )
+      sharedPreferences.read<PractitionerDetails>(SyncStrategy.PRACTITIONER.value)
         ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value
     )
 
+    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.CARETEAM.value)?.size)
+
     Assert.assertEquals(
       0,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
-        )
-        ?.size
+      sharedPreferences.read<List<String>>(SyncStrategy.ORGANIZATION.value)?.size
     )
+
+    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.LOCATION.value)?.size)
 
     Assert.assertEquals(
       0,
       sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-        )
-        ?.size
-    )
-
-    Assert.assertEquals(
-      0,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
-        )
-        ?.size
-    )
-
-    Assert.assertEquals(
-      0,
-      sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
+          SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name
         )
         ?.size
     )

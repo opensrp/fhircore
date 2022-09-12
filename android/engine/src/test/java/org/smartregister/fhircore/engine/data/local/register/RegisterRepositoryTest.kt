@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -72,6 +73,8 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   private val fhirPathDataExtractor: FhirPathDataExtractor = mockk()
 
+  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -84,7 +87,8 @@ class RegisterRepositoryTest : RobolectricTest() {
           dispatcherProvider = dispatcherProvider,
           configurationRegistry = configurationRegistry,
           rulesFactory = rulesFactory,
-          fhirPathDataExtractor = fhirPathDataExtractor
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          sharedPreferencesHelper = sharedPreferencesHelper
         )
       )
     runBlocking {

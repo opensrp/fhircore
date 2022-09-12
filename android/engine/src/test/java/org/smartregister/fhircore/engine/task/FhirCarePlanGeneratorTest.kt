@@ -57,6 +57,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
@@ -86,6 +87,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   lateinit var structureMapUtilities: StructureMapUtilities
 
+  private val defaultRepository: DefaultRepository = mockk()
+
   @Before
   fun setup() {
     hiltRule.inject()
@@ -96,7 +99,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
         transformSupportServices = transformSupportServices,
-        fhirPathEngine = fhirPathEngine
+        fhirPathEngine = fhirPathEngine,
+        defaultRepository = defaultRepository
       )
 
     mockkStatic(DateTimeType::class)

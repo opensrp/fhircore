@@ -77,6 +77,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
@@ -109,23 +110,28 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
+  private val configurationRegistry: ConfigurationRegistry = mockk()
+
   @Before
   fun setUp() {
     hiltRule.inject()
 
     every {
-      sharedPreferencesHelper.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-      )
+      sharedPreferencesHelper.read<PractitionerDetails>(key = SyncStrategy.PRACTITIONER.value)
     } returns practitionerDetails()
 
-    every {
-      sharedPreferencesHelper.read<List<String>>(
-        SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-      )
-    } returns listOf("105")
+    every { sharedPreferencesHelper.read<List<String>>(SyncStrategy.ORGANIZATION.value) } returns
+      listOf("105")
 
-    defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider))
+    defaultRepo =
+      spyk(
+        DefaultRepository(
+          fhirEngine,
+          coroutineRule.testDispatcherProvider,
+          sharedPreferencesHelper,
+          configurationRegistry
+        )
+      )
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
     sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "appId")
@@ -155,7 +161,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.update(any()) } answers {}
 
-    coEvery { defaultRepo.save(any()) } returns Unit
+    coEvery { defaultRepo.create(any()) } returns emptyList()
     coEvery { defaultRepo.addOrUpdate(any()) } just runs
 
     // Setup sample resources
@@ -557,9 +563,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testSaveResourceShouldVerifyResourceSaveMethodCall() {
-    coEvery { defaultRepo.save(any()) } returns Unit
+    coEvery { defaultRepo.create(any()) } returns emptyList()
     questionnaireViewModel.saveResource(mockk())
-    coVerify(exactly = 1) { defaultRepo.save(any()) }
+    coVerify(exactly = 1) { defaultRepo.create(any()) }
   }
 
   @Test
@@ -949,7 +955,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val sourcePatient = Patient().apply { id = "test_patient_1_id" }
     questionnaireViewModel.saveResource(sourcePatient)
 
-    coVerify { defaultRepo.save(sourcePatient) }
+    coVerify { defaultRepo.create(sourcePatient) }
   }
 
   @Test
