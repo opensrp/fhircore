@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire
+package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.app.Application
 import android.graphics.Bitmap
@@ -42,7 +42,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class CustomPhotoCaptureFactoryTest : RobolectricTest() {
@@ -57,7 +57,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
   @Test
   fun testCameraLauncherShouldBeRegistered() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val fragment = spyk<QuestQuestionnaireFragment>()
     every { fragment.requireContext() } returns context
 
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
@@ -84,7 +84,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
   @Test
   fun testQuestionnaireResponseShouldMatch() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val fragment = spyk<QuestQuestionnaireFragment>()
     every { fragment.requireContext() } returns context
 
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
@@ -107,7 +107,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
   @Test
   fun testQuestionnaireItemShouldBindWhenPrefixIsNotNull() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val fragment = spyk<QuestQuestionnaireFragment>()
     every { fragment.requireContext() } returns context
 
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
@@ -152,7 +152,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
   @Test
   fun testQuestionnaireItemShouldBindWhenPrefixIsNull() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val fragment = spyk<QuestQuestionnaireFragment>()
     every { fragment.requireContext() } returns context
 
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
@@ -196,7 +196,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
   @Test
   fun testPhotoCaptureShouldDisplayValidationResult() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val fragment = spyk<QuestQuestionnaireFragment>()
     every { fragment.requireContext() } returns context
 
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
@@ -214,7 +214,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
   @Test
   fun testPhotoCaptureShouldNotDisplayValidationResult() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val fragment = spyk<QuestQuestionnaireFragment>()
     every { fragment.requireContext() } returns context
 
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
@@ -232,7 +232,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
   @Test
   fun testPhotoCaptureShouldSetReadOnly() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val fragment = spyk<QuestQuestionnaireFragment>()
     every { fragment.requireContext() } returns context
 
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
@@ -252,7 +252,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
   @Test
   fun testPhotoCaptureShouldNotSetReadOnly() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val fragment = spyk<QuestQuestionnaireFragment>()
     every { fragment.requireContext() } returns context
 
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))

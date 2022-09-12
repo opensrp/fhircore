@@ -126,7 +126,7 @@ constructor(
 
     sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
-      practitionerDetails.userDetail
+      practitionerDetails
     )
     sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name,

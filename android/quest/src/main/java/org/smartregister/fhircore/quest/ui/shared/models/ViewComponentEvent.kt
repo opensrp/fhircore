@@ -19,14 +19,12 @@ package org.smartregister.fhircore.quest.ui.shared.models
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
-import com.google.android.fhir.logicalId
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
 
 /**
  * This sealed class is used to represent various click events of the configurable view components
@@ -54,13 +52,8 @@ sealed class ViewComponentEvent {
       }
       is LaunchQuestionnaire -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
-          val questionnaireType = questionnaireConfig.type
           navController.context.launchQuestionnaire<QuestionnaireActivity>(
-            questionnaireId = questionnaireConfig.id,
-            clientIdentifier =
-              if (questionnaireType == QuestionnaireType.DEFAULT) null
-              else resourceData?.baseResource?.logicalId,
-            questionnaireType = questionnaireType,
+            questionnaireConfig = questionnaireConfig,
             intentBundle =
               if (resourceData != null) actionConfig.paramsBundle(resourceData.computedValuesMap)
               else Bundle.EMPTY

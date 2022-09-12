@@ -31,29 +31,18 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.sync.OnSyncListener
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
-import timber.log.Timber
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
-class RegisterFragment : Fragment(), OnSyncListener {
-
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+class RegisterFragment : Fragment() {
 
   val appMainViewModel by activityViewModels<AppMainViewModel>()
 
@@ -64,7 +53,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    syncBroadcaster.registerSyncListener(this, lifecycleScope)
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
@@ -107,56 +95,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
               )
             }
           }
-        }
-      }
-    }
-  }
-
-  override fun onSync(state: State) {
-    Timber.i("Sync state received is $state")
-    when (state) {
-      is State.Started -> {
-        requireContext().showToast(getString(R.string.syncing))
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_initiated))
-        )
-      }
-      is State.InProgress -> {
-        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
-        )
-      }
-      is State.Glitch -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
-        )
-        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
-      }
-      is State.Failed -> {
-        requireContext().showToast(getString(R.string.sync_failed))
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(
-            state,
-            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-              getString(R.string.last_sync_timestamp, appMainViewModel.retrieveLastSyncTimestamp())
-            else getString(R.string.syncing_failed)
-          )
-        )
-        Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
-      }
-      is State.Finished -> {
-        requireContext().showToast(getString(R.string.sync_completed))
-        appMainViewModel.run {
-          onEvent(
-            AppMainEvent.UpdateSyncState(
-              state,
-              getString(
-                R.string.last_sync_timestamp,
-                formatLastSyncTimestamp(state.result.timestamp)
-              )
-            )
-          )
         }
       }
     }

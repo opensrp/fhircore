@@ -24,6 +24,7 @@ import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -42,6 +43,7 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
@@ -53,7 +55,8 @@ constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
   val configurationRegistry: ConfigurationRegistry,
-  val rulesFactory: RulesFactory
+  val rulesFactory: RulesFactory,
+  val fhirPathDataExtractor: FhirPathDataExtractor
 ) :
   Repository, DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
 
@@ -170,7 +173,8 @@ constructor(
         relatedResourceData.addLast(RelatedResourceData(it))
       }
     } else {
-      FhirPathDataExtractor.extractData(baseResource, fhirPathExpression)
+      fhirPathDataExtractor
+        .extractData(baseResource, fhirPathExpression)
         .takeWhile { it is Reference }
         .map { it as Reference }
         .map {
@@ -214,7 +218,15 @@ constructor(
         count = PaginationConstant.DEFAULT_PAGE_SIZE
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
-    return fhirEngine.search(search)
+    return when (resourceType) {
+      ResourceType.Group -> filterActiveGroups(search)
+      else -> fhirEngine.search(search)
+    }
+  }
+
+  suspend fun filterActiveGroups(search: Search): List<Resource> {
+    val groups = fhirEngine.search<Group>(search)
+    return groups.filter { it.active && !it.name.isNullOrEmpty() }
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
@@ -224,7 +236,8 @@ constructor(
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
 
     val resourceType = baseResourceClass.newInstance().resourceType
-    return fhirEngine.count(
+
+    val search =
       Search(resourceType).apply {
         baseResourceConfig.dataQueries?.forEach { filterBy(it) }
         // For patient return only active members count
@@ -232,7 +245,11 @@ constructor(
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
       }
-    )
+
+    return when (resourceType) {
+      ResourceType.Group -> filterActiveGroups(search).size.toLong()
+      else -> fhirEngine.count(search)
+    }
   }
 
   override suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData {
@@ -246,14 +263,10 @@ constructor(
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
 
-    // Some resource id maybe in the format  Group/1be72fc8-5e5c-4f90-a37d-739c73fc4bdf/_history/7
-    val parsedResourceId =
-      if (resourceId.startsWith(baseResourceType.name))
-        resourceId.substringAfter("/").substringBefore("/")
-      else resourceId
-
     val baseResource: Resource =
-      withContext(dispatcherProvider.io()) { fhirEngine.get(baseResourceType, parsedResourceId) }
+      withContext(dispatcherProvider.io()) {
+        fhirEngine.get(baseResourceType, resourceId.extractLogicalIdUuid())
+      }
 
     return retrieveRelatedResources(
       relatedResourcesConfig = relatedResourcesConfig,

@@ -88,8 +88,9 @@
             "id": "82953",
             "title": "Add family member",
             "saveButtonText": "ADD MEMBER",
-            "setPractitionerDetails": true,
-            "setOrganizationDetails": true
+            "setPractitionerDetails": false,
+            "setOrganizationDetails": false,
+            "groupIdentifier": "@{familyLogicalId}"
           }
         }
       ]
@@ -108,6 +109,13 @@
       "condition": "true",
       "actions": [
         "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+      ]
+    },
+    {
+      "name": "familyLogicalId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id.value'))"
       ]
     }
   ],
@@ -229,7 +237,9 @@
           "questionnaire": {
             "id": "82952",
             "title": "Add Family",
-            "type": "EDIT"
+            "type": "EDIT",
+            "clientIdentifier": "@{familyLogicalId}",
+            "groupIdentifier": "@{familyLogicalId}"
           }
         }
       ]
@@ -268,13 +278,26 @@
           "params": [
             {
               "key": "familyId",
-              "value": "@{familyId}"
+              "value": "@{familyLogicalId}"
+            },
+            {
+              "key": "familyName",
+              "value": "@{familyName}"
             }
           ],
           "questionnaire": {
             "id": "101644",
-            "title": "eCBIS Remove Family Form",
-            "type": "DEFAULT"
+            "title": "Remove Family Form",
+            "type": "DEFAULT",
+            "clientIdentifier": "@{familyLogicalId}",
+            "groupResource": {
+              "removeGroup": true
+            },
+            "confirmationDialog": {
+              "title": "Remove family",
+              "message": "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
+              "actionButtonText": "Remove family"
+            }
           }
         }
       ]

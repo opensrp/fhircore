@@ -16,12 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
@@ -44,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,13 +60,12 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
+import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
 const val NO_REGISTER_VIEW_TITLE_TEST_TAG = "noRegisterViewTitleTestTag"
@@ -97,6 +93,7 @@ fun RegisterScreen(
   val currentSetTotalRecordCount by rememberUpdatedState(registerViewModel::setTotalRecordsCount)
   val currentPaginateRegisterData by rememberUpdatedState(registerViewModel::paginateRegisterData)
   val refreshDataStateValue by remember { refreshDataState }
+  val totalRecordsCount by registerViewModel.totalRecordsCount.observeAsState(0)
 
   LaunchedEffect(Unit) {
     currentSetTotalRecordCount(registerId)
@@ -139,8 +136,7 @@ fun RegisterScreen(
       }
     },
     bottomBar = {
-      // Bottom section has a pagination footer and button with client registration action
-      // Only show when filtering data is not active
+      // Bottom section has a pagination footer
       Column {
         if (searchText.isEmpty() && pagingItems.itemCount > 0) {
           RegisterFooter(
@@ -154,20 +150,6 @@ fun RegisterScreen(
               registerViewModel.onEvent(RegisterEvent.MoveToNextPage(registerId))
             }
           )
-          // TODO activate this button action via config; now only activated for family register
-          if (registerViewModel.isRegisterFormViaSettingExists()) {
-            Button(
-              modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-              onClick = { registerViewModel.onEvent(RegisterEvent.RegisterNewClient(context)) },
-              enabled = !firstTimeSync.value
-            ) {
-              // TODO set text from new register configurations
-              Text(
-                text = stringResource(id = R.string.register_new_client),
-                modifier = modifier.padding(8.dp)
-              )
-            }
-          }
         }
       }
     },
@@ -187,7 +169,7 @@ fun RegisterScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (firstTimeSync.value) LoaderDialog(modifier = modifier)
-      if (pagingItems.itemCount > 0) {
+      if (totalRecordsCount > 0) {
         RegisterCardList(
           registerCardConfig =
             registerViewModel.retrieveRegisterConfiguration(registerId).registerCard,
@@ -199,27 +181,22 @@ fun RegisterScreen(
         }
       } else {
         registerConfiguration.noResults?.let { noResultConfig ->
-          NoRegistersView(
-            modifier = modifier,
-            context = context,
-            noResults = noResultConfig,
-            onClick = {
-              val onClickAction =
-                noResultConfig.actionButton?.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-              onClickAction?.let { actionConfig ->
-                when (onClickAction.workflow) {
-                  ApplicationWorkflow.LAUNCH_REGISTER -> {
-                    actionConfig.questionnaire?.id?.let { questionnaireId ->
-                      context.launchQuestionnaire<QuestionnaireActivity>(
-                        questionnaireId = questionnaireId
-                      )
-                    }
+          NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
+            val onClickAction =
+              noResultConfig.actionButton?.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+            onClickAction?.let { actionConfig ->
+              when (onClickAction.workflow) {
+                ApplicationWorkflow.LAUNCH_REGISTER -> {
+                  actionConfig.questionnaire?.let { questionnaireConfig ->
+                    context.launchQuestionnaire<QuestionnaireActivity>(
+                      questionnaireConfig = questionnaireConfig
+                    )
                   }
-                  else -> {}
                 }
+                else -> {}
               }
             }
-          )
+          }
         }
       }
     }
@@ -227,9 +204,8 @@ fun RegisterScreen(
 }
 
 @Composable
-fun NoRegistersView(
+fun NoRegisterDataView(
   modifier: Modifier = Modifier,
-  context: Context,
   noResults: NoResultsConfig,
   onClick: () -> Unit
 ) {
@@ -273,14 +249,12 @@ fun NoRegistersView(
 @ExcludeFromJacocoGeneratedReport
 @Composable
 private fun PreviewNoRegistersView() {
-  NoRegistersView(
+  NoRegisterDataView(
     noResults =
       NoResultsConfig(
         title = "Title",
         message = "This is message",
         actionButton = NavigationMenuConfig(display = "Button Text", id = "1")
-      ),
-    context = LocalContext.current,
-    onClick = {}
-  )
+      )
+  ) {}
 }
