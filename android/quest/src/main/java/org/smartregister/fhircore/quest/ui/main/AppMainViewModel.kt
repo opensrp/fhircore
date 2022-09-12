@@ -56,12 +56,12 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
 import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
@@ -135,8 +135,7 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          is State.Finished,
-          is State.Failed -> {
+          is State.Finished, is State.Failed -> {
             // Notify subscribers to refresh views after sync and refresh UI
             refreshDataState.value = true
             if (event.state is State.Finished) {
@@ -234,17 +233,14 @@ constructor(
     countsMap: SnapshotStateMap<String, Long>
   ) {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.filter { it.showCount }
-      .forEach { menuConfig ->
-        val countAction =
-          menuConfig.actions?.find { actionConfig ->
-            actionConfig.trigger == ActionTrigger.ON_COUNT
-          }
-        if (countAction != null) {
-          countsMap[countAction.id ?: menuConfig.id] =
-            registerRepository.countRegisterData(menuConfig.id)
-        }
+    this.filter { it.showCount }.forEach { menuConfig ->
+      val countAction =
+        menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
+      if (countAction != null) {
+        countsMap[countAction.id ?: menuConfig.id] =
+          registerRepository.countRegisterData(menuConfig.id)
       }
+    }
   }
 
   private fun loadCurrentLanguage() =
