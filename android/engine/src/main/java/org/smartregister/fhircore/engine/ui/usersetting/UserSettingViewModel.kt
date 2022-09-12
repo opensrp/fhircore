@@ -60,7 +60,7 @@ constructor(
       is UserSettingsEvent.Logout -> {
         accountAuthenticator.logout()
       }
-      is UserSettingsEvent.RunSync -> {
+      is UserSettingsEvent.SyncData -> {
         syncBroadcaster.runSync()
       }
       is UserSettingsEvent.SwitchLanguage -> {
