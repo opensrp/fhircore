@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util.extension
+package org.smartregister.fhircore.quest.util.extension
 
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.hl7.fhir.r4.model.CanonicalType
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.FieldType
+import org.smartregister.fhircore.engine.util.extension.asLabel
+import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
+import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestQuestionnaireFragment
 
 @HiltAndroidTest
 class QuestionnaireExtensionTest : RobolectricTest() {
@@ -155,5 +163,49 @@ class QuestionnaireExtensionTest : RobolectricTest() {
       questionnaire.find(FieldType.DEFINITION, "some-element-definition-identifier")
 
     Assert.assertEquals(1, filteredDefinitions.size)
+  }
+
+  @Test
+  fun `Questionnaire#prepareQuestionsForReadingOrEditing should retain custom extension`() {
+    val questionnaire = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+    questionnaire.add(
+      Questionnaire.QuestionnaireItemComponent().apply {
+        text = "Group"
+        type = Questionnaire.QuestionnaireItemType.GROUP
+      }
+    )
+    questionnaire.add(
+      Questionnaire.QuestionnaireItemComponent().apply {
+        prefix = "1."
+        text = "Photo of device"
+        readOnly = false
+        addExtension(
+          Extension().apply {
+            url = QuestQuestionnaireFragment.PHOTO_CAPTURE_URL
+            setValue(StringType().apply { value = QuestQuestionnaireFragment.PHOTO_CAPTURE_NAME })
+          }
+        )
+      }
+    )
+    questionnaire.add(
+      Questionnaire.QuestionnaireItemComponent().apply {
+        prefix = "2."
+        text = "Barcode"
+        readOnly = false
+        addExtension(
+          Extension().apply {
+            url = QuestQuestionnaireFragment.BARCODE_URL
+            setValue(StringType().apply { value = QuestQuestionnaireFragment.BARCODE_NAME })
+          }
+        )
+      }
+    )
+
+    questionnaire.prepareQuestionsForReadingOrEditing("path", true)
+
+    Assert.assertTrue(questionnaire[1].hasExtension(QuestQuestionnaireFragment.PHOTO_CAPTURE_URL))
+    Assert.assertTrue(questionnaire[1].readOnly)
+    Assert.assertTrue(questionnaire[2].hasExtension(QuestQuestionnaireFragment.BARCODE_URL))
+    Assert.assertTrue(questionnaire[2].readOnly)
   }
 }

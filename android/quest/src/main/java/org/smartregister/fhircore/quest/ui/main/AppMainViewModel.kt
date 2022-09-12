@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -40,6 +39,7 @@ import org.hl7.fhir.r4.model.Location
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
@@ -49,7 +49,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -62,6 +61,7 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
@@ -92,7 +92,7 @@ constructor(
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
-  private val applicationConfiguration: ApplicationConfiguration by lazy {
+  val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
@@ -129,13 +129,14 @@ constructor(
       }
       is AppMainEvent.RegisterNewClient -> {
         event.context.launchQuestionnaire<QuestionnaireActivity>(
-          questionnaireId = event.questionnaireId
+          questionnaireConfig = event.questionnaireConfig
         )
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          is State.Finished, is State.Failed -> {
+          is State.Finished,
+          is State.Failed -> {
             // Notify subscribers to refresh views after sync and refresh UI
             refreshDataState.value = true
             if (event.state is State.Finished) {
@@ -166,8 +167,7 @@ constructor(
   private fun triggerWorkflow(event: AppMainEvent.TriggerWorkflow) {
     val navigationAction = event.navMenu.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
     when (navigationAction?.workflow) {
-      ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC ->
-        startP2PScreen(context = event.navController.context)
+      ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(event.navController.context)
       ApplicationWorkflow.LAUNCH_SETTINGS ->
         event.navController.navigate(MainNavigationScreen.Settings.route)
       ApplicationWorkflow.LAUNCH_REPORT ->
@@ -190,7 +190,7 @@ constructor(
   }
 
   private fun displayRegisterBottomSheet(event: AppMainEvent.OpenRegistersBottomSheet) {
-    (event.navController.context as AppCompatActivity).let { activity ->
+    (event.navController.context.getActivity())?.let { activity ->
       RegisterBottomSheetFragment(
           navigationMenuConfigs = event.registersList,
           registerCountMap = appMainUiState.value.registerCountMap,
@@ -216,17 +216,17 @@ constructor(
   fun launchFamilyRegistrationWithLocationId(
     context: Context,
     locationId: String,
-    geoWidgetConfigId: String
+    questionnaireConfig: QuestionnaireConfig
   ) {
     viewModelScope.launch(dispatcherProvider.main()) {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
-
-      val bundle =
-        bundleOf(
-          Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
-        )
-
-      context.launchQuestionnaire<QuestionnaireActivity>(geoWidgetConfigId, intentBundle = bundle)
+      context.launchQuestionnaire<QuestionnaireActivity>(
+        questionnaireConfig = questionnaireConfig,
+        intentBundle =
+          bundleOf(
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
+          )
+      )
     }
   }
 
@@ -234,14 +234,17 @@ constructor(
     countsMap: SnapshotStateMap<String, Long>
   ) {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.filter { it.showCount }.forEach { menuConfig ->
-      val countAction =
-        menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
-      if (countAction != null) {
-        countsMap[countAction.id ?: menuConfig.id] =
-          registerRepository.countRegisterData(menuConfig.id)
+    this.filter { it.showCount }
+      .forEach { menuConfig ->
+        val countAction =
+          menuConfig.actions?.find { actionConfig ->
+            actionConfig.trigger == ActionTrigger.ON_COUNT
+          }
+        if (countAction != null) {
+          countsMap[countAction.id ?: menuConfig.id] =
+            registerRepository.countRegisterData(menuConfig.id)
+        }
       }
-    }
   }
 
   private fun loadCurrentLanguage() =

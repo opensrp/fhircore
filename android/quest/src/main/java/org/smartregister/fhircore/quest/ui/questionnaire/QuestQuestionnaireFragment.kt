@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire
+package org.smartregister.fhircore.quest.ui.questionnaire
 
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.contrib.views.barcode.QuestionnaireItemBarCodeReaderViewHolderFactory
 
-class FhirCoreQuestionnaireFragment : QuestionnaireFragment() {
+class QuestQuestionnaireFragment : QuestionnaireFragment() {
 
   override fun getCustomQuestionnaireItemViewHolderFactoryMatchers():
     List<QuestionnaireItemViewHolderFactoryMatcher> {

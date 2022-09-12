@@ -33,10 +33,10 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
 
 class ViewComponentEventTest : RobolectricTest() {
 
@@ -74,9 +74,7 @@ class ViewComponentEventTest : RobolectricTest() {
         ),
         resourceData = ResourceData(baseResource = Patient().apply { id = "p123" })
       )
-    val questionnaireIdSlot = slot<String>()
-    val clientIdentifierSlot = slot<String>()
-    val questionnaireTypeSlot = slot<QuestionnaireType>()
+    val questionnaireConfigSlot = slot<QuestionnaireConfig>()
     val intentBundleSlot = slot<Bundle>()
 
     val mockContext = mockk<Context>(relaxed = true, relaxUnitFun = true)
@@ -84,16 +82,15 @@ class ViewComponentEventTest : RobolectricTest() {
     every { mockContext.startActivity(any()) } just runs
     every {
       navController.context.launchQuestionnaire<QuestionnaireActivity>(
-        questionnaireId = capture(questionnaireIdSlot),
-        clientIdentifier = capture(clientIdentifierSlot),
-        questionnaireType = capture(questionnaireTypeSlot),
+        questionnaireConfig = capture(questionnaireConfigSlot),
         intentBundle = capture(intentBundleSlot)
       )
     } just runs
 
     viewComponentEvent.handleEvent(navController)
 
-    val captured = questionnaireIdSlot.captured
-    Assert.assertEquals("q123", captured)
+    val captured = questionnaireConfigSlot.captured
+    Assert.assertEquals("q123", captured.id)
+    Assert.assertEquals(QuestionnaireType.DEFAULT, captured.type)
   }
 }
