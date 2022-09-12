@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.usersetting
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.mockk.every
@@ -24,13 +25,11 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-@Ignore("Fix failing tests")
 class UserSettingScreenKtTest : RobolectricTest() {
 
   private val mockUserSettingsEventListener: (UserSettingsEvent) -> Unit = spyk({})
@@ -68,6 +67,18 @@ class UserSettingScreenKtTest : RobolectricTest() {
       )
     }
     composeRule.onNodeWithText("Sync").performClick()
+    verify { mockUserSettingsEventListener(any()) }
+  }
+
+  @Test
+  fun testLogoutRowClickShouldInitiateSync() {
+    composeRule.setContent {
+      UserSettingScreen(
+        userSettingViewModel = userSettingViewModel,
+        onClick = mockUserSettingsEventListener
+      )
+    }
+    composeRule.onNodeWithTag(USER_SETTING_ROW_TEST_TAG).performClick()
     verify { mockUserSettingsEventListener(any()) }
   }
 

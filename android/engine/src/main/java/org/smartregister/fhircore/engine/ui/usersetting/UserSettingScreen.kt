@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
@@ -62,6 +63,8 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
+
+const val USER_SETTING_ROW_TEST_TAG = "userSettingRowTestTag"
 
 @Composable
 fun UserSettingScreen(
@@ -157,7 +160,7 @@ fun UserSettingScreen(
       icon = Icons.Rounded.Logout,
       text = stringResource(id = R.string.logout),
       clickListener = { onClick(UserSettingsEvent.Logout) },
-      modifier = modifier
+      modifier = modifier.testTag(USER_SETTING_ROW_TEST_TAG)
     )
   }
 }
