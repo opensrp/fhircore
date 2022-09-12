@@ -16,14 +16,12 @@
 
 package org.smartregister.fhircore.engine.ui.usersetting
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -46,10 +44,6 @@ constructor(
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
 
-  val onLogout = MutableLiveData<Boolean?>(null)
-
-  val language = MutableLiveData<Language?>(null)
-
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun allowSwitchingLanguages() = languages.size > 1
@@ -64,7 +58,6 @@ constructor(
   fun onEvent(event: UserSettingsEvent) {
     when (event) {
       is UserSettingsEvent.Logout -> {
-        onLogout.postValue(true)
         accountAuthenticator.logout()
       }
       is UserSettingsEvent.RunSync -> {
