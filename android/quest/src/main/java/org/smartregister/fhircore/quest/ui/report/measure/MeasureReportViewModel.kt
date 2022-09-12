@@ -103,9 +103,7 @@ constructor(
   }
 
   private val practitionerDetails by lazy {
-    sharedPreferencesHelper.read<PractitionerDetails>(
-        key = SyncStrategy.PRACTITIONER.value
-      )
+    sharedPreferencesHelper.read<PractitionerDetails>(key = SyncStrategy.PRACTITIONER.value)
       ?.fhirPractitionerDetails
   }
 

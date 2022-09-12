@@ -100,15 +100,11 @@ constructor(
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private val authenticatedOrganizationIds by lazy {
-    sharedPreferencesHelper.read<List<String>>(
-      SyncStrategy.ORGANIZATION.value
-    )
+    sharedPreferencesHelper.read<List<String>>(SyncStrategy.ORGANIZATION.value)
   }
 
   private val practitionerDetails by lazy {
-    sharedPreferencesHelper.read<PractitionerDetails>(
-        key = SyncStrategy.PRACTITIONER.value
-      )
+    sharedPreferencesHelper.read<PractitionerDetails>(key = SyncStrategy.PRACTITIONER.value)
       ?.fhirPractitionerDetails
   }
 
