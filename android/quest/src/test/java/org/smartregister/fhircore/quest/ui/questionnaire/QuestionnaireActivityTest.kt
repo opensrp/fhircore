@@ -105,7 +105,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         id = "patient-registration",
         title = "Patient registration",
         "form",
-        clientIdentifier = "@{familyLogicalId}",
+        resourceIdentifier = "@{familyLogicalId}",
       )
     val computedValuesMap: Map<String, Any> =
       mutableMapOf<String, Any>().apply { put("familyLogicalId", "Group/group-id") }
@@ -159,7 +159,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         questionnaireConfig =
           QuestionnaireConfig(
             id = "my-form",
-            clientIdentifier = "1234",
+            resourceIdentifier = "1234",
             type = QuestionnaireType.READ_ONLY
           )
       )
@@ -167,7 +167,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val actualQuestionnaireConfig =
       result.getSerializable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig
     Assert.assertEquals("my-form", actualQuestionnaireConfig.id)
-    Assert.assertEquals("1234", actualQuestionnaireConfig.clientIdentifier)
+    Assert.assertEquals("1234", actualQuestionnaireConfig.resourceIdentifier)
     Assert.assertEquals(QuestionnaireType.READ_ONLY.name, actualQuestionnaireConfig.type.name)
     Assert.assertEquals(
       FhirContext.forCached(FhirVersionEnum.R4)

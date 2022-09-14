@@ -263,7 +263,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     val configurationRegistry = mockk<ConfigurationRegistry>()
     val accountAuthenticator = mockk<AccountAuthenticator>()
     val dispatcher = DefaultDispatcherProvider()
-    val sharedPreferences = SharedPreferencesHelper(application, gson)
+    val sharedPreferences = SharedPreferencesHelper(application)
 
     val viewModel =
       LoginViewModel(
@@ -321,7 +321,8 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertEquals(
       "John",
       sharedPreferences.read<PractitionerDetails>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+          key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
+          isFhirResource = true
         )
         ?.userDetail
         ?.userBioData
@@ -382,7 +383,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     val configurationRegistry = mockk<ConfigurationRegistry>()
     val accountAuthenticator = mockk<AccountAuthenticator>()
     val dispatcher = DefaultDispatcherProvider()
-    val sharedPreferences = SharedPreferencesHelper(application, gson)
+    val sharedPreferences = SharedPreferencesHelper(application)
 
     val viewModel =
       LoginViewModel(
@@ -418,7 +419,8 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertEquals(
       "John",
       sharedPreferences.read<PractitionerDetails>(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+          key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
+          isFhirResource = true
         )
         ?.userDetail
         ?.userBioData

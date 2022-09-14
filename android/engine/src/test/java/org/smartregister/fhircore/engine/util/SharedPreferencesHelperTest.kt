@@ -47,7 +47,7 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    sharedPreferencesHelper = SharedPreferencesHelper(context = application, gson = gson)
+    sharedPreferencesHelper = SharedPreferencesHelper(application)
   }
 
   @Test
@@ -89,7 +89,7 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     sharedPreferencesHelper.write("object", questionnaireConfig)
     Assert.assertEquals(
       questionnaireConfig.id,
-      sharedPreferencesHelper.read<QuestionnaireConfig>("object", isSerialized = true)?.id
+      sharedPreferencesHelper.read<QuestionnaireConfig>("object")?.id
     )
   }
 

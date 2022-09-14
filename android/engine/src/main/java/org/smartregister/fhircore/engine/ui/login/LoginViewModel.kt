@@ -125,8 +125,9 @@ constructor(
     val locationIds = fhirEngine.create(*locations.toTypedArray())
 
     sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
-      practitionerDetails
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
+      value = practitionerDetails,
+      isFhirResource = true
     )
     sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name,

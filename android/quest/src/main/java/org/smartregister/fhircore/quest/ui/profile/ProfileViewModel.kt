@@ -101,8 +101,6 @@ constructor(
           }
         }
       }
-      is ProfileEvent.OnViewComponentEvent ->
-        event.viewComponentEvent.handleEvent(event.navController)
       is ProfileEvent.OnChangeManagingEntity -> {
         viewModelScope.launch(dispatcherProvider.io()) {
           registerRepository.changeManagingEntity(event.newManagingEntityId, event.groupId)

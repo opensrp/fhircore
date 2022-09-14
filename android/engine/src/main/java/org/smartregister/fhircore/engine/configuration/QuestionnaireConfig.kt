@@ -29,8 +29,8 @@ data class QuestionnaireConfig(
   val setPractitionerDetails: Boolean = true,
   val setOrganizationDetails: Boolean = true,
   val planDefinitions: List<String>? = null,
-  val type: QuestionnaireType = QuestionnaireType.DEFAULT,
-  val clientIdentifier: String? = null,
+  var type: QuestionnaireType = QuestionnaireType.DEFAULT,
+  val resourceIdentifier: String? = null,
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null
 ) : java.io.Serializable
@@ -44,8 +44,8 @@ data class ConfirmationDialog(
 
 @Serializable
 data class GroupResourceConfig(
-  val groupIdentifier: String? = null,
-  val memberResourceType: String? = null,
+  val groupIdentifier: String,
+  val memberResourceType: String,
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
   val deactivateMembers: Boolean = true
@@ -54,11 +54,11 @@ data class GroupResourceConfig(
 fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
   this.copy(
     title = title?.interpolate(computedValuesMap),
-    clientIdentifier = clientIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
+    resourceIdentifier = resourceIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
     groupResource =
       groupResource?.copy(
         groupIdentifier =
-          groupResource.groupIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid()
+          groupResource.groupIdentifier.interpolate(computedValuesMap).extractLogicalIdUuid()
       ),
     confirmationDialog =
       confirmationDialog?.copy(

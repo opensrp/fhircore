@@ -27,20 +27,20 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 @Composable
 fun List(
   modifier: Modifier,
-  resourceData: ResourceData,
   viewProperties: ListProperties,
+  resourceData: ResourceData,
+  navController: NavController,
   viewModel: ViewRendererViewModel,
-  onViewComponentClick: (ViewComponentEvent) -> Unit
 ) {
   val resources = remember { resourceData.relatedResourcesMap[viewProperties.baseResource] }
   Column(
@@ -88,7 +88,7 @@ fun List(
         ViewRenderer(
           viewProperties = viewProperties.registerCard.views,
           resourceData = ResourceData(resource, relatedResources, computedValuesMap),
-          onViewComponentClick = onViewComponentClick,
+          navController = navController,
         )
         Spacer(modifier = modifier.height(8.dp))
         if ((index < resources.lastIndex) && viewProperties.showDivider)

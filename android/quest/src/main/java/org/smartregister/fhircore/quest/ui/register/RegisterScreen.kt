@@ -156,14 +156,7 @@ fun RegisterScreen(
     floatingActionButton = {
       val fabActions = registerConfiguration.fabActions
       if (fabActions.isNotEmpty() && fabActions.first().visible) {
-        ExtendedFab(
-          fabActions = fabActions,
-          onViewComponentEvent = { viewComponentEvent ->
-            registerViewModel.onEvent(
-              RegisterEvent.OnViewComponentEvent(viewComponentEvent, navController)
-            )
-          }
-        )
+        ExtendedFab(fabActions = fabActions, navController = navController)
       }
     }
   ) { innerPadding ->
@@ -173,12 +166,9 @@ fun RegisterScreen(
         RegisterCardList(
           registerCardConfig =
             registerViewModel.retrieveRegisterConfiguration(registerId).registerCard,
-          pagingItems = pagingItems
-        ) { viewComponentEvent ->
-          registerViewModel.onEvent(
-            RegisterEvent.OnViewComponentEvent(viewComponentEvent, navController)
-          )
-        }
+          pagingItems = pagingItems,
+          navController = navController
+        )
       } else {
         registerConfiguration.noResults?.let { noResultConfig ->
           NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {

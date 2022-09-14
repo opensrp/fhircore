@@ -85,12 +85,13 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "82953",
-            "title": "Add family member",
-            "saveButtonText": "ADD MEMBER",
-            "setPractitionerDetails": false,
-            "setOrganizationDetails": false,
-            "groupIdentifier": "@{familyLogicalId}"
+            "id": "e5155788-8831-4916-a3f5-486915ce34b2",
+            "title": "Add household member",
+            "saveButtonText": "Add Member",
+            "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Patient"
+            }
           }
         }
       ]
@@ -115,7 +116,7 @@
       "name": "familyLogicalId",
       "condition": "true",
       "actions": [
-        "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id.value'))"
+        "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
       ]
     }
   ],
@@ -212,8 +213,8 @@
                     "id": "defaultProfile",
                     "params": [
                       {
-                        "key": "familyId",
-                        "value": "@{familyId}"
+                        "key": "familyLogicalId",
+                        "value": "@{familyLogicalId}"
                       }
                     ]
                   }
@@ -227,7 +228,7 @@
   ],
   "overFlowMenuItems": [
     {
-      "title": "Family details",
+      "title": "Household details",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
@@ -235,17 +236,19 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "82952",
-            "title": "Add Family",
+            "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
+            "title": "{{add.family}}",
+            "saveButtonText": "Update household details",
+            "setPractitionerDetails": true,
+            "setOrganizationDetails": true,
             "type": "EDIT",
-            "clientIdentifier": "@{familyLogicalId}",
-            "groupIdentifier": "@{familyLogicalId}"
+            "resourceIdentifier": "@{familyLogicalId}"
           }
         }
       ]
     },
     {
-      "title": "Change family head",
+      "title": "Change household head",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
@@ -267,6 +270,12 @@
       ]
     },
     {
+      "title": "View medical history",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": []
+    },
+    {
       "title": "Remove family",
       "titleColor": "#FF0000",
       "visible": "true",
@@ -286,17 +295,17 @@
             }
           ],
           "questionnaire": {
-            "id": "101644",
-            "title": "Remove Family Form",
-            "type": "DEFAULT",
-            "clientIdentifier": "@{familyLogicalId}",
+            "id": "0259e181-581e-4b4c-8409-e3be3a166ef5",
+            "title": "Remove Household",
             "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Patient",
               "removeGroup": true
             },
             "confirmationDialog": {
-              "title": "Remove family",
+              "title": "Remove household",
               "message": "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
-              "actionButtonText": "Remove family"
+              "actionButtonText": "Remove household"
             }
           }
         }

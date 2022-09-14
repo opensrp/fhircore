@@ -105,6 +105,7 @@ constructor(
   private val practitionerDetails by lazy {
     sharedPreferencesHelper.read<PractitionerDetails>(
         key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
+        isFhirResource = true
       )
       ?.fhirPractitionerDetails
   }

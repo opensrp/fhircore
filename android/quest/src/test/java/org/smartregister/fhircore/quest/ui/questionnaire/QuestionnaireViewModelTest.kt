@@ -115,7 +115,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     every {
       sharedPreferencesHelper.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
+        isFhirResource = true
       )
     } returns practitionerDetails()
 
@@ -137,7 +138,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         type = QuestionnaireType.READ_ONLY,
         setPractitionerDetails = false,
         setOrganizationDetails = false,
-        clientIdentifier = "2"
+        resourceIdentifier = "2"
       )
 
     questionnaireViewModel =
@@ -582,7 +583,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         id = "patient-registration",
         title = "Patient registration",
         type = QuestionnaireType.READ_ONLY,
-        clientIdentifier = "2"
+        resourceIdentifier = "2"
       )
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY, expectedQuestionnaireConfig)
 

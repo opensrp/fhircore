@@ -107,7 +107,8 @@ constructor(
 
   private val practitionerDetails by lazy {
     sharedPreferencesHelper.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
+        isFhirResource = true
       )
       ?.fhirPractitionerDetails
   }
@@ -200,7 +201,7 @@ constructor(
 
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(
-        questionnaireConfig.clientIdentifier,
+        questionnaireConfig.resourceIdentifier,
         questionnaire,
         questionnaireResponse
       )
@@ -212,7 +213,7 @@ constructor(
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
             // if it is new registration set response subject
-            if (questionnaireConfig.clientIdentifier == null)
+            if (questionnaireConfig.resourceIdentifier == null)
               questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
           if (questionnaireConfig.setPractitionerDetails) {
@@ -426,7 +427,7 @@ constructor(
       forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
     }
 
-    questionnaireConfig.clientIdentifier?.let { patientId ->
+    questionnaireConfig.resourceIdentifier?.let { patientId ->
       loadPatient(patientId)?.apply {
         if (identifier.isEmpty()) {
           identifier =

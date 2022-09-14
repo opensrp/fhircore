@@ -168,8 +168,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
               if (questionnaireConfig.type.isReadOnly()) require(questionnaireResponse != null)
 
-              if (questionnaireConfig.clientIdentifier != null) {
-                setBarcode(questionnaire, questionnaireConfig.clientIdentifier!!)
+              if (questionnaireConfig.resourceIdentifier != null) {
+                setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
                 questionnaireResponse =
                   questionnaireViewModel.generateQuestionnaireResponse(
                     questionnaire,
@@ -343,7 +343,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   fun handleRemoveEntityQuestionnaireResponse(questionnaireConfig: QuestionnaireConfig) {
     dismissSaveProcessing()
     confirmationDialog(
-      resourceId = questionnaireConfig.clientIdentifier!!,
+      resourceId = questionnaireConfig.resourceIdentifier!!,
       questionnaireConfig = questionnaireConfig
     )
   }
@@ -357,7 +357,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       confirmButtonListener = { dialog ->
         if (questionnaireConfig.groupResource != null) {
           questionnaireViewModel.removeGroup(
-            groupId = resourceId,
+            groupId = questionnaireConfig.groupResource!!.groupIdentifier,
             removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
             deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers
           )
