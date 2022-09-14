@@ -33,6 +33,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -46,6 +47,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -67,6 +69,7 @@ fun PatientRegisterScreen(
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val context = LocalContext.current
+  val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
   val searchText by remember { patientRegisterViewModel.searchText }
   val patientRegistrationLauncher =
     rememberLauncherForActivityResult(
@@ -110,6 +113,7 @@ fun PatientRegisterScreen(
     if (refreshDataStateValue) {
       currentSetTotalRecordCount(appFeatureName, healthModule)
       currentPaginateRegisterData(appFeatureName, healthModule, false)
+      firstTimeSync.value = patientRegisterViewModel.isFirstTimeSync()
       refreshDataState.value = false
     }
   }
@@ -177,7 +181,8 @@ fun PatientRegisterScreen(
                 )
                 //
                 // patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
-              }
+              },
+              enabled = !firstTimeSync.value
             ) {
               Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp))
             }
@@ -187,6 +192,7 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
+      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
       // Only show counter during search
       var iModifier = Modifier.padding(top = 0.dp)
       if (searchText.isNotEmpty()) {
