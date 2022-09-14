@@ -42,8 +42,11 @@ class UserSettingFragment : Fragment() {
       setContent {
         AppTheme {
           UserSettingScreen(
-            userSettingViewModel = userSettingViewModel,
-            onClick = userSettingViewModel::onEvent
+            username = userSettingViewModel.retrieveUsername(),
+            allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
+            selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
+            languages = userSettingViewModel.languages,
+            onEvent = userSettingViewModel::onEvent
           )
         }
       }

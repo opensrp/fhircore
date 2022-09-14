@@ -58,8 +58,8 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
@@ -69,11 +69,13 @@ const val USER_SETTING_ROW_TEST_TAG = "userSettingRowTestTag"
 @Composable
 fun UserSettingScreen(
   modifier: Modifier = Modifier,
-  userSettingViewModel: UserSettingViewModel = hiltViewModel(),
-  onClick: (UserSettingsEvent) -> Unit,
+  username: String?,
+  allowSwitchingLanguages: Boolean,
+  selectedLanguage: String,
+  languages: List<Language>,
+  onEvent: (UserSettingsEvent) -> Unit,
 ) {
   val context = LocalContext.current
-  val username by remember { mutableStateOf(userSettingViewModel.retrieveUsername()) }
   var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = modifier.padding(vertical = 20.dp)) {
@@ -84,7 +86,7 @@ fun UserSettingScreen(
           contentAlignment = Alignment.Center
         ) {
           Text(
-            text = username!!.first().uppercase(),
+            text = username.first().uppercase(),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             fontSize = 28.sp,
@@ -92,7 +94,7 @@ fun UserSettingScreen(
           )
         }
         Text(
-          text = username!!.capitalize(Locale.current),
+          text = username.capitalize(Locale.current),
           fontSize = 22.sp,
           modifier = modifier.padding(vertical = 22.dp),
           fontWeight = FontWeight.Bold
@@ -103,12 +105,12 @@ fun UserSettingScreen(
     UserSettingRow(
       icon = Icons.Rounded.Sync,
       text = stringResource(id = R.string.sync),
-      clickListener = { onClick(UserSettingsEvent.SyncData) },
+      clickListener = { onEvent(UserSettingsEvent.SyncData) },
       modifier = modifier
     )
 
     // Language option
-    if (userSettingViewModel.allowSwitchingLanguages()) {
+    if (allowSwitchingLanguages) {
       Row(
         modifier =
           modifier
@@ -129,7 +131,7 @@ fun UserSettingScreen(
         }
         Box(contentAlignment = Alignment.CenterEnd) {
           Text(
-            text = userSettingViewModel.loadSelectedLanguage(),
+            text = selectedLanguage,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = modifier.wrapContentWidth(Alignment.End)
@@ -139,9 +141,9 @@ fun UserSettingScreen(
             onDismissRequest = { expanded = false },
             modifier = modifier.wrapContentWidth(Alignment.End)
           ) {
-            for (language in userSettingViewModel.languages) {
+            for (language in languages) {
               DropdownMenuItem(
-                onClick = { onClick(UserSettingsEvent.SwitchLanguage(language, context)) }
+                onClick = { onEvent(UserSettingsEvent.SwitchLanguage(language, context)) }
               ) { Text(text = language.displayName, fontSize = 18.sp) }
             }
           }
@@ -159,7 +161,7 @@ fun UserSettingScreen(
     UserSettingRow(
       icon = Icons.Rounded.Logout,
       text = stringResource(id = R.string.logout),
-      clickListener = { onClick(UserSettingsEvent.Logout) },
+      clickListener = { onEvent(UserSettingsEvent.Logout) },
       modifier = modifier.testTag(USER_SETTING_ROW_TEST_TAG)
     )
   }
