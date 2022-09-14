@@ -123,6 +123,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         fragment.whenStarted { loadProgress.dismiss() }
       }
     }
+
+    questionnaireViewModel.saveButtonEnabledLiveData.observe(this) {
+      findViewById<Button>(R.id.btn_save_client_info).isEnabled = it
+      findViewById<View>(R.id.progress).visibility = if (it) View.VISIBLE else View.GONE
+    }
   }
 
   fun updateViews() {

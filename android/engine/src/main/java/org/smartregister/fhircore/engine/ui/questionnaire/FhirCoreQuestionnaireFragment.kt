@@ -16,11 +16,16 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
+import android.os.Bundle
+import android.view.View
+import androidx.fragment.app.activityViewModels
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.contrib.views.barcode.QuestionnaireItemBarCodeReaderViewHolderFactory
 
 class FhirCoreQuestionnaireFragment : QuestionnaireFragment() {
+
+  private val fhirQuestionnaireActivityViewModel: QuestionnaireViewModel by activityViewModels()
 
   override fun getCustomQuestionnaireItemViewHolderFactoryMatchers():
     List<QuestionnaireItemViewHolderFactoryMatcher> {
@@ -38,6 +43,17 @@ class FhirCoreQuestionnaireFragment : QuestionnaireFragment() {
         }
       }
     )
+  }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+    view.findViewById<View>(com.google.android.fhir.datacapture.R.id.pagination_next_button).apply {
+      viewTreeObserver.addOnGlobalLayoutListener {
+        fhirQuestionnaireActivityViewModel.updateSaveButtonEnableState(
+          visibility == View.GONE || !isEnabled
+        )
+      }
+    }
   }
 
   companion object {

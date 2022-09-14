@@ -28,7 +28,8 @@
         android:layout_marginBottom="8dp"
         android:layout_marginTop="10dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btn_edit_qr"/>
+        app:layout_constraintBottom_toTopOf="@id/btn_edit_qr"
+        tools:layout="@layout/questionnaire_fragment" />
 
 
     <Button
