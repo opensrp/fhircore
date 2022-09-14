@@ -16,14 +16,15 @@
 
 package org.smartregister.fhircore.engine.ui.usersetting
 
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import io.mockk.every
-import io.mockk.mockk
+import androidx.test.core.app.ActivityScenario
 import io.mockk.spyk
 import io.mockk.verify
+import java.util.Locale
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -34,25 +35,18 @@ class UserSettingScreenKtTest : RobolectricTest() {
 
   private val mockUserSettingsEventListener: (UserSettingsEvent) -> Unit = spyk({})
 
-  private val userSettingViewModel = mockk<UserSettingViewModel>()
+  @get:Rule(order = 1) val composeRule = createEmptyComposeRule()
 
-  @get:Rule(order = 1) val composeRule = createComposeRule()
+  private lateinit var scenario: ActivityScenario<ComponentActivity>
 
   @Before
   fun setUp() {
-    every { userSettingViewModel.retrieveUsername() } returns "johndoe"
-    every { userSettingViewModel.allowSwitchingLanguages() } returns false
+    scenario = ActivityScenario.launch(ComponentActivity::class.java)
   }
 
   @Test
   fun testUserProfileShouldDisplayCorrectContent() {
-    composeRule.setContent {
-      UserSettingScreen(
-        userSettingViewModel = userSettingViewModel,
-        onClick = mockUserSettingsEventListener
-      )
-    }
-
+    initComposable()
     composeRule.onNodeWithText("Johndoe").assertExists()
     composeRule.onNodeWithText("Sync").assertExists()
     composeRule.onNodeWithText("Log out").assertExists()
@@ -60,69 +54,49 @@ class UserSettingScreenKtTest : RobolectricTest() {
 
   @Test
   fun testSyncRowClickShouldInitiateSync() {
-    composeRule.setContent {
-      UserSettingScreen(
-        userSettingViewModel = userSettingViewModel,
-        onClick = mockUserSettingsEventListener
-      )
-    }
+    initComposable()
     composeRule.onNodeWithText("Sync").performClick()
     verify { mockUserSettingsEventListener(any()) }
   }
 
   @Test
-  fun testLogoutRowClickShouldInitiateSync() {
-    composeRule.setContent {
-      UserSettingScreen(
-        userSettingViewModel = userSettingViewModel,
-        onClick = mockUserSettingsEventListener
-      )
-    }
-    composeRule.onNodeWithTag(USER_SETTING_ROW_TEST_TAG).performClick()
+  fun testLogoutRowClickShouldInitiateLogout() {
+    initComposable()
+    composeRule.onNodeWithText("Log out").performClick()
     verify { mockUserSettingsEventListener(any()) }
   }
 
   @Test
   fun testLanguageRowIsNotShownWhenAllowSwitchingLanguagesIsFalse() {
-    composeRule.setContent {
-      UserSettingScreen(
-        userSettingViewModel = userSettingViewModel,
-        onClick = mockUserSettingsEventListener
-      )
-    }
-
+    initComposable(allowSwitchingLanguages = false)
     composeRule.onNodeWithText("Language").assertDoesNotExist()
   }
 
   @Test
   fun testLanguageRowIsShownWhenAllowSwitchingLanguagesIsTrue() {
-    every { userSettingViewModel.allowSwitchingLanguages() } returns true
-    every { userSettingViewModel.loadSelectedLanguage() } returns "Some lang"
-    composeRule.setContent {
-      UserSettingScreen(
-        userSettingViewModel = userSettingViewModel,
-        onClick = mockUserSettingsEventListener
-      )
-    }
-
+    initComposable()
     composeRule.onNodeWithText("Language").assertExists()
   }
 
   @Test
   fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
-    val languages = listOf(Language("es", "Spanish"), Language("en", "English"))
-    every { userSettingViewModel.languages } returns languages
-    every { userSettingViewModel.allowSwitchingLanguages() } returns true
-    every { userSettingViewModel.loadSelectedLanguage() } returns "Some lang"
-    composeRule.setContent {
-      UserSettingScreen(
-        userSettingViewModel = userSettingViewModel,
-        onClick = mockUserSettingsEventListener
-      )
-    }
-
+    initComposable()
     composeRule.onNodeWithText("Language").performClick()
-    composeRule.onNodeWithText("Spanish").assertExists()
+    composeRule.onNodeWithText("Swahili").assertExists()
     composeRule.onNodeWithText("English").assertExists()
+  }
+
+  private fun initComposable(allowSwitchingLanguages: Boolean = true) {
+    scenario.onActivity { activity ->
+      activity.setContent {
+        UserSettingScreen(
+          username = "Johndoe",
+          allowSwitchingLanguages = allowSwitchingLanguages,
+          selectedLanguage = Locale.ENGLISH.toLanguageTag(),
+          languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+          onEvent = mockUserSettingsEventListener
+        )
+      }
+    }
   }
 }
