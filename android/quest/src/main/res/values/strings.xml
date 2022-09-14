@@ -40,6 +40,7 @@
     <string name="individual_details">Individual details</string>
     <string name="view_family">View family</string>
     <string name="record_sick_child">Record sick child</string>
+    <string name="register_with_disease">Register with disease</string>
 
     <!-- SideMenu option strings-->
     <string name="device_to_device_sync">Device to device sync</string>
