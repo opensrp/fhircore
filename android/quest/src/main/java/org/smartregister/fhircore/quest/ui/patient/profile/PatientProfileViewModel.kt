@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.monthsPassed
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -176,6 +177,13 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
+          R.id.register_with_disease -> {
+            event.context.launchQuestionnaire<QuestionnaireActivity>(
+              questionnaireId = DISEASE_REGISTER_FORM,
+              clientIdentifier = event.patientId,
+              questionnaireType = QuestionnaireType.DEFAULT
+            )
+          }
           else -> {}
         }
       }
@@ -195,5 +203,6 @@ constructor(
     const val SICK_CHILD_UNDER_2M_FORM = "sick-child-under-2m"
     const val SICK_CHILD_ABOVE_2M_FORM = "sick-child-above-2m"
     const val FAMILY_PLANNING = "family-planning"
+    const val DISEASE_REGISTER_FORM = "disease-registration-form"
   }
 }
