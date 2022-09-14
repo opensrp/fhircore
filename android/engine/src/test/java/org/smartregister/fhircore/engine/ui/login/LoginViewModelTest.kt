@@ -263,7 +263,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     val configurationRegistry = mockk<ConfigurationRegistry>()
     val accountAuthenticator = mockk<AccountAuthenticator>()
     val dispatcher = DefaultDispatcherProvider()
-    val sharedPreferences = SharedPreferencesHelper(application)
+    val sharedPreferences = SharedPreferencesHelper(application, gson)
 
     val viewModel =
       LoginViewModel(
@@ -320,11 +320,10 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<PractitionerDetails>(
-          key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
-          isFhirResource = true
+      sharedPreferences.read<KeycloakUserDetails>(
+          key = SharedPreferenceKey.USER_DETAILS.name,
+          decodeWithGson = true
         )
-        ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value
@@ -383,7 +382,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     val configurationRegistry = mockk<ConfigurationRegistry>()
     val accountAuthenticator = mockk<AccountAuthenticator>()
     val dispatcher = DefaultDispatcherProvider()
-    val sharedPreferences = SharedPreferencesHelper(application)
+    val sharedPreferences = SharedPreferencesHelper(application, gson)
 
     val viewModel =
       LoginViewModel(
@@ -418,11 +417,10 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<PractitionerDetails>(
-          key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
-          isFhirResource = true
+      sharedPreferences.read<KeycloakUserDetails>(
+          key = SharedPreferenceKey.USER_DETAILS.name,
+          decodeWithGson = true
         )
-        ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value

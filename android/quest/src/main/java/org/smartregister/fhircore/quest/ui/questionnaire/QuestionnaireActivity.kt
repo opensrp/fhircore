@@ -28,8 +28,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
@@ -68,15 +67,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
+  @Inject lateinit var parser: IParser
+
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   protected lateinit var questionnaire: Questionnaire
 
-  var computedValuesMap: Map<String, Any> = emptyMap()
+  private lateinit var computedValuesMap: Map<String, Any>
 
-  lateinit var fragment: QuestQuestionnaireFragment
-
-  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  private lateinit var fragment: QuestQuestionnaireFragment
 
   private lateinit var saveProcessingAlertDialog: AlertDialog
 
@@ -93,7 +92,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     setContentView(R.layout.activity_questionnaire)
 
     computedValuesMap =
-      intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY) as Map<String, Any>
+      intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY) as Map<String, Any>?
+        ?: emptyMap()
 
     questionnaireConfig =
       (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig).interpolate(
@@ -329,7 +329,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     if (questionnaireConfig.confirmationDialog != null) {
-      handleRemoveEntityQuestionnaireResponse(questionnaireConfig = questionnaireConfig)
+      dismissSaveProcessing()
+      confirmationDialog(questionnaireConfig = questionnaireConfig)
     } else {
       questionnaireViewModel.extractAndSaveResources(
         context = this,
@@ -340,29 +341,23 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  fun handleRemoveEntityQuestionnaireResponse(questionnaireConfig: QuestionnaireConfig) {
-    dismissSaveProcessing()
-    confirmationDialog(
-      resourceId = questionnaireConfig.resourceIdentifier!!,
-      questionnaireConfig = questionnaireConfig
-    )
-  }
-
-  private fun confirmationDialog(resourceId: String, questionnaireConfig: QuestionnaireConfig) {
+  private fun confirmationDialog(questionnaireConfig: QuestionnaireConfig) {
     AlertDialogue.showAlert(
       context = this,
       alertIntent = AlertIntent.CONFIRM,
       title = questionnaireConfig.confirmationDialog!!.title,
       message = questionnaireConfig.confirmationDialog!!.message,
       confirmButtonListener = { dialog ->
-        if (questionnaireConfig.groupResource != null) {
+        if (questionnaireConfig.resourceIdentifier != null) {
+          questionnaireViewModel.deleteResource(questionnaireConfig.resourceIdentifier!!)
+        } else if (questionnaireConfig.groupResource != null) {
           questionnaireViewModel.removeGroup(
             groupId = questionnaireConfig.groupResource!!.groupIdentifier,
             removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
             deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers
           )
           questionnaireViewModel.removeGroupMember(
-            memberId = resourceId,
+            memberId = questionnaireConfig.resourceIdentifier,
             removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
             groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
             memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
@@ -421,7 +416,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       backReference: String? = null,
       populationResources: ArrayList<Resource> = ArrayList(),
       questionnaireConfig: QuestionnaireConfig? = null,
-      computedValuesMap: Map<String, Any>? = emptyMap()
+      computedValuesMap: Map<String, Any>?
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference),

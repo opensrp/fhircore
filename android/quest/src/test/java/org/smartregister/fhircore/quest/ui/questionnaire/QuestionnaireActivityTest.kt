@@ -161,7 +161,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
             id = "my-form",
             resourceIdentifier = "1234",
             type = QuestionnaireType.READ_ONLY
-          )
+          ),
+        computedValuesMap = emptyMap()
       )
 
     val actualQuestionnaireConfig =

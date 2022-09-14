@@ -21,8 +21,7 @@ import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
@@ -42,7 +41,6 @@ import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -71,7 +69,6 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
 @HiltViewModel
@@ -85,7 +82,10 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator
 ) : ViewModel() {
+
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
+
+  @Inject lateinit var jsonParser: IParser
 
   val extractionProgress = MutableLiveData<Boolean>()
 
@@ -97,20 +97,16 @@ constructor(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-
   private val authenticatedOrganizationIds by lazy {
     sharedPreferencesHelper.read<List<String>>(
       SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
     )
   }
 
-  private val practitionerDetails by lazy {
-    sharedPreferencesHelper.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
-        isFhirResource = true
-      )
-      ?.fhirPractitionerDetails
+  private val practitionerId: String? by lazy {
+    sharedPreferencesHelper
+      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+      ?.extractLogicalIdUuid()
   }
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
@@ -131,49 +127,24 @@ constructor(
     return structureMap
   }
 
-  fun appendOrganizationInfo(resource: Resource) {
-    // Organization reference in shared pref as "Organization/some-gibberish-uuid"
-    authenticatedOrganizationIds.let { ids ->
-      val organizationRef =
-        ids?.first()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
-
-      when (resource) {
-        is Patient -> resource.managingOrganization = organizationRef
-        is Group -> resource.managingEntity = organizationRef
-        is Encounter -> resource.serviceProvider = organizationRef
-        is Location -> resource.managingOrganization = organizationRef
-      }
-    }
-  }
-
-  fun appendPractitionerInfo(resource: Resource) {
-    practitionerDetails?.id?.let {
-      // Convert practitioner uuid to reference e.g. "Practitioner/some-gibberish-uuid"
-      val practitionerRef = it.asReference(ResourceType.Practitioner)
-
-      if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
-      else if (resource is Encounter)
-        resource.participant =
-          arrayListOf(
-            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
-          )
-    }
-  }
-
-  suspend fun appendPatientsAndRelatedPersonsToGroups(resource: Resource, groupResourceId: String) {
+  suspend fun addGroupMember(resource: Resource, groupResourceId: String) {
     defaultRepository.loadResource<Group>(groupResourceId)?.run {
-      if (resource.resourceType == ResourceType.Patient) {
-        this.member?.add(
-          Group.GroupMemberComponent().apply {
-            entity =
-              Reference().apply { reference = "${ResourceType.Patient.name}/${resource.logicalId}" }
-          }
+      // Support all the valid group member references as per the FHIR specs
+      if (resource.resourceType.isIn(
+          ResourceType.CareTeam,
+          ResourceType.Device,
+          ResourceType.Group,
+          ResourceType.HealthcareService,
+          ResourceType.Location,
+          ResourceType.Organization,
+          ResourceType.Patient,
+          ResourceType.Practitioner,
+          ResourceType.PractitionerRole,
+          ResourceType.RelatedPerson,
+          ResourceType.Specimen
         )
-      } else {
-        this.managingEntity =
-          Reference().apply {
-            reference = "${ResourceType.RelatedPerson.name}/${resource.logicalId}"
-          }
+      ) {
+        this.member?.add(Group.GroupMemberComponent().apply { entity = resource.asReference() })
       }
       defaultRepository.addOrUpdate(this)
     }
@@ -230,10 +201,7 @@ constructor(
               )
           ) {
             questionnaireConfig.groupResource?.groupIdentifier?.let {
-              appendPatientsAndRelatedPersonsToGroups(
-                resource = bundleEntry.resource,
-                groupResourceId = it
-              )
+              addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
             }
           }
 
@@ -285,6 +253,35 @@ constructor(
     }
   }
 
+  fun appendOrganizationInfo(resource: Resource) {
+    // Organization reference in shared pref as "Organization/some-gibberish-uuid"
+    authenticatedOrganizationIds.let { ids ->
+      val organizationRef =
+        ids?.first()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
+
+      when (resource) {
+        is Patient -> resource.managingOrganization = organizationRef
+        is Group -> if (resource.managingEntity == null) resource.managingEntity = organizationRef
+        is Encounter -> resource.serviceProvider = organizationRef
+        is Location -> resource.managingOrganization = organizationRef
+      }
+    }
+  }
+
+  fun appendPractitionerInfo(resource: Resource) {
+    practitionerId?.let {
+      // Convert practitioner uuid to reference e.g. "Practitioner/some-gibberish-uuid"
+      val practitionerRef = it.asReference(ResourceType.Practitioner)
+
+      if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
+      else if (resource is Encounter)
+        resource.participant =
+          arrayListOf(
+            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
+          )
+    }
+  }
+
   suspend fun extractCarePlan(
     questionnaireResponse: QuestionnaireResponse,
     bundle: Bundle?,
@@ -298,7 +295,6 @@ constructor(
       val data =
         Bundle().apply {
           bundle?.entry?.map { this.addEntry(it) }
-
           addEntry().resource = questionnaireResponse
         }
 
@@ -496,12 +492,12 @@ constructor(
   }
 
   fun removeGroupMember(
-    memberId: String,
+    memberId: String?,
     groupIdentifier: String?,
     memberResourceType: String?,
     removeMember: Boolean
   ) {
-    if (removeMember) {
+    if (removeMember && !memberId.isNullOrEmpty()) {
       viewModelScope.launch(dispatcherProvider.io()) {
         try {
           defaultRepository.removeGroupMember(
@@ -516,6 +512,10 @@ constructor(
         }
       }
     }
+  }
+
+  fun deleteResource(resourceIdentifier: String) {
+    viewModelScope.launch { defaultRepository.delete(resourceIdentifier) }
   }
 
   companion object {

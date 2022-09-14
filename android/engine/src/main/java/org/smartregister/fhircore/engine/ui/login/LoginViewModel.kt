@@ -45,6 +45,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
 import retrofit2.Response
@@ -120,27 +121,32 @@ constructor(
     val locationHierarchies =
       practitionerDetails.fhirPractitionerDetails.locationHierarchyList ?: listOf()
 
-    val careTeamIds = fhirEngine.create(*careTeams.toTypedArray())
-    val organizationIds = fhirEngine.create(*organizations.toTypedArray())
-    val locationIds = fhirEngine.create(*locations.toTypedArray())
+    val careTeamIds: List<String> = fhirEngine.create(*careTeams.toTypedArray())
+    val organizationIds: List<String> = fhirEngine.create(*organizations.toTypedArray())
+    val locationIds: List<String> = fhirEngine.create(*locations.toTypedArray())
 
     sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
-      value = practitionerDetails,
-      isFhirResource = true
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      value = practitionerDetails.fhirPractitionerDetails.practitionerId.valueToString()
+    )
+
+    sharedPreferences.write(
+      key = SharedPreferenceKey.USER_DETAILS.name,
+      value = practitionerDetails.userDetail,
     )
     sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name,
-      careTeamIds
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name,
+      value = careTeamIds,
     )
     sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-      organizationIds
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
+      value = organizationIds,
     )
     sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name, locationIds)
+
     sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name,
-      locationHierarchies
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name,
+      value = locationHierarchies,
     )
   }
 

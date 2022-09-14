@@ -44,7 +44,8 @@ fun List<ActionConfig>.handleClickEvent(
             questionnaireConfig = questionnaireConfig,
             intentBundle =
               if (resourceData != null) actionConfig.paramsBundle(resourceData.computedValuesMap)
-              else Bundle.EMPTY
+              else Bundle.EMPTY,
+            computedValuesMap = resourceData?.computedValuesMap
           )
         }
       }

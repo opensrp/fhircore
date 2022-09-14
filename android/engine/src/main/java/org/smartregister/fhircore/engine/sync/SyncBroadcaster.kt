@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import timber.log.Timber
 
 /**
@@ -125,7 +126,7 @@ constructor(
             paramsMap
               ?.get(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
               ?.firstOrNull()
-              ?.substringAfter("/")
+              ?.extractLogicalIdUuid()
           ConfigurationRegistry.ID -> paramExpression
           ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
           else -> null

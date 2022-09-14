@@ -54,18 +54,15 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
-import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
-import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
 const val NO_REGISTER_VIEW_TITLE_TEST_TAG = "noRegisterViewTitleTestTag"
@@ -172,20 +169,7 @@ fun RegisterScreen(
       } else {
         registerConfiguration.noResults?.let { noResultConfig ->
           NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
-            val onClickAction =
-              noResultConfig.actionButton?.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-            onClickAction?.let { actionConfig ->
-              when (onClickAction.workflow) {
-                ApplicationWorkflow.LAUNCH_REGISTER -> {
-                  actionConfig.questionnaire?.let { questionnaireConfig ->
-                    context.launchQuestionnaire<QuestionnaireActivity>(
-                      questionnaireConfig = questionnaireConfig
-                    )
-                  }
-                }
-                else -> {}
-              }
-            }
+            noResultConfig.actionButton?.actions?.handleClickEvent(navController)
           }
         }
       }

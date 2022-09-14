@@ -199,7 +199,8 @@ constructor(
         intentBundle =
           bundleOf(
             Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
-          )
+          ),
+        computedValuesMap = null
       )
     }
   }

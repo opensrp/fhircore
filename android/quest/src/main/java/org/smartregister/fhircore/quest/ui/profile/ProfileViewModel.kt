@@ -55,11 +55,11 @@ constructor(
 
   fun retrieveProfileUiState(profileId: String, resourceId: String) {
     if (resourceId.isNotEmpty()) {
-      viewModelScope.launch {
+      viewModelScope.launch(dispatcherProvider.io()) {
         profileUiState.value =
           ProfileUiState(
             resourceData = registerRepository.loadProfileData(profileId, resourceId),
-            profileConfiguration = retrieveProfileConfiguration(profileId)
+            profileConfiguration = retrieveProfileConfiguration(profileId),
           )
       }
     }
