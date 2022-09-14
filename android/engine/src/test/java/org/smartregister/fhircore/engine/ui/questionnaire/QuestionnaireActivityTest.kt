@@ -24,6 +24,7 @@ import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
@@ -83,6 +84,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
 
+  private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
     spyk(
@@ -119,6 +122,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       QuestionnaireResponse()
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
+
+    val questionnaireString = parser.encodeResourceToString(Questionnaire())
+
+    questionnaireFragment.apply {
+      arguments =
+        bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
+    }
+
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
@@ -209,6 +220,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       }
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
+
+    val questionnaireString = parser.encodeResourceToString(Questionnaire())
+
+    questionnaireFragment.apply {
+      arguments =
+        bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
+    }
+
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
