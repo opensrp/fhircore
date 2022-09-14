@@ -80,13 +80,16 @@ class UserSettingScreenKtTest : RobolectricTest() {
 
   @Test
   fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
-    initComposable()
+    initComposable(allowMainClockAutoAdvance = true)
     composeRule.onNodeWithText("Language").performClick()
     composeRule.onNodeWithText("Swahili").assertExists()
     composeRule.onNodeWithText("English").assertExists()
   }
 
-  private fun initComposable(allowSwitchingLanguages: Boolean = true) {
+  private fun initComposable(
+    allowSwitchingLanguages: Boolean = true,
+    allowMainClockAutoAdvance: Boolean = false
+  ) {
     scenario.onActivity { activity ->
       activity.setContent {
         UserSettingScreen(
@@ -98,5 +101,6 @@ class UserSettingScreenKtTest : RobolectricTest() {
         )
       }
     }
+    composeRule.mainClock.autoAdvance = allowMainClockAutoAdvance
   }
 }
