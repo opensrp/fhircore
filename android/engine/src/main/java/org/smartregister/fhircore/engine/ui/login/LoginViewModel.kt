@@ -188,7 +188,7 @@ constructor(
       }
     }
 
-  private val _navigateToHome = MutableLiveData<Boolean>()
+  private val _navigateToHome = MutableLiveData<Boolean>( true)
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 

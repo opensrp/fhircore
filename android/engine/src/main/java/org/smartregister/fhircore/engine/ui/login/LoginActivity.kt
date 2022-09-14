@@ -40,10 +40,12 @@ class LoginActivity : BaseMultiLanguageActivity() {
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
     loginViewModel.apply {
-      // Run sync and navigate directly to home screen if session is active
-      if (accountAuthenticator.hasActiveSession()) loginService.navigateToHome()
 
       val isPinEnabled = loginViewModel.applicationConfiguration.loginConfig?.enablePin ?: false
+
+      // Run sync and navigate directly to home screen if session is active and pin is not enabled
+      if (accountAuthenticator.hasActiveSession() && !isPinEnabled) loginService.navigateToHome()
+
       navigateToHome.observe(this@LoginActivity) { launchHomeScreen ->
         when {
           launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() -> {
