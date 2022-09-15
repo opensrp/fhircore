@@ -39,6 +39,13 @@ class LoginActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
+
+    navigateToScreen()
+
+    setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+  }
+
+  fun navigateToScreen() {
     loginViewModel.apply {
       val isPinEnabled = loginViewModel.applicationConfiguration.loginConfig.enablePin ?: false
 
@@ -64,8 +71,6 @@ class LoginActivity : BaseMultiLanguageActivity() {
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
     }
-
-    setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
   }
 
   private fun launchDialPad(phone: String) {
