@@ -272,6 +272,10 @@ constructor(
     else _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
   }
 
+  fun isPinEnabled(): Boolean {
+    return applicationConfiguration.loginConfig.enablePin ?: false
+  }
+
   companion object {
     const val IDENTIFIER = "identifier"
   }
