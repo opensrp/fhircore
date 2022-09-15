@@ -39,7 +39,17 @@ class UserSettingFragment : Fragment() {
   ): View {
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-      setContent { AppTheme { UserSettingScreen(userSettingViewModel = userSettingViewModel) } }
+      setContent {
+        AppTheme {
+          UserSettingScreen(
+            username = userSettingViewModel.retrieveUsername(),
+            allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
+            selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
+            languages = userSettingViewModel.languages,
+            onEvent = userSettingViewModel::onEvent
+          )
+        }
+      }
     }
   }
 }

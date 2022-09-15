@@ -111,7 +111,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSync() {
-    userSettingViewModel.runSync()
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncData)
   }
 
   @Test
@@ -124,13 +124,13 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testLogoutUserShouldCallAuthLogoutService() {
+    val userSettingsEvent = UserSettingsEvent.Logout
     every { accountAuthenticator.logout() } returns Unit
 
-    userSettingViewModel.logoutUser()
+    userSettingViewModel.onEvent(userSettingsEvent)
 
     verify(exactly = 1) { accountAuthenticator.logout() }
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-    Assert.assertTrue(userSettingViewModel.onLogout.value!!)
   }
 
   @Test
@@ -163,18 +163,15 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Test
   fun setLanguageShouldCallSharedPreferencesHelperWriteWithSelectedLanguageTagAndPostValue() {
     val language = Language("es", "Spanish")
-    var postedValue: Language? = null
+    val userSettingsEvent = UserSettingsEvent.SwitchLanguage(language, context)
 
     every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
 
-    userSettingViewModel.language.observeForever { postedValue = it }
-
-    userSettingViewModel.setLanguage(language)
+    userSettingViewModel.onEvent(userSettingsEvent)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
-    Assert.assertEquals(language, postedValue!!)
   }
 
   @Test
