@@ -138,11 +138,15 @@ constructor(
           ResourceType.Patient,
           ResourceType.Practitioner,
           ResourceType.PractitionerRole,
-          ResourceType.RelatedPerson,
           ResourceType.Specimen
         )
       ) {
         this.member?.add(Group.GroupMemberComponent().apply { entity = resource.asReference() })
+      }
+
+      // set managing entity for extracted related resource
+      if (resource.resourceType == ResourceType.RelatedPerson) {
+        this.managingEntity = resource.logicalId.asReference(ResourceType.RelatedPerson)
       }
       defaultRepository.addOrUpdate(this)
     }
