@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.UriType
@@ -443,7 +444,8 @@ class ResourceExtensionTest : RobolectricTest() {
 
     val defaultRepository = mockk<DefaultRepository>()
 
-    coEvery { defaultRepository.delete(any()) } returns Unit
+    coEvery { defaultRepository.delete(any<Resource>()) } returns Unit
+    coEvery { defaultRepository.delete(any<String>()) } returns Unit
 
     runBlocking { questionnaireResponse.deleteRelatedResources(defaultRepository) }
 

@@ -28,6 +28,7 @@ import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -40,6 +41,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -59,6 +61,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -70,13 +73,17 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.C
 @HiltAndroidTest
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) var coroutinesTestRule = CoroutineTestRule()
+
+  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
+
+  @Inject lateinit var jsonParser: IParser
+
   private lateinit var questionnaireActivity: QuestionnaireActivity
 
   private lateinit var intent: Intent
-
-  @get:Rule var hiltRule = HiltAndroidRule(this)
-
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
 
@@ -91,7 +98,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         transformSupportServices = mockk(),
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = mockk(),
-        libraryEvaluator = mockk()
+        libraryEvaluator = mockk(),
+        fhirCarePlanGenerator = mockk(),
+        jsonParser = mockk()
       )
     )
 

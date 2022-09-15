@@ -80,12 +80,10 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val libraryEvaluator: LibraryEvaluator
+  val libraryEvaluator: LibraryEvaluator,
+  val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  val jsonParser: IParser
 ) : ViewModel() {
-
-  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-
-  @Inject lateinit var jsonParser: IParser
 
   val extractionProgress = MutableLiveData<Boolean>()
 
@@ -261,7 +259,7 @@ constructor(
 
       when (resource) {
         is Patient -> resource.managingOrganization = organizationRef
-        is Group -> if (resource.managingEntity == null) resource.managingEntity = organizationRef
+        is Group -> resource.managingEntity = organizationRef
         is Encounter -> resource.serviceProvider = organizationRef
         is Location -> resource.managingOrganization = organizationRef
       }

@@ -76,6 +76,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
@@ -91,9 +92,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
+  @get:Rule(order = 1) var coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
+
+  @Inject lateinit var jsonParser: IParser
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -146,7 +151,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           dispatcherProvider = defaultRepo.dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          libraryEvaluator = libraryEvaluator
+          libraryEvaluator = libraryEvaluator,
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
+          jsonParser = jsonParser
         )
       )
 
