@@ -188,7 +188,7 @@ constructor(
       }
     }
 
-  private val _navigateToHome = MutableLiveData<Boolean>(true)
+  private val _navigateToHome = MutableLiveData(false)
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 
@@ -217,17 +217,6 @@ constructor(
       username.value!!.trim(),
       password.value!!.trim().toCharArray()
     )
-  }
-
-  fun loginUser() {
-    viewModelScope.launch(dispatcher.io()) {
-      if (accountAuthenticator.hasActiveSession()) {
-        Timber.v("Login not needed .. navigating to home directly")
-        _navigateToHome.postValue(true)
-      } else {
-        accountAuthenticator.loadActiveAccount(this@LoginViewModel)
-      }
-    }
   }
 
   fun onUsernameUpdated(username: String) {
