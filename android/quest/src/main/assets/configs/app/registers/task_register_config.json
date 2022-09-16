@@ -22,7 +22,7 @@
       "id": "ActionButton",
       "visible": true,
       "display": "Add Tasks",
-      "icon": "add",
+      "menuIconConfig": {},
       "actions": [
         {
           "trigger": "ON_CLICK",

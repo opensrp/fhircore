@@ -25,6 +25,10 @@
       "id": "reports",
       "visible": true,
       "display": "{{reports}}",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_reports"
+      },
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -37,6 +41,10 @@
       "id": "p2p_sync",
       "visible": true,
       "display": "{{transfer.data}}",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_p2p"
+      },
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -49,6 +57,10 @@
       "id": "profile",
       "visible": true,
       "display": "{{profile }}",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_settings"
+      },
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -62,7 +74,10 @@
     {
       "id": "householdRegister",
       "display": "{{ all.households }}",
-      "icon": "",
+      "menuIconConfig": {
+        "type": "remote",
+        "reference": "Binary/144177"
+      },
       "showCount": true,
       "actions": [
         {
@@ -79,7 +94,10 @@
     {
       "id": "ancRegister",
       "display": "ANC",
-      "icon": "",
+      "menuIconConfig": {
+        "type": "remote",
+        "reference": "Binary/145193"
+      },
       "showCount": true,
       "actions": [
         {
@@ -96,7 +114,10 @@
     {
       "id": "taskRegister",
       "display": "Tasks",
-      "icon": "",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_tasks_priority"
+      },
       "showCount": true,
       "actions": [
         {
