@@ -28,6 +28,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -48,7 +49,7 @@ class ExtendedFabTest {
             NavigationMenuConfig(
               id = "test",
               display = "Fab Button",
-              icon = "add",
+              menuIconConfig = MenuIconConfig(),
               actions =
                 listOf(
                   ActionConfig(
