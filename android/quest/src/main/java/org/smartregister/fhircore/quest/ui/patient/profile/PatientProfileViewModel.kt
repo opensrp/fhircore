@@ -357,5 +357,6 @@ constructor(
     const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM =
       "contact-and-community-positive-hiv-test-and-next-appointment"
     const val REMOVE_HIV_PATIENT_FORM = "remove-person"
+    const val PATIENT_FINISH_VISIT = "patient-finish-visit"
   }
 }
