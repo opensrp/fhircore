@@ -39,11 +39,23 @@ class LoginActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
-    loginViewModel.apply {
-      // Run sync and navigate directly to home screen if session is active
-      if (accountAuthenticator.hasActiveSession()) loginService.navigateToHome()
 
-      val isPinEnabled = loginViewModel.applicationConfiguration.loginConfig?.enablePin ?: false
+    navigateToScreen()
+
+    setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+  }
+
+  fun navigateToScreen() {
+    loginViewModel.apply {
+      val isPinEnabled = isPinEnabled()
+
+      // Run sync and navigate directly to home screen if session is active and pin is not enabled
+      if (accountAuthenticator.hasActiveSession() && isPinEnabled) {
+        loginService.navigateToPinLogin(false)
+      } else if (accountAuthenticator.hasActiveSession() && !isPinEnabled) {
+        loginService.navigateToHome()
+      }
+
       navigateToHome.observe(this@LoginActivity) { launchHomeScreen ->
         when {
           launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() -> {
@@ -59,8 +71,6 @@ class LoginActivity : BaseMultiLanguageActivity() {
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
     }
-
-    setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
   }
 
   private fun launchDialPad(phone: String) {
