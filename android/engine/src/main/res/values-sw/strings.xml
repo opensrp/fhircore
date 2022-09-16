@@ -34,6 +34,7 @@
         <string name="syncing">Inasawazisha&#8230;</string>
         <string name="syncing_initiated">Kusawazisha imeanza&#8230;</string>
         <string name="sync_failed">Hitilafu ukisawazisha. Angalia muunganisho wako wa mtandao au jaribu tena.</string>
+        <string name="sync_unauthorised">Usawazishaji haukufaulu kwa sababu hauna vitambulisho sahihi vya uthibitishaji</string>
         <string name="try_again">Jaribu tena</string>
         <string name="date_last_seen">Mara ya mwisho kuonekana %1$s</string>
         <string name="login_error">Hitiliafu ukiidhinisha: %1$s</string>

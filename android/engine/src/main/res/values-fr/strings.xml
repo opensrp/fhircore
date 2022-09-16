@@ -23,6 +23,7 @@
     <string name="syncing">Synchronisation en cours</string>
     <string name="syncing_initiated">Synchronisation initiée</string>
     <string name="sync_failed">Échec de la synchronisation. Vérifiez la connexion Internet ou réessayez plus tard.</string>
+    <string name="sync_unauthorised">La synchronisation a échoué car il manque des identifiants d\'authentification valides</string>
     <string name="try_again">Réessayez</string>
     <string name="status_vaccinated">Vacciné</string>
     <string name="status_overdue">En retard</string>

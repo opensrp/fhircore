@@ -24,6 +24,7 @@
     <string name="syncing">Syncing&#8230;</string>
     <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
+    <string name="sync_unauthorised">Sync failed because it lacks valid authentication credentials.</string>
     <string name="try_again">Try again</string>
     <string name="status_vaccinated">Vaccinated</string>
     <string name="status_overdue">Overdue</string>
