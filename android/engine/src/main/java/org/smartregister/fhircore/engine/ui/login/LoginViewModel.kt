@@ -188,7 +188,7 @@ constructor(
       }
     }
 
-  private val _navigateToHome = MutableLiveData<Boolean>()
+  private val _navigateToHome = MutableLiveData(false)
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 
@@ -217,17 +217,6 @@ constructor(
       username.value!!.trim(),
       password.value!!.trim().toCharArray()
     )
-  }
-
-  fun loginUser() {
-    viewModelScope.launch(dispatcher.io()) {
-      if (accountAuthenticator.hasActiveSession()) {
-        Timber.v("Login not needed .. navigating to home directly")
-        _navigateToHome.postValue(true)
-      } else {
-        accountAuthenticator.loadActiveAccount(this@LoginViewModel)
-      }
-    }
   }
 
   fun onUsernameUpdated(username: String) {
@@ -281,6 +270,10 @@ constructor(
   private fun handleErrorMessage(throwable: Throwable) {
     if (throwable is UnknownHostException) _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
     else _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+  }
+
+  fun isPinEnabled(): Boolean {
+    return applicationConfiguration.loginConfig.enablePin ?: false
   }
 
   companion object {
