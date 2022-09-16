@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.main.components
 
 import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -54,6 +56,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
+import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -82,7 +87,8 @@ const val MENU_BUTTON_ICON_TEST_TAG = "menuButtonIconTestTag"
 const val MENU_BUTTON_TEXT_TEST_TAG = "menuButtonTextTestTag"
 const val SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG = "sideMenuItemMainRowTestTag"
 const val SIDE_MENU_ITEM_INNER_ROW_TEST_TAG = "sideMenuItemInnerRowTestTag"
-const val SIDE_MENU_ITEM_ICON_TEST_TAG = "sideMenuItemIconTestTag"
+const val SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG = "sideMenuItemLocalIconTestTag"
+const val SIDE_MENU_ITEM_BINARY_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
 const val SIDE_MENU_ITEM_END_ICON_TEST_TAG = "sideMenuItemEndIconTestTag"
 const val SIDE_MENU_ITEM_TEXT_TEST_TAG = "sideMenuItemTextTestTag"
 const val NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG = "navBottomSectionSideMenuItemTestTag"
@@ -119,7 +125,7 @@ fun AppDrawer(
       }
     },
     bottomBar = { // Display bottom section of the nav (sync)
-      NavBottomSection(modifier, appUiState, onSideMenuClick)
+      NavBottomSection(modifier, context, appUiState, onSideMenuClick)
     },
     backgroundColor = SideMenuDarkColor
   ) { innerPadding ->
@@ -174,6 +180,7 @@ fun AppDrawer(
 @Composable
 private fun NavBottomSection(
   modifier: Modifier,
+  context: Context,
   appUiState: AppMainUiState,
   onSideMenuClick: (AppMainEvent) -> Unit
 ) {
@@ -186,7 +193,8 @@ private fun NavBottomSection(
   ) {
     SideMenuItem(
       modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
-      iconResource = R.drawable.ic_sync,
+      context = context,
+      menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
       title = stringResource(R.string.sync),
       endText = appUiState.lastSyncTime,
       showEndText = true,
@@ -204,7 +212,6 @@ private fun OtherPatientsItem(
   navController: NavController
 ) {
   SideMenuItem(
-    iconResource = null,
     title = stringResource(R.string.other_patients),
     endText = "",
     showEndText = false,
@@ -264,7 +271,8 @@ private fun ClientRegisterMenus(
   LazyColumn(modifier = Modifier.testTag(NAV_CLIENT_REGISTER_MENUS_LIST)) {
     items(appUiState.navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
       SideMenuItem(
-        iconResource = context.retrieveResourceId(navigationMenu.icon),
+        context = context,
+        menuIconConfig = navigationMenu.menuIconConfig,
         title = navigationMenu.display,
         endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
         showEndText = navigationMenu.showCount,
@@ -292,8 +300,8 @@ private fun StaticMenus(
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
     items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
       SideMenuItem(
-        // TODO Do we want save icons as base64 encoded strings
-        iconResource = context.retrieveResourceId(navigationMenu.icon),
+        context = context,
+        menuIconConfig = navigationMenu.menuIconConfig,
         title = navigationMenu.display,
         endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
         showEndText = navigationMenu.showCount,
@@ -364,7 +372,8 @@ private fun MenuActionButton(
 @Composable
 private fun SideMenuItem(
   modifier: Modifier = Modifier,
-  iconResource: Int?,
+  context: Context? = null,
+  menuIconConfig: MenuIconConfig? = null,
   title: String,
   endText: String = "",
   endTextColor: Color = Color.White,
@@ -382,14 +391,36 @@ private fun SideMenuItem(
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp)) {
-      if (iconResource != null) {
-        Icon(
-          modifier =
-            modifier.testTag(SIDE_MENU_ITEM_ICON_TEST_TAG).padding(end = 10.dp).size(24.dp),
-          painter = painterResource(id = iconResource),
-          contentDescription = SIDE_MENU_ICON,
-          tint = MenuItemColor
-        )
+      if (menuIconConfig != null) {
+        when (menuIconConfig.type) {
+          ICON_TYPE_LOCAL -> {
+            context?.retrieveResourceId(menuIconConfig.reference)?.let { drawableId ->
+              Icon(
+                modifier =
+                  modifier
+                    .testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
+                    .padding(end = 10.dp)
+                    .size(24.dp),
+                painter = painterResource(id = drawableId),
+                contentDescription = SIDE_MENU_ICON,
+                tint = MenuItemColor
+              )
+            }
+          }
+          ICON_TYPE_REMOTE -> {
+            if (menuIconConfig.decodedBitmap != null) {
+              Image(
+                modifier =
+                  modifier
+                    .testTag(SIDE_MENU_ITEM_BINARY_ICON_TEST_TAG)
+                    .padding(end = 10.dp)
+                    .size(24.dp),
+                bitmap = menuIconConfig.decodedBitmap!!.asImageBitmap(),
+                contentDescription = SIDE_MENU_ICON
+              )
+            }
+          }
+        }
       }
       SideMenuItemText(title = title, textColor = Color.White)
     }
