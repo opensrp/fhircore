@@ -53,4 +53,6 @@ sealed class AppMainEvent {
   object Logout : AppMainEvent()
 
   object SyncData : AppMainEvent()
+
+  object RefreshAuthToken : AppMainEvent()
 }
