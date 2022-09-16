@@ -176,6 +176,18 @@ constructor(
         .readText()
         .decodeResourceFromString<Composition>()
         .run {
+          val iconConfigs =
+            retrieveCompositionSections().filter {
+              it.focus.hasIdentifier() && it.focus.identifier.value.startsWith(ICON_PREFIX)
+            }
+          if (iconConfigs.isNotEmpty()) {
+            val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
+            fhirResourceDataSource.loadData(
+                "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids"
+              )
+              .entry
+              .forEach { repository.addOrUpdate(it.resource) }
+          }
           populateConfigurationsMap(
             composition = this,
             loadFromAssets = loadFromAssets,
@@ -320,5 +332,6 @@ constructor(
     const val COUNT = "count"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val CONFIG_SUFFIX = "_config"
+    const val ICON_PREFIX = "ic_"
   }
 }
