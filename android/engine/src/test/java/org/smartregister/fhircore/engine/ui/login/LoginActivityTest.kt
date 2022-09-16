@@ -27,7 +27,9 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -93,38 +95,38 @@ class LoginActivityTest : ActivityRobolectricTest() {
     fhirResourceDataSource = FhirResourceDataSource(resourceService)
 
     loginViewModel =
-      LoginViewModel(
-        fhirEngine = mockk(),
-        accountAuthenticator = accountAuthenticator,
-        dispatcher = coroutineTestRule.testDispatcherProvider,
-        sharedPreferences = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry
+      spyk(
+        LoginViewModel(
+          fhirEngine = mockk(),
+          accountAuthenticator = accountAuthenticator,
+          dispatcher = coroutineTestRule.testDispatcherProvider,
+          sharedPreferences = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry
+        )
       )
-
-    val controller = Robolectric.buildActivity(LoginActivity::class.java)
-    loginActivity = controller.create().resume().get()
-
-    loginActivity.configurationRegistry = configurationRegistry
-    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
-    loginService = loginActivity.loginService
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
+    every { loginViewModel.isPinEnabled() } returns false
+    initLoginActivity()
     loginViewModel.navigateToHome()
     verify { loginService.navigateToHome() }
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenPinExists() {
+    initLoginActivity()
     coEvery { accountAuthenticator.hasActivePin() } returns true
     loginViewModel.navigateToHome()
-    verify { loginService.navigateToHome() }
+    verify { loginService.navigateToPinLogin(false) }
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenForcedLogin() {
     coEvery { accountAuthenticator.hasActivePin() } returns false
+    every { loginViewModel.isPinEnabled() } returns false
+    initLoginActivity()
     loginViewModel.navigateToHome()
 
     verify { loginService.navigateToHome() }
@@ -132,6 +134,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToPinSetupShouldVerifyExpectedIntent() {
+    initLoginActivity()
     loginViewModel.navigateToHome()
     val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
@@ -146,5 +149,14 @@ class LoginActivityTest : ActivityRobolectricTest() {
     override lateinit var loginActivity: AppCompatActivity
 
     override fun navigateToHome() {}
+  }
+
+  private fun initLoginActivity() {
+    val controller = Robolectric.buildActivity(LoginActivity::class.java)
+    loginActivity = controller.create().resume().get()
+
+    loginActivity.configurationRegistry = configurationRegistry
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
+    loginService = loginActivity.loginService
   }
 }
