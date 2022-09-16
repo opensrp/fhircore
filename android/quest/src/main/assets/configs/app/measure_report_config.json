@@ -14,6 +14,18 @@
       "title": "Household Members ANC",
       "description": "Number of Households, Household members enrolled into ANC, disaggregated by age",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDPREGNANCY"
+    },
+    {
+      "id": "3",
+      "title": "TB Clients",
+      "description": "TB Clients disaggregated by age, gender, and months",
+      "url": "http://fhir.org/guides/who/anc-cds/Measure/TBCLIENTSIND01"
+    },
+    {
+      "id": "4",
+      "title": "HIV Clients",
+      "description": "HIV Clients disaggregated by age, gender, and months",
+      "url": "http://fhir.org/guides/who/anc-cds/Measure/HIVCLIENTSIND01"
     }
   ]
 }
