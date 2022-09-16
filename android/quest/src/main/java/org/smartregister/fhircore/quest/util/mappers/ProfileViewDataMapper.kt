@@ -99,6 +99,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                   else it.status.retrieveColorCode(),
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
+                subtitleStatus = it.status.name
               )
             }
         )

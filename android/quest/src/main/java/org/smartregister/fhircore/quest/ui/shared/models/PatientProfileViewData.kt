@@ -20,6 +20,7 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
@@ -52,7 +53,12 @@ sealed class ProfileViewData(
     val otherPatients: List<Resource> = emptyList(),
     val viewChildText: String = "",
     val observations: List<Observation> = emptyList()
-  ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier)
+  ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier) {
+    val tasksCompleted =
+      carePlans.isNotEmpty() &&
+        tasks.isNotEmpty() &&
+        tasks.all { it.subtitleStatus == Task.TaskStatus.COMPLETED.name }
+  }
 
   data class FamilyProfileViewData(
     override val logicalId: String = "",
