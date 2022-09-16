@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
+import android.os.Parcelable
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
@@ -127,6 +129,18 @@ constructor(
       AppMainEvent.SyncData -> {
         syncBroadcaster.runSync()
         retrieveAppMainUiState()
+      }
+      is AppMainEvent.RefreshAuthToken -> {
+        accountAuthenticator.loadActiveAccount({ accountBundleFuture ->
+          val bundle = accountBundleFuture.result
+          bundle.getParcelable<Parcelable>(AccountManager.KEY_INTENT).let { intent ->
+            if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+              resumeSync()
+              return@let
+            }
+            accountAuthenticator.logout()
+          }
+        })
       }
       is AppMainEvent.RegisterNewClient -> {
         event.context.launchQuestionnaire<QuestionnaireActivity>(
@@ -250,6 +264,8 @@ constructor(
           ?: Locale.ENGLISH.toLanguageTag()
       )
       .displayName
+
+  private fun resumeSync() = syncBroadcaster.runSync()
 
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
     val syncTimestampFormatter =
