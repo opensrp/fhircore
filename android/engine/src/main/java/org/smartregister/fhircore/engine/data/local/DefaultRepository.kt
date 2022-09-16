@@ -274,7 +274,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     }
   }
 
-  suspend fun delete(resourceId: String) {
-    fhirEngine.delete<Resource>(resourceId)
+  suspend fun delete(resourceType: String, resourceId: String) {
+    fhirEngine.delete(resourceType.resourceClassType().newInstance().resourceType, resourceId)
   }
 }

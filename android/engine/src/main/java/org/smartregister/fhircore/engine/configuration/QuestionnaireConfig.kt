@@ -31,6 +31,7 @@ data class QuestionnaireConfig(
   val planDefinitions: List<String>? = null,
   var type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val resourceIdentifier: String? = null,
+  val resourceType: String? = null,
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null
 ) : java.io.Serializable

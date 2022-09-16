@@ -516,8 +516,10 @@ constructor(
     }
   }
 
-  fun deleteResource(resourceIdentifier: String) {
-    viewModelScope.launch { defaultRepository.delete(resourceIdentifier) }
+  fun deleteResource(resourceType: String, resourceIdentifier: String) {
+    viewModelScope.launch {
+      defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
+    }
   }
 
   companion object {

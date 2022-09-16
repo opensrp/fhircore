@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
-import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import com.google.android.fhir.logicalId
@@ -44,7 +43,7 @@ fun List<ActionConfig>.handleClickEvent(
             questionnaireConfig = questionnaireConfig,
             intentBundle =
               if (resourceData != null) actionConfig.paramsBundle(resourceData.computedValuesMap)
-              else Bundle.EMPTY,
+              else bundleOf(),
             computedValuesMap = resourceData?.computedValuesMap
           )
         }

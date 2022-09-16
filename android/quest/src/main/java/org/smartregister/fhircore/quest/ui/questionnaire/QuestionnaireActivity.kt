@@ -348,8 +348,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       title = questionnaireConfig.confirmationDialog!!.title,
       message = questionnaireConfig.confirmationDialog!!.message,
       confirmButtonListener = { dialog ->
-        if (questionnaireConfig.resourceIdentifier != null) {
-          questionnaireViewModel.deleteResource(questionnaireConfig.resourceIdentifier!!)
+        if (questionnaireConfig.resourceIdentifier != null &&
+            questionnaireConfig.resourceType != null
+        ) {
+          questionnaireViewModel.deleteResource(
+            questionnaireConfig.resourceType!!,
+            questionnaireConfig.resourceIdentifier!!
+          )
         } else if (questionnaireConfig.groupResource != null) {
           questionnaireViewModel.removeGroup(
             groupId = questionnaireConfig.groupResource!!.groupIdentifier,
