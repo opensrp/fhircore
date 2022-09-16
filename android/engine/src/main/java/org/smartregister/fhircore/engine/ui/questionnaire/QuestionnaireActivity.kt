@@ -33,6 +33,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -44,6 +45,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -67,6 +69,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
+  @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
@@ -296,6 +300,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   fun onPostSave(result: Boolean, questionnaireResponse: QuestionnaireResponse) {
     dismissSaveProcessing()
     if (result) {
+      // Put Sync Here
+      syncBroadcaster.runSync()
       postSaveSuccessful(questionnaireResponse)
     } else {
       Timber.e("An error occurred during extraction")
@@ -345,7 +351,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       )
       .values
       .flatten()
-      .all { it.isValid }
+      .all { it is Valid }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     questionnaireViewModel.extractAndSaveResources(

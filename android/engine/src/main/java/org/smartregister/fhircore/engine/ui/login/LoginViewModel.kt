@@ -115,7 +115,14 @@ constructor(
     object : ResponseHandler<OAuthResponse> {
       override fun handleResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
         if (!response.isSuccessful) {
-          handleFailure(call, IOException("Network call failed with $response"))
+          if (response.code() == 401) {
+            handleFailure(
+              call,
+              InvalidCredentialsException(Throwable(response.errorBody()?.toString()))
+            )
+          } else {
+            handleFailure(call, LoginNetworkException(Throwable(response.errorBody()?.toString())))
+          }
         } else {
           accountAuthenticator.run {
             addAuthenticatedAccount(
@@ -219,12 +226,12 @@ constructor(
 
   fun onUsernameUpdated(username: String) {
     _loginErrorState.postValue(null)
-    _username.postValue(username)
+    _username.value = username
   }
 
   fun onPasswordUpdated(password: String) {
     _loginErrorState.postValue(null)
-    _password.postValue(password)
+    _password.value = password
   }
 
   override fun run(future: AccountManagerFuture<Bundle>?) {
@@ -258,8 +265,12 @@ constructor(
   }
 
   private fun handleErrorMessage(throwable: Throwable) {
-    if (throwable is UnknownHostException) _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
-    else _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+    when (throwable) {
+      is UnknownHostException -> _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
+      is InvalidCredentialsException ->
+        _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+      else -> _loginErrorState.postValue(LoginErrorState.NETWORK_ERROR)
+    }
   }
 
   companion object {

@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
+import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactsProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
@@ -62,6 +64,10 @@ fun MainScreen(
     scope.launch {
       if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
     }
+  }
+
+  BackHandler(enabled = scaffoldState.drawerState.isOpen) {
+    scope.launch { scaffoldState.drawerState.close() }
   }
 
   Scaffold(
@@ -188,6 +194,21 @@ private fun AppMainNavigationGraph(
               familyId = patientId,
               navController = navController,
               refreshDataState = appMainViewModel.refreshDataState
+            )
+          }
+        MainNavigationScreen.ViewChildContacts ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
+            arguments = commonNavArgs.plus(patientIdNavArgument())
+          ) { stackEntry ->
+            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
+            ChildContactsProfileScreen(
+              patientId = patientId,
+              navController = navController,
+              refreshDataState = appMainViewModel.refreshDataState,
+              appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
+              healthModule = stackEntry.retrieveHealthModuleArg()
             )
           }
       }

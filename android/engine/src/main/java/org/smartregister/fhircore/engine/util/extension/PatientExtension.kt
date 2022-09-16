@@ -54,6 +54,14 @@ fun Patient.extractFamilyName(): String {
   } else ""
 }
 
+fun Patient.extractGivenName(): String {
+  if (!hasName()) return ""
+  val humanName = this.name.firstOrNull()
+  return if (humanName != null) {
+    humanName.given?.toString()?.trim('[')?.trim(']')?.capitalizeFirstLetter() ?: ""
+  } else ""
+}
+
 fun String.capitalizeFirstLetter() = replaceFirstChar { it.titlecase(Locale.getDefault()) }
 
 fun Patient.extractGender(context: Context): String? =
@@ -156,8 +164,7 @@ fun Patient.extractTelecom(): List<String> {
 }
 
 fun Patient.extractGeneralPractitionerReference(): String {
-  if (!hasGeneralPractitioner()) return ""
-  return with(generalPractitionerFirstRep) { this.reference }
+  return generalPractitioner.firstOrNull { !it.isEmpty }?.reference ?: ""
 }
 
 fun Patient.extractManagingOrganizationReference(): String {

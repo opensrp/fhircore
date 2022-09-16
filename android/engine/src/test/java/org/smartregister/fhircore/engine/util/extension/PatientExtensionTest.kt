@@ -99,6 +99,24 @@ class PatientExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `extractGeneralPractitionerReference should return the first non-empty reference`() {
+    val patient = Patient()
+    Assert.assertEquals("", patient.extractGeneralPractitionerReference())
+    patient.apply {
+      addGeneralPractitioner()
+      addGeneralPractitioner()
+      addGeneralPractitioner().apply { this.reference = "practitioner/2456" }
+    }
+    Assert.assertEquals("practitioner/2456", patient.extractGeneralPractitionerReference())
+  }
+
+  @Test
+  fun `extractGeneralPractitionerReference should return empty if no reference`() {
+    val patient = Patient().apply { addGeneralPractitioner() }
+    Assert.assertEquals("", patient.extractGeneralPractitionerReference())
+  }
+
+  @Test
   fun testExtractManagingOrganizationShouldReturnReference() {
     val patient =
       Patient().apply { managingOrganization.apply { this.reference = "reference/1234" } }
@@ -293,6 +311,13 @@ class PatientExtensionTest : RobolectricTest() {
       }
 
     Assert.assertEquals("Genealogy Family", patient.extractFamilyName())
+  }
+
+  @Test
+  fun testExtractGivenName() {
+    val patient = Patient().apply { addName().apply { addGiven("GivenName") } }
+
+    Assert.assertEquals("GivenName", patient.extractGivenName())
   }
 
   @Test
