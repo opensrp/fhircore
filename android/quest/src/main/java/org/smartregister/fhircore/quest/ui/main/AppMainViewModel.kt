@@ -123,7 +123,7 @@ constructor(
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
-          (this as Activity).refresh()
+          getActivity()?.refresh()
         }
       }
       AppMainEvent.SyncData -> {
