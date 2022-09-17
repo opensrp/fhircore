@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.accounts.AccountManager
-import android.app.Activity
 import android.content.Context
 import android.os.Parcelable
 import androidx.compose.material.ExperimentalMaterialApi
