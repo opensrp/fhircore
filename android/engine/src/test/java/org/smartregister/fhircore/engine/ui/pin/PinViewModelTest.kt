@@ -40,7 +40,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -63,9 +62,7 @@ internal class PinViewModelTest : RobolectricTest() {
 
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
-  val defaultRepository: DefaultRepository = mockk()
-
-  @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 

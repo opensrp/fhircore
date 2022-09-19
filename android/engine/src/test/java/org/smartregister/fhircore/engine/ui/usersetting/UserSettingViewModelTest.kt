@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.ui.usersetting
 
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.sync.State
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -29,7 +28,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
@@ -55,7 +53,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   lateinit var userSettingViewModel: UserSettingViewModel
 
@@ -66,8 +64,6 @@ class UserSettingViewModelTest : RobolectricTest() {
   var sharedPreferencesHelper: SharedPreferencesHelper
 
   private var configService: ConfigService
-
-  private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
 
   private var syncBroadcaster: SyncBroadcaster
 
