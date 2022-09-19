@@ -260,7 +260,8 @@ constructor(
               end = endDateFormatted,
               reportType = POPULATION,
               subject = null,
-              practitioner = null /*practitionerDetails?.id*/,
+              practitioner =
+                null /* TODO https://github.com/opensrp/fhircore/issues/1666 (crashing) practitionerDetails?.id */,
               lastReceivedOn = null // Non-null value not supported yet
             )
           }
@@ -283,12 +284,12 @@ constructor(
       .also { Timber.w(it.encodeResourceToString()) }
       .group
       .flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
-        // Measure Report :
-        // group[]
-        // group.population[]
-        // group.stratifier[]
-        // group.stratifier.stratum[]
-        // group.stratifier.stratum.population[]
+        // Measure Report model is as follows:
+        // L0 - group[]
+        // L1 - group.population[]
+        // L1 - group.stratifier[]
+        // L2 - group.stratifier.stratum[]
+        // L3 - group.stratifier.stratum.population[]
 
         // report group is stratifier/stratum denominator
         val denominator = reportGroup.findPopulation(NUMERATOR)?.count ?: 0
