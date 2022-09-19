@@ -35,11 +35,10 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class RegisterViewModelTest : RobolectricTest() {
 
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var registerViewModel: RegisterViewModel
   lateinit var registerRepository: RegisterRepository
-
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private lateinit var registerViewModelMock: RegisterViewModel
 
@@ -53,7 +52,8 @@ class RegisterViewModelTest : RobolectricTest() {
       RegisterViewModel(
         registerRepository = registerRepository,
         configurationRegistry = configurationRegistry,
-        sharedPreferencesHelper = sharedPreferencesHelper
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
   }
 
@@ -63,13 +63,5 @@ class RegisterViewModelTest : RobolectricTest() {
     every { registerViewModelMock.paginateRegisterData(any(), any()) } just runs
     registerViewModelMock.paginateRegisterData(registerId, false)
     verify { registerViewModelMock.paginateRegisterData(registerId, false) }
-  }
-
-  @Test
-  fun testSetTotalRecordsCount() {
-    val registerId = "12727277171"
-    every { registerViewModelMock.setTotalRecordsCount(registerId) } just runs
-    registerViewModelMock.setTotalRecordsCount(registerId)
-    verify { registerViewModelMock.setTotalRecordsCount(registerId) }
   }
 }
