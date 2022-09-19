@@ -144,10 +144,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
     if (resultCode == Activity.RESULT_OK)
       data?.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
-        lifecycleScope.launch(Dispatchers.IO) {
-          when {
-            it.startsWith(ResourceType.Task.name) ->
+        when {
+          it.startsWith(ResourceType.Task.name) -> {
+            lifecycleScope.launch(Dispatchers.IO) {
               fhirCarePlanGenerator.completeTask(it.asReference(ResourceType.Task).extractId())
+            }
+            syncBroadcaster.runSync()
           }
         }
       }
