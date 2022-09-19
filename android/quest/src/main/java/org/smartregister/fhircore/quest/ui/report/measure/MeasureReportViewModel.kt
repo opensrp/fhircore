@@ -45,7 +45,6 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
-import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -117,7 +116,7 @@ constructor(
     )
 
   fun reportMeasuresList(): Flow<PagingData<MeasureReportConfig>> =
-    Pager(PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE)) { measureReportRepository }
+    Pager(PagingConfig(pageSize = DEFAULT_PAGE_SIZE)) { measureReportRepository }
       .flow
       .cachedIn(viewModelScope)
 
@@ -167,7 +166,7 @@ constructor(
 
   private fun retrieveAncPatients(): Flow<PagingData<MeasureReportPatientViewData>> =
     Pager(
-        config = PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE),
+        config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
         pagingSourceFactory = {
           MeasureReportPatientsPagingSource(
             measureReportRepository,
@@ -371,5 +370,6 @@ constructor(
     const val SUBJECT = "subject"
     const val POPULATION = "population"
     const val POPULATION_OBS_URL = "populationId"
+    private const val DEFAULT_PAGE_SIZE = 20
   }
 }

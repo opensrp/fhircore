@@ -16,9 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -39,10 +38,10 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
-import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 
 @HiltViewModel
@@ -52,19 +51,16 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
 
-  private val _currentPage = MutableLiveData(0)
-  val currentPage
-    get() = _currentPage
+  val registerUiState: MutableState<RegisterUiState> = mutableStateOf(RegisterUiState())
 
-  private val _searchText = mutableStateOf("")
-  val searchText: androidx.compose.runtime.State<String>
-    get() = _searchText
+  val currentPage: MutableState<Int> = mutableStateOf(0)
 
-  private val _totalRecordsCount = MutableLiveData(0L)
-  val totalRecordsCount: LiveData<Long>
-    get() = _totalRecordsCount
+  val searchText = mutableStateOf("")
+
+  private val _totalRecordsCount = mutableStateOf(0L)
 
   private lateinit var registerConfiguration: RegisterConfiguration
 
@@ -77,26 +73,25 @@ constructor(
     paginatedRegisterData.value = getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
   }
 
-  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> =
-    Pager(
-      config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE, enablePlaceholders = false),
+  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
+
+    // Get the configured page size from RegisterConfiguration default is 20
+    val pageSize = retrieveRegisterConfiguration(registerId).pageSize
+
+    return Pager(
+      config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
         RegisterPagingSource(registerRepository).apply {
           setPatientPagingSourceState(
             RegisterPagingSourceState(
               registerId = registerId,
               loadAll = loadAll,
-              currentPage = if (loadAll) 0 else currentPage.value!!
+              currentPage = if (loadAll) 0 else currentPage.value
             )
           )
         }
       }
     )
-
-  fun setTotalRecordsCount(registerId: String) {
-    viewModelScope.launch {
-      _totalRecordsCount.postValue(registerRepository.countRegisterData(registerId))
-    }
   }
 
   fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
@@ -116,35 +111,31 @@ constructor(
     return allPatientRegisterData
   }
 
-  fun countPages(): Int =
-    _totalRecordsCount.value?.toDouble()?.div(DEFAULT_PAGE_SIZE.toLong())?.let { ceil(it).toInt() }
-      ?: 1
-
   fun onEvent(event: RegisterEvent) =
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        _searchText.value = event.searchText
-        if (event.searchText.isEmpty()) paginateRegisterData(event.registerId)
+        searchText.value = event.searchText
+        if (event.searchText.isEmpty()) paginateRegisterData(registerUiState.value.registerId)
         else filterRegisterData(event)
       }
       is RegisterEvent.MoveToNextPage -> {
-        this._currentPage.value = this._currentPage.value?.plus(1)
-        paginateRegisterData(event.registerId)
+        this.currentPage.value = this.currentPage.value.plus(1)
+        paginateRegisterData(registerUiState.value.registerId)
       }
       is RegisterEvent.MoveToPreviousPage -> {
-        this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
-        paginateRegisterData(event.registerId)
+        this.currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
+        paginateRegisterData(registerUiState.value.registerId)
       }
     }
 
   private fun filterRegisterData(event: RegisterEvent.SearchRegister) {
-    val searchBar = retrieveRegisterConfiguration(event.registerId).searchBar
+    val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {
       paginatedRegisterData.value =
-        retrieveAllPatientRegisterData(event.registerId).map { pagingData: PagingData<ResourceData>
-          ->
+        retrieveAllPatientRegisterData(registerUiState.value.registerId).map {
+          pagingData: PagingData<ResourceData> ->
           pagingData.filter { resourceData: ResourceData ->
             searchBar.computedRules!!.any { ruleName ->
               // if ruleName not found in map return {-1}; check always return false hence no data
@@ -156,6 +147,35 @@ constructor(
     }
   }
 
-  fun isFirstTimeSync() =
-    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null).isNullOrEmpty()
+  fun retrieveRegisterUiState(registerId: String, screenTitle: String) {
+    if (registerId.isNotEmpty()) {
+
+      viewModelScope.launch(dispatcherProvider.io()) {
+        val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId)
+        // Count register data then paginate the data
+        _totalRecordsCount.value = registerRepository.countRegisterData(registerId)
+        paginateRegisterData(registerId, loadAll = false)
+
+        registerUiState.value =
+          RegisterUiState(
+            screenTitle = screenTitle,
+            isFirstTimeSync =
+              sharedPreferencesHelper
+                .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+                .isNullOrEmpty(),
+            registerConfiguration = currentRegisterConfiguration,
+            registerId = registerId,
+            totalRecordsCount = _totalRecordsCount.value,
+            pagesCount =
+              ceil(
+                  _totalRecordsCount
+                    .value
+                    .toDouble()
+                    .div(currentRegisterConfiguration.pageSize.toLong())
+                )
+                .toInt()
+          )
+      }
+    }
+  }
 }

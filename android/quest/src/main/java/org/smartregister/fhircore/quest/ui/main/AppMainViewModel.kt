@@ -87,8 +87,6 @@ constructor(
       )
     )
 
-  val refreshDataState: MutableState<Boolean> = mutableStateOf(false)
-
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
@@ -130,8 +128,6 @@ constructor(
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
           is State.Finished, is State.Failed -> {
-            // Notify subscribers to refresh views after sync and refresh UI
-            refreshDataState.value = true
             if (event.state is State.Finished) {
               sharedPreferencesHelper.write(
                 SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,

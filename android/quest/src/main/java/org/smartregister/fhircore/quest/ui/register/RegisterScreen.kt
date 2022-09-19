@@ -28,30 +28,19 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
-import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -74,100 +63,64 @@ const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestT
 @Composable
 fun RegisterScreen(
   modifier: Modifier = Modifier,
-  screenTitle: String,
-  registerId: String,
   openDrawer: (Boolean) -> Unit,
-  refreshDataState: MutableState<Boolean>,
-  registerViewModel: RegisterViewModel = hiltViewModel(),
+  onEvent: (RegisterEvent) -> Unit,
+  registerUiState: RegisterUiState,
+  searchText: MutableState<String>,
+  currentPage: MutableState<Int>,
+  pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController
 ) {
-  val context = LocalContext.current
-  val firstTimeSync = remember { mutableStateOf(registerViewModel.isFirstTimeSync()) }
-  val searchText by remember { registerViewModel.searchText }
-  val registerConfiguration by remember {
-    mutableStateOf(registerViewModel.retrieveRegisterConfiguration(registerId))
-  }
-  val currentSetTotalRecordCount by rememberUpdatedState(registerViewModel::setTotalRecordsCount)
-  val currentPaginateRegisterData by rememberUpdatedState(registerViewModel::paginateRegisterData)
-  val refreshDataStateValue by remember { refreshDataState }
-  val totalRecordsCount by registerViewModel.totalRecordsCount.observeAsState(0)
-
-  LaunchedEffect(Unit) {
-    currentSetTotalRecordCount(registerId)
-    currentPaginateRegisterData(registerId, false)
-  }
-
-  SideEffect {
-    // Refresh data everytime sync completes then reset state
-    if (refreshDataStateValue) {
-      currentSetTotalRecordCount(registerId)
-      currentPaginateRegisterData(registerId, false)
-      firstTimeSync.value = registerViewModel.isFirstTimeSync()
-      refreshDataState.value = false
-    }
-  }
-
-  val pagingItems: LazyPagingItems<ResourceData> =
-    registerViewModel
-      .paginatedRegisterData
-      .collectAsState(emptyFlow())
-      .value
-      .collectAsLazyPagingItems()
 
   Scaffold(
     topBar = {
       Column {
         // Top section has toolbar and a results counts view
         TopScreenSection(
-          title = screenTitle,
-          searchText = searchText,
-          searchPlaceholder = registerConfiguration.searchBar?.display,
+          title = registerUiState.screenTitle,
+          searchText = searchText.value,
+          searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           onSearchTextChanged = { searchText ->
-            registerViewModel.onEvent(
-              RegisterEvent.SearchRegister(searchText = searchText, registerId = registerId)
-            )
+            onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           }
         ) { openDrawer(true) }
         // Only show counter during search
-        if (searchText.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
+        if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
     },
     bottomBar = {
       // Bottom section has a pagination footer
       Column {
-        if (searchText.isEmpty() && pagingItems.itemCount > 0) {
+        if (searchText.value.isEmpty() && pagingItems.itemCount > 0) {
           RegisterFooter(
             resultCount = pagingItems.itemCount,
-            currentPage = registerViewModel.currentPage.observeAsState(initial = 0).value.plus(1),
-            pagesCount = registerViewModel.countPages(),
-            previousButtonClickListener = {
-              registerViewModel.onEvent(RegisterEvent.MoveToPreviousPage(registerId))
-            },
-            nextButtonClickListener = {
-              registerViewModel.onEvent(RegisterEvent.MoveToNextPage(registerId))
-            }
+            currentPage = currentPage.value.plus(1),
+            pagesCount = registerUiState.pagesCount,
+            previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
+            nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) }
           )
         }
       }
     },
     floatingActionButton = {
-      val fabActions = registerConfiguration.fabActions
-      if (fabActions.isNotEmpty() && fabActions.first().visible) {
+      val fabActions = registerUiState.registerConfiguration?.fabActions
+      if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(fabActions = fabActions, navController = navController)
       }
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
-      if (totalRecordsCount > 0) {
+      if (registerUiState.isFirstTimeSync) LoaderDialog(modifier = modifier)
+      if (registerUiState.totalRecordsCount > 0 &&
+          registerUiState.registerConfiguration?.registerCard != null
+      ) {
         RegisterCardList(
-          registerCardConfig =
-            registerViewModel.retrieveRegisterConfiguration(registerId).registerCard,
+          registerCardConfig = registerUiState.registerConfiguration.registerCard,
           pagingItems = pagingItems,
           navController = navController
         )
       } else {
-        registerConfiguration.noResults?.let { noResultConfig ->
+        registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
           NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
             noResultConfig.actionButton?.actions?.handleClickEvent(navController)
           }

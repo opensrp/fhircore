@@ -25,15 +25,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.paging.compose.collectAsLazyPagingItems
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
@@ -47,6 +51,8 @@ class RegisterFragment : Fragment() {
   val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
+
+  val registerViewModel by viewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -64,6 +70,13 @@ class RegisterFragment : Fragment() {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
           }
         }
+        val pagingItems =
+          registerViewModel
+            .paginatedRegisterData
+            .collectAsState(emptyFlow())
+            .value
+            .collectAsLazyPagingItems()
+
         AppTheme {
           // Register screen provides access to the side navigation
           Scaffold(
@@ -89,9 +102,11 @@ class RegisterFragment : Fragment() {
               RegisterScreen(
                 navController = findNavController(),
                 openDrawer = openDrawer,
-                screenTitle = registerFragmentArgs.screenTitle,
-                registerId = registerFragmentArgs.registerId,
-                refreshDataState = appMainViewModel.refreshDataState
+                searchText = registerViewModel.searchText,
+                currentPage = registerViewModel.currentPage,
+                onEvent = registerViewModel::onEvent,
+                pagingItems = pagingItems,
+                registerUiState = registerViewModel.registerUiState.value
               )
             }
           }
@@ -102,9 +117,9 @@ class RegisterFragment : Fragment() {
 
   override fun onResume() {
     super.onResume()
-    appMainViewModel.run {
-      refreshDataState.value = true
-      retrieveAppMainUiState()
+    appMainViewModel.retrieveAppMainUiState()
+    with(registerFragmentArgs) {
+      registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
     }
   }
 }
