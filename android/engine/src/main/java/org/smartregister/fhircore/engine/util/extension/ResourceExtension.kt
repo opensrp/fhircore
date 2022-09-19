@@ -235,7 +235,6 @@ fun Resource.isPatient(patientId: String) =
 
 fun Resource.asReference(): Reference {
   val referenceValue = "${fhirType()}/$logicalId"
-
   return Reference().apply { this.reference = referenceValue }
 }
 

@@ -20,9 +20,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import io.mockk.spyk
-import io.mockk.verify
+import androidx.navigation.NavController
+import io.mockk.mockk
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Before
 import org.junit.Rule
@@ -34,10 +33,9 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 class ExtendedFabTest {
-  private val mockOnViewComponentClick: (ViewComponentEvent) -> Unit = spyk({})
+  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
 
   @get:Rule val composeRule = createComposeRule()
   @Before
@@ -60,7 +58,7 @@ class ExtendedFabTest {
                 )
             )
           ),
-        onViewComponentEvent = mockOnViewComponentClick,
+        navController = navController,
         resourceData = ResourceData(Patient())
       )
     }
@@ -95,11 +93,5 @@ class ExtendedFabTest {
       .onNodeWithTag(FAB_BUTTON_ROW_ICON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
-  }
-
-  @Test
-  fun testActionableButtonRendersAncClickWorksCorrectly() {
-    composeRule.onNodeWithTag(FAB_BUTTON_TEST_TAG).performClick()
-    verify { mockOnViewComponentClick(any()) }
   }
 }

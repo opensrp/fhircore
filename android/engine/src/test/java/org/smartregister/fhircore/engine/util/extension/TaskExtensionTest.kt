@@ -16,80 +16,41 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import java.time.LocalDate
+import java.util.Date
 import org.hl7.fhir.r4.model.Task
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert
 import org.junit.Test
 
 class TaskExtensionTest {
 
   @Test
-  fun testIsActiveAnc_shouldReturnTrue() {
-    var task =
-      Task().apply {
-        status = Task.TaskStatus.READY
-        description = "ANC Follow UP"
-      }
+  fun testHasPastEnd() {
+    val task = Task().apply { executionPeriod.end = Date() }
+    Assert.assertFalse(task.hasPastEnd())
 
-    assertTrue(task.isActiveAnc())
-
-    task =
-      Task().apply {
-        status = Task.TaskStatus.REQUESTED
-        description = "Follow UP ANC"
-      }
-
-    assertTrue(task.isActiveAnc())
-
-    task =
-      Task().apply {
-        status = Task.TaskStatus.READY
-        description = "Pregnancy Follow UP"
-      }
-
-    assertTrue(task.isActiveAnc())
-
-    task =
-      Task().apply {
-        status = Task.TaskStatus.READY
-        description = "Follow UP Pregnant Woman"
-      }
-
-    assertTrue(task.isActiveAnc())
+    val anotherTask =
+      Task().apply { executionPeriod.end = Date(LocalDate.parse("1972-12-12").toEpochDay()) }
+    Assert.assertTrue(anotherTask.hasPastEnd())
   }
 
   @Test
-  fun testIsActiveAnc_shouldReturnFalse() {
-    var task =
-      Task().apply {
-        status = Task.TaskStatus.READY
-        description = "Child Follow UP"
-      }
+  fun testHasStarted() {
+    val task = Task().apply { executionPeriod.start = Date() }
+    Assert.assertTrue(task.hasStarted())
 
-    assertFalse(task.isActiveAnc())
+    val anotherTask =
+      Task().apply { executionPeriod.end = Date(LocalDate.now().plusDays(8).toEpochDay()) }
+    Assert.assertFalse(anotherTask.hasStarted())
+  }
 
-    task =
-      Task().apply {
-        status = Task.TaskStatus.CANCELLED
-        description = "Follow UP ANC"
-      }
-
-    assertFalse(task.isActiveAnc())
-
-    task =
-      Task().apply {
-        status = Task.TaskStatus.FAILED
-        description = "Pregnancy Follow UP"
-      }
-
-    assertFalse(task.isActiveAnc())
-
-    task =
-      Task().apply {
-        status = Task.TaskStatus.COMPLETED
-        description = "Follow UP Pregnant Woman"
-      }
-
-    assertFalse(task.isActiveAnc())
+  @Test
+  fun testToCoding() {
+    val task = Task().apply { status = Task.TaskStatus.ACCEPTED }
+    val coding = task.status.toCoding()
+    Assert.assertNotNull(coding)
+    Assert.assertEquals(task.status.system, coding.system)
+    Assert.assertEquals(task.status.toCode(), coding.code)
+    Assert.assertEquals(task.status.display, coding.display)
   }
 }

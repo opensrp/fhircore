@@ -44,6 +44,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -53,7 +55,6 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val ACTIONABLE_BUTTON_TEST_TAG = "actionableButtonTestTag"
@@ -63,13 +64,18 @@ fun ActionableButton(
   modifier: Modifier = Modifier,
   buttonProperties: ButtonProperties,
   resourceData: ResourceData,
-  onViewComponentEvent: (ViewComponentEvent) -> Unit,
+  navController: NavController,
 ) {
   val computedValuesMap = remember { resourceData.computedValuesMap }
   val status = remember { buttonProperties.status.interpolate(resourceData.computedValuesMap) }
 
   OutlinedButton(
-    onClick = { buttonProperties.actions.handleClickEvent(onViewComponentEvent, resourceData) },
+    onClick = {
+      buttonProperties.actions.handleClickEvent(
+        navController = navController,
+        resourceData = resourceData
+      )
+    },
     colors =
       ButtonDefaults.buttonColors(
         backgroundColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.1f),
@@ -136,7 +142,8 @@ fun ActionableButtonPreview() {
   Column(modifier = Modifier.height(50.dp)) {
     ActionableButton(
       buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
-      resourceData = ResourceData(Patient())
-    ) {}
+      resourceData = ResourceData(Patient()),
+      navController = rememberNavController()
+    )
   }
 }

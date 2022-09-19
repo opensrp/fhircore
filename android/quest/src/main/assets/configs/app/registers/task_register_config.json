@@ -17,27 +17,6 @@
       }
     ]
   },
-  "fabActions": [
-    {
-      "id": "ActionButton",
-      "visible": true,
-      "display": "Add Tasks",
-      "menuIconConfig": {},
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "82953",
-            "title": "Add family member",
-            "saveButtonText": "ADD MEMBER",
-            "setPractitionerDetails": true,
-            "setOrganizationDetails": true
-          }
-        }
-      ]
-    }
-  ],
   "searchBar": {
     "visible": true,
     "display": "{{ search.by.task.practitioner.patient }}",
