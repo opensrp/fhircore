@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -32,6 +33,7 @@ import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.CarePlan
@@ -357,5 +359,16 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertThrows(IllegalStateException::class.java) {
       runBlocking { defaultRepository.removeGroup(group.logicalId, false) }
     }
+  }
+
+  @Test
+  fun testDeleteWithResourceId() = runTest {
+    val fhirEngine: FhirEngine = mockk(relaxUnitFun = true)
+    val defaultRepository =
+      spyk(DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider))
+
+    defaultRepository.delete(resourceType = "Patient", resourceId = "123")
+
+    coVerify { fhirEngine.delete(any<ResourceType>(), any<String>()) }
   }
 }

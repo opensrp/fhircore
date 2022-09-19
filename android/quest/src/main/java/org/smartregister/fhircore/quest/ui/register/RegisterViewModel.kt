@@ -136,8 +136,6 @@ constructor(
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
         paginateRegisterData(event.registerId)
       }
-      is RegisterEvent.OnViewComponentEvent ->
-        event.viewComponentEvent.handleEvent(event.navController)
     }
 
   private fun filterRegisterData(event: RegisterEvent.SearchRegister) {

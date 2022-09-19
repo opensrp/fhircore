@@ -56,8 +56,6 @@ import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
-import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
@@ -73,6 +71,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
@@ -111,8 +110,7 @@ fun AppDrawer(
         MenuActionButton(
           modifier = modifier,
           navigationConfiguration = appUiState.navigationConfiguration,
-          onSideMenuClick = onSideMenuClick,
-          context = context
+          navController = navController
         )
 
         Divider(color = DividerColor)
@@ -312,8 +310,7 @@ private fun StaticMenus(
 private fun MenuActionButton(
   modifier: Modifier = Modifier,
   navigationConfiguration: NavigationConfiguration,
-  onSideMenuClick: (AppMainEvent) -> Unit,
-  context: Context
+  navController: NavController
 ) {
   if (navigationConfiguration.menuActionButton != null) {
     Row(
@@ -321,19 +318,7 @@ private fun MenuActionButton(
         modifier
           .fillMaxWidth()
           .clickable {
-            val action =
-              navigationConfiguration.menuActionButton?.actions?.find {
-                it.trigger == ActionTrigger.ON_CLICK &&
-                  it.workflow == ApplicationWorkflow.LAUNCH_QUESTIONNAIRE
-              }
-            if (action?.questionnaire != null) {
-              onSideMenuClick(
-                AppMainEvent.RegisterNewClient(
-                  context = context,
-                  questionnaireConfig = action.questionnaire!!
-                )
-              )
-            }
+            navigationConfiguration.menuActionButton?.actions?.handleClickEvent(navController)
           }
           .padding(16.dp)
           .testTag(MENU_BUTTON_TEST_TAG),
