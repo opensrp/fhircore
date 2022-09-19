@@ -26,11 +26,15 @@ import org.smartregister.model.practitioner.UserBioData
 
 fun FhirContext.getCustomJsonParser(): IParser {
   return this.apply {
-      registerCustomType(PractitionerDetails::class.java)
-      registerCustomType(FhirPractitionerDetails::class.java)
-      registerCustomType(LocationHierarchy::class.java)
-      registerCustomType(KeycloakUserDetails::class.java)
-      registerCustomType(UserBioData::class.java)
+      registerCustomTypes(
+        listOf(
+          PractitionerDetails::class.java,
+          FhirPractitionerDetails::class.java,
+          LocationHierarchy::class.java,
+          KeycloakUserDetails::class.java,
+          UserBioData::class.java
+        )
+      )
     }
     .newJsonParser()
 }

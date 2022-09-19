@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-import androidx.core.os.bundleOf
+import android.os.Bundle
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -32,14 +32,12 @@ data class ActionConfig(
   val questionnaire: QuestionnaireConfig? = null,
   val params: List<ActionParameter> = emptyList()
 ) {
-  fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()) =
-    bundleOf(
-      *this.params
-        .map { actionParameter ->
-          Pair(actionParameter.key, actionParameter.value.interpolate(computedValuesMap))
-        }
-        .toTypedArray()
-    )
+  fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
+    Bundle().apply {
+      params.map { Pair(it.key, it.value.interpolate(computedValuesMap)) }.forEach {
+        putString(it.first, it.second)
+      }
+    }
 }
 
 @Serializable data class ActionParameter(val key: String, val value: String)

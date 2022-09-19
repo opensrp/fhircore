@@ -17,9 +17,11 @@
 package org.smartregister.fhircore.engine.util.fhirpath
 
 import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 
+@Singleton
 class FhirPathDataExtractor @Inject constructor(val fhirPathEngine: FHIRPathEngine) {
 
   fun extractData(base: Base, expressions: Map<String, String>): Map<String, List<Base>> =
