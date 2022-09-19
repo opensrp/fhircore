@@ -47,7 +47,7 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    sharedPreferencesHelper = SharedPreferencesHelper(context = application, gson = gson)
+    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
   }
 
   @Test
@@ -89,17 +89,17 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     sharedPreferencesHelper.write("object", questionnaireConfig)
     Assert.assertEquals(
       questionnaireConfig.id,
-      sharedPreferencesHelper.read<QuestionnaireConfig>("object", isSerialized = true)?.id
+      sharedPreferencesHelper.read<QuestionnaireConfig>("object")?.id
     )
   }
 
   @Test
   fun writeObjectUsingGson() {
     val keycloakUserDetails = KeycloakUserDetails().apply { id = "12345" }
-    sharedPreferencesHelper.write("object", keycloakUserDetails)
+    sharedPreferencesHelper.write("object", keycloakUserDetails, encodeWithGson = true)
     Assert.assertEquals(
       keycloakUserDetails.id,
-      sharedPreferencesHelper.read<KeycloakUserDetails>("object")?.id
+      sharedPreferencesHelper.read<KeycloakUserDetails>("object", decodeWithGson = true)?.id
     )
   }
 }

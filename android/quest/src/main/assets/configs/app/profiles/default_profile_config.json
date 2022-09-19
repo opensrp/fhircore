@@ -145,28 +145,34 @@
   ],
   "overFlowMenuItems": [
     {
-      "title": "View family",
+      "title": "Registration info",
       "titleColor": "#000000",
       "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_PROFILE",
-          "id": "defaultProfile",
-          "params": [
-            {
-              "key": "familyId",
-              "value": "@{familyId}"
-            }
-          ]
-        }
-      ]
+      "questionnaire": {
+        "id": "e5155788-8831-4916-a3f5-486915ce34b2",
+        "title": "Member registration info",
+        "saveButtonText": "Update registration",
+        "setPractitionerDetails": true,
+        "setOrganizationDetails": true,
+        "type": "EDIT",
+        "resourceIdentifier": "@{patientId}"
+      }
     },
     {
-      "title": "Register Pregnancy",
+      "title": "Record as Sick",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "Record as ANC",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "View medical history",
       "titleColor": "#000000",
       "visible": "true",
-      "showSeparator": "true"
+      "actions": []
     },
     {
       "title": "Pregnancy Outcome",
@@ -174,15 +180,20 @@
       "visible": "true"
     },
     {
-      "title": "Enrol to FP",
+      "title": "Enroll to FP",
       "titleColor": "#000000",
       "visible": "true"
     },
     {
-      "title": "Remove Patient",
+      "title": "Remove this person",
       "titleColor": "#FF0000",
       "visible": "true",
-      "showSeparator": "true"
+      "showSeparator": "true",
+      "questionnaire": {
+        "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
+        "title": "Remove family member",
+        "saveButtonText": "Update registration"
+      }
     }
   ]
 }

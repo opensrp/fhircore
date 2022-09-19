@@ -27,7 +27,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.C
 inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   intentBundle: Bundle = Bundle.EMPTY,
   questionnaireConfig: QuestionnaireConfig? = null,
-  computedValuesMap: Map<String, Any>? = emptyMap()
+  computedValuesMap: Map<String, Any>?
 ) {
   this.startActivity(
     Intent(this, Q::class.java)
@@ -42,7 +42,7 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
   backReference: String? = null,
   intentBundle: Bundle = Bundle.EMPTY,
   questionnaireConfig: QuestionnaireConfig,
-  computedValuesMap: Map<String, Any>? = emptyMap()
+  computedValuesMap: Map<String, Any>?
 ) {
   (this as Activity).startActivityForResult(
     Intent(this, Q::class.java)

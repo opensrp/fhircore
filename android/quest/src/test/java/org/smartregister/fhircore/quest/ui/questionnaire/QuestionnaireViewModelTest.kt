@@ -26,13 +26,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -43,6 +41,7 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -77,9 +76,11 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.model.practitioner.FhirPractitionerDetails
@@ -89,11 +90,15 @@ import org.smartregister.model.practitioner.PractitionerDetails
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
 
-  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
+  @get:Rule(order = 1) var coroutineRule = CoroutineTestRule()
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
+
+  @Inject lateinit var jsonParser: IParser
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -113,22 +118,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    every {
-      sharedPreferencesHelper.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name
-      )
-    } returns practitionerDetails()
+    // Write practitioner and organization to shared preferences
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.PRACTITIONER_ID.name,
+      practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString()
+    )
 
-    every {
-      sharedPreferencesHelper.read<List<String>>(
-        SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-      )
-    } returns listOf("105")
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
+      listOf("105")
+    )
 
     defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider))
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
-    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "appId")
 
     questionnaireConfig =
       QuestionnaireConfig(
@@ -137,7 +140,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         type = QuestionnaireType.READ_ONLY,
         setPractitionerDetails = false,
         setOrganizationDetails = false,
-        clientIdentifier = "2"
+        resourceIdentifier = "2"
       )
 
     questionnaireViewModel =
@@ -148,7 +151,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           dispatcherProvider = defaultRepo.dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          libraryEvaluator = libraryEvaluator
+          libraryEvaluator = libraryEvaluator,
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
+          jsonParser = jsonParser
         )
       )
 
@@ -582,7 +587,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         id = "patient-registration",
         title = "Patient registration",
         type = QuestionnaireType.READ_ONLY,
-        clientIdentifier = "2"
+        resourceIdentifier = "2"
       )
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY, expectedQuestionnaireConfig)
 
@@ -1005,7 +1010,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private fun practitionerDetails(): PractitionerDetails {
     return PractitionerDetails().apply {
       userDetail = KeycloakUserDetails().apply { id = "12345" }
-      fhirPractitionerDetails = FhirPractitionerDetails().apply { id = "12345" }
+      fhirPractitionerDetails =
+        FhirPractitionerDetails().apply {
+          id = "12345"
+          practitionerId = StringType("12345")
+        }
     }
   }
 
@@ -1021,7 +1030,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.appendPractitionerInfo(patient)
 
-    Assert.assertEquals("Practitioner/12345", patient.generalPractitioner[0].reference)
+    Assert.assertEquals("Practitioner/12345", patient.generalPractitioner.first().reference)
   }
 
   @Test
@@ -1041,7 +1050,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
     questionnaireViewModel.appendPractitionerInfo(encounter)
-    Assert.assertEquals("Practitioner/12345", encounter.participant[0].individual.reference)
+    Assert.assertEquals("Practitioner/12345", encounter.participant.first().individual.reference)
   }
 
   @Test
@@ -1054,16 +1063,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           name = "Mandela Family"
         }
       coEvery { fhirEngine.get<Group>(familyGroup.id) } returns familyGroup
-      questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(patient, familyGroup.id)
+      questionnaireViewModel.addGroupMember(patient, familyGroup.id)
       Assert.assertEquals(1, familyGroup.member.size)
 
       val familyGroup2 = Group().apply { id = "grp2" }
       coEvery { fhirEngine.get<Group>(familyGroup2.id) } returns familyGroup2
       // Sets the managing entity
-      questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(
-        RelatedPerson().apply { id = "rel1" },
-        familyGroup2.id
-      )
+      questionnaireViewModel.addGroupMember(RelatedPerson().apply { id = "rel1" }, familyGroup2.id)
       Assert.assertNotNull(familyGroup2.managingEntity)
     }
   }
