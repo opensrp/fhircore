@@ -104,11 +104,11 @@ class ProfileScreenTest {
     composeTestRule.waitUntilExists(hasTestTag(DROPDOWN_MENU_TEST_TAG))
     composeTestRule.onNodeWithTag(DROPDOWN_MENU_TEST_TAG).performClick()
     composeTestRule
-      .onNodeWithText("Family details", useUnmergedTree = true)
+      .onNodeWithText("Household details", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule
-      .onNodeWithText("Change family head", useUnmergedTree = true)
+      .onNodeWithText("Change household head", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule
@@ -116,7 +116,7 @@ class ProfileScreenTest {
       .assertExists()
       .assertIsDisplayed()
     composeTestRule
-      .onNodeWithText("Family details", useUnmergedTree = true)
+      .onNodeWithText("View medical history", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule

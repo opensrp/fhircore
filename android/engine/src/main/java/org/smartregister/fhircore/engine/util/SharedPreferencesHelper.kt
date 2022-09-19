@@ -23,18 +23,16 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 @Singleton
 class SharedPreferencesHelper
 @Inject
-constructor(
-  @ApplicationContext val context: Context,
-  val gson: Gson,
-) {
+constructor(@ApplicationContext val context: Context, val gson: Gson) {
 
-  private var prefs: SharedPreferences =
+  val prefs: SharedPreferences by lazy {
     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+  }
 
   /** @see [SharedPreferences.getString] */
   fun read(key: String, defaultValue: String?) = prefs.getString(key, defaultValue)
@@ -71,24 +69,17 @@ constructor(
   }
 
   /** Read any JSON object with type T */
-  inline fun <reified T> read(
-    key: String,
-    isFhirResource: Boolean = false,
-    isSerialized: Boolean = false
-  ): T? =
-    if (isFhirResource) {
-      this.read(key, null)?.decodeResourceFromString()
-    } else if (isSerialized) {
-      this.read(key, null)?.decodeJson<T>()
+  inline fun <reified T> read(key: String, decodeWithGson: Boolean = true): T? =
+    if (decodeWithGson) {
+      gson.fromJson(this.read(key, null), T::class.java)
     } else {
-      val json = this.read(key, null)
-      gson.fromJson(json, T::class.java)
+      this.read(key, null)?.decodeJson<T>()
     }
 
   /** Write any object by saving it as JSON */
-  fun write(key: String, value: Any?) {
+  inline fun <reified T> write(key: String, value: T?, encodeWithGson: Boolean = true) {
     with(prefs.edit()) {
-      putString(key, gson.toJson(value))
+      putString(key, if (encodeWithGson) gson.toJson(value) else value.encodeJson())
       commit()
     }
   }

@@ -180,7 +180,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     val group =
       fhirEngine.get<Group>(groupId).apply {
         managingEntity = relatedPerson.asReference()
-        name = relatedPerson.name.first().nameAsSingleString
+        name = relatedPerson.name.first().family
       }
     fhirEngine.update(group)
   }
@@ -272,5 +272,9 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       }
       addOrUpdate(resource)
     }
+  }
+
+  suspend fun delete(resourceType: String, resourceId: String) {
+    fhirEngine.delete(resourceType.resourceClassType().newInstance().resourceType, resourceId)
   }
 }
