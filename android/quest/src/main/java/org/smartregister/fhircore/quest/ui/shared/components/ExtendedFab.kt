@@ -80,7 +80,7 @@ fun ExtendedFab(
         )
       }
     val padding = if (text.isBlank()) ExtendedFabIconPadding else ExtendedFabTextPadding
-    val isTextOnly = fabActions.first().icon == null
+    val isTextOnly = fabActions.first().menuIconConfig == null
 
     Row(
       modifier =

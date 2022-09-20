@@ -55,7 +55,7 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @BindValue
-  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 

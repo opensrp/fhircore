@@ -118,7 +118,7 @@ fun UserSettingScreen(
       ) {
         Row(modifier = Modifier.align(Alignment.CenterVertically)) {
           Icon(
-            painterResource(R.drawable.ic_outline_language_black),
+            painterResource(R.drawable.ic_language),
             stringResource(R.string.language),
             tint = BlueTextColor,
             modifier = Modifier.size(26.dp)
