@@ -134,12 +134,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   override fun onSync(state: State) {
     Timber.i("Sync state received is $state")
     when (state) {
-      is State.Started -> {
-        showToast(getString(R.string.syncing))
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_initiated))
-        )
-      }
+      is State.Started -> showToast(getString(R.string.syncing))
       is State.InProgress -> {
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
         appMainViewModel.onEvent(
@@ -165,7 +160,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
       }
       is State.Finished -> {
-        showToast(getString(org.smartregister.fhircore.engine.R.string.sync_completed))
+        showToast(getString(R.string.sync_completed))
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(

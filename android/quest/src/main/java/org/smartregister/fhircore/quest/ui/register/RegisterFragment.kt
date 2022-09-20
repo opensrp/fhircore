@@ -38,9 +38,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
@@ -49,7 +53,9 @@ import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
-class RegisterFragment : Fragment() {
+class RegisterFragment : Fragment(), OnSyncListener {
+
+  @Inject lateinit var syncListenerManager: SyncListenerManager
 
   val appMainViewModel by activityViewModels<AppMainViewModel>()
 
@@ -125,6 +131,19 @@ class RegisterFragment : Fragment() {
             }
           }
         }
+      }
+    }
+  }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    // Register as listener to be notified to refresh views when sync completes
+    syncListenerManager.registerSyncListener(this, lifecycle)
+  }
+
+  override fun onSync(state: State) {
+    if (state is State.Finished || state is State.Failed) {
+      with(registerFragmentArgs) {
+        registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
       }
     }
   }
