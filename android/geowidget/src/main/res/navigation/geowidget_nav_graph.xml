@@ -11,6 +11,7 @@
             android:name="configId"
             app:argType="string"
             app:nullable="false" />
+
     </fragment>
 
 </navigation>
