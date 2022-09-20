@@ -25,6 +25,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -75,6 +76,8 @@ constructor(
 
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
+  val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
+    MutableStateFlow(emptyFlow())
 
   var registerViewConfiguration: RegisterViewConfiguration
     private set
@@ -90,6 +93,15 @@ constructor(
     loadAll: Boolean = false
   ) {
     paginatedRegisterData.value = getPager(appFeatureName, healthModule, loadAll).flow
+  }
+
+  fun paginateRegisterDataForSearch(
+    appFeatureName: String?,
+    healthModule: HealthModule,
+    loadAll: Boolean = true
+  ) {
+    paginatedRegisterDataForSearch.value =
+      getPager(appFeatureName, healthModule, loadAll).flow.cachedIn(viewModelScope)
   }
 
   private fun getPager(
@@ -176,7 +188,8 @@ constructor(
 
   private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
     paginatedRegisterData.value =
-      getPager(event.appFeatureName, event.healthModule, true).flow.map {
+      paginatedRegisterDataForSearch.value.map {
+        //         getPager(event.appFeatureName, event.healthModule, true).flow.map {
         pagingData: PagingData<RegisterViewData> ->
         pagingData.filter {
           it.title.contains(event.searchText, ignoreCase = true) ||

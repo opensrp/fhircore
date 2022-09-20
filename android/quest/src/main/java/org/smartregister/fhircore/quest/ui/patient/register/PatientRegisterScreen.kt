@@ -98,11 +98,15 @@ fun PatientRegisterScreen(
   val currentPaginateRegisterData by rememberUpdatedState(
     patientRegisterViewModel::paginateRegisterData
   )
+  val currentPaginateRegisterDataForSearch by rememberUpdatedState(
+    patientRegisterViewModel::paginateRegisterDataForSearch
+  )
   val refreshDataStateValue by remember { refreshDataState }
 
   LaunchedEffect(Unit) {
     currentSetTotalRecordCount(appFeatureName, healthModule)
     currentPaginateRegisterData(appFeatureName, healthModule, false)
+    currentPaginateRegisterDataForSearch(appFeatureName, healthModule, true)
   }
 
   SideEffect {
