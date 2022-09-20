@@ -48,15 +48,17 @@ import org.smartregister.p2p.sync.DataType
 class P2PSenderTransferDaoTest : RobolectricTest() {
 
   private val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
   private lateinit var p2PSenderTransferDao: P2PSenderTransferDao
-  private lateinit var configurationRegistry: ConfigurationRegistry
-  private lateinit var fhirEngine: FhirEngine
+
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  private val fhirEngine: FhirEngine = mockk()
+
   private val currentDate = Date()
 
   @Before
   fun setUp() {
-    fhirEngine = mockk()
-    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
     p2PSenderTransferDao =
       spyk(P2PSenderTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
   }

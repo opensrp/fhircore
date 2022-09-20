@@ -40,13 +40,14 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class ProfileViewModelTest : RobolectricTest() {
+
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var registerRepository: RegisterRepository
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 

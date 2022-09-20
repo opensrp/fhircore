@@ -168,6 +168,18 @@ android {
             versionName "0.0.1"
         }
     }
+    sourceSets {
+        main {
+            assets {
+                srcDirs 'src/main/assets'
+            }
+        }
+        test {
+            resources {
+                srcDirs 'src/test/assets'
+            }
+        }
+    }
 }
 
 // Test Logging

@@ -24,9 +24,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.Configuration
 import androidx.work.impl.utils.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
@@ -34,6 +34,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -42,7 +43,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   lateinit var appMainActivity: AppMainActivity
 
@@ -59,7 +61,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
 
     runBlocking {
-      configurationRegistry.loadConfigurations(APP_DEBUG, context) {}
       appMainActivity =
         Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get()
     }
