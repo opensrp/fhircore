@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.runtime.MutableState
@@ -96,21 +95,17 @@ constructor(
       }
       is AppMainEvent.SyncData -> {
         appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = false)
-        accountAuthenticator.loadActiveAccount({ accountBundleFuture ->
-          val bundle = accountBundleFuture.result
-          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { authIntent ->
+        accountAuthenticator.loadActiveAccount(
+          onActiveAuthTokenFound = {
             appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
-            if (authIntent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              run(resumeSync)
-              return@let
-            }
-
-            authIntent!!
-            authIntent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
-
-            event.launchManualAuth(authIntent)
+            run(resumeSync)
+          },
+          onValidTokenMissing = {
+            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+            it.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+            event.launchManualAuth(it)
           }
-        })
+        )
       }
       AppMainEvent.ResumeSync -> {
         run(resumeSync)

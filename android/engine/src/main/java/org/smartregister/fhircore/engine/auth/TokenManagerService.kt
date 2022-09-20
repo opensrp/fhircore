@@ -47,9 +47,11 @@ constructor(
     }
     Timber.v("Trying to get blocking auth token from account manager")
     return getActiveAccount()?.let {
-      accountManager.blockingGetAuthToken(it, AccountAuthenticator.AUTH_TOKEN_TYPE, false)
+      accountManager.blockingGetAuthToken(it, getAccountType(), false)
     }
   }
+
+  fun getAccountType(): String = configService.provideAuthConfiguration().accountType
 
   fun getActiveAccount(): Account? {
     Timber.v("Checking for an active account stored")
@@ -60,12 +62,9 @@ constructor(
     }
   }
 
-  fun getLocalSessionToken(invalidateCached: Boolean = true): String? {
+  fun getLocalSessionToken(): String? {
     Timber.v("Checking local storage for access token")
     val token = secureSharedPreference.retrieveSessionToken()
-    if (invalidateCached && !token.isNullOrBlank() && !isTokenActive(token)) {
-      accountManager.invalidateAuthToken(AccountAuthenticator.AUTH_TOKEN_TYPE, token)
-    }
     return if (isTokenActive(token)) token else null
   }
 
