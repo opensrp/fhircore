@@ -166,10 +166,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         showToast(getString(org.smartregister.fhircore.engine.R.string.sync_completed))
         appMainViewModel.run {
           onEvent(
-            AppMainEvent.UpdateSyncState(
-              state,
-              formatLastSyncTimestamp(state.result.timestamp)
-            )
+            AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.result.timestamp))
           )
         }
       }
