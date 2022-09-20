@@ -17,7 +17,6 @@
         <string name="show_overdue">Onyesha waliochelewa</string>
         <string name="record_vaccine_nl">Rekodi\nChanjo</string>
         <string name="str_save">Hifadhi</string>
-        <string name="last_sync_timestamp">Mara ya mwisho: %1$s</string>
         <string name="logout_as_user">Toka kama Francis</string>
         <string name="login_text">Ingia</string>
         <string name="username_input_hint">Ingiza jina la mtumiaji</string>

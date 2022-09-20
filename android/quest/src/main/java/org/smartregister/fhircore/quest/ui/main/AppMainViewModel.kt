@@ -245,7 +245,7 @@ constructor(
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
     val syncTimestampFormatter =
       SimpleDateFormat(SYNC_TIMESTAMP_INPUT_FORMAT, Locale.getDefault()).apply {
-        timeZone = TimeZone.getTimeZone(UTC)
+        timeZone = TimeZone.getDefault()
       }
     val parse: Date? = syncTimestampFormatter.parse(timestamp.toString())
     return if (parse == null) "" else simpleDateFormat.format(parse)
@@ -276,7 +276,6 @@ constructor(
 
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
-    const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "hh:mm aa, MMM d"
-    const val UTC = "UTC"
+    const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "MMM d, hh:mm aa"
   }
 }

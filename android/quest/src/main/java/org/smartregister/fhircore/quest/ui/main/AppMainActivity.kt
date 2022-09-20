@@ -156,7 +156,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           AppMainEvent.UpdateSyncState(
             state,
             if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
-              getString(R.string.last_sync_timestamp, appMainViewModel.retrieveLastSyncTimestamp())
+              appMainViewModel.retrieveLastSyncTimestamp()
             else getString(R.string.syncing_failed)
           )
         )
@@ -168,10 +168,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           onEvent(
             AppMainEvent.UpdateSyncState(
               state,
-              getString(
-                R.string.last_sync_timestamp,
-                formatLastSyncTimestamp(state.result.timestamp)
-              )
+              formatLastSyncTimestamp(state.result.timestamp)
             )
           )
         }

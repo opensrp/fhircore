@@ -1,6 +1,5 @@
 <resources>
     <string name="sync"> Synchronisation</string>
-    <string name="last_sync_timestamp">Dernier %1$s</string>
     <string name="language">Langue</string>
     <string name="logout_as_user">Déconnexion</string>
     <string name="show_overdue">Afficher en retard</string>
