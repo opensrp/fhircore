@@ -44,8 +44,6 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
@@ -68,20 +66,15 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @BindValue val repository: DefaultRepository = mockk()
 
-  @BindValue
-  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
-
   @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
 
   @BindValue lateinit var loginViewModel: LoginViewModel
 
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
-  private val resourceService: FhirResourceService = mockk()
-
   private lateinit var loginService: LoginService
-
-  private lateinit var fhirResourceDataSource: FhirResourceDataSource
 
   @Before
   fun setUp() {
@@ -91,8 +84,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
     coEvery { accountAuthenticator.hasActivePin() } returns false
     coEvery { accountAuthenticator.hasActiveSession() } returns true
-
-    fhirResourceDataSource = FhirResourceDataSource(resourceService)
 
     loginViewModel =
       spyk(
