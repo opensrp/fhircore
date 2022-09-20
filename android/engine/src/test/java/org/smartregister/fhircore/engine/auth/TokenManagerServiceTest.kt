@@ -26,6 +26,7 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.jsonwebtoken.UnsupportedJwtException
 import io.mockk.every
 import io.mockk.spyk
+import io.mockk.verify
 import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
@@ -106,5 +107,26 @@ class TokenManagerServiceTest : RobolectricTest() {
     Assert.assertNotNull(activeAccount)
     Assert.assertEquals(authCredentials.username, activeAccount!!.name)
     Assert.assertEquals(configService.provideAuthConfiguration().accountType, activeAccount.type)
+  }
+
+  @Test
+  fun getAccountTypeEqualValueFromConfigService() {
+    Assert.assertEquals(
+      configService.provideAuthConfiguration().accountType,
+      tokenManagerService.getAccountType()
+    )
+  }
+
+  @Test
+  fun getBlockingActiveAuthTokenShouldCallGetAccountTypeWhenLocalSessionTokenIsNull() {
+    secureSharedPreference.saveCredentials(authCredentials)
+    accountManager.addAccountExplicitly(
+      Account(authCredentials.username, configService.provideAuthConfiguration().accountType),
+      authCredentials.password,
+      bundleOf()
+    )
+    every { tokenManagerService.getLocalSessionToken() } returns null
+    tokenManagerService.getBlockingActiveAuthToken()
+    verify { tokenManagerService.getAccountType() }
   }
 }
