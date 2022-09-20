@@ -1,0 +1,199 @@
+{
+  "appId": "app",
+  "configType": "profile",
+  "id": "defaultProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Patient"
+    },
+    "relatedResources": [
+      {
+        "resource": "Condition",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Task",
+        "searchParameter": "subject"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "name": "patientName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
+      ]
+    },
+    {
+      "name": "patientId",
+      "condition": "true",
+      "actions": [
+        "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "CARD",
+          "padding": 0,
+          "content": [
+            {
+              "viewType": "COLUMN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "@{patientName}",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "ID: @{patientId}",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "ROW",
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    },
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    },
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    }
+                  ]
+                },
+                {
+                  "viewType": "PERSONAL_DATA",
+                  "personalDataItems": [
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Sex",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Female",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    },
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Age",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "20Y",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    },
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "DOB",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "01 2002",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewType": "SPACER",
+          "height": 16
+        }
+      ]
+    }
+  ],
+  "overFlowMenuItems": [
+    {
+      "title": "Registration info",
+      "titleColor": "#000000",
+      "visible": "true",
+      "questionnaire": {
+        "id": "e5155788-8831-4916-a3f5-486915ce34b2",
+        "title": "Member registration info",
+        "saveButtonText": "Update registration",
+        "setPractitionerDetails": true,
+        "setOrganizationDetails": true,
+        "type": "EDIT",
+        "resourceIdentifier": "@{patientId}"
+      }
+    },
+    {
+      "title": "Record as Sick",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "Record as ANC",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "View medical history",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": []
+    },
+    {
+      "title": "Pregnancy Outcome",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "Enroll to FP",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "Remove this person",
+      "titleColor": "#FF0000",
+      "visible": "true",
+      "showSeparator": "true",
+      "questionnaire": {
+        "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
+        "title": "Remove family member",
+        "saveButtonText": "Update registration"
+      }
+    }
+  ]
+}

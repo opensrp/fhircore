@@ -73,7 +73,10 @@
     {
       "id": "patientRegister",
       "display": "All Households",
-      "icon": "",
+      "menuIconConfig": {
+        "type": "remote",
+        "reference": "Binary/144177"
+      },
       "showCount": true,
       "actions": [
         {
@@ -90,7 +93,10 @@
     {
       "id": "taskRegister",
       "display": "Tasks",
-      "icon": "",
+      "menuIconConfig": {
+        "type": "remote",
+        "reference": "Binary/144177"
+      },
       "showCount": true,
       "actions": [
         {
