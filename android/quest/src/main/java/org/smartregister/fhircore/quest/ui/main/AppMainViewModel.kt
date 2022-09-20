@@ -56,6 +56,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
@@ -102,11 +103,11 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
   }
 
-  fun retrieveRemoteIconsBitmap() {
+  fun retrieveIconsAsBitmap() {
     navigationConfiguration.clientRegisters
       .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
       .forEach {
-        val resourceId = it.menuIconConfig!!.reference!!.substringAfter("/")
+        val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
         viewModelScope.launch(dispatcherProvider.io()) {
           registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
             it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()

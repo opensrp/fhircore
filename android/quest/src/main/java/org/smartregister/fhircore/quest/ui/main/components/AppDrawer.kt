@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.main.components
 
 import android.content.Context
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -76,6 +74,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
+import org.smartregister.fhircore.quest.ui.shared.components.MenuIcon
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
@@ -87,7 +86,6 @@ const val MENU_BUTTON_TEXT_TEST_TAG = "menuButtonTextTestTag"
 const val SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG = "sideMenuItemMainRowTestTag"
 const val SIDE_MENU_ITEM_INNER_ROW_TEST_TAG = "sideMenuItemInnerRowTestTag"
 const val SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG = "sideMenuItemLocalIconTestTag"
-const val SIDE_MENU_ITEM_BINARY_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
 const val SIDE_MENU_ITEM_END_ICON_TEST_TAG = "sideMenuItemEndIconTestTag"
 const val SIDE_MENU_ITEM_TEXT_TEST_TAG = "sideMenuItemTextTestTag"
 const val NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG = "navBottomSectionSideMenuItemTestTag"
@@ -393,17 +391,7 @@ private fun SideMenuItem(
             }
           }
           ICON_TYPE_REMOTE -> {
-            if (menuIconConfig.decodedBitmap != null) {
-              Image(
-                modifier =
-                  modifier
-                    .testTag(SIDE_MENU_ITEM_BINARY_ICON_TEST_TAG)
-                    .padding(end = 10.dp)
-                    .size(24.dp),
-                bitmap = menuIconConfig.decodedBitmap!!.asImageBitmap(),
-                contentDescription = SIDE_MENU_ICON
-              )
-            }
+            MenuIcon(modifier = modifier, menuIconConfig = menuIconConfig)
           }
         }
       }

@@ -53,7 +53,7 @@ class RegisterFragment : Fragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    appMainViewModel.retrieveRemoteIconsBitmap()
+    appMainViewModel.retrieveIconsAsBitmap()
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
