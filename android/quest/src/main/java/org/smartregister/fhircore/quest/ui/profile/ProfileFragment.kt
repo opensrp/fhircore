@@ -20,14 +20,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
@@ -45,6 +48,16 @@ class ProfileFragment : Fragment() {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
         AppTheme {
+          // Retrieve data when Lifecycle state is resuming
+          val lifecycleEvent = rememberLifecycleEvent()
+          LaunchedEffect(lifecycleEvent) {
+            if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+              with(profileFragmentArgs) {
+                profileViewModel.retrieveProfileUiState(profileId, resourceId)
+              }
+            }
+          }
+
           ProfileScreen(
             navController = findNavController(),
             profileUiState = profileViewModel.profileUiState.value,
@@ -53,13 +66,5 @@ class ProfileFragment : Fragment() {
         }
       }
     }
-  }
-
-  override fun onResume() {
-    super.onResume()
-    profileViewModel.retrieveProfileUiState(
-      profileId = profileFragmentArgs.profileId,
-      resourceId = profileFragmentArgs.resourceId
-    )
   }
 }

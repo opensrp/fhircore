@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -33,6 +34,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -43,6 +45,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
+import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
@@ -71,14 +74,24 @@ class RegisterFragment : Fragment() {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
           }
         }
-        val pagingItems =
-          registerViewModel
-            .paginatedRegisterData
-            .collectAsState(emptyFlow())
-            .value
-            .collectAsLazyPagingItems()
-
         AppTheme {
+          // Retrieve data when Lifecycle state is resuming
+          val lifecycleEvent = rememberLifecycleEvent()
+          LaunchedEffect(lifecycleEvent) {
+            if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+              with(registerFragmentArgs) {
+                registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+              }
+            }
+          }
+
+          val pagingItems =
+            registerViewModel
+              .paginatedRegisterData
+              .collectAsState(emptyFlow())
+              .value
+              .collectAsLazyPagingItems()
+
           // Register screen provides access to the side navigation
           Scaffold(
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
@@ -113,14 +126,6 @@ class RegisterFragment : Fragment() {
           }
         }
       }
-    }
-  }
-
-  override fun onResume() {
-    super.onResume()
-    appMainViewModel.retrieveAppMainUiState()
-    with(registerFragmentArgs) {
-      registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
     }
   }
 }

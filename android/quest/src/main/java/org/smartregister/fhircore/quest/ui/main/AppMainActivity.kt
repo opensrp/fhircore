@@ -107,6 +107,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
     }
 
+    appMainViewModel.retrieveAppMainUiState()
+
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
     syncBroadcaster.runSync()

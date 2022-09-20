@@ -54,7 +54,7 @@ constructor(
   val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
 
-  val registerUiState: MutableState<RegisterUiState> = mutableStateOf(RegisterUiState())
+  val registerUiState = mutableStateOf(RegisterUiState())
 
   val currentPage: MutableState<Int> = mutableStateOf(0)
 
@@ -74,7 +74,6 @@ constructor(
   }
 
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
-
     // Get the configured page size from RegisterConfiguration default is 20
     val pageSize = retrieveRegisterConfiguration(registerId).pageSize
 
