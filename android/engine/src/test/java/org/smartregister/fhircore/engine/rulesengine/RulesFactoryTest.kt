@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -25,6 +27,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ContactPoint
@@ -42,6 +45,7 @@ import org.jeasy.rules.core.DefaultRulesEngine
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
@@ -50,20 +54,25 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
+@HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
 
-  private lateinit var rulesEngine: DefaultRulesEngine
-  private lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-  private lateinit var configurationRegistry: ConfigurationRegistry
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  private val rulesEngine = mockk<DefaultRulesEngine>()
+
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   private lateinit var rulesFactory: RulesFactory
+
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
 
   @Before
   fun setUp() {
-    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
-    fhirPathDataExtractor = mockk(relaxed = true)
-    rulesEngine = mockk()
-    rulesFactory = spyk(RulesFactory(configurationRegistry = configurationRegistry))
+    hiltAndroidRule.inject()
+    rulesFactory = spyk(RulesFactory(configurationRegistry, fhirPathDataExtractor))
     rulesEngineService = rulesFactory.RulesEngineService()
   }
 
@@ -131,8 +140,8 @@ class RulesFactoryTest : RobolectricTest() {
         fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals(1, result.size)
-    Assert.assertEquals("CarePlan", result!![0].resourceType.name)
-    Assert.assertEquals("careplan-1", result!![0].logicalId)
+    Assert.assertEquals("CarePlan", result[0].resourceType.name)
+    Assert.assertEquals("careplan-1", result[0].logicalId)
   }
 
   @Test
@@ -145,7 +154,7 @@ class RulesFactoryTest : RobolectricTest() {
         fhirPathExpression = "CarePlan.subject.reference"
       )
     Assert.assertEquals("Patient", result!!.resourceType.name)
-    Assert.assertEquals("patient-1", result!!.logicalId)
+    Assert.assertEquals("patient-1", result.logicalId)
   }
   private fun populateFactsWithResources() {
     val carePlanRelatedResource = mutableListOf(populateCarePlan())

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.register
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -38,15 +39,11 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.rulesengine.RulesFactory
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
-import org.smartregister.fhircore.quest.navigation.NavigationArg
 
 @HiltViewModel
 class RegisterViewModel
@@ -55,7 +52,6 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val rulesFactory: RulesFactory
 ) : ViewModel() {
 
   private val _currentPage = MutableLiveData(0)
@@ -66,7 +62,9 @@ constructor(
   val searchText: androidx.compose.runtime.State<String>
     get() = _searchText
 
-  private val _totalRecordsCount = MutableLiveData(1L)
+  private val _totalRecordsCount = MutableLiveData(0L)
+  val totalRecordsCount: LiveData<Long>
+    get() = _totalRecordsCount
 
   private lateinit var registerConfiguration: RegisterConfiguration
 
@@ -102,7 +100,7 @@ constructor(
   }
 
   fun retrieveRegisterConfiguration(registerId: String): RegisterConfiguration {
-    // register configuration initialized once
+    // Ensures register configuration is initialized once
     if (!::registerConfiguration.isInitialized) {
       registerConfiguration =
         configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId)
@@ -122,7 +120,7 @@ constructor(
     _totalRecordsCount.value?.toDouble()?.div(DEFAULT_PAGE_SIZE.toLong())?.let { ceil(it).toInt() }
       ?: 1
 
-  fun onEvent(event: RegisterEvent) {
+  fun onEvent(event: RegisterEvent) =
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
@@ -138,25 +136,7 @@ constructor(
         this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
         paginateRegisterData(event.registerId)
       }
-      is RegisterEvent.RegisterNewClient ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
-          // TODO use appropriate property from the register configuration
-          "provide-questionnaire-id"
-        )
-      is RegisterEvent.OpenProfile -> {
-        val urlParams =
-          NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, event.patientId))
-        // TODO conditionally navigate to either family or patient profile
-        //        if (event.registerId)
-        //          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route +
-        // urlParams)
-        //        else
-        //          event.navController.navigate(
-        //            route = MainNavigationScreen.PatientProfile.route + urlParams
-        //          )
-      }
     }
-  }
 
   private fun filterRegisterData(event: RegisterEvent.SearchRegister) {
     val searchBar = retrieveRegisterConfiguration(event.registerId).searchBar
@@ -176,10 +156,6 @@ constructor(
     }
   }
 
-  // TODO this setting should be removed after refactor
-  fun isRegisterFormViaSettingExists(): Boolean {
-    return false
-  }
-
-  fun isFirstTimeSync() = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrEmpty()
+  fun isFirstTimeSync() =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null).isNullOrEmpty()
 }

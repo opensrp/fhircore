@@ -43,13 +43,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
@@ -102,11 +104,10 @@ constructor(
     MutableStateFlow(retrieveAncPatients())
   }
 
-  private val loggedInPractitioner by lazy {
-    sharedPreferencesHelper.read<Practitioner>(
-      key = LOGGED_IN_PRACTITIONER,
-      decodeFhirResource = true
-    )
+  private val practitionerId: String? by lazy {
+    sharedPreferencesHelper
+      .read(key = SharedPreferenceKey.PRACTITIONER_ID.name, null)
+      ?.extractLogicalIdUuid()
   }
 
   fun defaultDateRangeState() =
@@ -212,7 +213,8 @@ constructor(
                     end = endDateFormatted,
                     reportType = SUBJECT,
                     subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
-                    practitioner = loggedInPractitioner?.id,
+                    practitioner =
+                      practitionerId?.asReference(ResourceType.Practitioner)?.reference,
                     lastReceivedOn = null // Non-null value not supported yet
                   )
                 }
@@ -256,7 +258,7 @@ constructor(
           end = endDateFormatted,
           reportType = POPULATION,
           subject = null,
-          practitioner = loggedInPractitioner?.id,
+          practitioner = practitionerId?.asReference(ResourceType.Practitioner)?.reference,
           lastReceivedOn = null // Non-null value not supported yet
         )
       }

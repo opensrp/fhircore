@@ -25,31 +25,28 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import org.hl7.fhir.r4.model.Practitioner
-import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.encodeJson
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -58,11 +55,11 @@ import timber.log.Timber
 class LoginViewModel
 @Inject
 constructor(
+  val fhirEngine: FhirEngine,
+  val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
-  val sharedPreferences: SharedPreferencesHelper,
-  val fhirResourceDataSource: FhirResourceDataSource,
-  val configurationRegistry: ConfigurationRegistry
+  val sharedPreferences: SharedPreferencesHelper
 ) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -77,17 +74,33 @@ constructor(
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-        if (response.isSuccessful) {
-          response.body()?.let {
-            with(it.string().decodeJson<UserInfo>()) {
-              sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, this.encodeJson())
-              fetchLoggedInPractitioner(this)
-            }
-          }
-        } else {
+        if (!response.isSuccessful) {
           handleFailure(call, IOException("Network call failed with $response"))
+          Timber.i(response.errorBody()?.toString())
+          return
         }
-        Timber.i(response.errorBody()?.toString() ?: "No error")
+
+        val jsonResponseBody = response.body()!!.string()
+
+        viewModelScope.launch(dispatcher.io()) {
+          kotlin
+            .runCatching {
+              val bundle =
+                accountAuthenticator.getPractitionerDetails(
+                  keycloakUuid = jsonResponseBody.decodeJson<UserInfo>().keycloakUuid!!
+                )
+              savePractitionerDetails(bundle)
+            }
+            .onSuccess {
+              _showProgressBar.postValue(false)
+              _navigateToHome.postValue(true)
+            }
+            .onFailure { throwable ->
+              Timber.e("Error fetching practitioner details", throwable)
+              handleErrorMessage(throwable)
+              _showProgressBar.postValue(false)
+            }
+        }
       }
 
       override fun handleFailure(call: Call<ResponseBody>, throwable: Throwable) {
@@ -96,6 +109,46 @@ constructor(
         _showProgressBar.postValue(false)
       }
     }
+
+  suspend fun savePractitionerDetails(bundle: org.hl7.fhir.r4.model.Bundle) {
+    if (!bundle.hasEntry()) return
+
+    val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
+
+    val careTeams = practitionerDetails.fhirPractitionerDetails.careTeams ?: listOf()
+    val organizations = practitionerDetails.fhirPractitionerDetails.organizations ?: listOf()
+    val locations = practitionerDetails.fhirPractitionerDetails.locations ?: listOf()
+    val locationHierarchies =
+      practitionerDetails.fhirPractitionerDetails.locationHierarchyList ?: listOf()
+
+    val careTeamIds: List<String> = fhirEngine.create(*careTeams.toTypedArray())
+    val organizationIds: List<String> = fhirEngine.create(*organizations.toTypedArray())
+    val locationIds: List<String> = fhirEngine.create(*locations.toTypedArray())
+
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      value = practitionerDetails.fhirPractitionerDetails.practitionerId.valueToString()
+    )
+
+    sharedPreferences.write(
+      key = SharedPreferenceKey.USER_DETAILS.name,
+      value = practitionerDetails.userDetail,
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name,
+      value = careTeamIds,
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
+      value = organizationIds,
+    )
+    sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name, locationIds)
+
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name,
+      value = locationHierarchies,
+    )
+  }
 
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
@@ -142,7 +195,7 @@ constructor(
       }
     }
 
-  private val _navigateToHome = MutableLiveData<Boolean>()
+  private val _navigateToHome = MutableLiveData(false)
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 
@@ -166,53 +219,11 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  fun fetchLoggedInPractitioner(userInfo: UserInfo) {
-    if (!userInfo.keycloakUuid.isNullOrEmpty() &&
-        sharedPreferences.read(LOGGED_IN_PRACTITIONER, null) == null
-    ) {
-      viewModelScope.launch(dispatcher.io()) {
-        try {
-          fhirResourceDataSource.search(
-              ResourceType.Practitioner.name,
-              mapOf(IDENTIFIER to userInfo.keycloakUuid!!)
-            )
-            .run {
-              if (!this.entry.isNullOrEmpty()) {
-                sharedPreferences.write(
-                  LOGGED_IN_PRACTITIONER,
-                  (this.entryFirstRep.resource as Practitioner).encodeResourceToString()
-                )
-              }
-            }
-        } catch (throwable: Throwable) {
-          Timber.e("Error fetching practitioner details", throwable)
-        } finally {
-          _showProgressBar.postValue(false)
-          _navigateToHome.postValue(true)
-        }
-      }
-    } else {
-      _showProgressBar.postValue(false)
-      _navigateToHome.postValue(true)
-    }
-  }
-
   fun attemptLocalLogin(): Boolean {
     return accountAuthenticator.validLocalCredentials(
       username.value!!.trim(),
       password.value!!.trim().toCharArray()
     )
-  }
-
-  fun loginUser() {
-    viewModelScope.launch(dispatcher.io()) {
-      if (accountAuthenticator.hasActiveSession()) {
-        Timber.v("Login not needed .. navigating to home directly")
-        _navigateToHome.postValue(true)
-      } else {
-        accountAuthenticator.loadActiveAccount(this@LoginViewModel)
-      }
-    }
   }
 
   fun onUsernameUpdated(username: String) {
@@ -266,6 +277,10 @@ constructor(
   private fun handleErrorMessage(throwable: Throwable) {
     if (throwable is UnknownHostException) _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
     else _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+  }
+
+  fun isPinEnabled(): Boolean {
+    return applicationConfiguration.loginConfig.enablePin ?: false
   }
 
   companion object {

@@ -31,8 +31,8 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.util.APP_ID_KEY
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
@@ -99,7 +99,8 @@ constructor(
    * from [configsJsonMap] can be directly converted to a ResourceBundle.
    */
   fun retrieveResourceBundleConfiguration(bundleName: String): ResourceBundle? {
-    val resourceBundle = configsJsonMap[bundleName]
+    val resourceBundle =
+      configsJsonMap[bundleName.camelCase()] // Convention for config map keys is now Camel Case
     if (resourceBundle != null) {
       return PropertyResourceBundle(resourceBundle.byteInputStream())
     }
@@ -175,6 +176,18 @@ constructor(
         .readText()
         .decodeResourceFromString<Composition>()
         .run {
+          val iconConfigs =
+            retrieveCompositionSections().filter {
+              it.focus.hasIdentifier() && isIconConfig(it.focus.identifier.value)
+            }
+          if (iconConfigs.isNotEmpty()) {
+            val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
+            fhirResourceDataSource.loadData(
+                "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids"
+              )
+              .entry
+              .forEach { repository.addOrUpdate(it.resource) }
+          }
           populateConfigurationsMap(
             composition = this,
             loadFromAssets = loadFromAssets,
@@ -220,11 +233,11 @@ constructor(
     } else {
       composition.retrieveCompositionSections().forEach {
         if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
-          val configKey = it.focus.identifier.value
+          val configIdentifier = it.focus.identifier.value
           val referenceResourceType = it.focus.reference.substringBeforeLast("/")
-          if (isAppConfig(referenceResourceType)) {
+          if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
             val configBinary = repository.getBinary(it.focus.extractId())
-            configsJsonMap[configKey] = configBinary.content.decodeToString()
+            configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
           }
         }
       }
@@ -234,6 +247,8 @@ constructor(
 
   private fun isAppConfig(referenceResourceType: String) =
     referenceResourceType in arrayOf(ResourceType.Binary.name, ResourceType.Parameters.name)
+
+  private fun isIconConfig(configIdentifier: String) = configIdentifier.startsWith(ICON_PREFIX)
 
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
     // Reads supported files from asset/config/* directory recursively
@@ -275,7 +290,7 @@ constructor(
     // TODO load these type of configs from assets too
     CoroutineScope(dispatcherProvider.io()).launch {
       try {
-        sharedPreferencesHelper.read(APP_ID_KEY, null)?.let { appId: String ->
+        sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
           repository.searchCompositionByIdentifier(appId)?.let { composition ->
             composition
               .retrieveCompositionSections()
@@ -319,5 +334,6 @@ constructor(
     const val COUNT = "count"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val CONFIG_SUFFIX = "_config"
+    const val ICON_PREFIX = "ic_"
   }
 }

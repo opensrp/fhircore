@@ -17,29 +17,21 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import android.content.Context
-import androidx.navigation.NavHostController
-import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
-import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import androidx.navigation.NavController
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 sealed class ProfileEvent {
 
-  data class SeeAll(val patientProfileViewSection: PatientProfileViewSection) : ProfileEvent()
-
-  data class LoadQuestionnaire(val questionnaireId: String, val context: Context) : ProfileEvent()
-
-  data class OpenTaskForm(
-    val context: Context,
-    val taskFormId: String,
-    val taskId: String?,
-    val patientId: String
-  ) : ProfileEvent()
-
   data class OverflowMenuClick(
-    val navController: NavHostController,
+    val navController: NavController,
     val context: Context,
-    val menuId: Int,
-    val patientId: String,
-    val familyId: String? = null,
-    val patient: ProfileViewData.PatientProfileViewData
+    val resourceData: ResourceData?,
+    val overflowMenuItemConfig: OverflowMenuItemConfig?,
+    val managingEntity: ManagingEntityConfig? = null
   ) : ProfileEvent()
+
+  data class OnChangeManagingEntity(val newManagingEntityId: String, val groupId: String) :
+    ProfileEvent()
 }

@@ -16,15 +16,25 @@
 
 package org.smartregister.fhircore.engine.util.fhirpath
 
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class FhirPathDataExtractorTest : RobolectricTest() {
+
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   private val patientDeceased = "patientDeceased"
 
@@ -36,6 +46,11 @@ class FhirPathDataExtractorTest : RobolectricTest() {
       Pair(familyName, "Patient.name.family & ' Family'")
     )
 
+  @Before
+  fun setUp() {
+    hiltAndroidRule.inject()
+  }
+
   @Test
   fun testExtractDataShouldReturnMap() {
     val patient =
@@ -44,7 +59,7 @@ class FhirPathDataExtractorTest : RobolectricTest() {
         addName().family = "Doe"
       }
     val extractedData: Map<String, List<Base>> =
-      FhirPathDataExtractor.extractData(patient, expressions)
+      fhirPathDataExtractor.extractData(patient, expressions)
     Assert.assertTrue(extractedData.isNotEmpty())
 
     Assert.assertTrue(extractedData.containsKey(patientDeceased))
@@ -54,5 +69,28 @@ class FhirPathDataExtractorTest : RobolectricTest() {
     val familyNameValue = extractedData[familyName]
     Assert.assertEquals(1, familyNameValue?.size)
     Assert.assertEquals("Doe Family", (familyNameValue?.first() as StringType).value)
+  }
+
+  @Test
+  fun extractValueWithBasePatientAndFamilyNameExpressionShouldReturnStringValueOfFamily() {
+    val patient =
+      Patient().apply {
+        deceased = BooleanType(false)
+        addName().family = "Doe"
+      }
+    val expression = "Patient.name.family"
+    Assert.assertEquals("Doe", fhirPathDataExtractor.extractValue(patient, expression))
+  }
+
+  @Test
+  fun extractValueWithPatientWithNoGivenNameAndExpressionGivenNameShouldReturnEmptyString() {
+    val patientNoGivenName =
+      Patient().apply {
+        deceased = BooleanType(false)
+        addName().family = "Doe"
+      }
+    val expression = "Patient.name.given" // would evaluate to empty
+    val result = fhirPathDataExtractor.extractValue(patientNoGivenName, expression)
+    Assert.assertTrue(result.isEmpty())
   }
 }

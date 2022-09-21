@@ -21,18 +21,16 @@ import org.smartregister.fhircore.quest.R
 sealed class MainNavigationScreen(
   val titleResource: Int? = null,
   val iconResource: Int? = null,
-  val route: String,
+  val route: Int,
   val showInBottomNav: Boolean = false
 ) {
-  object Home : MainNavigationScreen(R.string.clients, R.drawable.ic_home, "homeRoute", true)
+  object Home :
+    MainNavigationScreen(R.string.clients, R.drawable.ic_home, R.id.registerFragment, true)
   object Reports :
-    MainNavigationScreen(R.string.reports, R.drawable.ic_reports, "reportsRoute", true)
+    MainNavigationScreen(R.string.reports, R.drawable.ic_reports, R.id.measureReportFragment, true)
   object Settings :
-    MainNavigationScreen(R.string.settings, R.drawable.ic_settings, "settingsRoute", true)
-  object Profile : MainNavigationScreen(titleResource = R.string.profile, route = "profileRoute")
-  object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
-
-  companion object {
-    val appScreens = listOf(Home, Reports, Settings, Profile, FamilyProfile)
-  }
+    MainNavigationScreen(R.string.settings, R.drawable.ic_settings, R.id.userSettingFragment, true)
+  object Profile :
+    MainNavigationScreen(titleResource = R.string.profile, route = R.id.profileFragment)
+  object GeoWidget : MainNavigationScreen(route = R.id.geoWidgetFragment)
 }

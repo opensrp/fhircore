@@ -1,0 +1,184 @@
+{
+    "resourceType": "QuestionnaireResponse",
+    "questionnaire": "Questionnaire/client-registration-sample",
+    "item": [
+      {
+        "linkId": "PR",
+        "item": [
+          {
+            "linkId": "PR-name",
+            "item": [
+              {
+                "linkId": "PR-name-given",
+                "answer": [
+                  {
+                    "valueString": "Mike"
+                  }
+                ]
+              },
+              {
+                "linkId": "PR-name-family",
+                "answer": [
+                  {
+                    "valueString": "Doe"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "linkId": "patient-0-birth-date",
+            "answer": [
+              {
+                "valueDate": "2021-07-01"
+              }
+            ]
+          },
+          {
+            "linkId": "patient-0-gender",
+            "answer": [
+              {
+                "valueCoding": {
+                  "code": "male",
+                  "display": "Male"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "PR-telecom",
+            "item": [
+              {
+                "linkId": "PR-telecom-system",
+                "answer": [
+                  {
+                    "valueString": "phone"
+                  }
+                ]
+              },
+              {
+                "linkId": "PR-telecom-value",
+                "answer": [
+                  {
+                    "valueString": "0700 000 000"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "linkId": "PR-address",
+            "item": [
+              {
+                "linkId": "PR-address-city",
+                "answer": [
+                  {
+                    "valueString": "Nairobi"
+                  }
+                ]
+              },
+              {
+                "linkId": "PR-address-country",
+                "answer": [
+                  {
+                    "valueString": "Kenya"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "linkId": "PR-active",
+            "answer": [
+              {
+                "valueBoolean": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "linkId": "RP",
+        "item": [
+          {
+            "linkId": "RP-family-name",
+            "answer": [
+              {
+                "valueString": "Doe"
+              }
+            ]
+          },
+          {
+            "linkId": "RP-first-name",
+            "answer": [
+              {
+                "valueString": "Mama-mike"
+              }
+            ]
+          },
+          {
+            "linkId": "RP-relationship",
+            "answer": [
+              {
+                "valueString": "PRN"
+              }
+            ]
+          },
+          {
+            "linkId": "RP-contact-1",
+            "answer": [
+              {
+                "valueString": "0700 001 001"
+              }
+            ]
+          },
+          {
+            "linkId": "RP-contact-alternate",
+            "answer": [
+              {
+                "valueString": "0700 000 012"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "linkId": "comorbidities",
+        "answer": [
+          {
+            "valueCoding": {
+              "display": "Cancer",
+              "system": "https://www.snomed.org",
+              "code": "363346000"
+            }
+          },
+          {
+            "valueCoding": {
+              "display": "Others",
+              "system": "https://www.snomed.org",
+              "code": "74964007"
+            }
+          }
+        ]
+      },
+      {
+        "linkId": "other_comorbidities",
+        "answer": [
+          {
+            "valueString": "This is another comorbidity"
+          }
+        ]
+      },
+      {
+        "linkId": "patient-barcode",
+        "answer": [
+          {
+            "valueString": "scanned-barcode-string"
+          }
+        ]
+      },
+      {
+        "linkId": "RP-id"
+      }
+    ]
+  }

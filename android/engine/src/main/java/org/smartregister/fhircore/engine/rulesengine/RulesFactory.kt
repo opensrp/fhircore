@@ -38,20 +38,20 @@ import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
 
 @Singleton
-class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationRegistry) :
-  RuleListener {
+class RulesFactory
+@Inject
+constructor(
+  val configurationRegistry: ConfigurationRegistry,
+  val fhirPathDataExtractor: FhirPathDataExtractor
+) : RuleListener {
 
   private var facts: Facts = Facts()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val computedValuesMap = mutableMapOf<String, Any>()
-  private val fhirPathDataExtractor = FhirPathDataExtractor
-  private val rulesEngineService = RulesEngineService()
+  val rulesEngineService = RulesEngineService()
 
   init {
     rulesEngine.registerRuleListener(this)
-    // Uncomment to include configurations in the facts map
-    //    configurationRegistry.configsJsonMap.forEach { entry -> facts.put(entry.key, entry.value)
-    // }
     facts.apply {
       put(FHIR_PATH, fhirPathDataExtractor)
       put(DATA, computedValuesMap)
@@ -138,11 +138,13 @@ class RulesFactory @Inject constructor(val configurationRegistry: ConfigurationR
      * - The ResourceType the relatedResources belong to [fhirPathExpression]
      * - A fhir path expression used to retrieve the subject reference Id from the related resources
      */
+    @Suppress("UNCHECKED_CAST")
     fun retrieveRelatedResources(
       resource: Resource,
       relatedResourceType: String,
       fhirPathExpression: String
     ): List<Resource> {
+      if (facts.getFact(relatedResourceType) == null) return emptyList()
       val value = facts.getFact(relatedResourceType).value as ArrayList<Resource>
 
       return value.filter {

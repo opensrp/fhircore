@@ -1,0 +1,186 @@
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/5021" = 'VitalSignsStandard'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
+uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
+uses "http://hl7.org/fhir/StructureDefinition/positiveInt" as target
+
+group VitalSigns(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.id = uuid() "rule_a";
+    src -> bundle.type = 'collection' "rule_b";
+    src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then
+        ExtractEncounter(src, encounter), ExtractWeight(src, bundle, encounter), ExtractHeight(src, bundle, encounter), ExtractOxygenSat(src, bundle, encounter),
+        ExtractBloodPressure(src, bundle, encounter), ExtractPulseRate(src, bundle, encounter), ExtractBloodGlucose(src, bundle, encounter) "rule_c";
+}
+
+group ExtractEncounter(source src : QuestionnaireResponse, target encounter : Encounter) {
+    src -> encounter.id = uuid() "rule_ee_1";
+    src -> encounter.status = "finished" "rule_ee_2";
+    src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "AMB", "ambulatory") "rule_ee_3";
+    src -> encounter.serviceType = cc("http://terminology.hl7.org/CodeSystem/service-type", "57", "Immunization") "rule_ee_4";
+}
+
+group ExtractWeight(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as item where(linkId = 'select-vital-sign' and answer.count() > 0 and (answer[0].value.code.value) = 'weight') then {
+            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                src -> obs.id = uuid() "ew_3";
+                src -> obs.code = create('CodeableConcept') as codeableConcept then {
+                    src -> codeableConcept.coding = c("http://loinc.org", "29463-7", "Body Weight") "ew_4";
+                    src -> codeableConcept.coding = c("http://loinc.org", "3141-9", "Body weight Measured") "ew_4.1";
+                    src -> codeableConcept.coding = c("http://snomed.info/sct", "27113001", "Body weight") "ew_4.2";
+                    src -> codeableConcept.coding = c("http://acme.org/devices/clinical-codes", "body-weight", "Body Weight") "ew_4.3";
+                } "ew_4_";
+                src -> obs.value = create("Quantity") as qty then {
+                       src -> qty.value = evaluate(src, $this.item.where(linkId = 'vital-signs-body-wight_lb').answer.value) "rule_ei_12_1";
+                       src -> qty.system = "http://unitsofmeasure.org" "rule_ei_12_2";
+                       src -> qty.code = "[lb_av]" "rule_ei_12_3";
+                       src -> qty.unit = "lb" "rule_ei_12_4";
+                     } "rule_ei_12";
+                src -> obs.encounter = reference(encounter) "ew_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
+                src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh_6";
+                src -> obs.effective = evaluate(item, now()) "ew_7";
+            } "ew_2";
+        } "ew_1";
+}
+
+group ExtractHeight(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as item where(linkId = 'select-vital-sign' and answer.count() > 0 and (answer[0].value.code.value) = 'height') then {
+            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                src -> obs.id = uuid() "eh_3";
+                src -> obs.code = create('CodeableConcept') as codeableConcept then {
+                 src -> codeableConcept.coding = c("http://loinc.org", "3137-7", "Body height") "eh_4.2";
+                 src -> codeableConcept.coding = c("http://loinc.org", "8302-2") "eh_4.1";
+                } "eh_4";
+                src -> obs.value = create("Quantity") as qty then {
+                       src -> qty.value = evaluate(src, ($this.item.where(linkId = 'vital-signs-height_ft').answer.value * 12 ) + $this.item.where(linkId = 'vital-signs-height_in').answer.value) "rule_ei_12_1";
+                       src -> qty.system = "http://unitsofmeasure.org" "rule_ei_12_2";
+                       src -> qty.code = "[in_i]" "rule_ei_12_3";
+                       src -> qty.unit = "in" "rule_ei_12_4";
+                     } "rule_ei_12";
+                src -> obs.encounter = reference(encounter) "eh_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
+                src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh_6";
+                src -> obs.effective = evaluate(item, now()) "eh_7";
+            } "eh_2";
+        } "eh_1";
+}
+
+group ExtractOxygenSat(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as item where(linkId = 'select-vital-sign' and answer.count() > 0 and (answer[0].value.code.value) = 'blood-oxygen-level') then {
+            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                src -> obs.id = uuid() "eos_3";
+                src -> obs.code = create('CodeableConcept') as codeableConcept then {
+                    src -> codeableConcept.coding = c("http://loinc.org", "2708-6", "Oxygen saturation in Arterial blood") "eos_4";
+                    src -> codeableConcept.coding = c("http://loinc.org", "59408-5", "Oxygen saturation in Arterial blood by Pulse oximetry") "eos_4.1";
+                } "eos_4_";
+                src -> obs.value = create("Quantity") as qty then {
+                       src -> qty.value = evaluate(src, $this.item.where(linkId = 'vital-signs-blood-oxygen-level').answer.value) "rule_ei_12_1";
+                       src -> qty.system = "http://unitsofmeasure.org" "rule_ei_12_2";
+                       src -> qty.code = "%" "rule_ei_12_3";
+                       src -> qty.unit = "%" "rule_ei_12_4";
+                     } "rule_ei_12";
+                src -> obs.encounter = reference(encounter) "eos_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
+                src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eos_6";
+                src -> obs.effective = evaluate(item, now()) "eos_7";
+            } "eos_2";
+        } "eos_1";
+}
+
+group ExtractBloodPressure(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as item where(linkId = 'select-vital-sign' and answer.count() > 0 and (answer[0].value.code.value) = 'blood-pressure') then {
+            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                src -> obs.id = uuid() "ebp_3";
+                src -> obs.code = create('CodeableConcept') as codeableConcept then {
+                    src -> codeableConcept.coding = c("http://loinc.org", "85354-9", "Blood pressure panel with all children optional") "ebp_4";
+                    src -> codeableConcept.coding = c("http://loinc.org", "8480-6", "Systolic blood pressure") "ebp_4.1";
+                    src -> codeableConcept.coding = c("http://snomed.info/sct", "271649006", "Systolic blood pressure") "ebp_4.2";
+                    src -> codeableConcept.coding = c("http://acme.org/devices/clinical-codes", "bp-s", "Systolic Blood pressure") "ebp_4.3";
+                    src -> codeableConcept.coding = evaluate(src, $this.item.where(linkId = 'vital-signs-body-site-systolic-blood-pressure').answer.value) "ebp_4.4";
+                } "ebp_4_";
+                src -> obs.value = create("Quantity") as qty then {
+                       src -> qty.value = evaluate(src, $this.item.where(linkId = 'vital-signs-systolic-blood-pressure').answer.value) "rule_ei_12_1";
+                       src -> qty.system = "http://unitsofmeasure.org" "rule_ei_12_2";
+                       src -> qty.code = "mm[Hg]" "rule_ei_12_3";
+                       src -> qty.unit = "mmHg" "rule_ei_12_4";
+                     } "rule_ei_12";
+                src -> obs.encounter = reference(encounter) "ebp_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
+                src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "ebp_6";
+                src -> obs.effective = evaluate(item, now()) "ebp_7";
+            } "ebp_2";
+
+            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                src -> obs.id = uuid() "eh1_3";
+                src -> obs.code = create('CodeableConcept') as codeableConcept then {
+                    src -> codeableConcept.coding = c("http://loinc.org", "85354-9", "Blood pressure panel with all children optional") "eh1_4";
+                    src -> codeableConcept.coding = c("http://loinc.org", "8462-4", "Diastolic blood pressure") "eh1_4.1";
+                    src -> codeableConcept.coding = evaluate(src, $this.item.where(linkId = 'vital-signs-body-site-diastolic-blood-pressure').answer.value) "eh1_4.2";
+                } "eh1_4_";
+                src -> obs.value = create("Quantity") as qty then {
+                       src -> qty.value = evaluate(src, $this.item.where(linkId = 'vital-signs-diastolic-blood-pressure').answer.value) "rule_ei_12_1";
+                       src -> qty.system = "http://unitsofmeasure.org" "rule_ei1_12_2";
+                       src -> qty.code = "mm[Hg]" "rule_ei1_12_3";
+                       src -> qty.unit = "mmHg" "rule_ei1_12_4";
+                     } "rule_ei1_12";
+                src -> obs.encounter = reference(encounter) "eh1_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
+                src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh1_6";
+                src -> obs.effective = evaluate(item, now()) "eh1_7";
+            } "eh1_2";
+        } "ebp_1";
+}
+
+group ExtractPulseRate(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as item where(linkId = 'select-vital-sign' and answer.count() > 0 and (answer[0].value.code.value) = 'pulse-rate') then {
+            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                src -> obs.id = uuid() "epr_3";
+                src -> obs.code = cc("http://loinc.org", "8867-4", "Heart rate") "epr_4";
+                src -> obs.value = create("Quantity") as qty then {
+                       src -> qty.value = evaluate(src, $this.item.where(linkId = 'vital-signs-pulse-rate-level').answer.value) "rule_ei_12_1";
+                       src -> qty.system = "http://unitsofmeasure.org" "rule_ei_12_2";
+                       src -> qty.code = "/min" "rule_ei_12_3";
+                       src -> qty.unit = "beats/minute" "rule_ei_12_4";
+                     } "rule_ei_12";
+                src -> obs.encounter = reference(encounter) "epr_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
+                src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "epr_6";
+                src -> obs.effective = evaluate(item, now()) "epr_7";
+            } "epr_2";
+        } "epr_1";
+}
+
+group ExtractBloodGlucose(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as item where(linkId = 'select-vital-sign' and answer.count() > 0 and (answer[0].value.code.value) = 'blood-glucose') then {
+            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                src -> obs.id = uuid() "ebc_3";
+                src -> obs.code = cc("http://loinc.org", "15074-8", "Glucose [Moles/volume] in Blood") "ebc_4";
+                src -> obs.value = create("Quantity") as qty then {
+                       src -> qty.value = evaluate(src, $this.item.where(linkId = 'vital-signs-blood_glucose').answer.value) "rule_ei_12_1";
+                       src -> qty.system = "http://unitsofmeasure.org" "rule_ei_12_2";
+                       src -> qty.code = "mmol/L" "rule_ei_12_3";
+                       src -> qty.unit = "mmol/l" "rule_ei_12_4";
+                     } "rule_ei_12";
+                src -> obs.encounter = reference(encounter) "ebc_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
+                src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "ebc_6";
+                src -> obs.effective = evaluate(item, now()) "ebc_7";
+            } "ebc_2";
+        } "ebc_1";
+}

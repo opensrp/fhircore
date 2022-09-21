@@ -9,19 +9,30 @@
       {
         "trigger": "ON_CLICK",
         "workflow": "LAUNCH_REGISTER",
-        "id": "patientRegister"
+        "id": "patientRegister",
+        "questionnaire": {
+          "id": "82952",
+          "title": "Add Family",
+          "saveButtonText": "ADD FAMILY",
+          "setPractitionerDetails": true,
+          "setOrganizationDetails": true
+        }
       }
-    ],
-    "questionnaire": {
-      "id": "82952",
-      "title": "Add Family",
-      "saveButtonText": "ADD FAMILY",
-      "setPractitionerDetails": true,
-      "setOrganizationDetails": true
-    }
+    ]
   },
   "staticMenu": [
     {
+      "id": "maps",
+      "visible": true,
+      "display": "Maps",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_MAP",
+          "id": "navigateToMapsScreen"
+        }
+      ]
+    },{
       "id": "reports",
       "visible": true,
       "display": "Reports",
@@ -62,7 +73,10 @@
     {
       "id": "patientRegister",
       "display": "All Households",
-      "icon": "",
+      "menuIconConfig": {
+        "type": "remote",
+        "reference": "Binary/144177"
+      },
       "showCount": true,
       "actions": [
         {
@@ -79,7 +93,10 @@
     {
       "id": "taskRegister",
       "display": "Tasks",
-      "icon": "",
+      "menuIconConfig": {
+        "type": "remote",
+        "reference": "Binary/144177"
+      },
       "showCount": true,
       "actions": [
         {

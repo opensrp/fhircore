@@ -19,11 +19,11 @@ package org.smartregister.fhircore.engine.util
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.Locale
-import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.messageFormat
@@ -34,7 +34,7 @@ import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 class LocalizationHelperTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var configRegistry: ConfigurationRegistry
+  private val configRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
@@ -155,5 +155,23 @@ class LocalizationHelperTest : RobolectricTest() {
       )
 
     Assert.assertEquals("Male from Nairobi, Kenya", result)
+  }
+
+  @Test
+  fun testParseTemplateWithStaticTranslationFilesGeneratesCorrectlyTranslatedString() {
+    val templateString = "{{person.gender}} from {{person.address}}"
+
+    val result =
+      configRegistry.localizationHelper.parseTemplate(
+        LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+        Locale.GERMAN,
+        templateString
+      )
+
+    Assert.assertTrue(
+      "Configs JSON Map DOES NOT contain key in correct format",
+      configRegistry.configsJsonMap.containsKey("stringsDe")
+    )
+    Assert.assertEquals("Mannlich from Berlin, Germany", result)
   }
 }

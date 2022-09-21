@@ -6,7 +6,7 @@
         <string name="search_hint">Tafuta jina ama ID</string>
         <string name="str_next">Ijayo</string>
         <string name="str_previous">Iliyopita</string>
-        <string name="str_page_info">Ukurasa %1$d of %2$d</string>
+        <string name="str_page_info">Ukurasa %1$d wa %2$d</string>
         <string name="status_vaccinated">Amechanjwa</string>
         <string name="status_overdue">Imechelewa</string>
         <string name="status_received_vaccine">Chanjo %1$d \n%2$s</string>

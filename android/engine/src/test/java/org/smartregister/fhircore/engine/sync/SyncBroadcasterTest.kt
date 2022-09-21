@@ -16,50 +16,141 @@
 
 package org.smartregister.fhircore.engine.sync
 
-import android.content.Context
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.SyncJob
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.MockKAnnotations
+import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.ResourceType
+import org.junit.Assert
 import org.junit.Before
-import org.mockito.Mock
+import org.junit.Rule
+import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.isIn
 
 @ExperimentalCoroutinesApi
-internal class SyncBroadcasterTest {
+@HiltAndroidTest
+class SyncBroadcasterTest : RobolectricTest() {
 
-  @Mock private lateinit var fhirResourceService: FhirResourceService
-  private lateinit var fhirResourceDataSource: FhirResourceDataSource
-  @Mock private lateinit var configService: ConfigService
-  @Mock private lateinit var context: Context
-  @Mock private lateinit var syncJob: SyncJob
-  @Mock private lateinit var fhirEngine: FhirEngine
-  @Mock private lateinit var dispatcherProvider: DispatcherProvider
-  @Mock private lateinit var configurationRegistry: ConfigurationRegistry
-  private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var configService: ConfigService
+
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  private val syncJob = mockk<SyncJob>(relaxed = true)
+
+  private val fhirEngine = mockk<FhirEngine>()
+
+  private val syncListenerManager = spyk<SyncListenerManager>()
+
   private lateinit var syncBroadcaster: SyncBroadcaster
 
   @Before
   fun setup() {
-    fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
-    sharedPreferencesHelper = SharedPreferencesHelper(context)
+    hiltAndroidRule.inject()
+    MockKAnnotations.init(this)
     syncBroadcaster =
-      SyncBroadcaster(
-        configurationRegistry,
-        sharedPreferencesHelper,
-        configService,
-        syncJob,
-        fhirEngine,
-        sharedSyncStatus,
-        dispatcherProvider
+      spyk(
+        SyncBroadcaster(
+          configurationRegistry = configurationRegistry,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configService = configService,
+          syncJob = syncJob,
+          fhirEngine = fhirEngine,
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          syncListenerManager = syncListenerManager
+        )
       )
+  }
+
+  @Test fun testRunSyncWorksAsExpected() = runTest {}
+
+  @Test
+  fun testLoadSyncParamsShouldLoadFromConfiguration() {
+
+    val paramsMap =
+      mutableMapOf<String, List<String>>().apply {
+        put(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
+          listOf("Organization/105")
+        )
+      }
+    val syncParam = syncBroadcaster.loadSyncParams(paramsMap)
+
+    Assert.assertTrue(syncParam.isNotEmpty())
+
+    val resourceTypes =
+      arrayOf(
+          ResourceType.CarePlan,
+          ResourceType.Condition,
+          ResourceType.Encounter,
+          ResourceType.Group,
+          ResourceType.Library,
+          ResourceType.Measure,
+          ResourceType.Observation,
+          ResourceType.Patient,
+          ResourceType.PlanDefinition,
+          ResourceType.Questionnaire,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.StructureMap,
+          ResourceType.Task
+        )
+        .sorted()
+
+    Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
+
+    syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+    }
+
+    syncParam.keys.filter { it.isIn(ResourceType.Patient) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+    }
+
+    syncParam.keys
+      .filter {
+        it.isIn(
+          ResourceType.Encounter,
+          ResourceType.Condition,
+          ResourceType.MedicationRequest,
+          ResourceType.Task,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.Observation
+        )
+      }
+      .forEach {
+        Assert.assertTrue(syncParam[it]!!.containsKey("subject.organization"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+      }
+
+    syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+    }
+  }
+
+  @Test
+  fun testSchedulePeriodicSyncShouldPoll() = runTest {
+    syncBroadcaster.schedulePeriodicSync()
+    verify { syncJob.poll<FhirSyncWorker>(periodicSyncConfiguration = any(), clazz = any()) }
   }
 }

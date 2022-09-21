@@ -32,7 +32,6 @@ class PinViewKtTest {
   @OptIn(ExperimentalComposeUiApi::class)
   @Before
   fun init() {
-
     composeTestRule.setContent { AppTheme { PinView(inputPin = "1934") } }
   }
 

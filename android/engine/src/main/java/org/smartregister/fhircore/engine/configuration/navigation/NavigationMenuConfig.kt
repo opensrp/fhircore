@@ -16,16 +16,27 @@
 
 package org.smartregister.fhircore.engine.configuration.navigation
 
+import android.graphics.Bitmap
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 
 @Serializable
 data class NavigationMenuConfig(
   val id: String,
   val visible: Boolean = true,
-  val icon: String? = null,
+  val menuIconConfig: MenuIconConfig? = null,
   val display: String,
-  val questionnaire: QuestionnaireConfig? = null,
   val showCount: Boolean = false,
-  val actions: List<NavigationActionConfig>? = null
+  val actions: List<ActionConfig>? = null,
 )
+
+@Serializable
+data class MenuIconConfig(
+  val type: String? = null,
+  val reference: String? = null,
+  @Contextual var decodedBitmap: Bitmap? = null
+)
+
+const val ICON_TYPE_LOCAL = "local"
+const val ICON_TYPE_REMOTE = "remote"

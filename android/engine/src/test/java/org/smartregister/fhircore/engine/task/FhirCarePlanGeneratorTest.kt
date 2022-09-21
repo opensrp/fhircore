@@ -49,6 +49,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.After
 import org.junit.Assert
@@ -81,6 +82,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Inject lateinit var transformSupportServices: TransformSupportServices
 
+  @Inject lateinit var fhirPathEngine: FHIRPathEngine
+
   lateinit var structureMapUtilities: StructureMapUtilities
 
   @Before
@@ -92,7 +95,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
-        transformSupportServices = transformSupportServices
+        transformSupportServices = transformSupportServices,
+        fhirPathEngine = fhirPathEngine
       )
 
     mockkStatic(DateTimeType::class)

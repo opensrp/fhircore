@@ -34,4 +34,6 @@ sealed class ConfigType(
   object Navigation : ConfigType("navigation")
   object Register : ConfigType("register", multiConfig = true)
   object MeasureReport : ConfigType("measureReport")
+  object Profile : ConfigType("profile", multiConfig = true)
+  object GeoWidget : ConfigType("geoWidget", multiConfig = true)
 }

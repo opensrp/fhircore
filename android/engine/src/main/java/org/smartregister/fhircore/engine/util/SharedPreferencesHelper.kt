@@ -18,17 +18,21 @@ package org.smartregister.fhircore.engine.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 @Singleton
-class SharedPreferencesHelper @Inject constructor(@ApplicationContext val context: Context) {
+class SharedPreferencesHelper
+@Inject
+constructor(@ApplicationContext val context: Context, val gson: Gson) {
 
-  private var prefs: SharedPreferences =
+  val prefs: SharedPreferences by lazy {
     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+  }
 
   /** @see [SharedPreferences.getString] */
   fun read(key: String, defaultValue: String?) = prefs.getString(key, defaultValue)
@@ -64,18 +68,27 @@ class SharedPreferencesHelper @Inject constructor(@ApplicationContext val contex
     }
   }
 
+  /** Read any JSON object with type T */
+  inline fun <reified T> read(key: String, decodeWithGson: Boolean = true): T? =
+    if (decodeWithGson) {
+      gson.fromJson(this.read(key, null), T::class.java)
+    } else {
+      this.read(key, null)?.decodeJson<T>()
+    }
+
+  /** Write any object by saving it as JSON */
+  inline fun <reified T> write(key: String, value: T?, encodeWithGson: Boolean = true) {
+    with(prefs.edit()) {
+      putString(key, if (encodeWithGson) gson.toJson(value) else value.encodeJson())
+      commit()
+    }
+  }
+
   fun remove(key: String) {
     prefs.edit().remove(key).apply()
   }
 
-  inline fun <reified T> read(key: String, decodeFhirResource: Boolean = false): T? =
-    if (decodeFhirResource) this.read(key, null)?.decodeResourceFromString()
-    else this.read(key, null)?.decodeJson<T>()
-
   companion object {
-    const val LANG = "shared_pref_lang"
-    const val THEME = "shared_pref_theme"
     const val PREFS_NAME = "params"
-    const val MEASURE_RESOURCES_LOADED = "measure_resources_loaded"
   }
 }

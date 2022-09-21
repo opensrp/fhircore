@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
+import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -73,7 +74,7 @@ class NetworkModule {
       .build()
       .create(OAuthService::class.java)
 
-  @Provides fun provideParser(): IParser = FhirContext.forR4Cached().newJsonParser()
+  @Provides fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
 
   @Provides
   fun provideFhirResourceService(

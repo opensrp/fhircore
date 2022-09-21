@@ -1,0 +1,315 @@
+{
+  "appId": "map",
+  "configType": "profile",
+  "id": "householdProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "id": "householdQueryByType",
+          "filterType": "TOKEN",
+          "key": "type",
+          "valueType": "CODING",
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/group-type",
+            "code": "person"
+          }
+        },
+        {
+          "id": "householdQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "35359004"
+          }
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "Patient",
+        "fhirPathExpression": "Group.member.entity",
+        "relatedResources": [
+          {
+            "resource": "Condition",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "CarePlan",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "Task",
+            "searchParameter": "subject"
+          }
+        ]
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "id": "filterHouseholdCarePlans",
+            "filterType": "TOKEN",
+            "key": "_tag",
+            "valueType": "CODING",
+            "valueCoding": {
+              "system": "https://www.snomed.org",
+              "code": "35359004"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "managingEntity": {
+    "infoFhirPathExpression": "Patient.name.given",
+    "fhirPathResource": {
+      "resourceType": "Patient",
+      "fhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')"
+    },
+    "dialogTitle": "{{ assign.new.family.head }}",
+    "dialogWarningMessage": "{{ abort.operation.question }}",
+    "dialogContentMessage": "{{ select.new.family.head }}"
+  },
+  "fabActions": [
+    {
+      "id": "ActionButton",
+      "visible": true,
+      "display": "{{ add.member }}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "e5155788-8831-4916-a3f5-486915ce34b2",
+            "title": "Add household member",
+            "saveButtonText": "Add Member",
+            "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Patient"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "name": "familyName",
+      "condition": "true",
+      "actions": [
+        "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
+      ]
+    },
+    {
+      "name": "familyId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+      ]
+    },
+    {
+      "name": "familyLogicalId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "COLUMN",
+          "backgroundColor": "primaryColor",
+          "padding": 8,
+          "children": [
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "@{familyName} Family",
+              "primaryTextColor": "#FFFFFF",
+              "fontSize": 20.0
+            },
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "ID: @{familyId}",
+              "primaryTextColor": "#FFFFFF",
+              "fontSize": 20.0
+            }
+          ]
+        },
+        {
+          "viewType": "CARD",
+          "padding": 0,
+          "content": [
+            {
+              "viewType": "BUTTON",
+              "smallSized": true,
+              "text": "Routine household visit",
+              "status": "COMPLETED"
+            }
+          ]
+        },
+        {
+          "viewType": "COLUMN",
+          "backgroundColor": "#F2F4F7",
+          "children": [
+            {
+              "viewType": "SPACER",
+              "height": 8
+            },
+            {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "HOUSEHOLD MEMBERS",
+              "primaryTextColor": "#6F7274",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            {
+              "viewType": "SPACER",
+              "height": 16
+            }
+          ]
+        },
+        {
+          "viewType": "LIST",
+          "baseResource": "Patient",
+          "padding": 16,
+          "relatedResources": [
+            {
+              "resourceType": "CarePlan",
+              "fhirPathExpression": "CarePlan.subject.reference"
+            }
+          ],
+          "registerCard": {
+            "rules": [
+              {
+                "name": "patientName",
+                "condition": "true",
+                "actions": [
+                  "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
+                ]
+              }
+            ],
+            "views": [
+              {
+                "viewType": "SERVICE_CARD",
+                "details": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "@{patientName}",
+                    "primaryTextColor": "#000000"
+                  }
+                ],
+                "actions": [
+                  {
+                    "trigger": "ON_CLICK",
+                    "workflow": "LAUNCH_PROFILE",
+                    "id": "defaultProfile",
+                    "params": [
+                      {
+                        "key": "familyLogicalId",
+                        "value": "@{familyLogicalId}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "overFlowMenuItems": [
+    {
+      "title": "Household details",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
+            "title": "{{add.family}}",
+            "saveButtonText": "Update household details",
+            "setPractitionerDetails": true,
+            "setOrganizationDetails": true,
+            "type": "EDIT",
+            "resourceIdentifier": "@{familyLogicalId}"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Change household head",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "CHANGE_MANAGING_ENTITY"
+        }
+      ]
+    },
+    {
+      "title": "Family activity",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE"
+        }
+      ]
+    },
+    {
+      "title": "View medical history",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": []
+    },
+    {
+      "title": "Remove family",
+      "titleColor": "#FF0000",
+      "visible": "true",
+      "showSeparator": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "params": [
+            {
+              "key": "familyId",
+              "value": "@{familyLogicalId}"
+            },
+            {
+              "key": "familyName",
+              "value": "@{familyName}"
+            }
+          ],
+          "questionnaire": {
+            "id": "0259e181-581e-4b4c-8409-e3be3a166ef5",
+            "title": "Remove Household",
+            "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Patient",
+              "removeGroup": true
+            },
+            "confirmationDialog": {
+              "title": "Remove household",
+              "message": "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
+              "actionButtonText": "Remove household"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
