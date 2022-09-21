@@ -22,7 +22,6 @@ import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -35,7 +34,6 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 class UserSettingViewModel
 @Inject
 constructor(
-  val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
@@ -59,9 +57,6 @@ constructor(
     when (event) {
       is UserSettingsEvent.Logout -> {
         accountAuthenticator.logout()
-      }
-      is UserSettingsEvent.SyncData -> {
-        syncBroadcaster.runSync()
       }
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
