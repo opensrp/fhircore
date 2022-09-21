@@ -32,6 +32,7 @@ import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.isPaginated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
@@ -160,7 +161,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         // 2- readonly -> assert and pass response from intent
         // 3- default -> process, populate and pass response/data from intent if exists
         arguments =
-          bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
+          bundleOf(
+            Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString),
+            Pair(QuestionnaireFragment.EXTRA_ENABLE_REVIEW_PAGE, questionnaire.isPaginated)
+          )
             .apply {
               var questionnaireResponse =
                 intent
