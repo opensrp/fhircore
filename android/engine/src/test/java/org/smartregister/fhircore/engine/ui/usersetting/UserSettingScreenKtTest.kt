@@ -49,15 +49,7 @@ class UserSettingScreenKtTest : RobolectricTest() {
   fun testUserProfileShouldDisplayCorrectContent() {
     initComposable()
     composeRule.onNodeWithText("Johndoe").assertExists()
-    composeRule.onNodeWithText("Sync").assertExists()
     composeRule.onNodeWithText("Log out").assertExists()
-  }
-
-  @Test
-  fun testSyncRowClickShouldInitiateSync() {
-    initComposable()
-    composeRule.onNodeWithText("Sync").performClick()
-    verify { mockUserSettingsEventListener(any()) }
   }
 
   @Test
