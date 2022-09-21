@@ -28,7 +28,8 @@ data class AppMainUiState(
   val languages: List<Language>,
   val sideMenuOptions: List<SideMenuOption>,
   val enableDeviceToDeviceSync: Boolean = false,
-  val enableReports: Boolean = false
+  val enableReports: Boolean = false,
+  val syncClickEnabled: Boolean = true
 )
 
 fun appMainUiStateOf(

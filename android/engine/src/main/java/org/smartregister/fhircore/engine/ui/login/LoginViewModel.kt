@@ -234,8 +234,8 @@ constructor(
     _password.value = password
   }
 
-  override fun run(future: AccountManagerFuture<Bundle>?) {
-    val bundle = future?.result ?: bundleOf()
+  override fun run(future: AccountManagerFuture<Bundle>) {
+    val bundle = future.result ?: bundleOf()
     bundle.getString(AccountManager.KEY_AUTHTOKEN)?.run {
       if (this.isNotEmpty() && accountAuthenticator.tokenManagerService.isTokenActive(this)) {
         _navigateToHome.postValue(true)
