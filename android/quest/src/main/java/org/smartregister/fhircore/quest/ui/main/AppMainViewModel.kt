@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import android.content.Intent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -92,12 +93,22 @@ constructor(
           (this as Activity).refresh()
         }
       }
-      AppMainEvent.SyncData -> {
-        syncBroadcaster.runSync()
-        appMainUiState.value =
-          appMainUiState.value.copy(
-            sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions()
-          )
+      is AppMainEvent.SyncData -> {
+        appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = false)
+        accountAuthenticator.loadActiveAccount(
+          onActiveAuthTokenFound = {
+            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+            run(resumeSync)
+          },
+          onValidTokenMissing = {
+            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+            it.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+            event.launchManualAuth(it)
+          }
+        )
+      }
+      AppMainEvent.ResumeSync -> {
+        run(resumeSync)
       }
       is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
       is AppMainEvent.UpdateSyncState -> {
@@ -119,6 +130,12 @@ constructor(
         }
       }
     }
+  }
+
+  private val resumeSync = {
+    syncBroadcaster.runSync()
+    appMainUiState.value =
+      appMainUiState.value.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
   }
 
   private fun loadCurrentLanguage() =
