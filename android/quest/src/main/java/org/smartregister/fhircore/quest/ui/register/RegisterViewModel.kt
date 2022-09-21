@@ -119,16 +119,16 @@ constructor(
         else filterRegisterData(event)
       }
       is RegisterEvent.MoveToNextPage -> {
-        this.currentPage.value = this.currentPage.value.plus(1)
+        currentPage.value = currentPage.value.plus(1)
         paginateRegisterData(registerUiState.value.registerId)
       }
       is RegisterEvent.MoveToPreviousPage -> {
-        this.currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
+        currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
         paginateRegisterData(registerUiState.value.registerId)
       }
     }
 
-  private fun filterRegisterData(event: RegisterEvent.SearchRegister) {
+  fun filterRegisterData(event: RegisterEvent.SearchRegister) {
     val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {
