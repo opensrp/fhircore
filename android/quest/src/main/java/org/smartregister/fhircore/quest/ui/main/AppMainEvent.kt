@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
+import android.content.Intent
 import com.google.android.fhir.sync.State
 import org.smartregister.fhircore.engine.domain.model.Language
 
@@ -24,6 +25,7 @@ sealed class AppMainEvent {
   data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
   data class DeviceToDeviceSync(val context: Context) : AppMainEvent()
   object Logout : AppMainEvent()
-  object SyncData : AppMainEvent()
+  data class SyncData(val launchManualAuth: (Intent) -> Unit) : AppMainEvent()
+  object ResumeSync : AppMainEvent()
   data class UpdateSyncState(val state: State, val lastSyncTime: String?) : AppMainEvent()
 }
