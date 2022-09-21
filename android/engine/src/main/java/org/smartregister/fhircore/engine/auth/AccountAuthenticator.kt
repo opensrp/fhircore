@@ -265,6 +265,37 @@ constructor(
   }
 
   fun loadActiveAccount(
+    onActiveAuthTokenFound: (String) -> Unit,
+    onValidTokenMissing: (Intent) -> Unit
+  ) {
+    tokenManagerService.getActiveAccount()?.run {
+      val accountType = getAccountType()
+      val authToken = accountManager.peekAuthToken(this, accountType)
+      if (!tokenManagerService.isTokenActive(authToken)) {
+        accountManager.invalidateAuthToken(accountType, authToken)
+      }
+
+      loadAccount(
+        this,
+        callback = { accountBundleFuture ->
+          val bundle = accountBundleFuture.result
+          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { logInIntent ->
+            if (logInIntent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+              onActiveAuthTokenFound(bundle.getString(AccountManager.KEY_AUTHTOKEN)!!)
+              return@let
+            }
+
+            logInIntent!!
+            logInIntent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+            onValidTokenMissing(logInIntent)
+          }
+        },
+        errorHandler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
+      )
+    }
+  }
+
+  fun loadActiveAccount(
     callback: AccountManagerCallback<Bundle>,
     errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
   ) {
@@ -277,7 +308,7 @@ constructor(
     errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
   ) {
     Timber.i("Trying to load from getAuthToken for account %s", account.name)
-    accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), false, callback, errorHandler)
+    accountManager.getAuthToken(account, getAccountType(), Bundle(), false, callback, errorHandler)
   }
 
   fun logout() {

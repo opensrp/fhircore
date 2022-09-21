@@ -22,7 +22,9 @@ import android.accounts.AccountManager.KEY_ACCOUNT_NAME
 import android.accounts.AccountManager.KEY_ACCOUNT_TYPE
 import android.accounts.AccountManager.KEY_AUTHTOKEN
 import android.accounts.AccountManager.KEY_INTENT
+import android.accounts.AccountManagerFuture
 import android.content.Intent
+import android.os.Bundle
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
@@ -38,6 +40,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -421,5 +424,53 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertEquals(AppSettingActivity::class.java, shadowIntent.intentClass)
 
     verify { oAuthService.logout(any(), any(), any()) }
+  }
+
+  @Test
+  fun loadActiveAccountWhenTokenInactiveShouldInvalidateToken() {
+    val accountType = "testAccountType"
+    val account = Account("test", accountType)
+    every { tokenManagerService.getActiveAccount() } returns account
+    every { tokenManagerService.isTokenActive(any()) } returns false
+    every { accountAuthenticator.getAccountType() } returns accountType
+    val token = "mystesttoken"
+    every { accountManager.peekAuthToken(any(), any()) } returns token
+    every { accountManager.invalidateAuthToken(any(), any()) } just runs
+    every {
+      accountManager.getAuthToken(
+        any<Account>(),
+        any<String>(),
+        any<Bundle>(),
+        any<Boolean>(),
+        any(),
+        any()
+      )
+    } returns
+      object : AccountManagerFuture<Bundle> {
+        override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
+          TODO("Not yet implemented")
+        }
+
+        override fun isCancelled(): Boolean {
+          TODO("Not yet implemented")
+        }
+
+        override fun isDone(): Boolean {
+          TODO("Not yet implemented")
+        }
+
+        override fun getResult(): Bundle {
+          TODO("Not yet implemented")
+        }
+
+        override fun getResult(timeout: Long, unit: TimeUnit?): Bundle {
+          TODO("Not yet implemented")
+        }
+      }
+
+    accountAuthenticator.loadActiveAccount(onActiveAuthTokenFound = {}, onValidTokenMissing = {})
+
+    verify { accountManager.peekAuthToken(account, accountType) }
+    verify { accountManager.invalidateAuthToken(accountType, token) }
   }
 }

@@ -87,7 +87,8 @@ fun MainScreen(
         onSideMenuClick = appMainViewModel::onEvent,
         navController = navController,
         enableDeviceToDeviceSync = uiState.enableDeviceToDeviceSync,
-        enableReports = uiState.enableReports
+        enableReports = uiState.enableReports,
+        syncClickEnabled = uiState.syncClickEnabled
       )
     },
     bottomBar = {
