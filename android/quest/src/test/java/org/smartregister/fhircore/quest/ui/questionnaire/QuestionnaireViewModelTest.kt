@@ -1073,4 +1073,56 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Assert.assertNotNull(familyGroup2.managingEntity)
     }
   }
+
+  @Test
+  fun testRemoveGroupCallsDefaultRepositoryRemoveGroup() {
+    val groupId = "group-1"
+    var deactivateMembers = false
+    Assert.assertFalse(questionnaireViewModel.removeOperation.value!!)
+    questionnaireViewModel.removeGroup(
+      groupId = groupId,
+      removeGroup = true,
+      deactivateMembers = deactivateMembers
+    )
+
+    coVerify { defaultRepo.removeGroup(groupId, deactivateMembers) }
+    Assert.assertTrue(questionnaireViewModel.removeOperation.value!!)
+  }
+
+  @Test
+  fun testRemoveGroupMemberCallsDefaultRepositoryRemoveGroupMember() {
+
+    val memberId = "member-id"
+    val groupIdentifier = "group_id"
+    val memberResourceType = "Patient"
+    val removeMember = true
+    Assert.assertFalse(questionnaireViewModel.removeOperation.value!!)
+    questionnaireViewModel.removeGroupMember(
+      memberId = memberId,
+      groupIdentifier = groupIdentifier,
+      memberResourceType = memberResourceType,
+      removeMember = removeMember
+    )
+
+    coVerify {
+      defaultRepo.removeGroupMember(
+        memberId = memberId,
+        groupId = groupIdentifier,
+        groupMemberResourceType = memberResourceType
+      )
+    }
+    Assert.assertTrue(questionnaireViewModel.removeOperation.value!!)
+  }
+
+  @Test
+  fun testDeleteResourceCallsDefaultRepositoryDelete() {
+    val resourceType = "Patient"
+    val resourceIdentifier = "rdsfjkdfh-dfdf-dfsd"
+    questionnaireViewModel.deleteResource(
+      resourceType = resourceType,
+      resourceIdentifier = resourceIdentifier
+    )
+
+    coVerify { defaultRepo.delete(resourceType = resourceType, resourceId = resourceIdentifier) }
+  }
 }
