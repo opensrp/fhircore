@@ -23,6 +23,9 @@
     <string name="sync_completed">Sync complete</string>
     <string name="syncing">Syncing&#8230;</string>
     <string name="syncing_initiated">Sync initiated&#8230;</string>
+    <string name="sync_failed_text">Sync failed!</string>
+    <string name="sync_authentication_error">Authentication error</string>
+    <string name="sync_check_internet">Check internet connection or try again later.</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
     <string name="try_again">Try again</string>
     <string name="status_vaccinated">Vaccinated</string>
@@ -127,4 +130,5 @@
     <string name="medical_history">MEDICAL HISTORY</string>
     <string name="upcoming_services">UPCOMING SERVICES</string>
     <string name="service_card">SERVICE CARD</string>
+    <string name="auth_token_expired">Session expired</string>
 </resources>

@@ -47,9 +47,11 @@ constructor(
     }
     Timber.v("Trying to get blocking auth token from account manager")
     return getActiveAccount()?.let {
-      accountManager.blockingGetAuthToken(it, AccountAuthenticator.AUTH_TOKEN_TYPE, false)
+      accountManager.blockingGetAuthToken(it, getAccountType(), false)
     }
   }
+
+  fun getAccountType(): String = configService.provideAuthConfiguration().accountType
 
   fun getActiveAccount(): Account? {
     Timber.v("Checking for an active account stored")

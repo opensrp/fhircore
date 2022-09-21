@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.main.components
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +32,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -40,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -76,10 +81,22 @@ fun AppDrawer(
   sideMenuOptions: List<SideMenuOption>,
   onSideMenuClick: (AppMainEvent) -> Unit,
   enableDeviceToDeviceSync: Boolean,
-  enableReports: Boolean
+  enableReports: Boolean,
+  syncClickEnabled: Boolean
 ) {
   val context = LocalContext.current
   var expandLanguageDropdown by remember { mutableStateOf(false) }
+  val authActivityLauncherForResult =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.StartActivityForResult(),
+      onResult = {
+        if (it.resultCode == Activity.RESULT_OK) {
+          // Re-issue sync event
+          onSideMenuClick(AppMainEvent.ResumeSync)
+        }
+      }
+    )
+  val syncEvent = AppMainEvent.SyncData { intent -> authActivityLauncherForResult.launch(intent) }
 
   Column(
     verticalArrangement = Arrangement.SpaceBetween,
@@ -188,7 +205,8 @@ fun AppDrawer(
         endText = lastSyncTime,
         showEndText = true,
         endTextColor = SubtitleTextColor,
-        onSideMenuClick = { onSideMenuClick(AppMainEvent.SyncData) }
+        onSideMenuClick = { onSideMenuClick(syncEvent) },
+        enabled = syncClickEnabled
       )
     }
   }
@@ -202,25 +220,30 @@ fun SideMenuItem(
   endText: String = "",
   endTextColor: Color = Color.White,
   showEndText: Boolean,
-  onSideMenuClick: () -> Unit
+  onSideMenuClick: () -> Unit,
+  enabled: Boolean = true
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier.fillMaxWidth().clickable { onSideMenuClick() },
+    modifier =
+      if (enabled) modifier.fillMaxWidth().clickable { onSideMenuClick() }
+      else modifier.fillMaxWidth(),
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    Row(modifier = modifier.padding(vertical = 16.dp)) {
+    val alpha = if (enabled) ContentAlpha.high else ContentAlpha.disabled
+
+    Row(modifier = modifier.padding(vertical = 16.dp).alpha(alpha)) {
       Icon(
-        modifier = modifier.padding(end = 10.dp).size(24.dp),
+        modifier = modifier.padding(end = 10.dp).size(24.dp).alpha(alpha),
         painter = painterResource(id = iconResource),
         contentDescription = SIDE_MENU_ICON,
         tint = Color.White
       )
-      SideMenuItemText(title = title, textColor = Color.White)
+      SideMenuItemText(title = title, textColor = Color.White.copy(alpha))
     }
 
     if (showEndText) {
-      SideMenuItemText(title = endText, textColor = endTextColor)
+      SideMenuItemText(title = endText, textColor = endTextColor.copy(alpha))
     }
   }
 }
@@ -267,6 +290,49 @@ fun AppDrawerPreview() {
     onSideMenuClick = {},
     languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
     enableDeviceToDeviceSync = true,
-    enableReports = true
+    enableReports = true,
+    syncClickEnabled = true
+  )
+}
+
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+@Composable
+fun AppDrawerPreviewSyncDisabled() {
+  AppDrawer(
+    appTitle = "MOH VTS",
+    username = "Demo",
+    lastSyncTime = "05:30 PM, Mar 3",
+    currentLanguage = "English",
+    navController = rememberNavController(),
+    openDrawer = {},
+    sideMenuOptions =
+      listOf(
+        SideMenuOption(
+          appFeatureName = "AllFamilies",
+          iconResource = R.drawable.ic_user,
+          titleResource = R.string.clients,
+          count = 4,
+          showCount = true,
+        ),
+        SideMenuOption(
+          appFeatureName = "ChildClients",
+          iconResource = R.drawable.ic_user,
+          titleResource = R.string.clients,
+          count = 16,
+          showCount = true
+        ),
+        SideMenuOption(
+          appFeatureName = "Reports",
+          iconResource = R.drawable.ic_reports,
+          titleResource = R.string.clients,
+          showCount = false
+        )
+      ),
+    onSideMenuClick = {},
+    languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+    enableDeviceToDeviceSync = true,
+    enableReports = true,
+    syncClickEnabled = false
   )
 }
