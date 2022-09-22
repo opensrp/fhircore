@@ -99,12 +99,14 @@ fun UserSettingScreen(
       }
     }
     Divider(color = DividerColor)
-    UserSettingRow(
+
+    //TODO temporary disabled the sync functionality and will be enabled in future
+    /*UserSettingRow(
       icon = Icons.Rounded.Sync,
       text = stringResource(id = R.string.sync),
       clickListener = { onEvent(UserSettingsEvent.SyncData) },
       modifier = modifier
-    )
+    )*/
 
     // Language option
     if (allowSwitchingLanguages) {
