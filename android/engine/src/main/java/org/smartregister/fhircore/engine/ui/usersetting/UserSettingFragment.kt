@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
@@ -50,7 +51,8 @@ class UserSettingFragment : Fragment() {
             onEvent = userSettingViewModel::onEvent,
             isShowDatabaseResetConfirmation =
               userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
-            isShowProgressBar = userSettingViewModel.showProgressBar.observeAsState(false).value
+            isShowProgressBar = userSettingViewModel.showProgressBar.observeAsState(false).value,
+            isDebugVariant = BuildConfig.DEBUG
           )
         }
       }

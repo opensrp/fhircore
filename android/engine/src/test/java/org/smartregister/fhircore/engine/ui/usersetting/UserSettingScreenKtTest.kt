@@ -39,7 +39,7 @@ class UserSettingScreenKtTest : RobolectricTest() {
   @get:Rule(order = 1) val composeRule = createEmptyComposeRule()
 
   private lateinit var scenario: ActivityScenario<ComponentActivity>
-
+  private lateinit var activity: ComponentActivity
   @Before
   fun setUp() {
     scenario = ActivityScenario.launch(ComponentActivity::class.java)
@@ -83,6 +83,12 @@ class UserSettingScreenKtTest : RobolectricTest() {
     composeRule.onNodeWithText("Language").assertExists()
   }
 
+  @Test
+  fun testResetDatabaseRowIsRenderedOnProfileScreen() {
+    initComposable(isDebugVariant = true)
+    composeRule.onNodeWithText("Reset data").assertExists()
+  }
+
   @Ignore("Fix AppIdleException")
   @Test
   fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
@@ -94,7 +100,8 @@ class UserSettingScreenKtTest : RobolectricTest() {
 
   private fun initComposable(
     allowSwitchingLanguages: Boolean = true,
-    allowMainClockAutoAdvance: Boolean = false
+    allowMainClockAutoAdvance: Boolean = false,
+    isDebugVariant: Boolean = false
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -106,14 +113,12 @@ class UserSettingScreenKtTest : RobolectricTest() {
           onEvent = mockUserSettingsEventListener,
           isShowProgressBar = false,
           isShowDatabaseResetConfirmation = false,
+          isDebugVariant = isDebugVariant
         )
       }
+
+      this.activity = activity
     }
     composeRule.mainClock.autoAdvance = allowMainClockAutoAdvance
-  }
-  @Test
-  fun testResetDatabaseRowIsRenderedOnProfileScreen() {
-    initComposable()
-    composeRule.onNodeWithText("Reset data").assertExists()
   }
 }

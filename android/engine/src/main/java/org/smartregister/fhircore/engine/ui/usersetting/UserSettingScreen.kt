@@ -60,7 +60,6 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
@@ -79,6 +78,7 @@ fun UserSettingScreen(
   languages: List<Language>,
   isShowDatabaseResetConfirmation: Boolean,
   isShowProgressBar: Boolean,
+  isDebugVariant: Boolean = false,
   onEvent: (UserSettingsEvent) -> Unit,
 ) {
   val context = LocalContext.current
@@ -180,7 +180,7 @@ fun UserSettingScreen(
       )
     }
 
-    if (BuildConfig.DEBUG) {
+    if (isDebugVariant) {
       UserSettingRow(
         icon = Icons.Rounded.DeleteForever,
         text = stringResource(id = R.string.clear_database),
