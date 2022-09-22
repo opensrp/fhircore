@@ -27,9 +27,7 @@ import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -50,9 +48,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -66,6 +64,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
   private val application = ApplicationProvider.getApplicationContext<Application>()
   @Inject lateinit var gson: Gson
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var configService: ConfigService
 
   var evaluator: LibraryEvaluator? = null
   var libraryData = ""
@@ -80,8 +79,6 @@ class LibraryEvaluatorTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    mockkObject(ApplicationUtil)
-    every { ApplicationUtil.application } returns application
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
     try {
       libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
@@ -189,7 +186,8 @@ class LibraryEvaluatorTest : RobolectricTest() {
         fhirEngine,
         DefaultDispatcherProvider(),
         sharedPreferencesHelper,
-        configurationRegistry
+        configurationRegistry,
+        configService
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary

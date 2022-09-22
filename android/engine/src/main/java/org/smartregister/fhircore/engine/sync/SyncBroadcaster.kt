@@ -102,7 +102,9 @@ constructor(
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
-    val mandatoryTags = appConfig.getMandatoryTags(sharedPreferencesHelper)
+    val syncStrategy = configService.provideSyncStrategy()
+
+    val mandatoryTags = appConfig.getMandatoryTags(sharedPreferencesHelper, syncStrategy)
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
@@ -117,7 +119,10 @@ constructor(
           ConfigurationRegistry.ORGANIZATION ->
             mandatoryTags
               .firstOrNull {
-                it.display.contentEquals(SyncStrategy.ORGANIZATION.tag.display, ignoreCase = true)
+                it.display.contentEquals(
+                  syncStrategy.organizationTag.tag?.display,
+                  ignoreCase = true
+                )
               }
               ?.code
           ConfigurationRegistry.ID -> paramExpression

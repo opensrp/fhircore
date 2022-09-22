@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -63,7 +64,8 @@ constructor(
   val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val configService: ConfigService
 ) {
 
   val json = Json {
@@ -78,7 +80,9 @@ constructor(
 
   val appConfig: ApplicationConfiguration by lazy { retrieveConfiguration(ConfigType.Application) }
 
-  val mandatoryTags: List<Coding> by lazy { appConfig.getMandatoryTags(sharedPreferencesHelper) }
+  val mandatoryTags: List<Coding> by lazy {
+    appConfig.getMandatoryTags(sharedPreferencesHelper, configService.provideSyncStrategy())
+  }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]

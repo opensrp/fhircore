@@ -28,10 +28,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
@@ -60,8 +58,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -75,16 +73,15 @@ class DefaultRepositoryTest : RobolectricTest() {
   private val application = ApplicationProvider.getApplicationContext<Application>()
   @Inject lateinit var gson: Gson
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  lateinit var dispatcherProvider: DefaultDispatcherProvider
-  lateinit var fhirEngine: FhirEngine
-  lateinit var sharedPreferenceHelper: SharedPreferencesHelper
-  lateinit var defaultRepository: DefaultRepository
+  @Inject lateinit var configService: ConfigService
+  private lateinit var dispatcherProvider: DefaultDispatcherProvider
+  private lateinit var fhirEngine: FhirEngine
+  private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
+  private lateinit var defaultRepository: DefaultRepository
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    mockkObject(ApplicationUtil)
-    every { ApplicationUtil.application } returns application
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
 
     dispatcherProvider = DefaultDispatcherProvider()
@@ -95,7 +92,8 @@ class DefaultRepositoryTest : RobolectricTest() {
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferenceHelper,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
+        configService = configService
       )
   }
 

@@ -91,8 +91,3 @@ fun String.camelCase(): String = CaseUtils.toCamelCase(this, false, '_')
  * be a keycloak-uuid.
  */
 fun String.practitionerEndpointUrl(): String = "practitioner-details?keycloak-uuid=$this"
-
-/** Returns a substring after the first occurrence between two delimiter. */
-fun String.getSubstringBetween(firstDelimiter: String, secondDelimiter: String): String {
-  return this.substringAfter(firstDelimiter).run { substringBefore(secondDelimiter) }
-}

@@ -31,22 +31,23 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
-import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.getSubstringBetween
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
 import retrofit2.Response
@@ -60,7 +61,8 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
   val sharedPreferences: SharedPreferencesHelper,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
+  val configService: ConfigService
 ) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -123,18 +125,16 @@ constructor(
       practitionerDetails.fhirPractitionerDetails.locationHierarchyList ?: listOf()
 
     val careTeamIds =
-      defaultRepository.create(*careTeams.toTypedArray()).map { it.getSubstringBetween("/", "/") }
+      defaultRepository.create(*careTeams.toTypedArray()).map { it.extractLogicalIdUuid() }
     val organizationIds =
-      defaultRepository.create(*organizations.toTypedArray()).map {
-        it.getSubstringBetween("/", "/")
-      }
+      defaultRepository.create(*organizations.toTypedArray()).map { it.extractLogicalIdUuid() }
     val locationIds =
-      defaultRepository.create(*locations.toTypedArray()).map { it.getSubstringBetween("/", "/") }
+      defaultRepository.create(*locations.toTypedArray()).map { it.extractLogicalIdUuid() }
 
-    sharedPreferences.write(SyncStrategy.PRACTITIONER.value, practitionerDetails.userDetail)
-    sharedPreferences.write(SyncStrategy.CARETEAM.value, careTeamIds)
-    sharedPreferences.write(SyncStrategy.ORGANIZATION.value, organizationIds)
-    sharedPreferences.write(SyncStrategy.LOCATION.value, locationIds)
+    sharedPreferences.write(ResourceType.Practitioner.name, practitionerDetails.userDetail)
+    sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
+    sharedPreferences.write(ResourceType.Organization.name, organizationIds)
+    sharedPreferences.write(ResourceType.Location.name, locationIds)
     sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
       locationHierarchies

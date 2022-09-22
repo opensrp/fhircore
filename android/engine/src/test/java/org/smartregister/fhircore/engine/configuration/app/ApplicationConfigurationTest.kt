@@ -20,18 +20,18 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.mockkObject
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncStrategy
-import org.smartregister.fhircore.engine.util.ApplicationUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -47,8 +47,6 @@ class ApplicationConfigurationTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    mockkObject(ApplicationUtil)
-    every { ApplicationUtil.application } returns application
     appConfig =
       ApplicationConfiguration(
         appId = "ancApp",
@@ -70,36 +68,72 @@ class ApplicationConfigurationTest : RobolectricTest() {
     Assert.assertEquals(15, appConfig.syncInterval)
     Assert.assertEquals("Test App", appConfig.appTitle)
     Assert.assertEquals(100, appConfig.remoteSyncPageSize)
-    Assert.assertTrue(appConfig.syncStrategy.containsAll(SyncStrategy.values().map { it.value }))
+    Assert.assertTrue(appConfig.syncStrategy.contains(ResourceType.CareTeam.name))
+    Assert.assertTrue(appConfig.syncStrategy.contains(ResourceType.Location.name))
+    Assert.assertTrue(appConfig.syncStrategy.contains(ResourceType.Organization.name))
+    Assert.assertTrue(appConfig.syncStrategy.contains(ResourceType.Practitioner.name))
   }
 
   @Test
   fun getMandatoryTags() {
     val careTeamIds = listOf("948", "372")
-    sharedPreferenceHelper.write(SyncStrategy.CARETEAM.value, careTeamIds)
+    sharedPreferenceHelper.write(ResourceType.CareTeam.name, careTeamIds)
 
     val organizationIds = listOf("400", "105")
-    sharedPreferenceHelper.write(SyncStrategy.ORGANIZATION.value, organizationIds)
+    sharedPreferenceHelper.write(ResourceType.Organization.name, organizationIds)
 
     val locationIds = listOf("728", "899")
-    sharedPreferenceHelper.write(SyncStrategy.LOCATION.value, locationIds)
+    sharedPreferenceHelper.write(ResourceType.Location.name, locationIds)
 
     runBlocking {
       configurationRegistry.loadConfigurations("app/debug", application)
 
-      val mandatoryTags = appConfig.getMandatoryTags(sharedPreferenceHelper)
+      val syncStrategyTag =
+        SyncStrategy().apply {
+          careTeamTag.tag =
+            Coding().apply {
+              system = application.getString(R.string.sync_strategy_careteam_system)
+              display = application.getString(R.string.sync_strategy_careteam_display)
+            }
+          locationTag.tag =
+            Coding().apply {
+              system = application.getString(R.string.sync_strategy_location_system)
+              display = application.getString(R.string.sync_strategy_location_display)
+            }
+          organizationTag.tag =
+            Coding().apply {
+              system = application.getString(R.string.sync_strategy_organization_system)
+              display = application.getString(R.string.sync_strategy_organization_display)
+            }
+          practitionerTag.tag =
+            Coding().apply {
+              system = application.getString(R.string.sync_strategy_practitioner_system)
+              display = application.getString(R.string.sync_strategy_practitioner_display)
+            }
+        }
+      val mandatoryTags = appConfig.getMandatoryTags(sharedPreferenceHelper, syncStrategyTag)
 
       Assert.assertEquals(
         careTeamIds,
-        mandatoryTags.filter { it.display == SyncStrategy.CARETEAM.tag.display }.map { it.code }
+        mandatoryTags
+          .filter { it.display == application.getString(R.string.sync_strategy_careteam_display) }
+          .map { it.code }
       )
+
       Assert.assertEquals(
         organizationIds,
-        mandatoryTags.filter { it.display == SyncStrategy.ORGANIZATION.tag.display }.map { it.code }
+        mandatoryTags
+          .filter {
+            it.display == application.getString(R.string.sync_strategy_organization_display)
+          }
+          .map { it.code }
       )
+
       Assert.assertEquals(
         locationIds,
-        mandatoryTags.filter { it.display == SyncStrategy.LOCATION.tag.display }.map { it.code }
+        mandatoryTags
+          .filter { it.display == application.getString(R.string.sync_strategy_location_display) }
+          .map { it.code }
       )
     }
   }

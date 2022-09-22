@@ -28,10 +28,4 @@ class StringExtensionTest {
       "my-keycloak-id".practitionerEndpointUrl()
     )
   }
-
-  @Test
-  fun getSubstringBetweenShouldParseId() {
-    val id = "CareTeam/140735/_history/1".getSubstringBetween("/", "/")
-    Assert.assertEquals("140735", id)
-  }
 }

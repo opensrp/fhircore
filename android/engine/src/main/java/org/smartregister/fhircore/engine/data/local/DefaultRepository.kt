@@ -41,6 +41,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -63,7 +64,8 @@ constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
   open val sharedPreferencesHelper: SharedPreferencesHelper,
-  open val configurationRegistry: ConfigurationRegistry
+  open val configurationRegistry: ConfigurationRegistry,
+  open val configService: ConfigService
 ) {
 
   val appConfig: ApplicationConfiguration by lazy {
@@ -118,7 +120,8 @@ constructor(
     }
 
   suspend fun create(vararg resource: Resource): List<String> {
-    val mandatoryTags = appConfig.getMandatoryTags(sharedPreferencesHelper)
+    val mandatoryTags =
+      appConfig.getMandatoryTags(sharedPreferencesHelper, configService.provideSyncStrategy())
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
         it.generateMissingId()

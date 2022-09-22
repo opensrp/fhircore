@@ -41,6 +41,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CareTeam
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
@@ -52,6 +53,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
@@ -59,7 +61,6 @@ import org.smartregister.fhircore.engine.data.remote.model.response.OAuthRespons
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -84,6 +85,8 @@ internal class LoginViewModelTest : RobolectricTest() {
   @get:Rule(order = 2) val coroutineTestRule: CoroutineTestRule = CoroutineTestRule()
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -121,7 +124,8 @@ internal class LoginViewModelTest : RobolectricTest() {
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        defaultRepository = defaultRepository
+        defaultRepository = defaultRepository,
+        configService = configService
       )
   }
 
@@ -275,7 +279,8 @@ internal class LoginViewModelTest : RobolectricTest() {
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
         sharedPreferences = sharedPreferences,
-        defaultRepository = defaultRepository
+        defaultRepository = defaultRepository,
+        configService = configService
       )
 
     val sampleKeycloakUserDetails =
@@ -324,21 +329,21 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<PractitionerDetails>(SyncStrategy.PRACTITIONER.value)
+      sharedPreferences.read<PractitionerDetails>(ResourceType.Practitioner.name)
         ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value
     )
 
-    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.CARETEAM.value)?.size)
+    Assert.assertEquals(1, sharedPreferences.read<List<String>>(ResourceType.CareTeam.name)?.size)
 
     Assert.assertEquals(
       1,
-      sharedPreferences.read<List<String>>(SyncStrategy.ORGANIZATION.value)?.size
+      sharedPreferences.read<List<String>>(ResourceType.Organization.name)?.size
     )
 
-    Assert.assertEquals(1, sharedPreferences.read<List<String>>(SyncStrategy.LOCATION.value)?.size)
+    Assert.assertEquals(1, sharedPreferences.read<List<String>>(ResourceType.Location.name)?.size)
 
     Assert.assertEquals(
       1,
@@ -377,7 +382,8 @@ internal class LoginViewModelTest : RobolectricTest() {
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
         sharedPreferences = sharedPreferences,
-        defaultRepository = defaultRepository
+        defaultRepository = defaultRepository,
+        configService = configService
       )
 
     val sampleKeycloakUserDetails =
@@ -404,21 +410,21 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<PractitionerDetails>(SyncStrategy.PRACTITIONER.value)
+      sharedPreferences.read<PractitionerDetails>(ResourceType.Practitioner.name)
         ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value
     )
 
-    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.CARETEAM.value)?.size)
+    Assert.assertEquals(0, sharedPreferences.read<List<String>>(ResourceType.CareTeam.name)?.size)
 
     Assert.assertEquals(
       0,
-      sharedPreferences.read<List<String>>(SyncStrategy.ORGANIZATION.value)?.size
+      sharedPreferences.read<List<String>>(ResourceType.Organization.name)?.size
     )
 
-    Assert.assertEquals(0, sharedPreferences.read<List<String>>(SyncStrategy.LOCATION.value)?.size)
+    Assert.assertEquals(0, sharedPreferences.read<List<String>>(ResourceType.Location.name)?.size)
 
     Assert.assertEquals(
       0,

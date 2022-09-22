@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
-import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -100,11 +99,11 @@ constructor(
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private val authenticatedOrganizationIds by lazy {
-    sharedPreferencesHelper.read<List<String>>(SyncStrategy.ORGANIZATION.value)
+    sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
   }
 
   private val practitionerDetails by lazy {
-    sharedPreferencesHelper.read<PractitionerDetails>(key = SyncStrategy.PRACTITIONER.value)
+    sharedPreferencesHelper.read<PractitionerDetails>(ResourceType.Practitioner.name)
       ?.fhirPractitionerDetails
   }
 

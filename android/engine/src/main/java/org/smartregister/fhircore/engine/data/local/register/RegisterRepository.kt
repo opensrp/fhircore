@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.ResourceConfig
@@ -57,6 +58,7 @@ constructor(
   override val dispatcherProvider: DefaultDispatcherProvider,
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
+  override val configService: ConfigService,
   val rulesFactory: RulesFactory,
   val fhirPathDataExtractor: FhirPathDataExtractor
 ) :
@@ -65,7 +67,8 @@ constructor(
     fhirEngine = fhirEngine,
     dispatcherProvider = dispatcherProvider,
     sharedPreferencesHelper = sharedPreferencesHelper,
-    configurationRegistry = configurationRegistry
+    configurationRegistry = configurationRegistry,
+    configService = configService
   ) {
 
   override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> {

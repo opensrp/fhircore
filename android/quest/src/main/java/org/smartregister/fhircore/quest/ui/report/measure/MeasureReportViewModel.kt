@@ -43,9 +43,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -103,7 +103,7 @@ constructor(
   }
 
   private val practitionerDetails by lazy {
-    sharedPreferencesHelper.read<PractitionerDetails>(key = SyncStrategy.PRACTITIONER.value)
+    sharedPreferencesHelper.read<PractitionerDetails>(ResourceType.Practitioner.name)
       ?.fhirPractitionerDetails
   }
 

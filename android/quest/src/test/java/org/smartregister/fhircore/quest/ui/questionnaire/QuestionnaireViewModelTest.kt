@@ -43,6 +43,7 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -74,10 +75,10 @@ import org.robolectric.Shadows
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
-import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
@@ -95,6 +96,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
+
+  @Inject lateinit var configService: ConfigService
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -117,10 +120,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     every {
-      sharedPreferencesHelper.read<PractitionerDetails>(key = SyncStrategy.PRACTITIONER.value)
+      sharedPreferencesHelper.read<PractitionerDetails>(ResourceType.Practitioner.name)
     } returns practitionerDetails()
 
-    every { sharedPreferencesHelper.read<List<String>>(SyncStrategy.ORGANIZATION.value) } returns
+    every { sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name) } returns
       listOf("105")
 
     defaultRepo =
@@ -129,7 +132,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirEngine,
           coroutineRule.testDispatcherProvider,
           sharedPreferencesHelper,
-          configurationRegistry
+          configurationRegistry,
+          configService
         )
       )
 

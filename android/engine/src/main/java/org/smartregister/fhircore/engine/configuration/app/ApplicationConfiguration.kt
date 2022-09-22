@@ -39,22 +39,35 @@ data class ApplicationConfiguration(
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null
 ) : Configuration() {
 
-  fun getMandatoryTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+  fun getMandatoryTags(
+    sharedPreferencesHelper: SharedPreferencesHelper,
+    providedSyncStrategy: SyncStrategy
+  ): List<Coding> {
     val tags = mutableListOf<Coding>()
     syncStrategy.forEach { strategy ->
       when (strategy) {
-        SyncStrategy.CARETEAM.value,
-        SyncStrategy.ORGANIZATION.value,
-        SyncStrategy.LOCATION.value -> {
+        providedSyncStrategy.careTeamTag.type -> {
           sharedPreferencesHelper.read<List<String>>(strategy)?.forEach { id ->
-            tags.add(SyncStrategy.valueOf(strategy.uppercase()).tag.apply { code = id }.copy())
+            providedSyncStrategy.careTeamTag.tag?.let { tags.add(it.copy().apply { code = id }) }
           }
         }
-        SyncStrategy.PRACTITIONER.value -> {
+        providedSyncStrategy.locationTag.type -> {
+          sharedPreferencesHelper.read<List<String>>(strategy)?.forEach { id ->
+            providedSyncStrategy.locationTag.tag?.let { tags.add(it.copy().apply { code = id }) }
+          }
+        }
+        providedSyncStrategy.organizationTag.type -> {
+          sharedPreferencesHelper.read<List<String>>(strategy)?.forEach { id ->
+            providedSyncStrategy.organizationTag.tag?.let {
+              tags.add(it.copy().apply { code = id })
+            }
+          }
+        }
+        providedSyncStrategy.practitionerTag.type -> {
           sharedPreferencesHelper.read<KeycloakUserDetails>(strategy)?.let { practitioner ->
-            tags.add(
-              SyncStrategy.valueOf(strategy.uppercase()).tag.apply { code = practitioner.id }
-            )
+            providedSyncStrategy.practitionerTag.tag?.let {
+              tags.add(it.copy().apply { code = practitioner.id })
+            }
           }
         }
       }
