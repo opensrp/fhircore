@@ -103,10 +103,17 @@ class UserSettingScreenKtTest : RobolectricTest() {
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-          onEvent = mockUserSettingsEventListener
+          onEvent = mockUserSettingsEventListener,
+          isShowProgressBar = false,
+          isShowDatabaseResetConfirmation = false,
         )
       }
     }
     composeRule.mainClock.autoAdvance = allowMainClockAutoAdvance
+  }
+  @Test
+  fun testResetDatabaseRowIsRenderedOnProfileScreen() {
+    initComposable()
+    composeRule.onNodeWithText("Reset data").assertExists()
   }
 }

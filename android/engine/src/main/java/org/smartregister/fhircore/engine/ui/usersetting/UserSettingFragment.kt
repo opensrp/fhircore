@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
@@ -46,7 +47,10 @@ class UserSettingFragment : Fragment() {
             allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
             selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
             languages = userSettingViewModel.languages,
-            onEvent = userSettingViewModel::onEvent
+            onEvent = userSettingViewModel::onEvent,
+            isShowDatabaseResetConfirmation =
+              userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
+            isShowProgressBar = userSettingViewModel.showProgressBar.observeAsState(false).value
           )
         }
       }

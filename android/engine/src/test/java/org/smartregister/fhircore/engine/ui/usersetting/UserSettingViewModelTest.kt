@@ -97,6 +97,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     sharedPreferencesHelper = mockk()
     userSettingViewModel =
       UserSettingViewModel(
+        fhirEngine = mockk(),
         syncBroadcaster,
         accountAuthenticator,
         secureSharedPreference,
