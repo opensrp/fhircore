@@ -69,6 +69,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
     savedInstanceState: Bundle?
   ): View {
     appMainViewModel.retrieveIconsAsBitmap()
+    syncListenerManager.registerSyncListener(this, lifecycle)
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
@@ -133,11 +134,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
         }
       }
     }
-  }
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    // Register as listener to be notified to refresh views when sync completes
-    syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
   override fun onSync(state: State) {
