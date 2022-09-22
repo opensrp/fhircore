@@ -50,13 +50,13 @@ class UserSettingScreenKtTest : RobolectricTest() {
     initComposable()
     composeRule.onNodeWithText("Johndoe").assertExists()
 
-    //TODO temporary disabled the sync functionality and will be enabled in future
-    //composeRule.onNodeWithText("Sync").assertExists()
+    // TODO temporary disabled the sync functionality and will be enabled in future
+    // composeRule.onNodeWithText("Sync").assertExists()
 
     composeRule.onNodeWithText("Log out").assertExists()
   }
 
-  //TODO temporary disabled the sync functionality and will be enabled in future
+  // TODO temporary disabled the sync functionality and will be enabled in future
   /*@Test
   fun testSyncRowClickShouldInitiateSync() {
     initComposable()

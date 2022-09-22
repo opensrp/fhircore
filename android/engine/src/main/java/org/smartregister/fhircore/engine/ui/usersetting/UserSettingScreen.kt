@@ -37,7 +37,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Logout
-import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -100,7 +99,7 @@ fun UserSettingScreen(
     }
     Divider(color = DividerColor)
 
-    //TODO temporary disabled the sync functionality and will be enabled in future
+    // TODO temporary disabled the sync functionality and will be enabled in future
     /*UserSettingRow(
       icon = Icons.Rounded.Sync,
       text = stringResource(id = R.string.sync),
