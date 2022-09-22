@@ -63,7 +63,7 @@ class RulesFactoryTest : RobolectricTest() {
 
   private val rulesEngine = mockk<DefaultRulesEngine>()
 
-  private lateinit var configurationRegistry: ConfigurationRegistry
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private lateinit var rulesFactory: RulesFactory
 
@@ -72,7 +72,6 @@ class RulesFactoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
     rulesFactory = spyk(RulesFactory(configurationRegistry, fhirPathDataExtractor))
     rulesEngineService = rulesFactory.RulesEngineService()
   }

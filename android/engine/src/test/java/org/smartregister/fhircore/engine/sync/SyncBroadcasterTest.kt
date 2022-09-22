@@ -34,6 +34,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -53,7 +54,7 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Inject lateinit var configService: ConfigService
 
-  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private val syncJob = mockk<SyncJob>(relaxed = true)
 

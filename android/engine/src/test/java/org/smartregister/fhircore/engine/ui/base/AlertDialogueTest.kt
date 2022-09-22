@@ -22,7 +22,6 @@ import android.content.DialogInterface
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
 import java.util.Date
 import org.junit.Assert
 import org.junit.Before

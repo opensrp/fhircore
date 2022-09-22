@@ -58,38 +58,31 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   var context: Context = ApplicationProvider.getApplicationContext()
 
-  private lateinit var fhirEngine: FhirEngine
-
-  private lateinit var dispatcherProvider: DefaultDispatcherProvider
-
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  private val fhirEngine: FhirEngine = mockk()
 
   @Inject lateinit var rulesFactory: RulesFactory
 
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   private lateinit var registerRepository: RegisterRepository
 
-  private val patient = Faker.buildPatient("12345")
-
   private val fhirPathDataExtractor: FhirPathDataExtractor = mockk()
+
+  private val patient = Faker.buildPatient("12345")
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    fhirEngine = mockk()
-    dispatcherProvider = DefaultDispatcherProvider()
     registerRepository =
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
+          dispatcherProvider = DefaultDispatcherProvider(),
           configurationRegistry = configurationRegistry,
           rulesFactory = rulesFactory,
           fhirPathDataExtractor = fhirPathDataExtractor
         )
       )
-    runBlocking {
-      configurationRegistry.loadConfigurations("app/debug", context) { Assert.assertTrue(it) }
-    }
     coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns
       listOf(Immunization())
   }
