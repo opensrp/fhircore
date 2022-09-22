@@ -157,11 +157,6 @@ constructor(
           }
         })
       }
-      is AppMainEvent.RegisterNewClient -> {
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
-          questionnaireConfig = event.questionnaireConfig
-        )
-      }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
