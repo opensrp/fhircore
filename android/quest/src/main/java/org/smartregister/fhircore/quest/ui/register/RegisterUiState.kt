@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.util
+package org.smartregister.fhircore.quest.ui.register
 
-/** Default values for pagination configuration */
-object PaginationConstant {
-  const val DEFAULT_PAGE_SIZE = 20
-}
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+
+data class RegisterUiState(
+  val screenTitle: String = "",
+  val isFirstTimeSync: Boolean = false,
+  val registerConfiguration: RegisterConfiguration? = null,
+  val registerId: String = "",
+  val totalRecordsCount: Long = 0,
+  val pagesCount: Int = 1
+)

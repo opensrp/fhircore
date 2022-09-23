@@ -16,36 +16,51 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure
 
-import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.core.util.Pair
+import androidx.navigation.NavController
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.spyk
+import io.mockk.verify
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.test.assertEquals
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
+import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 
 @HiltAndroidTest
 class MeasureReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val composeRule = createComposeRule()
-  @get:Rule(order = 2) val coroutinesTestRule = CoroutineTestRule()
+
+  @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
 
   @Inject lateinit var fhirEngine: FhirEngine
 
@@ -55,22 +70,29 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
-  @Inject lateinit var measureReportRepository: MeasureReportRepository
+  @BindValue val measureReportRepository = mockk<MeasureReportRepository>()
 
   private lateinit var measureReportViewModel: MeasureReportViewModel
+
+  private val navController: NavController = mockk(relaxUnitFun = true)
 
   @Before
   fun setUp() {
     hiltRule.inject()
 
+    coEvery { measureReportRepository.retrievePatients(0) } returns
+      listOf(ResourceData(Faker.buildPatient(), emptyMap(), emptyMap()))
+
     measureReportViewModel =
-      MeasureReportViewModel(
-        fhirEngine = fhirEngine,
-        fhirOperator = fhirOperator,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        dispatcherProvider = mockk(),
-        measureReportRepository = measureReportRepository,
-        measureReportPatientViewDataMapper = measureReportPatientViewDataMapper
+      spyk(
+        MeasureReportViewModel(
+          fhirEngine = fhirEngine,
+          fhirOperator = fhirOperator,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          dispatcherProvider = mockk(),
+          measureReportRepository = measureReportRepository,
+          measureReportPatientViewDataMapper = measureReportPatientViewDataMapper
+        )
       )
   }
 
@@ -92,11 +114,100 @@ class MeasureReportViewModelTest : RobolectricTest() {
     measureReportViewModel.resetState()
     Assert.assertFalse(measureReportViewModel.reportTypeSelectorUiState.value.showProgressIndicator)
     Assert.assertNotNull(measureReportViewModel.dateRange)
-    Assert.assertEquals(
-      MeasureReport.MeasureReportType.SUMMARY,
-      measureReportViewModel.reportTypeState.value
-    )
+    Assert.assertEquals(MeasureReportType.SUMMARY, measureReportViewModel.reportTypeState.value)
     Assert.assertEquals(TextFieldValue(""), measureReportViewModel.searchTextState.value)
+  }
+
+  @Test
+  fun testOnEventOnSelectMeasure() {
+    val measureReportConfig =
+      MeasureReportConfig(
+        id = "measureId",
+        title = "Measure 1",
+        description = "Measure report for testing",
+        url = "http://nourl.com"
+      )
+    measureReportViewModel.onEvent(
+      MeasureReportEvent.OnSelectMeasure(
+        measureReportConfig = measureReportConfig,
+        navController = navController
+      )
+    )
+    val routeSlot = slot<String>()
+
+    // config updated for the view model
+    val viewModelConfig = measureReportViewModel.measureReportConfig.value
+    Assert.assertEquals(viewModelConfig?.id, measureReportConfig.id)
+    Assert.assertEquals(viewModelConfig?.title, measureReportConfig.title)
+
+    verify { navController.navigate(capture(routeSlot)) }
+
+    Assert.assertEquals("reportTypeSelector?screenTitle=Measure 1", routeSlot.captured)
+  }
+
+  @Test
+  fun testOnEventOnDateRangeSelected() {
+    val newDateRange =
+      Pair(dateTimestamp("2020-01-01T14:34:18.000Z"), dateTimestamp("2020-12-31T14:34:18.000Z"))
+
+    measureReportViewModel.onEvent(MeasureReportEvent.OnDateRangeSelected(newDateRange))
+    Assert.assertEquals(measureReportViewModel.dateRange.value, newDateRange)
+    val reportTypeSelectorUiState = measureReportViewModel.reportTypeSelectorUiState.value
+
+    Assert.assertEquals("1 Jan, 2020", reportTypeSelectorUiState.startDate)
+    Assert.assertEquals("31 Dec, 2020", reportTypeSelectorUiState.endDate)
+  }
+
+  private fun dateTimestamp(startTimeString: String) =
+    LocalDateTime.parse(
+        startTimeString,
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
+      )
+      .atZone(ZoneId.systemDefault())
+      .toInstant()
+      .toEpochMilli()
+
+  @Test
+  fun testOnEventOnReportTypeChanged() {
+    // Test with report type INDIVIDUAL
+    measureReportViewModel.onEvent(
+      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.INDIVIDUAL, navController)
+    )
+    Assert.assertEquals(MeasureReportType.INDIVIDUAL, measureReportViewModel.reportTypeState.value)
+    val routeSlot = slot<String>()
+    verify { navController.navigate(capture(routeSlot)) }
+    Assert.assertEquals(MeasureReportNavigationScreen.PatientsList.route, routeSlot.captured)
+
+    // Test with report type other than INDIVIDUAL
+    measureReportViewModel.onEvent(
+      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.SUMMARY, navController)
+    )
+    Assert.assertNull(measureReportViewModel.reportTypeSelectorUiState.value.patientViewData)
+  }
+
+  @Test
+  fun testOnEventOnPatientSelected() {
+    val samplePatientViewData =
+      MeasureReportPatientViewData(
+        logicalId = "member1",
+        name = "Willy Mark",
+        gender = "M",
+        age = "28",
+        family = "Orion"
+      )
+    measureReportViewModel.onEvent(MeasureReportEvent.OnPatientSelected(samplePatientViewData))
+    val patientViewData = measureReportViewModel.reportTypeSelectorUiState.value.patientViewData
+    Assert.assertNotNull(samplePatientViewData.logicalId, patientViewData?.logicalId)
+    Assert.assertNotNull(samplePatientViewData.name, patientViewData?.name)
+    Assert.assertNotNull(samplePatientViewData.gender, patientViewData?.gender)
+    Assert.assertNotNull(samplePatientViewData.age, patientViewData?.age)
+    Assert.assertNotNull(samplePatientViewData.family, patientViewData?.family)
+  }
+
+  @Test
+  fun testOnEventOnSearchTextChanged() {
+    measureReportViewModel.onEvent(MeasureReportEvent.OnSearchTextChanged("Mandela"))
+    Assert.assertNotNull(measureReportViewModel.patientsData.value)
   }
 
   @Test
