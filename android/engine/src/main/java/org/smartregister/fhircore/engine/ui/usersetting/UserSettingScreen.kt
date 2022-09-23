@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
@@ -56,8 +57,8 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
@@ -65,10 +66,13 @@ import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 @Composable
 fun UserSettingScreen(
   modifier: Modifier = Modifier,
-  userSettingViewModel: UserSettingViewModel = hiltViewModel()
+  username: String?,
+  allowSwitchingLanguages: Boolean,
+  selectedLanguage: String,
+  languages: List<Language>,
+  onEvent: (UserSettingsEvent) -> Unit,
 ) {
-
-  val username by remember { mutableStateOf(userSettingViewModel.retrieveUsername()) }
+  val context = LocalContext.current
   var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = modifier.padding(vertical = 20.dp)) {
@@ -79,7 +83,7 @@ fun UserSettingScreen(
           contentAlignment = Alignment.Center
         ) {
           Text(
-            text = username!!.first().uppercase(),
+            text = username.first().uppercase(),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             fontSize = 28.sp,
@@ -87,7 +91,7 @@ fun UserSettingScreen(
           )
         }
         Text(
-          text = username!!.capitalize(Locale.current),
+          text = username.capitalize(Locale.current),
           fontSize = 22.sp,
           modifier = modifier.padding(vertical = 22.dp),
           fontWeight = FontWeight.Bold
@@ -98,12 +102,12 @@ fun UserSettingScreen(
     UserSettingRow(
       icon = Icons.Rounded.Sync,
       text = stringResource(id = R.string.sync),
-      clickListener = userSettingViewModel::runSync,
+      clickListener = { onEvent(UserSettingsEvent.SyncData) },
       modifier = modifier
     )
 
     // Language option
-    if (userSettingViewModel.allowSwitchingLanguages()) {
+    if (allowSwitchingLanguages) {
       Row(
         modifier =
           modifier
@@ -114,7 +118,7 @@ fun UserSettingScreen(
       ) {
         Row(modifier = Modifier.align(Alignment.CenterVertically)) {
           Icon(
-            painterResource(R.drawable.ic_outline_language_black),
+            painterResource(R.drawable.ic_language),
             stringResource(R.string.language),
             tint = BlueTextColor,
             modifier = Modifier.size(26.dp)
@@ -124,7 +128,7 @@ fun UserSettingScreen(
         }
         Box(contentAlignment = Alignment.CenterEnd) {
           Text(
-            text = userSettingViewModel.loadSelectedLanguage(),
+            text = selectedLanguage,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = modifier.wrapContentWidth(Alignment.End)
@@ -134,10 +138,10 @@ fun UserSettingScreen(
             onDismissRequest = { expanded = false },
             modifier = modifier.wrapContentWidth(Alignment.End)
           ) {
-            for (language in userSettingViewModel.languages) {
-              DropdownMenuItem(onClick = { userSettingViewModel.setLanguage(language) }) {
-                Text(text = language.displayName, fontSize = 18.sp)
-              }
+            for (language in languages) {
+              DropdownMenuItem(
+                onClick = { onEvent(UserSettingsEvent.SwitchLanguage(language, context)) }
+              ) { Text(text = language.displayName, fontSize = 18.sp) }
             }
           }
         }
@@ -154,7 +158,7 @@ fun UserSettingScreen(
     UserSettingRow(
       icon = Icons.Rounded.Logout,
       text = stringResource(id = R.string.logout),
-      clickListener = userSettingViewModel::logoutUser,
+      clickListener = { onEvent(UserSettingsEvent.Logout) },
       modifier = modifier
     )
   }

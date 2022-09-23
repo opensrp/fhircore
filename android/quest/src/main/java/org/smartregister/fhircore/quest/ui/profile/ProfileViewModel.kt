@@ -55,11 +55,11 @@ constructor(
 
   fun retrieveProfileUiState(profileId: String, resourceId: String) {
     if (resourceId.isNotEmpty()) {
-      viewModelScope.launch {
+      viewModelScope.launch(dispatcherProvider.io()) {
         profileUiState.value =
           ProfileUiState(
             resourceData = registerRepository.loadProfileData(profileId, resourceId),
-            profileConfiguration = retrieveProfileConfiguration(profileId)
+            profileConfiguration = retrieveProfileConfiguration(profileId),
           )
       }
     }
@@ -101,8 +101,6 @@ constructor(
           }
         }
       }
-      is ProfileEvent.OnViewComponentEvent ->
-        event.viewComponentEvent.handleEvent(event.navController)
       is ProfileEvent.OnChangeManagingEntity -> {
         viewModelScope.launch(dispatcherProvider.io()) {
           registerRepository.changeManagingEntity(event.newManagingEntityId, event.groupId)

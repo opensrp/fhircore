@@ -21,7 +21,6 @@ import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 sealed class ProfileEvent {
 
@@ -31,11 +30,6 @@ sealed class ProfileEvent {
     val resourceData: ResourceData?,
     val overflowMenuItemConfig: OverflowMenuItemConfig?,
     val managingEntity: ManagingEntityConfig? = null
-  ) : ProfileEvent()
-
-  data class OnViewComponentEvent(
-    val viewComponentEvent: ViewComponentEvent,
-    val navController: NavController
   ) : ProfileEvent()
 
   data class OnChangeManagingEntity(val newManagingEntityId: String, val groupId: String) :

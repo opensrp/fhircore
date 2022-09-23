@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.ui.usersetting
 
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.sync.State
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -29,7 +28,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
@@ -66,8 +64,6 @@ class UserSettingViewModelTest : RobolectricTest() {
   var sharedPreferencesHelper: SharedPreferencesHelper
 
   private var configService: ConfigService
-
-  private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
 
   private var syncBroadcaster: SyncBroadcaster
 
@@ -111,7 +107,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSync() {
-    userSettingViewModel.runSync()
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncData)
   }
 
   @Test
@@ -124,13 +120,13 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testLogoutUserShouldCallAuthLogoutService() {
+    val userSettingsEvent = UserSettingsEvent.Logout
     every { accountAuthenticator.logout() } returns Unit
 
-    userSettingViewModel.logoutUser()
+    userSettingViewModel.onEvent(userSettingsEvent)
 
     verify(exactly = 1) { accountAuthenticator.logout() }
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-    Assert.assertTrue(userSettingViewModel.onLogout.value!!)
   }
 
   @Test
@@ -163,18 +159,15 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Test
   fun setLanguageShouldCallSharedPreferencesHelperWriteWithSelectedLanguageTagAndPostValue() {
     val language = Language("es", "Spanish")
-    var postedValue: Language? = null
+    val userSettingsEvent = UserSettingsEvent.SwitchLanguage(language, context)
 
     every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
 
-    userSettingViewModel.language.observeForever { postedValue = it }
-
-    userSettingViewModel.setLanguage(language)
+    userSettingViewModel.onEvent(userSettingsEvent)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
-    Assert.assertEquals(language, postedValue!!)
   }
 
   @Test

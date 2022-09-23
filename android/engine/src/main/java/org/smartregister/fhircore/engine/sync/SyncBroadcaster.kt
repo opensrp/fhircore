@@ -62,17 +62,14 @@ constructor(
 ) {
 
   fun runSync() {
-    CoroutineScope(dispatcherProvider.io()).launch {
-      val coroutineScope = CoroutineScope(dispatcherProvider.main())
-      Timber.i("Running one time sync...")
-      val syncStateFlow = MutableSharedFlow<State>()
-      coroutineScope.launch(dispatcherProvider.main()) {
-        syncStateFlow.collect {
-          syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-            onSyncListener.onSync(it)
-          }
-        }
+    val coroutineScope = CoroutineScope(dispatcherProvider.main())
+    Timber.i("Running one time sync...")
+    val syncStateFlow = MutableSharedFlow<State>()
+    coroutineScope.launch(dispatcherProvider.main()) {
+      syncStateFlow.collect {
+        syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
       }
+    }
 
       coroutineScope.launch(dispatcherProvider.io()) {
         try {
@@ -89,7 +86,7 @@ constructor(
           coroutineScope.cancel()
         }
       }
-    }
+
   }
 
   /** Retrieve registry sync params */

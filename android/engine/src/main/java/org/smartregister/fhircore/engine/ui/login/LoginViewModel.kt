@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
 import retrofit2.Response
@@ -131,7 +132,12 @@ constructor(
     val locationIds =
       defaultRepository.create(*locations.toTypedArray()).map { it.extractLogicalIdUuid() }
 
-    sharedPreferences.write(ResourceType.Practitioner.name, practitionerDetails.userDetail)
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      value = practitionerDetails.fhirPractitionerDetails.practitionerId.valueToString()
+    )
+
+    sharedPreferences.write(SharedPreferenceKey.USER_DETAILS.name, practitionerDetails.userDetail)
     sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
     sharedPreferences.write(ResourceType.Organization.name, organizationIds)
     sharedPreferences.write(ResourceType.Location.name, locationIds)
@@ -186,7 +192,7 @@ constructor(
       }
     }
 
-  private val _navigateToHome = MutableLiveData<Boolean>()
+  private val _navigateToHome = MutableLiveData(false)
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 
@@ -215,17 +221,6 @@ constructor(
       username.value!!.trim(),
       password.value!!.trim().toCharArray()
     )
-  }
-
-  fun loginUser() {
-    viewModelScope.launch(dispatcher.io()) {
-      if (accountAuthenticator.hasActiveSession()) {
-        Timber.v("Login not needed .. navigating to home directly")
-        _navigateToHome.postValue(true)
-      } else {
-        accountAuthenticator.loadActiveAccount(this@LoginViewModel)
-      }
-    }
   }
 
   fun onUsernameUpdated(username: String) {
@@ -279,6 +274,10 @@ constructor(
   private fun handleErrorMessage(throwable: Throwable) {
     if (throwable is UnknownHostException) _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
     else _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+  }
+
+  fun isPinEnabled(): Boolean {
+    return applicationConfiguration.loginConfig.enablePin ?: false
   }
 
   companion object {

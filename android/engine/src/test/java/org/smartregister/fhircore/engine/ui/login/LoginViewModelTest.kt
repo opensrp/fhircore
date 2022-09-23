@@ -41,7 +41,6 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CareTeam
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
@@ -53,8 +52,6 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
@@ -86,8 +83,6 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
-  @Inject lateinit var configService: ConfigService
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
@@ -106,8 +101,6 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
-  private val defaultRepository: DefaultRepository = mockk()
-
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -120,12 +113,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     loginViewModel =
       LoginViewModel(
+        fhirEngine = mockk(),
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferences = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry,
-        defaultRepository = defaultRepository,
-        configService = configService
+        configurationRegistry = configurationRegistry
       )
   }
 
@@ -275,12 +267,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val viewModel =
       LoginViewModel(
+        fhirEngine = fhirEngine,
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
-        sharedPreferences = sharedPreferences,
-        defaultRepository = defaultRepository,
-        configService = configService
+        sharedPreferences = sharedPreferences
       )
 
     val sampleKeycloakUserDetails =
@@ -329,26 +320,43 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<PractitionerDetails>(ResourceType.Practitioner.name)
-        ?.userDetail
+      sharedPreferences.read<KeycloakUserDetails>(
+          key = SharedPreferenceKey.USER_DETAILS.name,
+          decodeWithGson = true
+        )
         ?.userBioData
         ?.givenName
         ?.value
     )
 
-    Assert.assertEquals(1, sharedPreferences.read<List<String>>(ResourceType.CareTeam.name)?.size)
-
     Assert.assertEquals(
       1,
-      sharedPreferences.read<List<String>>(ResourceType.Organization.name)?.size
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
+        )
+        ?.size
     )
-
-    Assert.assertEquals(1, sharedPreferences.read<List<String>>(ResourceType.Location.name)?.size)
 
     Assert.assertEquals(
       1,
       sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name
+          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      1,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      1,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
         )
         ?.size
     )
@@ -378,12 +386,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val viewModel =
       LoginViewModel(
+        fhirEngine = fhirEngine,
         configurationRegistry = configurationRegistry,
         accountAuthenticator = accountAuthenticator,
         dispatcher = dispatcher,
-        sharedPreferences = sharedPreferences,
-        defaultRepository = defaultRepository,
-        configService = configService
+        sharedPreferences = sharedPreferences
       )
 
     val sampleKeycloakUserDetails =
@@ -410,26 +417,43 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<PractitionerDetails>(ResourceType.Practitioner.name)
-        ?.userDetail
+      sharedPreferences.read<KeycloakUserDetails>(
+          key = SharedPreferenceKey.USER_DETAILS.name,
+          decodeWithGson = true
+        )
         ?.userBioData
         ?.givenName
         ?.value
     )
 
-    Assert.assertEquals(0, sharedPreferences.read<List<String>>(ResourceType.CareTeam.name)?.size)
-
     Assert.assertEquals(
       0,
-      sharedPreferences.read<List<String>>(ResourceType.Organization.name)?.size
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name
+        )
+        ?.size
     )
-
-    Assert.assertEquals(0, sharedPreferences.read<List<String>>(ResourceType.Location.name)?.size)
 
     Assert.assertEquals(
       0,
       sharedPreferences.read<List<String>>(
-          SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name
+          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      0,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name
+        )
+        ?.size
+    )
+
+    Assert.assertEquals(
+      0,
+      sharedPreferences.read<List<String>>(
+          SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name
         )
         ?.size
     )

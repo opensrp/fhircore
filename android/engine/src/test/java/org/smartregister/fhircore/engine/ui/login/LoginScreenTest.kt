@@ -57,7 +57,7 @@ class LoginScreenTest : RobolectricTest() {
 
   private lateinit var loginViewModel: LoginViewModel
 
-  val applicationConfiguration =
+  private val applicationConfiguration =
     ApplicationConfiguration(
       appTitle = "My app",
       appId = "app/debug",

@@ -74,12 +74,7 @@ class AppSettingActivity : AppCompatActivity() {
               loadSuccessful: Boolean ->
               if (loadSuccessful) {
                 sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-                if (!isLoggedIn) {
-                  accountAuthenticator.launchScreen(LoginActivity::class.java)
-                } else {
-                  loginService.loginActivity = appSettingActivity
-                  loginService.navigateToHome()
-                }
+                accountAuthenticator.launchScreen(LoginActivity::class.java)
                 appSettingViewModel.showProgressBar.postValue(false)
                 finish()
               } else {

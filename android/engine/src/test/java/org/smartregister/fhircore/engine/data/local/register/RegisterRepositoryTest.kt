@@ -49,7 +49,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -59,41 +58,31 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   var context: Context = ApplicationProvider.getApplicationContext()
 
-  private lateinit var fhirEngine: FhirEngine
-
-  private lateinit var dispatcherProvider: DefaultDispatcherProvider
-
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  private val fhirEngine: FhirEngine = mockk()
 
   @Inject lateinit var rulesFactory: RulesFactory
 
-  private lateinit var registerRepository: RegisterRepository
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  private val patient = Faker.buildPatient("12345")
+  private lateinit var registerRepository: RegisterRepository
 
   private val fhirPathDataExtractor: FhirPathDataExtractor = mockk()
 
-  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  private val patient = Faker.buildPatient("12345")
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    fhirEngine = mockk()
-    dispatcherProvider = DefaultDispatcherProvider()
     registerRepository =
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
+          dispatcherProvider = DefaultDispatcherProvider(),
           configurationRegistry = configurationRegistry,
           rulesFactory = rulesFactory,
-          fhirPathDataExtractor = fhirPathDataExtractor,
-          sharedPreferencesHelper = sharedPreferencesHelper
+          fhirPathDataExtractor = fhirPathDataExtractor
         )
       )
-    runBlocking {
-      configurationRegistry.loadConfigurations("app/debug", context) { Assert.assertTrue(it) }
-    }
     coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns
       listOf(Immunization())
   }

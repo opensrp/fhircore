@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import android.app.Activity
 import android.content.Context
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.MutableState
@@ -36,6 +35,7 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Location
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -43,18 +43,20 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.refresh
@@ -62,8 +64,8 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
-import org.smartregister.p2p.utils.startP2PScreen
 
 @HiltViewModel
 @ExperimentalMaterialApi
@@ -76,7 +78,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
-  val dispatcherProvider: DefaultDispatcherProvider
+  val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
 
   val appMainUiState: MutableState<AppMainUiState> =
@@ -101,6 +103,19 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
   }
 
+  fun retrieveIconsAsBitmap() {
+    navigationConfiguration.clientRegisters
+      .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
+      .forEach {
+        val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
+        viewModelScope.launch(dispatcherProvider.io()) {
+          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+            it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()
+          }
+        }
+      }
+  }
+
   fun retrieveAppMainUiState() {
     appMainUiState.value =
       appMainUiStateOf(
@@ -121,17 +136,12 @@ constructor(
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
-          (this as Activity).refresh()
+          getActivity()?.refresh()
         }
       }
       AppMainEvent.SyncData -> {
         syncBroadcaster.runSync()
         retrieveAppMainUiState()
-      }
-      is AppMainEvent.RegisterNewClient -> {
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
-          questionnaireConfig = event.questionnaireConfig
-        )
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
@@ -152,7 +162,12 @@ constructor(
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.TriggerWorkflow -> triggerWorkflow(event)
+      is AppMainEvent.TriggerWorkflow ->
+        event.navMenu.actions?.handleClickEvent(
+          navController = event.navController,
+          resourceData = null,
+          navMenu = event.navMenu
+        )
       is AppMainEvent.OpenProfile -> {
         val args =
           bundleOf(
@@ -161,31 +176,6 @@ constructor(
           )
         event.navController.navigate(MainNavigationScreen.Profile.route, args)
       }
-    }
-  }
-
-  private fun triggerWorkflow(event: AppMainEvent.TriggerWorkflow) {
-    val navigationAction = event.navMenu.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-    when (navigationAction?.workflow) {
-      ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(event.navController.context)
-      ApplicationWorkflow.LAUNCH_SETTINGS ->
-        event.navController.navigate(MainNavigationScreen.Settings.route)
-      ApplicationWorkflow.LAUNCH_REPORT ->
-        event.navController.navigate(MainNavigationScreen.Reports.route)
-      ApplicationWorkflow.LAUNCH_REGISTER -> {
-        val args =
-          bundleOf(
-            Pair(NavigationArg.REGISTER_ID, event.navMenu.id),
-            Pair(NavigationArg.SCREEN_TITLE, event.navMenu.display)
-          )
-        event.navController.navigate(MainNavigationScreen.Home.route, args)
-      }
-      ApplicationWorkflow.LAUNCH_MAP ->
-        event.navController.navigate(
-          MainNavigationScreen.GeoWidget.route,
-          bundleOf(NavigationArg.CONFIG_ID to navigationAction.id)
-        )
-      else -> return
     }
   }
 
@@ -225,7 +215,8 @@ constructor(
         intentBundle =
           bundleOf(
             Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
-          )
+          ),
+        computedValuesMap = null
       )
     }
   }

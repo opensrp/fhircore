@@ -46,6 +46,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
@@ -56,7 +58,6 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 @Composable
 fun MemberProfileBottomSheetView(
@@ -66,7 +67,7 @@ fun MemberProfileBottomSheetView(
   title: String,
   buttonProperties: List<ButtonProperties>,
   resourceData: ResourceData,
-  onViewComponent: (ViewComponentEvent) -> Unit,
+  navController: NavController,
   onViewProfile: () -> Unit
 ) {
   Column(modifier = modifier.verticalScroll(rememberScrollState())) {
@@ -108,7 +109,7 @@ fun MemberProfileBottomSheetView(
         ActionableButton(
           buttonProperties = it,
           resourceData = resourceData,
-          onViewComponentEvent = onViewComponent
+          navController = navController
         )
       }
       Spacer(modifier = modifier.height(8.dp))
@@ -137,7 +138,7 @@ private fun MemberProfileBottomSheetViewPreview() {
     bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     title = "John Doe, M, 35y",
     buttonProperties = emptyList(),
-    onViewComponent = { /*Do nothing*/},
+    navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
     resourceData = ResourceData(Patient())
   )
@@ -156,7 +157,7 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
         ButtonProperties(text = "Sick child", status = "UPCOMING"),
         ButtonProperties(text = "Pregnancy visit", status = "COMPLETED")
       ),
-    onViewComponent = { /*Do nothing*/},
+    navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
     resourceData = ResourceData(Patient())
   )

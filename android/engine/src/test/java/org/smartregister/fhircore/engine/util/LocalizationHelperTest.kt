@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.util
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.Locale
-import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -35,7 +34,7 @@ import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 class LocalizationHelperTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var configRegistry: ConfigurationRegistry
+  private val configRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
@@ -160,7 +159,6 @@ class LocalizationHelperTest : RobolectricTest() {
 
   @Test
   fun testParseTemplateWithStaticTranslationFilesGeneratesCorrectlyTranslatedString() {
-    val configRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
     val templateString = "{{person.gender}} from {{person.address}}"
 
     val result =

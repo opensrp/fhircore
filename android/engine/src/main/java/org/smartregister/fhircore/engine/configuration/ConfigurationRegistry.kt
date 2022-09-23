@@ -197,6 +197,18 @@ constructor(
         .readText()
         .decodeResourceFromString<Composition>()
         .run {
+          val iconConfigs =
+            retrieveCompositionSections().filter {
+              it.focus.hasIdentifier() && isIconConfig(it.focus.identifier.value)
+            }
+          if (iconConfigs.isNotEmpty()) {
+            val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
+            fhirResourceDataSource.loadData(
+                "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids"
+              )
+              .entry
+              .forEach { addOrUpdate(it.resource) }
+          }
           populateConfigurationsMap(
             composition = this,
             loadFromAssets = loadFromAssets,
@@ -242,11 +254,11 @@ constructor(
     } else {
       composition.retrieveCompositionSections().forEach {
         if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
-          val configKey = it.focus.identifier.value
+          val configIdentifier = it.focus.identifier.value
           val referenceResourceType = it.focus.reference.substringBeforeLast("/")
-          if (isAppConfig(referenceResourceType)) {
+          if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
             val configBinary = fhirEngine.get<Binary>(it.focus.extractId())
-            configsJsonMap[configKey] = configBinary.content.decodeToString()
+            configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
           }
         }
       }
@@ -256,6 +268,8 @@ constructor(
 
   private fun isAppConfig(referenceResourceType: String) =
     referenceResourceType in arrayOf(ResourceType.Binary.name, ResourceType.Parameters.name)
+
+  private fun isIconConfig(configIdentifier: String) = configIdentifier.startsWith(ICON_PREFIX)
 
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
     // Reads supported files from asset/config/* directory recursively
@@ -365,5 +379,6 @@ constructor(
     const val COUNT = "count"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val CONFIG_SUFFIX = "_config"
+    const val ICON_PREFIX = "ic_"
   }
 }

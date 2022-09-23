@@ -45,7 +45,6 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.p2p.sync.DataType
@@ -53,26 +52,19 @@ import org.smartregister.p2p.sync.DataType
 class P2PReceiverTransferDaoTest : RobolectricTest() {
 
   private val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
   private lateinit var p2PReceiverTransferDao: P2PReceiverTransferDao
-  private lateinit var configurationRegistry: ConfigurationRegistry
-  private lateinit var defaultRepository: DefaultRepository
-  private lateinit var fhirEngine: FhirEngine
+
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  private val fhirEngine: FhirEngine = mockk()
+
   private val currentDate = Date()
 
   @Before
   fun setUp() {
-    fhirEngine = mockk()
-    configurationRegistry = Faker.buildTestConfigurationRegistry()
-    defaultRepository = mockk()
     p2PReceiverTransferDao =
-      spyk(
-        P2PReceiverTransferDao(
-          fhirEngine,
-          DefaultDispatcherProvider(),
-          configurationRegistry,
-          defaultRepository
-        )
-      )
+      spyk(P2PReceiverTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
   }
 
   @Test
@@ -106,11 +98,11 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
     val expectedPatient = populateTestPatient()
     val jsonArray = populateTestJsonArray()
     val patientDataType = DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)
-    coEvery { defaultRepository.addOrUpdate(any()) } just runs
+    coEvery { p2PReceiverTransferDao.addOrUpdate(any()) } just runs
     p2PReceiverTransferDao.receiveJson(patientDataType, jsonArray)
 
     val resourceSlot = slot<Resource>()
-    coVerify { defaultRepository.addOrUpdate(capture(resourceSlot)) }
+    coVerify { p2PReceiverTransferDao.addOrUpdate(capture(resourceSlot)) }
     val actualPatient = resourceSlot.captured as Patient
     Assert.assertEquals(expectedPatient.logicalId, actualPatient.logicalId)
     Assert.assertEquals(expectedPatient.birthDate, actualPatient.birthDate)
