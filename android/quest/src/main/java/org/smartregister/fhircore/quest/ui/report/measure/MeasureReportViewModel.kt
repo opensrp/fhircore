@@ -40,23 +40,26 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
+import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.asMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.asYyyy
+import org.smartregister.fhircore.engine.util.extension.displayText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
+import org.smartregister.fhircore.engine.util.extension.findPercentage
+import org.smartregister.fhircore.engine.util.extension.findPopulation
+import org.smartregister.fhircore.engine.util.extension.findRatio
+import org.smartregister.fhircore.engine.util.extension.findStratumForMonth
+import org.smartregister.fhircore.engine.util.extension.isMonthlyReport
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
-import org.smartregister.fhircore.engine.util.extension.plusMonths
+import org.smartregister.fhircore.engine.util.extension.reportingPeriodMonthsSpan
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -225,7 +228,7 @@ constructor(
 
               if (measureReport.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
                 val population: MeasureReport.MeasureReportGroupPopulationComponent? =
-                  measureReport.group.first().population.find { it.id == NUMERATOR }
+                  measureReport.group.first().findPopulation(MeasurePopulationType.NUMERATOR)
                 measureReportIndividualResult.value =
                   MeasureReportIndividualResult(
                     status = if (population != null && population.count > 0) "True" else "False"
@@ -294,50 +297,25 @@ constructor(
         // L3 - group.stratifier.stratum.population[]
 
         // report group is stratifier/stratum denominator
-        val denominator = reportGroup.findPopulation(NUMERATOR)?.count ?: 0
+        val denominator = reportGroup.findPopulation(MeasurePopulationType.NUMERATOR)?.count ?: 0
 
         val stratifierItems: List<List<MeasureReportIndividualResult>> =
-          if (reportGroup.code.coding.any { it.code.contains("month", true) })
-            measureReport.period.let {
-              val list = mutableListOf<MeasureReportIndividualResult>()
-              var currentDate = it.copy().start.firstDayOfMonth()
-
-              while (currentDate.before(it.end)) {
-                val currentMonth = MONTH_NAMES.elementAt(currentDate.month)
-
-                val stats =
-                  reportGroup
-                    .stratifier
-                    .flatMap { it.stratum }
-                    .find {
-                      it.hasValue() &&
-                        it.value.text.contains(currentDate.asYyyy()) &&
-                        it.value.text.contains(currentMonth)
-                    }
-                    ?.let { it.findRatio(denominator) to it.findPercentage(denominator) }
+          if (reportGroup.isMonthlyReport())
+            measureReport.reportingPeriodMonthsSpan.map {
+              val stats = reportGroup.findStratumForMonth(it.first, it.second)
+              listOf(
                 MeasureReportIndividualResult(
-                    title = currentDate.asMmmYyyy(),
-                    percentage = stats?.second?.toString() ?: "0",
-                    count = stats?.first ?: "0/$denominator"
-                  )
-                  .also {
-                    currentDate = currentDate.plusMonths(1)
-                    list.add(it)
-                  }
-              }
-              listOf(list.toList())
+                  title = "${it.first}-${it.second}",
+                  percentage = stats?.findPercentage(denominator)?.toString() ?: "0",
+                  count = stats?.findRatio(denominator) ?: "0/$denominator"
+                )
+              )
             }
           else
             reportGroup.stratifier.map { stratifier ->
               stratifier.stratum.filter { it.hasValue() }.map { stratum ->
-                val text =
-                  when {
-                    stratum.value.hasText() -> StringUtils.capitalize(stratum.value.text)
-                    stratum.value.hasCoding() -> stratum.value.coding.last().display
-                    else -> "N/A"
-                  }
                 MeasureReportIndividualResult(
-                  title = text,
+                  title = stratum.displayText,
                   percentage = stratum.findPercentage(denominator).toString(),
                   count = stratum.findRatio(denominator),
                   description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
@@ -346,22 +324,17 @@ constructor(
             }
         // if each stratum evaluated to single item, display all under one group else for each add a
         // separate group
-        if (stratifierItems.all { it.count() <= 1 })
-          listOf(
-            MeasureReportPopulationResult(
-              title = reportGroup.id.replace("-", " "),
-              count = reportGroup.findRatio(),
-              dataList = stratifierItems.flatMap { it }
-            )
+        val datalist =
+          if (stratifierItems.all { it.count() <= 1 }) listOf(stratifierItems.flatten())
+          else stratifierItems
+
+        datalist.map {
+          MeasureReportPopulationResult(
+            title = reportGroup.id.replace("-", " "),
+            count = reportGroup.findRatio(),
+            dataList = it
           )
-        else
-          stratifierItems.map {
-            MeasureReportPopulationResult(
-              title = reportGroup.id.replace("-", " "),
-              count = reportGroup.findRatio(),
-              dataList = it
-            )
-          }
+        }
       }
       .toMutableList()
       .apply {
@@ -394,36 +367,6 @@ constructor(
       }
   }
 
-  // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
-  private fun MeasureReport.StratifierGroupComponent.findPopulation(
-    id: String
-  ): MeasureReport.StratifierGroupPopulationComponent? {
-    return this.population.find {
-      it.hasId() && it.id.equals(id, ignoreCase = true) || it.code.codingFirstRep.code == id
-    }
-  }
-
-  private fun MeasureReport.MeasureReportGroupComponent.findPopulation(
-    id: String
-  ): MeasureReport.MeasureReportGroupPopulationComponent? {
-    return this.population.find {
-      it.hasId() && it.id.equals(id, ignoreCase = true) || it.code.codingFirstRep.code == id
-    }
-  }
-
-  private fun MeasureReport.MeasureReportGroupComponent.findRatio(): String {
-    return "${this.findPopulation(NUMERATOR)?.count}/${this.findPopulation(DENOMINATOR)?.count}"
-  }
-
-  private fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int): String {
-    return "${this.findPopulation(NUMERATOR)?.count}/$denominator"
-  }
-
-  private fun MeasureReport.StratifierGroupComponent.findPercentage(denominator: Int): Int {
-    return if (denominator == 0) 0
-    else findPopulation(NUMERATOR)?.count?.times(100)?.div(denominator) ?: 0
-  }
-
   fun resetState() {
     reportTypeSelectorUiState.value = ReportTypeSelectorUiState()
     dateRange.value = defaultDateRangeState()
@@ -434,12 +377,8 @@ constructor(
   companion object {
     const val DATE_RANGE_DATE_FORMAT = "d MMM, yyyy"
     const val MEASURE_REPORT_DATE_FORMAT = "yyyy-MM-dd"
-    const val NUMERATOR = "numerator"
-    const val DENOMINATOR = "denominator"
     const val SUBJECT = "subject"
     const val POPULATION = "population"
     const val POPULATION_OBS_URL = "populationId"
-    val MONTH_NAMES =
-      listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
   }
 }

@@ -25,11 +25,15 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import javax.inject.Inject
+import kotlin.test.assertEquals
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.MeasureReport
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -94,4 +98,56 @@ class MeasureReportViewModelTest : RobolectricTest() {
     )
     Assert.assertEquals(TextFieldValue(""), measureReportViewModel.searchTextState.value)
   }
+
+  @Test
+  fun testFormatPopulationMeasureReport() {
+    val result = measureReportViewModel.formatPopulationMeasureReport(measureReport)
+
+    assertEquals(1, result.size)
+    assertEquals("3/4", result.first().count)
+    assertEquals("report group 1", result.first().title)
+
+    val disaggregation = result.first().dataList
+    assertEquals(1, result.first().dataList.size)
+    assertEquals("1/3", disaggregation.first().count)
+    assertEquals("Stratum #1", disaggregation.first().title)
+    assertEquals("33", disaggregation.first().percentage)
+  }
+
+  private val measureReport =
+    MeasureReport().apply {
+      addGroup().apply {
+        this.id = "report-group-1"
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+          )
+          this.count = 3
+        }
+
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+          )
+          this.count = 4
+        }
+
+        this.addStratifier().addStratum().apply {
+          this.value = CodeableConcept().apply { text = "Stratum #1" }
+          this.addPopulation().apply {
+            this.code.addCoding(
+              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+            )
+            this.count = 1
+          }
+
+          this.addPopulation().apply {
+            this.code.addCoding(
+              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+            )
+            this.count = 2
+          }
+        }
+      }
+    }
 }
