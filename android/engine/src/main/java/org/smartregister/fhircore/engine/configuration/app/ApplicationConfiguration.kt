@@ -21,8 +21,9 @@ import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.sync.SyncStrategy
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.model.practitioner.KeycloakUserDetails
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 @Serializable
 data class ApplicationConfiguration(
@@ -64,9 +65,9 @@ data class ApplicationConfiguration(
           }
         }
         providedSyncStrategy.practitionerTag.type -> {
-          sharedPreferencesHelper.read<KeycloakUserDetails>(strategy)?.let { practitioner ->
+          sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)?.let { id ->
             providedSyncStrategy.practitionerTag.tag?.let {
-              tags.add(it.copy().apply { code = practitioner.id })
+              tags.add(it.copy().apply { code = id.extractLogicalIdUuid() })
             }
           }
         }
