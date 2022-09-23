@@ -2,6 +2,7 @@
   "appId": "app",
   "configType": "register",
   "id": "taskRegister",
+  "pageSize": 40,
   "fhirResource": {
     "baseResource": {
       "resource": "Task"

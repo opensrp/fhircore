@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -42,7 +41,7 @@ fun List(
   navController: NavController,
   viewModel: ViewRendererViewModel,
 ) {
-  val resources = remember { resourceData.relatedResourcesMap[viewProperties.baseResource] }
+  val resources = resourceData.relatedResourcesMap[viewProperties.baseResource]
   Column(
     modifier =
       modifier
