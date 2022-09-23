@@ -25,28 +25,43 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
+import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
-class RegisterFragment : Fragment() {
+class RegisterFragment : Fragment(), OnSyncListener {
+
+  @Inject lateinit var syncListenerManager: SyncListenerManager
 
   val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
+
+  val registerViewModel by viewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -54,6 +69,7 @@ class RegisterFragment : Fragment() {
     savedInstanceState: Bundle?
   ): View {
     appMainViewModel.retrieveIconsAsBitmap()
+    syncListenerManager.registerSyncListener(this, lifecycle)
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
@@ -66,6 +82,23 @@ class RegisterFragment : Fragment() {
           }
         }
         AppTheme {
+          // Retrieve data when Lifecycle state is resuming
+          val lifecycleEvent = rememberLifecycleEvent()
+          LaunchedEffect(lifecycleEvent) {
+            if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+              with(registerFragmentArgs) {
+                registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+              }
+            }
+          }
+
+          val pagingItems =
+            registerViewModel
+              .paginatedRegisterData
+              .collectAsState(emptyFlow())
+              .value
+              .collectAsLazyPagingItems()
+
           // Register screen provides access to the side navigation
           Scaffold(
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
@@ -90,9 +123,11 @@ class RegisterFragment : Fragment() {
               RegisterScreen(
                 navController = findNavController(),
                 openDrawer = openDrawer,
-                screenTitle = registerFragmentArgs.screenTitle,
-                registerId = registerFragmentArgs.registerId,
-                refreshDataState = appMainViewModel.refreshDataState
+                searchText = registerViewModel.searchText,
+                currentPage = registerViewModel.currentPage,
+                onEvent = registerViewModel::onEvent,
+                pagingItems = pagingItems,
+                registerUiState = registerViewModel.registerUiState.value
               )
             }
           }
@@ -101,11 +136,11 @@ class RegisterFragment : Fragment() {
     }
   }
 
-  override fun onResume() {
-    super.onResume()
-    appMainViewModel.run {
-      refreshDataState.value = true
-      retrieveAppMainUiState()
+  override fun onSync(state: State) {
+    if (state is State.Finished || state is State.Failed) {
+      with(registerFragmentArgs) {
+        registerViewModel.retrieveRegisterUiState(registerId, screenTitle)
+      }
     }
   }
 }

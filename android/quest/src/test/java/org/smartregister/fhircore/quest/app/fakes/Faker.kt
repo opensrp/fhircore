@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.app.fakes
 
-import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
@@ -65,7 +65,7 @@ object Faker {
     runBlocking {
       configurationRegistry.loadConfigurations(
         appId = APP_DEBUG,
-        context = InstrumentationRegistry.getInstrumentation().targetContext
+        context = ApplicationProvider.getApplicationContext()
       ) {}
     }
 

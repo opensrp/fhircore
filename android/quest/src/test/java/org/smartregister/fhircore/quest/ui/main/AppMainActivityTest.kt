@@ -162,7 +162,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     Assert.assertTrue(
       ShadowToast.getTextOfLatestToast().contains("Sync complete", ignoreCase = true)
     )
-    Assert.assertTrue(viewModel.refreshDataState.value)
     Assert.assertEquals(
       viewModel.formatLastSyncTimestamp(timestamp = stateFinished.result.timestamp),
       viewModel.retrieveLastSyncTimestamp()
