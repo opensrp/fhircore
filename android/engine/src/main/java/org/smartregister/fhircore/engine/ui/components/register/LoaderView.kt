@@ -46,7 +46,10 @@ const val LOADER_DIALOG_PROGRESS_BAR_TAG = "loaderDialogProgressBarTag"
 const val LOADER_DIALOG_PROGRESS_MSG_TAG = "loaderDialogProgressMsgTag"
 
 @Composable
-fun LoaderDialog(modifier: Modifier = Modifier) {
+fun LoaderDialog(
+  modifier: Modifier = Modifier,
+  dialogMessage: String = stringResource(id = R.string.syncing)
+) {
   val openDialog = remember { mutableStateOf(true) }
   if (openDialog.value) {
     Dialog(
@@ -76,7 +79,7 @@ fun LoaderDialog(modifier: Modifier = Modifier) {
               Text(
                 fontSize = 16.sp,
                 color = Color.White,
-                text = stringResource(id = R.string.syncing),
+                text = dialogMessage,
                 modifier =
                   modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
               )

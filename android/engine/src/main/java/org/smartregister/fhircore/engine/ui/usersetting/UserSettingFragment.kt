@@ -20,11 +20,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
@@ -46,7 +48,11 @@ class UserSettingFragment : Fragment() {
             allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
             selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
             languages = userSettingViewModel.languages,
-            onEvent = userSettingViewModel::onEvent
+            onEvent = userSettingViewModel::onEvent,
+            isShowDatabaseResetConfirmation =
+              userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
+            isShowProgressBar = userSettingViewModel.showProgressBar.observeAsState(false).value,
+            isDebugVariant = BuildConfig.DEBUG
           )
         }
       }

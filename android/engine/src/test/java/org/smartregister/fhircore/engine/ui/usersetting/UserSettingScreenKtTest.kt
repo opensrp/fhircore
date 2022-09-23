@@ -29,6 +29,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
@@ -39,7 +40,7 @@ class UserSettingScreenKtTest : RobolectricTest() {
   @get:Rule(order = 1) val composeRule = createEmptyComposeRule()
 
   private lateinit var scenario: ActivityScenario<ComponentActivity>
-
+  private lateinit var activity: ComponentActivity
   @Before
   fun setUp() {
     scenario = ActivityScenario.launch(ComponentActivity::class.java)
@@ -49,6 +50,10 @@ class UserSettingScreenKtTest : RobolectricTest() {
   fun testUserProfileShouldDisplayCorrectContent() {
     initComposable()
     composeRule.onNodeWithText("Johndoe").assertExists()
+    composeRule.onNodeWithText(activity.getString(R.string.resetting_app)).assertDoesNotExist()
+    composeRule
+      .onNodeWithText(activity.getString(R.string.clear_database_message))
+      .assertDoesNotExist()
 
     // TODO temporary disabled the sync functionality and will be enabled in future
     // composeRule.onNodeWithText("Sync").assertExists()
@@ -83,6 +88,40 @@ class UserSettingScreenKtTest : RobolectricTest() {
     composeRule.onNodeWithText("Language").assertExists()
   }
 
+  @Test
+  fun testResetDatabaseRowIsRenderedOnProfileScreen() {
+    initComposable(isDebugVariant = true)
+    composeRule.onNodeWithText("Reset data").assertExists()
+  }
+
+  @Test
+  fun testWhenShowProgressBarTrueRendersLoaderView() {
+    initComposable(isShowProgressBar = true)
+    composeRule.onNodeWithText(activity.getString(R.string.resetting_app)).assertExists()
+  }
+
+  @Test
+  fun testWhenShowProgressBarFalseHidesLoaderView() {
+    initComposable(isShowProgressBar = false)
+    composeRule.onNodeWithText(activity.getString(R.string.resetting_app)).assertDoesNotExist()
+  }
+
+  @Test
+  fun testWhenShowDatabaseResetConfirmationFalseHidesConfirmationDialog() {
+
+    initComposable(isShowDatabaseResetConfirmation = false)
+    composeRule
+      .onNodeWithText(activity.getString(R.string.clear_database_message))
+      .assertDoesNotExist()
+  }
+
+  @Test
+  fun testWhenShowDatabaseResetConfirmationTrueRendersConfirmationDialog() {
+
+    initComposable(isShowDatabaseResetConfirmation = true)
+    composeRule.onNodeWithText(activity.getString(R.string.clear_database_message)).assertExists()
+  }
+
   @Ignore("Fix AppIdleException")
   @Test
   fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
@@ -94,7 +133,10 @@ class UserSettingScreenKtTest : RobolectricTest() {
 
   private fun initComposable(
     allowSwitchingLanguages: Boolean = true,
-    allowMainClockAutoAdvance: Boolean = false
+    allowMainClockAutoAdvance: Boolean = false,
+    isShowProgressBar: Boolean = false,
+    isShowDatabaseResetConfirmation: Boolean = false,
+    isDebugVariant: Boolean = false
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -103,9 +145,14 @@ class UserSettingScreenKtTest : RobolectricTest() {
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-          onEvent = mockUserSettingsEventListener
+          onEvent = mockUserSettingsEventListener,
+          isShowProgressBar = isShowProgressBar,
+          isShowDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
+          isDebugVariant = isDebugVariant
         )
       }
+
+      this.activity = activity
     }
     composeRule.mainClock.autoAdvance = allowMainClockAutoAdvance
   }
