@@ -3,4 +3,5 @@
     <string name="sex">Gender</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.mwcore</string>
     <string name="identifier_unassigned">Unassigned</string>
+    <string name="questionnaire_alert_submit_message">Are you sure you want to save?</string>
 </resources>
