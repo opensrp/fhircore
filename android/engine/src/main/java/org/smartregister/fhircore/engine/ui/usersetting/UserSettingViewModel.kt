@@ -23,6 +23,7 @@ import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -98,7 +99,7 @@ constructor(
         showResetDatabaseConfirmationDialogFlag(event.isShow)
       }
       is UserSettingsEvent.ResetDatabaseFlag -> {
-        if (event.isReset) this.resetDatabase()
+        if (event.isReset) this.resetDatabase(dispatcherProvider.io())
       }
       is UserSettingsEvent.ShowLoaderView -> {
         showProgressViewFlag(true)
@@ -114,8 +115,8 @@ constructor(
     showProgressBar.postValue(isShown)
   }
 
-  fun resetDatabase() {
-    viewModelScope.launch(dispatcherProvider.io()) {
+  fun resetDatabase(ioDispatcherProviderContext: CoroutineContext) {
+    viewModelScope.launch(ioDispatcherProviderContext) {
       fhirEngine.clearDatabase()
       sharedPreferencesHelper.resetSharedPrefs()
       secureSharedPreference.resetSharedPrefs()

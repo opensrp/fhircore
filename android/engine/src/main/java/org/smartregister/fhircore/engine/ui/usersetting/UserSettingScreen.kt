@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
+const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
 
 @Composable
 fun UserSettingScreen(
@@ -193,7 +194,7 @@ fun UserSettingScreen(
       icon = Icons.Rounded.Logout,
       text = stringResource(id = R.string.logout),
       clickListener = { onEvent(UserSettingsEvent.Logout) },
-      modifier = modifier
+      modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT)
     )
   }
 }
