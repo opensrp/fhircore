@@ -17,9 +17,9 @@
 package org.smartregister.fhircore.quest.ui.register
 
 sealed class RegisterEvent {
-  data class SearchRegister(val searchText: String = "", val registerId: String) : RegisterEvent()
+  data class SearchRegister(val searchText: String = "") : RegisterEvent()
 
-  data class MoveToNextPage(val registerId: String) : RegisterEvent()
+  object MoveToNextPage : RegisterEvent()
 
-  data class MoveToPreviousPage(val registerId: String) : RegisterEvent()
+  object MoveToPreviousPage : RegisterEvent()
 }

@@ -43,12 +43,12 @@ class SyncListenerManager @Inject constructor() {
    * [Lifecycle.State.DESTROYED]
    */
   fun registerSyncListener(onSyncListener: OnSyncListener, lifecycle: Lifecycle) {
-    Timber.w("${onSyncListener::class.simpleName} registered to receive sync state events")
     _onSyncListeners.add(WeakReference(onSyncListener))
+    Timber.w("${onSyncListener::class.simpleName} registered to receive sync state events")
     lifecycle.addObserver(
       object : DefaultLifecycleObserver {
-        override fun onDestroy(owner: LifecycleOwner) {
-          super.onDestroy(owner)
+        override fun onStop(owner: LifecycleOwner) {
+          super.onStop(owner)
           deregisterSyncListener(onSyncListener)
         }
       }
@@ -60,7 +60,8 @@ class SyncListenerManager @Inject constructor() {
    * receiving sync state events.
    */
   fun deregisterSyncListener(onSyncListener: OnSyncListener) {
-    Timber.w("Deregister ${onSyncListener::class.simpleName} from receiving sync state...")
-    _onSyncListeners.removeIf { it.get() == onSyncListener }
+    val removed = _onSyncListeners.removeIf { it.get() == onSyncListener }
+    if (removed)
+      Timber.w("De-registered ${onSyncListener::class.simpleName} from receiving sync state...")
   }
 }
