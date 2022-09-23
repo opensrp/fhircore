@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
-import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -83,7 +82,8 @@ constructor(
         searchResource(
           baseResourceClass = baseResourceClass,
           dataQueries = baseResourceConfig.dataQueries,
-          currentPage = currentPage
+          currentPage = currentPage,
+          pageSize = registerConfiguration.pageSize
         )
       }
 
@@ -216,7 +216,8 @@ constructor(
   private suspend fun searchResource(
     baseResourceClass: Class<out Resource>,
     dataQueries: List<DataQuery>?,
-    currentPage: Int
+    currentPage: Int,
+    pageSize: Int
   ): List<Resource> {
     val resourceType = baseResourceClass.newInstance().resourceType
     val search =
@@ -226,8 +227,8 @@ constructor(
         if (resourceType == ResourceType.Patient) {
           filter(TokenClientParam(ACTIVE), { value = of(true) })
         }
-        count = PaginationConstant.DEFAULT_PAGE_SIZE
-        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+        count = pageSize
+        from = currentPage * pageSize
       }
     return when (resourceType) {
       ResourceType.Group -> filterActiveGroups(search)

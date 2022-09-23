@@ -83,8 +83,4 @@ class RegisterPagingSource(private val registerRepository: RegisterRepository) :
         ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
     }
   }
-
-  companion object {
-    const val DEFAULT_PAGE_SIZE = 20
-  }
 }
