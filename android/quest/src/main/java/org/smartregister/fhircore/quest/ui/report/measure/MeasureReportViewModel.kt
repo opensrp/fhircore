@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
@@ -331,7 +332,7 @@ constructor(
               stratifier.stratum.filter { it.hasValue() }.map { stratum ->
                 val text =
                   when {
-                    stratum.value.hasText() -> stratum.value.text
+                    stratum.value.hasText() -> StringUtils.capitalize(stratum.value.text)
                     stratum.value.hasCoding() -> stratum.value.coding.last().display
                     else -> "N/A"
                   }
@@ -348,7 +349,7 @@ constructor(
         if (stratifierItems.all { it.count() <= 1 })
           listOf(
             MeasureReportPopulationResult(
-              title = reportGroup.id,
+              title = reportGroup.id.replace("-", " "),
               count = reportGroup.findRatio(),
               dataList = stratifierItems.flatMap { it }
             )
@@ -356,7 +357,7 @@ constructor(
         else
           stratifierItems.map {
             MeasureReportPopulationResult(
-              title = "${reportGroup.id} - ${it.first().description}",
+              title = reportGroup.id.replace("-", " "),
               count = reportGroup.findRatio(),
               dataList = it
             )
@@ -397,13 +398,17 @@ constructor(
   private fun MeasureReport.StratifierGroupComponent.findPopulation(
     id: String
   ): MeasureReport.StratifierGroupPopulationComponent? {
-    return this.population.find { it.hasId() && it.id.equals(id, ignoreCase = true) }
+    return this.population.find {
+      it.hasId() && it.id.equals(id, ignoreCase = true) || it.code.codingFirstRep.code == id
+    }
   }
 
   private fun MeasureReport.MeasureReportGroupComponent.findPopulation(
     id: String
   ): MeasureReport.MeasureReportGroupPopulationComponent? {
-    return this.population.find { it.hasId() && it.id.equals(id, ignoreCase = true) }
+    return this.population.find {
+      it.hasId() && it.id.equals(id, ignoreCase = true) || it.code.codingFirstRep.code == id
+    }
   }
 
   private fun MeasureReport.MeasureReportGroupComponent.findRatio(): String {
