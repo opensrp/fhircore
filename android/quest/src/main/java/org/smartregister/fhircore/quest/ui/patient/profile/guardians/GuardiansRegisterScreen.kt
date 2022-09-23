@@ -27,11 +27,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,20 +43,9 @@ import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 fun GuardiansRoute(
   navigateRoute: (String) -> Unit,
   onBackPress: () -> Unit,
-  refreshDataState: MutableState<Boolean>,
   viewModel: GuardianRegisterViewModel = hiltViewModel()
 ) {
   val uiState by viewModel.guardianUiDetails
-  val refreshDataStateValue by remember { refreshDataState }
-
-  LaunchedEffect(Unit) { viewModel.loadData() }
-
-  SideEffect {
-    if (refreshDataStateValue) {
-      viewModel.loadData()
-      refreshDataState.value = false
-    }
-  }
 
   GuardiansRegisterScreen(
     navigateRoute = navigateRoute,

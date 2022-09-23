@@ -22,11 +22,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.RelatedPerson
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.R
@@ -44,6 +47,7 @@ class GuardianNotOnARTProfileViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
+  syncBroadcaster: SyncBroadcaster,
   val overflowMenuFactory: OverflowMenuFactory,
   val profileViewDataMapper: ProfileViewDataMapper,
   val repository: HivPatientGuardianRepository
@@ -59,6 +63,21 @@ constructor(
 
   private var guardianResource: RelatedPerson? = null
   private var patientId: String? = null
+
+  init {
+    syncBroadcaster.registerSyncListener(
+      object : OnSyncListener {
+        override fun onSync(state: State) {
+          when (state) {
+            is State.Finished, is State.Failed -> getProfileData()
+            else -> {}
+          }
+        }
+      },
+      viewModelScope
+    )
+    getProfileData()
+  }
 
   fun getProfileData() {
     viewModelScope.launch {

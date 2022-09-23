@@ -20,8 +20,10 @@ import android.content.Context
 import androidx.navigation.NavHostController
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 sealed class PatientProfileEvent {
@@ -38,12 +40,15 @@ sealed class PatientProfileEvent {
     val taskId: String,
     val patientId: String,
     val carePlans: List<CarePlan> = emptyList(),
-    val patientConditions: List<Condition> = emptyList()
+    val patientConditions: List<Condition> = emptyList(),
+    val guardians: List<Guardian> = emptyList()
   ) : PatientProfileEvent() {
     fun getActivePopulationResources(): ArrayList<Resource> {
-      val resources = carePlans + patientConditions
+      val resources = carePlans + patientConditions + guardiansRelatedPersonResource()
       return ArrayList(resources)
     }
+
+    fun guardiansRelatedPersonResource() = guardians.filterIsInstance<RelatedPerson>()
   }
 
   data class OverflowMenuClick(
@@ -53,12 +58,15 @@ sealed class PatientProfileEvent {
     val patientId: String,
     val familyId: String? = null,
     val carePlans: List<CarePlan> = emptyList(),
-    val patientConditions: List<Condition> = emptyList()
+    val patientConditions: List<Condition> = emptyList(),
+    val guardians: List<Guardian> = emptyList()
   ) : PatientProfileEvent() {
     fun getActivePopulationResources(): ArrayList<Resource> {
-      val resources = carePlans + patientConditions
+      val resources = carePlans + patientConditions + guardiansRelatedPersonResource()
       return ArrayList(resources)
     }
+
+    fun guardiansRelatedPersonResource() = guardians.filterIsInstance<RelatedPerson>()
   }
 
   data class OpenChildProfile(

@@ -197,8 +197,7 @@ private fun AppMainNavigationGraph(
           ) {
             GuardiansRoute(
               navigateRoute = { route -> navController.navigate(route) },
-              onBackPress = { navController.popBackStack() },
-              refreshDataState = appMainViewModel.refreshDataState
+              onBackPress = { navController.popBackStack() }
             )
           }
         MainNavigationScreen.GuardianProfile ->
@@ -228,10 +227,7 @@ private fun AppMainNavigationGraph(
                 refreshDataState = appMainViewModel.refreshDataState
               )
             } else {
-              GuardianRelatedPersonProfileScreen(
-                refreshDataState = appMainViewModel.refreshDataState,
-                onBackPress = { navController.popBackStack() }
-              )
+              GuardianRelatedPersonProfileScreen(onBackPress = { navController.popBackStack() })
             }
           }
         MainNavigationScreen.FamilyProfile ->

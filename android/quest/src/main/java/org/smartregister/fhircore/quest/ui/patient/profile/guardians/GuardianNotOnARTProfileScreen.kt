@@ -35,9 +35,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,7 +57,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSecti
 
 @Composable
 fun GuardianRelatedPersonProfileScreen(
-  refreshDataState: MutableState<Boolean>,
   onBackPress: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: GuardianNotOnARTProfileViewModel = hiltViewModel()
@@ -69,17 +65,6 @@ fun GuardianRelatedPersonProfileScreen(
   val profileViewData = viewModel.profileViewData.value
   var showOverflowMenu by remember { mutableStateOf(false) }
   val viewState = viewModel.profileMenuUiState.value
-  val refreshDataStateValue by remember { refreshDataState }
-
-  LaunchedEffect(Unit) { viewModel.getProfileData() }
-
-  SideEffect {
-    // Refresh family profile data on resume
-    if (refreshDataStateValue) {
-      viewModel.getProfileData()
-      refreshDataState.value = false
-    }
-  }
 
   Scaffold(
     topBar = {

@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.sync.State as SyncState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -28,6 +29,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.RegisterData
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.quest.data.patient.HivPatientGuardianRepository
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -39,6 +42,7 @@ class GuardianRegisterViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
+  syncBroadcaster: SyncBroadcaster,
   val repository: HivPatientGuardianRepository,
   val registerViewDataMapper: RegisterViewDataMapper
 ) : ViewModel() {
@@ -53,6 +57,21 @@ constructor(
     mutableStateOf(GuardianUiState(patientFirstName = "", registerViewData = emptyList()))
 
   val guardianUiDetails: State<GuardianUiState> = _guardianUiDetails
+
+  init {
+    syncBroadcaster.registerSyncListener(
+      object : OnSyncListener {
+        override fun onSync(state: SyncState) {
+          when (state) {
+            is SyncState.Finished, is SyncState.Failed -> loadData()
+            else -> {}
+          }
+        }
+      },
+      viewModelScope
+    )
+    loadData()
+  }
 
   fun loadData() {
     viewModelScope.launch {
