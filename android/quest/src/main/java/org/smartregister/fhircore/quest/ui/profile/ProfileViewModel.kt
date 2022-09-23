@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -49,7 +48,7 @@ constructor(
   val fhirPathDataExtractor: FhirPathDataExtractor
 ) : ViewModel() {
 
-  val profileUiState: MutableState<ProfileUiState> = mutableStateOf(ProfileUiState())
+  val profileUiState = mutableStateOf(ProfileUiState())
 
   private lateinit var profileConfiguration: ProfileConfiguration
 
