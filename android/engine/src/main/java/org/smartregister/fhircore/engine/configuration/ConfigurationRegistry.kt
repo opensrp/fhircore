@@ -33,17 +33,14 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -77,12 +74,6 @@ constructor(
   val configsJsonMap = mutableMapOf<String, String>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   val supportedFileExtensions = listOf("json", "properties")
-
-  val appConfig: ApplicationConfiguration by lazy { retrieveConfiguration(ConfigType.Application) }
-
-  val mandatoryTags: List<Coding> by lazy {
-    appConfig.getMandatoryTags(sharedPreferencesHelper, configService.provideSyncStrategy())
-  }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -350,10 +341,7 @@ constructor(
 
   suspend fun create(vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
-      resource.onEach {
-        it.generateMissingId()
-        it.addTags(mandatoryTags)
-      }
+      resource.onEach { it.generateMissingId() }
 
       fhirEngine.create(*resource)
     }
