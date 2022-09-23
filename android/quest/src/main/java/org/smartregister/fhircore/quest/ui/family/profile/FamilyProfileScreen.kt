@@ -50,9 +50,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,25 +78,13 @@ import org.smartregister.fhircore.quest.ui.family.profile.components.FamilyProfi
 import org.smartregister.fhircore.quest.ui.family.profile.model.EligibleFamilyHeadMember
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyBottomSheetAction
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun FamilyProfileScreen(
-  familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  refreshDataState: MutableState<Boolean>,
   familyProfileViewModel: FamilyProfileViewModel = hiltViewModel()
 ) {
-  val refreshDataStateValue by remember { refreshDataState }
-
-  LaunchedEffect(Unit) { familyProfileViewModel.fetchFamilyProfileData(familyId) }
-
-  SideEffect {
-    // Refresh family profile data on resume
-    if (refreshDataStateValue) {
-      familyProfileViewModel.fetchFamilyProfileData(familyId)
-      refreshDataState.value = false
-    }
-  }
 
   val viewState = familyProfileViewModel.familyProfileUiState.value
   val profileViewData = familyProfileViewModel.familyMemberProfileData.value
@@ -131,7 +116,7 @@ fun FamilyProfileScreen(
               coroutineScope.launch {
                 familyProfileViewModel.run {
                   changeFamilyHead(familyMember.patientId, familyId!!)
-                  fetchFamilyProfileData(familyId)
+                  fetchFamilyProfileData()
                 }
                 if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
                   bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -163,7 +148,7 @@ fun FamilyProfileScreen(
               familyProfileViewModel.onEvent(
                 FamilyProfileEvent.OpenMemberProfile(
                   patientId = currentMemberPatientId,
-                  familyId = familyId,
+                  familyId = familyProfileViewModel.familyId,
                   navController = navController
                 )
               )
@@ -225,7 +210,11 @@ fun FamilyProfileScreen(
                       }
                     } else
                       familyProfileViewModel.onEvent(
-                        FamilyProfileEvent.OverflowMenuClick(context, it.id, familyId)
+                        FamilyProfileEvent.OverflowMenuClick(
+                          context,
+                          it.id,
+                          familyProfileViewModel.familyId
+                        )
                       )
                   },
                   contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -248,7 +237,9 @@ fun FamilyProfileScreen(
           contentColor = Color.White,
           text = { Text(text = stringResource(R.string.add_memeber).uppercase()) },
           onClick = {
-            familyProfileViewModel.onEvent(FamilyProfileEvent.AddMember(context, familyId))
+            familyProfileViewModel.onEvent(
+              FamilyProfileEvent.AddMember(context, familyProfileViewModel.familyId)
+            )
           },
           backgroundColor = MaterialTheme.colors.primary,
           icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
