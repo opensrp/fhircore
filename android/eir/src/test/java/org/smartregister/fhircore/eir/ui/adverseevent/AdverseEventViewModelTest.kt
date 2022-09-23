@@ -47,10 +47,10 @@ import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY
+//import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-
+/*
 @ExperimentalCoroutinesApi
 internal class AdverseEventViewModelTest : RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
@@ -169,4 +169,4 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
       }
     return listOf(immunization1, immunization2, immunization3)
   }
-}
+}*/

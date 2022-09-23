@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
+/*
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -405,3 +406,4 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     return patientDetailsActivity
   }
 }
+*/

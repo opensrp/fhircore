@@ -43,6 +43,7 @@ import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+/*
 
 @ExperimentalCoroutinesApi
 internal class RecordVaccineViewModelTest : RobolectricTest() {
@@ -151,3 +152,4 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     Assert.assertEquals(immunizationsList[0], actualImmunizations)
   }
 }
+*/

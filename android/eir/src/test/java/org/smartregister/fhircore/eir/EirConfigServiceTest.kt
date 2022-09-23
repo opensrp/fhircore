@@ -24,7 +24,7 @@ import org.junit.Test
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 
 class EirConfigServiceTest : RobolectricTest() {
-
+/*
   private lateinit var eirConfigService: EirConfigService
 
   @Before
@@ -52,5 +52,5 @@ class EirConfigServiceTest : RobolectricTest() {
     Assert.assertEquals(BuildConfig.OAUTH_CIENT_ID, authConfiguration.clientId)
     Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, authConfiguration.clientSecret)
     Assert.assertEquals("org.smartregister.fhircore.eir", authConfiguration.accountType)
-  }
+  }*/
 }

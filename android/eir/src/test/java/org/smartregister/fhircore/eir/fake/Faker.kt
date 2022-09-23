@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
 
-object Faker {
+/*object Faker {
 
   fun loadTestConfigurationRegistryData(
     appId: String,
@@ -62,4 +62,4 @@ object Faker {
 
     return configurationRegistry
   }
-}
+}*/

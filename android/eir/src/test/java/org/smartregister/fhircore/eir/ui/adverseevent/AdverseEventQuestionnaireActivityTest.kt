@@ -36,7 +36,7 @@ import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.util.ADVERSE_EVENT_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
-@ExperimentalCoroutinesApi
+/*@ExperimentalCoroutinesApi
 @HiltAndroidTest
 class AdverseEventQuestionnaireActivityTest : ActivityRobolectricTest() {
 
@@ -87,4 +87,4 @@ class AdverseEventQuestionnaireActivityTest : ActivityRobolectricTest() {
   override fun getActivity(): Activity {
     return activity
   }
-}
+}*/

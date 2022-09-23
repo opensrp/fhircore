@@ -47,12 +47,12 @@ import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.eir.fake.Faker
+//import org.smartregister.fhircore.eir.fake.Faker
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-
+/*
 @HiltAndroidTest
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
@@ -171,4 +171,4 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
       FakeKeyStore.setup
     }
   }
-}
+}*/

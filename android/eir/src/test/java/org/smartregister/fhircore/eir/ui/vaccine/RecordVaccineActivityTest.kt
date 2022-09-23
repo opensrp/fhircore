@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+/*
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -283,3 +284,4 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     return recordVaccineActivity
   }
 }
+*/

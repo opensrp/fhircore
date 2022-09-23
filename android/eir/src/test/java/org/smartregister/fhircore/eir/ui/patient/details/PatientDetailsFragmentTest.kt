@@ -48,12 +48,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.fake.Faker
+//import org.smartregister.fhircore.eir.fake.Faker
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-
+/*
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
 internal class PatientDetailsFragmentTest : RobolectricTest() {
@@ -270,4 +270,4 @@ internal class PatientDetailsFragmentTest : RobolectricTest() {
       }
     return listOf(immunization1, immunization2, immunization3)
   }
-}
+}*/

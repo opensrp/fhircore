@@ -34,14 +34,14 @@ import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
-import org.smartregister.fhircore.eir.fake.Faker
+//import org.smartregister.fhircore.eir.fake.Faker
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
-
+/*
 @HiltAndroidTest
 class PatientRegisterFragmentTest : RobolectricTest() {
 
@@ -118,4 +118,4 @@ class PatientRegisterFragmentTest : RobolectricTest() {
       FakeKeyStore.setup
     }
   }
-}
+}*/

@@ -23,6 +23,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 
+/*
 class AppConfigService @Inject constructor(@ApplicationContext val context: Context) :
   ConfigService {
 
@@ -43,3 +44,4 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       accountType = context.packageName
     )
 }
+*/
