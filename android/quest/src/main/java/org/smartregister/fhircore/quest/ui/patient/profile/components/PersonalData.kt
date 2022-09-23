@@ -68,7 +68,7 @@ fun PersonalData(
           stringResource(
             R.string.id,
             patientProfileViewData.identifier.ifEmpty {
-              stringResource(org.smartregister.fhircore.quest.R.string.identifier_unassigned)
+              stringResource(R.string.identifier_unassigned)
             }
           )
         if (patientProfileViewData.showIdentifierInProfile)
@@ -77,7 +77,7 @@ fun PersonalData(
               R.string.idKeyValue,
               patientProfileViewData.identifierKey,
               patientProfileViewData.identifier.ifEmpty {
-                stringResource(org.smartregister.fhircore.quest.R.string.identifier_unassigned)
+                stringResource(R.string.identifier_unassigned)
               }
             )
         Text(
