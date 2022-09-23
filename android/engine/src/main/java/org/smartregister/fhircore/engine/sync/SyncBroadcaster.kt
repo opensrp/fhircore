@@ -71,22 +71,21 @@ constructor(
       }
     }
 
-      coroutineScope.launch(dispatcherProvider.io()) {
-        try {
-          syncJob.run(
-            fhirEngine = fhirEngine,
-            downloadManager =
-              ResourceParamsBasedDownloadWorkManager(syncParams = loadSyncParams().toMap()),
-            subscribeTo = syncStateFlow,
-            resolver = AcceptLocalConflictResolver
-          )
-        } catch (exception: Exception) {
-          Timber.e("Error syncing data", exception)
-        } finally {
-          coroutineScope.cancel()
-        }
+    coroutineScope.launch(dispatcherProvider.io()) {
+      try {
+        syncJob.run(
+          fhirEngine = fhirEngine,
+          downloadManager =
+            ResourceParamsBasedDownloadWorkManager(syncParams = loadSyncParams().toMap()),
+          subscribeTo = syncStateFlow,
+          resolver = AcceptLocalConflictResolver
+        )
+      } catch (exception: Exception) {
+        Timber.e("Error syncing data", exception)
+      } finally {
+        coroutineScope.cancel()
       }
-
+    }
   }
 
   /** Retrieve registry sync params */
