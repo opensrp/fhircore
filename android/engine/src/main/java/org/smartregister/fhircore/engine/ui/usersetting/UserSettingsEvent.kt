@@ -21,6 +21,9 @@ import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class UserSettingsEvent {
   data class SwitchLanguage(val language: Language, val context: Context) : UserSettingsEvent()
+  data class ShowResetDatabaseConfirmationDialog(val isShow: Boolean) : UserSettingsEvent()
+  data class ResetDatabaseFlag(val isReset: Boolean) : UserSettingsEvent()
   object SyncData : UserSettingsEvent()
   object Logout : UserSettingsEvent()
+  object ShowLoaderView : UserSettingsEvent()
 }
