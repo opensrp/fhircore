@@ -85,12 +85,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     appMainActivity.onSync(State.Started)
     Assert.assertNotNull(ShadowToast.getLatestToast())
     Assert.assertTrue(ShadowToast.getTextOfLatestToast().contains("Syncing", ignoreCase = true))
-    Assert.assertTrue(
-      appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime.contains(
-        "Sync initiated",
-        ignoreCase = true
-      )
-    )
   }
 
   @Test
