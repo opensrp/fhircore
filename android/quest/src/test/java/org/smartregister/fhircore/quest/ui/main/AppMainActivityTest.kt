@@ -24,16 +24,20 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.Configuration
 import androidx.work.impl.utils.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
+import com.google.android.fhir.sync.Result
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.runBlocking
+import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 
@@ -60,10 +64,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
         .build()
     WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
 
-    runBlocking {
-      appMainActivity =
-        Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get()
-    }
+    appMainActivity =
+      spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
   }
 
   @Test
@@ -76,5 +78,87 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   override fun getActivity(): Activity {
     return appMainActivity
+  }
+
+  @Test
+  fun testOnSyncWithSyncStateStarted() {
+    appMainActivity.onSync(State.Started)
+    Assert.assertNotNull(ShadowToast.getLatestToast())
+    Assert.assertTrue(ShadowToast.getTextOfLatestToast().contains("Syncing", ignoreCase = true))
+  }
+
+  @Test
+  fun testOnSyncWithSyncStateInProgress() {
+    appMainActivity.onSync(State.InProgress(resourceType = null))
+    Assert.assertTrue(
+      appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime.contains(
+        "Sync in progress",
+        ignoreCase = true
+      )
+    )
+  }
+
+  @Test
+  fun testOnSyncWithSyncStateGlitch() {
+    val viewModel = appMainActivity.appMainViewModel
+    viewModel.sharedPreferencesHelper.write(
+      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+      "2022-05-19"
+    )
+    appMainActivity.onSync(State.Glitch(exceptions = emptyList()))
+    Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
+    Assert.assertTrue(
+      viewModel.appMainUiState.value.lastSyncTime.contains(
+        viewModel.retrieveLastSyncTimestamp()!!,
+        ignoreCase = true
+      )
+    )
+  }
+
+  @Test
+  fun testOnSyncWithSyncStateFailedRetrievesTimestamp() {
+    val viewModel = appMainActivity.appMainViewModel
+    viewModel.sharedPreferencesHelper.write(
+      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+      "2022-05-19"
+    )
+    appMainActivity.onSync(State.Failed(result = Result.Error(emptyList())))
+    Assert.assertNotNull(ShadowToast.getLatestToast())
+    Assert.assertTrue(
+      ShadowToast.getTextOfLatestToast()
+        .contains("Sync failed. Check internet connection or try again later.", ignoreCase = true)
+    )
+    Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
+    Assert.assertEquals(
+      viewModel.appMainUiState.value.lastSyncTime,
+      viewModel.retrieveLastSyncTimestamp()
+    )
+  }
+
+  @Test
+  fun testOnSyncWithSyncStateFailedWhenTimestampIsNull() {
+    val viewModel = appMainActivity.appMainViewModel
+    appMainActivity.onSync(State.Failed(result = Result.Error(emptyList())))
+    Assert.assertNotNull(ShadowToast.getLatestToast())
+    Assert.assertTrue(
+      ShadowToast.getTextOfLatestToast()
+        .contains("Sync failed. Check internet connection or try again later.", ignoreCase = true)
+    )
+    Assert.assertEquals(viewModel.appMainUiState.value.lastSyncTime, "")
+  }
+
+  @Test
+  fun testOnSyncWithSyncStateFinished() {
+    val viewModel = appMainActivity.appMainViewModel
+    val stateFinished = State.Finished(result = Result.Success())
+    appMainActivity.onSync(stateFinished)
+    Assert.assertNotNull(ShadowToast.getLatestToast())
+    Assert.assertTrue(
+      ShadowToast.getTextOfLatestToast().contains("Sync complete", ignoreCase = true)
+    )
+    Assert.assertEquals(
+      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.result.timestamp),
+      viewModel.retrieveLastSyncTimestamp()
+    )
   }
 }
