@@ -419,4 +419,28 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     verify { oAuthService.logout(any(), any(), any()) }
   }
+
+  @Test
+  fun testLocalLogoutInvalidatesAuthenticationToken() = runBlockingTest {
+    every { secureSharedPreference.deleteSessionTokens() } returns Unit
+    every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
+    every { tokenManagerService.getLocalSessionToken() } returns "my-token"
+
+    accountAuthenticator.localLogout()
+
+    verify { tokenManagerService.getLocalSessionToken() }
+    verify { accountManager.invalidateAuthToken(any(), any()) }
+  }
+
+  @Test
+  fun testLocalLogoutDeletesSessionTokens() = runBlockingTest {
+    every { secureSharedPreference.deleteSessionTokens() } returns Unit
+    every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
+    every { tokenManagerService.getLocalSessionToken() } returns "my-token"
+
+    accountAuthenticator.localLogout()
+
+    verify { tokenManagerService.getLocalSessionToken() }
+    verify { secureSharedPreference.deleteSessionTokens() }
+  }
 }
