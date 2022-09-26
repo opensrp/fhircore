@@ -17,9 +17,15 @@
 package org.smartregister.fhircore.quest
 
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @ExcludeFromJacocoGeneratedReport
 @AndroidEntryPoint
-class HiltActivityForTest : AppCompatActivity()
+class HiltActivityForTest : AppCompatActivity(), OnSyncListener {
+  override fun onSync(state: State) {
+    // DO nothing. This activity implements OnSyncListener for testing purposes
+  }
+}

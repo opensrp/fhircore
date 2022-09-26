@@ -54,7 +54,6 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
@@ -63,16 +62,15 @@ import org.smartregister.p2p.sync.DataType
 class BaseP2PTransferDaoTest : RobolectricTest() {
 
   private lateinit var baseP2PTransferDao: BaseP2PTransferDao
-  lateinit var configurationRegistry: ConfigurationRegistry
-  private lateinit var defaultRepository: DefaultRepository
-  private lateinit var fhirEngine: FhirEngine
+
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  private val fhirEngine: FhirEngine = mockk(relaxed = true)
+
   private val currentDate = Date()
 
   @Before
   fun setUp() {
-    fhirEngine = mockk(relaxed = true)
-    defaultRepository = mockk()
-    configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
     baseP2PTransferDao =
       spyk(P2PReceiverTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
   }

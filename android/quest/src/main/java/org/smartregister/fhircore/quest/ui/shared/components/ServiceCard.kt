@@ -49,6 +49,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
@@ -62,7 +64,6 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
@@ -71,7 +72,7 @@ fun ServiceCard(
   modifier: Modifier = Modifier,
   serviceCardProperties: ServiceCardProperties,
   resourceData: ResourceData,
-  onViewComponentEvent: (ViewComponentEvent) -> Unit
+  navController: NavController,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -86,7 +87,10 @@ fun ServiceCard(
       modifier =
         modifier
           .clickable {
-            serviceCardProperties.actions.handleClickEvent(onViewComponentEvent, resourceData)
+            serviceCardProperties.actions.handleClickEvent(
+              navController = navController,
+              resourceData = resourceData
+            )
           }
           .padding(top = 24.dp, bottom = 24.dp)
           .weight(0.75f)
@@ -129,14 +133,15 @@ fun ServiceCard(
             ActionableButton(
               modifier = modifier,
               buttonProperties = serviceCardProperties.serviceButton!!,
-              onViewComponentEvent = onViewComponentEvent,
+              navController = navController,
               resourceData = resourceData
             )
           } else {
             BigServiceButton(
               modifier = modifier,
               buttonProperties = serviceCardProperties.serviceButton!!,
-              computedValuesMap = resourceData.computedValuesMap,
+              navController = navController,
+              resourceData = resourceData,
             )
           }
         } else if (serviceCardProperties.services?.isNotEmpty() == true) {
@@ -144,7 +149,7 @@ fun ServiceCard(
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
-                onViewComponentEvent = onViewComponentEvent,
+                navController = navController,
                 resourceData = resourceData
               )
               Spacer(modifier = modifier.height(8.dp))
@@ -186,12 +191,13 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
 private fun BigServiceButton(
   modifier: Modifier = Modifier,
   buttonProperties: ButtonProperties,
-  computedValuesMap: Map<String, Any>
+  navController: NavController,
+  resourceData: ResourceData
 ) {
-  val statusColor = buttonProperties.statusColor(computedValuesMap)
+  val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
   val extractedStatus = remember {
-    ServiceStatus.valueOf(buttonProperties.status.interpolate(computedValuesMap))
+    ServiceStatus.valueOf(buttonProperties.status.interpolate(resourceData.computedValuesMap))
   }
 
   Column(
@@ -202,7 +208,13 @@ private fun BigServiceButton(
         .clip(RoundedCornerShape(4.dp))
         .background(
           if (extractedStatus == ServiceStatus.OVERDUE) contentColor else Color.Unspecified
-        ),
+        )
+        .clickable {
+          buttonProperties.actions.handleClickEvent(
+            navController = navController,
+            resourceData = resourceData
+          )
+        },
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
@@ -214,7 +226,7 @@ private fun BigServiceButton(
       if (extractedStatus == ServiceStatus.COMPLETED)
         Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
       Text(
-        text = buttonProperties.text?.interpolate(computedValuesMap) ?: "",
+        text = buttonProperties.text?.interpolate(resourceData.computedValuesMap) ?: "",
         color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
         textAlign = TextAlign.Center,
         fontSize = buttonProperties.fontSize.sp
@@ -272,7 +284,7 @@ private fun ServiceCardServiceOverduePreview() {
     ViewRenderer(
       viewProperties = viewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
-      onViewComponentClick = {},
+      navController = rememberNavController()
     )
   }
 }
@@ -326,7 +338,7 @@ private fun ServiceCardServiceDuePreview() {
     ViewRenderer(
       viewProperties = viewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
-      onViewComponentClick = {},
+      navController = rememberNavController()
     )
   }
 }
@@ -380,7 +392,7 @@ private fun ServiceCardServiceUpcomingPreview() {
     ViewRenderer(
       viewProperties = viewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
-      onViewComponentClick = {},
+      navController = rememberNavController()
     )
   }
 }
@@ -433,7 +445,7 @@ private fun ServiceCardServiceCompletedPreview() {
     ViewRenderer(
       viewProperties = viewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
-      onViewComponentClick = {},
+      navController = rememberNavController()
     )
   }
 }
@@ -481,7 +493,7 @@ private fun ServiceCardANCServiceDuePreview() {
     ViewRenderer(
       viewProperties = viewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
-      onViewComponentClick = {},
+      navController = rememberNavController()
     )
   }
 }
@@ -537,7 +549,7 @@ private fun ServiceCardANCServiceOverduePreview() {
     ViewRenderer(
       viewProperties = viewProperties,
       resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
-      onViewComponentClick = {},
+      navController = rememberNavController()
     )
   }
 }

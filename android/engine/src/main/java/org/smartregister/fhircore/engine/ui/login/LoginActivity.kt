@@ -21,11 +21,9 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
@@ -36,18 +34,28 @@ class LoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
-
   val loginViewModel by viewModels<LoginViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
-    loginViewModel.apply {
-      // Run sync and navigate directly to home screen if session is active
-      if (accountAuthenticator.hasActiveSession()) runSyncAndNavigateHome()
 
-      val isPinEnabled = loginViewModel.applicationConfiguration.loginConfig?.enablePin ?: false
+    navigateToScreen()
+
+    setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+  }
+
+  fun navigateToScreen() {
+    loginViewModel.apply {
+      val isPinEnabled = isPinEnabled()
+
+      // Run sync and navigate directly to home screen if session is active and pin is not enabled
+      if (accountAuthenticator.hasActiveSession() && isPinEnabled) {
+        loginService.navigateToPinLogin(false)
+      } else if (accountAuthenticator.hasActiveSession() && !isPinEnabled) {
+        loginService.navigateToHome()
+      }
+
       navigateToHome.observe(this@LoginActivity) { launchHomeScreen ->
         when {
           launchHomeScreen && isPinEnabled && accountAuthenticator.hasActivePin() -> {
@@ -57,18 +65,12 @@ class LoginActivity : BaseMultiLanguageActivity() {
             loginService.navigateToPinLogin(true)
           }
           launchHomeScreen && !isPinEnabled -> {
-            runSyncAndNavigateHome()
+            loginService.navigateToHome()
           }
         }
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
     }
-
-    setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
-  }
-
-  private fun runSyncAndNavigateHome() {
-    loginService.navigateToHome()
   }
 
   private fun launchDialPad(phone: String) {

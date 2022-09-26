@@ -17,24 +17,24 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
-import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.sync.ResourceSyncException
-import com.google.android.fhir.sync.Result
-import com.google.android.fhir.sync.State
+import androidx.navigation.fragment.NavHostFragment
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.work.Configuration
+import androidx.work.impl.utils.SynchronousExecutor
+import androidx.work.testing.WorkManagerTestInitHelper
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.just
-import io.mockk.runs
-import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -43,115 +43,35 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   lateinit var appMainActivity: AppMainActivity
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    // Initialize WorkManager for instrumentation tests.
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    val config =
+      Configuration.Builder()
+        .setMinimumLoggingLevel(Log.DEBUG)
+        .setExecutor(SynchronousExecutor())
+        .build()
+    WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
 
-    val controller = Robolectric.buildActivity(AppMainActivity::class.java)
-    appMainActivity = controller.create().get()
     runBlocking {
-      appMainActivity.appMainViewModel.configurationRegistry.loadConfigurations(
-        "app/debug",
-        appMainActivity.applicationContext
-      )
-    }
-    appMainActivity = controller.resume().get()
-  }
-
-  @Test
-  fun activityShouldNotNull() {
-    Assert.assertNotNull(getActivity())
-  }
-
-  @Test
-  fun onResumeShouldRefreshDataState() {
-    Assert.assertTrue(appMainActivity.appMainViewModel.refreshDataState.value)
-  }
-
-  @Test
-  fun onResumeShouldRetrieveAppMainUiState() {
-    appMainActivity.appMainViewModel.appMainUiState.value.let {
-      Assert.assertEquals("ECBIS", it.appTitle)
-      Assert.assertEquals("English", it.currentLanguage)
-      Assert.assertEquals("", it.username)
-      Assert.assertEquals("", it.lastSyncTime)
-      Assert.assertTrue(
-        it.languages
-          .map { language -> language.displayName }
-          .containsAll(listOf("English", "Swahili", "French"))
-      )
-      Assert.assertNotNull(it.navigationConfiguration)
-      Assert.assertNotNull(it.registerCountMap)
+      appMainActivity =
+        Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get()
     }
   }
 
   @Test
-  fun onSyncShouldStart() {
-    val state = State.Started
-
-    appMainActivity.onSync(state)
-
-    Assert.assertEquals(
-      "Sync initiated…",
-      appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime
-    )
-  }
-
-  @Test
-  fun onSyncShouldInProgress() {
-    val state = State.InProgress(ResourceType.Patient)
-
-    appMainActivity.onSync(state)
-
-    Assert.assertEquals(
-      "Sync in progress",
-      appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime
-    )
-  }
-
-  @Test
-  fun onSyncShouldGlitchAndLastSyncTimeIsEmpty() {
-    val exceptions =
-      listOf(
-        ResourceSyncException(ResourceType.Patient, ResourceNotFoundException("Patient", "12345"))
-      )
-    val state = State.Glitch(exceptions)
-
-    appMainActivity.onSync(state)
-
-    Assert.assertEquals("", appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime)
-  }
-
-  @Test
-  fun onSyncShouldFailedAndRefreshDataStateIsTrue() {
-    val configServiceSpy = spyk(appMainActivity.configService)
-    every { configServiceSpy.schedulePlan(appMainActivity) } just runs
-    appMainActivity.configService = configServiceSpy
-
-    val exceptions =
-      listOf(
-        ResourceSyncException(ResourceType.Patient, ResourceNotFoundException("Patient", "12345"))
-      )
-    val state = State.Failed(Result.Error(exceptions))
-
-    appMainActivity.onSync(state)
-
-    Assert.assertTrue(appMainActivity.appMainViewModel.refreshDataState.value)
-  }
-
-  @Test
-  fun onSyncShouldFinishedAndRefreshDataStateIsTrue() {
-    val configServiceSpy = spyk(appMainActivity.configService)
-    every { configServiceSpy.schedulePlan(appMainActivity) } just runs
-    appMainActivity.configService = configServiceSpy
-
-    val state = State.Finished(Result.Success())
-
-    appMainActivity.onSync(state)
-
-    Assert.assertTrue(appMainActivity.appMainViewModel.refreshDataState.value)
+  fun testActivityIsStartedCorrectly() {
+    Assert.assertNotNull(appMainActivity)
+    val fragments = appMainActivity.supportFragmentManager.fragments
+    Assert.assertEquals(1, fragments.size)
+    Assert.assertTrue(fragments.first() is NavHostFragment)
   }
 
   override fun getActivity(): Activity {

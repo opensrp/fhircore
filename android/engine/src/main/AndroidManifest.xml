@@ -40,10 +40,6 @@
             android:name=".ui.pin.PinSetupActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.questionnaire.QuestionnaireActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme" />
-        <activity
             android:name=".HiltActivityForTest"
             android:exported="false"
             android:theme="@style/AppTheme" />

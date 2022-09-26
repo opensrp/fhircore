@@ -36,9 +36,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -53,7 +54,7 @@ fun ExtendedFab(
   modifier: Modifier = Modifier,
   fabActions: List<NavigationMenuConfig>,
   resourceData: ResourceData? = null,
-  onViewComponentEvent: (ViewComponentEvent) -> Unit,
+  navController: NavController,
   icon: ImageVector = Icons.Filled.Add,
 ) {
   FloatingActionButton(
@@ -63,7 +64,7 @@ fun ExtendedFab(
       fabActions
         .first()
         .actions
-        ?.handleClickEvent(onViewComponentClick = onViewComponentEvent, resourceData = resourceData)
+        ?.handleClickEvent(navController = navController, resourceData = resourceData)
     },
     backgroundColor = MaterialTheme.colors.primary,
     modifier = modifier.testTag(FAB_BUTTON_TEST_TAG)
@@ -79,7 +80,7 @@ fun ExtendedFab(
         )
       }
     val padding = if (text.isBlank()) ExtendedFabIconPadding else ExtendedFabTextPadding
-    val isTextOnly = fabActions.first().icon == null
+    val isTextOnly = fabActions.first().menuIconConfig == null
 
     Row(
       modifier =
@@ -110,6 +111,6 @@ fun ExtendedFab(
 fun PreviewExtendedFab() {
   ExtendedFab(
     fabActions = listOf(NavigationMenuConfig(id = "test", display = "Fab Button")),
-    onViewComponentEvent = {}
+    navController = rememberNavController()
   )
 }

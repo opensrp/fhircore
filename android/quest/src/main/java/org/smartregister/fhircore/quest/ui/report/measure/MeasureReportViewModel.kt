@@ -43,12 +43,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
-import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
@@ -59,7 +61,6 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIn
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
-import org.smartregister.model.practitioner.KeycloakUserDetails
 import timber.log.Timber
 
 @HiltViewModel
@@ -102,10 +103,10 @@ constructor(
     MutableStateFlow(retrieveAncPatients())
   }
 
-  private val loggedInUserDetail by lazy {
-    sharedPreferencesHelper.read<KeycloakUserDetails>(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS_USER_DETAIL.name,
-    )
+  private val practitionerId: String? by lazy {
+    sharedPreferencesHelper
+      .read(key = SharedPreferenceKey.PRACTITIONER_ID.name, null)
+      ?.extractLogicalIdUuid()
   }
 
   fun defaultDateRangeState() =
@@ -115,7 +116,7 @@ constructor(
     )
 
   fun reportMeasuresList(): Flow<PagingData<MeasureReportConfig>> =
-    Pager(PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE)) { measureReportRepository }
+    Pager(PagingConfig(pageSize = DEFAULT_PAGE_SIZE)) { measureReportRepository }
       .flow
       .cachedIn(viewModelScope)
 
@@ -128,7 +129,7 @@ constructor(
             NavigationArg.bindArgumentsOf(
               Pair(NavigationArg.SCREEN_TITLE, event.measureReportConfig.title)
             )
-        ) { launchSingleTop = true }
+        )
       }
       is MeasureReportEvent.GenerateReport -> evaluateMeasure(event.navController)
       is MeasureReportEvent.OnDateRangeSelected -> {
@@ -165,7 +166,7 @@ constructor(
 
   private fun retrieveAncPatients(): Flow<PagingData<MeasureReportPatientViewData>> =
     Pager(
-        config = PagingConfig(pageSize = PaginationConstant.DEFAULT_PAGE_SIZE),
+        config = PagingConfig(pageSize = DEFAULT_PAGE_SIZE),
         pagingSourceFactory = {
           MeasureReportPatientsPagingSource(
             measureReportRepository,
@@ -211,7 +212,8 @@ constructor(
                     end = endDateFormatted,
                     reportType = SUBJECT,
                     subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
-                    practitioner = loggedInUserDetail?.id,
+                    practitioner =
+                      practitionerId?.asReference(ResourceType.Practitioner)?.reference,
                     lastReceivedOn = null // Non-null value not supported yet
                   )
                 }
@@ -255,7 +257,7 @@ constructor(
           end = endDateFormatted,
           reportType = POPULATION,
           subject = null,
-          practitioner = loggedInUserDetail?.id,
+          practitioner = practitionerId?.asReference(ResourceType.Practitioner)?.reference,
           lastReceivedOn = null // Non-null value not supported yet
         )
       }
@@ -368,5 +370,6 @@ constructor(
     const val SUBJECT = "subject"
     const val POPULATION = "population"
     const val POPULATION_OBS_URL = "populationId"
+    private const val DEFAULT_PAGE_SIZE = 20
   }
 }

@@ -24,11 +24,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
-import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Before
@@ -37,6 +35,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.quest.Faker
 import org.smartregister.fhircore.quest.HiltActivityForTest
 import org.smartregister.fhircore.quest.waitUntilExists
 
@@ -47,17 +46,12 @@ class ProfileScreenTest {
 
   @get:Rule(order = 1) val composeTestRule = createAndroidComposeRule<HiltActivityForTest>()
 
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
     hiltRule.inject()
     runBlocking {
-      configurationRegistry.loadConfigurations(
-        "app/debug",
-        InstrumentationRegistry.getInstrumentation().targetContext
-      ) {}
-
       val profileUiState =
         ProfileUiState(
           resourceData = ResourceData(Patient()),
@@ -104,11 +98,11 @@ class ProfileScreenTest {
     composeTestRule.waitUntilExists(hasTestTag(DROPDOWN_MENU_TEST_TAG))
     composeTestRule.onNodeWithTag(DROPDOWN_MENU_TEST_TAG).performClick()
     composeTestRule
-      .onNodeWithText("Family details", useUnmergedTree = true)
+      .onNodeWithText("Household details", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule
-      .onNodeWithText("Change family head", useUnmergedTree = true)
+      .onNodeWithText("Change household head", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule
@@ -116,7 +110,7 @@ class ProfileScreenTest {
       .assertExists()
       .assertIsDisplayed()
     composeTestRule
-      .onNodeWithText("Family details", useUnmergedTree = true)
+      .onNodeWithText("View medical history", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule

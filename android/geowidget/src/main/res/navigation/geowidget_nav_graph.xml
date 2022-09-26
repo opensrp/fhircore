@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/geo_widget_nav_graph"
+    app:startDestination="@id/geoWidgetFragment">
+
+    <fragment
+        android:id="@+id/geoWidgetFragment"
+        android:name="org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment">
+        <argument
+            android:name="configId"
+            app:argType="string"
+            app:nullable="false" />
+
+    </fragment>
+
+</navigation>

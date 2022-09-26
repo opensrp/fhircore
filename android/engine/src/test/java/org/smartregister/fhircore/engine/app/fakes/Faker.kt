@@ -17,11 +17,13 @@
 package org.smartregister.fhircore.engine.app.fakes
 
 import androidx.test.platform.app.InstrumentationRegistry
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
@@ -29,6 +31,8 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.toSha1
 
 object Faker {
@@ -46,10 +50,15 @@ object Faker {
   fun buildTestConfigurationRegistry(
     defaultRepository: DefaultRepository = mockk()
   ): ConfigurationRegistry {
+
+    val fhirResourceService = mockk<FhirResourceService>()
+    val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
+    coEvery { fhirResourceService.getResource(any()) } returns Bundle()
+
     val configurationRegistry =
       spyk(
         ConfigurationRegistry(
-          fhirResourceDataSource = mockk(),
+          fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = mockk(),
           dispatcherProvider = mockk(),
           repository = defaultRepository

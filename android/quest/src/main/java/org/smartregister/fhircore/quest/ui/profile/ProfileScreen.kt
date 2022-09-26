@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,11 +46,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
@@ -64,12 +64,11 @@ const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
 @Composable
 fun ProfileScreen(
   modifier: Modifier = Modifier,
-  navController: NavHostController,
+  navController: NavController,
   profileUiState: ProfileUiState,
   onEvent: (ProfileEvent) -> Unit
 ) {
   var showOverflowMenu by remember { mutableStateOf(false) }
-  val mutableInteractionSource = remember { MutableInteractionSource() }
   val context = LocalContext.current
 
   Scaffold(
@@ -102,8 +101,12 @@ fun ProfileScreen(
             onDismissRequest = { showOverflowMenu = false }
           ) {
             profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
-              if (!it.visible.toBoolean()) return@forEach
-              if (it.showSeparator.toBoolean()) Divider(color = DividerColor, thickness = 1.dp)
+              if (!it.visible
+                  .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
+                  .toBoolean()
+              )
+                return@forEach
+              if (it.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
@@ -135,12 +138,13 @@ fun ProfileScreen(
     },
     floatingActionButton = {
       val fabActions = profileUiState.profileConfiguration?.fabActions
+
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
           fabActions = fabActions,
           resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
-          onViewComponentEvent = { onEvent(ProfileEvent.OnViewComponentEvent(it, navController)) }
+          navController = navController
         )
       }
     }
@@ -152,7 +156,7 @@ fun ProfileScreen(
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
           resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
-          onViewComponentClick = { onEvent(ProfileEvent.OnViewComponentEvent(it, navController)) }
+          navController = navController
         )
       }
     }

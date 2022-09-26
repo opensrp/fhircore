@@ -112,7 +112,7 @@
     <string name="forgot_pin">Forgot pin?</string>
     <string name="please_contact_supervisor">Please contact your supervisor.</string>
     <string name="percentage" translatable="false">%</string>
-    <string name="logging_out">Please wait... Logging out</string>
+    <string name="logging_out">Please wait… Logging out</string>
     <string name="session_expired">Session has been expired and must login again</string>
     <string name="sex">Sex</string>
     <string name="age">Age</string>
@@ -126,4 +126,9 @@
     <string name="other_patients">Other patients</string>
     <string name="responses">RESPONSES (%1$s)</string>
     <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="clear_database">Reset data</string>
+    <string name="clear_database_title">Reset Database!</string>
+    <string name="clear_database_message">Resetting database will clear all records from your device. This action can’t be undone.</string>
+    <string name="resetting_app">Resetting Application...</string>
 </resources>
