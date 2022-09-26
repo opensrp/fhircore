@@ -39,6 +39,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
@@ -60,7 +62,8 @@ fun PatientRegisterScreen(
 ) {
   val context = LocalContext.current
   val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
-  val searchText by remember { patientRegisterViewModel.searchText }
+  val searchTextState = patientRegisterViewModel.searchText.collectAsState()
+  val searchText by remember { searchTextState }
   val patientRegistrationLauncher =
     rememberLauncherForActivityResult(
       contract = ActivityResultContracts.StartActivityForResult(),
@@ -106,7 +109,7 @@ fun PatientRegisterScreen(
             resultCount = pagingItems.itemCount,
             currentPage =
               patientRegisterViewModel.currentPage.observeAsState(initial = 0).value.plus(1),
-            pagesCount = patientRegisterViewModel.countPages(),
+            pagesCount = patientRegisterViewModel.countPages().observeAsState(initial = 1).value,
             previousButtonClickListener = {
               patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToPreviousPage)
             },
@@ -144,15 +147,23 @@ fun PatientRegisterScreen(
         iModifier = Modifier.padding(top = 32.dp)
         RegisterHeader(resultCount = pagingItems.itemCount)
       }
-      RegisterList(
-        modifier = iModifier,
-        pagingItems = pagingItems,
-        onRowClick = { patientId: String ->
-          patientRegisterViewModel.onEvent(
-            PatientRegisterEvent.OpenProfile(patientId, navController)
-          )
-        }
-      )
+
+      val isRefreshing by patientRegisterViewModel.isRefreshing.collectAsState()
+      SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = { patientRegisterViewModel.refresh() },
+        //        indicator = { _, _ -> }
+        ) {
+        RegisterList(
+          modifier = iModifier,
+          pagingItems = pagingItems,
+          onRowClick = { patientId: String ->
+            patientRegisterViewModel.onEvent(
+              PatientRegisterEvent.OpenProfile(patientId, navController)
+            )
+          }
+        )
+      }
     }
   }
 }
