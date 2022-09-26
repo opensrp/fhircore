@@ -29,7 +29,6 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.cqframework.cql.cql2elm.CqlTranslator
 import org.cqframework.cql.cql2elm.FhirLibrarySourceProvider
@@ -44,10 +43,11 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -57,15 +57,15 @@ class CqlContentTest : RobolectricTest() {
 
   private var context: Context = ApplicationProvider.getApplicationContext()
 
-  val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
-  val parser = fhirContext.newJsonParser()!!
-  val evaluator = LibraryEvaluator().apply { initialize() }
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+  private val parser = fhirContext.newJsonParser()!!
+  private val evaluator = LibraryEvaluator().apply { initialize() }
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val configService: ConfigService = mockk()
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking { configurationRegistry.loadConfigurations("app/debug", context) }
   }
 
   @Test
@@ -104,7 +104,13 @@ class CqlContentTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val defaultRepository =
       spyk(
-        DefaultRepository(fhirEngine, DefaultDispatcherProvider(), mockk(), configurationRegistry)
+        DefaultRepository(
+          fhirEngine,
+          DefaultDispatcherProvider(),
+          mockk(),
+          configurationRegistry,
+          configService
+        )
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
@@ -165,7 +171,13 @@ class CqlContentTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val defaultRepository =
       spyk(
-        DefaultRepository(fhirEngine, DefaultDispatcherProvider(), mockk(), configurationRegistry)
+        DefaultRepository(
+          fhirEngine,
+          DefaultDispatcherProvider(),
+          mockk(),
+          configurationRegistry,
+          configService
+        )
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
@@ -230,7 +242,13 @@ class CqlContentTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val defaultRepository =
       spyk(
-        DefaultRepository(fhirEngine, DefaultDispatcherProvider(), mockk(), configurationRegistry)
+        DefaultRepository(
+          fhirEngine,
+          DefaultDispatcherProvider(),
+          mockk(),
+          configurationRegistry,
+          configService
+        )
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary

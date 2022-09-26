@@ -47,7 +47,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -63,7 +63,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
   @Inject lateinit var gson: Gson
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   @Inject lateinit var configService: ConfigService
 
   var evaluator: LibraryEvaluator? = null
@@ -79,7 +79,6 @@ class LibraryEvaluatorTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
     try {
       libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
       helperData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")

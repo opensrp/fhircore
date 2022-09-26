@@ -86,6 +86,10 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
 
+    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
+    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
+    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
+
     val syncParam = syncBroadcaster.loadSyncParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())

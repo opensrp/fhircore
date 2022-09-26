@@ -29,7 +29,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -42,7 +41,6 @@ class ApplicationConfigurationTest : RobolectricTest() {
   lateinit var appConfig: ApplicationConfiguration
   var application: Application = ApplicationProvider.getApplicationContext()
   @Inject lateinit var sharedPreferenceHelper: SharedPreferencesHelper
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
@@ -86,8 +84,6 @@ class ApplicationConfigurationTest : RobolectricTest() {
     sharedPreferenceHelper.write(ResourceType.Location.name, locationIds)
 
     runBlocking {
-      configurationRegistry.loadConfigurations("app/debug", application)
-
       val syncStrategyTag =
         SyncStrategy().apply {
           careTeamTag.tag =

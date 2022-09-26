@@ -59,6 +59,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -74,7 +75,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
   @Inject lateinit var gson: Gson
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   @Inject lateinit var configService: ConfigService
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var fhirEngine: FhirEngine
@@ -84,7 +85,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
+    //    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
 
     dispatcherProvider = DefaultDispatcherProvider()
     fhirEngine = mockk()
@@ -339,7 +340,15 @@ class DefaultRepositoryTest : RobolectricTest() {
   fun testDeleteWithResourceId() = runTest {
     val fhirEngine: FhirEngine = mockk(relaxUnitFun = true)
     val defaultRepository =
-      spyk(DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider))
+      spyk(
+        DefaultRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = dispatcherProvider,
+          sharedPreferencesHelper = mockk(),
+          configurationRegistry = mockk(),
+          configService = mockk()
+        )
+      )
 
     defaultRepository.delete(resourceType = "Patient", resourceId = "123")
 
