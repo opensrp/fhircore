@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure
 
+import android.content.Context
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.core.util.Pair
 import androidx.navigation.NavController
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -60,6 +62,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
+
+  private val application: Context = ApplicationProvider.getApplicationContext()
 
   var fhirEngine: FhirEngine = mockk()
 
@@ -142,6 +146,37 @@ class MeasureReportViewModelTest : RobolectricTest() {
     verify { navController.navigate(capture(routeSlot)) }
 
     Assert.assertEquals("reportTypeSelector?screenTitle=Measure 1", routeSlot.captured)
+  }
+
+  @Test
+  fun testOnEventOnSelectGenerateReport() {
+    val measureReportConfig =
+      MeasureReportConfig(
+        id = "measureId",
+        title = "Measure 1",
+        description = "Measure report for testing",
+        url = "http://nourl.com"
+      )
+    val dateRange =
+      Pair(dateTimestamp("2020-01-01T14:34:18.000Z"), dateTimestamp("2020-12-31T14:34:18.000Z"))
+    val samplePatientViewData =
+      MeasureReportPatientViewData(
+        logicalId = "member1",
+        name = "Willy Mark",
+        gender = "M",
+        age = "28",
+        family = "Orion"
+      )
+
+    measureReportViewModel.measureReportConfig.value = measureReportConfig
+    measureReportViewModel.reportTypeSelectorUiState.value =
+      ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
+
+    measureReportViewModel.onEvent(
+      MeasureReportEvent.GenerateReport(context = application, navController = navController)
+    )
+
+    verify { measureReportViewModel.evaluateMeasure(navController) }
   }
 
   @Test

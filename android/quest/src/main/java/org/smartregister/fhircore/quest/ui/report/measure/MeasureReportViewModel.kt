@@ -258,20 +258,16 @@ constructor(
   ) {
     val measureReport =
       withContext(dispatcherProvider.io()) {
-          kotlin.runCatching {
-            fhirOperator.evaluateMeasure(
-              measureUrl = measureUrl,
-              start = startDateFormatted,
-              end = endDateFormatted,
-              reportType = POPULATION,
-              subject = null,
-              practitioner = practitionerId?.asReference(ResourceType.Practitioner)?.reference,
-              lastReceivedOn = null // Non-null value not supported yet
-            )
-          }
-        }
-        .onFailure { Timber.e(it) }
-        .getOrThrow()
+        fhirOperator.evaluateMeasure(
+          measureUrl = measureUrl,
+          start = startDateFormatted,
+          end = endDateFormatted,
+          reportType = POPULATION,
+          subject = null,
+          practitioner = practitionerId?.asReference(ResourceType.Practitioner)?.reference,
+          lastReceivedOn = null // Non-null value not supported yet
+        )
+      }
 
     measureReportPopulationResults.value = formatPopulationMeasureReport(measureReport)
   }
