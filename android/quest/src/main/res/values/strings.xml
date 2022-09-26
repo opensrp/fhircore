@@ -102,5 +102,6 @@
     <string name="due_on">Due on %1$s</string>
     <string name="record_as_anc">Record as ANC</string>
 
+    <string name="search_progress_message">Search in progress. Please wait…</string>
 
 </resources>

@@ -37,7 +37,8 @@ import timber.log.Timber
 fun RegisterList(
   pagingItems: LazyPagingItems<RegisterViewData>,
   onRowClick: (String) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  progressMessage: String = ""
 ) {
   LazyColumn(modifier = modifier) {
     items(pagingItems, key = { it.logicalId }) {
@@ -47,11 +48,17 @@ fun RegisterList(
       when {
         loadState.refresh is LoadState.Loading ->
           item {
-            CircularProgressBar(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally))
+            CircularProgressBar(
+              modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally),
+              text = progressMessage
+            )
           }
         loadState.append is LoadState.Loading ->
           item {
-            CircularProgressBar(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally))
+            CircularProgressBar(
+              modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally),
+              text = progressMessage
+            )
           }
         loadState.refresh is LoadState.Error -> {
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error

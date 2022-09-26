@@ -210,7 +210,8 @@ fun PatientRegisterScreen(
           patientRegisterViewModel.onEvent(
             PatientRegisterEvent.OpenProfile(appFeatureName, healthModule, patientId, navController)
           )
-        }
+        },
+        progressMessage = patientRegisterViewModel.progressMessage()
       )
     }
   }
