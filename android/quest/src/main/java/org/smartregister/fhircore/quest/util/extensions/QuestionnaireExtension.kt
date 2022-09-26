@@ -20,40 +20,22 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.intentArgs
 
 inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
-  intentBundle: Bundle = Bundle.EMPTY,
+  intentBundle: Bundle = bundleOf(),
   questionnaireConfig: QuestionnaireConfig? = null,
-  computedValuesMap: Map<String, Any>?
-) {
-  this.startActivity(
-    Intent(this, Q::class.java)
-      .putExtras(intentBundle)
-      .putExtras(
-        intentArgs(questionnaireConfig = questionnaireConfig, computedValuesMap = computedValuesMap)
-      )
-  )
-}
-
-inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForResult(
-  backReference: String? = null,
-  intentBundle: Bundle = Bundle.EMPTY,
-  questionnaireConfig: QuestionnaireConfig,
   computedValuesMap: Map<String, Any>?
 ) {
   (this as Activity).startActivityForResult(
     Intent(this, Q::class.java)
-      .putExtras(intentBundle)
       .putExtras(
-        intentArgs(
-          backReference = backReference,
-          questionnaireConfig = questionnaireConfig,
-          computedValuesMap = computedValuesMap
-        )
-      ),
+        intentArgs(questionnaireConfig = questionnaireConfig, computedValuesMap = computedValuesMap)
+      )
+      .putExtras(intentBundle),
     0
   )
 }
