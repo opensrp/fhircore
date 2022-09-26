@@ -21,7 +21,6 @@ import androidx.core.util.Pair
 import androidx.navigation.NavController
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
-import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -41,7 +40,6 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
@@ -63,15 +61,15 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
 
-  @Inject lateinit var fhirEngine: FhirEngine
+  var fhirEngine: FhirEngine = mockk()
 
-  @Inject lateinit var fhirOperator: FhirOperator
+  var fhirOperator: FhirOperator = mockk()
 
   @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
 
-  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
-  @BindValue val measureReportRepository = mockk<MeasureReportRepository>()
+  val measureReportRepository = mockk<MeasureReportRepository>()
 
   private lateinit var measureReportViewModel: MeasureReportViewModel
 
@@ -111,7 +109,6 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix out of memory exception")
   fun testResetState() {
     measureReportViewModel.resetState()
     Assert.assertFalse(measureReportViewModel.reportTypeSelectorUiState.value.showProgressIndicator)
