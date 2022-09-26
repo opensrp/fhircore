@@ -99,6 +99,15 @@ class MeasureExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `displayText should return NA for stratum when value has no coding and no text`() {
+    measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.value = null
+
+    val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.displayText
+
+    assertEquals("N/A", result)
+  }
+
+  @Test
   fun `isMonthlyReport should return true when report has coding for monthly report`() {
     measureReport.groupFirstRep.code.addCoding(Coding("http://code.org", "MONTHLY_REPORT", ""))
 
