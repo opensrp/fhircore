@@ -57,7 +57,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 
 @HiltAndroidTest
-@Ignore("Fix out of memory exception")
 class MeasureReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -112,6 +111,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @Ignore("Fix out of memory exception")
   fun testResetState() {
     measureReportViewModel.resetState()
     Assert.assertFalse(measureReportViewModel.reportTypeSelectorUiState.value.showProgressIndicator)
