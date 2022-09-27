@@ -16,12 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure
 
+import android.content.Context
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.core.util.Pair
 import androidx.navigation.NavController
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
-import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -34,12 +35,16 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.test.assertEquals
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -52,22 +57,23 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
 
 @HiltAndroidTest
-@Ignore("Fix out of memory exception")
 class MeasureReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
 
-  @Inject lateinit var fhirEngine: FhirEngine
+  private val application: Context = ApplicationProvider.getApplicationContext()
 
-  @Inject lateinit var fhirOperator: FhirOperator
+  var fhirEngine: FhirEngine = mockk()
+
+  var fhirOperator: FhirOperator = mockk()
 
   @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
 
-  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
-  @BindValue val measureReportRepository = mockk<MeasureReportRepository>()
+  val measureReportRepository = mockk<MeasureReportRepository>()
 
   private lateinit var measureReportViewModel: MeasureReportViewModel
 
@@ -143,6 +149,37 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testOnEventOnSelectGenerateReport() {
+    val measureReportConfig =
+      MeasureReportConfig(
+        id = "measureId",
+        title = "Measure 1",
+        description = "Measure report for testing",
+        url = "http://nourl.com"
+      )
+    val dateRange =
+      Pair(dateTimestamp("2020-01-01T14:34:18.000Z"), dateTimestamp("2020-12-31T14:34:18.000Z"))
+    val samplePatientViewData =
+      MeasureReportPatientViewData(
+        logicalId = "member1",
+        name = "Willy Mark",
+        gender = "M",
+        age = "28",
+        family = "Orion"
+      )
+
+    measureReportViewModel.measureReportConfig.value = measureReportConfig
+    measureReportViewModel.reportTypeSelectorUiState.value =
+      ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
+
+    measureReportViewModel.onEvent(
+      MeasureReportEvent.GenerateReport(context = application, navController = navController)
+    )
+
+    verify { measureReportViewModel.evaluateMeasure(navController) }
+  }
+
+  @Test
   fun testOnEventOnDateRangeSelected() {
     val newDateRange =
       Pair(dateTimestamp("2020-01-01T14:34:18.000Z"), dateTimestamp("2020-12-31T14:34:18.000Z"))
@@ -206,4 +243,56 @@ class MeasureReportViewModelTest : RobolectricTest() {
     measureReportViewModel.onEvent(MeasureReportEvent.OnSearchTextChanged("Mandela"))
     Assert.assertNotNull(measureReportViewModel.patientsData.value)
   }
+
+  @Test
+  fun testFormatPopulationMeasureReport() {
+    val result = measureReportViewModel.formatPopulationMeasureReport(measureReport)
+
+    assertEquals(1, result.size)
+    assertEquals("3/4", result.first().count)
+    assertEquals("report group 1", result.first().title)
+
+    val disaggregation = result.first().dataList
+    assertEquals(1, result.first().dataList.size)
+    assertEquals("1/3", disaggregation.first().count)
+    assertEquals("Stratum #1", disaggregation.first().title)
+    assertEquals("33", disaggregation.first().percentage)
+  }
+
+  private val measureReport =
+    MeasureReport().apply {
+      addGroup().apply {
+        this.id = "report-group-1"
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+          )
+          this.count = 3
+        }
+
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+          )
+          this.count = 4
+        }
+
+        this.addStratifier().addStratum().apply {
+          this.value = CodeableConcept().apply { text = "Stratum #1" }
+          this.addPopulation().apply {
+            this.code.addCoding(
+              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+            )
+            this.count = 1
+          }
+
+          this.addPopulation().apply {
+            this.code.addCoding(
+              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+            )
+            this.count = 2
+          }
+        }
+      }
+    }
 }
