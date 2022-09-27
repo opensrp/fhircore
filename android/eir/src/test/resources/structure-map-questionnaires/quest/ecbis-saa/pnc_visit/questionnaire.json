@@ -1,0 +1,481 @@
+{
+	"resourceType": "Questionnaire",
+	"language": "en-GB",
+	"id": "8a1f9578-5b88-45ea-8120-8f8557e01d8c",
+	"title": "eCBIS PNC Mother & Child Routine Visit ",
+	"description": "eCBIS PNC Mother & Child Routine Visit ",
+	"version": "0.0.1",
+	"status": "active",
+	"publisher": "ONA",
+	"meta": {
+		"profile": [
+			"http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+		],
+		"tag": [
+			{
+				"system": "urn:ietf:bcp:47",
+				"code": "en-GB",
+				"display": "English"
+			}
+		]
+	},
+	"useContext": [
+		{
+			"code": {
+				"system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+				"code": "focus",
+				"display": "Clinical Focus"
+			},
+			"valueCodeableConcept": {
+				"coding": [
+					{
+						"system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+						"display": "eCBIS PNC Mother & Child Routine Visit "
+					}
+				]
+			}
+		}
+	],
+	"contact": [
+		{
+			"name": "https://www.smartregister.org/"
+		}
+	],
+	"extension": [
+		{
+			"url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+			"valueCanonical": "https://fhir.labs.smartregister.org/fhir/StructureMap/0bb55b96-3b23-11ed-a261-0242ac120002"
+		}
+	],
+	"date": "2022-07-28T00:00:00Z",
+	"item": [
+		{
+			"linkId": "81cdf2a0-41b1-4427-88b3-e484eb02952f",
+			"type": "integer",
+			"text": "Baby weight",
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/minValue",
+					"valueInteger": 1
+				},
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+					"valueInteger": 10
+				},
+				{
+					"url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+					"valueString": "Enter valid weight"
+				}
+			],
+			"required": false
+		},
+		{
+			"linkId": "79289fa1-8dbd-4c4a-ee90-954ab252c6ee",
+			"type": "choice",
+			"text": "Mother has danger signs?",
+			"required": true,
+			"answerOption": [
+				{
+					"valueCoding": {
+						"id": "f54c3e3c-31ec-48f4-8149-bdc680ad34f5",
+						"code": "yes",
+						"system": "urn:uuid:eced3c20-dd7e-40c6-807e-5dcaadffece4",
+						"display": "Yes"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "21436c3c-cff8-48c5-968e-20e83b21a6ae",
+						"code": "no",
+						"system": "urn:uuid:eced3c20-dd7e-40c6-807e-5dcaadffece4",
+						"display": "No"
+					}
+				}
+			],
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+					"valueCodeableConcept": {
+						"coding": [
+							{
+								"system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+								"code": "radio-button"
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"linkId": "42a31131-c9b6-495f-a4c2-18eeef7581a1",
+			"type": "choice",
+			"text": "Danger signs - mother",
+			"required": false,
+			"answerOption": [
+				{
+					"valueCoding": {
+						"id": "4be56026-fff5-4482-abca-5a24c896a856",
+						"code": "swelling-of-face-and-hands",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Swelling of face and hands"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "7faf93f8-5f51-492b-83d9-3eb8be8d08ea",
+						"code": "pain-under-belly/pain-in-belly",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Pain under belly/pain in belly"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "2a746a8d-5e76-438e-868e-8a2691797142",
+						"code": "severe-pain-in-her-belly",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Severe pain in her belly"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "78954670-d2c2-49ce-c89f-f67efb6d09a1",
+						"code": "pain/burning-while-urinating",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Pain/burning while urinating"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "9496d4a4-432f-4131-f2c7-149f0f2c343a",
+						"code": "fever/chills",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Fever/chills"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "4241482d-10e0-490b-f563-61fc38b73fed",
+						"code": "abnormal-(bad-smelling-and-plenty)-vaginal-discharge",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Abnormal (bad smelling and plenty) vaginal discharge"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "f87c87e1-ee27-474f-8ab7-13b5be911f77",
+						"code": "excess-tiredness-or-shortness-of-breathe",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Excess tiredness or shortness of breathe"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "9afc1a75-8225-471f-c454-343b733bcade",
+						"code": "high-blood-pressure",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "High blood pressure"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "9915443f-4448-433e-847b-905bea8f3c5b",
+						"code": "severe-headache-or-blurred-vision",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Severe headache or blurred vision"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "89c685f3-c534-4400-ddda-6a59baef31ce",
+						"code": "fits/convulsions/-jerking",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Fits/Convulsions/ Jerking"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "87672a47-1ce7-47ae-e2f3-7fd63cf34597",
+						"code": "excessive-vaginal-bleeding",
+						"system": "urn:uuid:b7e42b90-2e88-4a97-cfb9-33ac3b83c4a1",
+						"display": "Excessive vaginal bleeding"
+					}
+				}
+			],
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+					"valueCodeableConcept": {
+						"coding": [
+							{
+								"system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+								"code": "check-box"
+							}
+						]
+					}
+				}
+			],
+			"enableWhen": [
+				{
+					"question": "79289fa1-8dbd-4c4a-ee90-954ab252c6ee",
+					"operator": "=",
+					"answerCoding": {
+						"system": "urn:uuid:eced3c20-dd7e-40c6-807e-5dcaadffece4",
+						"code": "yes"
+					}
+				}
+			],
+			"enableBehavior": "any"
+		},
+		{
+			"linkId": "1f9610d6-23ae-47f3-8602-cc0b8c2b8f4a",
+			"type": "choice",
+			"text": "Baby has danger signs?",
+			"required": true,
+			"answerOption": [
+				{
+					"valueCoding": {
+						"id": "6ce33d1a-abab-4fcb-9bf1-c78b634cab43",
+						"code": "yes",
+						"system": "urn:uuid:6d2d6139-0078-495d-8a9c-4f3047c5239e",
+						"display": "Yes"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "6bff08bb-938d-42ab-d40a-41d750b8b6d0",
+						"code": "no",
+						"system": "urn:uuid:6d2d6139-0078-495d-8a9c-4f3047c5239e",
+						"display": "No"
+					}
+				}
+			],
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+					"valueCodeableConcept": {
+						"coding": [
+							{
+								"system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+								"code": "drop-down"
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"linkId": "070c8489-643d-4439-f823-0e4d7d8193c3",
+			"type": "choice",
+			"required": false,
+			"answerOption": [
+				{
+					"valueCoding": {
+						"id": "70634c52-7bc2-411d-8bf6-0fb0cdaf5649",
+						"code": "low-body-weight---less-than-2kg",
+						"system": "urn:uuid:73a1cca5-f5a4-4430-983a-a949d4253430",
+						"display": "Low body weight - less than 2kg"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "59f4407a-c829-40a7-85f3-d0945ca85ad3",
+						"code": "problems-sucking-or-feeding",
+						"system": "urn:uuid:73a1cca5-f5a4-4430-983a-a949d4253430",
+						"display": "Problems sucking or feeding"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "0031e53c-5477-4c90-eb76-75a83edc64f3",
+						"code": "fits/convulsions/-jerkin",
+						"system": "urn:uuid:73a1cca5-f5a4-4430-983a-a949d4253430",
+						"display": "Fits/Convulsions/ Jerkin"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "39aadbe1-47b8-411d-84fa-a35e2b193794",
+						"code": "decreased-movement-or-activity",
+						"system": "urn:uuid:73a1cca5-f5a4-4430-983a-a949d4253430",
+						"display": "Decreased movement or activity"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "e86440cf-f92e-4002-8179-8a0d673be8c6",
+						"code": "fever-or-hyporthermia",
+						"system": "urn:uuid:73a1cca5-f5a4-4430-983a-a949d4253430",
+						"display": "Fever or hyporthermia"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "af8f2a71-1092-4fcd-c592-2e36ce3f7eef",
+						"code": "fast-breathing",
+						"system": "urn:uuid:73a1cca5-f5a4-4430-983a-a949d4253430",
+						"display": "Fast breathing"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "f4a5d6f8-74d1-451e-83c7-56ded8281b99",
+						"code": "chest-indrawing-or-granting",
+						"system": "urn:uuid:73a1cca5-f5a4-4430-983a-a949d4253430",
+						"display": "Chest indrawing or granting"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "82712be8-913f-4eea-9ca4-4cb17c941761",
+						"code": "severe-jaundice",
+						"system": "urn:uuid:73a1cca5-f5a4-4430-983a-a949d4253430",
+						"display": "Severe jaundice"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "1736162e-39c1-4412-840d-9d2879186617",
+						"code": "severe-local-infection;-umbilical-cord,-eyes,-ears,-or-ay-other-part-of-the-body",
+						"system": "urn:uuid:73a1cca5-f5a4-4430-983a-a949d4253430",
+						"display": "Severe local infection; umbilical cord, eyes, ears, or ay other part of the body"
+					}
+				}
+			],
+			"text": "Danger signs - Baby",
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+					"valueCodeableConcept": {
+						"coding": [
+							{
+								"system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+								"code": "check-box"
+							}
+						]
+					}
+				}
+			],
+			"enableWhen": [
+				{
+					"question": "1f9610d6-23ae-47f3-8602-cc0b8c2b8f4a",
+					"operator": "=",
+					"answerCoding": {
+						"system": "urn:uuid:6d2d6139-0078-495d-8a9c-4f3047c5239e",
+						"code": "yes"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "9e495bd6-6f98-4031-e7bc-d27d2c78aec4",
+			"type": "choice",
+			"text": "Condoms given",
+			"required": true,
+			"answerOption": [
+				{
+					"valueCoding": {
+						"id": "879cd0ab-2c6b-4b0f-8df8-c6e94d7a92c9",
+						"code": "female",
+						"system": "urn:uuid:7a72da90-05e2-48f1-8029-ce2e7ae82357",
+						"display": "Female"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "ef196c28-87e3-4500-808a-82b28384f120",
+						"code": "male",
+						"system": "urn:uuid:7a72da90-05e2-48f1-8029-ce2e7ae82357",
+						"display": "Male"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "452e8159-2b00-457f-ca06-b2eaef5534c9",
+						"code": "none",
+						"system": "urn:uuid:7a72da90-05e2-48f1-8029-ce2e7ae82357",
+						"display": "None"
+					}
+				}
+			],
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+					"valueCodeableConcept": {
+						"coding": [
+							{
+								"system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+								"code": "radio-button"
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"linkId": "48d9fb70-93b2-40e0-c44f-0502dc9e879a",
+			"type": "integer",
+			"text": "Number of condoms given",
+			"required": true,
+			"enableWhen": [
+				{
+					"question": "9e495bd6-6f98-4031-e7bc-d27d2c78aec4",
+					"operator": "!=",
+					"answerCoding": {
+						"system": "urn:uuid:7a72da90-05e2-48f1-8029-ce2e7ae82357",
+						"code": "none"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "9135d01c-aa0c-4be4-8dd8-71613ccea304",
+			"type": "choice",
+			"text": "Refered to the hospital?",
+			"required": false,
+			"answerOption": [
+				{
+					"valueCoding": {
+						"id": "682b3f44-f374-4a4b-8ac6-8aa71f3cce93",
+						"code": "yes",
+						"system": "urn:uuid:00278dfd-26f3-4e40-fe26-c95d59f3e4f6",
+						"display": "Yes"
+					}
+				},
+				{
+					"valueCoding": {
+						"id": "a9b13841-1499-48f0-8d8f-07553455dd84",
+						"code": "no",
+						"system": "urn:uuid:00278dfd-26f3-4e40-fe26-c95d59f3e4f6",
+						"display": "No"
+					}
+				}
+			],
+			"extension": [
+				{
+					"url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+					"valueCodeableConcept": {
+						"coding": [
+							{
+								"system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+								"code": "radio-button"
+							}
+						]
+					}
+				}
+			],
+			"enableWhen": [
+				{
+					"question": "42a31131-c9b6-495f-a4c2-18eeef7581a1",
+					"operator": "exists",
+					"answerBoolean": true
+				},
+				{
+					"question": "070c8489-643d-4439-f823-0e4d7d8193c3",
+					"operator": "exists",
+					"answerBoolean": true
+				}
+			],
+			"enableBehavior": "any"
+		}
+	]
+}

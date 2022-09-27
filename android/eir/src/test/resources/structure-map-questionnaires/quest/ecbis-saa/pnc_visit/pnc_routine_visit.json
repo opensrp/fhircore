@@ -1,0 +1,535 @@
+{
+  "resourceType": "StructureMap",
+  "id": "0bb55b96-3b23-11ed-a261-0242ac120002",
+  "url": "https://fhir.labs.smartregister.org/fhir/StructureMap/0bb55b96-3b23-11ed-a261-0242ac120002",
+  "name": "PNC Routine Visit",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "PNCRoutineVisit",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_type",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_bundle_entries",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "variable": "refPatient",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.subject"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractObservation",
+              "variable": [
+                "src",
+                "bundle",
+                "refPatient"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractObservation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "refPatient",
+          "type": "Reference",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_condom_given_value_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "((linkId = '48d9fb70-93b2-40e0-c44f-0502dc9e879a') and answer.value.exists() and (answer.value.toInteger() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_id",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_status",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "final"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_category_1",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://snomed.info/sct"
+                        },
+                        {
+                          "valueString": "386452003"
+                        },
+                        {
+                          "valueString": "Supply management"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_category_2",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://hl7.org/fhir/inventoryreport-counttype"
+                        },
+                        {
+                          "valueString": "subtraction"
+                        },
+                        {
+                          "valueString": "Subtraction"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "code",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_c_text",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "code",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "consumption"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "ExtractReference",
+                      "variable": [
+                        "src",
+                        "ref"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_effective_current_date_time",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_performer",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "performer",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "$this.generalPractitioner.first()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "qty",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Quantity"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_qty",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "qty",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "qty",
+                          "contextType": "variable",
+                          "element": "unit",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Pieces"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "qty",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "qty",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "767525000"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractReference",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "ref",
+          "type": "Reference",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_male_condom_type_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = '9e495bd6-6f98-4031-e7bc-d27d2c78aec4') and (answer.value.code = 'male'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_male_condom_ref",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "ref",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Group/951da426-1506-4cab-b03e-5583bdf0ca76"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_female_condom_type_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = '9e495bd6-6f98-4031-e7bc-d27d2c78aec4') and (answer.value.code = 'female'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_female_condom_ref",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "ref",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Group/3af23539-850a-44ed-8fb1-d4999e2145ff"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
