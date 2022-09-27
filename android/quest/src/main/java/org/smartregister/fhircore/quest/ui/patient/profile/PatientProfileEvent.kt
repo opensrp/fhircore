@@ -23,7 +23,6 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 sealed class PatientProfileEvent {
@@ -67,10 +66,6 @@ sealed class PatientProfileEvent {
     }
   }
 
-  data class OpenChildProfile(
-    val appFeatureName: String?,
-    val healthModule: HealthModule,
-    val patientId: String,
-    val navController: NavHostController
-  ) : PatientProfileEvent()
+  data class OpenChildProfile(val patientId: String, val navController: NavHostController) :
+    PatientProfileEvent()
 }
