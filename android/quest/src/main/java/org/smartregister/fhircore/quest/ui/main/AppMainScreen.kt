@@ -29,7 +29,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -37,7 +36,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
@@ -148,18 +146,13 @@ private fun AppMainNavigationGraph(
                 }
               )
           ) { stackEntry ->
-            val appFeatureName = stackEntry.retrieveAppFeatureNameArg()
-            val healthModule = stackEntry.retrieveHealthModuleArg()
             val screenTitle: String =
               stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
                 ?: stringResource(R.string.all_clients)
             PatientRegisterScreen(
               navController = navController,
               openDrawer = openDrawer,
-              appFeatureName = appFeatureName,
-              healthModule = healthModule,
-              screenTitle = screenTitle,
-              refreshDataState = appMainViewModel.refreshDataState
+              screenTitle = screenTitle
             )
           }
         MainNavigationScreen.Tasks -> composable(MainNavigationScreen.Tasks.route) {}
@@ -172,56 +165,23 @@ private fun AppMainNavigationGraph(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument())
-          ) { stackEntry ->
-            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
-            val familyId = stackEntry.arguments?.getString(NavigationArg.FAMILY_ID)
-            PatientProfileScreen(
-              navController = navController,
-              appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
-              healthModule = stackEntry.retrieveHealthModuleArg(),
-              patientId = patientId,
-              familyId = familyId,
-              refreshDataState = appMainViewModel.refreshDataState
-            )
-          }
+          ) { PatientProfileScreen(navController = navController) }
         MainNavigationScreen.FamilyProfile ->
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument())
-          ) { stackEntry ->
-            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
-            FamilyProfileScreen(
-              familyId = patientId,
-              navController = navController,
-              refreshDataState = appMainViewModel.refreshDataState
-            )
-          }
+          ) { FamilyProfileScreen(navController = navController) }
         MainNavigationScreen.ViewChildContacts ->
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument())
-          ) { stackEntry ->
-            val patientId = stackEntry.arguments?.getString(NavigationArg.PATIENT_ID)
-            ChildContactsProfileScreen(
-              patientId = patientId,
-              navController = navController,
-              refreshDataState = appMainViewModel.refreshDataState,
-              appFeatureName = stackEntry.retrieveAppFeatureNameArg(),
-              healthModule = stackEntry.retrieveHealthModuleArg()
-            )
-          }
+          ) { ChildContactsProfileScreen(navController = navController) }
       }
     }
   }
 }
-
-private fun NavBackStackEntry.retrieveAppFeatureNameArg() =
-  this.arguments?.getString(NavigationArg.FEATURE)
-
-private fun NavBackStackEntry.retrieveHealthModuleArg(): HealthModule =
-  (this.arguments?.get(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT) as HealthModule
 
 private fun patientIdNavArgument() =
   listOf(

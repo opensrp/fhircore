@@ -62,7 +62,7 @@ constructor(
 
   val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
 
-  val refreshDataState: MutableState<Boolean> = mutableStateOf(false)
+  val refreshDataState: MutableState<Int> = mutableStateOf(0)
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
@@ -117,7 +117,7 @@ constructor(
           is State.Finished,
           is State.Failed -> {
             // Notify subscribers to refresh views after sync
-            refreshDataState.value = true
+            updateRefreshState()
             appMainUiState.value =
               appMainUiState.value.copy(
                 lastSyncTime = event.lastSyncTime ?: "",
@@ -130,6 +130,10 @@ constructor(
         }
       }
     }
+  }
+
+  fun updateRefreshState() {
+    refreshDataState.value += 1
   }
 
   private val resumeSync = {

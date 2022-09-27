@@ -18,27 +18,16 @@ package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.content.Context
 import androidx.navigation.NavHostController
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 
 sealed class PatientRegisterEvent {
-  data class SearchRegister(
-    val searchText: String = "",
-    val appFeatureName: String?,
-    val healthModule: HealthModule
-  ) : PatientRegisterEvent()
+  data class SearchRegister(val searchText: String = "") : PatientRegisterEvent()
 
-  data class MoveToNextPage(val appFeatureName: String?, val healthModule: HealthModule) :
-    PatientRegisterEvent()
+  object MoveToNextPage : PatientRegisterEvent()
 
-  data class MoveToPreviousPage(val appFeatureName: String?, val healthModule: HealthModule) :
-    PatientRegisterEvent()
+  object MoveToPreviousPage : PatientRegisterEvent()
 
   data class RegisterNewClient(val context: Context) : PatientRegisterEvent()
 
-  data class OpenProfile(
-    val appFeatureName: String?,
-    val healthModule: HealthModule,
-    val patientId: String,
-    val navController: NavHostController
-  ) : PatientRegisterEvent()
+  data class OpenProfile(val patientId: String, val navController: NavHostController) :
+    PatientRegisterEvent()
 }
