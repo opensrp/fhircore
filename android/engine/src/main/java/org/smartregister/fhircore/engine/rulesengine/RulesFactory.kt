@@ -22,6 +22,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.apache.commons.jexl3.JexlException
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
@@ -32,6 +33,7 @@ import org.jeasy.rules.jexl.JexlRule
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
@@ -149,9 +151,7 @@ constructor(
 
       return value.filter {
         resource.logicalId ==
-          fhirPathDataExtractor
-            .extractValue(it, fhirPathExpression)
-            .substringAfterLast(delimiter = '/', missingDelimiterValue = "")
+          fhirPathDataExtractor.extractValue(it, fhirPathExpression).extractLogicalIdUuid()
       }
     }
 
@@ -172,11 +172,72 @@ constructor(
     ): Resource? {
       val value = facts.getFact(parentResourceType).value as ArrayList<Resource>
       val parentResourceId =
-        fhirPathDataExtractor
-          .extractValue(childResource, fhirPathExpression)
-          .substringAfterLast(delimiter = '/', missingDelimiterValue = "")
+        fhirPathDataExtractor.extractValue(childResource, fhirPathExpression).extractLogicalIdUuid()
 
       return value.find { it.logicalId == parentResourceId }
+    }
+
+    /**
+     * This function returns a true or false value if any ( [matchAll]= false) or all ( [matchAll]=
+     * true) of the [resources] satisfy the [fhirPathExpression] provided
+     *
+     * [resources] List of resources the expressions are run against [fhirPathExpression] An
+     * expression to run against the provided resources [matchAll] When true the function checks
+     * whether all of the resources fulfill the expression provided
+     * ```
+     *            When false the function checks whether any of the resources fulfills the expression provided
+     * ```
+     */
+    fun evaluateToBoolean(
+      resources: List<Base>,
+      fhirPathExpression: String,
+      matchAll: Boolean = false
+    ): Boolean {
+      return if (matchAll) {
+        resources.all { base ->
+          fhirPathDataExtractor
+            .extractData(base, fhirPathExpression)
+            .first()
+            .primitiveValue()
+            .toBoolean()
+        }
+      } else {
+        resources.any { base ->
+          fhirPathDataExtractor
+            .extractData(base, fhirPathExpression)
+            .first()
+            .primitiveValue()
+            .toBoolean()
+        }
+      }
+    }
+
+    /**
+     * This function returns a String consisting of comma separated [label] values for every
+     * resource that satisfies the [fhirPathExpression] i.e if the label is CHILD and 2 of the
+     * resources satisfy the [fhirPathExpression] then the resoult would be "CHILD, CHILD"
+     *
+     * [resources] List of resources the expressions are run against [fhirPathExpression] An
+     * expression to run against the provided resources [label] String value to concatenate for
+     * every resource that satisifies the [fhirPathExpression]
+     */
+    fun mapResourcesToLabeledCSV(
+      resources: List<Base>,
+      fhirPathExpression: String,
+      label: String
+    ): String {
+      return resources
+        .mapNotNull {
+          if (fhirPathDataExtractor
+              .extractData(it, fhirPathExpression)
+              .first()
+              .primitiveValue()
+              .toBoolean()
+          ) {
+            label
+          } else null
+        }
+        .joinToString(",")
     }
   }
 
