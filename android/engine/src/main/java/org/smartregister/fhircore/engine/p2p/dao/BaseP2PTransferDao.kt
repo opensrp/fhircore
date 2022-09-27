@@ -22,8 +22,6 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
@@ -36,11 +34,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
-import org.smartregister.fhircore.engine.util.extension.updateFrom
-import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao
@@ -87,20 +82,6 @@ constructor(
         DataType(name = resource, DataType.Filetype.JSON, index)
       }
     )
-
-  suspend fun <R : Resource> addOrUpdate(resource: R) {
-    return withContext(dispatcherProvider.io()) {
-      resource.updateLastUpdated()
-      try {
-        fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          fhirEngine.update(updateFrom(resource))
-        }
-      } catch (resourceNotFoundException: ResourceNotFoundException) {
-        resource.generateMissingId()
-        fhirEngine.create(resource)
-      }
-    }
-  }
 
   suspend fun loadResources(
     lastRecordUpdatedAt: Long,

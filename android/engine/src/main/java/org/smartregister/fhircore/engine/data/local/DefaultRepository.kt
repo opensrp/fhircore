@@ -28,21 +28,24 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -57,7 +60,17 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 @Singleton
 open class DefaultRepository
 @Inject
-constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
+constructor(
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider,
+  open val sharedPreferencesHelper: SharedPreferencesHelper,
+  open val configurationRegistry: ConfigurationRegistry,
+  open val configService: ConfigService
+) {
+
+  val appConfig: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
@@ -106,19 +119,16 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       else -> listOf()
     }
 
-  suspend fun searchCompositionByIdentifier(identifier: String): Composition? =
-    fhirEngine
-      .search<Composition> {
-        filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
-      }
-      .firstOrNull()
-
-  suspend fun getBinary(id: String): Binary = fhirEngine.get(id)
-
-  suspend fun save(resource: Resource) {
+  suspend fun create(vararg resource: Resource): List<String> {
+    val mandatoryTags =
+      appConfig.getMandatoryTags(sharedPreferencesHelper, configService.provideSyncStrategy())
     return withContext(dispatcherProvider.io()) {
-      resource.generateMissingId()
-      fhirEngine.create(resource)
+      resource.onEach {
+        it.generateMissingId()
+        it.addTags(mandatoryTags)
+      }
+
+      fhirEngine.create(*resource)
     }
   }
 
@@ -134,8 +144,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        resource.generateMissingId()
-        fhirEngine.create(resource)
+        create(resource)
       }
     }
   }
@@ -176,7 +185,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         this.id = UUID.randomUUID().toString()
       }
 
-    fhirEngine.create(relatedPerson)
+    create(relatedPerson)
     val group =
       fhirEngine.get<Group>(groupId).apply {
         managingEntity = relatedPerson.asReference()

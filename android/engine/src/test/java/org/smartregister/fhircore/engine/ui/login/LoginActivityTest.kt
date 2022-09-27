@@ -88,11 +88,12 @@ class LoginActivityTest : ActivityRobolectricTest() {
     loginViewModel =
       spyk(
         LoginViewModel(
-          fhirEngine = mockk(),
           accountAuthenticator = accountAuthenticator,
           dispatcher = coroutineTestRule.testDispatcherProvider,
           sharedPreferences = sharedPreferencesHelper,
-          configurationRegistry = configurationRegistry
+          configurationRegistry = configurationRegistry,
+          defaultRepository = mockk(),
+          configService = mockk()
         )
       )
   }

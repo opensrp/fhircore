@@ -309,3 +309,7 @@ fun String.resourceClassType(): Class<out Resource> =
  * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  */
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
+
+fun Resource.addTags(tags: List<Coding>) {
+  tags.forEach { this.meta.addTag(it) }
+}

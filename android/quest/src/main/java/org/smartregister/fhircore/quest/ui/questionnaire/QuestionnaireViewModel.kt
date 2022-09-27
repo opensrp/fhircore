@@ -96,9 +96,7 @@ constructor(
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
   private val authenticatedOrganizationIds by lazy {
-    sharedPreferencesHelper.read<List<String>>(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-    )
+    sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
   }
 
   private val practitionerId: String? by lazy {
@@ -412,7 +410,7 @@ constructor(
   }
 
   fun saveResource(resource: Resource) {
-    viewModelScope.launch { defaultRepository.save(resource = resource) }
+    viewModelScope.launch { defaultRepository.create(resource) }
   }
 
   open suspend fun getPopulationResources(
