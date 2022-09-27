@@ -111,6 +111,7 @@ constructor(
 
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
+
   val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
@@ -147,6 +148,8 @@ constructor(
         .collect { _totalRecordsCount.postValue(it) }
     }
 
+    viewModelScope.launch { paginateRegisterDataForSearch() }
+
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
         override fun onSync(state: State) {
@@ -175,33 +178,16 @@ constructor(
     getPager(appFeatureName, healthModule, loadAll = false, page = page).flow
 
   fun filterRegisterDataFlow(text: String) =
-    getPager(appFeatureName, healthModule, true).flow.map { pagingData: PagingData<RegisterViewData>
-      ->
+    paginatedRegisterDataForSearch.value.map { pagingData: PagingData<RegisterViewData> ->
       pagingData.filter {
         it.title.contains(text, ignoreCase = true) ||
           it.identifier.contains(text, ignoreCase = true)
       }
     }
 
-  private fun filterRegisterData(event: PatientRegisterEvent.SearchRegister) {
-    paginatedRegisterData.value =
-      paginatedRegisterDataForSearch.value.map {
-        //         getPager(event.appFeatureName, event.healthModule, true).flow.map {
-        pagingData: PagingData<RegisterViewData> ->
-        pagingData.filter {
-          it.title.contains(event.searchText, ignoreCase = true) ||
-            it.identifier.contains(event.searchText, ignoreCase = true)
-        }
-      }
-  }
-
-  fun paginateRegisterDataForSearch(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    loadAll: Boolean = true
-  ) {
+  fun paginateRegisterDataForSearch() {
     paginatedRegisterDataForSearch.value =
-      getPager(appFeatureName, healthModule, loadAll).flow.cachedIn(viewModelScope)
+      getPager(appFeatureName, healthModule, true).flow.cachedIn(viewModelScope)
   }
 
   private fun getPager(
