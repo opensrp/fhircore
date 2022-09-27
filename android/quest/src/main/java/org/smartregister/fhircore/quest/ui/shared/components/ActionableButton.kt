@@ -107,7 +107,7 @@ fun ActionableButton(
       )
       Spacer(modifier = modifier.width(6.dp))
       Text(
-        text = buttonProperties.text.toString(),
+        text = buttonProperties.text?.interpolate(computedValuesMap).toString(),
         fontWeight = FontWeight.Medium,
         color =
           if (status == ServiceStatus.COMPLETED.name) DefaultColor.copy(0.9f)
