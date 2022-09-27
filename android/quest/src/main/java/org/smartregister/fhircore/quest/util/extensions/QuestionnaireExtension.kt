@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.intentArgs
 
@@ -30,7 +30,8 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   questionnaireConfig: QuestionnaireConfig? = null,
   computedValuesMap: Map<String, Any>?
 ) {
-  (this as Activity).startActivityForResult(
+  // TODO Refactor: startActivityForResult is deprecated
+  (this.getActivity())?.startActivityForResult(
     Intent(this, Q::class.java)
       .putExtras(
         intentArgs(questionnaireConfig = questionnaireConfig, computedValuesMap = computedValuesMap)

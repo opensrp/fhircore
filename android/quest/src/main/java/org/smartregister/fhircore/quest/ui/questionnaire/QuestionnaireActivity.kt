@@ -92,11 +92,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     setContentView(R.layout.activity_questionnaire)
 
     computedValuesMap =
-      intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY) as Map<String, Any>?
+      intent.getSerializableExtra(QUESTIONNAIRE_COMPUTED_VALUES_MAP) as Map<String, Any>?
         ?: emptyMap()
 
     questionnaireConfig =
-      (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig).interpolate(
+      (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig).interpolate(
         computedValuesMap
       )
 
@@ -187,7 +187,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
-    questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
+    questionnaire.find(QUESTIONNAIRE_ARG_BARCODE)?.apply {
       initial =
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
       readOnly = true
@@ -401,11 +401,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val QUESTIONNAIRE_TASK_ID = "questionnaire-task-id"
-    const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
+    const val QUESTIONNAIRE_ARG_BARCODE = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
-    const val QUESTIONNAIRE_CONFIG_KEY = "questionnaire-config"
-    const val QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY = "computed-values-map"
+    const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
+    const val QUESTIONNAIRE_COMPUTED_VALUES_MAP = "computed-values-map"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =
@@ -418,8 +418,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       computedValuesMap: Map<String, Any>?
     ) =
       bundleOf(
-        Pair(QUESTIONNAIRE_CONFIG_KEY, questionnaireConfig),
-        Pair(QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY, computedValuesMap)
+        Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
+        Pair(QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap)
       )
         .apply {
           questionnaireResponse?.let {
