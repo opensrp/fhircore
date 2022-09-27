@@ -16,8 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,14 +49,8 @@ fun RegisterList(
     }
     pagingItems.apply {
       when {
-        loadState.refresh is LoadState.Loading ->
-          item {
-            CircularProgressBar(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally))
-          }
-        loadState.append is LoadState.Loading ->
-          item {
-            CircularProgressBar(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally))
-          }
+        loadState.refresh is LoadState.Loading -> item { BoxedCircularProgressBar() }
+        loadState.append is LoadState.Loading -> item { BoxedCircularProgressBar() }
         loadState.refresh is LoadState.Error -> {
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error
           item {
@@ -71,6 +69,14 @@ fun RegisterList(
       }
     }
   }
+}
+
+@Composable
+fun BoxedCircularProgressBar() {
+  Box(
+    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+    contentAlignment = Alignment.Center,
+  ) { CircularProgressBar(modifier = Modifier.wrapContentWidth(Alignment.CenterHorizontally)) }
 }
 
 @Composable

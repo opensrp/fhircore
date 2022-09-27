@@ -19,11 +19,14 @@ package org.smartregister.fhircore.quest.ui.patient.profile
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.os.bundleOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +42,8 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -64,12 +69,20 @@ import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 class PatientProfileViewModel
 @Inject
 constructor(
+  savedStateHandle: SavedStateHandle,
+  syncBroadcaster: SyncBroadcaster,
   val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val profileViewDataMapper: ProfileViewDataMapper,
   val registerViewDataMapper: RegisterViewDataMapper
 ) : ViewModel() {
+
+  val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
+  val healthModule =
+    savedStateHandle.get<HealthModule>(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT
+  val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
+  val familyId = savedStateHandle.get<String>(NavigationArg.FAMILY_ID)
 
   var patientProfileUiState: MutableState<PatientProfileUiState> =
     mutableStateOf(
@@ -86,11 +99,25 @@ constructor(
   val applicationConfiguration: ApplicationConfiguration
     get() = configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
 
-  fun fetchPatientProfileData(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    patientId: String
-  ) {
+  init {
+    syncBroadcaster.registerSyncListener(
+      object : OnSyncListener {
+        override fun onSync(state: State) {
+          when (state) {
+            is State.Finished, is State.Failed -> {
+              fetchPatientProfileDataWithChildren()
+            }
+            else -> {}
+          }
+        }
+      },
+      viewModelScope
+    )
+
+    fetchPatientProfileDataWithChildren()
+  }
+
+  fun fetchPatientProfileData() {
     if (patientId.isNotEmpty()) {
       viewModelScope.launch {
         patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
@@ -288,10 +315,10 @@ constructor(
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-            Pair(NavigationArg.HEALTH_MODULE, event.healthModule.name),
+            Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
             Pair(NavigationArg.PATIENT_ID, event.patientId)
           )
-        if (event.healthModule == HealthModule.FAMILY)
+        if (healthModule == HealthModule.FAMILY)
           event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
         else
           event.navController.navigate(
@@ -300,11 +327,7 @@ constructor(
       }
     }
 
-  fun fetchPatientProfileDataWithChildren(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    patientId: String
-  ) {
+  fun fetchPatientProfileDataWithChildren() {
     if (patientId.isNotEmpty()) {
       viewModelScope.launch {
         patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
@@ -313,7 +336,7 @@ constructor(
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
                 ProfileViewData.PatientProfileViewData
-            paginateChildrenRegisterData(appFeatureName, healthModule, true)
+            paginateChildrenRegisterData(true)
           }
       }
     }
@@ -322,12 +345,9 @@ constructor(
   val paginatedChildrenRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
-  fun paginateChildrenRegisterData(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    loadAll: Boolean = true
-  ) {
-    paginatedChildrenRegisterData.value = getPager(appFeatureName, healthModule, loadAll).flow
+  fun paginateChildrenRegisterData(loadAll: Boolean = true) {
+    paginatedChildrenRegisterData.value =
+      getPager(appFeatureName, healthModule, loadAll).flow.cachedIn(viewModelScope)
   }
 
   private fun getPager(

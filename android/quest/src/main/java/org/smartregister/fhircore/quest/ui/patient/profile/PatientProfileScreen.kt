@@ -39,9 +39,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,7 +58,6 @@ import androidx.navigation.NavHostController
 import java.util.Locale
 import org.hl7.fhir.r4.model.CarePlan
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
@@ -73,33 +69,15 @@ import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSecti
 
 @Composable
 fun PatientProfileScreen(
-  appFeatureName: String?,
-  healthModule: HealthModule,
-  patientId: String?,
-  familyId: String?,
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  patientProfileViewModel: PatientProfileViewModel = hiltViewModel(),
-  refreshDataState: MutableState<Boolean>
+  patientProfileViewModel: PatientProfileViewModel = hiltViewModel()
 ) {
 
   val context = LocalContext.current
   val profileViewData = patientProfileViewModel.patientProfileViewData.value
   var showOverflowMenu by remember { mutableStateOf(false) }
   val viewState = patientProfileViewModel.patientProfileUiState.value
-  val refreshDataStateValue by remember { refreshDataState }
-
-  LaunchedEffect(Unit) {
-    patientProfileViewModel.fetchPatientProfileData(appFeatureName, healthModule, patientId ?: "")
-  }
-
-  SideEffect {
-    // Refresh family profile data on resume
-    if (refreshDataStateValue) {
-      patientProfileViewModel.fetchPatientProfileData(appFeatureName, healthModule, patientId ?: "")
-      refreshDataState.value = false
-    }
-  }
 
   Scaffold(
     topBar = {
@@ -132,7 +110,7 @@ fun PatientProfileScreen(
                       context,
                       it.id,
                       profileViewData.logicalId,
-                      familyId,
+                      patientProfileViewModel.familyId,
                       carePlans = profileViewData.carePlans,
                       patientConditions = profileViewData.conditions,
                       guardians = profileViewData.guardians
