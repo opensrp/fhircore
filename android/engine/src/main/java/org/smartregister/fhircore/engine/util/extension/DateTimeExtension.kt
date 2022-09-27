@@ -30,6 +30,8 @@ import org.ocpsoft.prettytime.PrettyTime
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
 val SDF_DD_MMM = SimpleDateFormat("dd MMM")
 val SDF_YYYY_MM_DD = SimpleDateFormat("yyyy-MM-dd")
+val SDF_MMM_YYYY = SimpleDateFormat("MMM-yyyy")
+val SDF_YYYY = SimpleDateFormat("yyyy")
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
@@ -38,6 +40,16 @@ fun OffsetDateTime.asString(): String {
 fun Date?.asDdMmm(): String {
   if (this == null) return ""
   return SDF_DD_MMM.format(this)
+}
+
+fun Date?.asMmmYyyy(): String {
+  if (this == null) return ""
+  return SDF_MMM_YYYY.format(this)
+}
+
+fun Date?.asYyyy(): String {
+  if (this == null) return ""
+  return SDF_YYYY.format(this)
 }
 
 fun Date.asDdMmmYyyy(): String {
