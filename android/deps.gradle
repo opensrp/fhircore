@@ -5,7 +5,7 @@
 def sdk_versions = [:]
 sdk_versions.compile_sdk = 33
 sdk_versions.min_sdk = 21
-sdk_versions.target_sdk = 31
+sdk_versions.target_sdk = 33
 ext.sdk_versions = sdk_versions
 
 def build_tool_version = '30.0.3'
@@ -38,7 +38,7 @@ versions.material = '1.5.0'
 versions.okhttp_logging_interceptor = '4.0.0'
 versions.recyclerview = '1.1.0'
 versions.retrofit = '2.7.2'
-versions.robolectric = '4.7.3'
+versions.robolectric = '4.9-alpha-1'
 versions.room = '2.4.2'
 versions.spotless = '5.11.0'
 versions.truth = '1.0.1'
@@ -52,6 +52,7 @@ versions.timber = '4.7.1'
 versions.mockk = '1.12.3'
 versions.dokka = '1.5.0'
 versions.androidx_test = '2.1.0'
+versions.accompanist_swiperefresh = '0.26.4-beta'
 ext.versions = versions
 
 def deps = [:]
@@ -131,9 +132,12 @@ deps.json_tools = json_tools
 deps.guava = "joda-time:joda-time:$versions.joda_time"
 deps.timber = "com.jakewharton.timber:timber:$versions.timber"
 deps.mockk = "io.mockk:mockk:$versions.mockk"
-ext.deps = deps
 def androidx = [:]
 androidx.core_test = "androidx.arch.core:core-testing:$versions.androidx_test"
 deps.androidx = androidx
+def accompanist = [:]
+accompanist.swiperefresh = "com.google.accompanist:accompanist-swiperefresh:$versions.accompanist_swiperefresh"
+deps.accompanist = accompanist
 
+ext.deps = deps
 ext.hiltVersion = "2.41"

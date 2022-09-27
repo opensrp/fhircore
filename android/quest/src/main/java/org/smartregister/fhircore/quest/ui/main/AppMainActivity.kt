@@ -63,10 +63,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   override fun onResume() {
     super.onResume()
-    appMainViewModel.run {
-      refreshDataState.value = true
-      retrieveAppMainUiState()
-    }
+    //    appMainViewModel.updateRefreshState()
+    appMainViewModel.retrieveAppMainUiState()
   }
 
   override fun onSync(state: State) {

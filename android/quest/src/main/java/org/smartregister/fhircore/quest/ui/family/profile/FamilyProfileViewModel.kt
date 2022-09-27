@@ -18,8 +18,10 @@ package org.smartregister.fhircore.quest.ui.family.profile
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -28,6 +30,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -50,11 +54,15 @@ import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 class FamilyProfileViewModel
 @Inject
 constructor(
+  savedStateHandle: SavedStateHandle,
+  syncBroadcaster: SyncBroadcaster,
   val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper,
   val dispatcherProvider: DefaultDispatcherProvider
 ) : ViewModel() {
+
+  val familyId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID)
 
   val familyProfileUiState: MutableState<FamilyProfileUiState> =
     mutableStateOf(
@@ -66,6 +74,24 @@ constructor(
 
   val familyMemberProfileData: MutableState<ProfileViewData.FamilyProfileViewData> =
     mutableStateOf(ProfileViewData.FamilyProfileViewData())
+
+  init {
+    syncBroadcaster.registerSyncListener(
+      object : OnSyncListener {
+        override fun onSync(state: State) {
+          when (state) {
+            is State.Finished, is State.Failed -> {
+              fetchFamilyProfileData()
+            }
+            else -> {}
+          }
+        }
+      },
+      viewModelScope
+    )
+
+    fetchFamilyProfileData()
+  }
 
   fun onEvent(event: FamilyProfileEvent) {
     when (event) {
@@ -115,7 +141,7 @@ constructor(
     }
   }
 
-  fun fetchFamilyProfileData(familyId: String?) {
+  fun fetchFamilyProfileData() {
     viewModelScope.launch(dispatcherProvider.io()) {
       if (!familyId.isNullOrEmpty()) {
         patientRegisterRepository.loadPatientProfileData(
