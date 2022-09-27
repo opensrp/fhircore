@@ -137,7 +137,7 @@ constructor(
       value = practitionerDetails.fhirPractitionerDetails.practitionerId.valueToString()
     )
 
-    sharedPreferences.write(SharedPreferenceKey.USER_DETAILS.name, practitionerDetails.userDetail)
+    sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
     sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
     sharedPreferences.write(ResourceType.Organization.name, organizationIds)
     sharedPreferences.write(ResourceType.Location.name, locationIds)

@@ -333,10 +333,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<KeycloakUserDetails>(
-          key = SharedPreferenceKey.USER_DETAILS.name,
+      sharedPreferences.read<PractitionerDetails>(
+          key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
           decodeWithGson = true
         )
+        ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value
@@ -421,10 +422,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       "John",
-      sharedPreferences.read<KeycloakUserDetails>(
-          key = SharedPreferenceKey.USER_DETAILS.name,
+      sharedPreferences.read<PractitionerDetails>(
+          key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
           decodeWithGson = true
         )
+        ?.userDetail
         ?.userBioData
         ?.givenName
         ?.value
