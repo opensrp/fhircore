@@ -66,6 +66,7 @@ import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
@@ -132,8 +133,17 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any(), any()) } returns
       QuestionnaireResponse()
 
-    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    val questionnaireFragment = spyk<QuestQuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    questionnaireFragment.apply {
+      arguments =
+        bundleOf(
+          Pair(
+            QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING,
+            buildQuestionnaireWithConstraints().encodeResourceToString()
+          )
+        )
+    }
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()

@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">Quest</string>
     <string name="back_to_clients">Rudi kwa orodha ya wateja</string>
     <string name="test_results">Matokeo ya Vipimo</string>
 
@@ -61,5 +60,14 @@
     <string name="select_date">Chagua tarehe</string>
     <string name="select_patient">CHAGUA MGONJWA</string>
     <string name="start_date">Tarehe ya kuanza</string>
-
+    <string name="registers">Rejesta</string>
+    <string name="pregnancy_outcome">Matokeo ya Mimba</string>
+    <string name="visit_due_on">%1$s inadaiwa tarehe %2$s</string>
+    <string name="visit_due_today">%1$s inadaiwa leo</string>
+    <string name="visit_overdue">Muda wa %1$s umechelewa %2$s zilizopita</string>
+    <string name="record_sick_child">Sajili mtoto mgonjwa</string>
+    <string name="hiv_clients">Orodha ya Wateja</string>
+    <string name="phone_tracing_clients">Ufuatiliaji na Simu</string>
+    <string name="home_tracing_clients">Ufuatiliaji wa Nyumbani</string>
+    <string name="appointment_clients">Miadi</string>
 </resources>

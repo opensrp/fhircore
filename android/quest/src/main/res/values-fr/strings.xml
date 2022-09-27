@@ -60,5 +60,15 @@
     <string name="select_date">Sélectionnez des dates</string>
     <string name="select_patient">SÉLECTIONNER PATIENT</string>
     <string name="start_date">Date de début</string>
+    <string name="visit_due_on">%1$s dû le %2$s</string>
+    <string name="visit_due_today">%1$s dû aujourd\'hui</string>
+    <string name="visit_overdue">%1$s en retard il y a %2$s</string>
+    <string name="pregnancy_outcome">Résultat de la grossesse</string>
+    <string name="registers">Registres</string>
+    <string name="record_sick_child">Inscrire un enfant malade</string>
+    <string name="hiv_clients">Liste de clients</string>
+    <string name="phone_tracing_clients">Recherche de téléphone</string>
+    <string name="home_tracing_clients">Recherche de domicile</string>
+    <string name="appointment_clients">Rendez-vous</string>
 
 </resources>

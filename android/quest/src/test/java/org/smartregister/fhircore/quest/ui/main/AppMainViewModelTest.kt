@@ -155,7 +155,6 @@ class AppMainViewModelTest : RobolectricTest() {
     every { stateFinished.result } returns success
 
     appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateFinished, "Some timestamp"))
-    Assert.assertTrue(appMainViewModel.refreshDataState.value)
     Assert.assertEquals(
       appMainViewModel.formatLastSyncTimestamp(timestamp),
       sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)

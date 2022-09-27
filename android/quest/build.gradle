@@ -185,7 +185,7 @@ android {
 // Test Logging
 tasks.withType(Test) {
     testLogging {
-        events  "failed"
+        events "failed"
     }
 }
 
@@ -203,6 +203,7 @@ dependencies {
     implementation deps.lifecycle.viewmodel
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
     implementation 'org.smartregister:fhir-common-utils:0.0.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.measure:1.4.2'
     implementation 'com.github.bumptech.glide:glide:4.13.0'
 
     //Hilt - Dependency Injection
@@ -236,7 +237,7 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-    testImplementation ("androidx.navigation:navigation-testing:$navigationVersion")
+    testImplementation("androidx.navigation:navigation-testing:$navigationVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
     androidTestUtil 'androidx.test:orchestrator:1.4.2-alpha04'
 
