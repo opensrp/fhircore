@@ -127,7 +127,10 @@ fun ServiceCard(
       // Service card visibility can be determined dynamically e.g. only display when task is due
       if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
         if (serviceCardProperties.serviceButton != null &&
-            serviceCardProperties.serviceButton!!.visible == true
+            serviceCardProperties.serviceButton!!
+              .visible
+              ?.interpolate(resourceData.computedValuesMap)
+              .toBoolean()
         ) {
           if (serviceCardProperties.serviceButton!!.smallSized) {
             ActionableButton(
@@ -270,7 +273,7 @@ private fun ServiceCardServiceOverduePreview() {
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.OVERDUE.name,
                   text = "1",
                   smallSized = false
@@ -324,7 +327,7 @@ private fun ServiceCardServiceDuePreview() {
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.DUE.name,
                   text = "Issue Bed net",
                   smallSized = false
@@ -378,7 +381,7 @@ private fun ServiceCardServiceUpcomingPreview() {
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.UPCOMING.name,
                   text = "Next visit 09-10-2022",
                   smallSized = false
@@ -431,7 +434,7 @@ private fun ServiceCardServiceCompletedPreview() {
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.COMPLETED.name,
                   text = "Fully Vaccinated",
                   smallSized = false
@@ -479,7 +482,7 @@ private fun ServiceCardANCServiceDuePreview() {
               showVerticalDivider = false,
               serviceButton =
                 ButtonProperties(
-                  visible = true,
+                  visible = "true",
                   status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
                   smallSized = true
@@ -528,13 +531,13 @@ private fun ServiceCardANCServiceOverduePreview() {
               services =
                 listOf(
                   ButtonProperties(
-                    visible = true,
+                    visible = "true",
                     status = ServiceStatus.COMPLETED.name,
                     text = "Pregnancy Outcome 1",
                     smallSized = true
                   ),
                   ButtonProperties(
-                    visible = true,
+                    visible = "true",
                     status = ServiceStatus.OVERDUE.name,
                     text = "ANC Visit 2",
                     smallSized = true
