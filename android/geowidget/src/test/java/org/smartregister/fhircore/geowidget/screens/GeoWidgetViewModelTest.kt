@@ -28,6 +28,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
@@ -40,6 +41,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -55,6 +57,8 @@ class GeoWidgetViewModelTest {
   @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
+
+  @Inject lateinit var configService: ConfigService
 
   private lateinit var configurationRegistry: ConfigurationRegistry
 
@@ -79,7 +83,8 @@ class GeoWidgetViewModelTest {
           fhirEngine,
           coroutinesTestRule.testDispatcherProvider,
           sharedPreferencesHelper,
-          configurationRegistry
+          configurationRegistry,
+          configService
         )
       )
     geoWidgetViewModel =
