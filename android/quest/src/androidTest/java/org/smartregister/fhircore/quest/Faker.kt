@@ -39,10 +39,11 @@ object Faker {
     val configurationRegistry =
       spyk(
         ConfigurationRegistry(
+          fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = mockk(),
           dispatcherProvider = mockk(),
-          repository = mockk()
+          configService = mockk()
         )
       )
 
