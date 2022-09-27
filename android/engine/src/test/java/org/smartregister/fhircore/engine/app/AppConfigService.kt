@@ -19,8 +19,10 @@ package org.smartregister.fhircore.engine.app
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 
 class AppConfigService @Inject constructor(@ApplicationContext val context: Context) :
   ConfigService {
@@ -32,4 +34,28 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       clientSecret = "siri-fake",
       accountType = context.packageName
     )
+
+  override fun provideSyncStrategy() =
+    SyncStrategy().apply {
+      careTeamTag.tag =
+        Coding().apply {
+          system = "http://fake.tag.com/CareTeam#system"
+          display = "Practitioner CareTeam"
+        }
+      locationTag.tag =
+        Coding().apply {
+          system = "http://fake.tag.com/Location#system"
+          display = "Practitioner Location"
+        }
+      organizationTag.tag =
+        Coding().apply {
+          system = "http://fake.tag.com/Organization#system"
+          display = "Practitioner Organization"
+        }
+      practitionerTag.tag =
+        Coding().apply {
+          system = "http://fake.tag.com/Practitioner#system"
+          display = "Practitioner"
+        }
+    }
 }

@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -53,7 +54,8 @@ class FhirCarePlanGenerator
 constructor(
   val fhirEngine: FhirEngine,
   val fhirPathEngine: FHIRPathEngine,
-  val transformSupportServices: TransformSupportServices
+  val transformSupportServices: TransformSupportServices,
+  val defaultRepository: DefaultRepository
 ) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
@@ -176,9 +178,9 @@ constructor(
       carePlan.contained.clear()
 
       // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
-      if (output.hasActivity()) fhirEngine.create(carePlan)
+      if (output.hasActivity()) defaultRepository.create(carePlan)
 
-      dependents.forEach { fhirEngine.create(it) }
+      dependents.forEach { defaultRepository.create(it) }
 
       if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED)
         carePlan
@@ -200,7 +202,7 @@ constructor(
   }
 
   suspend fun completeTask(id: String) {
-    fhirEngine.create(
+    defaultRepository.create(
       getTask(id).apply {
         this.status = Task.TaskStatus.COMPLETED
         this.lastModified = Date()
@@ -209,7 +211,7 @@ constructor(
   }
 
   suspend fun cancelTask(id: String, reason: String) {
-    fhirEngine.create(
+    defaultRepository.create(
       getTask(id).apply {
         this.status = Task.TaskStatus.CANCELLED
         this.lastModified = Date()
