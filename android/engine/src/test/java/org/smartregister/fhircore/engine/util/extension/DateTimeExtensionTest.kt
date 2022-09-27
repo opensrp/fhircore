@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import java.util.Calendar
 import java.util.Date
+import org.apache.commons.lang3.time.DateUtils
 import org.hl7.fhir.r4.model.DateType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -51,6 +52,15 @@ class DateTimeExtensionTest : RobolectricTest() {
     val formatted = date.plusMonthsAsString(3)
 
     assertTrue("2013-01-12".contentEquals(formatted))
+  }
+
+  @Test
+  fun testDateAsMmmYyyyShouldReturnFormattedDate() {
+    val date = DateUtils.parseDate("2022-02-02", "yyyy-MM-dd")
+
+    val result = date.asMmmYyyy()
+
+    assertEquals("Feb-2022", result)
   }
 
   @Test
