@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.report.measure.components
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,6 +48,7 @@ import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.util.Calendar
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.R
 
 const val DATE_RANGE_TITLE_TEST_TAG = "dateRangeTitleTestTag"
@@ -128,7 +128,8 @@ fun showDateRangePicker(
       addOnPositiveButtonClickListener { selectedDateRange ->
         onDateRangeSelected(selectedDateRange)
       }
-      show((context as AppCompatActivity).supportFragmentManager, "DATE_PICKER_DIALOG_TAG")
+      val fragmentManager = context.getActivity()!!.supportFragmentManager
+      show(fragmentManager, "DATE_PICKER_DIALOG_TAG")
     }
 }
 
