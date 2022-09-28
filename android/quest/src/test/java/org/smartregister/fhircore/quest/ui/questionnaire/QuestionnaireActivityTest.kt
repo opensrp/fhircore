@@ -123,8 +123,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       Intent()
         .putExtras(
           bundleOf(
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY, questionnaireConfig),
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY, computedValuesMap)
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, questionnaireConfig),
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap)
           )
         )
 
@@ -185,7 +185,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       )
 
     val actualQuestionnaireConfig =
-      result.getSerializable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY) as QuestionnaireConfig
+      result.getSerializable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as QuestionnaireConfig
     Assert.assertEquals("my-form", actualQuestionnaireConfig.id)
     Assert.assertEquals("1234", actualQuestionnaireConfig.resourceIdentifier)
     Assert.assertEquals(QuestionnaireType.READ_ONLY.name, actualQuestionnaireConfig.type.name)
@@ -216,8 +216,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       Intent()
         .putExtras(
           bundleOf(
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY, expectedQuestionnaireConfig),
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY, computedValuesMap)
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig),
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap)
           )
         )
 
@@ -247,8 +247,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       Intent()
         .putExtras(
           bundleOf(
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY, expectedQuestionnaireConfig),
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_COMPUTED_VALUES_MAP_KEY, computedValuesMap)
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig),
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_COMPUTED_VALUES_MAP, computedValuesMap)
           )
         )
 
