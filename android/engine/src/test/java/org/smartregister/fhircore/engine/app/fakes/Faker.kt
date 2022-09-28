@@ -30,7 +30,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.toSha1
@@ -47,10 +46,7 @@ object Faker {
       refreshToken = "USrAgmSf5MJ8N_RLQODa7rZ3zNs1Sj1GkSIsTsb4n-Y"
     )
 
-  fun buildTestConfigurationRegistry(
-    defaultRepository: DefaultRepository = mockk()
-  ): ConfigurationRegistry {
-
+  fun buildTestConfigurationRegistry(): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
@@ -58,10 +54,11 @@ object Faker {
     val configurationRegistry =
       spyk(
         ConfigurationRegistry(
+          fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = mockk(),
           dispatcherProvider = mockk(),
-          repository = defaultRepository
+          configService = mockk()
         )
       )
 

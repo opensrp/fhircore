@@ -16,17 +16,23 @@
 
 package org.smartregister.fhircore.engine.cql
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
+import com.google.gson.Gson
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.Base64
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -39,13 +45,27 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
-class LibraryEvaluatorTest {
+@HiltAndroidTest
+class LibraryEvaluatorTest : RobolectricTest() {
+
+  @get:Rule val hiltRule = HiltAndroidRule(this)
+
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+  @Inject lateinit var gson: Gson
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+  @Inject lateinit var configService: ConfigService
+
   var evaluator: LibraryEvaluator? = null
   var libraryData = ""
   var helperData = ""
@@ -58,6 +78,7 @@ class LibraryEvaluatorTest {
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     try {
       libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
       helperData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")
@@ -158,7 +179,15 @@ class LibraryEvaluatorTest {
         Patient
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = DefaultRepository(fhirEngine, DefaultDispatcherProvider())
+    val sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+    val defaultRepository =
+      DefaultRepository(
+        fhirEngine,
+        DefaultDispatcherProvider(),
+        sharedPreferencesHelper,
+        configurationRegistry,
+        configService
+      )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
