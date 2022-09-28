@@ -297,10 +297,10 @@ constructor(
         val stratifierItems: List<List<MeasureReportIndividualResult>> =
           if (reportGroup.isMonthlyReport())
             measureReport.reportingPeriodMonthsSpan.map {
-              val stats = reportGroup.findStratumForMonth(it.first, it.second)
+              val stats = reportGroup.findStratumForMonth(it)
               listOf(
                 MeasureReportIndividualResult(
-                  title = "${it.first}-${it.second}",
+                  title = it,
                   percentage = stats?.findPercentage(denominator)?.toString() ?: "0",
                   count = stats?.findRatio(denominator) ?: "0/$denominator"
                 )
