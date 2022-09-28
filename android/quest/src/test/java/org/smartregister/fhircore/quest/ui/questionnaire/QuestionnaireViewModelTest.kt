@@ -601,7 +601,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         type = QuestionnaireType.READ_ONLY,
         resourceIdentifier = "2"
       )
-    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY, expectedQuestionnaireConfig)
+    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig)
 
     runBlocking {
       val resourceList = questionnaireViewModel.getPopulationResources(intent, questionnaireConfig)

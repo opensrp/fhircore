@@ -121,7 +121,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     super.onActivityResult(requestCode, resultCode, data)
 
     if (resultCode == Activity.RESULT_OK)
-      data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
+      data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_TASK_ID)?.let {
         lifecycleScope.launch(dispatcherProvider.io()) {
           when {
             it.startsWith(ResourceType.Task.name) ->
