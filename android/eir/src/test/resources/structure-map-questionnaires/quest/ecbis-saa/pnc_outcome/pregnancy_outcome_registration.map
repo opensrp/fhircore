@@ -1,0 +1,102 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/42d6d826-d6b2-41e9-9787-7424b4deca85" = "PNC Registration"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group PNCRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.type = "collection" "r_bundle_type";
+    src -> evaluate(src, $this.subject) as refPatient then
+        ExtractPNCResources(src, bundle, refPatient) "r_bundle_entries";
+}
+
+group ExtractPNCResources(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    	src.item as item_pnc_started where(linkId ='dd90825d-c161-480a-8f9f-ab2921155be2' and answer.value.code = 'live-birth') then {
+            src then ExtractPNCCondition(src, bundle, refPatient) "rule_pnc_condition";
+            src then ExtractChildRegistrationTasks(src, bundle, refPatient) "rule_child_registration";
+            src then ExtractObservation(src, bundle, refPatient) "rule_comodity_observation";
+    	} "rule_live_birth_check";
+}
+
+/* Create the PNC Condition for the patients  */
+group ExtractPNCCondition(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    src -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+        src -> cnd.id = uuid() "r_cnd_id";
+     	src -> cnd.onset = evaluate(src, now()) "r_cnd_onset_date_val";
+     	src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+        src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+        src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "encounter-diagnosis",
+        "Encounter Diagnosis") "r_cnd_category";
+        src -> cnd.subject = refPatient "r_cnd_sub";
+        src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+        src -> cnd.code = create("CodeableConcept") as ccPreg then {
+             src -> ccPreg.coding = c("http://snomed.info/sct", "234234234", "PNC") "r_cnd_code_coding";
+             src -> ccPreg.text = "PNC" "r_cnd_code_text";
+        } "r_cnd_code";
+    } "r_cnd";
+}
+
+/*Create the Tasks for child registrations*/
+group ExtractChildRegistrationTasks(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+     src -> evaluate(src, today()) as start, evaluate(src, today() + '2 \'days\''.toQuantity()) as end, create('Period')
+     as period,bundle.entry as entry, entry.resource = create("Task") as pncTask then {
+
+        src then ExtractTaskPeriod(start, end, period) "rule_task_period";
+
+        src -> pncTask.id = uuid(),
+            pncTask.identifier = create('Identifier') as identifier, identifier.value = uuid(), identifier.use = 'official',
+            pncTask.status = 'ready',
+            pncTask.intent = 'plan',
+            pncTask.executionPeriod = period,
+            pncTask.priority = 'routine',
+            pncTask.description = 'New Born registration task',
+            pncTask.for = refPatient,
+            pncTask.authoredOn = evaluate(src, now()),
+            pncTask.requester = evaluate(src, $this.generalPractitioner.first()),
+            pncTask.owner = evaluate(src, $this.generalPractitioner.first()) "rule_task_data";
+
+            // child registration form link
+            src -> pncTask.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/f0a04fc4-4179-4df4-b2dc-8b2eac444d0b' "r_task_reason_ref";
+     } "rule_create_task";
+}
+
+group ExtractTaskPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}
+
+group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    src.item as item where(linkId ='489de7ae-51cc-4f43-c761-12c8fb65266b' and answer.value.exists() and answer.value.toInteger() > 0) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+            src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.text = 'consumption' "r_obs_c_text";
+            } "r_obs_code";
+            src -> obs.subject = create('Reference') as ref then ExtractReference(src, ref) "r_obs_ref";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+            src -> obs.value = create('Quantity') as qty then {
+                src -> qty.value = evaluate(item, $this.answer.value),
+                    qty.unit = 'Pieces',
+                    qty.system = 'http://snomed.info/sct',
+                    qty.code = '767525000' "r_obs_qty";
+            } "r_obs_value";
+        } "r_obs";
+    } "r_condom_given_value_check";
+}
+
+group ExtractReference(source src: QuestionnaireResponse, target ref: Reference) {
+
+src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'male-condoms') then {
+    src -> ref.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76' "r_male_condom_ref";
+} "r_male_condom_type_check";
+
+src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'female-condoms') then {
+    src -> ref.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff' "r_female_condom_ref";
+} "r_female_condom_type_check";
+}

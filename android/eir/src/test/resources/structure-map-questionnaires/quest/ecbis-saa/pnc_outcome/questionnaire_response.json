@@ -1,0 +1,63 @@
+{
+	"resourceType": "QuestionnaireResponse",
+	"questionnaire": "Questionnaire/405619ff-cde8-4379-b674-0a4735098b33",
+	"subject": {
+		"reference": "Patient/12345"
+	},
+	"item": [
+		{
+			"linkId": "dd90825d-c161-480a-8f9f-ab2921155be2",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "a67a4c44-8505-4dfa-b026-41619e0f51a2",
+						"system": "urn:uuid:1329ec3a-f409-4a8b-cae0-8c0911dc3a0c",
+						"code": "live-birth",
+						"display": "Live birth"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "5c9a5b34-04ed-4f41-8614-9fb42333871a",
+			"answer": [
+				{
+					"valueDate": "2022-09-22"
+				}
+			]
+		},
+		{
+			"linkId": "91df4f8b-69ff-44f9-bd45-1648f326fd22"
+		},
+		{
+			"linkId": "a9e50fc1-8d74-42e2-8185-fae889afcb55"
+		},
+		{
+			"linkId": "b5de9ea9-b01b-4cde-8114-bea0759b84ee"
+		},
+		{
+			"linkId": "8d52a178-2dba-45f7-9973-a56c94329f77"
+		},
+		{
+			"linkId": "d26cf25a-5811-47dc-bfe9-84899c0e9825",
+			"answer": [
+				{
+					"valueCoding": {
+						"id": "f4706eda-de70-4a8b-8f54-12b98e20af85",
+						"system": "urn:uuid:b2cab913-6d12-4252-8a0f-3ae684122571",
+						"code": "female-condoms",
+						"display": "Male condoms"
+					}
+				}
+			]
+		},
+		{
+			"linkId": "489de7ae-51cc-4f43-c761-12c8fb65266b",
+			"answer": [
+				{
+					"valueInteger": 30
+				}
+			]
+		}
+	]
+}
