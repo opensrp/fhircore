@@ -226,7 +226,7 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @Test
   fun onRefreshAuthToken() {
-      appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
 
     verify { accountAuthenticator.loadActiveAccount(any(), any()) }
   }
