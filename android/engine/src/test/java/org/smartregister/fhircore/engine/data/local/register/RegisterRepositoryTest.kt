@@ -80,7 +80,9 @@ class RegisterRepositoryTest : RobolectricTest() {
           dispatcherProvider = DefaultDispatcherProvider(),
           configurationRegistry = configurationRegistry,
           rulesFactory = rulesFactory,
-          fhirPathDataExtractor = fhirPathDataExtractor
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          sharedPreferencesHelper = mockk(),
+          configService = mockk()
         )
       )
     coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implements Practitioner Details
 - Integrates Geo Widget
 - Implements configurable side menu icons
+- Implements resource tagging
 
 ## [0.0.9 Quest, 0.0.10 EIR, 0.0.4 - ANC] - 2022-07-04, 2021-11-24, 2022-04-01
 ### Added

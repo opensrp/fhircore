@@ -131,4 +131,12 @@
     <string name="clear_database_title">Reset Database!</string>
     <string name="clear_database_message">Resetting database will clear all records from your device. This action can’t be undone.</string>
     <string name="resetting_app">Resetting Application...</string>
+    <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
+    <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
+    <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
+    <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
 </resources>

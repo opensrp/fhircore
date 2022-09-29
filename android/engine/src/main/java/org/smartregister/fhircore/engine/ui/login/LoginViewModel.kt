@@ -25,18 +25,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
@@ -45,6 +47,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Call
@@ -55,11 +58,12 @@ import timber.log.Timber
 class LoginViewModel
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
-  val sharedPreferences: SharedPreferencesHelper
+  val sharedPreferences: SharedPreferencesHelper,
+  val defaultRepository: DefaultRepository,
+  val configService: ConfigService
 ) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -121,32 +125,25 @@ constructor(
     val locationHierarchies =
       practitionerDetails.fhirPractitionerDetails.locationHierarchyList ?: listOf()
 
-    val careTeamIds: List<String> = fhirEngine.create(*careTeams.toTypedArray())
-    val organizationIds: List<String> = fhirEngine.create(*organizations.toTypedArray())
-    val locationIds: List<String> = fhirEngine.create(*locations.toTypedArray())
+    val careTeamIds =
+      defaultRepository.create(*careTeams.toTypedArray()).map { it.extractLogicalIdUuid() }
+    val organizationIds =
+      defaultRepository.create(*organizations.toTypedArray()).map { it.extractLogicalIdUuid() }
+    val locationIds =
+      defaultRepository.create(*locations.toTypedArray()).map { it.extractLogicalIdUuid() }
 
     sharedPreferences.write(
       key = SharedPreferenceKey.PRACTITIONER_ID.name,
       value = practitionerDetails.fhirPractitionerDetails.practitionerId.valueToString()
     )
 
+    sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
+    sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
+    sharedPreferences.write(ResourceType.Organization.name, organizationIds)
+    sharedPreferences.write(ResourceType.Location.name, locationIds)
     sharedPreferences.write(
-      key = SharedPreferenceKey.USER_DETAILS.name,
-      value = practitionerDetails.userDetail,
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS_CARE_TEAM_IDS.name,
-      value = careTeamIds,
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-      value = organizationIds,
-    )
-    sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_IDS.name, locationIds)
-
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS_LOCATION_HIERARCHIES.name,
-      value = locationHierarchies,
+      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
+      locationHierarchies
     )
   }
 

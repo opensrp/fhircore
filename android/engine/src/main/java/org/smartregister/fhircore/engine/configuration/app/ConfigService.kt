@@ -21,6 +21,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 
 /** An interface that provides the application configurations. */
@@ -28,6 +29,9 @@ interface ConfigService {
 
   /** Provide [AuthConfiguration] for the application */
   fun provideAuthConfiguration(): AuthConfiguration
+
+  /** Provide [SyncStrategy] for the application */
+  fun provideSyncStrategy(): SyncStrategy
 
   fun scheduleFhirTaskPlanWorker(context: Context) {
     WorkManager.getInstance(context)

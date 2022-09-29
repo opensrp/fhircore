@@ -26,10 +26,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
@@ -41,7 +40,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
 
@@ -56,6 +58,12 @@ class GeoWidgetViewModelTest {
 
   @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
 
+  @Inject lateinit var configService: ConfigService
+
+  private lateinit var configurationRegistry: ConfigurationRegistry
+
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   private lateinit var geoWidgetViewModel: GeoWidgetViewModel
 
   private lateinit var defaultRepository: DefaultRepository
@@ -67,12 +75,22 @@ class GeoWidgetViewModelTest {
   @Before
   fun setUp() {
     hiltRule.inject()
+    sharedPreferencesHelper = mockk()
+    configurationRegistry = mockk()
     defaultRepository =
-      spyk(DefaultRepository(fhirEngine, coroutinesTestRule.testDispatcherProvider))
+      spyk(
+        DefaultRepository(
+          fhirEngine,
+          coroutinesTestRule.testDispatcherProvider,
+          sharedPreferencesHelper,
+          configurationRegistry,
+          configService
+        )
+      )
     geoWidgetViewModel =
       spyk(GeoWidgetViewModel(defaultRepository, coroutinesTestRule.testDispatcherProvider))
 
-    coEvery { defaultRepository.save(any()) } just runs
+    coEvery { defaultRepository.create(any()) } returns emptyList()
   }
 
   @Test
@@ -124,7 +142,7 @@ class GeoWidgetViewModelTest {
 
     val locationLiveData = geoWidgetViewModel.saveLocation(location)
 
-    coVerify { defaultRepository.save(location) }
+    coVerify { defaultRepository.create(location) }
     Assert.assertTrue(locationLiveData.value!!)
   }
 }
