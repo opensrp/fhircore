@@ -162,10 +162,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
       is State.Finished -> {
         showToast(getString(R.string.sync_completed))
-//        showToast(getString(R.string.sync_completed))
-//        val totalTime = ChronoUnit.SECONDS.between(appMainViewModel.syncStartedAt, state.result.timestamp)
-//        // showToast(getString(R.string.sync_completed) + " in "+totalTime + " seconds")
-//        Timber.d(getString(R.string.sync_completed) + " in " + totalTime + " seconds")
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.result.timestamp))
