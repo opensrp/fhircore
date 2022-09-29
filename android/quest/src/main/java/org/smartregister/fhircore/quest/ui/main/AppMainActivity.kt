@@ -27,6 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
@@ -46,7 +47,6 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import timber.log.Timber
-import java.time.temporal.ChronoUnit
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
@@ -162,10 +162,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
       is State.Finished -> {
         showToast(getString(R.string.sync_completed))
-        showToast(getString(R.string.sync_completed))
-        val totalTime = ChronoUnit.SECONDS.between(appMainViewModel.syncStartedAt, state.result.timestamp)
-        //showToast(getString(R.string.sync_completed) + " in "+totalTime + " seconds")
-        Timber.d(getString(R.string.sync_completed) + " in "+totalTime + " seconds")
+//        showToast(getString(R.string.sync_completed))
+//        val totalTime = ChronoUnit.SECONDS.between(appMainViewModel.syncStartedAt, state.result.timestamp)
+//        // showToast(getString(R.string.sync_completed) + " in "+totalTime + " seconds")
+//        Timber.d(getString(R.string.sync_completed) + " in " + totalTime + " seconds")
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.result.timestamp))

@@ -100,7 +100,7 @@ constructor(
   val navigationConfiguration: NavigationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
   }
-  var syncStartedAt = OffsetDateTime.now()
+//  var syncStartedAt = OffsetDateTime.now()
 
   fun retrieveIconsAsBitmap() {
     navigationConfiguration.clientRegisters
