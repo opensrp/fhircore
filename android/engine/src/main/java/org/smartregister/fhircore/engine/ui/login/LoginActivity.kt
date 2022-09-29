@@ -79,6 +79,7 @@ class LoginActivity :
           }
         } else if (isUpdatingCurrentAccount) {
           configurationRegistry.fetchNonWorkflowConfigResources()
+          syncBroadcaster.get().runSync() // restart/resume sync
           setResult(Activity.RESULT_OK)
           finish() // Return to the previous activity
         } else {
