@@ -117,22 +117,6 @@ constructor(
     fetchPatientProfileDataWithChildren()
   }
 
-  fun fetchPatientProfileData() {
-    if (patientId.isNotEmpty()) {
-      viewModelScope.launch {
-        patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
-          ?.let {
-            patientProfileData = it
-            patientProfileViewData.value =
-              profileViewDataMapper.transformInputToOutputModel(it) as
-                ProfileViewData.PatientProfileViewData
-            // TODO only display some overflow menu items when certain conditions are met
-            refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
-          }
-      }
-    }
-  }
-
   fun getOverflowMenuHostByPatientType(healthStatus: HealthStatus): OverflowMenuHost {
     return when (healthStatus) {
       HealthStatus.NEWLY_DIAGNOSED_CLIENT -> OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE
@@ -324,6 +308,7 @@ constructor(
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
                 ProfileViewData.PatientProfileViewData
+            refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
             paginateChildrenRegisterData(true)
           }
       }
