@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.showToast
+import retrofit2.HttpException
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -62,10 +63,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   override fun onResume() {
     super.onResume()
-    appMainViewModel.run {
-      refreshDataState.value = true
-      retrieveAppMainUiState()
-    }
+    //    appMainViewModel.updateRefreshState()
+    appMainViewModel.retrieveAppMainUiState()
   }
 
   override fun onSync(state: State) {
@@ -90,7 +89,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
       }
       is State.Failed -> {
-        showToast(getString(R.string.sync_failed))
+        showToast(getString(R.string.sync_failed_text))
+        val resultHasAuthError =
+          state.result.exceptions.any {
+            it.exception is HttpException && (it.exception as HttpException).code() == 401
+          }
+        val message =
+          if (resultHasAuthError) R.string.session_expired else R.string.sync_check_internet
+        showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
             state,
@@ -136,10 +142,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
     if (resultCode == Activity.RESULT_OK)
       data?.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
-        lifecycleScope.launch(Dispatchers.IO) {
-          when {
-            it.startsWith(ResourceType.Task.name) ->
+        when {
+          it.startsWith(ResourceType.Task.name) -> {
+            lifecycleScope.launch(Dispatchers.IO) {
               fhirCarePlanGenerator.completeTask(it.asReference(ResourceType.Task).extractId())
+            }
+            syncBroadcaster.runSync()
           }
         }
       }

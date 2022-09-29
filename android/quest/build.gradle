@@ -149,6 +149,8 @@ android {
             dimension "apps"
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
+            versionCode 5
+            versionName "0.0.5"
         }
         afyayangu {
             dimension "apps"
@@ -170,6 +172,7 @@ dependencies {
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
+    implementation deps.accompanist.swiperefresh
 
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"

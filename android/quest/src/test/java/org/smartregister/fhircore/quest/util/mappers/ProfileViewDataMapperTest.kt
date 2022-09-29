@@ -24,6 +24,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.text.SimpleDateFormat
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
@@ -70,6 +71,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
+      Assert.assertEquals("familyName", familyName)
+      Assert.assertEquals("givenName", givenName)
       Assert.assertEquals("testIdentifier()", identifier)
       Assert.assertEquals("HCC Number", identifierKey)
       Assert.assertEquals(true, showIdentifierInProfile)
@@ -144,12 +147,26 @@ class ProfileViewDataMapperTest : RobolectricTest() {
     }
   }
 
+  fun buildCarePlanServices(): List<CarePlan> {
+    val carePlan1 = CarePlan()
+    carePlan1.id = "CarePlan/cp1"
+    carePlan1.careTeam = listOf(Reference("Ref11"), Reference("Ref12"))
+
+    val carePlan2 = CarePlan()
+    carePlan2.id = "CarePlan/cp2"
+    carePlan2.careTeam = listOf(Reference("Ref21"), Reference("Ref22"))
+
+    return listOf(carePlan1, carePlan2)
+  }
+
   private fun buildProfileData(healthModule: HealthModule): ProfileData {
     return when (healthModule) {
       HealthModule.HIV ->
         ProfileData.HivProfileData(
           logicalId = "logicalId",
           name = "testName",
+          familyName = "familyName",
+          givenName = "givenName",
           identifier = "testIdentifier()",
           address = "testAddress",
           age = "5y",
@@ -157,7 +174,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
           chwAssigned = Reference("referenceKey"),
           healthStatus = HealthStatus.EXPOSED_INFANT,
-          services = emptyList(),
+          services = buildCarePlanServices(),
           tasks = emptyList(),
           showIdentifierInProfile = true
         )

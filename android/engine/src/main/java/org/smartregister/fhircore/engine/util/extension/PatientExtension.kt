@@ -20,6 +20,7 @@ import android.content.Context
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
@@ -50,6 +51,14 @@ fun Patient.extractFamilyName(): String {
   val humanName = this.name.firstOrNull()
   return if (humanName != null) {
     humanName.family?.capitalizeFirstLetter()?.plus(" Family") ?: ""
+  } else ""
+}
+
+fun Patient.extractGivenName(): String {
+  if (!hasName()) return ""
+  val humanName = this.name.firstOrNull()
+  return if (humanName != null) {
+    humanName.given?.toString()?.trim('[')?.trim(']')?.capitalizeFirstLetter() ?: ""
   } else ""
 }
 
@@ -155,8 +164,7 @@ fun Patient.extractTelecom(): List<String> {
 }
 
 fun Patient.extractGeneralPractitionerReference(): String {
-  if (!hasGeneralPractitioner()) return ""
-  return with(generalPractitionerFirstRep) { this.reference }
+  return generalPractitioner.firstOrNull { !it.isEmpty }?.reference ?: ""
 }
 
 fun Patient.extractManagingOrganizationReference(): String {
@@ -179,11 +187,22 @@ fun Patient.isFamilyHead() = this.extractFamilyTag() != null
 
 fun List<Condition>.hasActivePregnancy() =
   this.any { condition ->
-    // is active and any of the display / text into code is pregnant
+    // is active and any of the display / text in code is pregnant
     val active = condition.clinicalStatus.coding.any { it.code == "active" }
     val pregnancy =
       condition.code.coding.map { it.display }.plus(condition.code.text).any {
         it.contentEquals("pregnant", true)
+      }
+
+    active && pregnancy
+  }
+
+fun List<Condition>.activelyBreastfeeding() =
+  this.any { condition ->
+    val active = condition.clinicalStatus.coding.any { it.code == "active" }
+    val pregnancy =
+      condition.code.coding.map { it.display }.plus(condition.code.text).any {
+        it.contentEquals("breastfeeding", true)
       }
 
     active && pregnancy
@@ -221,25 +240,25 @@ fun Patient.extractOfficialIdentifier(): String? =
     this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
   else null
 
-fun Patient.extractHealthStatusFromMeta(filterTag: String): HealthStatus {
+fun Coding.toHealthStatus(): HealthStatus {
   return try {
-    val tagList = this.meta.tag.filter { it.system.equals(filterTag, true) }
-    if (filterTag.isEmpty() ||
-        tagList.isEmpty() ||
-        tagList[0].code == null ||
-        tagList[0].code.isEmpty()
-    )
-      return HealthStatus.DEFAULT
-    HealthStatus.valueOf(tagList[0].code!!.uppercase(Locale.getDefault()).replace("-", "_")).apply {
-      display =
-        when (this) {
+    HealthStatus.valueOf(this.code.uppercase(Locale.getDefault()).replace("-", "_")).apply {
+      this@apply.display =
+        when (this@apply) {
           HealthStatus.NEWLY_DIAGNOSED_CLIENT, HealthStatus.CLIENT_ALREADY_ON_ART -> "ART Client"
           HealthStatus.COMMUNITY_POSITIVE -> "No Conf Test"
-          else -> tagList[0].display
+          else -> this@toHealthStatus.display
         }
     }
   } catch (e: Exception) {
     Timber.e(e)
     HealthStatus.DEFAULT
   }
+}
+
+fun Patient.extractHealthStatusFromMeta(filterTag: String): HealthStatus {
+  val tagList =
+    this.meta.tag.filter { it.system.equals(filterTag, true) }.filterNot { it.code.isNullOrBlank() }
+  if (filterTag.isEmpty() || tagList.isEmpty()) return HealthStatus.DEFAULT
+  return tagList.map { it.toHealthStatus() }.minByOrNull { it.priority() }!!
 }

@@ -64,13 +64,21 @@ fun PersonalData(
         )
       }
       if (patientProfileViewData.identifier != null) {
-        var idKeyValue = stringResource(R.string.id, patientProfileViewData.identifier)
+        var idKeyValue =
+          stringResource(
+            R.string.id,
+            patientProfileViewData.identifier.ifEmpty {
+              stringResource(R.string.identifier_unassigned)
+            }
+          )
         if (patientProfileViewData.showIdentifierInProfile)
           idKeyValue =
             stringResource(
               R.string.idKeyValue,
               patientProfileViewData.identifierKey,
-              patientProfileViewData.identifier
+              patientProfileViewData.identifier.ifEmpty {
+                stringResource(R.string.identifier_unassigned)
+              }
             )
         Text(
           text = idKeyValue,

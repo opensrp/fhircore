@@ -16,12 +16,30 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+typealias StatusPriority = Int
+
 enum class HealthStatus(var display: String = "") {
-  NEWLY_DIAGNOSED_CLIENT,
-  CLIENT_ALREADY_ON_ART,
-  EXPOSED_INFANT,
-  CHILD_CONTACT,
-  SEXUAL_CONTACT,
-  COMMUNITY_POSITIVE,
-  DEFAULT
+  CLIENT_ALREADY_ON_ART {
+    override fun priority(): StatusPriority = 1
+  },
+  NEWLY_DIAGNOSED_CLIENT {
+    override fun priority(): StatusPriority = 2
+  },
+  EXPOSED_INFANT {
+    override fun priority(): StatusPriority = 3
+  },
+  CHILD_CONTACT {
+    override fun priority(): StatusPriority = 3
+  },
+  SEXUAL_CONTACT {
+    override fun priority(): StatusPriority = 3
+  },
+  COMMUNITY_POSITIVE {
+    override fun priority(): StatusPriority = 3
+  },
+  DEFAULT {
+    override fun priority(): StatusPriority = Int.MAX_VALUE
+  };
+
+  abstract fun priority(): StatusPriority
 }

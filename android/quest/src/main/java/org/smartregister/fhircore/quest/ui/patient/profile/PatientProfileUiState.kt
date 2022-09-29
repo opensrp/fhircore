@@ -18,4 +18,6 @@ package org.smartregister.fhircore.quest.ui.patient.profile
 
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItem
 
-data class PatientProfileUiState(val overflowMenuItems: List<OverflowMenuItem> = emptyList())
+data class PatientProfileUiState(val overflowMenuItems: List<OverflowMenuItem> = emptyList()) {
+  fun visibleOverflowMenuItems() = overflowMenuItems.filterNot { it.hidden }
+}

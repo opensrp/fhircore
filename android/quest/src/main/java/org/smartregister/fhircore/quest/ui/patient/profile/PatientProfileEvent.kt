@@ -18,6 +18,9 @@ package org.smartregister.fhircore.quest.ui.patient.profile
 
 import android.content.Context
 import androidx.navigation.NavHostController
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 
 sealed class PatientProfileEvent {
@@ -32,8 +35,15 @@ sealed class PatientProfileEvent {
     val context: Context,
     val taskFormId: String,
     val taskId: String,
-    val patientId: String
-  ) : PatientProfileEvent()
+    val patientId: String,
+    val carePlans: List<CarePlan> = emptyList(),
+    val patientConditions: List<Condition> = emptyList()
+  ) : PatientProfileEvent() {
+    fun getActivePopulationResources(): ArrayList<Resource> {
+      val resources = carePlans + patientConditions
+      return ArrayList(resources)
+    }
+  }
 
   data class OverflowMenuClick(
     val navController: NavHostController,
@@ -41,5 +51,15 @@ sealed class PatientProfileEvent {
     val menuId: Int,
     val patientId: String,
     val familyId: String? = null,
-  ) : PatientProfileEvent()
+    val carePlans: List<CarePlan> = emptyList(),
+    val patientConditions: List<Condition> = emptyList()
+  ) : PatientProfileEvent() {
+    fun getActivePopulationResources(): ArrayList<Resource> {
+      val resources = carePlans + patientConditions
+      return ArrayList(resources)
+    }
+  }
+
+  data class OpenChildProfile(val patientId: String, val navController: NavHostController) :
+    PatientProfileEvent()
 }

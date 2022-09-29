@@ -23,6 +23,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
@@ -31,7 +32,9 @@ import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.isPaginated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -43,6 +46,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -66,6 +70,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
+  @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
@@ -155,7 +161,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         // 2- readonly -> assert and pass response from intent
         // 3- default -> process, populate and pass response/data from intent if exists
         arguments =
-          bundleOf(Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
+          bundleOf(
+            Pair(QuestionnaireFragment.EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString),
+            Pair(QuestionnaireFragment.EXTRA_ENABLE_REVIEW_PAGE, questionnaire.isPaginated)
+          )
             .apply {
               var questionnaireResponse =
                 intent
@@ -193,9 +202,19 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
         questionnaireConfig = resultPair.first
         questionnaire = resultPair.second
+
+        populateInitialValues(questionnaire)
       }
-      .onFailure { Timber.e(it) }
-      .also { populateInitialValues(questionnaire) }
+      .onFailure {
+        Timber.e(it)
+
+        withContext(dispatcherProvider.main()) {
+          if (it is QuestionnaireNotFoundException) {
+            Toast.makeText(this@QuestionnaireActivity, it.message, Toast.LENGTH_LONG).show()
+            finish()
+          }
+        }
+      }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
@@ -285,6 +304,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   fun onPostSave(result: Boolean, questionnaireResponse: QuestionnaireResponse) {
     dismissSaveProcessing()
     if (result) {
+      // Put Sync Here
+      syncBroadcaster.runSync()
       postSaveSuccessful(questionnaireResponse)
     } else {
       Timber.e("An error occurred during extraction")
@@ -334,7 +355,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       )
       .values
       .flatten()
-      .all { it.isValid }
+      .all { it is Valid }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     questionnaireViewModel.extractAndSaveResources(

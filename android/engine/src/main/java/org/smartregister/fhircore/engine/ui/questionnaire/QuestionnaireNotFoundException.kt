@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register
+package org.smartregister.fhircore.engine.ui.questionnaire
 
-import android.content.Context
-import androidx.navigation.NavHostController
-
-sealed class PatientRegisterEvent {
-  data class SearchRegister(val searchText: String = "") : PatientRegisterEvent()
-
-  object MoveToNextPage : PatientRegisterEvent()
-
-  object MoveToPreviousPage : PatientRegisterEvent()
-
-  data class RegisterNewClient(val context: Context) : PatientRegisterEvent()
-
-  data class OpenProfile(val patientId: String, val navController: NavHostController) :
-    PatientRegisterEvent()
+class QuestionnaireNotFoundException : Exception {
+  constructor(
+    formName: String,
+    cause: Throwable
+  ) : super("Questionnaire '$formName' not found", cause)
+  constructor(formName: String) : super("Questionnaire '$formName' not found")
 }

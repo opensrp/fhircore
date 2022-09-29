@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.extension.canBeCompleted
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.translateGender
@@ -65,6 +66,8 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
         ProfileViewData.PatientProfileViewData(
           logicalId = inputModel.logicalId,
           name = inputModel.name,
+          givenName = inputModel.givenName,
+          familyName = inputModel.familyName,
           sex = inputModel.gender.translateGender(context),
           age = inputModel.age,
           dob = inputModel.birthdate.formatDob(),
@@ -73,14 +76,16 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = inputModel.showIdentifierInProfile,
           showListsHighlights = false,
+          conditions = inputModel.conditions,
+          otherPatients = inputModel.otherPatients,
+          viewChildText =
+            context.getString(R.string.view_children_x, inputModel.otherPatients.size.toString()),
+          carePlans = inputModel.services,
           tasks =
-            inputModel.tasks.sortedWith(compareBy<Task> { it.description }).map {
+            inputModel.tasks.map {
               PatientProfileRowItem(
                 id = it.logicalId,
-                actionFormId =
-                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
-                    it.reasonReference.extractId()
-                  else null,
+                actionFormId = if (it.canBeCompleted()) it.reasonReference.extractId() else null,
                 title = "", // it.description,
                 subtitle = "", // context.getString(R.string.due_on,
                 // it.executionPeriod.start.makeItReadable()),
@@ -93,6 +98,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                   else it.status.retrieveColorCode(),
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
+                subtitleStatus = it.status.name
               )
             }
         )

@@ -99,6 +99,24 @@ class PatientExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `extractGeneralPractitionerReference should return the first non-empty reference`() {
+    val patient = Patient()
+    Assert.assertEquals("", patient.extractGeneralPractitionerReference())
+    patient.apply {
+      addGeneralPractitioner()
+      addGeneralPractitioner()
+      addGeneralPractitioner().apply { this.reference = "practitioner/2456" }
+    }
+    Assert.assertEquals("practitioner/2456", patient.extractGeneralPractitionerReference())
+  }
+
+  @Test
+  fun `extractGeneralPractitionerReference should return empty if no reference`() {
+    val patient = Patient().apply { addGeneralPractitioner() }
+    Assert.assertEquals("", patient.extractGeneralPractitionerReference())
+  }
+
+  @Test
   fun testExtractManagingOrganizationShouldReturnReference() {
     val patient =
       Patient().apply { managingOrganization.apply { this.reference = "reference/1234" } }
@@ -177,6 +195,48 @@ class PatientExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `return true for 'activelyBreastfeeding' when 'active' breastfeeding condition exist`() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "breastfeeding"
+        }
+      )
+
+    Assert.assertTrue(conditions.activelyBreastfeeding())
+  }
+
+  @Test
+  fun `return false for 'activelyBreastfeeding' when no breastfeeding conditions exist`() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "pregnant"
+        }
+      )
+
+    Assert.assertFalse(conditions.activelyBreastfeeding())
+  }
+
+  @Test
+  fun `return false for 'activelyBreastfeeding' when no 'active' breastfeeding conditions exist`() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "inactive"
+          this.code.addCoding().display = "breastfeeding"
+        }
+      )
+
+    Assert.assertFalse(conditions.activelyBreastfeeding())
+  }
+
+  @Test
   fun testPregnancyConditionShouldReturnCondition() {
     val conditions =
       listOf(
@@ -251,6 +311,13 @@ class PatientExtensionTest : RobolectricTest() {
       }
 
     Assert.assertEquals("Genealogy Family", patient.extractFamilyName())
+  }
+
+  @Test
+  fun testExtractGivenName() {
+    val patient = Patient().apply { addName().apply { addGiven("GivenName") } }
+
+    Assert.assertEquals("GivenName", patient.extractGivenName())
   }
 
   @Test

@@ -27,14 +27,11 @@ import androidx.compose.material.Button
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -42,10 +39,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import kotlinx.coroutines.flow.emptyFlow
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.appfeature.AppFeature
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -58,16 +55,15 @@ import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 @Composable
 fun PatientRegisterScreen(
   modifier: Modifier = Modifier,
-  appFeatureName: String?,
-  healthModule: HealthModule,
   screenTitle: String,
   openDrawer: (Boolean) -> Unit,
   navController: NavHostController,
-  refreshDataState: MutableState<Boolean>,
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val context = LocalContext.current
-  val searchText by remember { patientRegisterViewModel.searchText }
+  val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
+  val searchTextState = patientRegisterViewModel.searchText.collectAsState()
+  val searchText by remember { searchTextState }
   val patientRegistrationLauncher =
     rememberLauncherForActivityResult(
       contract = ActivityResultContracts.StartActivityForResult(),
@@ -80,46 +76,16 @@ fun PatientRegisterScreen(
           val patientId = questionnaireResponse?.subject?.extractId()
           if (patientId != null) {
             patientRegisterViewModel.onEvent(
-              PatientRegisterEvent.OpenProfile(
-                appFeatureName,
-                healthModule,
-                patientId,
-                navController
-              )
+              PatientRegisterEvent.OpenProfile(patientId, navController)
             )
           }
         }
       }
     )
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
-  val currentSetTotalRecordCount by rememberUpdatedState(
-    patientRegisterViewModel::setTotalRecordsCount
-  )
-  val currentPaginateRegisterData by rememberUpdatedState(
-    patientRegisterViewModel::paginateRegisterData
-  )
-  val refreshDataStateValue by remember { refreshDataState }
-
-  LaunchedEffect(Unit) {
-    currentSetTotalRecordCount(appFeatureName, healthModule)
-    currentPaginateRegisterData(appFeatureName, healthModule, false)
-  }
-
-  SideEffect {
-    // Refresh data everytime sync completes then reset state
-    if (refreshDataStateValue) {
-      currentSetTotalRecordCount(appFeatureName, healthModule)
-      currentPaginateRegisterData(appFeatureName, healthModule, false)
-      refreshDataState.value = false
-    }
-  }
 
   val pagingItems: LazyPagingItems<RegisterViewData> =
-    patientRegisterViewModel
-      .paginatedRegisterData
-      .collectAsState(emptyFlow())
-      .value
-      .collectAsLazyPagingItems()
+    patientRegisterViewModel.paginatedRegisterData.collectAsState().value.collectAsLazyPagingItems()
 
   Scaffold(
     topBar = {
@@ -129,11 +95,7 @@ fun PatientRegisterScreen(
         searchText = searchText,
         onSearchTextChanged = { searchText ->
           patientRegisterViewModel.onEvent(
-            PatientRegisterEvent.SearchRegister(
-              searchText = searchText,
-              appFeatureName = appFeatureName,
-              healthModule = healthModule
-            )
+            PatientRegisterEvent.SearchRegister(searchText = searchText)
           )
         }
       ) { openDrawer(true) }
@@ -147,26 +109,16 @@ fun PatientRegisterScreen(
             resultCount = pagingItems.itemCount,
             currentPage =
               patientRegisterViewModel.currentPage.observeAsState(initial = 0).value.plus(1),
-            pagesCount = patientRegisterViewModel.countPages(),
+            pagesCount = patientRegisterViewModel.countPages().observeAsState(initial = 1).value,
             previousButtonClickListener = {
-              patientRegisterViewModel.onEvent(
-                PatientRegisterEvent.MoveToPreviousPage(
-                  appFeatureName = appFeatureName,
-                  healthModule = healthModule
-                )
-              )
+              patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToPreviousPage)
             },
             nextButtonClickListener = {
-              patientRegisterViewModel.onEvent(
-                PatientRegisterEvent.MoveToNextPage(
-                  appFeatureName = appFeatureName,
-                  healthModule = healthModule
-                )
-              )
+              patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToNextPage)
             }
           )
           // TODO activate this button action via config; now only activated for family register
-          if (appFeatureName.equals(AppFeature.HouseholdManagement.name, true) ||
+          if (patientRegisterViewModel.isAppFeatureHousehold() ||
               patientRegisterViewModel.isRegisterFormViaSettingExists()
           ) {
             Button(
@@ -177,7 +129,8 @@ fun PatientRegisterScreen(
                 )
                 //
                 // patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
-              }
+              },
+              enabled = !firstTimeSync.value
             ) {
               Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp))
             }
@@ -187,21 +140,31 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
+      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
       // Only show counter during search
       var iModifier = Modifier.padding(top = 0.dp)
       if (searchText.isNotEmpty()) {
         iModifier = Modifier.padding(top = 32.dp)
         RegisterHeader(resultCount = pagingItems.itemCount)
       }
-      RegisterList(
-        modifier = iModifier,
-        pagingItems = pagingItems,
-        onRowClick = { patientId: String ->
-          patientRegisterViewModel.onEvent(
-            PatientRegisterEvent.OpenProfile(appFeatureName, healthModule, patientId, navController)
-          )
-        }
-      )
+
+      val isRefreshing by patientRegisterViewModel.isRefreshing.collectAsState()
+      SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = { patientRegisterViewModel.refresh() },
+        //        indicator = { _, _ -> }
+        ) {
+        RegisterList(
+          modifier = iModifier,
+          pagingItems = pagingItems,
+          onRowClick = { patientId: String ->
+            patientRegisterViewModel.onEvent(
+              PatientRegisterEvent.OpenProfile(patientId, navController)
+            )
+          },
+          progressMessage = patientRegisterViewModel.progressMessage()
+        )
+      }
     }
   }
 }

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import android.content.Intent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -61,7 +62,7 @@ constructor(
 
   val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
 
-  val refreshDataState: MutableState<Boolean> = mutableStateOf(false)
+  val refreshDataState: MutableState<Int> = mutableStateOf(0)
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
@@ -92,12 +93,22 @@ constructor(
           (this as Activity).refresh()
         }
       }
-      AppMainEvent.SyncData -> {
-        syncBroadcaster.runSync()
-        appMainUiState.value =
-          appMainUiState.value.copy(
-            sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions()
-          )
+      is AppMainEvent.SyncData -> {
+        appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = false)
+        accountAuthenticator.loadActiveAccount(
+          onActiveAuthTokenFound = {
+            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+            run(resumeSync)
+          },
+          onValidTokenMissing = {
+            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+            it.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+            event.launchManualAuth(it)
+          }
+        )
+      }
+      AppMainEvent.ResumeSync -> {
+        run(resumeSync)
       }
       is AppMainEvent.DeviceToDeviceSync -> startP2PScreen(context = event.context)
       is AppMainEvent.UpdateSyncState -> {
@@ -106,7 +117,7 @@ constructor(
           is State.Finished,
           is State.Failed -> {
             // Notify subscribers to refresh views after sync
-            refreshDataState.value = true
+            updateRefreshState()
             appMainUiState.value =
               appMainUiState.value.copy(
                 lastSyncTime = event.lastSyncTime ?: "",
@@ -121,6 +132,16 @@ constructor(
     }
   }
 
+  fun updateRefreshState() {
+    refreshDataState.value += 1
+  }
+
+  private val resumeSync = {
+    syncBroadcaster.runSync()
+    appMainUiState.value =
+      appMainUiState.value.copy(sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions())
+  }
+
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
@@ -132,7 +153,7 @@ constructor(
 
     val syncTimestampFormatter =
       SimpleDateFormat(SYNC_TIMESTAMP_INPUT_FORMAT, Locale.getDefault()).apply {
-        timeZone = TimeZone.getTimeZone(UTC)
+        timeZone = TimeZone.getDefault()
       }
     val parse: Date? = syncTimestampFormatter.parse(timestamp.toString())
     return if (parse == null) "" else simpleDateFormat.format(parse)
@@ -147,6 +168,5 @@ constructor(
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
     const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "hh:mm aa, MMM d"
-    const val UTC = "UTC"
   }
 }

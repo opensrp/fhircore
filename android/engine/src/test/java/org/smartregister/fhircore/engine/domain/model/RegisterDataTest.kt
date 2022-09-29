@@ -43,11 +43,12 @@ class RegisterDataTest : RobolectricTest() {
     with(hivRegisterDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
+      Assert.assertEquals("givenName", givenName)
+      Assert.assertEquals("familyName", familyName)
       Assert.assertEquals("testIdentifier()", identifier)
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
       Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
-      //            Assert.assertEquals(Date("12345678"), birthdate)
       Assert.assertEquals("reference/Key", chwAssigned)
       Assert.assertEquals("reference/Key1", practitioners?.get(0)?.reference)
       Assert.assertEquals("reference/Key2", practitioners?.get(1)?.reference)
@@ -105,6 +106,8 @@ class RegisterDataTest : RobolectricTest() {
         RegisterData.HivRegisterData(
           logicalId = "logicalId",
           name = "testName",
+          familyName = "familyName",
+          givenName = "givenName",
           identifier = "testIdentifier()",
           address = "testAddress",
           age = "5y",

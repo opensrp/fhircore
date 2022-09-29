@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.text.SimpleDateFormat
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
@@ -44,11 +45,14 @@ class ProfileDataTest : RobolectricTest() {
     with(hivProfileDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
+      Assert.assertEquals("familyName", familyName)
+      Assert.assertEquals("givenName", givenName)
       Assert.assertEquals("testIdentifier()", identifier)
       Assert.assertEquals("testAddress", address)
       Assert.assertEquals("5y", age)
       Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
-      //      Assert.assertEquals(Date("12345678"), birthdate)
+      Assert.assertTrue(services.size == 2)
+      Assert.assertTrue(conditions.isEmpty())
       Assert.assertEquals("referenceKey", chwAssigned.reference)
     }
   }
@@ -108,13 +112,17 @@ class ProfileDataTest : RobolectricTest() {
         ProfileData.HivProfileData(
           logicalId = "logicalId",
           name = "testName",
+          familyName = "familyName",
+          givenName = "givenName",
           identifier = "testIdentifier()",
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
           birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
           chwAssigned = Reference("referenceKey"),
-          healthStatus = HealthStatus.EXPOSED_INFANT
+          healthStatus = HealthStatus.EXPOSED_INFANT,
+          services = buildCarePlanServices(),
+          conditions = emptyList()
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
         ProfileData.DefaultProfileData(
@@ -228,5 +236,17 @@ class ProfileDataTest : RobolectricTest() {
           visits = emptyList()
         )
     }
+  }
+
+  fun buildCarePlanServices(): List<CarePlan> {
+    val carePlan1 = CarePlan()
+    carePlan1.id = "CarePlan/cp1"
+    carePlan1.careTeam = listOf(Reference("Ref11"), Reference("Ref12"))
+
+    val carePlan2 = CarePlan()
+    carePlan2.id = "CarePlan/cp2"
+    carePlan2.careTeam = listOf(Reference("Ref21"), Reference("Ref22"))
+
+    return listOf(carePlan1, carePlan2)
   }
 }

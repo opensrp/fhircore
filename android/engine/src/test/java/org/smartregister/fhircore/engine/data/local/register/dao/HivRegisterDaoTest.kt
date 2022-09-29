@@ -24,15 +24,18 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -53,6 +56,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HivRegisterDaoTest : RobolectricTest() {
@@ -91,18 +95,67 @@ class HivRegisterDaoTest : RobolectricTest() {
     )
       .apply { active = true }
 
+  private val testTask1 =
+    Task().apply {
+      this.id = "1"
+      this.meta.addTag(
+        Coding().apply {
+          system = "https://d-tree.org"
+          code = "clinic-visit-task-order-3"
+        }
+      )
+    }
+
+  private val testTask2 =
+    Task().apply {
+      this.id = "2"
+      this.meta.addTag(
+        Coding().apply {
+          system = "https://d-tree.org"
+          code = "clinic-visit-task-order-1"
+        }
+      )
+    }
+
+  private val carePlan1 =
+    CarePlan().apply {
+      id = "CarePlan/cp1"
+      status = CarePlan.CarePlanStatus.ACTIVE
+      careTeam = listOf(Reference("Ref11"), Reference("Ref12"))
+      addActivity(
+        CarePlan.CarePlanActivityComponent().apply {
+          outcomeReference.add(Reference(testTask1.referenceValue()))
+        }
+      )
+    }
+
+  private val carePlan2 =
+    CarePlan().apply {
+      id = "CarePlan/cp2"
+      status = CarePlan.CarePlanStatus.ACTIVE
+      careTeam = listOf(Reference("Ref21"), Reference("Ref22"))
+      addActivity(
+        CarePlan.CarePlanActivityComponent().apply {
+          outcomeReference.add(Reference(testTask2.referenceValue()))
+        }
+      )
+    }
+
   @Before
   fun setUp() {
 
     coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns testPatient
+
+    coEvery { fhirEngine.get(ResourceType.Task, testTask1.logicalId) } returns testTask1
+    coEvery { fhirEngine.get(ResourceType.Task, testTask2.logicalId) } returns testTask2
 
     coEvery { fhirEngine.search<Resource>(any()) } answers
       {
         val search = firstArg<Search>()
         when (search.type) {
           ResourceType.Patient -> listOf<Patient>(testPatient, testPatientGenderNull)
-          ResourceType.Task -> emptyList<Task>()
-          ResourceType.CarePlan -> emptyList<CarePlan>()
+          ResourceType.Task -> listOf<Task>(testTask1, testTask2)
+          ResourceType.CarePlan -> listOf<CarePlan>(carePlan1, carePlan2)
           else -> emptyList()
         }
       }
@@ -171,6 +224,21 @@ class HivRegisterDaoTest : RobolectricTest() {
   }
 
   @Test
+  fun `loadProfileData loads tasks in specified order from meta tag`() {
+    val data = runBlocking {
+      hivRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1")
+    }
+    assertNotNull(data)
+    val hivProfileData = data as ProfileData.HivProfileData
+    assertNotNull(hivProfileData.tasks)
+    assertEquals(2, hivProfileData.tasks.size)
+    // assert testTask2 comes before testTest1 according to meta tag
+    // 'clinic-visit-task-order-{order_number}'
+    assertEquals(testTask2, hivProfileData.tasks[0])
+    assertEquals(testTask1, hivProfileData.tasks[1])
+  }
+
+  @Test
   fun `test hiv patient identifier to be the 'official' identifier`() = runTest {
     val identifierNumber = "123456"
     val patient =
@@ -195,7 +263,7 @@ class HivRegisterDaoTest : RobolectricTest() {
   }
 
   @Test
-  fun `test hiv patient identifier to be the 'secondary' identifier when no 'official' identifier found`() =
+  fun `test hiv patient identifier to be empty string when no 'official' identifier found`() =
       runTest {
     val identifierNumber = "149856"
     val patient =
@@ -209,7 +277,7 @@ class HivRegisterDaoTest : RobolectricTest() {
           }
         )
       }
-    assertEquals(identifierNumber, hivRegisterDao.hivPatientIdentifier(patient))
+    assertEquals("", hivRegisterDao.hivPatientIdentifier(patient))
   }
 
   @Test
@@ -221,5 +289,50 @@ class HivRegisterDaoTest : RobolectricTest() {
   fun testCountRegisterData() = runTest {
     val count = hivRegisterDao.countRegisterData("HIV")
     assertEquals(1, count)
+  }
+
+  private val testHivPatient =
+    buildPatient(
+      id = "logicalId",
+      family = "doe",
+      given = "john",
+      age = 50,
+      patientType = "exposed-infant",
+      practitionerReference = "practitioner/1234"
+    )
+      .apply {
+        active = true
+        identifier.add(
+          Identifier().apply {
+            this.use = Identifier.IdentifierUse.SECONDARY
+            this.value = "149856"
+          }
+        )
+        meta.addTag(
+          Coding().apply {
+            system = "https://d-tree.org"
+            code = "exposed-infant"
+            display = "Exposed Infant"
+          }
+        )
+      }
+
+  @Test
+  fun testTransformChildrenPatientToRegisterData() = runTest {
+    val patient = testHivPatient.apply { active = true }
+    val childRegisterData = hivRegisterDao.transformChildrenPatientToRegisterData(listOf(patient))
+    assertEquals(1, childRegisterData.size)
+    val registerDataPatient = childRegisterData[0] as RegisterData.HivRegisterData
+    with(registerDataPatient) {
+      assertEquals("logicalId", logicalId)
+      assertEquals("John Doe", name)
+      assertEquals("Dist 1 City 1", address)
+      assertEquals("50y", age)
+      assertEquals(emptyList(), phoneContacts)
+      assertEquals(Enumerations.AdministrativeGender.MALE, gender)
+      assertEquals("practitioner/1234", chwAssigned)
+      assertEquals("practitioner/1234", practitioners?.get(0)?.reference)
+      assertNotEquals(HealthStatus.DEFAULT, healthStatus)
+    }
   }
 }

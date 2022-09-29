@@ -19,39 +19,70 @@ package org.smartregister.fhircore.quest.ui.patient.profile
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.os.bundleOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
+import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
 import org.smartregister.fhircore.quest.navigation.OverflowMenuHost
 import org.smartregister.fhircore.quest.ui.family.remove.member.RemoveFamilyMemberQuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactPagingSource
+import org.smartregister.fhircore.quest.ui.patient.remove.HivPatientQuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
+import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 @HiltViewModel
 class PatientProfileViewModel
 @Inject
 constructor(
+  savedStateHandle: SavedStateHandle,
+  syncBroadcaster: SyncBroadcaster,
   val overflowMenuFactory: OverflowMenuFactory,
   val patientRegisterRepository: PatientRegisterRepository,
-  val profileViewDataMapper: ProfileViewDataMapper
+  val configurationRegistry: ConfigurationRegistry,
+  val profileViewDataMapper: ProfileViewDataMapper,
+  val registerViewDataMapper: RegisterViewDataMapper
 ) : ViewModel() {
+
+  val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
+  val healthModule =
+    savedStateHandle.get<HealthModule>(NavigationArg.HEALTH_MODULE) ?: HealthModule.DEFAULT
+  val patientId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID) ?: ""
+  val familyId = savedStateHandle.get<String>(NavigationArg.FAMILY_ID)
 
   var patientProfileUiState: MutableState<PatientProfileUiState> =
     mutableStateOf(
@@ -63,15 +94,35 @@ constructor(
   val patientProfileViewData: MutableState<ProfileViewData.PatientProfileViewData> =
     mutableStateOf(ProfileViewData.PatientProfileViewData())
 
-  fun fetchPatientProfileData(
-    appFeatureName: String?,
-    healthModule: HealthModule,
-    patientId: String
-  ) {
+  var patientProfileData: ProfileData? = null
+
+  val applicationConfiguration: ApplicationConfiguration
+    get() = configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+
+  init {
+    syncBroadcaster.registerSyncListener(
+      object : OnSyncListener {
+        override fun onSync(state: State) {
+          when (state) {
+            is State.Finished, is State.Failed -> {
+              fetchPatientProfileDataWithChildren()
+            }
+            else -> {}
+          }
+        }
+      },
+      viewModelScope
+    )
+
+    fetchPatientProfileDataWithChildren()
+  }
+
+  fun fetchPatientProfileData() {
     if (patientId.isNotEmpty()) {
       viewModelScope.launch {
         patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
           ?.let {
+            patientProfileData = it
             patientProfileViewData.value =
               profileViewDataMapper.transformInputToOutputModel(it) as
                 ProfileViewData.PatientProfileViewData
@@ -109,6 +160,30 @@ constructor(
     }
   }
 
+  fun filterGuardianVisitTasks() {
+    if (patientProfileData != null) {
+      val hivPatientProfileData = patientProfileData as ProfileData.HivProfileData
+      val newProfileData =
+        hivPatientProfileData.copy(
+          tasks =
+            hivPatientProfileData.tasks.filter {
+              it.isGuardianVisit(applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem)
+            }
+        )
+      patientProfileViewData.value =
+        profileViewDataMapper.transformInputToOutputModel(newProfileData) as
+          ProfileViewData.PatientProfileViewData
+    }
+  }
+
+  fun undoGuardianVisitTasksFilter() {
+    if (patientProfileData != null) {
+      patientProfileViewData.value =
+        profileViewDataMapper.transformInputToOutputModel(patientProfileData!!) as
+          ProfileViewData.PatientProfileViewData
+    }
+  }
+
   fun onEvent(event: PatientProfileEvent) =
     when (event) {
       is PatientProfileEvent.LoadQuestionnaire ->
@@ -124,6 +199,32 @@ constructor(
               clientIdentifier = event.patientId,
               questionnaireType = QuestionnaireType.EDIT
             )
+          R.id.guardian_visit -> {
+            val updatedMenuItems =
+              patientProfileUiState.value.overflowMenuItems.map {
+                when (it.id) {
+                  R.id.guardian_visit -> it.apply { hidden = true }
+                  R.id.client_visit -> it.apply { hidden = false }
+                  else -> it
+                }
+              }
+            patientProfileUiState.value =
+              patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
+            filterGuardianVisitTasks()
+          }
+          R.id.client_visit -> {
+            val updatedMenuItems =
+              patientProfileUiState.value.overflowMenuItems.map {
+                when (it.id) {
+                  R.id.guardian_visit -> it.apply { hidden = false }
+                  R.id.client_visit -> it.apply { hidden = true }
+                  else -> it
+                }
+              }
+            patientProfileUiState.value =
+              patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
+            undoGuardianVisitTasksFilter()
+          }
           R.id.view_family -> {
             event.familyId?.let { familyId ->
               val urlParams =
@@ -134,6 +235,19 @@ constructor(
                 )
               event.navController.navigate(
                 route = MainNavigationScreen.FamilyProfile.route + urlParams
+              )
+            }
+          }
+          R.id.view_children -> {
+            event.patientId.let { patientId ->
+              val urlParams =
+                NavigationArg.bindArgumentsOf(
+                  Pair(NavigationArg.FEATURE, AppFeature.HouseholdManagement.name),
+                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV.name),
+                  Pair(NavigationArg.PATIENT_ID, patientId)
+                )
+              event.navController.navigate(
+                route = MainNavigationScreen.ViewChildContacts.route + urlParams
               )
             }
           }
@@ -159,19 +273,27 @@ constructor(
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = VIRAL_LOAD_RESULTS_FORM,
               clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
+              questionnaireType = QuestionnaireType.DEFAULT,
+              populationResources = event.getActivePopulationResources()
             )
           R.id.hiv_test_and_results ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = HIV_TEST_AND_RESULTS_FORM,
               clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
+              questionnaireType = QuestionnaireType.DEFAULT,
+              populationResources = event.getActivePopulationResources()
             )
           R.id.hiv_test_and_next_appointment ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = HIV_TEST_AND_NEXT_APPOINTMENT_FORM,
               clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
+              questionnaireType = QuestionnaireType.DEFAULT,
+              populationResources = event.getActivePopulationResources()
+            )
+          R.id.remove_hiv_patient ->
+            event.context.launchQuestionnaire<HivPatientQuestionnaireActivity>(
+              questionnaireId = REMOVE_HIV_PATIENT_FORM,
+              clientIdentifier = event.patientId
             )
           else -> {}
         }
@@ -180,9 +302,77 @@ constructor(
         event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,
-          backReference = event.taskId.asReference(ResourceType.Task).reference
+          backReference = event.taskId.asReference(ResourceType.Task).reference,
+          populationResources = event.getActivePopulationResources()
         )
+      is PatientProfileEvent.OpenChildProfile -> {
+        val urlParams =
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+            Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
+            Pair(NavigationArg.PATIENT_ID, event.patientId)
+          )
+        if (healthModule == HealthModule.FAMILY)
+          event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
+        else
+          event.navController.navigate(
+            route = MainNavigationScreen.PatientProfile.route + urlParams
+          )
+      }
     }
+
+  fun fetchPatientProfileDataWithChildren() {
+    if (patientId.isNotEmpty()) {
+      viewModelScope.launch {
+        patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
+          ?.let {
+            patientProfileData = it
+            patientProfileViewData.value =
+              profileViewDataMapper.transformInputToOutputModel(it) as
+                ProfileViewData.PatientProfileViewData
+            paginateChildrenRegisterData(true)
+          }
+      }
+    }
+  }
+
+  val paginatedChildrenRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
+    MutableStateFlow(emptyFlow())
+
+  fun paginateChildrenRegisterData(loadAll: Boolean = true) {
+    paginatedChildrenRegisterData.value =
+      getPager(appFeatureName, healthModule, loadAll).flow.cachedIn(viewModelScope)
+  }
+
+  private fun getPager(
+    appFeatureName: String?,
+    healthModule: HealthModule,
+    loadAll: Boolean = true
+  ): Pager<Int, RegisterViewData> =
+    Pager(
+      config =
+        PagingConfig(
+          pageSize = PatientRegisterPagingSource.DEFAULT_PAGE_SIZE,
+          initialLoadSize = PatientRegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE
+        ),
+      pagingSourceFactory = {
+        ChildContactPagingSource(
+            patientProfileViewData.value.otherPatients,
+            patientRegisterRepository,
+            registerViewDataMapper
+          )
+          .apply {
+            setPatientPagingSourceState(
+              PatientPagingSourceState(
+                appFeatureName = appFeatureName,
+                healthModule = healthModule,
+                loadAll = loadAll,
+                currentPage = 0
+              )
+            )
+          }
+      }
+    )
 
   companion object {
     const val REMOVE_FAMILY_FORM = "remove-family"
@@ -193,5 +383,7 @@ constructor(
     const val HIV_TEST_AND_RESULTS_FORM = "exposed-infant-hiv-test-and-results"
     const val HIV_TEST_AND_NEXT_APPOINTMENT_FORM =
       "contact-and-community-positive-hiv-test-and-next-appointment"
+    const val REMOVE_HIV_PATIENT_FORM = "remove-person"
+    const val PATIENT_FINISH_VISIT = "patient-finish-visit"
   }
 }

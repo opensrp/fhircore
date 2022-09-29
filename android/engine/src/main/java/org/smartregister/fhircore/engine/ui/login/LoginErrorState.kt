@@ -18,5 +18,6 @@ package org.smartregister.fhircore.engine.ui.login
 
 enum class LoginErrorState {
   UNKNOWN_HOST,
+  NETWORK_ERROR,
   INVALID_CREDENTIALS
 }
