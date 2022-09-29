@@ -20,8 +20,10 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 
 @Singleton
 class QuestConfigService @Inject constructor(@ApplicationContext val context: Context) :
@@ -35,4 +37,28 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
       clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
       accountType = context.getString(R.string.authenticator_account_type)
     )
+
+  override fun provideSyncStrategy() =
+    SyncStrategy().apply {
+      careTeamTag.tag =
+        Coding().apply {
+          system = context.getString(R.string.sync_strategy_careteam_system)
+          display = context.getString(R.string.sync_strategy_careteam_display)
+        }
+      locationTag.tag =
+        Coding().apply {
+          system = context.getString(R.string.sync_strategy_location_system)
+          display = context.getString(R.string.sync_strategy_location_display)
+        }
+      organizationTag.tag =
+        Coding().apply {
+          system = context.getString(R.string.sync_strategy_organization_system)
+          display = context.getString(R.string.sync_strategy_organization_display)
+        }
+      practitionerTag.tag =
+        Coding().apply {
+          system = context.getString(R.string.sync_strategy_practitioner_system)
+          display = context.getString(R.string.sync_strategy_practitioner_display)
+        }
+    }
 }

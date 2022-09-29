@@ -73,6 +73,7 @@ import org.robolectric.Shadows
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -81,6 +82,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.model.practitioner.FhirPractitionerDetails
@@ -99,6 +101,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   @Inject lateinit var jsonParser: IParser
+
+  @Inject lateinit var configService: ConfigService
+
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -124,12 +130,18 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString()
     )
 
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-      listOf("105")
-    )
+    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("105"))
 
-    defaultRepo = spyk(DefaultRepository(fhirEngine, coroutineRule.testDispatcherProvider))
+    defaultRepo =
+      spyk(
+        DefaultRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry,
+          configService = configService
+        )
+      )
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
 
@@ -160,7 +172,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.update(any()) } answers {}
 
-    coEvery { defaultRepo.save(any()) } returns Unit
+    coEvery { defaultRepo.create(any()) } returns emptyList()
     coEvery { defaultRepo.addOrUpdate(any()) } just runs
 
     // Setup sample resources
@@ -562,9 +574,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testSaveResourceShouldVerifyResourceSaveMethodCall() {
-    coEvery { defaultRepo.save(any()) } returns Unit
+    coEvery { defaultRepo.create(any()) } returns emptyList()
     questionnaireViewModel.saveResource(mockk())
-    coVerify(exactly = 1) { defaultRepo.save(any()) }
+    coVerify(exactly = 1) { defaultRepo.create(any()) }
   }
 
   @Test
@@ -589,7 +601,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         type = QuestionnaireType.READ_ONLY,
         resourceIdentifier = "2"
       )
-    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG_KEY, expectedQuestionnaireConfig)
+    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig)
 
     runBlocking {
       val resourceList = questionnaireViewModel.getPopulationResources(intent, questionnaireConfig)
@@ -954,7 +966,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val sourcePatient = Patient().apply { id = "test_patient_1_id" }
     questionnaireViewModel.saveResource(sourcePatient)
 
-    coVerify { defaultRepo.save(sourcePatient) }
+    coVerify { defaultRepo.create(sourcePatient) }
   }
 
   @Test

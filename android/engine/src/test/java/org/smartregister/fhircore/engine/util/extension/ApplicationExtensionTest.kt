@@ -21,10 +21,8 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.workflow.FhirOperator
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import java.util.Calendar
 import java.util.UUID
@@ -37,8 +35,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class ApplicationExtensionTest : RobolectricTest() {
 
@@ -115,32 +111,5 @@ class ApplicationExtensionTest : RobolectricTest() {
       expectedDateTimeFormat,
       DateTimeType(dateTimeTypeObject).format().split("T")[0]
     )
-  }
-
-  @Test
-  fun `FhirEngine#loadCqlLibraryBundle()`() {
-
-    val context = ApplicationProvider.getApplicationContext<Application>()
-    val fhirEngine = mockk<FhirEngine>()
-    val fhirOperator: FhirOperator = mockk()
-    val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
-    val measureResourceBundleUrl = "measure/ANCIND01-bundle.json"
-
-    val prefsDataKey = SharedPreferenceKey.MEASURE_RESOURCES_LOADED.name
-    every { sharedPreferencesHelper.read(prefsDataKey, any<String>()) } returns ""
-    every { sharedPreferencesHelper.write(prefsDataKey, any<String>()) } returns Unit
-    coEvery { fhirOperator.loadLib(any()) } returns Unit
-    coEvery { fhirEngine.create(any()) } returns listOf()
-
-    runBlocking {
-      fhirEngine.loadCqlLibraryBundle(
-        context = context,
-        fhirOperator = fhirOperator,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        resourcesBundlePath = measureResourceBundleUrl
-      )
-    }
-
-    Assert.assertNotNull(sharedPreferencesHelper.read(prefsDataKey, ""))
   }
 }
