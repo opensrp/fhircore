@@ -148,7 +148,7 @@ constructor(
           val bundle = accountBundleFuture.result
           bundle.getParcelable<Parcelable>(AccountManager.KEY_INTENT).let { intent ->
             if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              resumeSync()
+              syncBroadcaster.runSync()
               return@let
             }
             accountAuthenticator.logout()
@@ -251,8 +251,6 @@ constructor(
           ?: Locale.ENGLISH.toLanguageTag()
       )
       .displayName
-
-  private fun resumeSync() = syncBroadcaster.runSync()
 
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
     val syncTimestampFormatter =
