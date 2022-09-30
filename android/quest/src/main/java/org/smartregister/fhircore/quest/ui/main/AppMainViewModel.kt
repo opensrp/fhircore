@@ -101,7 +101,6 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
   }
 
-
   fun retrieveIconsAsBitmap() {
     navigationConfiguration.clientRegisters
       .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }

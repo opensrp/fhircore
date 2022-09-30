@@ -27,7 +27,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
