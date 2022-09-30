@@ -1,0 +1,1308 @@
+{
+    "resourceType": "StructureMap",
+    "id": "42d6d826-d6b2-41e9-9787-7424b4deca85",
+    "url": "https://fhir.labs.smartregister.org/fhir/StructureMap/42d6d826-d6b2-41e9-9787-7424b4deca85",
+    "name": "PNC Registration",
+    "structure": [
+        {
+            "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+            "mode": "source"
+        },
+        {
+            "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+            "mode": "target"
+        }
+    ],
+    "group": [
+        {
+            "name": "PNCRegistration",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "bundle",
+                    "type": "Bundle",
+                    "mode": "target"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_bundle_type",
+                    "source": [
+                        {
+                            "context": "src"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "bundle",
+                            "contextType": "variable",
+                            "element": "type",
+                            "transform": "copy",
+                            "parameter": [
+                                {
+                                    "valueString": "collection"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "r_bundle_entries",
+                    "source": [
+                        {
+                            "context": "src"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "variable": "refPatient",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueId": "src"
+                                },
+                                {
+                                    "valueString": "$this.subject"
+                                }
+                            ]
+                        }
+                    ],
+                    "dependent": [
+                        {
+                            "name": "ExtractPNCResources",
+                            "variable": [
+                                "src",
+                                "bundle",
+                                "refPatient"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ExtractPNCResources",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "bundle",
+                    "type": "Bundle",
+                    "mode": "target"
+                },
+                {
+                    "name": "refPatient",
+                    "type": "Reference",
+                    "mode": "source"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "rule_live_birth_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "variable": "item_pnc_started",
+                            "condition": "((linkId = 'dd90825d-c161-480a-8f9f-ab2921155be2') and (answer.value.code = 'live-birth'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "rule_pnc_condition",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "dependent": [
+                                {
+                                    "name": "ExtractPNCCondition",
+                                    "variable": [
+                                        "src",
+                                        "bundle",
+                                        "refPatient"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "rule_child_registration",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "dependent": [
+                                {
+                                    "name": "ExtractChildRegistrationTasks",
+                                    "variable": [
+                                        "src",
+                                        "bundle",
+                                        "refPatient"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "rule_comodity_observation",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "dependent": [
+                                {
+                                    "name": "ExtractObservation",
+                                    "variable": [
+                                        "src",
+                                        "bundle",
+                                        "refPatient"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ExtractPNCCondition",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "bundle",
+                    "type": "Bundle",
+                    "mode": "target"
+                },
+                {
+                    "name": "refPatient",
+                    "type": "Reference",
+                    "mode": "source"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_cnd",
+                    "source": [
+                        {
+                            "context": "src"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "bundle",
+                            "contextType": "variable",
+                            "element": "entry",
+                            "variable": "entry"
+                        },
+                        {
+                            "context": "entry",
+                            "contextType": "variable",
+                            "element": "resource",
+                            "variable": "cnd",
+                            "transform": "create",
+                            "parameter": [
+                                {
+                                    "valueString": "Condition"
+                                }
+                            ]
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_cnd_id",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "id",
+                                    "transform": "uuid"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_onset_date_val",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "onset",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "now()"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_clinical_st",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "clinicalStatus",
+                                    "transform": "cc",
+                                    "parameter": [
+                                        {
+                                            "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                                        },
+                                        {
+                                            "valueString": "active"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_verif_st",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "verificationStatus",
+                                    "transform": "cc",
+                                    "parameter": [
+                                        {
+                                            "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+                                        },
+                                        {
+                                            "valueString": "confirmed"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_category",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "category",
+                                    "transform": "cc",
+                                    "parameter": [
+                                        {
+                                            "valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
+                                        },
+                                        {
+                                            "valueString": "encounter-diagnosis"
+                                        },
+                                        {
+                                            "valueString": "Encounter Diagnosis"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_sub",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "subject",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueId": "refPatient"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_recorded",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "recordedDate",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "now()"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_code",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "code",
+                                    "variable": "ccPreg",
+                                    "transform": "create",
+                                    "parameter": [
+                                        {
+                                            "valueString": "CodeableConcept"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "rule": [
+                                {
+                                    "name": "r_cnd_code_coding",
+                                    "source": [
+                                        {
+                                            "context": "src"
+                                        }
+                                    ],
+                                    "target": [
+                                        {
+                                            "context": "ccPreg",
+                                            "contextType": "variable",
+                                            "element": "coding",
+                                            "transform": "c",
+                                            "parameter": [
+                                                {
+                                                    "valueString": "http://snomed.info/sct"
+                                                },
+                                                {
+                                                    "valueString": "234234234"
+                                                },
+                                                {
+                                                    "valueString": "PNC"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "r_cnd_code_text",
+                                    "source": [
+                                        {
+                                            "context": "src"
+                                        }
+                                    ],
+                                    "target": [
+                                        {
+                                            "context": "ccPreg",
+                                            "contextType": "variable",
+                                            "element": "text",
+                                            "transform": "copy",
+                                            "parameter": [
+                                                {
+                                                    "valueString": "PNC"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ExtractChildRegistrationTasks",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "bundle",
+                    "type": "Bundle",
+                    "mode": "target"
+                },
+                {
+                    "name": "refPatient",
+                    "type": "Reference",
+                    "mode": "source"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "rule_create_task",
+                    "source": [
+                        {
+                            "context": "src"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "variable": "start",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueId": "src"
+                                },
+                                {
+                                    "valueString": "today()"
+                                }
+                            ]
+                        },
+                        {
+                            "variable": "end",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueId": "src"
+                                },
+                                {
+                                    "valueString": "today() + '2 'days''.toQuantity()"
+                                }
+                            ]
+                        },
+                        {
+                            "variable": "period",
+                            "transform": "create",
+                            "parameter": [
+                                {
+                                    "valueString": "Period"
+                                }
+                            ]
+                        },
+                        {
+                            "context": "bundle",
+                            "contextType": "variable",
+                            "element": "entry",
+                            "variable": "entry"
+                        },
+                        {
+                            "context": "entry",
+                            "contextType": "variable",
+                            "element": "resource",
+                            "variable": "pncTask",
+                            "transform": "create",
+                            "parameter": [
+                                {
+                                    "valueString": "Task"
+                                }
+                            ]
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "rule_task_period",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "dependent": [
+                                {
+                                    "name": "ExtractTaskPeriod",
+                                    "variable": [
+                                        "start",
+                                        "end",
+                                        "period"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "rule_task_data",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "id",
+                                    "transform": "uuid"
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "identifier",
+                                    "variable": "identifier",
+                                    "transform": "create",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Identifier"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "identifier",
+                                    "contextType": "variable",
+                                    "element": "value",
+                                    "transform": "uuid"
+                                },
+                                {
+                                    "context": "identifier",
+                                    "contextType": "variable",
+                                    "element": "use",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "official"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "status",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "ready"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "intent",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "plan"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "executionPeriod",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueId": "period"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "priority",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "routine"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "description",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "New Born registration task"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "for",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueId": "refPatient"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "authoredOn",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "now()"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "requester",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "$this.generalPractitioner.first()"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "owner",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "$this.generalPractitioner.first()"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_task_reason_ref",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "pncTask",
+                                    "contextType": "variable",
+                                    "element": "reasonReference",
+                                    "variable": "ref",
+                                    "transform": "create",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Reference"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "context": "ref",
+                                    "contextType": "variable",
+                                    "element": "reference",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Questionnaire/f0a04fc4-4179-4df4-b2dc-8b2eac444d0b"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ExtractTaskPeriod",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "start",
+                    "type": "DateType",
+                    "mode": "source"
+                },
+                {
+                    "name": "end",
+                    "type": "DateType",
+                    "mode": "source"
+                },
+                {
+                    "name": "period",
+                    "type": "Period",
+                    "mode": "target"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_per_start",
+                    "source": [
+                        {
+                            "context": "start"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "period",
+                            "contextType": "variable",
+                            "element": "start",
+                            "variable": "dt",
+                            "transform": "create",
+                            "parameter": [
+                                {
+                                    "valueString": "dateTime"
+                                }
+                            ]
+                        },
+                        {
+                            "context": "dt",
+                            "contextType": "variable",
+                            "element": "value",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueId": "start"
+                                },
+                                {
+                                    "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "r_per_end",
+                    "source": [
+                        {
+                            "context": "end"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "period",
+                            "contextType": "variable",
+                            "element": "end",
+                            "variable": "dt",
+                            "transform": "create",
+                            "parameter": [
+                                {
+                                    "valueString": "dateTime"
+                                }
+                            ]
+                        },
+                        {
+                            "context": "dt",
+                            "contextType": "variable",
+                            "element": "value",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueId": "end"
+                                },
+                                {
+                                    "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ExtractObservation",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "bundle",
+                    "type": "Bundle",
+                    "mode": "target"
+                },
+                {
+                    "name": "refPatient",
+                    "type": "Reference",
+                    "mode": "source"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_condom_given_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "variable": "item_given",
+                            "condition": "((linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825') and (answer.value.code != 'none'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_condom_given_count_check",
+                            "source": [
+                                {
+                                    "context": "src",
+                                    "element": "item",
+                                    "variable": "item_given_count",
+                                    "condition": "((linkId = '489de7ae-51cc-4f43-c761-12c8fb65266b') and answer.value.exists() and (answer.value.toInteger() > 0))"
+                                }
+                            ],
+                            "rule": [
+                                {
+                                    "name": "r_obs",
+                                    "source": [
+                                        {
+                                            "context": "src"
+                                        }
+                                    ],
+                                    "target": [
+                                        {
+                                            "context": "bundle",
+                                            "contextType": "variable",
+                                            "element": "entry",
+                                            "variable": "entry"
+                                        },
+                                        {
+                                            "context": "entry",
+                                            "contextType": "variable",
+                                            "element": "resource",
+                                            "variable": "obs",
+                                            "transform": "create",
+                                            "parameter": [
+                                                {
+                                                    "valueString": "Observation"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "rule": [
+                                        {
+                                            "name": "r_obs_id",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "context": "obs",
+                                                    "contextType": "variable",
+                                                    "element": "id",
+                                                    "transform": "uuid"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "r_obs_status",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "context": "obs",
+                                                    "contextType": "variable",
+                                                    "element": "status",
+                                                    "transform": "copy",
+                                                    "parameter": [
+                                                        {
+                                                            "valueString": "final"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "r_obs_category_1",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "context": "obs",
+                                                    "contextType": "variable",
+                                                    "element": "category",
+                                                    "transform": "cc",
+                                                    "parameter": [
+                                                        {
+                                                            "valueString": "http://snomed.info/sct"
+                                                        },
+                                                        {
+                                                            "valueString": "386452003"
+                                                        },
+                                                        {
+                                                            "valueString": "Supply management"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "r_obs_category_2",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "context": "obs",
+                                                    "contextType": "variable",
+                                                    "element": "category",
+                                                    "transform": "cc",
+                                                    "parameter": [
+                                                        {
+                                                            "valueString": "http://hl7.org/fhir/inventoryreport-counttype"
+                                                        },
+                                                        {
+                                                            "valueString": "subtraction"
+                                                        },
+                                                        {
+                                                            "valueString": "Subtraction"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "r_obs_code",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "context": "obs",
+                                                    "contextType": "variable",
+                                                    "element": "code",
+                                                    "variable": "code",
+                                                    "transform": "create",
+                                                    "parameter": [
+                                                        {
+                                                            "valueString": "CodeableConcept"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "rule": [
+                                                {
+                                                    "name": "r_obs_c_text",
+                                                    "source": [
+                                                        {
+                                                            "context": "src"
+                                                        }
+                                                    ],
+                                                    "target": [
+                                                        {
+                                                            "context": "code",
+                                                            "contextType": "variable",
+                                                            "element": "text",
+                                                            "transform": "copy",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "consumption"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "r_obs_ref",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "context": "obs",
+                                                    "contextType": "variable",
+                                                    "element": "subject",
+                                                    "variable": "ref",
+                                                    "transform": "create",
+                                                    "parameter": [
+                                                        {
+                                                            "valueString": "Reference"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "dependent": [
+                                                {
+                                                    "name": "ExtractReference",
+                                                    "variable": [
+                                                        "src",
+                                                        "ref"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "r_effective_current_date_time",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "context": "obs",
+                                                    "contextType": "variable",
+                                                    "element": "effective",
+                                                    "transform": "evaluate",
+                                                    "parameter": [
+                                                        {
+                                                            "valueId": "src"
+                                                        },
+                                                        {
+                                                            "valueString": "now()"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "r_obs_performer",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "context": "obs",
+                                                    "contextType": "variable",
+                                                    "element": "performer",
+                                                    "transform": "evaluate",
+                                                    "parameter": [
+                                                        {
+                                                            "valueId": "src"
+                                                        },
+                                                        {
+                                                            "valueString": "$this.generalPractitioner.first()"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "r_obs_value",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "context": "obs",
+                                                    "contextType": "variable",
+                                                    "element": "value",
+                                                    "variable": "qty",
+                                                    "transform": "create",
+                                                    "parameter": [
+                                                        {
+                                                            "valueString": "Quantity"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "rule": [
+                                                {
+                                                    "name": "r_obs_qty",
+                                                    "source": [
+                                                        {
+                                                            "context": "src"
+                                                        }
+                                                    ],
+                                                    "target": [
+                                                        {
+                                                            "context": "qty",
+                                                            "contextType": "variable",
+                                                            "element": "value",
+                                                            "transform": "evaluate",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueId": "item_given_count"
+                                                                },
+                                                                {
+                                                                    "valueString": "$this.answer.value"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "context": "qty",
+                                                            "contextType": "variable",
+                                                            "element": "unit",
+                                                            "transform": "copy",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "Pieces"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "context": "qty",
+                                                            "contextType": "variable",
+                                                            "element": "system",
+                                                            "transform": "copy",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "http://snomed.info/sct"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "context": "qty",
+                                                            "contextType": "variable",
+                                                            "element": "code",
+                                                            "transform": "copy",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "767525000"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ExtractReference",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "ref",
+                    "type": "Reference",
+                    "mode": "target"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_male_condom_type_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "condition": "((linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825') and (answer.value.code = 'male-condoms'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_male_condom_ref",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "ref",
+                                    "contextType": "variable",
+                                    "element": "reference",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Group/951da426-1506-4cab-b03e-5583bdf0ca76"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "r_female_condom_type_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "condition": "((linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825') and (answer.value.code = 'female-condoms'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_female_condom_ref",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "ref",
+                                    "contextType": "variable",
+                                    "element": "reference",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Group/3af23539-850a-44ed-8fb1-d4999e2145ff"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

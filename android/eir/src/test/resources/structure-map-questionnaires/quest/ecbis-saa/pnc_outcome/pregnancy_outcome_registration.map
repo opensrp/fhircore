@@ -68,35 +68,37 @@ group ExtractTaskPeriod(source start: DateType, source end: DateType, target per
 }
 
 group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
-    src.item as item where(linkId ='489de7ae-51cc-4f43-c761-12c8fb65266b' and answer.value.exists() and answer.value.toInteger() > 0) then {
-        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
-            src -> obs.id = uuid() "r_obs_id";
-            src -> obs.status = 'final' "r_obs_status";
-            src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
-            src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
-            src -> obs.code = create('CodeableConcept') as code then {
-                src -> code.text = 'consumption' "r_obs_c_text";
-            } "r_obs_code";
-            src -> obs.subject = create('Reference') as ref then ExtractReference(src, ref) "r_obs_ref";
-            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
-            src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
-            src -> obs.value = create('Quantity') as qty then {
-                src -> qty.value = evaluate(item, $this.answer.value),
-                    qty.unit = 'Pieces',
-                    qty.system = 'http://snomed.info/sct',
-                    qty.code = '767525000' "r_obs_qty";
-            } "r_obs_value";
-        } "r_obs";
-    } "r_condom_given_value_check";
+    src.item as item_given where(linkId='d26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code != 'none') then {
+        src.item as item_given_count where(linkId ='489de7ae-51cc-4f43-c761-12c8fb65266b' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                src -> obs.id = uuid() "r_obs_id";
+                src -> obs.status = 'final' "r_obs_status";
+                src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+                src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
+                src -> obs.code = create('CodeableConcept') as code then {
+                    src -> code.text = 'consumption' "r_obs_c_text";
+                } "r_obs_code";
+                src -> obs.subject = create('Reference') as ref then ExtractReference(src, ref) "r_obs_ref";
+                src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+                src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                src -> obs.value = create('Quantity') as qty then {
+                    src -> qty.value = evaluate(item_given_count, $this.answer.value),
+                        qty.unit = 'Pieces',
+                        qty.system = 'http://snomed.info/sct',
+                        qty.code = '767525000' "r_obs_qty";
+                } "r_obs_value";
+            } "r_obs";
+        } "r_condom_given_count_check";
+    } "r_condom_given_check";
 }
 
 group ExtractReference(source src: QuestionnaireResponse, target ref: Reference) {
 
-src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'male-condoms') then {
-    src -> ref.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76' "r_male_condom_ref";
-} "r_male_condom_type_check";
+    src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'male-condoms') then {
+        src -> ref.reference = 'Group/951da426-1506-4cab-b03e-5583bdf0ca76' "r_male_condom_ref";
+    } "r_male_condom_type_check";
 
-src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'female-condoms') then {
-    src -> ref.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff' "r_female_condom_ref";
-} "r_female_condom_type_check";
+    src.item where(linkId = 'd26cf25a-5811-47dc-bfe9-84899c0e9825' and answer.value.code = 'female-condoms') then {
+        src -> ref.reference = 'Group/3af23539-850a-44ed-8fb1-d4999e2145ff' "r_female_condom_ref";
+    } "r_female_condom_type_check";
 }
