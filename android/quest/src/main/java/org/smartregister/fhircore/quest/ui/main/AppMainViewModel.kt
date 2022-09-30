@@ -168,7 +168,8 @@ constructor(
         val args =
           bundleOf(
             NavigationArg.PROFILE_ID to event.profileId,
-            NavigationArg.RESOURCE_ID to event.resourceId
+            NavigationArg.RESOURCE_ID to event.resourceId,
+            NavigationArg.RESOURCE_CONFIG to event.resourceConfig
           )
         event.navController.navigate(MainNavigationScreen.Profile.route, args)
       }
@@ -260,7 +261,14 @@ constructor(
         ConfigType.GeoWidget,
         geoWidgetConfigId
       )
-    onEvent(AppMainEvent.OpenProfile(navController, geoWidgetConfiguration.profileId, resourceId))
+    onEvent(
+      AppMainEvent.OpenProfile(
+        navController = navController,
+        profileId = geoWidgetConfiguration.profileId,
+        resourceId = resourceId,
+        resourceConfig = geoWidgetConfiguration.resourceConfig
+      )
+    )
   }
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {

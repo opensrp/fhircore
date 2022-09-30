@@ -33,10 +33,11 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.register.ResourceConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
@@ -268,13 +269,17 @@ constructor(
     }
   }
 
-  override suspend fun loadProfileData(profileId: String, resourceId: String): ResourceData {
+  override suspend fun loadProfileData(
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig?
+  ): ResourceData {
     val profileConfiguration =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
         ConfigType.Profile,
         profileId
       )
-    val baseResourceConfig = profileConfiguration.fhirResource.baseResource
+    val baseResourceConfig = (fhirResourceConfig ?: profileConfiguration.fhirResource).baseResource
     val relatedResourcesConfig = profileConfiguration.fhirResource.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType

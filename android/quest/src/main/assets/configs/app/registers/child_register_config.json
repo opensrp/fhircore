@@ -11,9 +11,7 @@
           "filterType": "DATE",
           "key": "birthdate",
           "valueType": "DATE",
-          "valueDateType": {
-            "date": "2017-03-14"
-          },
+          "valueDate": "2017-03-14",
           "paramPrefix": "GREATERTHAN_OR_EQUALS"
         }
       ]
@@ -77,7 +75,14 @@
                 "primaryTextColor": "#000000"
               }
             ],
-            "showVerticalDivider": false
+            "showVerticalDivider": false,
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "defaultProfile"
+              }
+            ]
           }
         ]
       }

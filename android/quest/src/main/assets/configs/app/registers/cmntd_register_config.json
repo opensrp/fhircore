@@ -105,7 +105,14 @@
                 "primaryTextColor": "#000000"
               }
             ],
-            "showVerticalDivider": false
+            "showVerticalDivider": false,
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "otherRegistersProfile"
+              }
+            ]
           }
         ]
       }

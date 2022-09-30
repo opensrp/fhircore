@@ -1,0 +1,258 @@
+{
+  "appId": "app",
+  "configType": "profile",
+  "id": "otherRegistersProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Condition"
+    },
+    "relatedResources": [
+      {
+        "resource": "Patient",
+        "fhirPathExpression": "Condition.subject",
+        "relatedResources": [
+          {
+            "resource": "CarePlan",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "Task",
+            "searchParameter": "subject"
+          }
+        ]
+      }
+    ]
+  },
+  "rules": [
+    {
+      "name": "patientName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientName', fhirPath.extractValue(Patient.get(0), \"Patient.name.select(given + ' ' + family)\"))"
+      ]
+    },
+    {
+      "name": "patientId",
+      "condition": "true",
+      "actions": [
+        "data.put('patientId', fhirPath.extractValue(Patient.get(0), 'Patient.identifier[0].value'))"
+      ]
+    },
+    {
+      "name": "patientAge",
+      "condition": "true",
+      "actions": [
+        "data.put('patientAge', service.extractAge(Patient.get(0)))"
+      ]
+    },
+    {
+      "name": "patientGender",
+      "condition": "true",
+      "actions": [
+        "data.put('patientGender', service.extractGender(Patient.get(0)))"
+      ]
+    },
+    {
+      "name": "patientDOB",
+      "condition": "true",
+      "actions": [
+        "data.put('patientDOB', service.extractDOB(Patient.get(0), 'dd/MM/YY'))"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "CARD",
+          "padding": 0,
+          "content": [
+            {
+              "viewType": "COLUMN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "@{patientName}",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "ID: @{patientId}",
+                  "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "PERSONAL_DATA",
+                  "personalDataItems": [
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Sex",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{patientGender}",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    },
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "Age",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{patientAge}",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    },
+                    {
+                      "label": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "DOB",
+                        "primaryTextColor": "#000000"
+                      },
+                      "displayValue": {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{patientDOB}",
+                        "fontSize": 14,
+                        "primaryTextColor": "#000000"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewType": "SPACER",
+          "height": 16
+        },
+        {
+          "viewType": "CARD",
+          "padding": 16,
+          "header": {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "VISITS",
+            "primaryTextColor": "#6F7274",
+            "fontSize": 18.0,
+            "padding": 16
+          },
+          "content": [
+            {
+              "viewType": "LIST",
+              "baseResource": "Task",
+              "registerCard": {
+                "rules": [
+                  {
+                    "name": "taskStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
+                    ]
+                  },
+                  {
+                    "name": "taskStatusColorCode",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
+                    ]
+                  },
+                  {
+                    "name": "taskDescription",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
+                    ]
+                  },
+                  {
+                    "name": "taskId",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
+                    ]
+                  },
+                  {
+                    "name": "taskQuestionnaireId",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
+                    ]
+                  }
+                ],
+                "views": [
+                  {
+                    "viewType": "BUTTON",
+                    "smallSized": "true",
+                    "text": "@{taskDescription}",
+                    "status": "@{taskStatusColorCode}",
+                    "visible": "true",
+                    "actions": [
+                      {
+                        "trigger": "ON_CLICK",
+                        "workflow": "LAUNCH_QUESTIONNAIRE",
+                        "questionnaire": {
+                          "id": "@{taskQuestionnaireId}",
+                          "title": "@{taskDescription}",
+                          "saveButtonText": "Save",
+                          "taskId": "@{taskId}"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "overFlowMenuItems": [
+    {
+      "title": "View family",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "defaultProfile",
+          "params": [
+            {
+              "key": "familyId",
+              "value": "@{familyId}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Register Pregnancy",
+      "titleColor": "#000000",
+      "visible": "true",
+      "showSeparator": "true"
+    },
+    {
+      "title": "Pregnancy Outcome",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "Enrol to FP",
+      "titleColor": "#000000",
+      "visible": "true"
+    },
+    {
+      "title": "Remove Patient",
+      "titleColor": "#FF0000",
+      "visible": "true",
+      "showSeparator": "true"
+    }
+  ]
+}

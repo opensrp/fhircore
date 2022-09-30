@@ -103,7 +103,7 @@ fun Search.filterDate(dataQuery: DataQuery) {
         DateClientParam(dataQuery.key),
         {
           this.prefix = dataQuery.paramPrefix
-          this.value = of(DateType(dataQuery.valueDateType?.date))
+          this.value = of(DateType(dataQuery.valueDate))
         }
       )
     else ->
