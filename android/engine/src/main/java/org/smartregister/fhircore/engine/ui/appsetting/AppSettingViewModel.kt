@@ -21,15 +21,25 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.nio.charset.Charset
 import javax.inject.Inject
+import okio.ByteString.Companion.decodeBase64
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
+import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.register.FhirResourceConfig
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.register.ResourceConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import timber.log.Timber
 
 @HiltViewModel
@@ -37,7 +47,8 @@ class AppSettingViewModel
 @Inject
 constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
   val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
@@ -77,18 +88,10 @@ constructor(
       Timber.i("Fetching configs for app $appId")
       showProgressBar.postValue(true)
       val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
-      val compositionResponse =
-        fhirResourceDataSource.loadData(urlPath).entryFirstRep.also {
-          if (!it.hasResource()) {
-            Timber.w("No response for composition resource on path $urlPath")
-            showProgressBar.postValue(false)
-            _error.postValue(context.getString(R.string.application_not_supported, appId))
-            return
-          }
-        }
+      val compositionResource = fetchComposition(urlPath, context) ?: return
 
-      val composition = (compositionResponse.resource as Composition)
-      composition
+      val patientRelatedResourceTypes = mutableListOf<ResourceType>()
+      compositionResource
         .retrieveCompositionSections()
         .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
         .groupBy { it.focus.reference.substringBeforeLast("/") }
@@ -98,11 +101,29 @@ constructor(
           val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
           fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach {
             defaultRepository.create(it.resource)
+
+            if (it.resource is Binary) {
+              val binary = it.resource as Binary
+              binary.data.decodeToString().decodeBase64()!!.string(Charset.defaultCharset()).let {
+                val config =
+                  it.tryDecodeJson<RegisterConfiguration>()
+                    ?: it.tryDecodeJson<ProfileConfiguration>()
+
+                when (config) {
+                  is RegisterConfiguration ->
+                    config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                  is ProfileConfiguration ->
+                    config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                }
+              }
+            }
           }
         }
 
+      saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
+
       // Save composition after fetching all the referenced section resources
-      defaultRepository.create(composition)
+      defaultRepository.create(compositionResource)
 
       loadConfigurations(true)
       showProgressBar.postValue(false)
@@ -112,6 +133,35 @@ constructor(
         showProgressBar.postValue(false)
         _error.postValue("${it.message}")
       }
+  }
+
+  suspend fun fetchComposition(urlPath: String, context: Context): Composition? {
+    return fhirResourceDataSource.loadData(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for composition resource on path $urlPath")
+        showProgressBar.postValue(false)
+        _error.postValue(context.getString(R.string.application_not_supported, appId))
+        return null
+      }
+
+      it.resource as Composition
+    }
+  }
+
+  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
+      resourceTypes.distinctBy { it.name }
+    )
+
+  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+    this.baseResource.dependentResourceTypes(target)
+    this.relatedResources.forEach { it.dependentResourceTypes(target) }
+  }
+
+  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+    target.add(ResourceType.fromCode(resource))
+    relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
   fun hasDebugSuffix(): Boolean = appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) ?: false
