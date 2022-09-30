@@ -154,16 +154,12 @@ constructor(
       resourceTypes.distinctBy { it.name }
     )
 
-  private fun FhirResourceConfig.dependentResourceTypes(
-    target: MutableList<ResourceType> = mutableListOf()
-  ) {
+  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     this.baseResource.dependentResourceTypes(target)
     this.relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
-  private fun ResourceConfig.dependentResourceTypes(
-    target: MutableList<ResourceType> = mutableListOf()
-  ) {
+  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     target.add(ResourceType.fromCode(resource))
     relatedResources.forEach { it.dependentResourceTypes(target) }
   }

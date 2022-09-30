@@ -152,6 +152,33 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun `fetchComposition() should return composition resource`() = runBlockingTest {
+    coEvery { fhirResourceDataSource.loadData(any()) } returns
+      Bundle().apply {
+        addEntry().resource =
+          Composition().apply {
+            addSection().apply {
+              this.focus =
+                Reference().apply {
+                  reference = "Binary/123"
+                  identifier = Identifier().apply { value = "register-test" }
+                }
+            }
+          }
+      }
+
+    val result =
+      appSettingViewModel.fetchComposition(
+        "Composition?identifier=test-app",
+        ApplicationProvider.getApplicationContext()
+      )
+
+    coVerify { fhirResourceDataSource.loadData(any()) }
+
+    assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
+  }
+
+  @Test
   fun testHasDebugSuffix_withSuffix_shouldReturn_true() {
     appSettingViewModel.appId.value = "app/debug"
     Assert.assertTrue(appSettingViewModel.hasDebugSuffix())
