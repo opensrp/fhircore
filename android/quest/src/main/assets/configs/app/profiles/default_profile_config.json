@@ -49,6 +49,13 @@
       "actions": [
         "data.put('patientGender', service.extractGender(Patient))"
       ]
+    },
+    {
+      "name": "patientDOB",
+      "condition": "true",
+      "actions": [
+        "data.put('patientDOB', service.extractDOB(Patient, \"DD/MM/YY\"))"
+      ]
     }
   ],
   "views": [
@@ -109,7 +116,7 @@
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
-                        "primaryText": "01 2002",
+                        "primaryText": "@{patientDOB}",
                         "fontSize": 14,
                         "primaryTextColor": "#000000"
                       }

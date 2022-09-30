@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import com.google.android.fhir.logicalId
+import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
@@ -287,6 +288,12 @@ constructor(
           AdministrativeGender.UNKNOWN -> "Unknown"
           AdministrativeGender.NULL -> ""
         }
+      } else ""
+    }
+
+    fun extractDOB(patient: Patient, dateFormat: String): String {
+      return if (patient != null) {
+        SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
       } else ""
     }
   }
