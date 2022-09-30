@@ -30,6 +30,8 @@ class FhirPathDataExtractor @Inject constructor(val fhirPathEngine: FHIRPathEngi
   fun extractData(base: Base, expression: String): List<Base> =
     fhirPathEngine.evaluate(base, expression)
 
-  fun extractValue(base: Base, expression: String) =
-    this.extractData(base, expression).firstOrNull()?.primitiveValue() ?: ""
+  fun extractValue(base: Base?, expression: String): String {
+    if (base == null) return ""
+    return this.extractData(base, expression).firstOrNull()?.primitiveValue() ?: ""
+  }
 }
