@@ -169,7 +169,11 @@ private fun RenderChildView(
         resourceData = resourceData,
         navController = navController
       )
-    is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
+    is PersonalDataProperties ->
+      PersonalDataView(
+        personalDataCardProperties = viewProperties,
+        computedValuesMap = resourceData.computedValuesMap
+      )
     is ButtonProperties ->
       ActionableButton(
         buttonProperties = viewProperties,

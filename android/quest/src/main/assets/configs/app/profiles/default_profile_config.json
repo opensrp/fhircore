@@ -35,6 +35,20 @@
       "actions": [
         "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
       ]
+    },
+    {
+      "name": "patientAge",
+      "condition": "true",
+      "actions": [
+        "data.put('patientAge', service.extractAge(Patient))"
+      ]
+    },
+    {
+      "name": "patientGender",
+      "condition": "true",
+      "actions": [
+        "data.put('patientGender', service.extractGender(Patient))"
+      ]
     }
   ],
   "views": [
@@ -69,7 +83,7 @@
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
-                        "primaryText": "Female",
+                        "primaryText": "@{patientGender}",
                         "fontSize": 14,
                         "primaryTextColor": "#000000"
                       }
@@ -82,7 +96,7 @@
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
-                        "primaryText": "20Y",
+                        "primaryText": "@{patientAge}",
                         "fontSize": 14,
                         "primaryTextColor": "#000000"
                       }

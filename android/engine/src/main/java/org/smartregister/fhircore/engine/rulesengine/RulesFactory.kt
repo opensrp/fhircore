@@ -21,7 +21,9 @@ import java.util.Locale
 import javax.inject.Inject
 import org.apache.commons.jexl3.JexlBuilder
 import org.apache.commons.jexl3.JexlException
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
@@ -33,6 +35,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
+import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -270,6 +273,22 @@ constructor(
       fhirPathExpression: String,
       label: String
     ): String? = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
+
+    fun extractAge(patient: Patient): String {
+      return patient.extractAge()
+    }
+
+    fun extractGender(patient: Patient): String {
+      return if (patient.hasGender()) {
+        when (AdministrativeGender.valueOf(patient.gender.name)) {
+          AdministrativeGender.MALE -> "Male"
+          AdministrativeGender.FEMALE -> "Female"
+          AdministrativeGender.OTHER -> "Other"
+          AdministrativeGender.UNKNOWN -> "Unknown"
+          AdministrativeGender.NULL -> ""
+        }
+      } else ""
+    }
   }
 
   companion object {
