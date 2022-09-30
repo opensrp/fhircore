@@ -1,23 +1,23 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "ancRegister",
+  "id": "mentalHealthRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Condition",
       "dataQueries": [
         {
-          "id": "ancQueryByCode",
+          "id": "mentalHealthQueryByCode",
           "filterType": "TOKEN",
           "key": "code",
           "valueType": "CODEABLECONCEPT",
           "valueCoding": {
             "system": "http://snomed.info/sct",
-            "code": "77386006"
+            "code": "99990004"
           }
         },
         {
-          "id": "ancQueryByClinicalStatus",
+          "id": "mentalHealthQueryByClinicalStatus",
           "filterType": "TOKEN",
           "key": "clinical-status",
           "valueType": "CODEABLECONCEPT",

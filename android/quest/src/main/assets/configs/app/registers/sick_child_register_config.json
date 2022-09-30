@@ -1,23 +1,23 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "ancRegister",
+  "id": "sickChildRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Condition",
       "dataQueries": [
         {
-          "id": "ancQueryByCode",
+          "id": "sickChildQueryByCode",
           "filterType": "TOKEN",
           "key": "code",
           "valueType": "CODEABLECONCEPT",
           "valueCoding": {
             "system": "http://snomed.info/sct",
-            "code": "77386006"
+            "code": "275142008"
           }
         },
         {
-          "id": "ancQueryByClinicalStatus",
+          "id": "sickQueryByClinicalStatus",
           "filterType": "TOKEN",
           "key": "clinical-status",
           "valueType": "CODEABLECONCEPT",
