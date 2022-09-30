@@ -58,6 +58,20 @@
       "actions": [
         "data.put('patientDOB', service.extractDOB(Patient.get(0), 'dd/MM/YY'))"
       ]
+    },
+    {
+      "name": "canBearChild",
+      "condition": "true",
+      "actions": [
+        "data.put('canBearChild',  fhirPath.extractValue(Patient.get(0), \"Patient.active and Patient.gender = 'female' and (Patient.birthDate >= today() - 12 'years')\"))"
+      ]
+    },
+    {
+      "name": "canEnrollToFp",
+      "condition": "true",
+      "actions": [
+        "data.put('canEnrollToFp', data.get('canBearChild') && fhirPath.extractValue(Condition, \"Condition.code.text != 'Family Planning'\"))"
+      ]
     }
   ],
   "views": [
@@ -215,44 +229,79 @@
   ],
   "overFlowMenuItems": [
     {
-      "title": "View family",
+      "title": "Registration info",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_PROFILE",
-          "id": "defaultProfile",
-          "params": [
-            {
-              "key": "familyId",
-              "value": "@{familyId}"
-            }
-          ]
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "e5155788-8831-4916-a3f5-486915ce34b2",
+            "title": "Member registration info",
+            "saveButtonText": "Update registration",
+            "setPractitionerDetails": true,
+            "setOrganizationDetails": true,
+            "type": "EDIT",
+            "resourceIdentifier": "@{patientId}"
+          }
         }
       ]
     },
     {
-      "title": "Register Pregnancy",
-      "titleColor": "#000000",
-      "visible": "true",
-      "showSeparator": "true"
-    },
-    {
       "title": "Pregnancy Outcome",
       "titleColor": "#000000",
-      "visible": "true"
+      "visible": "@{canBearChild}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "405619ff-cde8-4379-b674-0a4735098b33",
+            "title": "Pregnancy outcome",
+            "resourceIdentifier": "@{patientId}"
+          }
+        }
+      ]
     },
     {
-      "title": "Enrol to FP",
+      "title": "Enroll to FP",
       "titleColor": "#000000",
-      "visible": "true"
+      "visible": "@{canEnrollToFp}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "4acc8776-32b0-4440-a1b1-a11a12d79acb",
+            "title": "Enroll to family planning",
+            "resourceIdentifier": "@{patientId}"
+          }
+        }
+      ]
     },
     {
-      "title": "Remove Patient",
+      "title": "View medical history",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": []
+    },
+    {
+      "title": "Remove this person",
       "titleColor": "#FF0000",
       "visible": "true",
-      "showSeparator": "true"
+      "showSeparator": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
+            "title": "Remove family member",
+            "saveButtonText": "Update registration"
+          }
+        }
+      ]
     }
   ]
 }
