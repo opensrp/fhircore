@@ -54,7 +54,7 @@
       "name": "patientDOB",
       "condition": "true",
       "actions": [
-        "data.put('patientDOB', service.extractDOB(Patient, \"DD/MM/YY\"))"
+        "data.put('patientDOB', service.extractDOB(Patient, 'dd/MM/YY'))"
       ]
     }
   ],
