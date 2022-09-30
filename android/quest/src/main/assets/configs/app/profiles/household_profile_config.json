@@ -145,19 +145,7 @@
         },
         {
           "viewType": "CARD",
-          "content": [
-            {
-              "viewType": "BUTTON",
-              "smallSized": true,
-              "text": "Routine household visit",
-              "status": "COMPLETED",
-              "visible": "false"
-            }
-          ]
-        },
-        {
-          "viewType": "CARD",
-          "header":  {
+          "header": {
             "viewType": "COMPOUND_TEXT",
             "primaryText": "HOUSEHOLD MEMBERS",
             "primaryTextColor": "#6F7274",
@@ -203,14 +191,28 @@
                     "name": "serviceStatus",
                     "condition": "true",
                     "actions": [
-                      "data.put('serviceStatus',  service.evaluateToBoolean(Task, \"Task.get(0).status = 'ready' \", false) ? 'DUE' : 'UPCOMING')"
+                      "data.put('serviceStatus',  service.evaluateToBoolean(Task, \"Task.status = 'ready' \", false) ? 'DUE' : 'UPCOMING')"
                     ]
                   },
                   {
                     "name": "taskDescription",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskDescription', fhirPath.extractValue(Task.get(0), 'Task.description'))"
+                      "data.put('taskDescription', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.description'))"
+                    ]
+                  },
+                  {
+                    "name": "taskId",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.id'))"
+                    ]
+                  },
+                  {
+                    "name": "taskQuestionnaireId",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskQuestionnaireId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.reasonReference.reference'))"
                     ]
                   },
                   {
@@ -218,6 +220,20 @@
                     "condition": "true",
                     "actions": [
                       "data.put('showMemberTasks', size(Task) > 0)"
+                    ]
+                  },
+                  {
+                    "name": "serviceMemberIcons",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('serviceMemberIcons', StringUtils:join([service.mapResourcesToLabeledCSV(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\", 'CHILD'), service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
+                    ]
+                  },
+                  {
+                    "name": "statuses",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('statuses', StringUtils:join([service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'Pregnant'), service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Family Planning'\", 'Family Planning')], ','))"
                     ]
                   }
                 ],
@@ -229,14 +245,31 @@
                         "viewType": "COMPOUND_TEXT",
                         "primaryText": "@{patientName}",
                         "primaryTextColor": "#000000"
+                      },
+                      {
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{statuses}",
+                        "primaryTextColor": "#939596"
                       }
                     ],
-                    "serviceMemberIcons": "CHILD",
+                    "serviceMemberIcons": "@{serviceMemberIcons}",
                     "serviceButton": {
                       "visible": "@{showMemberTasks}",
                       "text": "@{taskDescription}",
                       "status": "@{serviceStatus}",
-                      "smallSized": true
+                      "smallSized": true,
+                      "actions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_QUESTIONNAIRE",
+                          "questionnaire": {
+                            "id": "@{taskQuestionnaireId}",
+                            "title": "@{taskDescription}",
+                            "saveButtonText": "Save",
+                            "taskId": "@{taskId}"
+                          }
+                        }
+                      ]
                     },
                     "actions": [
                       {

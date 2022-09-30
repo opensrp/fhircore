@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -63,22 +62,25 @@ fun ActionableButton(
   modifier: Modifier = Modifier,
   buttonProperties: ButtonProperties,
   resourceData: ResourceData,
-  navController: NavController,
+  navController: NavController
 ) {
   if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
-    val computedValuesMap = remember { resourceData.computedValuesMap }
-    val status = buttonProperties.interpolateStatus(computedValuesMap)
+    val status = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
     OutlinedButton(
       onClick = {
-        buttonProperties.actions.handleClickEvent(
-          navController = navController,
-          resourceData = resourceData
-        )
+        if (status != ServiceStatus.UPCOMING && status != ServiceStatus.COMPLETED) {
+          buttonProperties.actions.handleClickEvent(
+            navController = navController,
+            resourceData = resourceData
+          )
+        }
       },
       colors =
         ButtonDefaults.buttonColors(
-          backgroundColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.1f),
-          contentColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
+          backgroundColor =
+            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.1f),
+          contentColor =
+            buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
         ),
       modifier =
         modifier
@@ -101,16 +103,17 @@ fun ActionableButton(
           tint =
             when (status) {
               ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
-              else -> buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
+              else ->
+                buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
             }
         )
         Spacer(modifier = modifier.width(6.dp))
         Text(
-          text = buttonProperties.text?.interpolate(computedValuesMap).toString(),
+          text = buttonProperties.text?.interpolate(resourceData.computedValuesMap).toString(),
           fontWeight = FontWeight.Medium,
           color =
             if (status == ServiceStatus.COMPLETED) DefaultColor.copy(0.9f)
-            else buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
+            else buttonProperties.statusColor(resourceData.computedValuesMap).copy(alpha = 0.9f)
         )
         Spacer(modifier = modifier.weight(0.5f))
         if (status == ServiceStatus.COMPLETED) {
@@ -126,7 +129,7 @@ fun ActionableButton(
 }
 
 @Composable
-fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color = remember {
+fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color {
   // Status color is determined from the service status
   val interpolated = this.status.interpolate(computedValuesMap)
   val status =
@@ -134,7 +137,7 @@ fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color = r
       ServiceStatus.valueOf(interpolated)
     else ServiceStatus.UPCOMING
 
-  when (status) {
+  return when (status) {
     ServiceStatus.DUE -> InfoColor
     ServiceStatus.OVERDUE -> DangerColor
     ServiceStatus.UPCOMING -> DefaultColor
@@ -143,10 +146,9 @@ fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color = r
 }
 
 @Composable
-fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus =
-    remember {
+fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus {
   val interpolated = this.status.interpolate(computedValuesMap)
-  if (ServiceStatus.values().map { it.name }.contains(interpolated))
+  return if (ServiceStatus.values().map { it.name }.contains(interpolated))
     ServiceStatus.valueOf(interpolated)
   else ServiceStatus.UPCOMING
 }

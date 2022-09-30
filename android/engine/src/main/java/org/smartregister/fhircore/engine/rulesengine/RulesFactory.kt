@@ -55,7 +55,8 @@ constructor(
       .namespaces(
         mutableMapOf<String, Any>(
           "Timber" to Timber,
-          "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils")
+          "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
+          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils")
         )
       )
       .silent(false)
@@ -246,7 +247,7 @@ constructor(
       resources: List<Resource>?,
       fhirPathExpression: String,
       label: String
-    ): String =
+    ): String? =
       resources
         ?.mapNotNull {
           if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
@@ -257,7 +258,6 @@ constructor(
           } else null
         }
         ?.joinToString(",")
-        ?: ""
 
     /**
      * Transforms a [resource] into [label] if the [fhirPathExpression] is evaluated to true.
@@ -269,7 +269,7 @@ constructor(
       resource: Resource,
       fhirPathExpression: String,
       label: String
-    ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
+    ): String? = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
   }
 
   companion object {

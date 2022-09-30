@@ -187,8 +187,8 @@ fun ServiceCard(
 @Composable
 private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons: String?) {
   // Count member icons only show and display counter of the rest
-  val iconsSplit = remember { serviceMemberIcons?.split(",") } ?: listOf()
-  val twoMemberIcons = remember { iconsSplit.map { it.capitalize().trim() }.take(2) }
+  val iconsSplit = serviceMemberIcons?.split(",") ?: listOf()
+  val twoMemberIcons = iconsSplit.map { it.capitalize().trim() }.take(2)
   if (twoMemberIcons.isNotEmpty()) {
     Row(modifier.padding(horizontal = 8.dp)) {
       twoMemberIcons.forEach {
