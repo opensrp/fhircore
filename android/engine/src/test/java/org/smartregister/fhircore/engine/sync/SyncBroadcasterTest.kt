@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 
@@ -89,6 +90,24 @@ class SyncBroadcasterTest : RobolectricTest() {
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
+      arrayOf(
+          ResourceType.CarePlan.name,
+          ResourceType.Condition.name,
+          ResourceType.Encounter.name,
+          ResourceType.Group.name,
+          ResourceType.Library.name,
+          ResourceType.Observation.name,
+          ResourceType.Patient.name,
+          ResourceType.PlanDefinition.name,
+          ResourceType.Questionnaire.name,
+          ResourceType.QuestionnaireResponse.name,
+          ResourceType.StructureMap.name,
+          ResourceType.Task.name
+        )
+        .sorted()
+    )
 
     val syncParam = syncBroadcaster.loadSyncParams()
 
@@ -101,7 +120,6 @@ class SyncBroadcasterTest : RobolectricTest() {
           ResourceType.Encounter,
           ResourceType.Group,
           ResourceType.Library,
-          ResourceType.Measure,
           ResourceType.Observation,
           ResourceType.Patient,
           ResourceType.PlanDefinition,

@@ -83,6 +83,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Inject lateinit var jsonParser: IParser
 
   private lateinit var questionnaireActivity: QuestionnaireActivity
+  private lateinit var questionnaireFragment: QuestQuestionnaireFragment
 
   private lateinit var intent: Intent
 
@@ -133,8 +134,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { questionnaireViewModel.generateQuestionnaireResponse(any(), any(), any()) } returns
       QuestionnaireResponse()
 
-    val questionnaireFragment = spyk<QuestQuestionnaireFragment>()
-    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+    questionnaireFragment = spyk()
+
     questionnaireFragment.apply {
       arguments =
         bundleOf(
@@ -314,6 +315,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testHandleQuestionnaireSubmitShouldShowProgressAndCallExtractAndSaveResources() {
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
     ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
+
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+
     questionnaireActivity.handleQuestionnaireSubmit()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
@@ -332,6 +336,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testHandleQuestionnaireSubmitShouldShowErrorAlertOnInvalidData() {
     val questionnaire = buildQuestionnaireWithConstraints()
+
+    coEvery { questionnaireViewModel.defaultRepository.addOrUpdate(any()) } just runs
+    every { questionnaireFragment.getQuestionnaireResponse() } returns
+      QuestionnaireResponse().apply {
+        addItem().apply { linkId = "1" }
+        addItem().apply { linkId = "2" }
+      }
 
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
     questionnaireActivity.handleQuestionnaireSubmit()
