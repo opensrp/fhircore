@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import timber.log.Timber
 
 val json = Json {
   encodeDefaults = true
@@ -30,6 +31,10 @@ val json = Json {
 /** Decode string to an entity of type [T] */
 inline fun <reified T> String.decodeJson(jsonInstance: Json? = null): T =
   jsonInstance?.decodeFromString(this) ?: json.decodeFromString(this)
+
+/** Decode string to an entity of type [T] */
+inline fun <reified T> String.tryDecodeJson(jsonInstance: Json? = null): T? =
+  kotlin.runCatching { this.decodeJson<T>(jsonInstance) }.onFailure { Timber.w(it) }.getOrNull()
 
 /** Encode the type [T] into a Json string */
 inline fun <reified T> T.encodeJson(jsonInstance: Json? = null): String =
