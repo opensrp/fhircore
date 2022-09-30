@@ -1,23 +1,23 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "ancRegister",
+  "id": "hivRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Condition",
       "dataQueries": [
         {
-          "id": "ancQueryByCode",
+          "id": "hivQueryByCode",
           "filterType": "TOKEN",
           "key": "code",
           "valueType": "CODEABLECONCEPT",
           "valueCoding": {
             "system": "http://snomed.info/sct",
-            "code": "77386006"
+            "code": "99990003"
           }
         },
         {
-          "id": "ancQueryByClinicalStatus",
+          "id": "hivQueryByClinicalStatus",
           "filterType": "TOKEN",
           "key": "clinical-status",
           "valueType": "CODEABLECONCEPT",

@@ -117,8 +117,7 @@
           "Questionnaire",
           "StructureMap",
           "Task",
-          "Group",
-          "Location"
+          "Group"
         ],
         "type": "token",
         "expression": "#count"

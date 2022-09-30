@@ -153,32 +153,6 @@
           }
         }
       ]
-    },
-    {
-      "title": "Icon configurations",
-      "mode": "working",
-      "section": [
-        {
-          "title": "Icon households",
-          "mode": "working",
-          "focus": {
-            "reference": "Binary/144177",
-            "identifier": {
-              "value": "ic_households"
-            }
-          }
-        },
-        {
-          "title": "Icon pregnant",
-          "mode": "working",
-          "focus": {
-            "reference": "Binary/145193",
-            "identifier": {
-              "value": "ic_pregnant"
-            }
-          }
-        }
-      ]
     }
   ]
 }

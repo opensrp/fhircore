@@ -1,23 +1,23 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "ancRegister",
+  "id": "pncRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Condition",
       "dataQueries": [
         {
-          "id": "ancQueryByCode",
+          "id": "pncQueryByCode",
           "filterType": "TOKEN",
           "key": "code",
           "valueType": "CODEABLECONCEPT",
           "valueCoding": {
             "system": "http://snomed.info/sct",
-            "code": "77386006"
+            "code": "234234234"
           }
         },
         {
-          "id": "ancQueryByClinicalStatus",
+          "id": "pncQueryByClinicalStatus",
           "filterType": "TOKEN",
           "key": "clinical-status",
           "valueType": "CODEABLECONCEPT",

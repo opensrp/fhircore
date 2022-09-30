@@ -40,36 +40,11 @@
           {
             "resource": "CarePlan",
             "searchParameter": "subject"
-          }
-        ]
-      },
-      {
-        "resource": "CarePlan",
-        "searchParameter": "subject",
-        "dataQueries": [
+          },
           {
-            "id": "filterHouseholdCarePlans",
-            "filterType": "TOKEN",
-            "key": "_tag",
-            "valueType": "CODING",
-            "valueCoding": {
-              "system": "https://www.snomed.org",
-              "code": "35359004"
-            }
+            "resource": "Task",
+            "searchParameter": "subject"
           }
-        ]
-      }
-    ]
-  },
-  "filter": {
-    "visible": true,
-    "display": "{{ show.overdue }}",
-    "rules": [
-      {
-        "name": "filter",
-        "condition": "",
-        "actions": [
-          ""
         ]
       }
     ]
@@ -97,6 +72,27 @@
         "actions": [
           "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
         ]
+      },
+      {
+        "name": "taskCount",
+        "condition": "true",
+        "actions": [
+          "data.put('taskCount', size(Task) == 0 ? '' : size(Task))"
+        ]
+      },
+      {
+        "name": "serviceStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+        ]
+      },
+      {
+        "name": "serviceMemberIcons",
+        "condition": "true",
+        "actions": [
+          "data.put('serviceMemberIcons', StringUtils:join([service.mapResourcesToLabeledCSV(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\", 'CHILD'), service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
+        ]
       }
     ],
     "views": [
@@ -108,24 +104,31 @@
             "details": [
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "{{ family.name.family }}",
+                "primaryText": "@{familyName} Family",
                 "primaryTextColor": "#000000"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "{{ id.family.id }}",
+                "primaryText": "ID: @{familyId}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#000000"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "{{ village.or.address }}",
+                "primaryText": "Village/Address",
                 "fontSize": 14.0,
                 "primaryTextColor": "#5A5A5A"
               }
             ],
             "showVerticalDivider": true,
-            "serviceMemberIcons": "PREGNANT_WOMAN,CHILD,CHILD",
+            "serviceMemberIcons": "@{serviceMemberIcons}",
+            "serviceButton": {
+              "visible": true,
+              "text": "@{taskCount}",
+              "status": "@{serviceStatus}",
+              "fontSize": 14.0,
+              "smallSized": false
+            },
             "actions": [
               {
                 "trigger": "ON_CLICK",
@@ -145,8 +148,8 @@
     ]
   },
   "noResults": {
-    "title": "No Families Added",
-    "message": "Sorry, you haven't added any families to your register",
+    "title": "No households added",
+    "message": "Sorry, you haven't added any households to your register",
     "actionButton": {
       "id": "noResultsButton",
       "visible": true,
@@ -158,7 +161,7 @@
           "id": "householdRegister",
           "questionnaire": {
             "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
-            "title": "{{add.family}}",
+            "title": "Add household",
             "saveButtonText": "Add Household",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true

@@ -1,23 +1,43 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "ancRegister",
+  "id": "cmntdRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Condition",
       "dataQueries": [
         {
-          "id": "ancQueryByCode",
+          "id": "cmntdBuruliUlcerQueryByCode",
           "filterType": "TOKEN",
           "key": "code",
           "valueType": "CODEABLECONCEPT",
           "valueCoding": {
             "system": "http://snomed.info/sct",
-            "code": "77386006"
+            "code": "99990000"
           }
         },
         {
-          "id": "ancQueryByClinicalStatus",
+          "id": "cmntdLeprosyQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "99990001"
+          }
+        },
+        {
+          "id": "cmntdLymphaticFamiliarisesQueryByCode",
+          "filterType": "TOKEN",
+          "key": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "99990002"
+          }
+        },
+        {
+          "id": "cmntdQueryByClinicalStatus",
           "filterType": "TOKEN",
           "key": "clinical-status",
           "valueType": "CODEABLECONCEPT",

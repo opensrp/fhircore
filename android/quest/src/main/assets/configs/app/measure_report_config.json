@@ -14,66 +14,6 @@
       "title": "Household Members ANC",
       "description": "Number of Households, Household members enrolled into ANC, disaggregated by age",
       "url": "http://fhir.org/guides/who/anc-cds/Measure/HOUSEHOLDPREGNANCY"
-    },
-    {
-      "id": "3",
-      "title": "TB Clients",
-      "description": "TB Clients disaggregated by age, gender, and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/TBCLIENTSIND01"
-    },
-    {
-      "id": "4",
-      "title": "HIV Clients",
-      "description": "HIV Clients disaggregated by age, gender, and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/HIVCLIENTSIND01"
-    },
-    {
-      "id": "5",
-      "title": "Births Home",
-      "description": "Births at Home disaggregated by gender, and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Births01"
-    },
-    {
-      "id": "6",
-      "title": "Births Facility",
-      "description": "Births at Facility disaggregated by gender, and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Births02"
-    },
-    {
-      "id": "7",
-      "title": "Stillbirths",
-      "description": "Stillbirths disaggregated by months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Stillbirth01"
-    },
-    {
-      "id": "8",
-      "title": "Deaths Neonatal",
-      "description": "Deaths Neonatal disaggregated by age and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths01"
-    },
-    {
-      "id": "9",
-      "title": "Deaths Post Neonatal",
-      "description": "Deaths Post Neonatal disaggregated by gender and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths02"
-    },
-    {
-      "id": "10",
-      "title": "Deaths Children Under 5Y",
-      "description": "Deaths Children Under 5Y disaggregated by gender and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths03"
-    },
-    {
-      "id": "11",
-      "title": "Deaths Maternal",
-      "description": "Deaths Maternal disaggregated by age and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths04"
-    },
-    {
-      "id": "12",
-      "title": "Deaths Persons Over 5Y",
-      "description": "Deaths Persons over 5Y disaggregated by gender, age and months",
-      "url": "http://fhir.org/guides/who/anc-cds/Measure/Deaths05"
     }
   ]
 }

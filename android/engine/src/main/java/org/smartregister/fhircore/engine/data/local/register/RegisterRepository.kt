@@ -110,21 +110,24 @@ constructor(
     // Retrieve related resources recursively
     relatedResourcesConfig.forEach { resourceConfig: ResourceConfig ->
       val relatedResources =
-        withContext(dispatcherProvider.io()) {
-          searchRelatedResources(
-            resourceConfig = resourceConfig,
-            baseResourceType = baseResourceType,
-            baseResource = baseResource,
-            fhirPathExpression = resourceConfig.fhirPathExpression
-          )
-        }
+        searchRelatedResources(
+          resourceConfig = resourceConfig,
+          baseResourceType = baseResourceType,
+          baseResource = baseResource,
+          fhirPathExpression = resourceConfig.fhirPathExpression
+        )
       currentRelatedResources.addAll(relatedResources)
     }
 
     val relatedResourcesMap = currentRelatedResources.createRelatedResourcesMap()
 
     // Compute values via rules engine and return a map. Rule names MUST be unique
-    val computedValuesMap = rulesFactory.fireRule(rules, baseResource, relatedResourcesMap)
+    val computedValuesMap =
+      rulesFactory.fireRule(
+        ruleConfigs = rules,
+        baseResource = baseResource,
+        relatedResourcesMap = relatedResourcesMap
+      )
 
     return ResourceData(baseResource, relatedResourcesMap, computedValuesMap)
   }
@@ -169,7 +172,7 @@ constructor(
   ): LinkedList<RelatedResourceData> {
     val relatedResourceClass = resourceConfig.resource.resourceClassType()
     val relatedResourceType = relatedResourceClass.newInstance().resourceType
-    val relatedResourceData = LinkedList<RelatedResourceData>()
+    val relatedResourcesData = LinkedList<RelatedResourceData>()
     if (fhirPathExpression.isNullOrEmpty()) {
       val relatedResourceSearch =
         Search(type = relatedResourceType).apply {
@@ -180,8 +183,8 @@ constructor(
           )
           resourceConfig.dataQueries?.forEach { filterBy(it) }
         }
-      fhirEngine.search<Resource>(relatedResourceSearch).forEach {
-        relatedResourceData.addLast(RelatedResourceData(it))
+      fhirEngine.search<Resource>(relatedResourceSearch).forEach { resource ->
+        relatedResourcesData.addLast(RelatedResourceData(resource = resource))
       }
     } else {
       fhirPathDataExtractor
@@ -195,10 +198,10 @@ constructor(
           )
         }
         .forEach { resource ->
-          relatedResourceData.addLast(RelatedResourceData(resource = resource))
+          relatedResourcesData.addLast(RelatedResourceData(resource = resource))
         }
     }
-    relatedResourceData.forEach { resourceData: RelatedResourceData ->
+    relatedResourcesData.forEach { resourceData: RelatedResourceData ->
       resourceConfig.relatedResources.forEach {
         val searchRelatedResources =
           searchRelatedResources(
@@ -210,7 +213,7 @@ constructor(
         resourceData.relatedResources.addAll(searchRelatedResources)
       }
     }
-    return relatedResourceData
+    return relatedResourcesData
   }
 
   private suspend fun searchResource(
@@ -238,7 +241,8 @@ constructor(
 
   suspend fun filterActiveGroups(search: Search): List<Resource> {
     val groups = fhirEngine.search<Group>(search)
-    return groups.filter { it.active && !it.name.isNullOrEmpty() }
+    // TODO filter active groups
+    return groups.filter { !it.name.isNullOrEmpty() }
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */

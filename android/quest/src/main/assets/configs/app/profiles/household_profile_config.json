@@ -145,90 +145,124 @@
         },
         {
           "viewType": "CARD",
-          "padding": 0,
           "content": [
             {
               "viewType": "BUTTON",
               "smallSized": true,
               "text": "Routine household visit",
-              "status": "COMPLETED"
+              "status": "COMPLETED",
+              "visible": "false"
             }
           ]
         },
         {
-          "viewType": "COLUMN",
-          "backgroundColor": "#F2F4F7",
-          "children": [
+          "viewType": "CARD",
+          "header":  {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "HOUSEHOLD MEMBERS",
+            "primaryTextColor": "#6F7274",
+            "fontSize": 18.0,
+            "padding": 16
+          },
+          "content": [
             {
-              "viewType": "SPACER",
-              "height": 8
-            },
-            {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "HOUSEHOLD MEMBERS",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            {
-              "viewType": "SPACER",
-              "height": 16
-            }
-          ]
-        },
-        {
-          "viewType": "LIST",
-          "baseResource": "Patient",
-          "padding": 16,
-          "relatedResources": [
-            {
-              "resourceType": "CarePlan",
-              "fhirPathExpression": "CarePlan.subject.reference"
-            }
-          ],
-          "registerCard": {
-            "rules": [
-              {
-                "name": "patientName",
-                "condition": "true",
-                "actions": [
-                  "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.select(given + ' ' + family)\"))"
-                ]
-              }
-            ],
-            "views": [
-              {
-                "viewType": "SERVICE_CARD",
-                "details": [
+              "viewType": "LIST",
+              "baseResource": "Patient",
+              "padding": 16,
+              "relatedResources": [
+                {
+                  "resourceType": "CarePlan",
+                  "fhirPathExpression": "CarePlan.subject.reference"
+                },
+                {
+                  "resourceType": "Condition",
+                  "fhirPathExpression": "Condition.subject.reference"
+                },
+                {
+                  "resourceType": "Task",
+                  "fhirPathExpression": "Task.for.reference"
+                }
+              ],
+              "registerCard": {
+                "rules": [
                   {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryText": "@{patientName}",
-                    "primaryTextColor": "#000000"
+                    "name": "patientName",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name.first().select(given.first() + ' ' + family.first())\"))"
+                    ]
+                  },
+                  {
+                    "name": "patientLogicalId",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('patientLogicalId', fhirPath.extractValue(Patient, 'Patient.id'))"
+                    ]
+                  },
+                  {
+                    "name": "serviceStatus",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('serviceStatus',  service.evaluateToBoolean(Task, \"Task.get(0).status = 'ready' \", false) ? 'DUE' : 'UPCOMING')"
+                    ]
+                  },
+                  {
+                    "name": "taskDescription",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskDescription', fhirPath.extractValue(Task.get(0), 'Task.description'))"
+                    ]
+                  },
+                  {
+                    "name": "showMemberTasks",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('showMemberTasks', size(Task) > 0)"
+                    ]
                   }
                 ],
-                "actions": [
+                "views": [
                   {
-                    "trigger": "ON_CLICK",
-                    "workflow": "LAUNCH_PROFILE",
-                    "id": "defaultProfile",
-                    "params": [
+                    "viewType": "SERVICE_CARD",
+                    "details": [
                       {
-                        "key": "familyLogicalId",
-                        "value": "@{familyLogicalId}"
+                        "viewType": "COMPOUND_TEXT",
+                        "primaryText": "@{patientName}",
+                        "primaryTextColor": "#000000"
+                      }
+                    ],
+                    "serviceMemberIcons": "CHILD",
+                    "serviceButton": {
+                      "visible": "@{showMemberTasks}",
+                      "text": "@{taskDescription}",
+                      "status": "@{serviceStatus}",
+                      "smallSized": true
+                    },
+                    "actions": [
+                      {
+                        "trigger": "ON_CLICK",
+                        "workflow": "LAUNCH_PROFILE",
+                        "id": "defaultProfile",
+                        "params": [
+                          {
+                            "key": "familyLogicalId",
+                            "value": "@{familyLogicalId}"
+                          }
+                        ]
                       }
                     ]
                   }
                 ]
               }
-            ]
-          }
+            }
+          ]
         }
       ]
     }
   ],
   "overFlowMenuItems": [
     {
-      "title": "Household details",
+      "title": "Family details",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
@@ -248,7 +282,7 @@
       ]
     },
     {
-      "title": "Change household head",
+      "title": "Change family head",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [

@@ -17,16 +17,11 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
@@ -59,8 +54,7 @@ fun ViewRenderer(
   modifier: Modifier = Modifier,
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
-  navController: NavController,
-  viewModel: ViewRendererViewModel = hiltViewModel()
+  navController: NavController
 ) {
   viewProperties.forEach { properties ->
     // Render views recursively
@@ -72,8 +66,7 @@ fun ViewRenderer(
             modifier = modifier,
             viewProperties = properties,
             resourceData = resourceData,
-            navController = navController,
-            viewModel = viewModel
+            navController = navController
           )
         else -> return
       }
@@ -82,8 +75,7 @@ fun ViewRenderer(
         modifier = modifier,
         viewProperties = properties,
         resourceData = resourceData,
-        navController = navController,
-        viewModel = viewModel
+        navController = navController
       )
     }
   }
@@ -94,8 +86,7 @@ private fun RenderViewGroup(
   modifier: Modifier = Modifier,
   viewProperties: ViewGroupProperties,
   resourceData: ResourceData,
-  navController: NavController,
-  viewModel: ViewRendererViewModel
+  navController: NavController
 ) {
 
   viewProperties.children.forEach { childViewProperty ->
@@ -117,8 +108,7 @@ private fun RenderViewGroup(
             modifier = modifier,
             viewProperties = childViewProperty.children,
             resourceData = resourceData,
-            navController = navController,
-            viewModel = viewModel
+            navController = navController
           )
         }
       } else if (childViewProperty.viewType == ViewType.ROW) {
@@ -138,8 +128,7 @@ private fun RenderViewGroup(
             modifier = modifier,
             viewProperties = childViewProperty.children,
             resourceData = resourceData,
-            navController = navController,
-            viewModel = viewModel
+            navController = navController
           )
         }
       }
@@ -148,8 +137,7 @@ private fun RenderViewGroup(
       modifier = modifier,
       viewProperties = childViewProperty,
       resourceData = resourceData,
-      navController = navController,
-      viewModel = viewModel
+      navController = navController
     )
   }
 }
@@ -160,7 +148,6 @@ private fun RenderChildView(
   viewProperties: ViewProperties,
   resourceData: ResourceData,
   navController: NavController,
-  viewModel: ViewRendererViewModel
 ) {
   when (viewProperties) {
     is CompoundTextProperties ->
@@ -176,22 +163,12 @@ private fun RenderChildView(
         navController = navController
       )
     is CardViewProperties ->
-      Card(
-        elevation = viewProperties.elevation.dp,
-        modifier =
-          modifier
-            .padding(viewProperties.padding.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
-      ) {
-        Column(modifier = modifier.padding(16.dp)) {
-          ViewRenderer(
-            viewProperties = viewProperties.content,
-            resourceData = resourceData,
-            navController = navController
-          )
-        }
-      }
+      CardView(
+        modifier = modifier,
+        viewProperties = viewProperties,
+        resourceData = resourceData,
+        navController = navController
+      )
     is PersonalDataProperties -> PersonalDataView(personalDataCardProperties = viewProperties)
     is ButtonProperties ->
       ActionableButton(
@@ -206,7 +183,6 @@ private fun RenderChildView(
         viewProperties = viewProperties,
         resourceData = resourceData,
         navController = navController,
-        viewModel = viewModel
       )
   }
 }
