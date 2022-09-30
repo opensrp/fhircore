@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import android.content.Context
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -32,6 +34,7 @@ import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.jeasy.rules.jexl.JexlRule
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -46,6 +49,7 @@ import timber.log.Timber
 class RulesFactory
 @Inject
 constructor(
+  @ApplicationContext val context: Context,
   val configurationRegistry: ConfigurationRegistry,
   val fhirPathDataExtractor: FhirPathDataExtractor
 ) : RuleListener {
@@ -275,27 +279,22 @@ constructor(
       label: String
     ): String? = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
-    fun extractAge(patient: Patient): String {
-      return patient.extractAge()
-    }
+    fun extractAge(patient: Patient): String = patient.extractAge()
 
     fun extractGender(patient: Patient): String {
       return if (patient.hasGender()) {
         when (AdministrativeGender.valueOf(patient.gender.name)) {
-          AdministrativeGender.MALE -> "Male"
-          AdministrativeGender.FEMALE -> "Female"
-          AdministrativeGender.OTHER -> "Other"
-          AdministrativeGender.UNKNOWN -> "Unknown"
+          AdministrativeGender.MALE -> context.getString(R.string.male)
+          AdministrativeGender.FEMALE -> context.getString(R.string.female)
+          AdministrativeGender.OTHER -> context.getString(R.string.other)
+          AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
           AdministrativeGender.NULL -> ""
         }
       } else ""
     }
 
-    fun extractDOB(patient: Patient, dateFormat: String): String {
-      return if (patient != null) {
-        SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
-      } else ""
-    }
+    fun extractDOB(patient: Patient, dateFormat: String): String =
+      SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
   }
 
   companion object {

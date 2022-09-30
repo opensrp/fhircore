@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -72,7 +73,14 @@ class RulesFactoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    rulesFactory = spyk(RulesFactory(configurationRegistry, fhirPathDataExtractor))
+    rulesFactory =
+      spyk(
+        RulesFactory(
+          ApplicationProvider.getApplicationContext(),
+          configurationRegistry,
+          fhirPathDataExtractor
+        )
+      )
     rulesEngineService = rulesFactory.RulesEngineService()
   }
 
