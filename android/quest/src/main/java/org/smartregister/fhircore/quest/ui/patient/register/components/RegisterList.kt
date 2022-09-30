@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,7 +40,8 @@ import timber.log.Timber
 fun RegisterList(
   pagingItems: LazyPagingItems<RegisterViewData>,
   onRowClick: (String) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  progressMessage: String = ""
 ) {
   LazyColumn(modifier = modifier) {
     items(pagingItems, key = { it.logicalId }) {
@@ -49,8 +49,10 @@ fun RegisterList(
     }
     pagingItems.apply {
       when {
-        loadState.refresh is LoadState.Loading -> item { BoxedCircularProgressBar() }
-        loadState.append is LoadState.Loading -> item { BoxedCircularProgressBar() }
+        loadState.refresh is LoadState.Loading ->
+          item { BoxedCircularProgressBar(progressMessage = progressMessage) }
+        loadState.append is LoadState.Loading ->
+          item { BoxedCircularProgressBar(progressMessage = progressMessage) }
         loadState.refresh is LoadState.Error -> {
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error
           item {
@@ -72,11 +74,16 @@ fun RegisterList(
 }
 
 @Composable
-fun BoxedCircularProgressBar() {
+fun BoxedCircularProgressBar(progressMessage: String) {
   Box(
     modifier = Modifier.padding(16.dp).fillMaxWidth(),
     contentAlignment = Alignment.Center,
-  ) { CircularProgressBar(modifier = Modifier.wrapContentWidth(Alignment.CenterHorizontally)) }
+  ) {
+    CircularProgressBar(
+      modifier = Modifier.wrapContentWidth(Alignment.CenterHorizontally),
+      text = progressMessage
+    )
+  }
 }
 
 @Composable
