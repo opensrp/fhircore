@@ -10,26 +10,28 @@ group PNCRoutineVisit(source src : QuestionnaireResponse, target bundle: Bundle)
 }
 
 group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
-    	src.item as item where(linkId ='48d9fb70-93b2-40e0-c44f-0502dc9e879a' and answer.value.exists() and answer.value.toInteger() > 0) then {
-            src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
-                src -> obs.id = uuid() "r_obs_id";
-                src -> obs.status = 'final' "r_obs_status";
-                src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
-                src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
-                src -> obs.code = create('CodeableConcept') as code then {
-                    src -> code.text = 'consumption' "r_obs_c_text";
-                } "r_obs_code";
-                src -> obs.subject = create('Reference') as ref then ExtractReference(src, ref) "r_obs_ref";
-                src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
-                src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
-                src -> obs.value = create('Quantity') as qty then {
-                    src -> qty.value = evaluate(item, $this.answer.value),
-                        qty.unit = 'Pieces',
-                        qty.system = 'http://snomed.info/sct',
-                        qty.code = '767525000' "r_obs_qty";
-                } "r_obs_value";
-            } "r_obs";
-    	} "r_condom_given_value_check";
+    	src.item as item_given where(linkId='9e495bd6-6f98-4031-e7bc-d27d2c78aec4' and answer.value.code != 'none') then {
+    	     src.item as item_given_count where(linkId ='48d9fb70-93b2-40e0-c44f-0502dc9e879a' and answer.value.exists() and answer.value.toInteger() > 0) then {
+                src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+                    src -> obs.id = uuid() "r_obs_id";
+                    src -> obs.status = 'final' "r_obs_status";
+                    src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+                    src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
+                    src -> obs.code = create('CodeableConcept') as code then {
+                        src -> code.text = 'consumption' "r_obs_c_text";
+                    } "r_obs_code";
+                    src -> obs.subject = create('Reference') as ref then ExtractReference(src, ref) "r_obs_ref";
+                    src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                    src -> obs.value = create('Quantity') as qty then {
+                        src -> qty.value = evaluate(item_given_count, $this.answer.value),
+                            qty.unit = 'Pieces',
+                            qty.system = 'http://snomed.info/sct',
+                            qty.code = '767525000' "r_obs_qty";
+                    } "r_obs_value";
+                } "r_obs";
+            } "r_condom_given_count_check";
+    	} "r_condom_given_check";
 }
 
 group ExtractReference(source src: QuestionnaireResponse, target ref: Reference) {
