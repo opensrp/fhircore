@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.ResourceConfig
@@ -41,6 +42,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -53,11 +55,20 @@ class RegisterRepository
 constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
-  val configurationRegistry: ConfigurationRegistry,
+  override val sharedPreferencesHelper: SharedPreferencesHelper,
+  override val configurationRegistry: ConfigurationRegistry,
+  override val configService: ConfigService,
   val rulesFactory: RulesFactory,
   val fhirPathDataExtractor: FhirPathDataExtractor
 ) :
-  Repository, DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
+  Repository,
+  DefaultRepository(
+    fhirEngine = fhirEngine,
+    dispatcherProvider = dispatcherProvider,
+    sharedPreferencesHelper = sharedPreferencesHelper,
+    configurationRegistry = configurationRegistry,
+    configService = configService
+  ) {
 
   override suspend fun loadRegisterData(currentPage: Int, registerId: String): List<ResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId)

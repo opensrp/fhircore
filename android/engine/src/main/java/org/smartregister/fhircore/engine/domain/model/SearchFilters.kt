@@ -34,4 +34,4 @@ data class DataQuery(
 
 @Stable
 @Serializable
-data class Code(val system: String? = null, val code: String? = null, val display: String? = null)
+data class Code(var system: String? = null, var code: String? = null, var display: String? = null)

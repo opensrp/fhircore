@@ -38,7 +38,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 
@@ -87,14 +86,11 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
 
-    val paramsMap =
-      mutableMapOf<String, List<String>>().apply {
-        put(
-          SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-          listOf("Organization/105")
-        )
-      }
-    val syncParam = syncBroadcaster.loadSyncParams(paramsMap)
+    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
+    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
+    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
+
+    val syncParam = syncBroadcaster.loadSyncParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
 

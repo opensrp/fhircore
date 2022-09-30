@@ -40,9 +40,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import timber.log.Timber
 
 /**
@@ -74,21 +72,11 @@ constructor(
     }
 
     coroutineScope.launch(dispatcherProvider.io()) {
-      val paramsMap =
-        mutableMapOf<String, List<String>>().apply {
-          put(
-            SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-            sharedPreferencesHelper.read<List<String>>(
-              SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name
-            )
-              ?: listOf()
-          )
-        }
       try {
         syncJob.run(
           fhirEngine = fhirEngine,
           downloadManager =
-            ResourceParamsBasedDownloadWorkManager(syncParams = loadSyncParams(paramsMap).toMap()),
+            ResourceParamsBasedDownloadWorkManager(syncParams = loadSyncParams().toMap()),
           subscribeTo = syncStateFlow,
           resolver = AcceptLocalConflictResolver
         )
@@ -101,9 +89,7 @@ constructor(
   }
 
   /** Retrieve registry sync params */
-  fun loadSyncParams(
-    paramsMap: Map<String, List<String>>?
-  ): Map<ResourceType, Map<String, String>> {
+  fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
     val syncConfig =
@@ -111,6 +97,10 @@ constructor(
 
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+
+    val syncStrategy = configService.provideSyncStrategy()
+
+    val mandatoryTags = appConfig.getMandatoryTags(sharedPreferencesHelper, syncStrategy)
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
@@ -123,10 +113,14 @@ constructor(
           // TODO: Does not support multi organization yet,
           // https://github.com/opensrp/fhircore/issues/1550
           ConfigurationRegistry.ORGANIZATION ->
-            paramsMap
-              ?.get(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
-              ?.firstOrNull()
-              ?.extractLogicalIdUuid()
+            mandatoryTags
+              .firstOrNull {
+                it.display.contentEquals(
+                  syncStrategy.organizationTag.tag?.display,
+                  ignoreCase = true
+                )
+              }
+              ?.code
           ConfigurationRegistry.ID -> paramExpression
           ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
           else -> null
