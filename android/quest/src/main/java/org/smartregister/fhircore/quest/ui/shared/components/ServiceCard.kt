@@ -63,6 +63,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
@@ -93,9 +94,15 @@ fun ServiceCard(
             )
           }
           .padding(top = 24.dp, bottom = 24.dp)
-          .weight(0.75f)
+          .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f)
     ) {
-      Column(modifier = modifier.wrapContentWidth(Alignment.Start).weight(0.7f)) {
+      // When show div
+      Column(
+        modifier =
+          modifier
+            .wrapContentWidth(Alignment.Start)
+            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f)
+      ) {
         serviceCardProperties.details.forEach {
           CompoundText(
             compoundTextProperties = it,
@@ -103,25 +110,38 @@ fun ServiceCard(
           )
         }
       }
-      ServiceMemberIcons(
-        modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
-        serviceMemberIcons =
-          serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
-      )
+      if (serviceCardProperties.showVerticalDivider) {
+        ServiceMemberIcons(
+          modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
+          serviceMemberIcons =
+            serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
+        )
+      }
     }
 
-    // Display a vertical divider to separate service card details from action button
+    // When divider is displayed member icons will not show
     if (serviceCardProperties.showVerticalDivider) {
       Divider(
         modifier = modifier.fillMaxHeight().width(1.dp),
         thickness = 1.dp,
         color = DividerColor
       )
+    } else {
+      ServiceMemberIcons(
+        serviceMemberIcons =
+          serviceCardProperties
+            .serviceMemberIcons
+            ?.replace("\\s+".toRegex(), "")
+            ?.interpolate(resourceData.computedValuesMap)
+      )
     }
 
     // Show action button (occupies 25% of the row width)
     Box(
-      modifier = modifier.weight(0.25f).padding(top = 24.dp, bottom = 24.dp),
+      modifier =
+        modifier
+          .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.5f)
+          .padding(top = 24.dp, bottom = 24.dp),
       contentAlignment = Alignment.Center
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
@@ -129,7 +149,7 @@ fun ServiceCard(
         if (serviceCardProperties.serviceButton != null &&
             serviceCardProperties.serviceButton!!
               .visible
-              ?.interpolate(resourceData.computedValuesMap)
+              .interpolate(resourceData.computedValuesMap)
               .toBoolean()
         ) {
           if (serviceCardProperties.serviceButton!!.smallSized) {
@@ -168,7 +188,7 @@ fun ServiceCard(
 private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons: String?) {
   // Count member icons only show and display counter of the rest
   val iconsSplit = remember { serviceMemberIcons?.split(",") } ?: listOf()
-  val twoMemberIcons = remember { iconsSplit.onEach { it.capitalize().trim() }.take(2) }
+  val twoMemberIcons = remember { iconsSplit.map { it.capitalize().trim() }.take(2) }
   if (twoMemberIcons.isNotEmpty()) {
     Row(modifier.padding(horizontal = 8.dp)) {
       twoMemberIcons.forEach {
@@ -199,9 +219,7 @@ private fun BigServiceButton(
 ) {
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
-  val extractedStatus = remember {
-    ServiceStatus.valueOf(buttonProperties.status.interpolate(resourceData.computedValuesMap))
-  }
+  val extractedStatus = buttonProperties.interpolateStatus(resourceData.computedValuesMap)
 
   Column(
     modifier =
@@ -223,11 +241,20 @@ private fun BigServiceButton(
   ) {
     Column(
       verticalArrangement = Arrangement.Center,
-      modifier = modifier.fillMaxSize().padding(8.dp),
+      modifier = modifier.fillMaxSize().padding(4.dp),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
       if (extractedStatus == ServiceStatus.COMPLETED)
-        Icon(imageVector = Icons.Filled.Check, contentDescription = null, tint = contentColor)
+        Icon(
+          modifier = modifier.size(16.dp),
+          imageVector = Icons.Filled.Check,
+          contentDescription = null,
+          tint =
+            when (extractedStatus) {
+              ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
+              else -> statusColor.copy(alpha = 0.9f)
+            }
+        )
       Text(
         text = buttonProperties.text?.interpolate(resourceData.computedValuesMap) ?: "",
         color = if (extractedStatus == ServiceStatus.OVERDUE) Color.White else contentColor,
@@ -436,7 +463,7 @@ private fun ServiceCardServiceCompletedPreview() {
                 ButtonProperties(
                   visible = "true",
                   status = ServiceStatus.COMPLETED.name,
-                  text = "Fully Vaccinated",
+                  text = "Fully Vaccinated against COVID 19 virus",
                   smallSized = false
                 )
             )
@@ -479,6 +506,7 @@ private fun ServiceCardANCServiceDuePreview() {
                     secondaryTextColor = "#555AAA"
                   )
                 ),
+              serviceMemberIcons = "CHILD",
               showVerticalDivider = false,
               serviceButton =
                 ButtonProperties(

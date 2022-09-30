@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -39,7 +40,7 @@ fun List(
   viewProperties: ListProperties,
   resourceData: ResourceData,
   navController: NavController,
-  viewModel: ViewRendererViewModel,
+  viewModel: ViewRendererViewModel = hiltViewModel(),
 ) {
   val resources = resourceData.relatedResourcesMap[viewProperties.baseResource]
   Column(
@@ -54,31 +55,29 @@ fun List(
         )
   ) {
     resources?.forEachIndexed { index, resource ->
-      // Retrieve all the related resources from the already provided resource data
-      val relatedResources =
-        produceState(initialValue = emptyMap()) {
-            value =
+      // Retrieve available related resources proceed to compute rules
+      val listItemResourceData =
+        produceState(ResourceData(resource)) {
+            val newRelatedResources =
               viewProperties.relatedResources.associate {
                 Pair(
                   it.resourceType,
                   viewModel.rulesFactory.rulesEngineService.retrieveRelatedResources(
                     resource = resource,
                     relatedResourceType = it.resourceType,
-                    fhirPathExpression = it.fhirPathExpression
+                    fhirPathExpression = it.fhirPathExpression,
+                    resourceData = resourceData
                   )
                 )
               }
-          }
-          .value
-
-      // Fire rules engine to compute values
-      val computedValuesMap =
-        produceState<Map<String, Any>>(initialValue = emptyMap()) {
-            value =
+            val computedValuesMap =
               viewModel.rulesFactory.fireRule(
-                viewProperties.registerCard.rules,
-                resource,
+                ruleConfigs = viewProperties.registerCard.rules,
+                baseResource = resource,
+                relatedResourcesMap = newRelatedResources
               )
+
+            value = ResourceData(resource, newRelatedResources, computedValuesMap)
           }
           .value
 
@@ -86,7 +85,7 @@ fun List(
         Spacer(modifier = modifier.height(8.dp))
         ViewRenderer(
           viewProperties = viewProperties.registerCard.views,
-          resourceData = ResourceData(resource, relatedResources, computedValuesMap),
+          resourceData = listItemResourceData,
           navController = navController,
         )
         Spacer(modifier = modifier.height(8.dp))

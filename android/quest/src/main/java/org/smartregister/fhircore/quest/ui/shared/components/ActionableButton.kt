@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -66,60 +65,61 @@ fun ActionableButton(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val computedValuesMap = remember { resourceData.computedValuesMap }
-  val status = remember { buttonProperties.status.interpolate(resourceData.computedValuesMap) }
-
-  OutlinedButton(
-    onClick = {
-      buttonProperties.actions.handleClickEvent(
-        navController = navController,
-        resourceData = resourceData
-      )
-    },
-    colors =
-      ButtonDefaults.buttonColors(
-        backgroundColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.1f),
-        contentColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
-      ),
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .padding(top = 0.dp, start = 12.dp, end = 12.dp)
-        .wrapContentHeight()
-        .testTag(ACTIONABLE_BUTTON_TEST_TAG)
-  ) {
-    Row(
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.Center,
-      modifier = modifier.fillMaxWidth()
-    ) {
-      Spacer(modifier = modifier.weight(0.5f).fillMaxHeight())
-      Icon(
-        modifier = modifier.size(16.dp),
-        imageVector =
-          if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
-        contentDescription = null,
-        tint =
-          when (status) {
-            ServiceStatus.COMPLETED.name -> SuccessColor.copy(alpha = 0.9f)
-            else -> buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
-          }
-      )
-      Spacer(modifier = modifier.width(6.dp))
-      Text(
-        text = buttonProperties.text?.interpolate(computedValuesMap).toString(),
-        fontWeight = FontWeight.Medium,
-        color =
-          if (status == ServiceStatus.COMPLETED.name) DefaultColor.copy(0.9f)
-          else buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
-      )
-      Spacer(modifier = Modifier.weight(0.5f).fillMaxHeight())
-      if (status == ServiceStatus.COMPLETED.name) {
-        Icon(
-          imageVector = Icons.Filled.ArrowDropDown,
-          contentDescription = null,
-          tint = DefaultColor.copy(alpha = 0.9f)
+  if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
+    val computedValuesMap = remember { resourceData.computedValuesMap }
+    val status = buttonProperties.interpolateStatus(computedValuesMap)
+    OutlinedButton(
+      onClick = {
+        buttonProperties.actions.handleClickEvent(
+          navController = navController,
+          resourceData = resourceData
         )
+      },
+      colors =
+        ButtonDefaults.buttonColors(
+          backgroundColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.1f),
+          contentColor = buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
+        ),
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .padding(top = 0.dp, start = 12.dp, end = 12.dp)
+          .wrapContentHeight()
+          .testTag(ACTIONABLE_BUTTON_TEST_TAG)
+    ) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier.wrapContentHeight().fillMaxWidth()
+      ) {
+        Spacer(modifier = modifier.weight(0.5f).wrapContentHeight())
+        Icon(
+          modifier = modifier.size(16.dp),
+          imageVector =
+            if (status == ServiceStatus.COMPLETED) Icons.Filled.Check else Icons.Filled.Add,
+          contentDescription = null,
+          tint =
+            when (status) {
+              ServiceStatus.COMPLETED -> SuccessColor.copy(alpha = 0.9f)
+              else -> buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
+            }
+        )
+        Spacer(modifier = modifier.width(6.dp))
+        Text(
+          text = buttonProperties.text?.interpolate(computedValuesMap).toString(),
+          fontWeight = FontWeight.Medium,
+          color =
+            if (status == ServiceStatus.COMPLETED) DefaultColor.copy(0.9f)
+            else buttonProperties.statusColor(computedValuesMap).copy(alpha = 0.9f)
+        )
+        Spacer(modifier = modifier.weight(0.5f))
+        if (status == ServiceStatus.COMPLETED) {
+          Icon(
+            imageVector = Icons.Filled.ArrowDropDown,
+            contentDescription = null,
+            tint = DefaultColor.copy(alpha = 0.9f)
+          )
+        }
       }
     }
   }
@@ -128,7 +128,13 @@ fun ActionableButton(
 @Composable
 fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color = remember {
   // Status color is determined from the service status
-  when (ServiceStatus.valueOf(this.status.interpolate(computedValuesMap))) {
+  val interpolated = this.status.interpolate(computedValuesMap)
+  val status =
+    if (ServiceStatus.values().map { it.name }.contains(interpolated))
+      ServiceStatus.valueOf(interpolated)
+    else ServiceStatus.UPCOMING
+
+  when (status) {
     ServiceStatus.DUE -> InfoColor
     ServiceStatus.OVERDUE -> DangerColor
     ServiceStatus.UPCOMING -> DefaultColor
@@ -137,11 +143,32 @@ fun ButtonProperties.statusColor(computedValuesMap: Map<String, Any>): Color = r
 }
 
 @Composable
+fun ButtonProperties.interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus =
+    remember {
+  val interpolated = this.status.interpolate(computedValuesMap)
+  if (ServiceStatus.values().map { it.name }.contains(interpolated))
+    ServiceStatus.valueOf(interpolated)
+  else ServiceStatus.UPCOMING
+}
+
+@Composable
 @Preview(showBackground = true)
 fun ActionableButtonPreview() {
   Column(modifier = Modifier.height(50.dp)) {
     ActionableButton(
       buttonProperties = ButtonProperties(status = "OVERDUE", text = "Button Text"),
+      resourceData = ResourceData(Patient()),
+      navController = rememberNavController()
+    )
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun SmallActionableButtonPreview() {
+  Column(modifier = Modifier.height(50.dp)) {
+    ActionableButton(
+      buttonProperties = ButtonProperties(status = "DUE", text = "Due Task"),
       resourceData = ResourceData(Patient()),
       navController = rememberNavController()
     )
