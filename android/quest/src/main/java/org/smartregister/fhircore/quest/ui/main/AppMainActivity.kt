@@ -45,6 +45,7 @@ import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import retrofit2.HttpException
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -148,7 +149,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
       }
       is State.Failed -> {
-        showToast(getString(R.string.sync_failed))
+        val hasAuthError =
+          state.result.exceptions.any {
+            it.exception is HttpException && (it.exception as HttpException).code() == 401
+          }
+        val message = if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
+        showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
             state,
@@ -157,6 +163,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             else getString(R.string.syncing_failed)
           )
         )
+        if (hasAuthError) {
+          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+        }
         Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
       }
       is State.Finished -> {
