@@ -144,7 +144,7 @@ constructor(
         retrieveAppMainUiState()
       }
       is AppMainEvent.RefreshAuthToken -> {
-        accountAuthenticator.loadActiveAccount({ accountBundleFuture ->
+        accountAuthenticator.loadRefreshedSessionAccount { accountBundleFuture ->
           val bundle = accountBundleFuture.result
           bundle.getParcelable<Parcelable>(AccountManager.KEY_INTENT).let { intent ->
             if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
@@ -153,7 +153,7 @@ constructor(
             }
             accountAuthenticator.logout()
           }
-        })
+        }
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
