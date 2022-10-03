@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
@@ -90,6 +91,8 @@ constructor(
       val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
       val compositionResource = fetchComposition(urlPath, context) ?: return
 
+      Timber.d("Fetched app config ${compositionResource.encodeResourceToString()}")
+
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
       compositionResource
         .retrieveCompositionSections()
@@ -99,6 +102,9 @@ constructor(
         .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
           val ids = entry.value.joinToString(",") { it.focus.extractId() }
           val resourceUrlPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
+
+          Timber.d("Fetching config details $resourceUrlPath")
+
           fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach {
             defaultRepository.create(it.resource)
 
@@ -117,6 +123,8 @@ constructor(
                 }
               }
             }
+
+            Timber.d("Fetched and processed config details $resourceUrlPath")
           }
         }
 
@@ -124,6 +132,8 @@ constructor(
 
       // Save composition after fetching all the referenced section resources
       defaultRepository.create(compositionResource)
+
+      Timber.d("Done with all app configs and details")
 
       loadConfigurations(true)
       showProgressBar.postValue(false)
