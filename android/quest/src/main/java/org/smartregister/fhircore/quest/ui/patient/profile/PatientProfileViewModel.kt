@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
+import org.smartregister.fhircore.engine.util.extension.toHealthStatusMetaTag
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
@@ -251,7 +252,10 @@ constructor(
             event.context.launchQuestionnaire<QuestionnaireActivity>(
               questionnaireId = EDIT_PROFILE_FORM,
               clientIdentifier = event.patientId,
-              questionnaireType = QuestionnaireType.EDIT
+              questionnaireType = QuestionnaireType.EDIT,
+              patientCategory =
+                (patientProfileData as ProfileData.HivProfileData).healthStatus.display
+                  .toHealthStatusMetaTag()
             )
           R.id.viral_load_results ->
             event.context.launchQuestionnaire<QuestionnaireActivity>(

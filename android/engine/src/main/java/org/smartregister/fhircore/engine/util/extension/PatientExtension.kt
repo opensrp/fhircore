@@ -256,6 +256,22 @@ fun Coding.toHealthStatus(): HealthStatus {
   }
 }
 
+fun String.toHealthStatusMetaTag(): String {
+  return try {
+    val hs = this.lowercase(Locale.getDefault()).replace("_", "-").replace(" ", "-")
+    if (hs.equals("art-client", true)) {
+      "client-already-on-art"
+    } else if (hs.equals("child-contact", true)) {
+      "exposed-infant"
+    } else {
+      HealthStatus.DEFAULT.display
+    }
+  } catch (e: Exception) {
+    Timber.e(e)
+    HealthStatus.DEFAULT.display
+  }
+}
+
 fun Patient.extractHealthStatusFromMeta(filterTag: String): HealthStatus {
   val tagList =
     this.meta.tag.filter { it.system.equals(filterTag, true) }.filterNot { it.code.isNullOrBlank() }

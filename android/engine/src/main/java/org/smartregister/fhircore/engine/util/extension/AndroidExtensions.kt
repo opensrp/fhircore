@@ -84,7 +84,8 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   groupIdentifier: String? = null,
   questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
   intentBundle: Bundle = Bundle.EMPTY,
-  populationResources: ArrayList<Resource>? = null
+  populationResources: ArrayList<Resource>? = null,
+  patientCategory: String = ""
 ) {
   this.startActivity(
     Intent(this, Q::class.java)
@@ -95,7 +96,8 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
           groupIdentifier = groupIdentifier,
           formName = questionnaireId,
           questionnaireType = questionnaireType,
-          populationResources = populationResources ?: ArrayList()
+          populationResources = populationResources ?: ArrayList(),
+          patientCategory = patientCategory
         )
       )
   )
