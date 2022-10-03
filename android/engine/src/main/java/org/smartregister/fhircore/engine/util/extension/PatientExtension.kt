@@ -263,7 +263,7 @@ fun String.toHealthStatusMetaTag(): String {
       "client-already-on-art"
     } else if (hs.equals("child-contact", true)) {
       "exposed-infant"
-    } else if(hs.isEmpty()) {
+    } else if (hs.isEmpty()) {
       HealthStatus.DEFAULT.display
     } else {
       hs
