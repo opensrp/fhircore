@@ -157,7 +157,7 @@
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "id": "householdRegister",
           "questionnaire": {
-            "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
+            "id": "253",
             "title": "{{add.family}}",
             "saveButtonText": "Add Household",
             "setPractitionerDetails": true,

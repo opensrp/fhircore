@@ -85,7 +85,7 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "e5155788-8831-4916-a3f5-486915ce34b2",
+            "id": "252",
             "title": "Add household member",
             "saveButtonText": "Add Member",
             "groupResource": {
@@ -236,7 +236,7 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
+            "id": "253",
             "title": "{{add.family}}",
             "saveButtonText": "Update household details",
             "setPractitionerDetails": true,
