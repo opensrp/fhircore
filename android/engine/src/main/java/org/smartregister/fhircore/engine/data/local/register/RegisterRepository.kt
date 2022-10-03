@@ -279,8 +279,9 @@ constructor(
         ConfigType.Profile,
         profileId
       )
-    val baseResourceConfig = (fhirResourceConfig ?: profileConfiguration.fhirResource).baseResource
-    val relatedResourcesConfig = profileConfiguration.fhirResource.relatedResources
+    val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
+    val baseResourceConfig = resourceConfig.baseResource
+    val relatedResourcesConfig = resourceConfig.relatedResources
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
     val baseResourceType = baseResourceClass.newInstance().resourceType
 
