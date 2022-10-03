@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -102,6 +103,9 @@ constructor(
 
     val mandatoryTags = appConfig.getMandatoryTags(sharedPreferencesHelper, syncStrategy)
 
+    val patientRelatedResourceTypes =
+      sharedPreferencesHelper.read<List<String>>(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
+
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
     syncConfig.parameter.map { it.resource as SearchParameter }.forEach { sp ->
@@ -134,8 +138,8 @@ constructor(
       // for each entity in base create and add param map
       // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
       // ],..]
-      sp.base.forEach { base ->
-        val resourceType = ResourceType.fromCode(base.code)
+      patientRelatedResourceTypes!!.forEach { clinicalResource ->
+        val resourceType = ResourceType.fromCode(clinicalResource)
         val pair = pairs.find { it.first == resourceType }
         if (pair == null) {
           pairs.add(
