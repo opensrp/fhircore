@@ -163,6 +163,39 @@ class SyncBroadcasterTest : RobolectricTest() {
   }
 
   @Test
+  fun `loadSyncParams() should load configuration when remote sync preference is missing`() {
+
+    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
+    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
+    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
+    sharedPreferencesHelper.resetSharedPrefs()
+
+    val syncParam = syncBroadcaster.loadSyncParams()
+
+    Assert.assertTrue(syncParam.isNotEmpty())
+
+    val resourceTypes =
+      arrayOf(
+          ResourceType.CarePlan,
+          ResourceType.Condition,
+          ResourceType.Encounter,
+          ResourceType.Group,
+          ResourceType.Library,
+          ResourceType.Observation,
+          ResourceType.Measure,
+          ResourceType.Patient,
+          ResourceType.PlanDefinition,
+          ResourceType.Questionnaire,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.StructureMap,
+          ResourceType.Task
+        )
+        .sorted()
+
+    Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
+  }
+
+  @Test
   fun testSchedulePeriodicSyncShouldPoll() = runTest {
     syncBroadcaster.schedulePeriodicSync()
     verify { syncJob.poll<FhirSyncWorker>(periodicSyncConfiguration = any(), clazz = any()) }
