@@ -82,6 +82,7 @@ constructor(
           resolver = AcceptLocalConflictResolver
         )
       } catch (exception: Exception) {
+        Timber.e(exception)
         Timber.e("Error syncing data", exception)
       } finally {
         coroutineScope.cancel()
@@ -138,7 +139,7 @@ constructor(
       // for each entity in base create and add param map
       // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
       // ],..]
-      patientRelatedResourceTypes!!.forEach { clinicalResource ->
+      (patientRelatedResourceTypes ?: sp.base.map { it.code }).forEach { clinicalResource ->
         val resourceType = ResourceType.fromCode(clinicalResource)
         val pair = pairs.find { it.first == resourceType }
         if (pair == null) {
