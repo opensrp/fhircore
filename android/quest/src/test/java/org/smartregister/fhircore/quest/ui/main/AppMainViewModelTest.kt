@@ -223,4 +223,11 @@ class AppMainViewModelTest : RobolectricTest() {
     // Destroy the activity
     controller.destroy()
   }
+
+  @Test
+  fun onRefreshAuthToken() {
+    appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+
+    verify { accountAuthenticator.loadRefreshedSessionAccount(any()) }
+  }
 }
