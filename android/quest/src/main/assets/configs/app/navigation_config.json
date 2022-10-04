@@ -44,7 +44,7 @@
     },
     {
       "id": "childRegister",
-      "display": "Child patients",
+      "display": "Children",
       "icon": "",
       "showCount": true,
       "menuIconConfig": {
@@ -95,7 +95,7 @@
     "registers": [
       {
         "id": "ancRegister",
-        "display": "ANC patients",
+        "display": "ANC",
         "showCount": true,
         "actions": [
           {
@@ -111,7 +111,7 @@
       },
       {
         "id": "pncRegister",
-        "display": "PNC patients",
+        "display": "PNC",
         "showCount": true,
         "actions": [
           {
@@ -127,7 +127,7 @@
       },
       {
         "id": "fpRegister",
-        "display": "FP patients",
+        "display": "FP",
         "showCount": true,
         "actions": [
           {
@@ -143,7 +143,7 @@
       },
       {
         "id": "mentalHealthRegister",
-        "display": "Mental health patients",
+        "display": "Mental health",
         "showCount": true,
         "actions": [
           {
@@ -176,7 +176,7 @@
       },
       {
         "id": "tbRegister",
-        "display": "TB patients",
+        "display": "TB",
         "icon": "",
         "showCount": true,
         "actions": [
@@ -193,7 +193,7 @@
       },
       {
         "id": "cmntdRegister",
-        "display": "CM-NTD patients",
+        "display": "CM-NTD",
         "icon": "",
         "showCount": true,
         "actions": [
@@ -211,6 +211,27 @@
     ]
   },
   "staticMenu": [
+    {
+      "id": "inventoryRegister",
+      "display": "Stock Inventory",
+      "icon": "",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_inventory"
+      },
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "inventoryRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "inventoryRegister"
+        }
+      ]
+    },
     {
       "id": "reports",
       "visible": true,

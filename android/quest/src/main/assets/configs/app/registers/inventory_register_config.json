@@ -1,0 +1,150 @@
+{
+	"appId": "app",
+	"configType": "register",
+	"id": "inventoryRegister",
+	"fhirResource": {
+		"baseResource": {
+			"resource": "Group",
+			"dataQueries": [
+				{
+					"id": "commoditiesQueryByCode",
+					"filterType": "TOKEN",
+					"key": "code",
+					"valueType": "CODEABLECONCEPT",
+					"valueCoding": {
+						"system": "http://snomed.info/sct",
+						"code": "386452003"
+					}
+				}
+			]
+		},
+		"relatedResources": [
+			{
+				"resource": "Observation",
+				"searchParameter": "subject",
+				"dataQueries": [
+					{
+						"id": "filterLatestObservation",
+						"filterType": "TOKEN",
+						"key": "_tag",
+						"valueType": "CODING",
+						"valueCoding": {
+							"code": "latest"
+						}
+					}
+				]
+			}
+		]
+	},
+	"fabActions": [
+		{
+			"id": "ActionButton",
+			"visible": true,
+			"display": "Record Restock",
+			"icon": "add",
+			"actions": [
+				{
+					"trigger": "ON_CLICK",
+					"workflow": "LAUNCH_QUESTIONNAIRE",
+					"questionnaire": {
+						"id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+						"title": "Physical Inventory Count and Stock Supply",
+						"saveButtonText": "SAVE"
+					}
+				}
+			]
+		}
+	],
+	"searchBar": {
+		"visible": true,
+		"display": "Search by name",
+		"computedRules": [
+			"commodityName"
+		]
+	},
+	"registerCard": {
+		"rules": [
+			{
+				"name": "commodityName",
+				"condition": "true",
+				"actions": [
+					"data.put('commodityName', fhirPath.extractValue(Group, 'Group.name'))"
+				]
+			},
+			{
+				"name": "commodityId",
+				"condition": "true",
+				"actions": [
+					"data.put('commodityId', fhirPath.extractValue(Group, 'Group.id'))"
+				]
+			},
+			{
+				"name": "quantity",
+				"condition": "true",
+				"actions": [
+					"data.put('quantity', fhirPath.extractValue(Observation.get(0), 'Observation.component.value.value'))"
+				]
+			},
+			{
+				"name": "lastUpdated",
+				"condition": "true",
+				"actions": [
+					"data.put('lastUpdated', fhirPath.extractValue(Observation.get(0), 'Observation.effective'))"
+				]
+			}
+		],
+		"views": [
+			{
+				"viewType": "COLUMN",
+				"children": [
+					{
+						"viewType": "SERVICE_CARD",
+						"details": [
+							{
+								"viewType": "COMPOUND_TEXT",
+								"primaryText": "@{commodityName}",
+								"primaryTextColor": "#000000"
+							},
+							{
+								"viewType": "COMPOUND_TEXT",
+								"primaryText": "@{quantity}",
+								"fontSize": 14.0,
+								"primaryTextColor": "#DF0E1A"
+							},
+							{
+								"viewType": "COMPOUND_TEXT",
+								"primaryText": "{{ last.updated.on.last.updated }}",
+								"fontSize": 14.0,
+								"primaryTextColor": "#5A5A5A"
+							}
+						],
+						"showVerticalDivider": false,
+						"serviceButton": {
+							"visible": false,
+							"text": "",
+							"status": "DUE",
+							"smallSized": false
+						},
+						"actions": [
+							{
+								"trigger": "ON_CLICK",
+								"workflow": "LAUNCH_QUESTIONNAIRE",
+								"questionnaire": {
+									"id": "cfdba05b-fb46-4673-a1bd-e300ab1afe94",
+									"title": "Stock Level Adjustment",
+									"saveButtonText": "ADJUST STOCK LEVELS",
+									"setPractitionerDetails": true,
+									"setOrganizationDetails": true
+								}
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	"noResults": {
+		"title": "No Commodities",
+		"message": "Sorry, stock commodities have not been setup yet"
+	}
+}
