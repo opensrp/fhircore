@@ -24,7 +24,6 @@ import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -90,14 +89,16 @@ constructor(
 
     // Retrieve data for each of the configured related resources
     // Also retrieve data for nested related resources for each of the related resource
-    return baseResources.map { baseResource: Resource ->
-      retrieveRelatedResources(
-        relatedResourcesConfig = relatedResourcesConfig,
-        baseResourceType = baseResourceType,
-        baseResource = baseResource,
-        rules = registerConfiguration.registerCard.rules
-      )
-    }
+    val resourceData =
+      baseResources.map { baseResource: Resource ->
+        retrieveRelatedResources(
+          relatedResourcesConfig = relatedResourcesConfig,
+          baseResourceType = baseResourceType,
+          baseResource = baseResource,
+          rules = registerConfiguration.registerCard.rules
+        )
+      }
+    return resourceData
   }
 
   private suspend fun retrieveRelatedResources(
@@ -234,16 +235,7 @@ constructor(
         count = pageSize
         from = currentPage * pageSize
       }
-    return when (resourceType) {
-      ResourceType.Group -> filterActiveGroups(search)
-      else -> fhirEngine.search(search)
-    }
-  }
-
-  suspend fun filterActiveGroups(search: Search): List<Resource> {
-    val groups = fhirEngine.search<Group>(search)
-    // TODO filter active groups
-    return groups.filter { !it.name.isNullOrEmpty() }
+    return fhirEngine.search(search)
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
@@ -251,7 +243,6 @@ constructor(
     val registerConfiguration = retrieveRegisterConfiguration(registerId)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val baseResourceClass = baseResourceConfig.resource.resourceClassType()
-
     val resourceType = baseResourceClass.newInstance().resourceType
 
     val search =
@@ -263,10 +254,7 @@ constructor(
         }
       }
 
-    return when (resourceType) {
-      ResourceType.Group -> filterActiveGroups(search).size.toLong()
-      else -> fhirEngine.count(search)
-    }
+    return fhirEngine.count(search)
   }
 
   override suspend fun loadProfileData(
