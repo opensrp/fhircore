@@ -20,9 +20,6 @@ import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.MeasureReport
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 
-val MONTH_NAMES =
-  listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
 fun MeasureReport.StratifierGroupComponent.findPopulation(
   id: MeasurePopulationType
@@ -62,25 +59,24 @@ val MeasureReport.StratifierGroupComponent.displayText
     }
 
 /**
- * Returns a list of year-month pair for all months falling in given measure period Example:
- * Jan-2021 -> Apr-2021 = [(2021, Jan), (2021, Feb), (2021, Mar), (2021, Apr)]
+ * Returns a list of month-year for for all months falling in given measure period Example: Jan-2021
+ * -> Apr-2021 = [(Jan-2021), (Feb-2021), (Mar-2021), (Apr-2021)]
  */
 val MeasureReport.reportingPeriodMonthsSpan
   get() =
     this.period.let {
-      val yearMonths = mutableListOf<Pair<Int, String>>()
+      val yearMonths = mutableListOf<String>()
       var currentDate = it.copy().start.firstDayOfMonth()
 
       while (currentDate.before(it.end)) {
-        val currentMonthString = MONTH_NAMES.elementAt(currentDate.month)
-        yearMonths.add(currentDate.asYyyy().toInt() to currentMonthString)
+        yearMonths.add(currentDate.asMmmYyyy())
 
         currentDate = currentDate.plusMonths(1)
       }
       yearMonths.toList()
     }
 
-fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(year: Int, month: String) =
+fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(reportingMonth: String) =
   this.stratifier.flatMap { it.stratum }.find {
-    it.hasValue() && it.value.text.contains(year.toString()) && it.value.text.contains(month)
+    it.hasValue() && isSameMonthYear(it.value.text, reportingMonth)
   }

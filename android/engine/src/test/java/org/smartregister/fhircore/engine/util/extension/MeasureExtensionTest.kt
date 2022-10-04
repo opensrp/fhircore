@@ -134,10 +134,26 @@ class MeasureExtensionTest : RobolectricTest() {
 
     val result = measureReport.reportingPeriodMonthsSpan
 
-    assertEquals(2021 to "Nov", result.elementAt(0))
-    assertEquals(2021 to "Dec", result.elementAt(1))
-    assertEquals(2022 to "Jan", result.elementAt(2))
-    assertEquals(2022 to "Feb", result.elementAt(3))
+    assertEquals("Nov-2021", result.elementAt(0))
+    assertEquals("Dec-2021", result.elementAt(1))
+    assertEquals("Jan-2022", result.elementAt(2))
+    assertEquals("Feb-2022", result.elementAt(3))
+  }
+
+  @Test
+  fun `reportingPeriodMonthsSpan should return correct stratum for given year and month`() {
+    val group =
+      MeasureReport.MeasureReportGroupComponent().apply {
+        this.addStratifier().apply {
+          addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Nov" } }
+          addStratum().apply { this.value = CodeableConcept().apply { text = "2021-Dec" } }
+          addStratum().apply { this.value = CodeableConcept().apply { text = "2022-Jan" } }
+        }
+      }
+
+    val result = group.findStratumForMonth("Dec-2021")
+
+    assertEquals("2021-Dec", result!!.value.text)
   }
 
   @Test
@@ -151,7 +167,7 @@ class MeasureExtensionTest : RobolectricTest() {
         }
       }
 
-    val result = group.findStratumForMonth(2021, "Dec")
+    val result = group.findStratumForMonth("2021-Dec")
 
     assertEquals("2021-Dec", result!!.value.text)
   }
