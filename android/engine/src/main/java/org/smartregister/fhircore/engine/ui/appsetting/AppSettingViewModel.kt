@@ -105,11 +105,11 @@ constructor(
 
           Timber.d("Fetching config details $resourceUrlPath")
 
-          fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach {
-            defaultRepository.create(it.resource)
+          fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach { bundleEntryComponent ->
+            defaultRepository.create(bundleEntryComponent.resource)
 
-            if (it.resource is Binary) {
-              val binary = it.resource as Binary
+            if (bundleEntryComponent.resource is Binary) {
+              val binary = bundleEntryComponent.resource as Binary
               binary.data.decodeToString().decodeBase64()!!.string(Charset.defaultCharset()).let {
                 val config =
                   it.tryDecodeJson<RegisterConfiguration>()
