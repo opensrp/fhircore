@@ -63,7 +63,7 @@
       "name": "canBearChild",
       "condition": "true",
       "actions": [
-        "data.put('canBearChild',  fhirPath.extractValue(Patient.get(0), \"Patient.active and Patient.gender = 'female' and (Patient.birthDate >= today() - 12 'years')\"))"
+        "data.put('canBearChild',  fhirPath.extractValue(Patient.get(0), \"Patient.active and Patient.gender = 'female' and (Patient.birthDate <= today() - 12 'years')\"))"
       ]
     },
     {
