@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
 import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
@@ -111,6 +112,9 @@ constructor(
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
+  val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
+    MutableStateFlow(emptyFlow())
+
   val firstTimeSyncState = mutableStateOf(isFirstTimeSync())
 
   var registerViewConfiguration: RegisterViewConfiguration
@@ -144,6 +148,8 @@ constructor(
         .collect { _totalRecordsCount.postValue(it) }
     }
 
+    viewModelScope.launch { paginateRegisterDataForSearch() }
+
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
         override fun onSync(state: State) {
@@ -172,13 +178,17 @@ constructor(
     getPager(appFeatureName, healthModule, loadAll = false, page = page).flow
 
   fun filterRegisterDataFlow(text: String) =
-    getPager(appFeatureName, healthModule, true).flow.map { pagingData: PagingData<RegisterViewData>
-      ->
+    paginatedRegisterDataForSearch.value.map { pagingData: PagingData<RegisterViewData> ->
       pagingData.filter {
         it.title.contains(text, ignoreCase = true) ||
           it.identifier.contains(text, ignoreCase = true)
       }
     }
+
+  fun paginateRegisterDataForSearch() {
+    paginatedRegisterDataForSearch.value =
+      getPager(appFeatureName, healthModule, true).flow.cachedIn(viewModelScope)
+  }
 
   private fun getPager(
     appFeatureName: String?,
@@ -258,4 +268,11 @@ constructor(
   }
 
   fun isFirstTimeSync() = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrEmpty()
+
+  fun progressMessage() =
+    if (searchText.value.isEmpty()) {
+      ""
+    } else {
+      configurationRegistry.context.resources.getString(R.string.search_progress_message)
+    }
 }

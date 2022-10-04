@@ -164,7 +164,7 @@ dependencies {
     api("androidx.navigation:navigation-compose:2.5.0-alpha03")
     api ("androidx.hilt:hilt-navigation-compose:1.0.0")
     api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0-alpha04")
-    api("androidx.paging:paging-compose:1.0.0-alpha14")
+    api("androidx.paging:paging-compose:1.0.0-alpha16")
     api("androidx.activity:activity-compose:1.4.0")
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
     api("androidx.work:work-runtime-ktx:2.7.1")
