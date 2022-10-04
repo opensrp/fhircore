@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -31,13 +29,13 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.util.extensions.launchQuestionnaire
 import timber.log.Timber
 
 @HiltViewModel
@@ -47,19 +45,20 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
+  val fhirPathDataExtractor: FhirPathDataExtractor
 ) : ViewModel() {
 
-  val profileUiState: MutableState<ProfileUiState> = mutableStateOf(ProfileUiState())
+  val profileUiState = mutableStateOf(ProfileUiState())
 
   private lateinit var profileConfiguration: ProfileConfiguration
 
   fun retrieveProfileUiState(profileId: String, resourceId: String) {
     if (resourceId.isNotEmpty()) {
-      viewModelScope.launch {
+      viewModelScope.launch(dispatcherProvider.io()) {
         profileUiState.value =
           ProfileUiState(
             resourceData = registerRepository.loadProfileData(profileId, resourceId),
-            profileConfiguration = retrieveProfileConfiguration(profileId)
+            profileConfiguration = retrieveProfileConfiguration(profileId),
           )
       }
     }
@@ -81,15 +80,11 @@ constructor(
           when (actionConfig.workflow) {
             ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
               actionConfig.questionnaire?.let { questionnaireConfig ->
-                val questionnaireType = questionnaireConfig.type
                 event.context.launchQuestionnaire<QuestionnaireActivity>(
-                  questionnaireId = questionnaireConfig.id,
-                  clientIdentifier =
-                    if (questionnaireType == QuestionnaireType.DEFAULT) null
-                    else event.resourceData?.baseResource?.logicalId,
-                  questionnaireType = questionnaireType,
                   intentBundle =
-                    actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap())
+                    actionConfig.paramsBundle(event.resourceData?.computedValuesMap ?: emptyMap()),
+                  questionnaireConfig = questionnaireConfig,
+                  computedValuesMap = event.resourceData?.computedValuesMap
                 )
               }
             }
@@ -97,7 +92,7 @@ constructor(
               if (event.managingEntity == null) return@forEach
               if (event.resourceData?.baseResource?.resourceType != ResourceType.Group) {
                 Timber.w("Wrong resource type. Expecting Group resource")
-                return@forEach
+                return
               }
               changeManagingEntity(event = event)
             }
@@ -105,8 +100,6 @@ constructor(
           }
         }
       }
-      is ProfileEvent.OnViewComponentEvent ->
-        event.viewComponentEvent.handleEvent(event.navController)
       is ProfileEvent.OnChangeManagingEntity -> {
         viewModelScope.launch(dispatcherProvider.io()) {
           registerRepository.changeManagingEntity(event.newManagingEntityId, event.groupId)
@@ -124,10 +117,8 @@ constructor(
         ?.relatedResourcesMap
         ?.get(resourceTypeToFilter)
         ?.filter {
-          FhirPathDataExtractor.extractValue(
-              it,
-              event.managingEntity?.fhirPathResource?.fhirPathExpression ?: ""
-            )
+          fhirPathDataExtractor
+            .extractValue(it, event.managingEntity?.fhirPathResource?.fhirPathExpression ?: "")
             .toBoolean()
         }
         ?.map {
@@ -135,19 +126,21 @@ constructor(
             groupId = event.resourceData.baseResource.logicalId,
             logicalId = it.logicalId,
             memberInfo =
-              FhirPathDataExtractor.extractValue(
+              fhirPathDataExtractor.extractValue(
                 it,
                 event.managingEntity?.infoFhirPathExpression ?: ""
               )
           )
         }
-    (event.context as AppCompatActivity).let { activity ->
+    (event.context.getActivity())?.let { activity ->
       ProfileBottomSheetFragment(
           eligibleManagingEntities = eligibleManagingEntityList!!,
           onSaveClick = {
-            ProfileEvent.OnChangeManagingEntity(
-              newManagingEntityId = it.logicalId,
-              groupId = it.groupId
+            onEvent(
+              ProfileEvent.OnChangeManagingEntity(
+                newManagingEntityId = it.logicalId,
+                groupId = it.groupId
+              )
             )
           },
           managingEntity = event.managingEntity

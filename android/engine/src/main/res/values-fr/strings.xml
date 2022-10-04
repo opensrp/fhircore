@@ -1,6 +1,5 @@
 <resources>
     <string name="sync"> Synchronisation</string>
-    <string name="last_sync_timestamp">Dernier %1$s</string>
     <string name="language">Langue</string>
     <string name="logout_as_user">Déconnexion</string>
     <string name="show_overdue">Afficher en retard</string>
@@ -23,6 +22,7 @@
     <string name="syncing">Synchronisation en cours</string>
     <string name="syncing_initiated">Synchronisation initiée</string>
     <string name="sync_failed">Échec de la synchronisation. Vérifiez la connexion Internet ou réessayez plus tard.</string>
+    <string name="sync_unauthorised">La synchronisation a échoué car il manque des identifiants d\'authentification valides</string>
     <string name="try_again">Réessayez</string>
     <string name="status_vaccinated">Vacciné</string>
     <string name="status_overdue">En retard</string>
@@ -114,6 +114,15 @@
     <string name="dob">DDN</string>
     <string name="invalid_form_id">ID de formulaire joint non valide</string>
     <string name="error_loading_config">Erreur lors du chargement de la configuration. Descriptif : %$1s</string>
-    <string name="error_contacting_server">Erreur de contact avec le serveur. Code d\'erreur %1$s</string>
     <string name="date_last_visited">Dernière visite %1$s</string>
+    <string name="clear_database">Réinitialiser</string>
+    <string name="other_patients">Autres malades</string>
+    <string name="responses">RÉPONSES (%1$s)</string>
+    <string name="multi_user_login_attempt">Tentative de connexion avec un autre fournisseur</string>
+    <string name="clear_database_title">Réinitialiser la base de données!</string>
+    <string name="clear_database_message">La réinitialisation de la base de données effacera tous les enregistrements de votre appareil. Cette action ne peut pas être annulée.</string>
+    <string name="resetting_app">Réinitialisation de l\'application...</string>
+    <string name="cannot_logout_user">Impossible de se déconnecter. Vérifiez si l\'appareil est hors ligne.</string>
+    <string name="error_logging_out">Message d\'erreur de déconnexion : %1$s</string>
+    <string name="please_wait">Veuillez patienter...</string>
 </resources>

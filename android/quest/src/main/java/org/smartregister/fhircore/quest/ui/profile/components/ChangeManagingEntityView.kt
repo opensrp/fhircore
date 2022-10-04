@@ -169,7 +169,10 @@ fun ChangeManagingEntityView(
         }
         TextButton(
           enabled = isEnabled,
-          onClick = { onSaveClick(eligibleManagingEntities.first { it.selected }) },
+          onClick = {
+            onSaveClick(eligibleManagingEntities.first { it.selected })
+            onDismiss()
+          },
           modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_SAVE),
           colors =
             ButtonDefaults.textButtonColors(

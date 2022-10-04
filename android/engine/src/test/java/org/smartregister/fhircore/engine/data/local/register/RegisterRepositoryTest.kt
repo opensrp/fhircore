@@ -27,9 +27,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.spyk
-import io.mockk.unmockkObject
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -40,8 +38,8 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -56,46 +54,39 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class RegisterRepositoryTest : RobolectricTest() {
 
-  @get:Rule var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
   var context: Context = ApplicationProvider.getApplicationContext()
 
-  private lateinit var fhirEngine: FhirEngine
-
-  private lateinit var dispatcherProvider: DefaultDispatcherProvider
-
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  private val fhirEngine: FhirEngine = mockk()
 
   @Inject lateinit var rulesFactory: RulesFactory
 
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   private lateinit var registerRepository: RegisterRepository
+
+  private val fhirPathDataExtractor: FhirPathDataExtractor = mockk()
 
   private val patient = Faker.buildPatient("12345")
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    fhirEngine = mockk()
-    dispatcherProvider = DefaultDispatcherProvider()
     registerRepository =
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
+          dispatcherProvider = DefaultDispatcherProvider(),
           configurationRegistry = configurationRegistry,
-          rulesFactory = rulesFactory
+          rulesFactory = rulesFactory,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          sharedPreferencesHelper = mockk(),
+          configService = mockk()
         )
       )
-    runBlocking {
-      configurationRegistry.loadConfigurations("app/debug", context) { Assert.assertTrue(it) }
-    }
     coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns
       listOf(Immunization())
-  }
-
-  @After
-  fun tearDown() {
-    unmockkObject(FhirPathDataExtractor)
   }
 
   @Test
@@ -139,6 +130,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       Group().apply {
         id = "12345"
         name = "Snow"
+        active = true
         addMember().apply { entity = Reference("Patient/${patient.logicalId}") }
       }
 
@@ -146,9 +138,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 20, from = 20))
     } returns listOf(group)
 
-    mockkObject(FhirPathDataExtractor)
-
-    every { FhirPathDataExtractor.extractData(group, "Group.member.entity") } returns
+    every { fhirPathDataExtractor.extractData(group, "Group.member.entity") } returns
       listOf(Reference("Patient/12345"))
 
     coEvery { fhirEngine.get(type = ResourceType.Patient, "12345") } returns patient
@@ -180,15 +170,13 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 20, from = 20)) }
 
-    verify { FhirPathDataExtractor.extractData(group, "Group.member.entity") }
+    verify { fhirPathDataExtractor.extractData(group, "Group.member.entity") }
 
     coVerify { fhirEngine.get(type = ResourceType.Patient, "12345") }
 
     coVerify { fhirEngine.search<Condition>(Search(type = ResourceType.Condition)) }
 
     coVerify { fhirEngine.search<CarePlan>(Search(type = ResourceType.CarePlan)) }
-
-    unmockkObject(FhirPathDataExtractor)
   }
 
   @Test
@@ -203,6 +191,35 @@ class RegisterRepositoryTest : RobolectricTest() {
       Assert.assertTrue(profileData.computedValuesMap.containsKey(PATIENT_ID))
       Assert.assertEquals("12345", profileData.computedValuesMap[PATIENT_ID])
     }
+  }
+
+  @Test
+  fun filterActiveGroupsReturnsOnlyActiveGroups() {
+    val activeGroup =
+      Group().apply {
+        id = "12345"
+        name = "Snow"
+        active = true
+        addMember().apply { entity = Reference("Patient/${patient.logicalId}") }
+      }
+
+    val inActiveGroup =
+      Group().apply {
+        id = "22222"
+        name = "Mordor"
+        active = false
+        addMember().apply { entity = Reference("Patient/${patient.logicalId}") }
+      }
+
+    val search = Search(type = ResourceType.Group, count = 20, from = 20)
+    coEvery { fhirEngine.search<Group>(search) } returns listOf(activeGroup, inActiveGroup)
+
+    val actualGroups: List<Resource> = runBlocking {
+      registerRepository.filterActiveGroups(search = search)
+    }
+
+    Assert.assertEquals(1, actualGroups.size)
+    Assert.assertEquals("12345", actualGroups[0].id)
   }
 
   companion object {

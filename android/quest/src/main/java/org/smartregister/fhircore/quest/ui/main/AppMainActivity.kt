@@ -19,33 +19,38 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.fhir.sync.State
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BACK_REFERENCE_KEY
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import retrofit2.HttpException
+import timber.log.Timber
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
-open class AppMainActivity : BaseMultiLanguageActivity() {
+open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
@@ -53,13 +58,13 @@ open class AppMainActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
+  @Inject lateinit var syncListenerManager: SyncListenerManager
+
+  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
   val appMainViewModel by viewModels<AppMainViewModel>()
 
   val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
-
-  lateinit var getLocationPos: ActivityResultLauncher<Intent>
-
-  lateinit var mapLauncherResultHandler: ActivityResultLauncher<Intent>
 
   lateinit var navHostFragment: NavHostFragment
 
@@ -90,20 +95,26 @@ open class AppMainActivity : BaseMultiLanguageActivity() {
         is GeoWidgetEvent.OpenProfile -> {
           appMainViewModel.launchProfileFromGeoWidget(
             navHostFragment.navController,
-            "householdRegistrationMap",
+            geoWidgetEvent.geoWidgetConfiguration.id,
             geoWidgetEvent.data
           )
         }
         is GeoWidgetEvent.RegisterClient ->
           appMainViewModel.launchFamilyRegistrationWithLocationId(
-            this,
-            geoWidgetEvent.data,
-            geoWidgetEvent.geoWidgetConfigId
+            context = this,
+            locationId = geoWidgetEvent.data,
+            questionnaireConfig = geoWidgetEvent.questionnaire
           )
       }
     }
 
-    configService.schedulePlan(this)
+    appMainViewModel.retrieveAppMainUiState()
+
+    // Register sync listener then run sync in that order
+    syncListenerManager.registerSyncListener(this, lifecycle)
+    syncBroadcaster.runSync()
+
+    configService.scheduleFhirTaskPlanWorker(this)
   }
 
   @Suppress("DEPRECATION")
@@ -111,13 +122,60 @@ open class AppMainActivity : BaseMultiLanguageActivity() {
     super.onActivityResult(requestCode, resultCode, data)
 
     if (resultCode == Activity.RESULT_OK)
-      data?.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
+      data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_TASK_ID)?.let {
         lifecycleScope.launch(dispatcherProvider.io()) {
           when {
             it.startsWith(ResourceType.Task.name) ->
-              fhirCarePlanGenerator.completeTask(it.asReference(ResourceType.Task).extractId())
+              fhirCarePlanGenerator.completeTask(it.extractLogicalIdUuid())
           }
         }
       }
+  }
+
+  override fun onSync(state: State) {
+    Timber.i("Sync state received is $state")
+    when (state) {
+      is State.Started -> showToast(getString(R.string.syncing))
+      is State.InProgress -> {
+        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
+        )
+      }
+      is State.Glitch -> {
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
+        )
+        Timber.w(state.exceptions.joinToString { it.exception.message.toString() })
+      }
+      is State.Failed -> {
+        val hasAuthError =
+          state.result.exceptions.any {
+            it.exception is HttpException && (it.exception as HttpException).code() == 401
+          }
+        val message = if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
+        showToast(getString(message))
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(
+            state,
+            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
+              appMainViewModel.retrieveLastSyncTimestamp()
+            else getString(R.string.syncing_failed)
+          )
+        )
+        if (hasAuthError) {
+          appMainViewModel.onEvent(AppMainEvent.RefreshAuthToken)
+        }
+        Timber.e(state.result.exceptions.joinToString { it.exception.message.toString() })
+      }
+      is State.Finished -> {
+        showToast(getString(R.string.sync_completed))
+        appMainViewModel.run {
+          onEvent(
+            AppMainEvent.UpdateSyncState(state, formatLastSyncTimestamp(state.result.timestamp))
+          )
+        }
+      }
+    }
   }
 }

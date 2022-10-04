@@ -27,7 +27,9 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -42,8 +44,6 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
@@ -66,20 +66,15 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @BindValue val repository: DefaultRepository = mockk()
 
-  @BindValue
-  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
-
   @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
 
   @BindValue lateinit var loginViewModel: LoginViewModel
 
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
-  private val resourceService: FhirResourceService = mockk()
-
   private lateinit var loginService: LoginService
-
-  private lateinit var fhirResourceDataSource: FhirResourceDataSource
 
   @Before
   fun setUp() {
@@ -90,41 +85,40 @@ class LoginActivityTest : ActivityRobolectricTest() {
     coEvery { accountAuthenticator.hasActivePin() } returns false
     coEvery { accountAuthenticator.hasActiveSession() } returns true
 
-    fhirResourceDataSource = FhirResourceDataSource(resourceService)
-
     loginViewModel =
-      LoginViewModel(
-        fhirEngine = mockk(),
-        accountAuthenticator = accountAuthenticator,
-        dispatcher = coroutineTestRule.testDispatcherProvider,
-        sharedPreferences = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry
+      spyk(
+        LoginViewModel(
+          accountAuthenticator = accountAuthenticator,
+          dispatcher = coroutineTestRule.testDispatcherProvider,
+          sharedPreferences = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry,
+          defaultRepository = mockk(),
+          configService = mockk()
+        )
       )
-
-    val controller = Robolectric.buildActivity(LoginActivity::class.java)
-    loginActivity = controller.create().resume().get()
-
-    loginActivity.configurationRegistry = configurationRegistry
-    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
-    loginService = loginActivity.loginService
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
+    every { loginViewModel.isPinEnabled() } returns false
+    initLoginActivity()
     loginViewModel.navigateToHome()
     verify { loginService.navigateToHome() }
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenPinExists() {
+    initLoginActivity()
     coEvery { accountAuthenticator.hasActivePin() } returns true
     loginViewModel.navigateToHome()
-    verify { loginService.navigateToHome() }
+    verify { loginService.navigateToPinLogin(false) }
   }
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenForcedLogin() {
     coEvery { accountAuthenticator.hasActivePin() } returns false
+    every { loginViewModel.isPinEnabled() } returns false
+    initLoginActivity()
     loginViewModel.navigateToHome()
 
     verify { loginService.navigateToHome() }
@@ -132,6 +126,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToPinSetupShouldVerifyExpectedIntent() {
+    initLoginActivity()
     loginViewModel.navigateToHome()
     val expectedIntent = Intent(getActivity(), PinSetupActivity::class.java)
     val actualIntent = Shadows.shadowOf(application).nextStartedActivity
@@ -146,5 +141,14 @@ class LoginActivityTest : ActivityRobolectricTest() {
     override lateinit var loginActivity: AppCompatActivity
 
     override fun navigateToHome() {}
+  }
+
+  private fun initLoginActivity() {
+    val controller = Robolectric.buildActivity(LoginActivity::class.java)
+    loginActivity = controller.create().resume().get()
+
+    loginActivity.configurationRegistry = configurationRegistry
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
+    loginService = loginActivity.loginService
   }
 }

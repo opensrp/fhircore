@@ -16,77 +16,144 @@
 
 package org.smartregister.fhircore.engine.ui.usersetting
 
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import io.mockk.every
-import io.mockk.mockk
+import androidx.test.core.app.ActivityScenario
+import io.mockk.spyk
 import io.mockk.verify
+import java.util.Locale
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-@Ignore("Fix failing tests")
 class UserSettingScreenKtTest : RobolectricTest() {
 
-  private val userSettingViewModel = mockk<UserSettingViewModel>()
+  private val mockUserSettingsEventListener: (UserSettingsEvent) -> Unit = spyk({})
 
-  @get:Rule(order = 1) val composeRule = createComposeRule()
+  @get:Rule(order = 1) val composeRule = createEmptyComposeRule()
 
+  private lateinit var scenario: ActivityScenario<ComponentActivity>
+  private lateinit var activity: ComponentActivity
   @Before
   fun setUp() {
-    every { userSettingViewModel.retrieveUsername() } returns "johndoe"
-    every { userSettingViewModel.allowSwitchingLanguages() } returns false
+    scenario = ActivityScenario.launch(ComponentActivity::class.java)
   }
 
   @Test
   fun testUserProfileShouldDisplayCorrectContent() {
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
-
+    initComposable()
     composeRule.onNodeWithText("Johndoe").assertExists()
-    composeRule.onNodeWithText("Sync").assertExists()
+    composeRule.onNodeWithText(activity.getString(R.string.resetting_app)).assertDoesNotExist()
+    composeRule
+      .onNodeWithText(activity.getString(R.string.clear_database_message))
+      .assertDoesNotExist()
+
+    // TODO temporary disabled the sync functionality and will be enabled in future
+    // composeRule.onNodeWithText("Sync").assertExists()
+
     composeRule.onNodeWithText("Log out").assertExists()
   }
 
-  @Test
+  // TODO temporary disabled the sync functionality and will be enabled in future
+  /*@Test
   fun testSyncRowClickShouldInitiateSync() {
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
-    every { userSettingViewModel.runSync() } returns Unit
-
+    initComposable()
     composeRule.onNodeWithText("Sync").performClick()
+    verify { mockUserSettingsEventListener(any()) }
+  }*/
 
-    verify { userSettingViewModel.runSync() }
+  @Test
+  fun testLogoutRowClickShouldInitiateLogout() {
+    initComposable()
+    composeRule.onNodeWithText("Log out").performClick()
+    verify { mockUserSettingsEventListener(any()) }
   }
 
   @Test
   fun testLanguageRowIsNotShownWhenAllowSwitchingLanguagesIsFalse() {
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
-
+    initComposable(allowSwitchingLanguages = false)
     composeRule.onNodeWithText("Language").assertDoesNotExist()
   }
 
   @Test
   fun testLanguageRowIsShownWhenAllowSwitchingLanguagesIsTrue() {
-    every { userSettingViewModel.allowSwitchingLanguages() } returns true
-    every { userSettingViewModel.loadSelectedLanguage() } returns "Some lang"
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
-
+    initComposable()
     composeRule.onNodeWithText("Language").assertExists()
   }
 
   @Test
-  fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
-    val languages = listOf(Language("es", "Spanish"), Language("en", "English"))
-    every { userSettingViewModel.languages } returns languages
-    every { userSettingViewModel.allowSwitchingLanguages() } returns true
-    every { userSettingViewModel.loadSelectedLanguage() } returns "Some lang"
-    composeRule.setContent { UserSettingScreen(userSettingViewModel = userSettingViewModel) }
+  fun testResetDatabaseRowIsRenderedOnProfileScreen() {
+    initComposable(isDebugVariant = true)
+    composeRule.onNodeWithText("Reset data").assertExists()
+  }
 
+  @Test
+  fun testWhenShowProgressBarTrueRendersLoaderView() {
+    initComposable(isShowProgressBar = true)
+    composeRule.onNodeWithText(activity.getString(R.string.resetting_app)).assertExists()
+  }
+
+  @Test
+  fun testWhenShowProgressBarFalseHidesLoaderView() {
+    initComposable(isShowProgressBar = false)
+    composeRule.onNodeWithText(activity.getString(R.string.resetting_app)).assertDoesNotExist()
+  }
+
+  @Test
+  fun testWhenShowDatabaseResetConfirmationFalseHidesConfirmationDialog() {
+
+    initComposable(isShowDatabaseResetConfirmation = false)
+    composeRule
+      .onNodeWithText(activity.getString(R.string.clear_database_message))
+      .assertDoesNotExist()
+  }
+
+  @Test
+  fun testWhenShowDatabaseResetConfirmationTrueRendersConfirmationDialog() {
+
+    initComposable(isShowDatabaseResetConfirmation = true)
+    composeRule.onNodeWithText(activity.getString(R.string.clear_database_message)).assertExists()
+  }
+
+  @Ignore("Fix AppIdleException")
+  @Test
+  fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
+    initComposable(allowMainClockAutoAdvance = true)
     composeRule.onNodeWithText("Language").performClick()
-    composeRule.onNodeWithText("Spanish").assertExists()
+    composeRule.onNodeWithText("Swahili").assertExists()
     composeRule.onNodeWithText("English").assertExists()
+  }
+
+  private fun initComposable(
+    allowSwitchingLanguages: Boolean = true,
+    allowMainClockAutoAdvance: Boolean = false,
+    isShowProgressBar: Boolean = false,
+    isShowDatabaseResetConfirmation: Boolean = false,
+    isDebugVariant: Boolean = false
+  ) {
+    scenario.onActivity { activity ->
+      activity.setContent {
+        UserSettingScreen(
+          username = "Johndoe",
+          allowSwitchingLanguages = allowSwitchingLanguages,
+          selectedLanguage = Locale.ENGLISH.toLanguageTag(),
+          languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+          onEvent = mockUserSettingsEventListener,
+          isShowProgressBar = isShowProgressBar,
+          isShowDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
+          isDebugVariant = isDebugVariant
+        )
+      }
+
+      this.activity = activity
+    }
+    composeRule.mainClock.autoAdvance = allowMainClockAutoAdvance
   }
 }

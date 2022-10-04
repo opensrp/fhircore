@@ -126,25 +126,6 @@
             ],
             "showVerticalDivider": true,
             "serviceMemberIcons": "PREGNANT_WOMAN,CHILD,CHILD",
-            "serviceButton": {
-              "visible": true,
-              "text": "1",
-              "status": "OVERDUE",
-              "smallSized": false,
-              "actions": [
-                {
-                  "trigger": "ON_CLICK",
-                  "workflow": "LAUNCH_QUESTIONNAIRE",
-                  "questionnaire": {
-                    "id": "82952",
-                    "title": "Add Family",
-                    "saveButtonText": "ADD FAMILY",
-                    "setPractitionerDetails": true,
-                    "setOrganizationDetails": true
-                  }
-                }
-              ]
-            },
             "actions": [
               {
                 "trigger": "ON_CLICK",
@@ -173,12 +154,12 @@
       "actions": [
         {
           "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
           "id": "householdRegister",
           "questionnaire": {
-            "id": "82952",
+            "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
             "title": "{{add.family}}",
-            "saveButtonText": "ADD FAMILY",
+            "saveButtonText": "Add Household",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true
           }

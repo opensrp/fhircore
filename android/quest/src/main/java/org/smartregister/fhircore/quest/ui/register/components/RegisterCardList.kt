@@ -18,13 +18,12 @@ package org.smartregister.fhircore.quest.ui.register.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
@@ -35,7 +34,6 @@ import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 import timber.log.Timber
 
 /**
@@ -47,7 +45,7 @@ fun RegisterCardList(
   modifier: Modifier = Modifier,
   registerCardConfig: RegisterCardConfig,
   pagingItems: LazyPagingItems<ResourceData>,
-  onViewComponentClick: (ViewComponentEvent) -> Unit
+  navController: NavController
 ) {
   LazyColumn {
     items(pagingItems, key = { it.baseResource.logicalId }) {
@@ -56,21 +54,15 @@ fun RegisterCardList(
         ViewRenderer(
           resourceData = it!!,
           viewProperties = registerCardConfig.views,
-          onViewComponentClick = onViewComponentClick,
+          navController = navController,
         )
       }
       Divider(color = DividerColor, thickness = 1.dp)
     }
     pagingItems.apply {
       when {
-        loadState.refresh is LoadState.Loading ->
-          item {
-            CircularProgressBar(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally))
-          }
-        loadState.append is LoadState.Loading ->
-          item {
-            CircularProgressBar(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally))
-          }
+        loadState.refresh is LoadState.Loading -> item { CircularProgressBar() }
+        loadState.append is LoadState.Loading -> item { CircularProgressBar() }
         loadState.refresh is LoadState.Error -> {
           val loadStateError = pagingItems.loadState.refresh as LoadState.Error
           item {

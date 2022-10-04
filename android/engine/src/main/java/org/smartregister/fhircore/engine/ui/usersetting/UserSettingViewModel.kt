@@ -18,22 +18,31 @@ package org.smartregister.fhircore.engine.ui.usersetting
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.refresh
+import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 @HiltViewModel
 class UserSettingViewModel
 @Inject
 constructor(
+  val fhirEngine: FhirEngine,
   val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
@@ -41,11 +50,15 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : ViewModel() {
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   val languages by lazy { configurationRegistry.fetchLanguages() }
 
   val onLogout = MutableLiveData<Boolean?>(null)
 
-  val language = MutableLiveData<Language?>(null)
+  val showDBResetConfirmationDialog = MutableLiveData(false)
+
+  val showProgressBar = MutableLiveData(false)
 
   fun runSync() {
     syncBroadcaster.runSync()
@@ -67,8 +80,48 @@ constructor(
       )
       .displayName
 
-  fun setLanguage(language: Language) {
-    sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, language.tag)
-    this.language.postValue(language)
+  fun onEvent(event: UserSettingsEvent) {
+    when (event) {
+      is UserSettingsEvent.Logout -> {
+        accountAuthenticator.logout()
+      }
+      is UserSettingsEvent.SyncData -> {
+        syncBroadcaster.runSync()
+      }
+      is UserSettingsEvent.SwitchLanguage -> {
+        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
+        event.context.run {
+          setAppLocale(event.language.tag)
+          getActivity()?.refresh()
+        }
+      }
+      is UserSettingsEvent.ShowResetDatabaseConfirmationDialog -> {
+        showResetDatabaseConfirmationDialogFlag(event.isShow)
+      }
+      is UserSettingsEvent.ResetDatabaseFlag -> {
+        if (event.isReset) this.resetDatabase(dispatcherProvider.io())
+      }
+      is UserSettingsEvent.ShowLoaderView -> {
+        showProgressViewFlag(true)
+      }
+    }
+  }
+
+  fun showResetDatabaseConfirmationDialogFlag(isClearDatabase: Boolean) {
+    showDBResetConfirmationDialog.postValue(isClearDatabase)
+  }
+
+  fun showProgressViewFlag(isShown: Boolean) {
+    showProgressBar.postValue(isShown)
+  }
+
+  fun resetDatabase(ioDispatcherProviderContext: CoroutineContext) {
+    viewModelScope.launch(ioDispatcherProviderContext) {
+      fhirEngine.clearDatabase()
+      sharedPreferencesHelper.resetSharedPrefs()
+      secureSharedPreference.resetSharedPrefs()
+      accountAuthenticator.localLogout()
+      accountAuthenticator.launchScreen(AppSettingActivity::class.java)
+    }
   }
 }

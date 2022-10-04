@@ -22,7 +22,6 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.Sync
-import com.google.android.fhir.sync.SyncJob
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.Module
 import dagger.Provides
@@ -32,10 +31,8 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class])
@@ -46,28 +43,16 @@ class CoreModule {
 
   @Singleton
   @Provides
-  fun provideSyncBroadcaster(
-    configurationRegistry: ConfigurationRegistry,
-    sharedPreferencesHelper: SharedPreferencesHelper,
-    configService: ConfigService,
-    syncJob: SyncJob,
-    fhirEngine: FhirEngine
-  ) =
-    SyncBroadcaster(
-      configurationRegistry = configurationRegistry,
-      sharedPreferencesHelper = sharedPreferencesHelper,
-      configService = configService,
-      fhirEngine = fhirEngine,
-      syncJob = syncJob
-    )
-
-  @Singleton
-  @Provides
   fun provideWorkerContextProvider(): SimpleWorkerContext =
     SimpleWorkerContext().apply {
       setExpansionProfile(Parameters())
       isCanRunWithoutTerminology = true
     }
+
+  @Singleton
+  @Provides
+  fun provideFHIRPathEngine(transformSupportServices: TransformSupportServices) =
+    FHIRPathEngine(transformSupportServices.simpleWorkerContext)
 
   @Singleton
   @Provides

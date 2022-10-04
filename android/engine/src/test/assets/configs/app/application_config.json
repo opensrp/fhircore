@@ -1,31 +1,31 @@
 {
-	"appId": "app",
-	"configType": "application",
-	"theme": "DEFAULT",
-	"appTitle": "ECBIS",
-	"remoteSyncPageSize": 100,
-	"languages": [
-		"en",
-		"sw"
-	],
-	"useDarkTheme": false,
-	"syncInterval": 30,
-	"syncStrategy": ["Organization","Location","CareTeam","Practitioner"],
-	"loginConfig": {
-		"showLogo": true,
-		"enablePin": true
-	},
-	"deviceToDeviceSync": {
-		"resourcesToSync": [
-			"Group",
-			"Patient",
-			"CarePlan",
-			"Task",
-			"Encounter",
-			"Observation",
-			"Condition",
-			"Questionnaire",
-			"QuestionnaireResponse"
-		]
-	}
+  "appId": "app",
+  "configType": "application",
+  "theme": "DEFAULT",
+  "appTitle": "ECBIS",
+  "remoteSyncPageSize": 100,
+  "languages": [
+    "en",
+    "sw"
+  ],
+  "useDarkTheme": false,
+  "syncInterval": 30,
+  "syncStrategy": ["CareTeam", "Location", "Organization", "Practitioner"],
+  "loginConfig": {
+    "showLogo": true,
+    "enablePin": true
+  },
+  "deviceToDeviceSync": {
+    "resourcesToSync": [
+      "Group",
+      "Patient",
+      "CarePlan",
+      "Task",
+      "Encounter",
+      "Observation",
+      "Condition",
+      "Questionnaire",
+      "QuestionnaireResponse"
+    ]
+  }
 }

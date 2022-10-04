@@ -16,107 +16,188 @@
 
 package org.smartregister.fhircore.engine.sync
 
-import android.content.Context
-import android.content.SharedPreferences
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.AcceptLocalConflictResolver
-import com.google.android.fhir.sync.Result
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.SyncJob
-import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
-import com.google.gson.Gson
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.MockKAnnotations
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.isIn
 
 @ExperimentalCoroutinesApi
-class SyncBroadcasterTest {
+@HiltAndroidTest
+class SyncBroadcasterTest : RobolectricTest() {
 
-  @MockK private lateinit var fhirResourceService: FhirResourceService
-  private lateinit var fhirResourceDataSource: FhirResourceDataSource
-  @MockK private lateinit var configService: ConfigService
-  @MockK private lateinit var context: Context
-  @MockK private lateinit var syncJob: SyncJob
-  @MockK private lateinit var fhirEngine: FhirEngine
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
-  @MockK private lateinit var sharedPreferences: SharedPreferences
-  @MockK private lateinit var configurationRegistry: ConfigurationRegistry
-  @MockK private lateinit var gson: Gson
-  private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var configService: ConfigService
+
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  private val syncJob = mockk<SyncJob>(relaxed = true)
+
+  private val fhirEngine = mockk<FhirEngine>()
+
+  private val syncListenerManager = spyk<SyncListenerManager>()
+
   private lateinit var syncBroadcaster: SyncBroadcaster
 
   @Before
   fun setup() {
+    hiltAndroidRule.inject()
     MockKAnnotations.init(this)
-    fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
-    every { context.getSharedPreferences(any(), any()) } returns sharedPreferences
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = gson)
     syncBroadcaster =
-      SyncBroadcaster(
-        configurationRegistry,
-        sharedPreferencesHelper,
-        configService,
-        syncJob,
-        fhirEngine,
-        sharedSyncStatus,
-        dispatcherProvider
+      spyk(
+        SyncBroadcaster(
+          configurationRegistry = configurationRegistry,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configService = configService,
+          syncJob = syncJob,
+          fhirEngine = fhirEngine,
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          syncListenerManager = syncListenerManager
+        )
       )
   }
 
-  @Test
-  fun `runSync calls syncJob with correct params`() = runTest {
-    every {
-      sharedPreferences.getString(
-        SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name,
-        any()
-      )
-    } returns "[]"
-    val organizationIds = emptyList<String>()
-    every { gson.fromJson("[]", List::class.java) } returns organizationIds
-    every { configService.loadRegistrySyncParams(configurationRegistry, any()) } returns mapOf()
-    coEvery { syncJob.run(fhirEngine, any(), any(), any()) } returns Result.Success()
+  @Test fun testRunSyncWorksAsExpected() = runTest {}
 
-    syncBroadcaster.runSync()
-    verify {
-      configService.loadRegistrySyncParams(
-        configurationRegistry,
-        withArg {
-          Assert.assertTrue(
-            it.containsKey(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
-          )
-          Assert.assertEquals(
-            organizationIds,
-            it.getValue(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
-          )
-        }
-      )
+  @Test
+  fun testLoadSyncParamsShouldLoadFromConfiguration() {
+
+    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
+    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
+    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
+      arrayOf(
+          ResourceType.CarePlan.name,
+          ResourceType.Condition.name,
+          ResourceType.Encounter.name,
+          ResourceType.Group.name,
+          ResourceType.Library.name,
+          ResourceType.Observation.name,
+          ResourceType.Patient.name,
+          ResourceType.PlanDefinition.name,
+          ResourceType.Questionnaire.name,
+          ResourceType.QuestionnaireResponse.name,
+          ResourceType.StructureMap.name,
+          ResourceType.Task.name
+        )
+        .sorted()
+    )
+
+    val syncParam = syncBroadcaster.loadSyncParams()
+
+    Assert.assertTrue(syncParam.isNotEmpty())
+
+    val resourceTypes =
+      arrayOf(
+          ResourceType.CarePlan,
+          ResourceType.Condition,
+          ResourceType.Encounter,
+          ResourceType.Group,
+          ResourceType.Library,
+          ResourceType.Observation,
+          ResourceType.Patient,
+          ResourceType.PlanDefinition,
+          ResourceType.Questionnaire,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.StructureMap,
+          ResourceType.Task
+        )
+        .sorted()
+
+    Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
+
+    syncParam.keys.filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
-    coVerify {
-      syncJob.run(
-        fhirEngine,
-        withArg { Assert.assertTrue(it is ResourceParamsBasedDownloadWorkManager) },
-        subscribeTo = sharedSyncStatus,
-        resolver = AcceptLocalConflictResolver
-      )
+
+    syncParam.keys.filter { it.isIn(ResourceType.Patient) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
     }
+
+    syncParam.keys
+      .filter {
+        it.isIn(
+          ResourceType.Encounter,
+          ResourceType.Condition,
+          ResourceType.MedicationRequest,
+          ResourceType.Task,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.Observation
+        )
+      }
+      .forEach {
+        Assert.assertTrue(syncParam[it]!!.containsKey("subject.organization"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+      }
+
+    syncParam.keys.filter { it.isIn(ResourceType.Questionnaire) }.forEach {
+      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+    }
+  }
+
+  @Test
+  fun `loadSyncParams() should load configuration when remote sync preference is missing`() {
+
+    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
+    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
+    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
+    sharedPreferencesHelper.resetSharedPrefs()
+
+    val syncParam = syncBroadcaster.loadSyncParams()
+
+    Assert.assertTrue(syncParam.isNotEmpty())
+
+    val resourceTypes =
+      arrayOf(
+          ResourceType.CarePlan,
+          ResourceType.Condition,
+          ResourceType.Encounter,
+          ResourceType.Group,
+          ResourceType.Library,
+          ResourceType.Observation,
+          ResourceType.Measure,
+          ResourceType.Patient,
+          ResourceType.PlanDefinition,
+          ResourceType.Questionnaire,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.StructureMap,
+          ResourceType.Task
+        )
+        .sorted()
+
+    Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
+  }
+
+  @Test
+  fun testSchedulePeriodicSyncShouldPoll() = runTest {
+    syncBroadcaster.schedulePeriodicSync()
+    verify { syncJob.poll<FhirSyncWorker>(periodicSyncConfiguration = any(), clazz = any()) }
   }
 }

@@ -20,130 +20,25 @@ import android.content.Context
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
-import com.google.android.fhir.sync.SyncJob
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Parameters
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.SearchParameter
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.sync.SyncStrategy
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import timber.log.Timber
 
 /** An interface that provides the application configurations. */
 interface ConfigService {
 
-  /** Provide [AuthConfiguration] for the Application */
+  /** Provide [AuthConfiguration] for the application */
   fun provideAuthConfiguration(): AuthConfiguration
 
-  /**
-   * Schedule periodic sync periodically as defined in the [configurationRegistry] application
-   * config interval. The [syncBroadcaster] will broadcast the sync status to its listeners
-   */
-  fun schedulePeriodicSync(
-    syncJob: SyncJob,
-    configurationRegistry: ConfigurationRegistry,
-    syncBroadcaster: SyncBroadcaster,
-    syncInterval: Long = DEFAULT_SYNC_INTERVAL,
-  ) {
-    CoroutineScope(Dispatchers.Main).launch {
-      syncBroadcaster.sharedSyncStatus.emitAll(syncJob.stateFlow())
-    }
+  /** Provide [SyncStrategy] for the application */
+  fun provideSyncStrategy(): SyncStrategy
 
-    syncJob.poll(
-      periodicSyncConfiguration =
-        PeriodicSyncConfiguration(repeat = RepeatInterval(syncInterval, TimeUnit.MINUTES)),
-      clazz = FhirSyncWorker::class.java
-    )
-  }
-
-  fun schedulePlan(context: Context) {
+  fun scheduleFhirTaskPlanWorker(context: Context) {
     WorkManager.getInstance(context)
       .enqueueUniquePeriodicWork(
         FhirTaskPlanWorker.WORK_ID,
         ExistingPeriodicWorkPolicy.REPLACE,
         PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
       )
-  }
-
-  /** Retrieve registry sync params */
-  fun loadRegistrySyncParams(
-    configurationRegistry: ConfigurationRegistry,
-    paramsMap: Map<String, List<String>>?,
-  ): Map<ResourceType, Map<String, String>> {
-    val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-
-    val syncConfig =
-      configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-
-    val appConfig =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-
-    // TODO Does not support nested parameters i.e. parameters.parameters...
-    // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig.parameter.map { it.resource as SearchParameter }.forEach { sp ->
-      val paramName = sp.name // e.g. organization
-      val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
-      val paramExpression = sp.expression
-      val expressionValue =
-        when (paramName) {
-          // TODO: Does not support multi organization yet,
-          // https://github.com/opensrp/fhircore/issues/1550
-          ConfigurationRegistry.ORGANIZATION ->
-            paramsMap
-              ?.get(SharedPreferenceKey.PRACTITIONER_DETAILS_ORGANIZATION_IDS.name)
-              ?.firstOrNull()
-              ?.substringAfter("/")
-          ConfigurationRegistry.ID -> paramExpression
-          ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
-          else -> null
-        }?.let {
-          // replace the evaluated value into expression for complex expressions
-          // e.g. #organization -> 123
-          // e.g. patient.organization eq #organization -> patient.organization eq 123
-          paramExpression.replace(paramLiteral, it)
-        }
-
-      // for each entity in base create and add param map
-      // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
-      // ],..]
-      sp.base.forEach { base ->
-        val resourceType = ResourceType.fromCode(base.code)
-        val pair = pairs.find { it.first == resourceType }
-        if (pair == null) {
-          pairs.add(
-            Pair(
-              resourceType,
-              expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf()
-            )
-          )
-        } else {
-          expressionValue?.let {
-            // add another parameter if there is a matching resource type
-            // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
-            val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
-            val index = pairs.indexOfFirst { it.first == resourceType }
-            pairs.set(index, Pair(resourceType, updatedPair))
-          }
-        }
-      }
-    }
-
-    Timber.i("SYNC CONFIG $pairs")
-
-    return mapOf(*pairs.toTypedArray())
-  }
-
-  companion object {
-    const val DEFAULT_SYNC_INTERVAL: Long = 30
   }
 }

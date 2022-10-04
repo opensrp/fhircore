@@ -51,6 +51,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.ProfileBackgroundColor
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
@@ -100,8 +101,12 @@ fun ProfileScreen(
             onDismissRequest = { showOverflowMenu = false }
           ) {
             profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
-              if (!it.visible.toBoolean()) return@forEach
-              if (it.showSeparator.toBoolean()) Divider(color = DividerColor, thickness = 1.dp)
+              if (!it.visible
+                  .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
+                  .toBoolean()
+              )
+                return@forEach
+              if (it.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
@@ -133,12 +138,13 @@ fun ProfileScreen(
     },
     floatingActionButton = {
       val fabActions = profileUiState.profileConfiguration?.fabActions
+
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
           fabActions = fabActions,
           resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
-          onViewComponentEvent = { onEvent(ProfileEvent.OnViewComponentEvent(it, navController)) }
+          navController = navController
         )
       }
     }
@@ -150,7 +156,7 @@ fun ProfileScreen(
         ViewRenderer(
           viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
           resourceData = profileUiState.resourceData ?: ResourceData(Patient()),
-          onViewComponentClick = { onEvent(ProfileEvent.OnViewComponentEvent(it, navController)) }
+          navController = navController
         )
       }
     }

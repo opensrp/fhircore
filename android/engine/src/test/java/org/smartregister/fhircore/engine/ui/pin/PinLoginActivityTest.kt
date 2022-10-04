@@ -54,7 +54,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @BindValue
-  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 

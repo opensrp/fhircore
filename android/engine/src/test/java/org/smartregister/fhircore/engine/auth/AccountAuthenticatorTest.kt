@@ -419,4 +419,58 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     verify { oAuthService.logout(any(), any(), any()) }
   }
+
+  @Test
+  fun testLocalLogoutInvalidatesAuthenticationToken() = runBlockingTest {
+    every { secureSharedPreference.deleteSessionTokens() } returns Unit
+    every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
+    every { tokenManagerService.getLocalSessionToken() } returns "my-token"
+
+    accountAuthenticator.localLogout()
+
+    verify { tokenManagerService.getLocalSessionToken() }
+    verify { accountManager.invalidateAuthToken(any(), any()) }
+  }
+
+  @Test
+  fun testLocalLogoutDeletesSessionTokens() = runBlockingTest {
+    every { secureSharedPreference.deleteSessionTokens() } returns Unit
+    every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
+    every { tokenManagerService.getLocalSessionToken() } returns "my-token"
+
+    accountAuthenticator.localLogout()
+
+    verify { tokenManagerService.getLocalSessionToken() }
+    verify { secureSharedPreference.deleteSessionTokens() }
+  }
+
+  @Test
+  fun loadRefreshedSessionAccountRefreshesAccessTokenIfExpired() = runBlockingTest {
+    every { tokenManagerService.getActiveAccount() } returns mockk()
+    every { tokenManagerService.isTokenActive(any()) } returns false
+    every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
+      mockk()
+    every { accountManager.peekAuthToken(any(), any()) } returns "auth-token"
+    every { accountManager.notifyAccountAuthenticated(any()) } returns true
+    every { accountAuthenticator.getRefreshToken() } returns "refresh-token"
+
+    accountAuthenticator.loadRefreshedSessionAccount(mockk())
+    verify { accountAuthenticator.refreshToken(any()) }
+  }
+
+  @Test
+  fun loadRefreshedSessionAccountInvalidatesAccessTokenIfRefreshTokenExpired() = runBlockingTest {
+    every { tokenManagerService.getActiveAccount() } returns mockk()
+    every { tokenManagerService.isTokenActive(any()) } returns false
+    every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
+      null
+    every { accountManager.peekAuthToken(any(), any()) } returns "auth-token"
+    every { accountManager.invalidateAuthToken(any(), any()) } returns Unit
+    every { accountAuthenticator.getRefreshToken() } returns "refresh-token"
+    every { accountAuthenticator.refreshToken("refresh-token") } throws
+      Exception("Failed to refresh token")
+
+    accountAuthenticator.loadRefreshedSessionAccount(mockk())
+    verify { accountManager.invalidateAuthToken(any(), any()) }
+  }
 }

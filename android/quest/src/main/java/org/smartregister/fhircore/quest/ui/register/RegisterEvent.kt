@@ -16,21 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-import android.content.Context
-import androidx.navigation.NavController
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
-
 sealed class RegisterEvent {
-  data class SearchRegister(val searchText: String = "", val registerId: String) : RegisterEvent()
+  data class SearchRegister(val searchText: String = "") : RegisterEvent()
 
-  data class MoveToNextPage(val registerId: String) : RegisterEvent()
+  object MoveToNextPage : RegisterEvent()
 
-  data class MoveToPreviousPage(val registerId: String) : RegisterEvent()
-
-  data class RegisterNewClient(val context: Context) : RegisterEvent()
-
-  data class OnViewComponentEvent(
-    val viewComponentEvent: ViewComponentEvent,
-    val navController: NavController
-  ) : RegisterEvent()
+  object MoveToPreviousPage : RegisterEvent()
 }

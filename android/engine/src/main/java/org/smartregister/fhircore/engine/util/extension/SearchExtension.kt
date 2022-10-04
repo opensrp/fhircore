@@ -53,45 +53,46 @@ fun Search.filterBy(filter: DataQuery) {
   }
 }
 
-fun Search.filterToken(filter: DataQuery) {
+fun Search.filterToken(dataQuery: DataQuery) {
   // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
-  when (filter.valueType) {
+  when (dataQuery.valueType) {
     Enumerations.DataType.CODING ->
-      filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
+      filter(TokenClientParam(dataQuery.key), { value = of(dataQuery.valueCoding!!.asCoding()) })
     Enumerations.DataType.CODEABLECONCEPT ->
-      filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCodeableConcept()) })
+      filter(
+        TokenClientParam(dataQuery.key),
+        { value = of(dataQuery.valueCoding!!.asCodeableConcept()) }
+      )
     else ->
-      throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
+      throw UnsupportedOperationException("SDK does not support value type ${dataQuery.valueType}")
   }
 }
 
-fun Search.filterString(filter: DataQuery) {
+fun Search.filterString(dataQuery: DataQuery) {
   // TODO StringFilter in SDK is not fully implemented and ignores all types but String and Boolean
-  when (filter.valueType) {
+  when (dataQuery.valueType) {
     Enumerations.DataType.STRING ->
       filter(
-        StringClientParam(filter.key),
+        StringClientParam(dataQuery.key),
         {
           this.modifier = StringFilterModifier.MATCHES_EXACTLY
-          this.value = filter.valueString!!
+          this.value = dataQuery.valueString!!
         }
       )
     Enumerations.DataType.BOOLEAN ->
       filter(
-        StringClientParam(filter.key),
+        StringClientParam(dataQuery.key),
         {
           this.modifier = StringFilterModifier.MATCHES_EXACTLY
-          this.value = filter.valueBoolean.toString()
+          this.value = dataQuery.valueBoolean.toString()
         }
       )
     else ->
-      throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
+      throw UnsupportedOperationException("SDK does not support value type ${dataQuery.valueType}")
   }
 }
 
 fun Code.asCoding() = Coding(this.system, this.code, this.display)
-
-fun Coding.asCode() = Code(this.system, this.code, this.display)
 
 fun Code.asCodeableConcept() =
   CodeableConcept().apply {

@@ -32,10 +32,10 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 
 class MeasureReportPatientViewDataMapper
 @Inject
-constructor(@ApplicationContext val context: Context) :
-  DataMapper<ResourceData, MeasureReportPatientViewData> {
-
-  private val fhirPath = FhirPathDataExtractor
+constructor(
+  @ApplicationContext val context: Context,
+  val fhirPathDataExtractor: FhirPathDataExtractor
+) : DataMapper<ResourceData, MeasureReportPatientViewData> {
 
   override fun transformInputToOutputModel(inputModel: ResourceData): MeasureReportPatientViewData {
     // Patient resource can be the baseResource or any of the relatedResources of the resourceData
@@ -49,13 +49,14 @@ constructor(@ApplicationContext val context: Context) :
 
     return MeasureReportPatientViewData(
       logicalId = patient.logicalId,
-      name = fhirPath.extractValue(patient, "Patient.name.select(given + ' ' + family)"),
+      name =
+        fhirPathDataExtractor.extractValue(patient, "Patient.name.select(given + ' ' + family)"),
       gender = patient.gender.translateGender(context).first().uppercase(),
       age = patient.birthDate?.toAgeDisplay() ?: "N/A",
       family =
         context.getString(
           R.string.family_suffix,
-          fhirPath.extractValue(patient, "Patient.name.family")
+          fhirPathDataExtractor.extractValue(patient, "Patient.name.family")
         )
     )
   }

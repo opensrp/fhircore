@@ -18,24 +18,26 @@ package org.smartregister.fhircore.engine.ui.usersetting
 
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.sync.State
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows
+import org.robolectric.shadows.ShadowLooper
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -55,7 +57,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   lateinit var userSettingViewModel: UserSettingViewModel
 
@@ -63,11 +65,11 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   lateinit var secureSharedPreference: SecureSharedPreference
 
+  lateinit var fhirEngine: FhirEngine
+
   var sharedPreferencesHelper: SharedPreferencesHelper
 
   private var configService: ConfigService
-
-  private val sharedSyncStatus: MutableSharedFlow<State> = MutableSharedFlow()
 
   private var syncBroadcaster: SyncBroadcaster
 
@@ -88,8 +90,8 @@ class UserSettingViewModelTest : RobolectricTest() {
         configService,
         syncJob = mockk(),
         fhirEngine = mockk(),
-        sharedSyncStatus,
-        dispatcherProvider = CoroutineTestRule().testDispatcherProvider
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        syncListenerManager = mockk(relaxed = true)
       )
   }
 
@@ -99,8 +101,10 @@ class UserSettingViewModelTest : RobolectricTest() {
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
+    fhirEngine = mockk()
     userSettingViewModel =
       UserSettingViewModel(
+        fhirEngine = fhirEngine,
         syncBroadcaster,
         accountAuthenticator,
         secureSharedPreference,
@@ -111,7 +115,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSync() {
-    userSettingViewModel.runSync()
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncData)
   }
 
   @Test
@@ -119,18 +123,20 @@ class UserSettingViewModelTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
     Assert.assertEquals("demo", userSettingViewModel.retrieveUsername())
+
     verify { secureSharedPreference.retrieveSessionUsername() }
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
   }
 
   @Test
   fun testLogoutUserShouldCallAuthLogoutService() {
+    val userSettingsEvent = UserSettingsEvent.Logout
     every { accountAuthenticator.logout() } returns Unit
 
-    userSettingViewModel.logoutUser()
+    userSettingViewModel.onEvent(userSettingsEvent)
 
     verify(exactly = 1) { accountAuthenticator.logout() }
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-    Assert.assertTrue(userSettingViewModel.onLogout.value!!)
   }
 
   @Test
@@ -141,6 +147,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     every { userSettingViewModel.languages } returns languages
 
     Assert.assertTrue(userSettingViewModel.allowSwitchingLanguages())
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
   }
 
   @Test
@@ -149,6 +156,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     userSettingViewModel = spyk(userSettingViewModel)
 
     every { userSettingViewModel.languages } returns languages
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     Assert.assertFalse(userSettingViewModel.allowSwitchingLanguages())
   }
@@ -157,28 +165,26 @@ class UserSettingViewModelTest : RobolectricTest() {
   fun loadSelectedLanguage() {
     every { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") } returns "fr"
     Assert.assertEquals("French", userSettingViewModel.loadSelectedLanguage())
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
     verify { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") }
   }
 
   @Test
   fun setLanguageShouldCallSharedPreferencesHelperWriteWithSelectedLanguageTagAndPostValue() {
     val language = Language("es", "Spanish")
-    var postedValue: Language? = null
+    val userSettingsEvent = UserSettingsEvent.SwitchLanguage(language, context)
 
     every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
 
-    userSettingViewModel.language.observeForever { postedValue = it }
-
-    userSettingViewModel.setLanguage(language)
+    userSettingViewModel.onEvent(userSettingsEvent)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
-    Assert.assertEquals(language, postedValue!!)
   }
 
   @Test
-  fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() = runBlockingTest {
+  fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() = runTest {
     val languages = userSettingViewModel.languages
     Assert.assertEquals("English", languages[0].displayName)
     Assert.assertEquals("en", languages[0].tag)
@@ -194,5 +200,120 @@ class UserSettingViewModelTest : RobolectricTest() {
     Assert.assertEquals("en", languages[0].tag)
     Assert.assertEquals("Swahili", languages[1].displayName)
     Assert.assertEquals("sw", languages[1].tag)
+  }
+
+  @Test
+  fun testShowResetDatabaseConfirmationDialogShouldUpdateFlagCorrectly() {
+    Assert.assertEquals(false, userSettingViewModel.showDBResetConfirmationDialog.value)
+
+    val userSettingsEvent = UserSettingsEvent.ShowResetDatabaseConfirmationDialog(true)
+
+    userSettingViewModel.onEvent(userSettingsEvent)
+
+    ShadowLooper.idleMainLooper()
+    Assert.assertEquals(true, userSettingViewModel.showDBResetConfirmationDialog.value)
+  }
+
+  @Test
+  fun testResetDatabaseFlagEventShouldInvokeResetDatabaseMethod() {
+    val userSettingViewModelSpy = spyk(userSettingViewModel)
+    userSettingViewModelSpy.dispatcherProvider = CoroutineTestRule().testDispatcherProvider
+    every { userSettingViewModelSpy.resetDatabase(any()) } just runs
+
+    val userSettingsEvent = UserSettingsEvent.ResetDatabaseFlag(true)
+
+    userSettingViewModelSpy.onEvent(userSettingsEvent)
+
+    verify { userSettingViewModelSpy.resetDatabase(any()) }
+  }
+
+  @Test
+  fun testShowLoaderViewShouldUpdateShowProgressFlagCorrectly() {
+    Assert.assertEquals(false, userSettingViewModel.showProgressBar.value)
+
+    val userSettingsEvent = UserSettingsEvent.ShowLoaderView
+
+    userSettingViewModel.onEvent(userSettingsEvent)
+
+    ShadowLooper.idleMainLooper()
+    Assert.assertEquals(true, userSettingViewModel.showProgressBar.value)
+  }
+
+  @Test
+  fun testResetDatabaseInvokesClearDatabase() = runTest {
+    coEvery { fhirEngine.clearDatabase() } just runs
+    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
+    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
+    coEvery { accountAuthenticator.localLogout() } just runs
+
+    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+
+    coVerify { fhirEngine.clearDatabase() }
+  }
+
+  @Test
+  fun testResetDatabaseInvokesResetSharedPrefs() = runTest {
+    coEvery { fhirEngine.clearDatabase() } just runs
+    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
+    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
+    coEvery { accountAuthenticator.localLogout() } just runs
+
+    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+
+    coVerify { sharedPreferencesHelper.resetSharedPrefs() }
+  }
+
+  @Test
+  fun testResetDatabaseInvokesResetSecuredSharedPrefs() = runTest {
+    coEvery { fhirEngine.clearDatabase() } just runs
+    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
+    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
+    coEvery { accountAuthenticator.localLogout() } just runs
+
+    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+
+    coVerify { secureSharedPreference.resetSharedPrefs() }
+  }
+
+  @Test
+  fun testResetDatabaseInvokesAccountAuthenticatorLocalLogout() = runTest {
+    coEvery { fhirEngine.clearDatabase() } just runs
+    coEvery { accountAuthenticator.localLogout() } just runs
+    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
+    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
+    coEvery { accountAuthenticator.localLogout() } just runs
+
+    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+
+    coVerify { accountAuthenticator.localLogout() }
+  }
+
+  @Test
+  fun testResetDatabaseInvokesAccountAuthenticatorLaunchScreen() = runTest {
+    coEvery { fhirEngine.clearDatabase() } just runs
+    coEvery { accountAuthenticator.launchScreen(any()) } just runs
+    coEvery { sharedPreferencesHelper.resetSharedPrefs() } just runs
+    coEvery { secureSharedPreference.resetSharedPrefs() } just runs
+    coEvery { accountAuthenticator.localLogout() } just runs
+
+    userSettingViewModel.resetDatabase(CoroutineTestRule().testDispatcherProvider.io())
+
+    coVerify { accountAuthenticator.launchScreen(any()) }
+  }
+
+  @Test
+  fun testLogoutUserShouldCallAuthLogoutServiceX() {
+
+    Assert.assertNull(userSettingViewModel.onLogout.value)
+    every { accountAuthenticator.logout() } returns Unit
+
+    userSettingViewModel.logoutUser()
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    Assert.assertEquals(true, userSettingViewModel.onLogout.value)
+    verify(exactly = 1) { accountAuthenticator.logout() }
   }
 }

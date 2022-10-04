@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
@@ -43,12 +44,10 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.profile.components.PersonalDataView
-import org.smartregister.fhircore.quest.ui.shared.models.ViewComponentEvent
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
- * properties. The content used in the views is provided via [ResourceData] class. The card also has
- * an [onViewComponentClick] listener that responds to the click events.
+ * properties. The content used in the views is provided via [ResourceData] class.
  *
  * Note that by default the view render is not rendered in a view group like a Column/Row. This is
  * to allow us to call the function recursively for nested view group layout. Therefore when using
@@ -60,7 +59,7 @@ fun ViewRenderer(
   modifier: Modifier = Modifier,
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
-  onViewComponentClick: (ViewComponentEvent) -> Unit,
+  navController: NavController,
   viewModel: ViewRendererViewModel = hiltViewModel()
 ) {
   viewProperties.forEach { properties ->
@@ -69,7 +68,13 @@ fun ViewRenderer(
       if (properties.children.isEmpty()) return
       when (properties.viewType) {
         ViewType.COLUMN, ViewType.ROW ->
-          RenderViewGroup(modifier, properties, resourceData, onViewComponentClick, viewModel)
+          RenderViewGroup(
+            modifier = modifier,
+            viewProperties = properties,
+            resourceData = resourceData,
+            navController = navController,
+            viewModel = viewModel
+          )
         else -> return
       }
     } else {
@@ -77,7 +82,7 @@ fun ViewRenderer(
         modifier = modifier,
         viewProperties = properties,
         resourceData = resourceData,
-        onViewComponentClick = onViewComponentClick,
+        navController = navController,
         viewModel = viewModel
       )
     }
@@ -89,7 +94,7 @@ private fun RenderViewGroup(
   modifier: Modifier = Modifier,
   viewProperties: ViewGroupProperties,
   resourceData: ResourceData,
-  onViewComponentClick: (ViewComponentEvent) -> Unit,
+  navController: NavController,
   viewModel: ViewRendererViewModel
 ) {
 
@@ -112,7 +117,7 @@ private fun RenderViewGroup(
             modifier = modifier,
             viewProperties = childViewProperty.children,
             resourceData = resourceData,
-            onViewComponentClick = onViewComponentClick,
+            navController = navController,
             viewModel = viewModel
           )
         }
@@ -133,7 +138,7 @@ private fun RenderViewGroup(
             modifier = modifier,
             viewProperties = childViewProperty.children,
             resourceData = resourceData,
-            onViewComponentClick = onViewComponentClick,
+            navController = navController,
             viewModel = viewModel
           )
         }
@@ -143,7 +148,7 @@ private fun RenderViewGroup(
       modifier = modifier,
       viewProperties = childViewProperty,
       resourceData = resourceData,
-      onViewComponentClick = onViewComponentClick,
+      navController = navController,
       viewModel = viewModel
     )
   }
@@ -154,7 +159,7 @@ private fun RenderChildView(
   modifier: Modifier = Modifier,
   viewProperties: ViewProperties,
   resourceData: ResourceData,
-  onViewComponentClick: (ViewComponentEvent) -> Unit,
+  navController: NavController,
   viewModel: ViewRendererViewModel
 ) {
   when (viewProperties) {
@@ -168,7 +173,7 @@ private fun RenderChildView(
       ServiceCard(
         serviceCardProperties = viewProperties,
         resourceData = resourceData,
-        onViewComponentEvent = onViewComponentClick
+        navController = navController
       )
     is CardViewProperties ->
       Card(
@@ -183,7 +188,7 @@ private fun RenderChildView(
           ViewRenderer(
             viewProperties = viewProperties.content,
             resourceData = resourceData,
-            onViewComponentClick = onViewComponentClick
+            navController = navController
           )
         }
       }
@@ -191,11 +196,17 @@ private fun RenderChildView(
     is ButtonProperties ->
       ActionableButton(
         buttonProperties = viewProperties,
-        onViewComponentEvent = onViewComponentClick,
+        navController = navController,
         resourceData = resourceData
       )
     is SpacerProperties -> SpacerView(spacerProperties = viewProperties)
     is ListProperties ->
-      List(modifier, resourceData, viewProperties, viewModel, onViewComponentClick)
+      List(
+        modifier = modifier,
+        viewProperties = viewProperties,
+        resourceData = resourceData,
+        navController = navController,
+        viewModel = viewModel
+      )
   }
 }

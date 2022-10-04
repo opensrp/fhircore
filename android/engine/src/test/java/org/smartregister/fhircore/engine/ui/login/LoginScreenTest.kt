@@ -42,7 +42,7 @@ class LoginScreenTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
   @BindValue
-  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private val listenerObjectSpy =
     spyk(
@@ -57,7 +57,7 @@ class LoginScreenTest : RobolectricTest() {
 
   private lateinit var loginViewModel: LoginViewModel
 
-  val applicationConfiguration =
+  private val applicationConfiguration =
     ApplicationConfiguration(
       appTitle = "My app",
       appId = "app/debug",

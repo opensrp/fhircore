@@ -1,6 +1,5 @@
 <resources>
     <string name="sync">Sync</string>
-    <string name="last_sync_timestamp">Last: %1$s</string>
     <string name="language">Language</string>
     <string name="logout_as_user">Log out as </string>
     <string name="show_overdue">Show overdue</string>
@@ -24,6 +23,7 @@
     <string name="syncing">Syncing&#8230;</string>
     <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
+    <string name="sync_unauthorised">Sync failed because the authentication credentials are invalid.</string>
     <string name="try_again">Try again</string>
     <string name="status_vaccinated">Vaccinated</string>
     <string name="status_overdue">Overdue</string>
@@ -127,4 +127,16 @@
     <string name="responses">RESPONSES (%1$s)</string>
     <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
     <string name="please_wait">Please wait…</string>
+    <string name="clear_database">Reset data</string>
+    <string name="clear_database_title">Reset Database!</string>
+    <string name="clear_database_message">Resetting database will clear all records from your device. This action can’t be undone.</string>
+    <string name="resetting_app">Resetting Application...</string>
+    <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
+    <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
+    <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
+    <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
 </resources>

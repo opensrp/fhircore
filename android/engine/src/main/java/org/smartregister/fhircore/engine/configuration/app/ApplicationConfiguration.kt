@@ -17,8 +17,13 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.sync.SyncStrategy
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 @Serializable
 data class ApplicationConfiguration(
@@ -29,8 +34,45 @@ data class ApplicationConfiguration(
   val remoteSyncPageSize: Int = 100,
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
-  val syncInterval: Int = 30,
+  val syncInterval: Long = 30,
   val syncStrategy: List<String> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null
-) : Configuration()
+) : Configuration() {
+
+  fun getMandatoryTags(
+    sharedPreferencesHelper: SharedPreferencesHelper,
+    providedSyncStrategy: SyncStrategy
+  ): List<Coding> {
+    val tags = mutableListOf<Coding>()
+    syncStrategy.forEach { strategy ->
+      when (strategy) {
+        providedSyncStrategy.careTeamTag.type -> {
+          sharedPreferencesHelper.read<List<String>>(strategy)?.forEach { id ->
+            providedSyncStrategy.careTeamTag.tag?.let { tags.add(it.copy().apply { code = id }) }
+          }
+        }
+        providedSyncStrategy.locationTag.type -> {
+          sharedPreferencesHelper.read<List<String>>(strategy)?.forEach { id ->
+            providedSyncStrategy.locationTag.tag?.let { tags.add(it.copy().apply { code = id }) }
+          }
+        }
+        providedSyncStrategy.organizationTag.type -> {
+          sharedPreferencesHelper.read<List<String>>(strategy)?.forEach { id ->
+            providedSyncStrategy.organizationTag.tag?.let {
+              tags.add(it.copy().apply { code = id })
+            }
+          }
+        }
+        providedSyncStrategy.practitionerTag.type -> {
+          sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)?.let { id ->
+            providedSyncStrategy.practitionerTag.tag?.let {
+              tags.add(it.copy().apply { code = id.extractLogicalIdUuid() })
+            }
+          }
+        }
+      }
+    }
+    return tags
+  }
+}

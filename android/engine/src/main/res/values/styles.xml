@@ -16,6 +16,7 @@
         <item name="android:textColorSecondary">@color/white</item>
         <item name="android:listDivider">@color/white_slightly_opaque</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <item name="questionnaire_theme">@style/AppTheme.Questionnaire</item>
         <!-- This Theme override seems to be causing the radio buttons to NOT render
         <item name="questionnaire_theme">@style/Theme.MaterialComponents.Light.DarkActionBar</item> -->
     </style>
@@ -51,5 +52,12 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorOnPrimary">@color/colorPrimary</item>
         <item name="colorSurface">@color/colorPrimary</item>
+    </style>
+
+    <style name="AppTheme.Questionnaire" parent="Theme.Questionnaire">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorSecondary">@color/white</item>
     </style>
 </resources>

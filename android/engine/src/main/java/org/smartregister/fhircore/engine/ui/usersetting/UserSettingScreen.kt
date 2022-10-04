@@ -29,15 +29,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Logout
-import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +50,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
@@ -56,19 +60,29 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 
+const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
+const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
+
 @Composable
 fun UserSettingScreen(
   modifier: Modifier = Modifier,
-  userSettingViewModel: UserSettingViewModel = hiltViewModel()
+  username: String?,
+  allowSwitchingLanguages: Boolean,
+  selectedLanguage: String,
+  languages: List<Language>,
+  isShowDatabaseResetConfirmation: Boolean,
+  isShowProgressBar: Boolean,
+  isDebugVariant: Boolean = false,
+  onEvent: (UserSettingsEvent) -> Unit,
 ) {
-
-  val username by remember { mutableStateOf(userSettingViewModel.retrieveUsername()) }
+  val context = LocalContext.current
   var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = modifier.padding(vertical = 20.dp)) {
@@ -79,7 +93,7 @@ fun UserSettingScreen(
           contentAlignment = Alignment.Center
         ) {
           Text(
-            text = username!!.first().uppercase(),
+            text = username.first().uppercase(),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             fontSize = 28.sp,
@@ -87,7 +101,7 @@ fun UserSettingScreen(
           )
         }
         Text(
-          text = username!!.capitalize(Locale.current),
+          text = username.capitalize(Locale.current),
           fontSize = 22.sp,
           modifier = modifier.padding(vertical = 22.dp),
           fontWeight = FontWeight.Bold
@@ -95,15 +109,17 @@ fun UserSettingScreen(
       }
     }
     Divider(color = DividerColor)
-    UserSettingRow(
+
+    // TODO temporary disabled the sync functionality and will be enabled in future
+    /*UserSettingRow(
       icon = Icons.Rounded.Sync,
       text = stringResource(id = R.string.sync),
-      clickListener = userSettingViewModel::runSync,
+      clickListener = { onEvent(UserSettingsEvent.SyncData) },
       modifier = modifier
-    )
+    )*/
 
     // Language option
-    if (userSettingViewModel.allowSwitchingLanguages()) {
+    if (allowSwitchingLanguages) {
       Row(
         modifier =
           modifier
@@ -114,7 +130,7 @@ fun UserSettingScreen(
       ) {
         Row(modifier = Modifier.align(Alignment.CenterVertically)) {
           Icon(
-            painterResource(R.drawable.ic_outline_language_black),
+            painterResource(R.drawable.ic_language),
             stringResource(R.string.language),
             tint = BlueTextColor,
             modifier = Modifier.size(26.dp)
@@ -124,7 +140,7 @@ fun UserSettingScreen(
         }
         Box(contentAlignment = Alignment.CenterEnd) {
           Text(
-            text = userSettingViewModel.loadSelectedLanguage(),
+            text = selectedLanguage,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = modifier.wrapContentWidth(Alignment.End)
@@ -134,10 +150,10 @@ fun UserSettingScreen(
             onDismissRequest = { expanded = false },
             modifier = modifier.wrapContentWidth(Alignment.End)
           ) {
-            for (language in userSettingViewModel.languages) {
-              DropdownMenuItem(onClick = { userSettingViewModel.setLanguage(language) }) {
-                Text(text = language.displayName, fontSize = 18.sp)
-              }
+            for (language in languages) {
+              DropdownMenuItem(
+                onClick = { onEvent(UserSettingsEvent.SwitchLanguage(language, context)) }
+              ) { Text(text = language.displayName, fontSize = 18.sp) }
             }
           }
         }
@@ -151,11 +167,34 @@ fun UserSettingScreen(
       Divider(color = DividerColor)
     }
 
+    if (isShowProgressBar) {
+      LoaderDialog(modifier = modifier, stringResource(id = R.string.resetting_app))
+    }
+
+    if (isShowDatabaseResetConfirmation) {
+      ConfirmClearDatabaseDialog(
+        permanentResetDatabase = {
+          onEvent(UserSettingsEvent.ShowLoaderView)
+          onEvent(UserSettingsEvent.ResetDatabaseFlag(true))
+        },
+        onDismissDialog = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false)) }
+      )
+    }
+
+    if (isDebugVariant) {
+      UserSettingRow(
+        icon = Icons.Rounded.DeleteForever,
+        text = stringResource(id = R.string.clear_database),
+        clickListener = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(true)) },
+        modifier = modifier
+      )
+    }
+
     UserSettingRow(
       icon = Icons.Rounded.Logout,
       text = stringResource(id = R.string.logout),
-      clickListener = userSettingViewModel::logoutUser,
-      modifier = modifier
+      clickListener = { onEvent(UserSettingsEvent.Logout) },
+      modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT)
     )
   }
 }
@@ -188,4 +227,44 @@ fun UserSettingRow(
     )
   }
   Divider(color = DividerColor)
+}
+
+@Composable
+fun ConfirmClearDatabaseDialog(
+  permanentResetDatabase: () -> Unit,
+  onDismissDialog: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  AlertDialog(
+    onDismissRequest = onDismissDialog,
+    title = {
+      Text(
+        text = stringResource(R.string.clear_database_title),
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp
+      )
+    },
+    text = { Text(text = stringResource(R.string.clear_database_message), fontSize = 16.sp) },
+    buttons = {
+      Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        horizontalArrangement = Arrangement.End
+      ) {
+        Text(
+          text = stringResource(R.string.cancel),
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
+        )
+        Text(
+          color = MaterialTheme.colors.primary,
+          text = stringResource(R.string.clear_database).uppercase(),
+          modifier =
+            modifier.padding(horizontal = 10.dp).clickable {
+              permanentResetDatabase()
+              onDismissDialog()
+            }
+        )
+      }
+    },
+    modifier = Modifier.testTag(RESET_DATABASE_DIALOG)
+  )
 }
