@@ -24,7 +24,6 @@
     {
       "id": "householdRegister",
       "display": "All households",
-      "icon": "",
       "showCount": true,
       "menuIconConfig": {
         "type": "local",
@@ -45,7 +44,6 @@
     {
       "id": "childRegister",
       "display": "Children",
-      "icon": "",
       "showCount": true,
       "menuIconConfig": {
         "type": "local",
@@ -66,7 +64,6 @@
     {
       "id": "sickChildRegister",
       "display": "Sick child",
-      "icon": "",
       "showCount": true,
       "menuIconConfig": {
         "type": "local",

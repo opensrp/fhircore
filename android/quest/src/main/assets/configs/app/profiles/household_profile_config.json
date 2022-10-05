@@ -91,7 +91,10 @@
             "groupResource": {
               "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient"
-            }
+            },
+            "planDefinitions": [
+              "9fac39bd-9750-4c1d-b355-1961de4e37f3"
+            ]
           }
         }
       ]
@@ -226,14 +229,14 @@
                     "name": "serviceMemberIcons",
                     "condition": "true",
                     "actions": [
-                      "data.put('serviceMemberIcons', StringUtils:join([service.mapResourcesToLabeledCSV(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\", 'CHILD'), service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
+                      "data.put('serviceMemberIcons', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': fhirPath.extractValue(Condition, \"Condition.code.text = 'Pregnant'\") == 'true'? 'PREGNANT_WOMAN': '')"
                     ]
                   },
                   {
                     "name": "statuses",
                     "condition": "true",
                     "actions": [
-                      "data.put('statuses', StringUtils:join([service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'Pregnant'), service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Family Planning'\", 'Family Planning')], ','))"
+                      "data.put('statuses', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? '': fhirPath.extractValue(Condition, \"Condition.code.text = 'Pregnant'\") == 'true'? 'Pregnant': fhirPath.extractValue(Condition, \"Condition.code.text = 'Family Planning'\") == 'true'? 'Family Planning': '')"
                     ]
                   }
                 ],
