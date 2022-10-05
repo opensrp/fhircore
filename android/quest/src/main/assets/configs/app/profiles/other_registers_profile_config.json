@@ -74,10 +74,17 @@
       ]
     },
     {
+      "name": "canHavePregnancyOutcome",
+      "condition": "true",
+      "actions": [
+        "data.put('canHavePregnancyOutcome',  data.get('canBearChild'))"
+      ]
+    },
+    {
       "name": "canEnrollToFp",
       "condition": "true",
       "actions": [
-        "data.put('canEnrollToFp', data.get('canBearChild') && fhirPath.extractValue(Condition, \"Condition.code.text != 'Family Planning'\"))"
+        "data.put('canEnrollToFp', data.get('canBearChild') && fhirPath.extractValue(Condition, \"(Condition.code.text != 'Family Planning') and (Condition.code.text != 'Pregnant')\"))"
       ]
     }
   ],
@@ -250,7 +257,10 @@
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "type": "EDIT",
-            "resourceIdentifier": "@{patientId}"
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "9fac39bd-9750-4c1d-b355-1961de4e37f3"
+            ]
           }
         }
       ]
@@ -258,7 +268,7 @@
     {
       "title": "Pregnancy Outcome",
       "titleColor": "#000000",
-      "visible": "@{canBearChild}",
+      "visible": "@{canHavePregnancyOutcome}",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -266,7 +276,10 @@
           "questionnaire": {
             "id": "405619ff-cde8-4379-b674-0a4735098b33",
             "title": "Pregnancy outcome",
-            "resourceIdentifier": "@{patientId}"
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
+            ]
           }
         }
       ]
@@ -282,7 +295,31 @@
           "questionnaire": {
             "id": "4acc8776-32b0-4440-a1b1-a11a12d79acb",
             "title": "Enroll to family planning",
-            "resourceIdentifier": "@{patientId}"
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "d6263f2d-2ebe-456c-bbb7-786dabd3ea22",
+              "cd39380b-2359-4b98-8ab9-df7f90fe9392"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Register with Disease",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "f7004382-ba3d-4f62-a687-6e9d18c09d3a",
+            "resourceIdentifier": "@{patientId}",
+            "title": "Diseases Registration Form",
+            "planDefinitions": [
+              "55d89227-3a06-4a9a-b526-2819dcb1d301",
+              "d6263f2d-2ebe-456c-bbb7-786dabd3ea22"
+            ]
           }
         }
       ]
