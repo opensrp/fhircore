@@ -56,6 +56,8 @@ sealed class ProfileViewData(
       carePlans.isNotEmpty() &&
         tasks.isNotEmpty() &&
         tasks.all { it.subtitleStatus == Task.TaskStatus.COMPLETED.name }
+
+    val populationResources: ArrayList<Resource> = ArrayList(carePlans + conditions)
   }
 
   data class FamilyProfileViewData(

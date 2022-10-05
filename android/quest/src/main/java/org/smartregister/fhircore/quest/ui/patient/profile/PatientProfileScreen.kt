@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,7 +75,8 @@ fun PatientProfileScreen(
 ) {
 
   val context = LocalContext.current
-  val profileViewData = patientProfileViewModel.patientProfileViewData.value
+  val profileViewDataState = patientProfileViewModel.patientProfileViewData.collectAsState()
+  val profileViewData by remember { profileViewDataState }
   var showOverflowMenu by remember { mutableStateOf(false) }
   val viewState = patientProfileViewModel.patientProfileUiState.value
 
@@ -104,15 +106,7 @@ fun PatientProfileScreen(
                 onClick = {
                   showOverflowMenu = false
                   patientProfileViewModel.onEvent(
-                    PatientProfileEvent.OverflowMenuClick(
-                      navController,
-                      context,
-                      it.id,
-                      profileViewData.logicalId,
-                      patientProfileViewModel.familyId,
-                      carePlans = profileViewData.carePlans,
-                      patientConditions = profileViewData.conditions
-                    )
+                    PatientProfileEvent.OverflowMenuClick(navController, context, it.id)
                   )
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -178,10 +172,7 @@ fun PatientProfileScreen(
                       PatientProfileEvent.OpenTaskForm(
                         context = context,
                         taskFormId = taskFormId,
-                        taskId = taskId,
-                        patientId = profileViewData.logicalId,
-                        carePlans = profileViewData.carePlans,
-                        patientConditions = profileViewData.conditions
+                        taskId = taskId
                       )
                     )
                   }
