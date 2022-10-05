@@ -32,10 +32,17 @@
       ]
     },
     {
+      "name": "patientIdentifier",
+      "condition": "true",
+      "actions": [
+        "data.put('patientIdentifier', fhirPath.extractValue(Patient.get(0), 'Patient.identifier[0].value'))"
+      ]
+    },
+    {
       "name": "patientId",
       "condition": "true",
       "actions": [
-        "data.put('patientId', fhirPath.extractValue(Patient.get(0), 'Patient.identifier[0].value'))"
+        "data.put('patientId', fhirPath.extractValue(Patient.get(0), 'Patient.id'))"
       ]
     },
     {
@@ -92,7 +99,7 @@
                 },
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "ID: @{patientId}",
+                  "primaryText": "ID: @{patientIdentifier}",
                   "primaryTextColor": "#000000"
                 },
                 {
@@ -279,12 +286,6 @@
           }
         }
       ]
-    },
-    {
-      "title": "View medical history",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": []
     },
     {
       "title": "Remove this person",

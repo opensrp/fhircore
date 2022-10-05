@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "profile",
-  "id": "childProfile",
+  "id": "defaultProfile",
   "fhirResource": {
     "baseResource": {
       "resource": "Patient"
@@ -30,52 +30,10 @@
       ]
     },
     {
-      "name": "patientIdentifier",
-      "condition": "true",
-      "actions": [
-        "data.put('patientIdentifier', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
-      ]
-    },
-    {
       "name": "patientId",
       "condition": "true",
       "actions": [
-        "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
-      ]
-    },
-    {
-      "name": "patientAge",
-      "condition": "true",
-      "actions": [
-        "data.put('patientAge', service.extractAge(Patient))"
-      ]
-    },
-    {
-      "name": "patientGender",
-      "condition": "true",
-      "actions": [
-        "data.put('patientGender', service.extractGender(Patient))"
-      ]
-    },
-    {
-      "name": "patientDOB",
-      "condition": "true",
-      "actions": [
-        "data.put('patientDOB', service.extractDOB(Patient, 'dd/MM/YY'))"
-      ]
-    },
-    {
-      "name": "isChild",
-      "condition": "true",
-      "actions": [
-        "data.put('isChild',  fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
-      ]
-    },
-    {
-      "name": "canBearChild",
-      "condition": "true",
-      "actions": [
-        "data.put('canBearChild',  fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and (Patient.birthDate <= today() - 12 'years')\"))"
+        "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
       ]
     }
   ],
@@ -97,8 +55,38 @@
                 },
                 {
                   "viewType": "COMPOUND_TEXT",
-                  "primaryText": "ID: @{patientIdentifier}",
+                  "primaryText": "ID: @{patientId}",
                   "primaryTextColor": "#000000"
+                },
+                {
+                  "viewType": "ROW",
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    },
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    }
+                  ]
+                },
+                {
+                  "viewType": "COLUMN",
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    },
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Careplan1",
+                      "primaryTextColor": "#000000"
+                    }
+                  ]
                 },
                 {
                   "viewType": "PERSONAL_DATA",
@@ -111,7 +99,7 @@
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
-                        "primaryText": "@{patientGender}",
+                        "primaryText": "Female",
                         "fontSize": 14,
                         "primaryTextColor": "#000000"
                       }
@@ -124,7 +112,7 @@
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
-                        "primaryText": "@{patientAge}",
+                        "primaryText": "20Y",
                         "fontSize": 14,
                         "primaryTextColor": "#000000"
                       }
@@ -137,7 +125,7 @@
                       },
                       "displayValue": {
                         "viewType": "COMPOUND_TEXT",
-                        "primaryText": "@{patientDOB}",
+                        "primaryText": "01 2002",
                         "fontSize": 14,
                         "primaryTextColor": "#000000"
                       }
@@ -151,83 +139,6 @@
         {
           "viewType": "SPACER",
           "height": 16
-        },
-        {
-          "viewType": "CARD",
-          "padding": 16,
-          "header": {
-            "viewType": "COMPOUND_TEXT",
-            "primaryText": "VISITS",
-            "primaryTextColor": "#6F7274",
-            "fontSize": 18.0,
-            "padding": 16
-          },
-          "content": [
-            {
-              "viewType": "LIST",
-              "baseResource": "Task",
-              "registerCard": {
-                "rules": [
-                  {
-                    "name": "taskStatus",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
-                    ]
-                  },
-                  {
-                    "name": "taskStatusColorCode",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
-                    ]
-                  },
-                  {
-                    "name": "taskDescription",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
-                    ]
-                  },
-                  {
-                    "name": "taskId",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
-                    ]
-                  },
-                  {
-                    "name": "taskQuestionnaireId",
-                    "condition": "true",
-                    "actions": [
-                      "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
-                    ]
-                  }
-                ],
-                "views": [
-                  {
-                    "viewType": "BUTTON",
-                    "smallSized": "true",
-                    "text": "@{taskDescription}",
-                    "status": "@{taskStatusColorCode}",
-                    "visible": "true",
-                    "actions": [
-                      {
-                        "trigger": "ON_CLICK",
-                        "workflow": "LAUNCH_QUESTIONNAIRE",
-                        "questionnaire": {
-                          "id": "@{taskQuestionnaireId}",
-                          "title": "@{taskDescription}",
-                          "saveButtonText": "Save",
-                          "taskId": "@{taskId}"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          ]
         }
       ]
     }

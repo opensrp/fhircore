@@ -275,7 +275,7 @@
                       {
                         "trigger": "ON_CLICK",
                         "workflow": "LAUNCH_PROFILE",
-                        "id": "defaultProfile",
+                        "id": "otherRegistersProfile",
                         "params": [
                           {
                             "key": "familyLogicalId",
@@ -324,23 +324,6 @@
           "workflow": "CHANGE_MANAGING_ENTITY"
         }
       ]
-    },
-    {
-      "title": "Family activity",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_PROFILE"
-        }
-      ]
-    },
-    {
-      "title": "View medical history",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": []
     },
     {
       "title": "Remove family",

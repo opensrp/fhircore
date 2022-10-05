@@ -113,7 +113,7 @@
 							},
 							{
 								"viewType": "COMPOUND_TEXT",
-								"primaryText": "{{ last.updated.on.last.updated }}",
+								"primaryText": "@{lastUpdated}",
 								"fontSize": 14.0,
 								"primaryTextColor": "#5A5A5A"
 							}
