@@ -1,0 +1,1599 @@
+{
+    "resourceType": "StructureMap",
+    "id": "650943ec-3c61-42a7-86ef-12a4c9955d5d",
+    "url": "https://fhir.labs.smartregister.org/fhir/StructureMap/650943ec-3c61-42a7-86ef-12a4c9955d5d",
+    "name": "New FP Registration",
+    "structure": [
+        {
+            "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+            "mode": "source"
+        },
+        {
+            "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+            "mode": "target"
+        }
+    ],
+    "group": [
+        {
+            "name": "newFpRegistration",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "bundle",
+                    "type": "Bundle",
+                    "mode": "target"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_bundle_type",
+                    "source": [
+                        {
+                            "context": "src"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "bundle",
+                            "contextType": "variable",
+                            "element": "type",
+                            "transform": "copy",
+                            "parameter": [
+                                {
+                                    "valueString": "collection"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "r_fp_ext",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "variable": "isFPTriggered",
+                            "condition": "(((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and ((answer.value.code = 'Male condoms') or (answer.value.code = 'Female condoms') or (answer.value.code = 'Microlut Pills (Progestin-only)') or (answer.value.code = 'Microgynon Pills (Combined oral pills)') or (answer.value.code = 'Sayana press (Depo)'))) or ((linkId = '7f49d2b9-6465-4d0f-e98f-ce4bb98b8cec') and ((answer.value.code = 'Male condoms') or (answer.value.code = 'Female condoms') or (answer.value.code = 'Microlut Pills (Progestin-only)') or (answer.value.code = 'Microgynon Pills (Combined oral pills)') or (answer.value.code = 'Sayana press (Depo)') or (answer.value.code = 'IUD') or (answer.value.code = 'Implant') or (answer.value.code = 'The standard day method (SDM) using Cycle Bead') or (answer.value.code = 'Lactational Amenorrhea Method (LAM)')))).exists()"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_bundle_entries",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "variable": "refPatient",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "$this.subject"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "dependent": [
+                                {
+                                    "name": "extractFPCondition",
+                                    "variable": [
+                                        "src",
+                                        "bundle",
+                                        "refPatient"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "r_obs_entry",
+                    "source": [
+                        {
+                            "context": "src"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "variable": "refPatient",
+                            "transform": "evaluate",
+                            "parameter": [
+                                {
+                                    "valueId": "src"
+                                },
+                                {
+                                    "valueString": "$this.subject"
+                                }
+                            ]
+                        }
+                    ],
+                    "dependent": [
+                        {
+                            "name": "ExtractObservation",
+                            "variable": [
+                                "src",
+                                "bundle",
+                                "refPatient"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "extractFPCondition",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "bundle",
+                    "type": "Bundle",
+                    "mode": "target"
+                },
+                {
+                    "name": "refPatient",
+                    "type": "Reference",
+                    "mode": "source"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_cnd",
+                    "source": [
+                        {
+                            "context": "src"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "bundle",
+                            "contextType": "variable",
+                            "element": "entry",
+                            "variable": "entry"
+                        },
+                        {
+                            "context": "entry",
+                            "contextType": "variable",
+                            "element": "resource",
+                            "variable": "cnd",
+                            "transform": "create",
+                            "parameter": [
+                                {
+                                    "valueString": "Condition"
+                                }
+                            ]
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_cnd_id",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "id",
+                                    "transform": "uuid"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_onset_date_val",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "onset",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "now()"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_clinical_st",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "clinicalStatus",
+                                    "transform": "cc",
+                                    "parameter": [
+                                        {
+                                            "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                                        },
+                                        {
+                                            "valueString": "active"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_verif_st",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "verificationStatus",
+                                    "transform": "cc",
+                                    "parameter": [
+                                        {
+                                            "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+                                        },
+                                        {
+                                            "valueString": "confirmed"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_category",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "category",
+                                    "transform": "cc",
+                                    "parameter": [
+                                        {
+                                            "valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
+                                        },
+                                        {
+                                            "valueString": "problem-list-item"
+                                        },
+                                        {
+                                            "valueString": "Problem List Item"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_sub",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "subject",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueId": "refPatient"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_recorded",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "recordedDate",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "now()"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_cnd_code",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "cnd",
+                                    "contextType": "variable",
+                                    "element": "code",
+                                    "variable": "ccPreg",
+                                    "transform": "create",
+                                    "parameter": [
+                                        {
+                                            "valueString": "CodeableConcept"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "rule": [
+                                {
+                                    "name": "r_cnd_code_coding",
+                                    "source": [
+                                        {
+                                            "context": "src"
+                                        }
+                                    ],
+                                    "target": [
+                                        {
+                                            "context": "ccPreg",
+                                            "contextType": "variable",
+                                            "element": "coding",
+                                            "transform": "c",
+                                            "parameter": [
+                                                {
+                                                    "valueString": "http://snomed.info/sct"
+                                                },
+                                                {
+                                                    "valueString": "99998888"
+                                                },
+                                                {
+                                                    "valueString": "Family Planning"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "r_cnd_code_text",
+                                    "source": [
+                                        {
+                                            "context": "src"
+                                        }
+                                    ],
+                                    "target": [
+                                        {
+                                            "context": "ccPreg",
+                                            "contextType": "variable",
+                                            "element": "text",
+                                            "transform": "copy",
+                                            "parameter": [
+                                                {
+                                                    "valueString": "Family Planning"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ExtractObservation",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "bundle",
+                    "type": "Bundle",
+                    "mode": "target"
+                },
+                {
+                    "name": "refPatient",
+                    "type": "Reference",
+                    "mode": "source"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_any_risk_factor_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "variable": "any_risk",
+                            "condition": "((linkId = 'd67585d7-ae6b-4ede-83c1-80980bc9481f') and answer.value.exists() and (answer.value.code = 'no'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_available_method",
+                            "source": [
+                                {
+                                    "context": "src",
+                                    "element": "item",
+                                    "variable": "available_method",
+                                    "condition": "((linkId = 'aea83698-5a14-48d9-8345-3076bbb576ee') and answer.value.exists() and (answer.value.code = 'yes'))"
+                                }
+                            ],
+                            "rule": [
+                                {
+                                    "name": "r_male_condom",
+                                    "source": [
+                                        {
+                                            "context": "src",
+                                            "element": "item",
+                                            "variable": "male_condom",
+                                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and answer.value.exists() and (answer.value.code = 'male-condoms'))"
+                                        }
+                                    ],
+                                    "rule": [
+                                        {
+                                            "name": "r_male_condom_count",
+                                            "source": [
+                                                {
+                                                    "context": "src",
+                                                    "element": "item",
+                                                    "variable": "male_condom_count",
+                                                    "condition": "((linkId = 'd67e3038-fb94-411b-8f34-046401319877') and answer.value.exists() and (answer.value.toInteger() > 0))"
+                                                }
+                                            ],
+                                            "rule": [
+                                                {
+                                                    "name": "r_obs_value",
+                                                    "source": [
+                                                        {
+                                                            "context": "src"
+                                                        }
+                                                    ],
+                                                    "target": [
+                                                        {
+                                                            "variable": "qty",
+                                                            "transform": "create",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "Quantity"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ],
+                                                    "rule": [
+                                                        {
+                                                            "name": "r_obs_qty",
+                                                            "source": [
+                                                                {
+                                                                    "context": "src"
+                                                                }
+                                                            ],
+                                                            "target": [
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "value",
+                                                                    "transform": "evaluate",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueId": "male_condom_count"
+                                                                        },
+                                                                        {
+                                                                            "valueString": "$this.answer.value"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "unit",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "Pieces"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "system",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "http://snomed.info/sct"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "code",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "767525000"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "r_extract_male_condom_obs",
+                                                            "source": [
+                                                                {
+                                                                    "context": "src"
+                                                                }
+                                                            ],
+                                                            "target": [
+                                                                {
+                                                                    "variable": "valueQty",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueId": "qty"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            "dependent": [
+                                                                {
+                                                                    "name": "ExtractSpecificObservation",
+                                                                    "variable": [
+                                                                        "src",
+                                                                        "bundle",
+                                                                        "refPatient",
+                                                                        "valueQty"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "r_female_condom",
+                                    "source": [
+                                        {
+                                            "context": "src",
+                                            "element": "item",
+                                            "variable": "female_condom",
+                                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and answer.value.exists() and (answer.value.code = 'female-condoms'))"
+                                        }
+                                    ],
+                                    "rule": [
+                                        {
+                                            "name": "r_female_condom_count",
+                                            "source": [
+                                                {
+                                                    "context": "src",
+                                                    "element": "item",
+                                                    "variable": "female_condom_count",
+                                                    "condition": "((linkId = 'cb942faa-5f6a-4426-878e-930596fd752e') and answer.value.exists() and (answer.value.toInteger() > 0))"
+                                                }
+                                            ],
+                                            "rule": [
+                                                {
+                                                    "name": "r_obs_value",
+                                                    "source": [
+                                                        {
+                                                            "context": "src"
+                                                        }
+                                                    ],
+                                                    "target": [
+                                                        {
+                                                            "variable": "qty",
+                                                            "transform": "create",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "Quantity"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ],
+                                                    "rule": [
+                                                        {
+                                                            "name": "r_obs_qty",
+                                                            "source": [
+                                                                {
+                                                                    "context": "src"
+                                                                }
+                                                            ],
+                                                            "target": [
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "value",
+                                                                    "transform": "evaluate",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueId": "female_condom_count"
+                                                                        },
+                                                                        {
+                                                                            "valueString": "$this.answer.value"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "unit",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "Pieces"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "system",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "http://snomed.info/sct"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "code",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "767525000"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "r_extract_female_condom_obs",
+                                                            "source": [
+                                                                {
+                                                                    "context": "src"
+                                                                }
+                                                            ],
+                                                            "target": [
+                                                                {
+                                                                    "variable": "valueQty",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueId": "qty"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            "dependent": [
+                                                                {
+                                                                    "name": "ExtractSpecificObservation",
+                                                                    "variable": [
+                                                                        "src",
+                                                                        "bundle",
+                                                                        "refPatient",
+                                                                        "valueQty"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "r_microlut",
+                                    "source": [
+                                        {
+                                            "context": "src",
+                                            "element": "item",
+                                            "variable": "microlut",
+                                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and answer.value.exists() and (answer.value.code = 'microlut'))"
+                                        }
+                                    ],
+                                    "rule": [
+                                        {
+                                            "name": "r_microlut_count",
+                                            "source": [
+                                                {
+                                                    "context": "src",
+                                                    "element": "item",
+                                                    "variable": "microlut_count",
+                                                    "condition": "((linkId = 'deebaa95-b9b4-41e5-883c-24023ed3693c') and answer.value.exists() and (answer.value.toInteger() > 0))"
+                                                }
+                                            ],
+                                            "rule": [
+                                                {
+                                                    "name": "r_obs_value",
+                                                    "source": [
+                                                        {
+                                                            "context": "src"
+                                                        }
+                                                    ],
+                                                    "target": [
+                                                        {
+                                                            "variable": "qty",
+                                                            "transform": "create",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "Quantity"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ],
+                                                    "rule": [
+                                                        {
+                                                            "name": "r_obs_qty",
+                                                            "source": [
+                                                                {
+                                                                    "context": "src"
+                                                                }
+                                                            ],
+                                                            "target": [
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "value",
+                                                                    "transform": "evaluate",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueId": "microlut_count"
+                                                                        },
+                                                                        {
+                                                                            "valueString": "$this.answer.value"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "unit",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "Cycles"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "system",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "http://snomed.info/sct"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "code",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "767525000"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "r_extract_microlut_obs",
+                                                            "source": [
+                                                                {
+                                                                    "context": "src"
+                                                                }
+                                                            ],
+                                                            "target": [
+                                                                {
+                                                                    "variable": "valueQty",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueId": "qty"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            "dependent": [
+                                                                {
+                                                                    "name": "ExtractSpecificObservation",
+                                                                    "variable": [
+                                                                        "src",
+                                                                        "bundle",
+                                                                        "refPatient",
+                                                                        "valueQty"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "r_microgynon",
+                                    "source": [
+                                        {
+                                            "context": "src",
+                                            "element": "item",
+                                            "variable": "microgynon",
+                                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and answer.value.exists() and (answer.value.code = 'microgynon'))"
+                                        }
+                                    ],
+                                    "rule": [
+                                        {
+                                            "name": "r_microgynon_count",
+                                            "source": [
+                                                {
+                                                    "context": "src",
+                                                    "element": "item",
+                                                    "variable": "microgynon_count",
+                                                    "condition": "((linkId = 'c0b1c27b-d7e1-41ef-80f9-3e2e9774ed7a') and answer.value.exists() and (answer.value.toInteger() > 0))"
+                                                }
+                                            ],
+                                            "rule": [
+                                                {
+                                                    "name": "r_obs_value",
+                                                    "source": [
+                                                        {
+                                                            "context": "src"
+                                                        }
+                                                    ],
+                                                    "target": [
+                                                        {
+                                                            "variable": "qty",
+                                                            "transform": "create",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "Quantity"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ],
+                                                    "rule": [
+                                                        {
+                                                            "name": "r_obs_qty",
+                                                            "source": [
+                                                                {
+                                                                    "context": "src"
+                                                                }
+                                                            ],
+                                                            "target": [
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "value",
+                                                                    "transform": "evaluate",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueId": "microgynon_count"
+                                                                        },
+                                                                        {
+                                                                            "valueString": "$this.answer.value"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "unit",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "Cycles"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "system",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "http://snomed.info/sct"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "context": "qty",
+                                                                    "contextType": "variable",
+                                                                    "element": "code",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueString": "767525000"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "r_extract_microgynon_obs",
+                                                            "source": [
+                                                                {
+                                                                    "context": "src"
+                                                                }
+                                                            ],
+                                                            "target": [
+                                                                {
+                                                                    "variable": "valueQty",
+                                                                    "transform": "copy",
+                                                                    "parameter": [
+                                                                        {
+                                                                            "valueId": "qty"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            "dependent": [
+                                                                {
+                                                                    "name": "ExtractSpecificObservation",
+                                                                    "variable": [
+                                                                        "src",
+                                                                        "bundle",
+                                                                        "refPatient",
+                                                                        "valueQty"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "r_depo",
+                                    "source": [
+                                        {
+                                            "context": "src",
+                                            "element": "item",
+                                            "variable": "depo",
+                                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and answer.value.exists() and (answer.value.code = 'depo'))"
+                                        }
+                                    ],
+                                    "rule": [
+                                        {
+                                            "name": "r_obs_value",
+                                            "source": [
+                                                {
+                                                    "context": "src"
+                                                }
+                                            ],
+                                            "target": [
+                                                {
+                                                    "variable": "qty",
+                                                    "transform": "create",
+                                                    "parameter": [
+                                                        {
+                                                            "valueString": "Quantity"
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "rule": [
+                                                {
+                                                    "name": "r_obs_qty",
+                                                    "source": [
+                                                        {
+                                                            "context": "src"
+                                                        }
+                                                    ],
+                                                    "target": [
+                                                        {
+                                                            "context": "qty",
+                                                            "contextType": "variable",
+                                                            "element": "value",
+                                                            "transform": "copy",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueInteger": 1
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "context": "qty",
+                                                            "contextType": "variable",
+                                                            "element": "unit",
+                                                            "transform": "copy",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "Ampoules"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "context": "qty",
+                                                            "contextType": "variable",
+                                                            "element": "system",
+                                                            "transform": "copy",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "http://snomed.info/sct"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "context": "qty",
+                                                            "contextType": "variable",
+                                                            "element": "code",
+                                                            "transform": "copy",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueString": "767525000"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "r_extract_depo_obs",
+                                                    "source": [
+                                                        {
+                                                            "context": "src"
+                                                        }
+                                                    ],
+                                                    "target": [
+                                                        {
+                                                            "variable": "valueQty",
+                                                            "transform": "copy",
+                                                            "parameter": [
+                                                                {
+                                                                    "valueId": "qty"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ],
+                                                    "dependent": [
+                                                        {
+                                                            "name": "ExtractSpecificObservation",
+                                                            "variable": [
+                                                                "src",
+                                                                "bundle",
+                                                                "refPatient",
+                                                                "valueQty"
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ExtractSpecificObservation",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "bundle",
+                    "type": "Bundle",
+                    "mode": "target"
+                },
+                {
+                    "name": "refPatient",
+                    "type": "Reference",
+                    "mode": "source"
+                },
+                {
+                    "name": "valueQty",
+                    "type": "Quantity",
+                    "mode": "source"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_obs",
+                    "source": [
+                        {
+                            "context": "src"
+                        }
+                    ],
+                    "target": [
+                        {
+                            "context": "bundle",
+                            "contextType": "variable",
+                            "element": "entry",
+                            "variable": "entry"
+                        },
+                        {
+                            "context": "entry",
+                            "contextType": "variable",
+                            "element": "resource",
+                            "variable": "obs",
+                            "transform": "create",
+                            "parameter": [
+                                {
+                                    "valueString": "Observation"
+                                }
+                            ]
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_obs_id",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "obs",
+                                    "contextType": "variable",
+                                    "element": "id",
+                                    "transform": "uuid"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_obs_status",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "obs",
+                                    "contextType": "variable",
+                                    "element": "status",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "final"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_obs_category_1",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "obs",
+                                    "contextType": "variable",
+                                    "element": "category",
+                                    "transform": "cc",
+                                    "parameter": [
+                                        {
+                                            "valueString": "http://snomed.info/sct"
+                                        },
+                                        {
+                                            "valueString": "386452003"
+                                        },
+                                        {
+                                            "valueString": "Supply management"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_obs_category_2",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "obs",
+                                    "contextType": "variable",
+                                    "element": "category",
+                                    "transform": "cc",
+                                    "parameter": [
+                                        {
+                                            "valueString": "http://hl7.org/fhir/inventoryreport-counttype"
+                                        },
+                                        {
+                                            "valueString": "subtraction"
+                                        },
+                                        {
+                                            "valueString": "Subtraction"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_obs_code",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "obs",
+                                    "contextType": "variable",
+                                    "element": "code",
+                                    "variable": "code",
+                                    "transform": "create",
+                                    "parameter": [
+                                        {
+                                            "valueString": "CodeableConcept"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "rule": [
+                                {
+                                    "name": "r_obs_c_text",
+                                    "source": [
+                                        {
+                                            "context": "src"
+                                        }
+                                    ],
+                                    "target": [
+                                        {
+                                            "context": "code",
+                                            "contextType": "variable",
+                                            "element": "text",
+                                            "transform": "copy",
+                                            "parameter": [
+                                                {
+                                                    "valueString": "consumption"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_obs_ref",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "obs",
+                                    "contextType": "variable",
+                                    "element": "subject",
+                                    "variable": "ref",
+                                    "transform": "create",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Reference"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "dependent": [
+                                {
+                                    "name": "ExtractReference",
+                                    "variable": [
+                                        "src",
+                                        "ref"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_effective_current_date_time",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "obs",
+                                    "contextType": "variable",
+                                    "element": "effective",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "now()"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_obs_performer",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "obs",
+                                    "contextType": "variable",
+                                    "element": "performer",
+                                    "transform": "evaluate",
+                                    "parameter": [
+                                        {
+                                            "valueId": "src"
+                                        },
+                                        {
+                                            "valueString": "$this.generalPractitioner.first()"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "r_obs_value",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "obs",
+                                    "contextType": "variable",
+                                    "element": "value",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueId": "valueQty"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ExtractReference",
+            "typeMode": "none",
+            "input": [
+                {
+                    "name": "src",
+                    "type": "QuestionnaireResponse",
+                    "mode": "source"
+                },
+                {
+                    "name": "ref",
+                    "type": "Reference",
+                    "mode": "target"
+                }
+            ],
+            "rule": [
+                {
+                    "name": "r_male_condom_type_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and (answer.value.code = 'male-condoms'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_male_condom_ref",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "ref",
+                                    "contextType": "variable",
+                                    "element": "reference",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Group/951da426-1506-4cab-b03e-5583bdf0ca76"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "r_female_condom_type_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and (answer.value.code = 'female-condoms'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_female_condom_ref",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "ref",
+                                    "contextType": "variable",
+                                    "element": "reference",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Group/3af23539-850a-44ed-8fb1-d4999e2145ff"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "r_microlut_type_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and (answer.value.code = 'microlut'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_microlut_ref",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "ref",
+                                    "contextType": "variable",
+                                    "element": "reference",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "r_microgynon_type_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and (answer.value.code = 'microgynon'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_microgynon_ref",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "ref",
+                                    "contextType": "variable",
+                                    "element": "reference",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "r_depo_type_check",
+                    "source": [
+                        {
+                            "context": "src",
+                            "element": "item",
+                            "condition": "((linkId = '55b1164d-7492-4635-9b83-0806fbed77d3') and (answer.value.code = 'depo'))"
+                        }
+                    ],
+                    "rule": [
+                        {
+                            "name": "r_depo_ref",
+                            "source": [
+                                {
+                                    "context": "src"
+                                }
+                            ],
+                            "target": [
+                                {
+                                    "context": "ref",
+                                    "contextType": "variable",
+                                    "element": "reference",
+                                    "transform": "copy",
+                                    "parameter": [
+                                        {
+                                            "valueString": "Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
