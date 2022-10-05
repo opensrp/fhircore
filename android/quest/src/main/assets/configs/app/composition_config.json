@@ -86,7 +86,7 @@
           "focus": {
             "reference": "Binary/7a68f458-9402-4c07-be62-feb85d341c17",
             "identifier": {
-              "value": "inventoryRegister"
+              "value": "childRegister"
             }
           }
         },
@@ -95,7 +95,7 @@
           "focus": {
             "reference": "Binary/d90ae75b-b180-45c0-ab57-24dc6c885cc1",
             "identifier": {
-              "value": "inventoryRegister"
+              "value": "cmntdRegister"
             }
           }
         },
@@ -104,7 +104,7 @@
           "focus": {
             "reference": "Binary/7d0ce69f-22c2-4829-90b4-c0aadebdffba",
             "identifier": {
-              "value": "inventoryRegister"
+              "value": "fpRegister"
             }
           }
         },
@@ -113,7 +113,7 @@
           "focus": {
             "reference": "Binary/faa1688d-98fa-4954-9889-6c2bdf4d4e57",
             "identifier": {
-              "value": "inventoryRegister"
+              "value": "hivRegister"
             }
           }
         },
@@ -131,7 +131,7 @@
           "focus": {
             "reference": "Binary/ba22490f-d24b-43d0-b6f4-f5af474bbf05",
             "identifier": {
-              "value": "inventoryRegister"
+              "value": "mentalHealthRegister"
             }
           }
         },
@@ -140,7 +140,7 @@
           "focus": {
             "reference": "Binary/9aa6bbb6-df76-42a4-bdbe-72dc197378ca",
             "identifier": {
-              "value": "inventoryRegister"
+              "value": "pncRegister"
             }
           }
         },
@@ -149,16 +149,7 @@
           "focus": {
             "reference": "Binary/079a2120-e802-4445-95ac-59511751a4c0",
             "identifier": {
-              "value": "inventoryRegister"
-            }
-          }
-        },
-        {
-          "title": "Task register configuration",
-          "focus": {
-            "reference": "Binary/3cd69028-b1b1-403c-8647-f300cee6e346",
-            "identifier": {
-              "value": "inventoryRegister"
+              "value": "sickChildRegister"
             }
           }
         },
@@ -167,7 +158,7 @@
           "focus": {
             "reference": "Binary/2ac6ec4f-1a29-4d85-a015-06db9c1b82d9",
             "identifier": {
-              "value": "inventoryRegister"
+              "value": "tbRegister"
             }
           }
         }
@@ -187,7 +178,7 @@
           }
         },
         {
-          "title": "Child profile configuration",
+          "title": "Default profile configuration",
           "focus": {
             "reference": "Binary/40352701-4e80-41dc-9584-0847b2a04964",
             "identifier": {
@@ -200,19 +191,10 @@
           "focus": {
             "reference": "Binary/cbea524d-9d97-4e90-8376-01d336ba3bc3",
             "identifier": {
-              "value": "ancProfile"
+              "value": "otherRegistersProfile"
             }
           }
         },
-        {
-          "title": "Tasks profile configuration",
-          "focus": {
-            "reference": "Binary/af12e177-191c-45d7-9cec-fdea1fda4c09",
-            "identifier": {
-              "value": "ancProfile"
-            }
-          }
-        }
       ]
     },
     {

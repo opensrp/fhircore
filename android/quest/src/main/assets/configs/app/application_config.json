@@ -11,9 +11,6 @@
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
-  "syncStrategy": [
-    "Location"
-  ],
   "loginConfig": {
     "showLogo": true,
     "enablePin": true

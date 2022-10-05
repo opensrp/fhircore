@@ -275,7 +275,7 @@
                       {
                         "trigger": "ON_CLICK",
                         "workflow": "LAUNCH_PROFILE",
-                        "id": "otherRegistersProfile",
+                        "id": "defaultProfile",
                         "params": [
                           {
                             "key": "familyLogicalId",

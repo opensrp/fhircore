@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "profile",
-  "id": "childProfile",
+  "id": "defaultProfile",
   "fhirResource": {
     "baseResource": {
       "resource": "Patient"
