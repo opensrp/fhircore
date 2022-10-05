@@ -106,11 +106,11 @@ constructor(
           Timber.d("Fetching config details $resourceUrlPath")
 
           fhirResourceDataSource.loadData(resourceUrlPath).entry.forEach { bundleEntryComponent ->
-            defaultRepository.create(bundleEntryComponent.resource)
+            defaultRepository.create(false, bundleEntryComponent.resource)
 
             if (bundleEntryComponent.resource is Binary) {
               val binary = bundleEntryComponent.resource as Binary
-              binary.data.decodeToString().decodeBase64()!!.string(Charset.defaultCharset()).let {
+              binary.data.decodeToString().decodeBase64()?.string(Charset.defaultCharset())?.let {
                 val config =
                   it.tryDecodeJson<RegisterConfiguration>()
                     ?: it.tryDecodeJson<ProfileConfiguration>()
@@ -131,7 +131,7 @@ constructor(
       saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
 
       // Save composition after fetching all the referenced section resources
-      defaultRepository.create(compositionResource)
+      defaultRepository.create(false, compositionResource)
 
       Timber.d("Done with all app configs and details")
 

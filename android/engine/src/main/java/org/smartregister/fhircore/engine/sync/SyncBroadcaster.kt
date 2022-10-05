@@ -100,12 +100,13 @@ constructor(
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
-    val syncStrategy = configService.provideSyncStrategy()
+    val organizationSyncStrategy =
+      configService.provideSyncStrategyTags().find { it.type == ResourceType.Organization.name }
 
-    val mandatoryTags = appConfig.getMandatoryTags(sharedPreferencesHelper, syncStrategy)
+    val mandatoryTags = configService.provideMandatorySyncTags(sharedPreferencesHelper)
 
-    val patientRelatedResourceTypes =
-      sharedPreferencesHelper.read<List<String>>(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
+    val relatedResourceTypes: List<String>? =
+      sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
@@ -120,10 +121,7 @@ constructor(
           ConfigurationRegistry.ORGANIZATION ->
             mandatoryTags
               .firstOrNull {
-                it.display.contentEquals(
-                  syncStrategy.organizationTag.tag?.display,
-                  ignoreCase = true
-                )
+                it.display.contentEquals(organizationSyncStrategy?.tag?.display, ignoreCase = true)
               }
               ?.code
           ConfigurationRegistry.ID -> paramExpression
@@ -139,26 +137,31 @@ constructor(
       // for each entity in base create and add param map
       // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
       // ],..]
-      (patientRelatedResourceTypes ?: sp.base.map { it.code }).forEach { clinicalResource ->
-        val resourceType = ResourceType.fromCode(clinicalResource)
-        val pair = pairs.find { it.first == resourceType }
-        if (pair == null) {
-          pairs.add(
-            Pair(
-              resourceType,
-              expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf()
-            )
-          )
+      if (relatedResourceTypes.isNullOrEmpty()) {
+          sp.base.map { it.code }
         } else {
-          expressionValue?.let {
-            // add another parameter if there is a matching resource type
-            // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
-            val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
-            val index = pairs.indexOfFirst { it.first == resourceType }
-            pairs.set(index, Pair(resourceType, updatedPair))
+          relatedResourceTypes
+        }
+        .forEach { clinicalResource ->
+          val resourceType = ResourceType.fromCode(clinicalResource)
+          val pair = pairs.find { it.first == resourceType }
+          if (pair == null) {
+            pairs.add(
+              Pair(
+                resourceType,
+                expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf()
+              )
+            )
+          } else {
+            expressionValue?.let {
+              // add another parameter if there is a matching resource type
+              // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
+              val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
+              val index = pairs.indexOfFirst { it.first == resourceType }
+              pairs.set(index, Pair(resourceType, updatedPair))
+            }
           }
         }
-      }
     }
 
     Timber.i("SYNC CONFIG $pairs")

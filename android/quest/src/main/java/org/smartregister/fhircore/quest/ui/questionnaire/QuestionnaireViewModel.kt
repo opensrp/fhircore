@@ -410,7 +410,7 @@ constructor(
   }
 
   fun saveResource(resource: Resource) {
-    viewModelScope.launch { defaultRepository.create(resource) }
+    viewModelScope.launch { defaultRepository.create(true, resource) }
   }
 
   open suspend fun getPopulationResources(

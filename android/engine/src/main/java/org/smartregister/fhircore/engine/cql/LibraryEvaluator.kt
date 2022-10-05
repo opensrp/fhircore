@@ -265,7 +265,7 @@ class LibraryEvaluator @Inject constructor() {
 
         if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
           data.addEntry().apply { this.resource = p.resource }
-          repository.create(it as Resource)
+          repository.create(true, it as Resource)
         }
 
         when {

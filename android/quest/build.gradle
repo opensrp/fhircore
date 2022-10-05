@@ -36,6 +36,7 @@ android {
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
         buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
+        buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
 
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
     }
@@ -131,6 +132,7 @@ android {
             applicationIdSuffix ".quest"
             versionNameSuffix "-quest"
             getIsDefault().set(true)
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         ecbis {
@@ -139,18 +141,21 @@ android {
             versionNameSuffix "-ecbis"
             versionCode 3
             versionName "0.1.1"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         g6pd {
             dimension "apps"
             applicationIdSuffix ".g6pd"
             versionNameSuffix "-g6pd"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         mwcore {
             dimension "apps"
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         afyayangu {
@@ -159,6 +164,7 @@ android {
             versionNameSuffix "-afyayangu"
             versionCode 1
             versionName "0.0.1"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 
         map {
@@ -167,6 +173,7 @@ android {
             versionNameSuffix "-map"
             versionCode 1
             versionName "0.0.1"
+            buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
     }
     sourceSets {
