@@ -16,11 +16,18 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
+import android.os.Bundle
+import android.view.View
+import androidx.core.view.isGone
+import androidx.fragment.app.activityViewModels
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.R as R2
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.contrib.views.barcode.QuestionnaireItemBarCodeReaderViewHolderFactory
 
 class FhirCoreQuestionnaireFragment : QuestionnaireFragment() {
+
+  private val fhirQuestionnaireActivityViewModel: QuestionnaireViewModel by activityViewModels()
 
   override fun getCustomQuestionnaireItemViewHolderFactoryMatchers():
     List<QuestionnaireItemViewHolderFactoryMatcher> {
@@ -38,6 +45,20 @@ class FhirCoreQuestionnaireFragment : QuestionnaireFragment() {
         }
       }
     )
+  }
+
+  private fun View.isHidden() = this.isGone || !this.isEnabled
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+    val previousButton = view.findViewById<View>(R2.id.pagination_previous_button)
+    val nextButton = view.findViewById<View>(R2.id.pagination_next_button)
+
+    view.findViewById<View>(R2.id.bottom_buttons).viewTreeObserver.addOnGlobalLayoutListener {
+      fhirQuestionnaireActivityViewModel.updateSaveButtonEnableState(
+        enabled = previousButton.isHidden() && nextButton.isHidden()
+      )
+    }
   }
 
   companion object {
