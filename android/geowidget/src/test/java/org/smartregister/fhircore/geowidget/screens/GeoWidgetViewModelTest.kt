@@ -142,7 +142,7 @@ class GeoWidgetViewModelTest {
 
     val locationLiveData = geoWidgetViewModel.saveLocation(location)
 
-    coVerify { defaultRepository.create(location) }
+    coVerify { defaultRepository.create(true, location) }
     Assert.assertTrue(locationLiveData.value!!)
   }
 }
