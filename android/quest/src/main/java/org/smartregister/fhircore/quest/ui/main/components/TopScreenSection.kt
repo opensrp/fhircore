@@ -16,14 +16,17 @@
 
 package org.smartregister.fhircore.quest.ui.main.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
@@ -33,6 +36,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +46,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.fhir.sync.State
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 
@@ -61,11 +69,14 @@ const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
 fun TopScreenSection(
   modifier: Modifier = Modifier,
   title: String,
+  syncStateFlow: Flow<State>,
   searchText: String,
   searchPlaceholder: String? = null,
   onSearchTextChanged: (String) -> Unit,
   onTitleIconClick: () -> Unit
 ) {
+  val syncState = syncStateFlow.collectAsState(initial = null)
+
   Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
@@ -128,11 +139,53 @@ fun TopScreenSection(
           }
       }
     )
+
+    AnimatedVisibility(visible = syncState.value?.isSyncEnded() == false) {
+      Column(modifier = modifier.background(MaterialTheme.colors.background).padding(10.dp)) {
+        LinearProgressIndicator(
+          0.2f,
+          modifier.fillMaxWidth().padding(vertical = 5.dp),
+          MaterialTheme.colors.primary
+        )
+
+        Row {
+          Text(
+            text =
+              if (syncState.value?.isSyncEnded() == true)
+                syncState.value?.javaClass?.simpleName?.uppercase() ?: ""
+              else stringResource(R.string.syncing),
+            fontSize = 16.sp,
+            color = MaterialTheme.colors.primary,
+            modifier = modifier.testTag(TOP_ROW_TEXT_TEST_TAG)
+          )
+          Spacer(Modifier.weight(1f).padding(5.dp))
+          Text(
+            text = "${syncState.value.progressAction()} ${syncState.value.progressPercent()}",
+            fontSize = 16.sp,
+            color = MaterialTheme.colors.primary,
+            modifier = modifier.testTag(TOP_ROW_TEXT_TEST_TAG)
+          )
+        }
+      }
+    }
   }
 }
+
+private fun State.isSyncEnded() = this is State.Finished || this is State.Failed
+
+private fun State?.progressAction() =
+  if (this is State.InProgress) "${this.syncOperation.name.lowercase()}ing ... " else ""
+
+private fun State?.progressPercent() =
+  if (this is State.InProgress) "${this.percentCompleted.times(100).roundToInt()}%" else ""
 
 @Preview(showBackground = true)
 @Composable
 fun TopScreenSectionPreview() {
-  TopScreenSection(title = "All Clients", searchText = "Eddy", onSearchTextChanged = {}) {}
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    onSearchTextChanged = {},
+    syncStateFlow = flowOf()
+  ) {}
 }

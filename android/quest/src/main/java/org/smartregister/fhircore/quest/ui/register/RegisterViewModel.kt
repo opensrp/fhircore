@@ -25,11 +25,16 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -54,7 +59,17 @@ constructor(
   val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
 
-  val registerUiState = mutableStateOf(RegisterUiState())
+  private val job = Sync.basicSyncJob(sharedPreferencesHelper.context)
+  private val _pollState =
+    MutableSharedFlow<State>(onBufferOverflow = BufferOverflow.DROP_OLDEST, replay = 1)
+  val pollState: Flow<State>
+    get() = _pollState
+
+  init {
+    viewModelScope.launch { _pollState.emitAll(job.stateFlow(this)) }
+  }
+
+  val registerUiState = mutableStateOf(RegisterUiState(syncState = _pollState))
 
   val currentPage: MutableState<Int> = mutableStateOf(0)
 
@@ -162,6 +177,7 @@ constructor(
               sharedPreferencesHelper
                 .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
                 .isNullOrEmpty(),
+            syncState = _pollState,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.value,

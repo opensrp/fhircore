@@ -82,7 +82,8 @@ fun RegisterScreen(
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
-          }
+          },
+          syncStateFlow = registerUiState.syncState
         ) { openDrawer(true) }
         // Only show counter during search
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)

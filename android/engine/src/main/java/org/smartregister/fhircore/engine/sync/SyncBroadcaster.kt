@@ -29,7 +29,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Parameters
@@ -175,16 +174,25 @@ constructor(
     Timber.i("Scheduling periodic sync...")
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    val periodicSyncFlow: Flow<State> =
-      syncJob.poll(
-        periodicSyncConfiguration =
-          PeriodicSyncConfiguration(
-            repeat = RepeatInterval(appConfig.syncInterval, TimeUnit.MINUTES)
-          ),
-        clazz = FhirSyncWorker::class.java // TODO requires a concrete class of FhirSyncWorker
-      )
-    periodicSyncFlow.collect { state ->
-      syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(state) }
+    syncJob.poll(
+      periodicSyncConfiguration =
+        PeriodicSyncConfiguration(
+          repeat = RepeatInterval(appConfig.syncInterval, TimeUnit.MINUTES)
+        ),
+      clazz = FhirSyncWorker::class.java // TODO requires a concrete class of FhirSyncWorker
+    )
+
+    val coroutineScope = CoroutineScope(dispatcherProvider.main())
+    runCatching {
+      syncJob.stateFlow(coroutineScope).collect { state ->
+        syncListenerManager.onSyncListeners.forEach { onSyncListener ->
+          onSyncListener.onSync(state)
+        }
+      }
     }
+      .onFailure {
+        Timber.e(it)
+        coroutineScope.cancel()
+      }
   }
 }

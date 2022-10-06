@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
+import com.google.android.fhir.sync.State
+import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 
 data class RegisterUiState(
   val screenTitle: String = "",
   val isFirstTimeSync: Boolean = false,
+  val syncState: Flow<State>,
   val registerConfiguration: RegisterConfiguration? = null,
   val registerId: String = "",
   val totalRecordsCount: Long = 0,
