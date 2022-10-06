@@ -29,6 +29,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.unmockkStatic
 import java.time.LocalDate
 import java.util.Date
@@ -171,8 +172,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
         val resourcesSlot = mutableListOf<Resource>()
+        val booleanSlot = slot<Boolean>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -244,8 +246,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
         val resourcesSlot = mutableListOf<Resource>()
+        val booleanSlot = slot<Boolean>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -331,8 +334,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertEquals(3, carePlan.activityFirstRep.outcomeReference.size)
 
         val resourcesSlot = mutableListOf<Resource>()
+        val booleanSlot = slot<Boolean>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
@@ -422,8 +426,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertNull(it)
 
         val resourcesSlot = mutableListOf<Resource>()
+        val booleanSlot = slot<Boolean>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
@@ -482,7 +487,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
 
         val resourcesSlot = mutableListOf<Resource>()
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        val booleanSlot = slot<Boolean>()
+
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
@@ -546,7 +553,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       .also {
         val resourcesSlot = mutableListOf<Resource>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        val booleanSlot = slot<Boolean>()
+
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
         resourcesSlot
@@ -647,8 +656,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         ) // 6 visits as 4th month is passing (15th day) as per lmp
 
         val resourcesSlot = mutableListOf<Resource>()
+        val booleanSlot = slot<Boolean>()
 
-        coVerify { defaultRepository.create(capture(resourcesSlot)) }
+        coVerify { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
