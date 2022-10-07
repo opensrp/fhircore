@@ -211,6 +211,13 @@
                     "actions": [
                       "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
                     ]
+                  },
+                  {
+                    "name": "taskFor",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
+                    ]
                   }
                 ],
                 "views": [
@@ -227,6 +234,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+                          "resourceIdentifier": "@{taskFor}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}"
                         }

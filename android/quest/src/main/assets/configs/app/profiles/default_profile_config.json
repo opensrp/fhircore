@@ -225,6 +225,13 @@
                     ]
                   },
                   {
+                    "name": "taskFor",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
+                    ]
+                  },
+                  {
                     "name": "taskQuestionnaireId",
                     "condition": "true",
                     "actions": [
@@ -247,7 +254,8 @@
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
                           "saveButtonText": "Save",
-                          "taskId": "@{taskId}"
+                          "taskId": "@{taskId}",
+                          "resourceIdentifier": "@{taskFor}"
                         }
                       }
                     ]
