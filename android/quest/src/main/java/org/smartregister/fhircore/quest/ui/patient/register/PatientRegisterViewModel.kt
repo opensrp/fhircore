@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.content.Context
 import android.content.Intent
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -107,6 +106,10 @@ constructor(
   val refreshCounter: StateFlow<Int>
     get() = _refreshCounter.asStateFlow()
 
+  private val _firstTimeSyncState = MutableStateFlow(isFirstTimeSync())
+  val firstTimeSyncState: StateFlow<Boolean>
+    get() = _firstTimeSyncState.asStateFlow()
+
   private val _totalRecordsCount = MutableLiveData(1L)
 
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
@@ -114,8 +117,6 @@ constructor(
 
   val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
-
-  val firstTimeSyncState = mutableStateOf(isFirstTimeSync())
 
   var registerViewConfiguration: RegisterViewConfiguration
     private set
@@ -150,20 +151,17 @@ constructor(
 
     viewModelScope.launch { paginateRegisterDataForSearch() }
 
-    syncBroadcaster.registerSyncListener(
+    val syncStateListener =
       object : OnSyncListener {
         override fun onSync(state: State) {
-          when (state) {
-            is State.Finished, is State.Failed -> {
-              refresh()
-              firstTimeSyncState.value = isFirstTimeSync()
-            }
-            else -> {}
-          }
+          val isStateCompleted = state is State.Failed || state is State.Finished
+          if (isStateCompleted) {
+            refresh()
+            _firstTimeSyncState.value = false
+          } else _firstTimeSyncState.value = isFirstTimeSync()
         }
-      },
-      viewModelScope
-    )
+      }
+    syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
   }
 
   fun refresh() {
@@ -267,7 +265,7 @@ constructor(
     return appFeatureManager.appFeatureHasSetting(REGISTER_FORM_ID_KEY)
   }
 
-  fun isFirstTimeSync() = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrEmpty()
+  fun isFirstTimeSync() = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrBlank()
 
   fun progressMessage() =
     if (searchText.value.isEmpty()) {
