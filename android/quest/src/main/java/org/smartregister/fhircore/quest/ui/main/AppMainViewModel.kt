@@ -162,7 +162,11 @@ constructor(
   fun retrieveLastSyncTimestamp(): String? = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
-    sharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, formatLastSyncTimestamp(timestamp))
+    sharedPreferencesHelper.write(
+      LAST_SYNC_TIMESTAMP,
+      formatLastSyncTimestamp(timestamp),
+      async = true
+    )
   }
 
   companion object {
