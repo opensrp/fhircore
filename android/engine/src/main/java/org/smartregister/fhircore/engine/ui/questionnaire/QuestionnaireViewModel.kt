@@ -29,11 +29,27 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Calendar
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
@@ -41,12 +57,26 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
-import org.smartregister.fhircore.engine.util.*
-import org.smartregister.fhircore.engine.util.extension.*
+import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.assertSubject
+import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
+import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.findSubject
+import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
+import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.retainMetadata
+import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
-import java.util.*
-import javax.inject.Inject
 
 @HiltViewModel
 open class QuestionnaireViewModel
@@ -377,12 +407,6 @@ constructor(
     }
 
     questionnaireResponse.assertSubject() // should not allow further flow without subject
-    println("########")
-    println(questionnaireResponse)
-    println("########")
-    println(questionnaireResponse.toString())
-    println("########")
-    println(questionnaireResponse.encodeResourceToString())
 
     questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
 

@@ -188,11 +188,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                   questionnaireResponse.encodeResourceToString()
                 )
               }
-              val patientCategory = intent.getStringExtra(QUESTIONNAIRE_ARG_SET_CATEGORY) ?: ""
-              Timber.e("patient-category - $patientCategory")
-              if (patientCategory.isNotEmpty()) {
-                setPatientCategory(questionnaire, patientCategory, true)
-              }
             }
       }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
@@ -231,24 +226,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       initial =
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
       readOnly = readonly
-    }
-  }
-
-  private fun setPatientCategory(
-    questionnaire: Questionnaire,
-    category: String,
-    readonly: Boolean
-  ) {
-    try {
-      questionnaire.find(QUESTIONNAIRE_ARG_CATEGORY_LINK_ID)?.apply {
-        initial =
-          mutableListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(category))
-          )
-        readOnly = readonly
-      }
-    } catch (e: Exception) {
-      e.printStackTrace()
     }
   }
 
@@ -436,8 +413,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
-    const val QUESTIONNAIRE_ARG_SET_CATEGORY = "questionnaire_patient_set_category"
-    const val QUESTIONNAIRE_ARG_CATEGORY_LINK_ID = "patient-category"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
     fun Intent.populationResources() =
@@ -450,16 +425,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
       backReference: String? = null,
-      populationResources: ArrayList<Resource> = ArrayList(),
-      patientCategory: String = ""
+      populationResources: ArrayList<Resource> = ArrayList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_GROUP_KEY, groupIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, formName),
         Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
-        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference),
-        Pair(QUESTIONNAIRE_ARG_SET_CATEGORY, patientCategory)
+        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)
       )
         .apply {
           questionnaireResponse?.let {
