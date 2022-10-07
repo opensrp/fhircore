@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -61,7 +60,8 @@ fun PatientRegisterScreen(
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
 ) {
   val context = LocalContext.current
-  val firstTimeSync = remember { mutableStateOf(patientRegisterViewModel.isFirstTimeSync()) }
+  val firstTimeSyncState = patientRegisterViewModel.firstTimeSyncState.collectAsState()
+  val firstTimeSync by remember { firstTimeSyncState }
   val searchTextState = patientRegisterViewModel.searchText.collectAsState()
   val searchText by remember { searchTextState }
   val patientRegistrationLauncher =
@@ -130,7 +130,7 @@ fun PatientRegisterScreen(
                 //
                 // patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
               },
-              enabled = !firstTimeSync.value
+              enabled = !firstTimeSync
             ) {
               Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp))
             }
@@ -140,7 +140,7 @@ fun PatientRegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (firstTimeSync.value) LoaderDialog(modifier = modifier)
+      if (firstTimeSync) LoaderDialog(modifier = modifier)
       // Only show counter during search
       var iModifier = Modifier.padding(top = 0.dp)
       if (searchText.isNotEmpty()) {

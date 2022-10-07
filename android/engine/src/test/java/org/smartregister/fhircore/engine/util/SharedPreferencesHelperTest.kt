@@ -33,7 +33,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
 @HiltAndroidTest
-internal class SharedPreferencesHelperTest : RobolectricTest() {
+class SharedPreferencesHelperTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -70,14 +70,32 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
   }
 
   @Test
+  fun testWriteStringAsync() {
+    sharedPreferencesHelper.write("anyStringKey", "test write String", async = true)
+    Assert.assertEquals("test write String", sharedPreferencesHelper.read("anyStringKey", ""))
+  }
+
+  @Test
   fun testWriteBoolean() {
     sharedPreferencesHelper.write("anyBooleanKey", true)
     Assert.assertEquals(true, sharedPreferencesHelper.read("anyBooleanKey", false))
   }
 
   @Test
+  fun testWriteBooleanAsync() {
+    sharedPreferencesHelper.write("anyBooleanKey", true, async = true)
+    Assert.assertEquals(true, sharedPreferencesHelper.read("anyBooleanKey", false))
+  }
+
+  @Test
   fun testWriteLong() {
     sharedPreferencesHelper.write("anyLongKey", 123456789)
+    Assert.assertEquals(123456789, sharedPreferencesHelper.read("anyLongKey", 0))
+  }
+
+  @Test
+  fun testWriteLongAsync() {
+    sharedPreferencesHelper.write("anyLongKey", 123456789, async = true)
     Assert.assertEquals(123456789, sharedPreferencesHelper.read("anyLongKey", 0))
   }
 
