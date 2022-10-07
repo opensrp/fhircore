@@ -25,10 +25,31 @@
   },
   "rules": [
     {
+      "name": "patientFirstName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
+      ]
+    },
+    {
+      "name": "patientMiddleName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
+      ]
+    },
+    {
+      "name": "patientLastName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
+      ]
+    },
+    {
       "name": "patientName",
       "condition": "true",
       "actions": [
-        "data.put('patientName', fhirPath.extractValue(Patient.get(0), \"Patient.name.select(given + ' ' + family)\"))"
+        "data.put('patientName', data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName'))"
       ]
     },
     {
@@ -70,7 +91,7 @@
       "name": "canBearChild",
       "condition": "true",
       "actions": [
-        "data.put('canBearChild',  fhirPath.extractValue(Patient.get(0), \"Patient.active and Patient.gender = 'female' and (Patient.birthDate <= today() - 12 'years')\"))"
+        "data.put('canBearChild',  fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
       ]
     },
     {
@@ -84,7 +105,7 @@
       "name": "canEnrollToFp",
       "condition": "true",
       "actions": [
-        "data.put('canEnrollToFp', data.get('canBearChild') && fhirPath.extractValue(Condition, \"(Condition.code.text != 'Family Planning') and (Condition.code.text != 'Pregnant')\"))"
+        "data.put('canEnrollToFp', data.get('canBearChild'))"
       ]
     }
   ],
@@ -228,7 +249,11 @@
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
                           "saveButtonText": "Save",
-                          "taskId": "@{taskId}"
+                          "resourceIdentifier": "@{patientId}",
+                          "taskId": "@{taskId}",
+                          "planDefinitions": [
+                            "9fac39bd-9750-4c1d-b355-1961de4e37f3"
+                          ]
                         }
                       }
                     ]
