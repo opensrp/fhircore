@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
@@ -94,6 +95,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val phoneContacts: List<String> = listOf(),
     val showIdentifierInProfile: Boolean = false,
     val conditions: List<Condition> = emptyList(),
-    val otherPatients: List<Resource> = listOf()
+    val otherPatients: List<Resource> = listOf(),
+    val guardians: List<Guardian> = emptyList()
   ) : ProfileData(logicalId = logicalId, name = name)
 }

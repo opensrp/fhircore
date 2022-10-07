@@ -209,6 +209,18 @@ constructor(
               patientProfileUiState.value.copy(overflowMenuItems = updatedMenuItems)
             undoGuardianVisitTasksFilter()
           }
+          R.id.view_guardians -> {
+            val commonParams =
+              NavigationArg.bindArgumentsOf(
+                Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+                Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV.name)
+              )
+
+            event.navController.navigate(
+              route =
+                "${MainNavigationScreen.PatientGuardians.route}/${event.patientId}$commonParams"
+            ) { launchSingleTop = true }
+          }
           R.id.view_family -> {
             event.familyId?.let { familyId ->
               val urlParams =
@@ -226,7 +238,7 @@ constructor(
             event.patientId.let { patientId ->
               val urlParams =
                 NavigationArg.bindArgumentsOf(
-                  Pair(NavigationArg.FEATURE, AppFeature.HouseholdManagement.name),
+                  Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
                   Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV.name),
                   Pair(NavigationArg.PATIENT_ID, patientId)
                 )

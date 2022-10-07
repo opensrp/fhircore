@@ -31,7 +31,7 @@ data class QuestionnaireConfig(
   val title: String,
   val identifier: String,
   val saveButtonText: String? = null,
-  val setPractitionerDetails: Boolean = false,
-  val setOrganizationDetails: Boolean = false,
+  val setPractitionerDetails: Boolean = true,
+  val setOrganizationDetails: Boolean = true,
   val planDefinitions: List<String> = listOf()
 )

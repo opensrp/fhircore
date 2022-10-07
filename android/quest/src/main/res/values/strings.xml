@@ -39,11 +39,13 @@
     <string name="remove_this_person">Remove this person</string>
     <string name="individual_details">Individual details</string>
     <string name="view_family">View family</string>
+    <string name="guardians_screen_title">%1$s\'s Guardians</string>
 
     <string name="client_visit">Client Visit</string>
     <string name="guardian_visit">Guardian Visit</string>
     <string name="viral_load_results">Viral Load Results</string>
     <string name="view_children_x">View Children (%1$s)</string>
+    <string name="view_guardians_x">View Guardians (%1$d)</string>
     <string name="patient_x_children">%1$s\'s Children</string>
     <string name="prompt_no_child">No Child to Visit</string>
     <string name="edit_profile">Edit Profile</string>
