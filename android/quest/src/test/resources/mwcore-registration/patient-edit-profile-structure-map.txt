@@ -1,0 +1,111 @@
+map "https://fhir-dev.d-tree.org/fhir/StructureMap/patient-edit-profile" = "Patient Edit Profile"
+
+    uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
+    uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+    uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
+    uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
+
+group Main(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src->bundle.id = uuid(),
+    bundle.type = "collection" then
+        ExtractEncounter(src, bundle),
+        ExtractPatient(src, bundle) "r_bundle_data";
+}
+
+group ExtractEncounter(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src->bundle.entry as entry,
+    entry.resource = create("Encounter") as encounter then {
+        src->encounter.id = uuid(),
+            encounter.status = "finished",
+            encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "IMP", "inpatient encounter"),
+            encounter.serviceType = cc("https://d-tree.org", "patient-edit-profile", "Patient Edit Profile") "r_enc_data";
+
+        src->encounter.subject = create("Reference") as ref then {
+            src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_enc_subject_ref";
+        }
+        "r_enc_subject";
+    }
+    "r_encounter";
+}
+
+group ExtractPatient(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src.item first as page where(linkId = "page-3") then {
+        page.item as patient_id_item where(linkId = "patient-id") then {
+            src->bundle.entry as entry,
+            entry.resource = create("Patient") as patient then {
+                // set existing id so as to overwrite the resource
+                src->patient.id = create("id") as patient_id then {
+                    src->patient_id.value = evaluate(patient_id_item, $this.answer.value) "r_item_patient_id_patient_set_pat_id";
+                }
+                "r_item_patient_id_patient_create_pat_id";
+
+                src then ExtractPersonalInformation(src, patient),
+                    ExtractLocationInformation(src, patient),
+                    ExtractPhoneInformation(src, patient)
+                    "r_extract_info";
+            }
+            "r_create_patient";
+        }
+        "r_check_patient_id";
+    }
+    "r_check_page";
+}
+
+group ExtractPersonalInformation(source src: QuestionnaireResponse, target patient: Patient) {
+    src.item first as page where(linkId = "page-1") then {
+        src->patient.name = create("HumanName") as patientName then {
+            page.item first as rFirstName where(linkId = "required-first-name")->patientName.given = evaluate(rFirstName, $this.answer.value) "r_p_required_fname";
+            page.item first as oFirstName where(linkId = "optional-first-name" and answer.count() > 0)->patientName.given = evaluate(oFirstName, $this.answer.value) "r_p_required_fname";
+            page.item first as lastName where(linkId = "last-name")->patientName.family = evaluate(lastName, $this.answer.value) "r_p_lname";
+        }
+        "r_p_create_human_name";
+    }
+    "r_check_page_2";
+}
+
+group ExtractLocationInformation(source src: QuestionnaireResponse, target patient: Patient) {
+    src.item first as page where(linkId = "page-2") then {
+        src->patient.address = create("Address")as patientAddress then {
+            page.item first as district where(linkId = "district")->patientAddress.district = evaluate(district, $this.answer.value) "r_p_address_district";
+
+            page.item first as tracingCatchment where(linkId.startsWith("tracing-catchment") and answer.count() > 0) then {
+                src->patientAddress.state = evaluate(tracingCatchment, $this.answer.value) "r_p_address_tracing_catchment";
+
+                page.item first as physicalLocator where(linkId = "physical-locator")->patientAddress.text = evaluate(physicalLocator, $this.answer.value) "r_p_address_text";
+            }
+            "r_check_tracing_catchment";
+
+            src->patientAddress.use = "home" "r_p_address_use";
+            src->patientAddress.type = "physical" "r_p_address_type";
+        }
+        "r_p_address";
+    }
+    "r_check_page_3";
+}
+
+group ExtractPhoneInformation(source src: QuestionnaireResponse, target patient: Patient) {
+    src.item first as page where(linkId = "page-3") then {
+        page.item first where(linkId = "phone-number-available-1" and answer.value = true) then {
+            page.item first as group1 where(linkId = "phone-information-1") then StorePhoneInformation(src, group1, patient) "r_save_phone_1";
+        }
+        "r_check_phone_1";
+
+        page.item first where(linkId = "phone-number-available-2" and answer.value = true) then {
+            page.item first as group2 where(linkId = "phone-information-2") then StorePhoneInformation(src, group2, patient) "r_save_phone_2";
+        }
+        "r_check_phone_2";
+    }
+    "r_check_page_4";
+}
+
+//! todo - find a way to store phone owner
+group StorePhoneInformation(source src: QuestionnaireResponse, source phoneNumberGroup: QuestionnaireResponseItem, target patient: Patient) {
+    src->patient.telecom = create("ContactPoint") as patientContact then {
+        phoneNumberGroup.item first as phoneNumber where(linkId.startsWith("phone-number-value")) then {
+            src->patientContact.value = evaluate(phoneNumber, $this.answer.value) "r_p_contact_value";
+            src->patientContact.system = "phone" "r_p_contact_system";
+        }
+        "r_p_phone_number_value";
+    }
+    "r_p_telecom";
+}
