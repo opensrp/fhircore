@@ -186,12 +186,12 @@ dependencies {
     api("androidx.work:work-runtime-ktx:2.7.1")
     api("org.ocpsoft.prettytime:prettytime:5.0.2.Final")
 
-    def coroutineVersion = '1.6.1'
+    def coroutineVersion = '1.6.2'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
     api("org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin")
 
-    api('org.smartregister:data-capture:0.1.0-beta05-preview2-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta05-preview3-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -211,7 +211,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api('org.smartregister:engine:0.1.0-beta02-preview2-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta02-preview3-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
