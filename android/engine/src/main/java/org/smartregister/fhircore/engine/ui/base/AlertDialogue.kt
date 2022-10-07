@@ -62,6 +62,7 @@ object AlertDialogue {
     @StringRes confirmButtonText: Int = R.string.questionnaire_alert_confirm_button_title,
     neutralButtonListener: ((d: DialogInterface) -> Unit)? = null,
     @StringRes neutralButtonText: Int = R.string.questionnaire_alert_neutral_button_title,
+    cancellable: Boolean = false,
     options: Array<AlertDialogListItem>? = null
   ): AlertDialog {
     val dialog =
@@ -70,7 +71,7 @@ object AlertDialogue {
           val view = context.layoutInflater.inflate(R.layout.alert_dialog, null)
           setView(view)
           title?.let { setTitle(it) }
-          setCancelable(false)
+          setCancelable(cancellable)
           neutralButtonListener?.let {
             setNeutralButton(neutralButtonText) { d, _ -> neutralButtonListener.invoke(d) }
           }
@@ -158,6 +159,32 @@ object AlertDialogue {
       confirmButtonText = confirmButtonText,
       neutralButtonListener = { d -> d.dismiss() },
       neutralButtonText = R.string.questionnaire_alert_neutral_button_title,
+      cancellable = false,
+      options = options?.toTypedArray()
+    )
+  }
+
+  fun showCancelAlert(
+    context: Activity,
+    @StringRes message: Int,
+    @StringRes title: Int? = null,
+    confirmButtonListener: ((d: DialogInterface) -> Unit),
+    @StringRes confirmButtonText: Int,
+    neutralButtonListener: ((d: DialogInterface) -> Unit),
+    @StringRes neutralButtonText: Int,
+    cancellable: Boolean = true,
+    options: List<AlertDialogListItem>? = null
+  ): AlertDialog {
+    return showAlert(
+      context = context,
+      alertIntent = AlertIntent.CONFIRM,
+      message = context.getString(message),
+      title = title?.let { context.getString(it) },
+      confirmButtonListener = confirmButtonListener,
+      confirmButtonText = confirmButtonText,
+      neutralButtonListener = neutralButtonListener,
+      neutralButtonText = neutralButtonText,
+      cancellable = cancellable,
       options = options?.toTypedArray()
     )
   }
