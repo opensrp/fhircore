@@ -200,8 +200,10 @@ constructor(
       val organizationRef =
         Reference().apply { reference = "${ResourceType.Organization.name}/$org" }
 
-      if (resource is Patient) resource.managingOrganization = organizationRef
-      else if (resource is Group) resource.managingEntity = organizationRef
+      if (resource is Patient && !resource.hasManagingOrganization())
+        resource.managingOrganization = organizationRef
+      else if (resource is Group && !resource.hasManagingEntity())
+        resource.managingEntity = organizationRef
     }
   }
 
@@ -492,7 +494,11 @@ constructor(
         resourcesList.add(this)
       }
         ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
-      loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
+
+      // for situations where patient RelatedPersons not passed through intent extras
+      if (resourcesList.none { it.resourceType == ResourceType.RelatedPerson }) {
+        loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
+      }
     }
 
     return resourcesList.toTypedArray()

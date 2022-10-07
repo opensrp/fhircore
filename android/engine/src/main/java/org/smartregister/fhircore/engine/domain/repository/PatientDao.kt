@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.di
+package org.smartregister.fhircore.engine.domain.repository
 
-import javax.inject.Qualifier
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.smartregister.fhircore.engine.domain.model.ProfileData
+import org.smartregister.fhircore.engine.domain.model.RegisterData
 
-@ExcludeFromJacocoGeneratedReport
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class AuthOkHttpClientQualifier
+interface PatientDao {
+  suspend fun loadPatient(patientId: String): Patient?
 
-@ExcludeFromJacocoGeneratedReport
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class OkHttpClientQualifier
+  suspend fun loadRelatedPerson(logicalId: String): RelatedPerson?
+
+  suspend fun loadGuardiansRegisterData(patient: Patient): List<RegisterData>
+
+  suspend fun loadRelatedPersonProfileData(logicalId: String): ProfileData
+}

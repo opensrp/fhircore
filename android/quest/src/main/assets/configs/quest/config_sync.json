@@ -106,6 +106,18 @@
         "type": "token",
         "expression": "#count"
       }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "patient.organization",
+        "base": [
+          "RelatedPerson"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
     }
   ]
 }
