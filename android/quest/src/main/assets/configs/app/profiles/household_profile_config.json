@@ -159,7 +159,6 @@
             {
               "viewType": "LIST",
               "baseResource": "Patient",
-              "padding": 16,
               "relatedResources": [
                 {
                   "resourceType": "CarePlan",

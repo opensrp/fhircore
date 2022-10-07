@@ -93,7 +93,7 @@ fun ServiceCard(
               resourceData = resourceData
             )
           }
-          .padding(top = 24.dp, bottom = 24.dp)
+          .padding(top = 13.dp, bottom = 13.dp)
           .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f)
     ) {
       // When show div
@@ -141,7 +141,7 @@ fun ServiceCard(
       modifier =
         modifier
           .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.5f)
-          .padding(top = 24.dp, bottom = 24.dp),
+          .padding(top = 10.dp, bottom = 10.dp),
       contentAlignment = Alignment.Center
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
