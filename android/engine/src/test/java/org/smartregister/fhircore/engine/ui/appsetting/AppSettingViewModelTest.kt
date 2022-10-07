@@ -133,7 +133,7 @@ class AppSettingViewModelTest : RobolectricTest() {
                 )
           }
       }
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
     coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
 
     appSettingViewModel.fetchConfigurations("app", ApplicationProvider.getApplicationContext())
@@ -142,7 +142,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coVerify { appSettingViewModel.fetchComposition(any(), any()) }
     coVerify { fhirResourceDataSource.loadData(any()) }
-    coVerify { defaultRepository.create(any()) }
+    coVerify { defaultRepository.create(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
     assertEquals(
