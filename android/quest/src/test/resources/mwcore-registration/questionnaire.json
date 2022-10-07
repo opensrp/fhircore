@@ -1,0 +1,1326 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "patient-demographic-updates",
+  "language": "en",
+  "title": "Demographic Updates",
+  "status": "active",
+  "publisher": "mcore",
+  "subjectType": [
+    "Patient"
+  ],
+  "contact": [
+    {
+      "name": "https://www.d-tree.org"
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir-dev.d-tree.org/StructureMap/patient-demographic-updates"
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-entryMode",
+      "valueCode": "prior-edit"
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 1"
+              }
+            ],
+            "text": "Page 1"
+          }
+        }
+      ],
+      "linkId": "page-1",
+      "type": "group",
+      "text": "<h1>Personal Information</h1>",
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.meta.tag.where(system='https://www.d-tree.org').first()"
+              }
+            }
+          ],
+          "linkId": "patient-category",
+          "text": "* Update",
+          "type": "choice",
+          "readOnly": "true"
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.name.given"
+              }
+            }
+          ],
+          "linkId": "required-first-name",
+          "text": "* First Name",
+          "type": "string",
+          "required": true,
+          "enableBehavior": "all",
+          "enableWhen": [
+            {
+              "question": "patient-category",
+              "operator": "!=",
+              "answerCoding": {
+                "code": "exposed-infant"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.name.given"
+              }
+            }
+          ],
+          "linkId": "optional-first-name",
+          "text": "First Name",
+          "type": "string",
+          "required": false,
+          "enableBehavior": "all",
+          "enableWhen": [
+            {
+              "question": "patient-category",
+              "operator": "=",
+              "answerCoding": {
+                "code": "exposed-infant"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.name.family"
+              }
+            }
+          ],
+          "linkId": "last-name",
+          "text": "* Last Name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.gender"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ],
+          "linkId": "gender",
+          "text": "* Gender",
+          "type": "choice",
+          "required": true,
+          "readOnly": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "male",
+                "display": "Male"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "female",
+                "display": "Female"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.birthDate"
+              }
+            }
+          ],
+          "linkId": "date-of-birth",
+          "text": "* Date Of Birth",
+          "type": "date",
+          "required": true,
+          "readOnly": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 2"
+              }
+            ],
+            "text": "Page 2"
+          }
+        }
+      ],
+      "linkId": "page-2",
+      "text": "<h1>Location Information</h1>",
+      "type": "group",
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.address.district"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "district",
+          "text": "* District",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueString": "Balaka"
+            },
+            {
+              "valueString": "Blantyre"
+            },
+            {
+              "valueString": "Chikwawa"
+            },
+            {
+              "valueString": "Chiradzulu"
+            },
+            {
+              "valueString": "Chitipa"
+            },
+            {
+              "valueString": "Dedza"
+            },
+            {
+              "valueString": "Dowa"
+            },
+            {
+              "valueString": "Karonga"
+            },
+            {
+              "valueString": "Kasungu"
+            },
+            {
+              "valueString": "Likoma"
+            },
+            {
+              "valueString": "Lilongwe"
+            },
+            {
+              "valueString": "Machinga"
+            },
+            {
+              "valueString": "Mangochi"
+            },
+            {
+              "valueString": "Mchinji"
+            },
+            {
+              "valueString": "Mozambique"
+            },
+            {
+              "valueString": "Mulanje"
+            },
+            {
+              "valueString": "Mwanza"
+            },
+            {
+              "valueString": "Mzimba"
+            },
+            {
+              "valueString": "Neno"
+            },
+            {
+              "valueString": "Nkhata Bay"
+            },
+            {
+              "valueString": "Nkhotakota"
+            },
+            {
+              "valueString": "Nsanje"
+            },
+            {
+              "valueString": "Ntcheu"
+            },
+            {
+              "valueString": "Ntchisi"
+            },
+            {
+              "valueString": "Phalombe"
+            },
+            {
+              "valueString": "Rumphi"
+            },
+            {
+              "valueString": "Salima"
+            },
+            {
+              "valueString": "Thyolo"
+            },
+            {
+              "valueString": "Zomba"
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.address.state"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "tracing-catchment-balaka",
+          "text": "* <b>SELECT</b> Tracing Catchment",
+          "type": "choice",
+          "required": true,
+          "enableBehavior": "any",
+          "enableWhen": [
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Balaka"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueString": "Adamu"
+            },
+            {
+              "valueString": "Amonitsute"
+            },
+            {
+              "valueString": "Bulusi"
+            },
+            {
+              "valueString": "Chauluka"
+            },
+            {
+              "valueString": "Chidalala"
+            },
+            {
+              "valueString": "Chikalogwe"
+            },
+            {
+              "valueString": "Chikololele"
+            },
+            {
+              "valueString": "Chikuse"
+            },
+            {
+              "valueString": "Chimatiro"
+            },
+            {
+              "valueString": "Chimkwakwa"
+            },
+            {
+              "valueString": "Chimpakati"
+            },
+            {
+              "valueString": "Chimtendere"
+            },
+            {
+              "valueString": "Chingagwe"
+            },
+            {
+              "valueString": "Chipochera"
+            },
+            {
+              "valueString": "Chitala"
+            },
+            {
+              "valueString": "Chiyembekezo"
+            },
+            {
+              "valueString": "Damu"
+            },
+            {
+              "valueString": "Domoka"
+            },
+            {
+              "valueString": "Hanjahanja"
+            },
+            {
+              "valueString": "James"
+            },
+            {
+              "valueString": "Joshua"
+            },
+            {
+              "valueString": "Kachikuni"
+            },
+            {
+              "valueString": "Kadyalunda"
+            },
+            {
+              "valueString": "Kalimba"
+            },
+            {
+              "valueString": "Kampeni"
+            },
+            {
+              "valueString": "Kandengwe"
+            },
+            {
+              "valueString": "Kanyumbaaka"
+            },
+            {
+              "valueString": "Kapalamula"
+            },
+            {
+              "valueString": "Kapire"
+            },
+            {
+              "valueString": "Katuma"
+            },
+            {
+              "valueString": "Kaumphawi"
+            },
+            {
+              "valueString": "Kayinga"
+            },
+            {
+              "valueString": "Khoswe"
+            },
+            {
+              "valueString": "Khwalala"
+            },
+            {
+              "valueString": "Khwisa"
+            },
+            {
+              "valueString": "Liwiza"
+            },
+            {
+              "valueString": "Liwonde"
+            },
+            {
+              "valueString": "Lupanga"
+            },
+            {
+              "valueString": "Mackenzie"
+            },
+            {
+              "valueString": "Majawa"
+            },
+            {
+              "valueString": "Majo"
+            },
+            {
+              "valueString": "Makoloje"
+            },
+            {
+              "valueString": "Maliwata"
+            },
+            {
+              "valueString": "Matola"
+            },
+            {
+              "valueString": "Mbodzoole"
+            },
+            {
+              "valueString": "Mchenga"
+            },
+            {
+              "valueString": "Mchirakwenda"
+            },
+            {
+              "valueString": "Mgwira"
+            },
+            {
+              "valueString": "Mitochi"
+            },
+            {
+              "valueString": "Mlandula"
+            },
+            {
+              "valueString": "M'Manga"
+            },
+            {
+              "valueString": "Mpezeni"
+            },
+            {
+              "valueString": "Mponda"
+            },
+            {
+              "valueString": "Mpoto"
+            },
+            {
+              "valueString": "Mpulula"
+            },
+            {
+              "valueString": "Mtalika"
+            },
+            {
+              "valueString": "Mwalero"
+            },
+            {
+              "valueString": "Mzati"
+            },
+            {
+              "valueString": "Ngomano"
+            },
+            {
+              "valueString": "Ng'Onga"
+            },
+            {
+              "valueString": "Ngwalo"
+            },
+            {
+              "valueString": "Njede"
+            },
+            {
+              "valueString": "Ntonya"
+            },
+            {
+              "valueString": "Petulo"
+            },
+            {
+              "valueString": "Phalula"
+            },
+            {
+              "valueString": "Pilitu"
+            },
+            {
+              "valueString": "Sawali"
+            },
+            {
+              "valueString": "Siliya"
+            },
+            {
+              "valueString": "Sosola"
+            },
+            {
+              "valueString": "Tembo"
+            },
+            {
+              "valueString": "Toleza"
+            },
+            {
+              "valueString": "Uli"
+            },
+            {
+              "valueString": "Zammimba"
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.address.state"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "tracing-catchment-machinga",
+          "text": "* <b>SELECT</b> Tracing Catchment",
+          "type": "choice",
+          "required": true,
+          "enableBehavior": "any",
+          "enableWhen": [
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Machinga"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueString": "Chamba Dispensary"
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.address.state"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "tracing-catchment-mangochi",
+          "text": "* <b>SELECT</b> Tracing Catchment",
+          "type": "choice",
+          "required": true,
+          "enableBehavior": "any",
+          "enableWhen": [
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Mangochi"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueString": "Assalaam Clinic"
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.address.state"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "tracing-catchment-phalombe",
+          "text": "* <b>SELECT</b> Tracing Catchment",
+          "type": "choice",
+          "required": true,
+          "enableBehavior": "any",
+          "enableWhen": [
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Phalombe"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueString": "Chiringa Maternity"
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.address.state"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "linkId": "tracing-catchment-salima",
+          "text": "* <b>SELECT</b> Tracing Catchment",
+          "type": "choice",
+          "required": true,
+          "enableBehavior": "any",
+          "enableWhen": [
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Salima"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueString": "Chinguluwe Health Centre"
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.address.text"
+              }
+            }
+          ],
+          "linkId": "physical-locator",
+          "text": "* <b>DESCRIBE</b> Physical Locator",
+          "type": "text",
+          "required": true,
+          "enableBehavior": "any",
+          "enableWhen": [
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Balaka"
+            },
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Machinga"
+            },
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Mangochi"
+            },
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Phalombe"
+            },
+            {
+              "question": "district",
+              "operator": "=",
+              "answerString": "Salima"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 3"
+              }
+            ],
+            "text": "Page 3"
+          }
+        }
+      ],
+      "linkId": "page-3",
+      "type": "group",
+      "text": "<h1>Phone Information</h1>",
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.telecom.count() > 0"
+              }
+            }
+          ],
+          "linkId": "phone-number-available-1",
+          "text": "* <b>ASK</b> Do you have a phone number where we can reach you?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "phone-information-1",
+          "type": "group",
+          "enableBehavior": "any",
+          "enableWhen": [
+            {
+              "question": "phone-number-available-1",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ],
+          "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "phone-number-type-1",
+              "text": "* <b>ENTER</b> Type of Phone Number 1",
+              "type": "choice",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Airtel/TNM"
+                },
+                {
+                  "valueString": "Other"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.telecom[0].value"
+                  }
+                },
+                {
+                  "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "https://github.com/google/android-fhir/questionnaire-item-control",
+                        "code": "phone-number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+                  "valueInteger": 10
+                }
+              ],
+              "linkId": "phone-number-value-1",
+              "text": "* <b>ENTER</b> Phone Number 1",
+              "type": "string",
+              "required": true,
+              "maxLength": 10,
+              "enableBehavior": "any",
+              "enableWhen": [
+                {
+                  "question": "phone-number-type-1",
+                  "operator": "=",
+                  "answerString": "Airtel/TNM"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.telecom[0].value"
+                  }
+                },
+                {
+                  "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "https://github.com/google/android-fhir/questionnaire-item-control",
+                        "code": "phone-number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+                  "valueInteger": 8
+                }
+              ],
+              "linkId": "phone-number-value-1",
+              "text": "* <b>ENTER</b> Phone Number 1",
+              "type": "string",
+              "required": true,
+              "maxLength": 13,
+              "enableBehavior": "any",
+              "enableWhen": [
+                {
+                  "question": "phone-number-type-1",
+                  "operator": "=",
+                  "answerString": "Other"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "phone-number-owner-1",
+              "text": "<b>ENTER</b> Phone Owner 1",
+              "type": "choice",
+              "required": true,
+              "enableBehavior": "all",
+              "enableWhen": [
+                {
+                  "question": "phone-number-type-1",
+                  "operator": "exists",
+                  "answerBoolean": true
+                },
+                {
+                  "question": "patient-category",
+                  "operator": "!=",
+                  "answerCoding": {
+                    "code": "exposed-infant"
+                  }
+                }
+              ],
+              "answerOption": [
+                {
+                  "valueString": "Self"
+                },
+                {
+                  "valueString": "Parent"
+                },
+                {
+                  "valueString": "Spouse"
+                },
+                {
+                  "valueString": "Other"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "phone-number-owner-1",
+              "text": "* <b>ENTER</b> Phone Owner 1",
+              "type": "choice",
+              "required": true,
+              "enableBehavior": "all",
+              "enableWhen": [
+                {
+                  "question": "phone-number-type-1",
+                  "operator": "exists",
+                  "answerBoolean": true
+                },
+                {
+                  "question": "patient-category",
+                  "operator": "=",
+                  "answerCoding": {
+                    "code": "exposed-infant"
+                  }
+                }
+              ],
+              "answerOption": [
+                {
+                  "valueString": "Mother"
+                },
+                {
+                  "valueString": "Father"
+                },
+                {
+                  "valueString": "Other"
+                }
+              ]
+            },
+            {
+              "linkId": "phone-number-owner-other-1",
+              "text": "* <b>SPECIFY</b> Other Phone Owner",
+              "type": "string",
+              "required": true,
+              "enableBehavior": "any",
+              "enableWhen": [
+                {
+                  "question": "phone-number-owner-1",
+                  "operator": "=",
+                  "answerString": "Other"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.telecom.count() > 1"
+              }
+            }
+          ],
+          "linkId": "phone-number-available-2",
+          "text": "* <b>ASK:</b> Do you have a second phone number where we can reach you?",
+          "type": "boolean",
+          "required": true,
+          "enableBehavior": "any",
+          "enableWhen": [
+            {
+              "question": "phone-number-available-1",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "phone-information-2",
+          "type": "group",
+          "enableBehavior": "any",
+          "enableWhen": [
+            {
+              "question": "phone-number-available-2",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ],
+          "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "phone-number-type-2",
+              "text": "* <b>ENTER</b> Type of phone number",
+              "type": "choice",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueString": "Airtel/TNM"
+                },
+                {
+                  "valueString": "Other"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.telecom[1].value"
+                  }
+                },
+                {
+                  "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "https://github.com/google/android-fhir/questionnaire-item-control",
+                        "code": "phone-number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+                  "valueInteger": 10
+                }
+              ],
+              "linkId": "phone-number-value-2",
+              "text": "* <b>ENTER</b> Phone Number 2",
+              "type": "string",
+              "required": true,
+              "maxLength": 10,
+              "enableBehavior": "any",
+              "enableWhen": [
+                {
+                  "question": "phone-number-type-2",
+                  "operator": "=",
+                  "answerString": "Airtel/TNM"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.telecom[1].value"
+                  }
+                },
+                {
+                  "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "https://github.com/google/android-fhir/questionnaire-item-control",
+                        "code": "phone-number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+                  "valueInteger": 8
+                }
+              ],
+              "linkId": "phone-number-value-2",
+              "text": "* <b>ENTER</b> Phone Number 2",
+              "type": "string",
+              "required": true,
+              "maxLength": 13,
+              "enableBehavior": "any",
+              "enableWhen": [
+                {
+                  "question": "phone-number-type-2",
+                  "operator": "=",
+                  "answerString": "Other"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "phone-number-owner-2",
+              "text": "<b>ENTER</b> Phone Owner 2",
+              "type": "choice",
+              "required": true,
+              "enableBehavior": "all",
+              "enableWhen": [
+                {
+                  "question": "phone-number-type-2",
+                  "operator": "exists",
+                  "answerBoolean": true
+                },
+                {
+                  "question": "patient-category",
+                  "operator": "!=",
+                  "answerCoding": {
+                    "code": "exposed-infant"
+                  }
+                }
+              ],
+              "answerOption": [
+                {
+                  "valueString": "Self"
+                },
+                {
+                  "valueString": "Parent"
+                },
+                {
+                  "valueString": "Spouse"
+                },
+                {
+                  "valueString": "Other"
+                }
+              ]
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "drop-down",
+                        "display": "Drop down"
+                      }
+                    ],
+                    "text": "Drop down"
+                  }
+                }
+              ],
+              "linkId": "phone-number-owner-2",
+              "text": "* <b>ENTER</b> Phone Owner 2",
+              "type": "choice",
+              "required": true,
+              "enableBehavior": "all",
+              "enableWhen": [
+                {
+                  "question": "phone-number-type-2",
+                  "operator": "exists",
+                  "answerBoolean": true
+                },
+                {
+                  "question": "patient-category",
+                  "operator": "=",
+                  "answerCoding": {
+                    "code": "exposed-infant"
+                  }
+                }
+              ],
+              "answerOption": [
+                {
+                  "valueString": "Mother"
+                },
+                {
+                  "valueString": "Father"
+                },
+                {
+                  "valueString": "Other"
+                }
+              ]
+            },
+            {
+              "linkId": "phone-number-owner-other-2",
+              "text": "* <b>SPECIFY</b> Other Phone Owner",
+              "type": "string",
+              "required": true,
+              "enableBehavior": "any",
+              "enableWhen": [
+                {
+                  "question": "phone-number-owner-2",
+                  "operator": "=",
+                  "answerString": "Other"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.id"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "patient-id",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}
