@@ -6,39 +6,13 @@
 	},
 	"item": [
 		{
-			"linkId": "55b1164d-7492-4635-9b83-0806fbed77d3",
+			"linkId": "ae2b3afe-68bc-46d9-fdb9-9c3322efd277",
 			"answer": [
 				{
 					"valueCoding": {
-						"id": "63fae169-38f4-40d6-8290-2848405c2ba4",
-						"code": "depo",
-						"system": "urn:uuid:e94d6a17-6239-405d-8bf5-804392bbf8c0",
-						"display": "Male condoms"
-					}
-				}
-			]
-		},
-		{
-			"linkId": "d67585d7-ae6b-4ede-83c1-80980bc9481f",
-			"answer": [
-				{
-					"valueCoding": {
-						"id": "30618366-8188-4951-9029-5f4f62b75c4d",
-						"code": "no",
-						"system": "urn:uuid:8c1e52f8-b570-4f26-cd3c-6107a60e7340",
-						"display": "No"
-					}
-				}
-			]
-		},
-		{
-			"linkId": "aea83698-5a14-48d9-8345-3076bbb576ee",
-			"answer": [
-				{
-					"valueCoding": {
-						"id": "fd9758fb-731c-43c1-8dab-2ce8abb38f1e",
+						"id": "bda820d4-15dd-471b-b7a7-9aed02bb0558",
 						"code": "yes",
-						"system": "urn:uuid:763e3668-a11a-4c4d-d1e4-1736a8d3f48b",
+						"system": "urn:uuid:e94d6a17-6239-405d-8bf5-804392bbf8c0",
 						"display": "Yes"
 					}
 				}
@@ -73,6 +47,14 @@
 			"answer": [
 				{
 					"valueInteger": 3
+				}
+			]
+		},
+		{
+			"linkId": "451a7edc-348b-4859-c384-15da059adc47",
+			"answer": [
+				{
+					"valueBoolean": true
 				}
 			]
 		}
