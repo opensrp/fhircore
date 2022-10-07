@@ -966,7 +966,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val sourcePatient = Patient().apply { id = "test_patient_1_id" }
     questionnaireViewModel.saveResource(sourcePatient)
 
-    coVerify { defaultRepo.create(sourcePatient) }
+    coVerify { defaultRepo.create(true, sourcePatient) }
   }
 
   @Test

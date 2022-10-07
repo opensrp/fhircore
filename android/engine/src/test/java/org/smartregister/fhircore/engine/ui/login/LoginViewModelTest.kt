@@ -313,18 +313,21 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     coEvery {
       defaultRepository.create(
+        true,
         *samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray()
       )
     } returns listOf("1")
 
     coEvery {
       defaultRepository.create(
+        true,
         *samplePractitionerDetails.fhirPractitionerDetails.organizations.toTypedArray()
       )
     } returns listOf("12")
 
     coEvery {
       defaultRepository.create(
+        true,
         *samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray()
       )
     } returns listOf("123")
@@ -362,18 +365,21 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     coVerify {
       defaultRepository.create(
+        true,
         *samplePractitionerDetails.fhirPractitionerDetails.careTeams.toTypedArray()
       )
     }
 
     coVerify {
       defaultRepository.create(
+        true,
         *samplePractitionerDetails.fhirPractitionerDetails.organizations.toTypedArray()
       )
     }
 
     coVerify {
       defaultRepository.create(
+        true,
         *samplePractitionerDetails.fhirPractitionerDetails.locations.toTypedArray()
       )
     }
@@ -416,7 +422,7 @@ internal class LoginViewModelTest : RobolectricTest() {
         entry = listOf(Bundle.BundleEntryComponent().apply { resource = samplePractitionerDetails })
       }
 
-    coEvery { defaultRepository.create(*emptyArray()) } returns listOf()
+    coEvery { defaultRepository.create(true, *emptyArray()) } returns listOf()
 
     runBlocking { viewModel.savePractitionerDetails(bundle) }
 
@@ -449,6 +455,6 @@ internal class LoginViewModelTest : RobolectricTest() {
         ?.size
     )
 
-    coVerify(exactly = 3) { defaultRepository.create(*emptyArray()) }
+    coVerify(exactly = 3) { defaultRepository.create(true, *emptyArray()) }
   }
 }

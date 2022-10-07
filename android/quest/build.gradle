@@ -111,7 +111,7 @@ android {
     }
 
     testOptions {
-        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        //execution 'ANDROIDX_TEST_ORCHESTRATOR'
         animationsDisabled true
 
         unitTests {
@@ -139,8 +139,8 @@ android {
             dimension "apps"
             applicationIdSuffix ".ecbis"
             versionNameSuffix "-ecbis"
-            versionCode 3
-            versionName "0.1.1"
+            versionCode 4
+            versionName "0.1.4"
             buildConfigField "String[]", "SYNC_STRATEGIES", '{"Location"}'
         }
 

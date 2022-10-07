@@ -85,12 +85,9 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun initPopulatesFactsWithDataAndFhirPathValues() {
+  fun initClearsExistingFacts() {
     val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
-    Assert.assertEquals(3, facts.asMap().size)
-    Assert.assertNotNull(facts.get("data"))
-    Assert.assertNotNull(facts.get("fhirPath"))
-    Assert.assertNotNull(facts.get("service"))
+    Assert.assertEquals(0, facts.asMap().size)
   }
 
   @Test

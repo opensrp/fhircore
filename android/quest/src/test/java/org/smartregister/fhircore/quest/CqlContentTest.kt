@@ -254,7 +254,8 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
-    coEvery { defaultRepository.create(any()) } returns emptyList()
+    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
+    coEvery { configService.provideMandatorySyncTags(any()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(cqlLibrary.logicalId, null, dataBundle, defaultRepository)
@@ -272,7 +273,8 @@ class CqlContentTest : RobolectricTest() {
     )
 
     val observationSlot = slot<Observation>()
-    coVerify { defaultRepository.create(capture(observationSlot)) }
+    val booleanSlot = slot<Boolean>()
+    coVerify { defaultRepository.create(capture(booleanSlot), capture(observationSlot)) }
 
     Assert.assertEquals(
       "QuestionnaireResponse/TEST_QUESTIONNAIRE_RESPONSE",
