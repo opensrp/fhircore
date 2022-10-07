@@ -253,6 +253,16 @@ constructor(
     }
   }
 
+  fun savePartialQuestionnaireResponse(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    viewModelScope.launch(dispatcherProvider.io()) {
+      questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+      saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+    }
+  }
+
   fun appendOrganizationInfo(resource: Resource) {
     // Organization reference in shared pref as "Organization/some-gibberish-uuid"
     authenticatedOrganizationIds.let { ids ->
