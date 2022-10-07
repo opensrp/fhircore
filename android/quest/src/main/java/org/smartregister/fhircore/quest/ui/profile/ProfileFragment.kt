@@ -20,24 +20,30 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 
+@OptIn(ExperimentalMaterialApi::class)
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
 
   val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
 
   val profileViewModel by viewModels<ProfileViewModel>()
+
+  val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -65,6 +71,15 @@ class ProfileFragment : Fragment() {
           )
         }
       }
+    }
+  }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    appMainViewModel.refreshDataLiveData.observe(viewLifecycleOwner) {
+      with(profileFragmentArgs) {
+        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig)
+      }
+      appMainViewModel.refreshDataLiveData.postValue(false)
     }
   }
 }

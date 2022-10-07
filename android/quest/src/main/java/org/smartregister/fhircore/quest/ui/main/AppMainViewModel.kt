@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -82,6 +83,8 @@ constructor(
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
+
+  val refreshDataLiveData = MutableLiveData(false)
 
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
