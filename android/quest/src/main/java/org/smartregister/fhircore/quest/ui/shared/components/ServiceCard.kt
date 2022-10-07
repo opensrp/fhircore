@@ -93,7 +93,7 @@ fun ServiceCard(
               resourceData = resourceData
             )
           }
-          .padding(top = 13.dp, bottom = 13.dp)
+          .padding(top = 16.dp, bottom = 16.dp)
           .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f)
     ) {
       // When show div
@@ -140,8 +140,8 @@ fun ServiceCard(
     Box(
       modifier =
         modifier
-          .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.5f)
-          .padding(top = 10.dp, bottom = 10.dp),
+          .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
+          .padding(top = 16.dp, bottom = 16.dp),
       contentAlignment = Alignment.Center
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
@@ -413,6 +413,41 @@ private fun ServiceCardServiceUpcomingPreview() {
                   text = "Next visit 09-10-2022",
                   smallSized = false
                 )
+            )
+          )
+      )
+    )
+
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    ViewRenderer(
+      viewProperties = viewProperties,
+      resourceData = ResourceData(Patient(), emptyMap(), emptyMap()),
+      navController = rememberNavController()
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ServiceCardServiceFamilyMemberPreview() {
+  val viewProperties =
+    listOf<ViewProperties>(
+      ViewGroupProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "John Njoroge Mwangi, F",
+                    primaryTextColor = "#000000",
+                  ),
+                ),
+              serviceMemberIcons = "CHILD",
+              showVerticalDivider = false
             )
           )
       )

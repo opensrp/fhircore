@@ -2,7 +2,7 @@
   "appId": "app",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "ECBIS",
+  "appTitle": "eCBIS",
   "remoteSyncPageSize": 100,
   "languages": [
     "en",

@@ -121,6 +121,13 @@
               }
             ],
             "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": true,
+              "text": "ANC Visit",
+              "status": "DUE",
+              "fontSize": 12.0,
+              "smallSized": true
+            },
             "actions": [
               {
                 "trigger": "ON_CLICK",

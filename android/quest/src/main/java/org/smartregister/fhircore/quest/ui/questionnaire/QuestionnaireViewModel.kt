@@ -55,7 +55,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -206,7 +205,8 @@ constructor(
           }
 
           // response MUST have subject by far otherwise flow has issues
-          if (!questionnaire.experimental) questionnaireResponse.assertSubject()
+          // if (!questionnaire.experimental) questionnaireResponse.assertSubject() // Disabled this
+          // because the subject is not required in the questionnaire response
 
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
@@ -241,15 +241,28 @@ constructor(
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
 
-        extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-        extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
+        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-        extractCqlOutput(questionnaire, questionnaireResponse, null)
-        extractCarePlan(questionnaireResponse, null, questionnaireConfig)
+        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
 
       viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
+    }
+  }
+
+  /* We can remove this after we review why a subject is needed for every questionnaire response in fhir core.
+  The subject is not required in the questionnaire response
+   https://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.subject */
+  private suspend fun performExtraction(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaire: Questionnaire,
+    bundle: Bundle?
+  ) {
+    if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
+      extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+      extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
     }
   }
 
@@ -358,7 +371,9 @@ constructor(
       return
     }
 
-    questionnaireResponse.assertSubject() // should not allow further flow without subject
+    // Disabled this check because the subject is not a required attribute on the
+    // QuestionnaireResponse
+    // questionnaireResponse.assertSubject() // should not allow further flow without subject
 
     defaultRepository.addOrUpdate(questionnaireResponse)
   }

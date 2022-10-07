@@ -123,8 +123,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_TASK_ID)?.let {
         lifecycleScope.launch(dispatcherProvider.io()) {
           when {
-            it.startsWith(ResourceType.Task.name) ->
+            it.startsWith(ResourceType.Task.name) -> {
               fhirCarePlanGenerator.completeTask(it.extractLogicalIdUuid())
+            }
           }
         }
       }

@@ -36,25 +36,6 @@
       }
     ]
   },
-  "fabActions": [
-    {
-      "id": "ActionButton",
-      "visible": true,
-      "display": "Record Restock",
-      "icon": "add",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
-            "title": "Physical Inventory Count and Stock Supply",
-            "saveButtonText": "SAVE"
-          }
-        }
-      ]
-    }
-  ],
   "searchBar": {
     "visible": true,
     "display": "Search by name",
@@ -107,12 +88,6 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "@{quantity}",
-                "fontSize": 14.0,
-                "primaryTextColor": "#DF0E1A"
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
                 "primaryText": "@{lastUpdated}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#5A5A5A"
@@ -120,9 +95,10 @@
             ],
             "showVerticalDivider": false,
             "serviceButton": {
-              "visible": false,
-              "text": "",
+              "visible": true,
+              "text": "@{quantity}",
               "status": "DUE",
+              "fontSize": 14.0,
               "smallSized": false
             },
             "actions": [
@@ -143,6 +119,25 @@
       }
     ]
   },
+  "fabActions": [
+    {
+      "id": "ActionButton",
+      "visible": true,
+      "display": "Record Restock",
+      "icon": "add",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
+            "title": "Physical Inventory Count and Stock Supply",
+            "saveButtonText": "SAVE"
+          }
+        }
+      ]
+    }
+  ],
   "noResults": {
     "title": "No Commodities",
     "message": "Sorry, stock commodities have not been setup yet"

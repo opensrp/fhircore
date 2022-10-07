@@ -52,9 +52,9 @@ fun CompoundText(
           vertical = compoundTextProperties.padding.div(2).dp
         ),
   ) {
-    if (compoundTextProperties.primaryText != null) {
+    if (!compoundTextProperties.primaryText.isNullOrBlank()) {
       Text(
-        text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap),
+        text = compoundTextProperties.primaryText!!.interpolate(computedValuesMap).trim(),
         color = compoundTextProperties.primaryTextColor.parseColor(),
         modifier =
           modifier
@@ -66,11 +66,11 @@ fun CompoundText(
         fontSize = compoundTextProperties.fontSize.sp,
       )
     }
-    if (compoundTextProperties.secondaryText != null) {
+    if (!compoundTextProperties.secondaryText.isNullOrBlank()) {
       // Separate the primary and secondary text
       Separator(separator = compoundTextProperties.separator ?: "-")
       Text(
-        text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap),
+        text = compoundTextProperties.secondaryText!!.interpolate(computedValuesMap).trim(),
         color = compoundTextProperties.secondaryTextColor.parseColor(),
         modifier =
           modifier

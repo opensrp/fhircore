@@ -82,13 +82,13 @@ fun List(
           .value
 
       Column {
-        Spacer(modifier = modifier.height(8.dp))
+        Spacer(modifier = modifier.height(5.dp))
         ViewRenderer(
           viewProperties = viewProperties.registerCard.views,
           resourceData = listItemResourceData,
           navController = navController,
         )
-        Spacer(modifier = modifier.height(8.dp))
+        Spacer(modifier = modifier.height(5.dp))
         if ((index < resources.lastIndex) && viewProperties.showDivider)
           Divider(color = DividerColor)
       }
